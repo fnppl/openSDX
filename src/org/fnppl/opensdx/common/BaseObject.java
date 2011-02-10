@@ -79,7 +79,7 @@ public abstract class BaseObject {
     		sql.append("\""+identcols[i]+"\" = "+identvalues[i]);
     	}    	
     	//System.out.println("SQL: "+sql);
-    	int res = BalancingConnectionManager.execUpdate(
+    	int res = DBConnManager.execUpdate(
 			sql.toString()
 		);
     	
@@ -308,11 +308,11 @@ public abstract class BaseObject {
     public static void fromDBRAW(BaseObject mo, DBResultSet Rs, int line) {
     	for(int i=0; i<Rs.width(); i++) {
     		mo.names.addElement(Rs.getNameAt(i));
-        	mo.values.addElement(Rs.getValueAt(line, i));
+        	mo.values.addElement(Rs.getSValueAt(line, i));
         }
     }
     
-    public static void setIds(SObject me, long[] myids, String[] identcols) {
+    public static void setIds(BaseObject me, long[] myids, String[] identcols) {
 		if (myids.length != identcols.length) {
 			return;
 		}
@@ -337,12 +337,12 @@ public abstract class BaseObject {
         Class c = getClass();
         Element ret = new Element(c.getName().substring(c.getName().lastIndexOf(".")+1));
         
-        for(int i=0;i<names.size();i++) {
+        for(int i=0; i<names.size(); i++) {
         	String key = names.elementAt(i);
             Element e = new Element(key);
             ret.addContent(e);
             Object o = values.elementAt(i);
-            e.setText(o.toString());//NOCH UNSCHÖN HT 18.08.2008
+            e.setText(o.toString()); //uargsn HT 20110210
         }
         
         return ret;

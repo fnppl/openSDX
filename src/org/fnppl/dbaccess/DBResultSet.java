@@ -16,4 +16,7 @@ public class DBResultSet {
 	public String getSValueOf(int line, String name) {
 		return null;
 	}
+	public int height() {
+		return -1;
+	}
 }

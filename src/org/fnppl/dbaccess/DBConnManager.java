@@ -9,4 +9,11 @@ public class DBConnManager {
 	public DBResultSet execQ(String sql) {
 		return null;
 	}
+	
+	public static int execUpdate(String sql) {
+		return defaultInstance.execU(sql);
+	}
+	public int execU(String sql) {
+		return -1;
+	}
 }
