@@ -1,5 +1,6 @@
 package org.fnppl.opensdx.common;
 
+import org.fnppl.opensdx.dbaccess.*;
 import org.jdom.*;
 import java.util.*;
 
@@ -17,11 +18,11 @@ public abstract class BaseObject {
         return null;
     }
     
-    public static BaseObject init(SObject me, String tablename, String idname, long id) {
+    public static BaseObject init(BaseObject me, String tablename, String idname, long id) {
     	return init(me, tablename, idname, id);
     }
 
-    public static BaseObject init(SObject me, String tablename, String[] idnames, long[] ids) {
+    public static BaseObject init(BaseObject me, String tablename, String[] idnames, long[] ids) {
     	if(idnames.length != ids.length || tablename==null || tablename.length()==0) {    		
     		throw new RuntimeException("SObject::init_failed::mismatch "+idnames.length+" != "+ids.length+" for table["+tablename+"]");
     	}    	
@@ -35,8 +36,8 @@ public abstract class BaseObject {
     		sb.append("\""+idnames[i]+"\" = "+ids[i]);
     	}
     	
-    	//System.out.println("SQL: "+sb);
-    	DBResultSet Rs = BalancingConnectionManager.execQuery(sb.toString());
+
+    	DBResultSet Rs = DBConnManager.execQuery(sb.toString());
 		fromDBRAW(me, Rs, 0);
 		if(Rs.height()>=1) {
 			me.fromDB = true;
@@ -304,9 +305,9 @@ public abstract class BaseObject {
      * @param Rs
      * @param line
      */
-    public static void fromDBRAW(SObject mo, DBResultSet Rs, int line) {
+    public static void fromDBRAW(BaseObject mo, DBResultSet Rs, int line) {
     	for(int i=0; i<Rs.width(); i++) {
-    		mo.names.addElement(Rs.gimmeNameAt(i));
+    		mo.names.addElement(Rs.getNameAt(i));
         	mo.values.addElement(Rs.getValueAt(line, i));
         }
     }
