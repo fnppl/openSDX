@@ -14,3 +14,13 @@ If you want to contribute in terms of coding for fun and a higher purpose, pleas
 Henning Thieß
 ht@fnppl.org
 
+
+
+
+===== clipboard =====
+give us all you've got:
+    find -type f -exec git add {} \;
+    git commit -a -m "shizzle."
+    git push
+    
+     
