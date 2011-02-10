@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dbaccess;
+package org.fnppl.dbaccess;
 
 //wrapper around a fully-fetched database-resultset
 

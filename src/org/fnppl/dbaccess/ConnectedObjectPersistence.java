@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dbaccess;
+package org.fnppl.dbaccess;
 
 /*
  * HT 20110210

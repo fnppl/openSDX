@@ -1,6 +1,6 @@
 package org.fnppl.opensdx.common;
 
-import org.fnppl.opensdx.dbaccess.*;
+import org.fnppl.dbaccess.*;
 import org.jdom.*;
 import java.util.*;
 
@@ -116,7 +116,7 @@ public abstract class BaseObject {
 				}
 				else {
 					sb.append("'");
-					sb.append(Helper.dbEncode(value.toString()));
+					sb.append(DBConnManager.dbEncode(value.toString()));
 					sb.append("'");
 				}
 				
@@ -133,7 +133,7 @@ public abstract class BaseObject {
 	    		sb.append("\""+identcols[i]+"\" = "+identvalues[i]);
 	    	}
 			//System.out.println("SQL: "+sb);
-			int r = BalancingConnectionManager.execUpdate(sb.toString());
+			int r = DBConnManager.execUpdate(sb.toString());
 			return r==1;
 		}
 		return true;

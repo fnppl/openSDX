@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dbaccess;
+package org.fnppl.dbaccess;
 
 public class DBConnManager {
 	private static DBConnManager defaultInstance = null;
@@ -15,5 +15,10 @@ public class DBConnManager {
 	}
 	public int execU(String sql) {
 		return -1;
+	}
+	
+	public static String dbEncode(String s) {
+		//HT 20110210 - encode quotes etc.
+		return s;
 	}
 }
