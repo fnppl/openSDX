@@ -98,11 +98,14 @@
 		
 		<information>
 			<promotext lang="en">
-			asdasd
+			EN asdasd
+			</promotext>
+			<promotext lang="de">
+			DE asdasd
 			</promotext>
 			<teasertext lang="de">
-			asdasd
-			</promotext>
+			DE asdasd
+			</teasertext>
 			
 			<physical_release_date>1960-02-13 GMT+00</physical_release_date>
 			<digital_release_date>1960-02-13 GMT+00</digital_release_date>
@@ -161,6 +164,12 @@
 				</then>				
 			</rule_2>
 		</license_specifics>
+		
+		<items> <!-- those items aka tracks/videos/flash/apps/whatever contained in this bundle -->
+			<item>
+			</item>
+		</items>
+		
 	</bundle>
 	<!--  could have X more bundles -->
 
