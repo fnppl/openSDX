@@ -26,11 +26,11 @@ package org.fnppl.opensdx.common;
  */
 
 /*
- * can be any type of label, publishing house, aggregator, whatever
- * basically, i would recommend even for a "label-contract-partner" to create subunits for that "single-releaser"...
+ * in any term of assignment, classification etc. these assignments etc. 
+ * should be also possible to be made under some restrictions or "only for..."
  * 
  */
 
-public class ContractPartner extends BaseObject {
+public class ConditionAkaRestriction extends BaseObject {
 
 }

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+ 
+ * Copyright (C) 2010-2011 
+ * 							fine people e.V. <opensdx@fnppl.org> 
+ * 							Henning Thieß <ht@fnppl.org>
+ * 
+ * 							http://fnppl.org
+ * 
+ * 
+ * This file is part of openSDX
+ * openSDX is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * openSDX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * and GNU General Public License along with openSDX.
+ * If not, see <http://www.gnu.org/licenses/>.
+ 
+ -->
+
+<!-- 
+	basically a feed could contain as many products as wanted; 
+	they all should be from one direct licensor though
+	
+	HT 20110214
+	from my point of view, a *feed* with only one product is much more desirable in terms of error-isolation/correction
+	in these days, it should never be a problem to have computers work on this in a proper manner 
+ -->
+
+<feed id="jajajajaj"><!-- id is provided by sender; should be unique -->
+	<sender>
+		<contractpartnerid></contractpartnerid><!-- your side of "ID" -->
+		<ourcontractpartnerid></ourcontractpartnerid><!-- our side of "ID" -->
+		<email></email><!--  esp. for signature-check -->		
+	</sender>
+	<licensor>
+		<ourcontractpartnerid></ourcontractpartnerid><!-- our side of "ID" -->
+		<contractpartnerid></contractpartnerid><!-- your side of "ID" -->
+		<email></email><!--  good, but not neccessarily needed -->
+	</licensor><!-- could be identical to sender, but has to be given -->
+	
+	<actions>
+		<oninitialreceive></oninitialreceive><!-- when the *machine* picks up this delivery (aka pulls it away from *inbox*) -->
+		<onprocessstart></onprocessstart><!-- when the *machine* start processing this feed -->
+		<onprocessend></onprocessend><!-- when *machine* has ended working on this -->
+		<onfullsuccess></onfullsuccess><!-- when *machine* thinks, everything was read and successfully process - without ANY error -->
+		<onerror></onerror><!-- when *machine* could process this, but some error, or total fail occured -->
+	</actions>
+	
+	<bundle>
+		<ids>
+			<grid></grid><!-- grid -->
+			<upc></upc><!-- ean/upc -->
+			<isrc></isrc><!-- isrc - not applicable on bundle-level, but for  -->			
+		</ids>
+		<displayname></displayname><!-- this is how this should be displayed in pos -->
+		<name></name><!-- name - should be without "version" or stuff -->
+		<version></version><!-- version if different versions of this bundle exist -->
+		<contributors>
+			<contributor>
+				<name></name><!-- could be labelname -->
+				<type>label</type><!-- e.g. label -->
+				<ids>
+					<gvl></gvl><!-- gvl -->
+					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<own></own><!-- must be unique for that contributor/licensor -->
+					<your></your><!-- if given some kind of "your" id: thats it -->					
+				</ids>
+			</contributor>
+			<contributor>
+				<name></name><!-- could be artistname -->
+				<type>display_artist</type><!-- e.g. display_artist -->
+				<ids>
+					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<own></own><!-- must be unique for that contributor/licensor -->
+					<your></your><!-- if given some kind of "your" id: thats it -->					
+				</ids>				
+			</contributor>
+			<contributor>
+				<name></name><!-- could be compilator -->
+				<type>compilator</type><!-- e.g. compilator -->
+				<ids>
+					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<own></own><!-- must be unique for that contributor/licensor -->
+					<your></your><!-- if given some kind of "your" id: thats it -->					
+				</ids>				
+			</contributor>
+			<!-- HT 14.02.2011 - could also have some "restrictions/conditions" on it - e.g. when an artist is different for some territory or such... -->
+		</contributors>
+		
+		<information>
+			<promotext lang="en">
+			asdasd
+			</promotext>
+			<teasertext lang="de">
+			asdasd
+			</promotext>
+			
+			<physical_release_date>1960-02-13 GMT+00</physical_release_date>
+			<digital_release_date>1960-02-13 GMT+00</digital_release_date>
+		</information>
+		
+		<license_basis>
+			<territorial>
+				<territory></territory><!-- type omitted: allow -->
+				<territory type="allow"></territory><!-- type explicitly given -->
+				<territory type="disallow"></territory><!-- for use for eg. WW -AT -->
+				<!-- U more territories -->
+			</territorial>
+			<timeframe>
+				<from>1960-02-13 00:00:00 GMT+01</from><!-- MUST -->
+				<to>2050-02-13 23:59:59 GMT+01</to><!-- MUST -->
+			</timeframe>
+				
+			<pricing>
+			</pricing>
+		</license_basis>
+		<license_specifics>
+			<!-- all territories here MUST be given in *basis* -->
+			<!-- all times here MUST be included in the basis-timeframe -->
+			<!-- HT 14.02.2011 - using some *basic-if-then-else*-style here because of clarity and easy implemenation-possibility -->
+			<rule_1><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
+				<if>
+					<what>territory</what>
+					<operator>containedin</operator><!-- equals/before/after/contains/containedin -->
+					<value>EU</value>
+				</if>
+				<then>
+					<echo>me is debugging output for happy programmers...</echo><!-- HT 14.02.2011 - much appreciated... -->
+					<break /><!-- this means to not process any more rules...; just leave it away to "continue" -->
+				</then>
+				<else><!-- HT 14.02.2011 we should not cascade this now..., but could easily do -->
+					<proclaim>
+						<what>price</what>
+						<for>EUR 9.99</for>
+					</proclaim>
+					<proclaim>
+						<what>pricelevel</what>
+						<for>medium</for>
+					</proclaim>
+					<break />
+				</else>
+			</rule_1><!-- numbered since we need an ordered mode here - first come first match -->
+			
+			<rule_2><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
+				<if>
+					<what>territory</what><!-- *field* -->
+					<operator>equals</operator><!-- equals/before/after/contains/containedin -->
+					<value>DE</value>
+				</if>
+				<then>
+					<echo>YOU CANNOT EVEN REACH ME - since RULE1 breaks and DE is in EU</echo>					
+				</then>				
+			</rule_2>
+		</license_specifics>
+	</bundle>
+	<!--  could have X more bundles -->
+
+	<!-- it is also possible to only send "an item" - aka track although this is quite inconvenient... -->	
+	<item>
+	</item>
+	<!--  could have Z more items -->
+</feed>
+
