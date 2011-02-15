@@ -51,7 +51,7 @@ public abstract class BaseObject {
         if(v instanceof Boolean) {
         	return ((Boolean)v).booleanValue();
         }        
-        return v.toString().indexOf("t")==0;
+        return v.toString().toLowerCase().indexOf("t")==0; //BB 20110215
     }
     /**
      * @param name
