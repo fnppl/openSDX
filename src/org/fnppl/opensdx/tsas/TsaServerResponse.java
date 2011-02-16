@@ -33,4 +33,8 @@ import org.fnppl.opensdx.security.*;
 
 public class TsaServerResponse {
 
+	public void toOutput(OutputStream out) throws Exception {
+		
+	}
+	
 }

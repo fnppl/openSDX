@@ -39,6 +39,11 @@ public class TSAServerMain {
 		
 	}
 	
+	public static TsaServerResponse prepareResponse(TsaServerRequest request) {
+		//yeah, switch cmd/method - stuff whatever...
+		return null;
+	}
+	
 	public void readKeys(File f, char[] pass_mantra) throws Exception {
 		KeyRingCollection krc = KeyRingCollection.fromFile(f, pass_mantra, true);
 		//get the relevant sign-key from that collection
@@ -52,6 +57,12 @@ public class TSAServerMain {
 			public void run() {
 				try {
 					InputStream in = s.getInputStream();
+					TsaServerRequest request = TsaServerRequest.fromInputStream(in);
+					
+					TsaServerResponse response = prepareResponse(request);//this is ok since the response is small and can be kept in mem - no need for directly kick it on socket... 
+					
+					OutputStream out = s.getOutputStream();
+					response.toOutput(out);
 				} catch(Exception ex) {
 					ex.printStackTrace();
 				}
