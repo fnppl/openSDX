@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.xml;
+package org.fnppl.opensdx.tsas;
 
 /*
  * Copyright (C) 2010-2011 
@@ -25,18 +25,10 @@ package org.fnppl.opensdx.xml;
  *      
  */
 
-/*
- * basically this class mimics the org.jdom-stuff.
- * why is it here? because we want to be independent of jdoms-implementation!
- * 
- * this class should provide nice stuff for parsing/writing xml
- * + DOM-mode
- * + SAX-mode
- * 
- * most probably, we will shift this in specific classes then...
- * 
- */
-
-public class XMLHelper {
+public class TSAServerMain {
+	
+	public static void main(String[] args) {
+		
+	}
 
 }
