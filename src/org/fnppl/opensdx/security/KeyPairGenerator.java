@@ -36,6 +36,11 @@ import org.bouncycastle.openpgp.*;
 
 public class KeyPairGenerator {
 
+	public static AsymmetricKeyPair generateKeyPair() { //always RSA_2048 !!!
+		return null;
+	}
+	
+	
 	//TODO save to KeyRing
 	public static void generateRSAKeyPair(String identity, String passPhrase, boolean asc) throws Exception {
 		Security.addProvider(new BouncyCastleProvider());
