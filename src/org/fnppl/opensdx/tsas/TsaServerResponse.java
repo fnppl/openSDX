@@ -32,7 +32,8 @@ import org.fnppl.opensdx.security.*;
 
 
 public class TsaServerResponse {
-
+	public int retcode = 404;//fail
+	
 	public void toOutput(OutputStream out) throws Exception {
 		//write it to the outputstream...
 	}

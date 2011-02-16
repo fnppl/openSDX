@@ -39,8 +39,18 @@ public class TSAServerMain {
 		
 	}
 	
-	public static TsaServerResponse prepareResponse(TsaServerRequest request) {
+	public static TsaServerResponse prepareResponse(TsaServerRequest request, BufferedInputStream in) throws Exception {
 		//yeah, switch cmd/method - stuff whatever...
+		if(request.cmd.equals("POST")) {
+			
+		}
+		else if(request.cmd.equals("HEAD")) {
+			throw new Exception("NOT IMPLEMENTED"); //correct would be to fire a HTTP_ERR
+		}
+		else if(request.cmd.equals("GET")) {
+			
+		}
+		
 		return null;
 	}
 	
@@ -57,10 +67,11 @@ public class TSAServerMain {
 			public void run() {
 				//should add entry to current_working_threads...
 				try {
-					InputStream in = s.getInputStream();
+					InputStream _in = s.getInputStream();
+					BufferedInputStream in = new BufferedInputStream(_in);
 					TsaServerRequest request = TsaServerRequest.fromInputStream(in);
 					
-					TsaServerResponse response = prepareResponse(request);//this is ok since the response is small and can be kept in mem - no need for directly kick it on socket... 
+					TsaServerResponse response = prepareResponse(request, in);//this is ok since the response is small and can be kept in mem - no need for directly kick it on socket... 
 					
 					OutputStream out = s.getOutputStream();
 					response.toOutput(out);
