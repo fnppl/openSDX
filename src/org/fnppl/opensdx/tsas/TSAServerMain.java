@@ -41,6 +41,8 @@ public class TSAServerMain {
 	
 	public static TsaServerResponse prepareResponse(TsaServerRequest request, BufferedInputStream in) throws Exception {
 		//yeah, switch cmd/method - stuff whatever...
+		TsaServerResponse resp = new TsaServerResponse();
+		
 		if(request.cmd.equals("POST")) {
 			
 		}
@@ -51,7 +53,7 @@ public class TSAServerMain {
 			
 		}
 		
-		return null;
+		return resp;
 	}
 	
 	public void readKeys(File f, char[] pass_mantra) throws Exception {
