@@ -25,20 +25,14 @@ package org.fnppl.opensdx.security;
  *      
  */
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.security.KeyPair;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.util.Date;
+import java.io.*;
+import java.util.*;
+import java.security.*;
 
-import org.bouncycastle.bcpg.ArmoredOutputStream;
+import org.bouncycastle.bcpg.*;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openpgp.PGPEncryptedData;
-import org.bouncycastle.openpgp.PGPPublicKey;
-import org.bouncycastle.openpgp.PGPSecretKey;
-import org.bouncycastle.openpgp.PGPSignature;
+import org.bouncycastle.openpgp.*;
 
 public class KeyPairGenerator {
 
@@ -46,18 +40,21 @@ public class KeyPairGenerator {
 	public static void generateRSAKeyPair(String identity, String passPhrase, boolean asc) throws Exception {
 		Security.addProvider(new BouncyCastleProvider());
 		java.security.KeyPairGenerator    kpg = java.security.KeyPairGenerator.getInstance("RSA", "BC");
-		kpg.initialize(1024);
+		kpg.initialize(2048);
 		KeyPair kp = kpg.generateKeyPair();
 
 		String ending = "bpg";
 		if (asc) {
 			ending = "asc";
 		}
+		File userdir = new File(System.getProperty("user.home"));
+		File keydir = new File(userdir, "keypairs");
+		keydir.mkdirs();
+		
 		//TODO save to KeyRing 
-		File fsKey = new File("keypairs/secret."+ending);
-		File fpKey = new File("keypairs/public."+ending);
-		fsKey.getParentFile().mkdirs();
-		fpKey.getParentFile().mkdirs();
+		File fsKey = new File(keydir, "secret."+ending);
+		File fpKey = new File(keydir, "public."+ending);
+		
 		OutputStream secretOut = new FileOutputStream(fsKey);
 		OutputStream publicOut = new FileOutputStream(fpKey);
 		
@@ -66,7 +63,20 @@ public class KeyPairGenerator {
 			publicOut = new ArmoredOutputStream(publicOut);
 		}
 
-		PGPSecretKey secretKey = new PGPSecretKey(PGPSignature.DEFAULT_CERTIFICATION, PGPPublicKey.RSA_GENERAL, kp.getPublic(), kp.getPrivate(), new Date(), identity, PGPEncryptedData.CAST5, passPhrase.toCharArray(), null, null, new SecureRandom(), "BC");
+		PGPSecretKey secretKey = new PGPSecretKey(
+				PGPSignature.DEFAULT_CERTIFICATION, 
+				PGPPublicKey.RSA_GENERAL, 
+				kp.getPublic(), 
+				kp.getPrivate(), 
+				new Date(), 
+				identity, 
+				PGPEncryptedData.CAST5, 
+				passPhrase.toCharArray(), 
+				null, 
+				null, 
+				new SecureRandom(), 
+				"BC"
+			);
 		secretKey.encode(secretOut);
 		secretOut.close();
 		
@@ -74,5 +84,7 @@ public class KeyPairGenerator {
 		key.encode(publicOut);
 		publicOut.close();
 	}
+	
+	
 
 }

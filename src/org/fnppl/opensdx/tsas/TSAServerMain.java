@@ -25,10 +25,62 @@ package org.fnppl.opensdx.tsas;
  *      
  */
 
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import org.fnppl.opensdx.security.*;
+
 public class TSAServerMain {
+	int port = -1;
+	Inet4Address address = null;
+	private AsymmetricKeyPair sign_keys = null;
 	
-	public static void main(String[] args) {
+	public TSAServerMain() {
 		
 	}
-
+	
+	public void readKeys(File f, char[] pass_mantra) throws Exception {
+		KeyRingCollection krc = KeyRingCollection.fromFile(f, pass_mantra, true);
+		//get the relevant sign-key from that collection
+		this.sign_keys = null;//assign that keys from that...
+	}
+	
+	public void handleSocket(final Socket s) throws Exception {
+		//check on *too* many requests from one ip
+		
+		Thread t = new Thread() {
+			public void run() {
+				try {
+					InputStream in = s.getInputStream();
+				} catch(Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		};
+		t.start();
+	}
+	
+	public void startService() throws Exception {
+		ServerSocket so = new ServerSocket(port);
+		if(address!=null) {
+			throw new RuntimeException("Not yet implemented...");
+		}
+		while(true) {
+			try {
+				final Socket me = so.accept();
+				handleSocket(me);
+			} catch(Exception ex) {
+				ex.printStackTrace();
+				Thread.sleep(250);//cooldown...
+			}
+		}
+	}
+	
+	public static void main(String[] args) throws Exception {
+		TSAServerMain ss = new TSAServerMain();
+		ss.port = 8889;
+		
+		ss.startService();
+	}
 }
+
