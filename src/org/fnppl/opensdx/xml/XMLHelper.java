@@ -33,6 +33,8 @@ package org.fnppl.opensdx.xml;
  * + DOM-mode
  * + SAX-mode
  * 
+ * most probably, we will shift this in specific classes then...
+ * 
  */
 
 public class XMLHelper {
