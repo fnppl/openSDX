@@ -36,58 +36,22 @@ import org.bouncycastle.openpgp.*;
 
 public class KeyPairGenerator {
 
-	public static AsymmetricKeyPair generateKeyPair() { //always RSA_2048 !!!
-		return null;
-	}
+	/**
+	 * Generates a RSA_2048 KeyPair
+	 *  
+	 * @param identity
+	 * @param passPhrase secret passphrase
+	 * @return the asymetricKeyPair
+	 */
 	
-	
-	//TODO save to KeyRing
-	public static void generateRSAKeyPair(String identity, String passPhrase, boolean asc) throws Exception {
+	public static AsymmetricKeyPair generateAsymmetricKeyPair() throws Exception {
 		Security.addProvider(new BouncyCastleProvider());
-		java.security.KeyPairGenerator    kpg = java.security.KeyPairGenerator.getInstance("RSA", "BC");
+		java.security.KeyPairGenerator kpg = java.security.KeyPairGenerator.getInstance("RSA", "BC");
 		kpg.initialize(2048);
 		KeyPair kp = kpg.generateKeyPair();
-
-		String ending = "bpg";
-		if (asc) {
-			ending = "asc";
-		}
-		File userdir = new File(System.getProperty("user.home"));
-		File keydir = new File(userdir, "keypairs");
-		keydir.mkdirs();
-		
-		//TODO save to KeyRing 
-		File fsKey = new File(keydir, "secret."+ending);
-		File fpKey = new File(keydir, "public."+ending);
-		
-		OutputStream secretOut = new FileOutputStream(fsKey);
-		OutputStream publicOut = new FileOutputStream(fpKey);
-		
-		if (asc) {
-			secretOut = new ArmoredOutputStream(secretOut);
-			publicOut = new ArmoredOutputStream(publicOut);
-		}
-
-		PGPSecretKey secretKey = new PGPSecretKey(
-				PGPSignature.DEFAULT_CERTIFICATION, 
-				PGPPublicKey.RSA_GENERAL, 
-				kp.getPublic(), 
-				kp.getPrivate(), 
-				new Date(), 
-				identity, 
-				PGPEncryptedData.CAST5, 
-				passPhrase.toCharArray(), 
-				null, 
-				null, 
-				new SecureRandom(), 
-				"BC"
-			);
-		secretKey.encode(secretOut);
-		secretOut.close();
-		
-		PGPPublicKey key = secretKey.getPublicKey();
-		key.encode(publicOut);
-		publicOut.close();
+		PGPKeyPair pgpkp = new PGPKeyPair(PGPPublicKey.RSA_GENERAL, kp, new Date());
+		//System.out.println(pgpkp.getKeyID());
+		return new AsymmetricKeyPair(pgpkp);
 	}
 	
 	

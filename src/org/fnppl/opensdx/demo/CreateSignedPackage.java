@@ -41,7 +41,7 @@ import org.fnppl.opensdx.security.SignAndVerify;
 public class CreateSignedPackage {
 	
 	public static void createSignedPackage(File xml, Vector<File> additionalFiles, Properties properties) throws Exception {
-		//sign xml file
+	/*	//sign xml file
 		SignAndVerify.signTextFile(xml.getAbsolutePath(), properties.getProperty("filename.secret.key"), properties.getProperty("passphrase"));
 		
 		//collect files
@@ -58,6 +58,8 @@ public class CreateSignedPackage {
 		
 		//create timestamp signature
 		//TODO getTimeStampSignFromServer
+		 
+	 */
 	}
 	
 	
@@ -65,13 +67,14 @@ public class CreateSignedPackage {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		/*
 		// PGPKeyPairGenerator
 		try {
 			System.out.println("generating RSAKeyPair");
 			String identitiy = "debug-key";
 			String passPhrase = "debug";
 			boolean formatASC = true;
-			KeyPairGenerator.generateRSAKeyPair(identitiy, passPhrase, formatASC);
+			KeyPairGenerator.generateKeyPair(identitiy, passPhrase, formatASC);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -93,7 +96,7 @@ public class CreateSignedPackage {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		 */
 	}
 
 }

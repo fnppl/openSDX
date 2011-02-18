@@ -28,14 +28,34 @@ package org.fnppl.opensdx.demo;
 import java.io.*;
 import java.util.*;
 
+import org.fnppl.opensdx.security.KeyPairGenerator;
+
+/**
+ * Demonstrates a simple Key Pair Generation
+ * 
+ * @author Bertram Boedeker
+ *
+ */
 public class KeyPairGeneration {
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+		/*
+		// PGPKeyPairGenerator
+		try {
+			System.out.println("Testing PGPKeyPairGenerator.generateRSAKeyPair");
+			String identitiy = "debug-key";
+			String passPhrase = "debug";
+			boolean formatASC = true;
+			KeyPairGenerator.generateRSAKeyPair(identitiy, passPhrase, formatASC);
+			
+			System.out.println("PASSED: no exception catched");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		*/
 	}
 
 }

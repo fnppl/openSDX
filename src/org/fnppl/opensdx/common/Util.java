@@ -33,6 +33,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -43,6 +45,32 @@ import java.util.zip.ZipOutputStream;
  *
  */
 public class Util {
+	
+	 public static void saveObjectToFile(File datei, Object obj) {
+	    	//System.out.println("Saving Object to file: "+datei.getAbsolutePath());
+	        try {
+	            FileOutputStream file = new FileOutputStream( datei );
+	            ObjectOutputStream o = new ObjectOutputStream( file );
+	            o.writeObject(obj);
+	            o.close();
+	        } catch ( IOException e ) {
+	        	System.out.println("Fehler beim Speichern.");
+	        	e.printStackTrace();
+	        }
+	    }
+	    
+	    public static Object loadObject(File datei) {
+	       // System.out.println("Lade "+datei.getAbsolutePath());
+	        Object ob = null;
+	        try {
+	            FileInputStream file = new FileInputStream( datei );
+	            ObjectInputStream in = new ObjectInputStream( file );
+	            ob = in.readObject();
+	            in.close();
+	        } catch ( Exception e ) {System.out.println("Fehler beim Laden");e.printStackTrace(); }
+	        //System.out.println("OK!");
+	        return ob;
+	    }
 
 	public static void zipFiles(File archive, Vector<File> files) {
 		final int BUFFER = 2048;  

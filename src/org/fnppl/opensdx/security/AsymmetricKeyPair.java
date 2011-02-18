@@ -1,5 +1,9 @@
 package org.fnppl.opensdx.security;
 
+import org.bouncycastle.openpgp.PGPKeyPair;
+import org.bouncycastle.openpgp.PGPPrivateKey;
+import org.bouncycastle.openpgp.PGPPublicKey;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -30,6 +34,59 @@ package org.fnppl.opensdx.security;
  */
 
 public class AsymmetricKeyPair {
-	public final int TYPE_RSA = 0;
-	public final int TYPE_DSA = 1; //dont want this...
+	
+	public static final int TYPE_UNDEFINED = -1;
+	public static final int TYPE_RSA = 0;
+	public static final int TYPE_DSA = 1; //dont want this...
+	
+	
+	private PGPKeyPair keypair = null;
+	private int	type = -1; 
+	
+	public AsymmetricKeyPair() {
+		
+	}
+	
+	public long getKeyID() {
+		return keypair.getKeyID();
+	}
+	
+	public String getKeyIDHex() {
+		return "0x"+Long.toHexString(getKeyID());
+	}
+	
+	public AsymmetricKeyPair(PGPKeyPair kp) {
+		keypair = kp;
+		int algo = keypair.getPublicKey().getAlgorithm();
+		if (algo == PGPPublicKey.RSA_GENERAL || algo == PGPPublicKey.RSA_SIGN || algo == PGPPublicKey.RSA_ENCRYPT) {
+			type = TYPE_RSA;
+		} else if (algo == PGPPublicKey.DSA) {
+			type = TYPE_DSA;
+		} else {
+			type = TYPE_UNDEFINED;
+		}
+		
+	}
+	
+	public PGPPublicKey getPGPPublicKey() {
+		return keypair.getPublicKey();
+	}
+	
+	public PGPPrivateKey getPGPPrivateKey() {
+		return keypair.getPrivateKey();
+	}
+	
+	public PGPKeyPair getPGPKeyPair() {
+		return keypair;	
+	}
+	
+	public int getType() {
+		return type;
+	}
+	
+	public boolean isRSA() {
+		if (type==TYPE_RSA) return true;
+		return false;
+	}
+	
 }
