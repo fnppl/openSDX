@@ -435,7 +435,9 @@
 						<genre2></genre2>
 					</genres>
 					<origin_country>DE</origin_country>
-					<main_language>de</main_language>					
+					<main_language>de</main_language>
+					<bundle_only>false</bundle_only>
+					<streaming_allowed>true</streaming_allowed>
 				</tags>
 				
 				<files>
