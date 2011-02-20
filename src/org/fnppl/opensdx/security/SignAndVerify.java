@@ -63,10 +63,14 @@ import org.bouncycastle.openpgp.PGPUtil;
  * Class for signing and verifying File using openpgp and bouncycastle.org implementations
  * digest algo is SHA1
  * 
- * @author Bertram Boedeker
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * @author Henning Thieß <ht@fnppl.org>
  */
+
 public class SignAndVerify {
-	
+	static {
+		SecurityHelper.ensureBC();
+	}
 	
 	public static void createSignatureFile(File filename, AsymmetricKeyPair kp) throws Exception {
 		FileInputStream in = new FileInputStream(filename);
@@ -80,7 +84,7 @@ public class SignAndVerify {
 	    
 	
 	public static PGPSignature createSignature(InputStream in, AsymmetricKeyPair kp) throws Exception {
-		Security.addProvider(new BouncyCastleProvider());
+		
     	PGPPrivateKey pgpPrivKey = kp.getPGPPrivateKey();       
     	PGPPublicKey pgpPubKey = kp.getPGPPublicKey();
     	PGPSignatureGenerator sGen = new PGPSignatureGenerator(pgpPubKey.getAlgorithm(), PGPUtil.SHA1, "BC");

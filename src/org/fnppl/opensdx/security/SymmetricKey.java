@@ -40,5 +40,7 @@ import org.bouncycastle.openpgp.*;
  */
 
 public class SymmetricKey {
-
+	static {
+		SecurityHelper.ensureBC();
+	}
 }

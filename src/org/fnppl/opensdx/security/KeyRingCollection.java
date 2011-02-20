@@ -38,9 +38,14 @@ import org.fnppl.opensdx.common.Util;
 //check this example: http://www.docjar.com/html/api/org/bouncycastle/openpgp/examples/DetachedSignatureProcessor.java.html
 
 /**
- * @author Bertram Boedeker
+ * @author Bertram Boedeker <bbodeker@gmx.de>
+ * @author Henning Thieß <ht@fnppl.org>
  */
+
 public class KeyRingCollection {
+	static {
+		SecurityHelper.ensureBC();
+	}
 	
 	private File f = null;
 	private PGPSecretKeyRingCollection  pgpSecretRingCollection = null;
@@ -50,6 +55,8 @@ public class KeyRingCollection {
 	private boolean this_is_private_keyring_collection = false;
 	
 	private KeyRingCollection() {}
+	
+	
 	
 	public static KeyRingCollection generateNewKeyRingOnFile(File f, char[] pass_mantra, boolean isprivate) throws Exception {
 		KeyRingCollection k = new KeyRingCollection();
@@ -210,7 +217,7 @@ public class KeyRingCollection {
 // -- end public methods
 	
 	private void readFromFile() throws Exception {
-		Security.addProvider(new BouncyCastleProvider());
+		
 		InputStream keyIn = new FileInputStream(f);
 		
 		ArmoredInputStream aIn=new ArmoredInputStream(keyIn);
@@ -253,7 +260,7 @@ public class KeyRingCollection {
 	}
 	
 	private void initEmptyKeyRingCollection() throws Exception {
-		Security.addProvider(new BouncyCastleProvider());
+		
 		if (this_is_private_keyring_collection) {
 			pgpSecretRingCollection = new PGPSecretKeyRingCollection(new Vector());
 		} else {
@@ -262,7 +269,7 @@ public class KeyRingCollection {
 	}
 	
 	private void addNewSecretKeyRing(PGPSecretKeyRing ring) throws Exception {
-		Security.addProvider(new BouncyCastleProvider());
+		
 		if (this_is_private_keyring_collection) {
 			pgpSecretRingCollection = PGPSecretKeyRingCollection.addSecretKeyRing(pgpSecretRingCollection, ring);
 		} else {
@@ -293,7 +300,7 @@ public class KeyRingCollection {
 		if (!this_is_private_keyring_collection) {
 			throw new Exception("CANNOT ADD SECRET KEY TO PUBLIC COLLECTION!"); 
 		}
-		Security.addProvider(new BouncyCastleProvider());
+		
 		int certificationLevel = PGPSignature.POSITIVE_CERTIFICATION; //DEFAULT_CERTIFICATION; 
 		
 		int encAlgorithm = PGPEncryptedData.AES_128; //TODO AES_256 not allowed

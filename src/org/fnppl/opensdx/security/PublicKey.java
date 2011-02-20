@@ -35,7 +35,10 @@ import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
 import org.bouncycastle.openpgp.PGPUtil;
 
 public class PublicKey {
-
+	static {
+		SecurityHelper.ensureBC();
+	}
+	
 	private PGPPublicKey key;
 	
 	public PublicKey(PGPPublicKey key) {

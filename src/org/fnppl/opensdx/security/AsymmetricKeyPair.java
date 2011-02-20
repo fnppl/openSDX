@@ -34,7 +34,9 @@ import org.bouncycastle.openpgp.PGPPublicKey;
  */
 
 public class AsymmetricKeyPair {
-	
+	static {
+		SecurityHelper.ensureBC();
+	}
 	public static final int TYPE_UNDEFINED = -1;
 	public static final int TYPE_RSA = 0;
 	public static final int TYPE_DSA = 1; //dont want this...

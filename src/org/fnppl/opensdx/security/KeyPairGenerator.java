@@ -35,7 +35,9 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.*;
 
 public class KeyPairGenerator {
-
+	static {
+		SecurityHelper.ensureBC();
+	}
 	/**
 	 * Generates a RSA_2048 KeyPair
 	 *  
