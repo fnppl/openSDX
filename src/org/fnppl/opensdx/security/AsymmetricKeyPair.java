@@ -2,9 +2,12 @@ package org.fnppl.opensdx.security;
 
 import java.io.ByteArrayOutputStream;
 
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.engines.RSAEngine;
 import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.RSAKeyParameters;
+import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
 
 import org.bouncycastle.openpgp.*;
 
@@ -48,47 +51,66 @@ public class AsymmetricKeyPair {
 	private PublicKey pubkey = null;
 	private PrivateKey privkey = null;
 	
-	private PGPKeyPair keypair = null;
+	private AsymmetricCipherKeyPair keypair = null;
+	private RSAKeyParameters rpub = null;
+	private RSAPrivateCrtKeyParameters rpriv = null;
+	
 	private int	type = -1; 
 	
-	public AsymmetricKeyPair() {
-		
+	private AsymmetricKeyPair() {		
 	}
 	
+	int keyid = -1;
 	public long getKeyID() {
-		return keypair.getKeyID();
+		if(keyid == -1) {
+			org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+			byte[] kk = rpub.getModulus().toByteArray();
+			keyid = sha1.doFinal(kk, 0);			
+		}
+		
+		return keyid;
 	}
 	
 	public String getKeyIDHex() {
 		return "0x"+Long.toHexString(getKeyID());
 	}
-	
-	public AsymmetricKeyPair(PGPKeyPair kp) {
-		keypair = kp;
-		int algo = keypair.getPublicKey().getAlgorithm();
-		if (algo == PGPPublicKey.RSA_GENERAL || algo == PGPPublicKey.RSA_SIGN || algo == PGPPublicKey.RSA_ENCRYPT) {
-			type = TYPE_RSA;
-		} else if (algo == PGPPublicKey.DSA) {
-			type = TYPE_DSA;
-		} else {
-			type = TYPE_UNDEFINED;
-		}
-		
+
+	public AsymmetricKeyPair(AsymmetricCipherKeyPair keyPair) {
+		int algo = TYPE_RSA;
+
+		CipherParameters pub = keyPair.getPublic();
+		CipherParameters priv = keyPair.getPrivate();
+
+		rpub = (RSAKeyParameters)pub;
+		rpriv = (RSAPrivateCrtKeyParameters)priv;
 	}
 	
+//	public AsymmetricKeyPair(PGPKeyPair kp) {
+//		keypair = kp;
+//		int algo = keypair.getPublicKey().getAlgorithm();
+//		if (algo == PGPPublicKey.RSA_GENERAL || algo == PGPPublicKey.RSA_SIGN || algo == PGPPublicKey.RSA_ENCRYPT) {
+//			type = TYPE_RSA;
+//		} else if (algo == PGPPublicKey.DSA) {
+//			type = TYPE_DSA;
+//		} else {
+//			type = TYPE_UNDEFINED;
+//		}
+//		
+//	}
+//	
 	
-	public PGPPublicKey getPGPPublicKey() {
-		return keypair.getPublicKey();
-	}
-	
-	public PGPPrivateKey getPGPPrivateKey() {
-		return keypair.getPrivateKey();
-	}
-	
-	public PGPKeyPair getPGPKeyPair() {
-		return keypair;	
-	}
-	
+//	public PGPPublicKey getPGPPublicKey() {
+//		return keypair.getPublicKey();
+//	}
+//	
+//	public PGPPrivateKey getPGPPrivateKey() {
+//		return keypair.getPrivateKey();
+//	}
+//	
+//	public PGPKeyPair getPGPKeyPair() {
+//		return keypair;	
+//	}
+//	
 	public int getType() {
 		return type;
 	}

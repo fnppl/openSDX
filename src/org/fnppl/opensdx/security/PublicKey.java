@@ -44,8 +44,11 @@ public class PublicKey {
 		SecurityHelper.ensureBC();
 	}
 	
-	private PGPPublicKey key;
+//	private PGPPublicKey key;
 	
+	public PublicKey() {
+		
+	}
 	public PublicKey(PGPPublicKey key) {
 		this.key = key;
 	}

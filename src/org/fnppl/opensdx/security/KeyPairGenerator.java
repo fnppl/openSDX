@@ -26,13 +26,19 @@ package org.fnppl.opensdx.security;
  */
 
 import java.io.*;
+import java.math.BigInteger;
+
 import java.util.*;
 import java.security.*;
 
-import org.bouncycastle.bcpg.*;
+import org.bouncycastle.crypto.*;
+import org.bouncycastle.crypto.generators.*;
+import org.bouncycastle.crypto.params.*;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openpgp.*;
+//import org.bouncycastle.bcpg.*;
+//
+//import org.bouncycastle.jce.provider.BouncyCastleProvider;
+//import org.bouncycastle.openpgp.*;
 
 public class KeyPairGenerator {
 	static {
@@ -47,15 +53,42 @@ public class KeyPairGenerator {
 	 */
 	
 	public static AsymmetricKeyPair generateAsymmetricKeyPair() throws Exception {
-		Security.addProvider(new BouncyCastleProvider());
-		java.security.KeyPairGenerator kpg = java.security.KeyPairGenerator.getInstance("RSA", "BC");
-		kpg.initialize(2048);
-		KeyPair kp = kpg.generateKeyPair();
-		PGPKeyPair pgpkp = new PGPKeyPair(PGPPublicKey.RSA_GENERAL, kp, new Date());
-		//System.out.println(pgpkp.getKeyID());
-		return new AsymmetricKeyPair(pgpkp);
+		SecurityHelper.ensureBC();
+		
+//		SecureRandom sc = new SecureRandom();
+//		KeyGenerationParameters kp = new KeyGenerationParameters(sc, 256);
+//		
+//		RSAKeyPairGenerator rsak = new RSAKeyPairGenerator();
+//		rsak.init(kp);
+		
+		RSAKeyGenerationParameters kk = new RSAKeyGenerationParameters(
+		    	BigInteger.valueOf(65537),//publicExponent
+		        SecureRandom.getInstance("SHA1PRNG"),//prng
+		        3072,//strength
+		        80//certainty
+		    );
+		
+		RSAKeyPairGenerator generator = new RSAKeyPairGenerator();
+		generator.init(kk);
+
+		System.out.println("Starting RSA keypairgeneration...");
+		AsymmetricCipherKeyPair keyPair = generator.generateKeyPair();
+		System.out.println("ENDED RSA keypairgeneration... -> "+keyPair.getClass().getName());
+		
+		CipherParameters pub = keyPair.getPublic();
+		CipherParameters priv = keyPair.getPrivate();
+
+		RSAKeyParameters rpub = (RSAKeyParameters)pub;
+		RSAPrivateCrtKeyParameters rpriv = (RSAPrivateCrtKeyParameters)priv;
+		
+		System.out.println("***PRIV***\nEXP: "+rpriv.getExponent()+"\nMOD: "+rpriv.getModulus());
+		System.out.println("\n\n***PUB***\nEXP: "+rpub.getExponent()+"\nMOD: "+rpub.getModulus());
+		
+		return new AsymmetricKeyPair(keyPair );
 	}
 	
-	
-
+	public static void main(String[] args) throws Exception {
+		generateAsymmetricKeyPair();
+	}
 }
+
