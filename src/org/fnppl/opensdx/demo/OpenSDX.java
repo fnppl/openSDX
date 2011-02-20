@@ -23,14 +23,12 @@ package org.fnppl.opensdx.demo;
  * If not, see <http://www.gnu.org/licenses/>.
  *      
  */
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.URL;
-import java.net.URLConnection;
+
+import java.io.*;
+import java.net.*;
 import java.security.Security;
+
+import org.fnppl.opensdx.security.*;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.BCPGOutputStream;
@@ -42,8 +40,6 @@ import org.fnppl.opensdx.security.KeyPairGenerator;
 import org.fnppl.opensdx.security.KeyRingCollection;
 import org.fnppl.opensdx.security.PublicKey;
 import org.fnppl.opensdx.security.SignAndVerify;
-
-import com.sun.corba.se.impl.oa.poa.ActiveObjectMap.Key;
 
 public class OpenSDX {
 
@@ -58,25 +54,29 @@ public class OpenSDX {
 		}
 	}
 	
-	public static void verifyFileDetachedClearText(String file, String keyringFile, String passPhrase) {
+	public static void verifyFileDetachedClearText(File signed, File signature, File keyringFile, String passPhrase) {
 		try {
-			File kf = new File(keyringFile);
-			if (!kf.exists()) {
+			if (!keyringFile.exists()) {
 				System.out.println("SORRY, KEYRING-COLLECTION DOES NOT EXIST.");
 				return;
 			}
-			File f = new File(file);
-			if (!f.exists()) {
-				System.out.println("SORRY, FILE "+f.getAbsolutePath()+" DOES NOT EXIST.");
+			
+			if (!signed.exists()) {
+				System.out.println("SORRY, FILE "+signed.getAbsolutePath()+" DOES NOT EXIST.");
 				return;
 			}
-			KeyRingCollection c = KeyRingCollection.fromFile(kf, passPhrase.toCharArray());
+			if (!signature.exists()) {
+				System.out.println("SORRY, FILE "+signature.getAbsolutePath()+" DOES NOT EXIST.");
+				return;
+			}
+			KeyRingCollection c = KeyRingCollection.fromFile(keyringFile, passPhrase.toCharArray());
 			
-			boolean v = SignAndVerify.verifySignature(f, c);
+			Signature s = new Signature(signature, signed, c);
+			boolean v = s.tryVerification(); //SignAndVerify.verifySignature(f, c);
 			if (v) {
-				System.out.println("File \""+f.getName()+"\" verified.");
+				System.out.println("File \""+signed.getName()+"\" verified.");
 			} else {
-				System.out.println("File \""+f.getName()+"\" NOT verified.");
+				System.out.println("File \""+signed.getName()+"\" NOT verified.");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -305,7 +305,10 @@ public class OpenSDX {
 		
 		addKeyPairToKeyRingCollection(privateCol, id, pass);
 		signFileDetachedClearText(testfile, privateCol, pass);
-		verifyFileDetachedClearText(testfile, privateCol, pass);
+		
+		File signed = new File(testfile);
+		File signature = new File(signed.getParentFile(), signed.getName()+".asc");
+		verifyFileDetachedClearText(signed, signature, new File(privateCol), pass);
 		uploadKeyToGPG(privateCol, pass, 1);
 		
 		//manual upload BB20110217
@@ -319,7 +322,9 @@ public class OpenSDX {
 			System.out.println("looking for key: "+keyID+" ...");
 			
 			addPublicKeyFromGPG(publicCol, publicPass, keyID);
-			verifyFileDetachedClearText(testfile, publicCol, publicPass);
+			
+//			verifyFileDetachedClearText(testfile, publicCol, publicPass);
+			verifyFileDetachedClearText(signed, signature, new File(publicCol), pass);
 						
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -329,15 +334,16 @@ public class OpenSDX {
 	}
 	
 	public static void main(String[] a) {
-		Security.addProvider(new BouncyCastleProvider());
+		SecurityHelper.ensureBC();
+		
 		test();
 		
 		if (a.length<3) {printUsage();return;};
 		
 		if (a[0].equals("-s") && a.length==4) {
 			signFileDetachedClearText(a[1],a[2],a[3]);
-		} else if (a[0].equals("-v") && a.length==4) {
-			verifyFileDetachedClearText(a[1],a[2],a[3]);
+		} else if (a[0].equals("-v") && a.length==5) {
+			verifyFileDetachedClearText(new File(a[1]),new File(a[2]),new File(a[3]), a[4]);
 		} else if (a[0].equals("-a") && a.length==4) {
 			addKeyPairToKeyRingCollection(a[1],a[2],a[3]);
 		} else if (a[0].equals("-gpg") && a.length==4) {
@@ -348,6 +354,9 @@ public class OpenSDX {
 			listKeys(a[1],a[2],true);
 		} else if (a[0].equals("-up") && a.length==4) {
 			uploadKeyToGPG(a[1],a[2],Integer.parseInt(a[3]));
+		}
+		else {
+			printUsage();
 		}
 		
 	}

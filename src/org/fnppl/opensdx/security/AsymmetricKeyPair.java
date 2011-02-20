@@ -5,9 +5,8 @@ import java.io.ByteArrayOutputStream;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.engines.RSAEngine;
 import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.openpgp.PGPKeyPair;
-import org.bouncycastle.openpgp.PGPPrivateKey;
-import org.bouncycastle.openpgp.PGPPublicKey;
+
+import org.bouncycastle.openpgp.*;
 
 /*
  * Copyright (C) 2010-2011 
@@ -49,7 +48,7 @@ public class AsymmetricKeyPair {
 	private PublicKey pubkey = null;
 	private PrivateKey privkey = null;
 	
-//	private PGPKeyPair keypair = null;
+	private PGPKeyPair keypair = null;
 	private int	type = -1; 
 	
 	public AsymmetricKeyPair() {
@@ -77,9 +76,6 @@ public class AsymmetricKeyPair {
 		
 	}
 	
-	public PGPPublicKey getPGPPublicKey() {
-		return keypair.getPublicKey();
-	}
 	
 	public PGPPublicKey getPGPPublicKey() {
 		return keypair.getPublicKey();
@@ -102,33 +98,33 @@ public class AsymmetricKeyPair {
 		return false;
 	}
 
-	public byte[] encryptWithPubKey(byte[] in) throws Exception {
-		//HT 20.02.2011 - to check wether this is encrypting-allowed RSA
-		
-		CipherParameters cp = new KeyParameter(ukey.getRawEncoded());
-//		Key kkey = key.getKey("BC");
-				
-//		AsymmetricKeyParameter key = this.key.get;
-		RSAEngine e = new RSAEngine();
-		e.init(true, cp);
-		int blockSize = e.getInputBlockSize();
-		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		
-		for (int chunkPosition = 0; chunkPosition < in.length; chunkPosition += blockSize) {
-			int chunkSize = Math.min(blockSize, in.length - (chunkPosition * blockSize));
-			bout.write(
-					e.processBlock(in, chunkPosition, chunkSize)
-				);
-		 }
-		
-		return bout.toByteArray();
-	}
+//	public byte[] encryptWithPubKey(byte[] in) throws Exception {
+//		//HT 20.02.2011 - to check wether this is encrypting-allowed RSA
+//		
+//		CipherParameters cp = new KeyParameter(ukey.getRawEncoded());
+////		Key kkey = key.getKey("BC");
+//				
+////		AsymmetricKeyParameter key = this.key.get;
+//		RSAEngine e = new RSAEngine();
+//		e.init(true, cp);
+//		int blockSize = e.getInputBlockSize();
+//		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+//		
+//		for (int chunkPosition = 0; chunkPosition < in.length; chunkPosition += blockSize) {
+//			int chunkSize = Math.min(blockSize, in.length - (chunkPosition * blockSize));
+//			bout.write(
+//					e.processBlock(in, chunkPosition, chunkSize)
+//				);
+//		 }
+//		
+//		return bout.toByteArray();
+//	}
 	
 	public static void main(String[] args) throws Exception {
 		byte[] enc = "me is to encode".getBytes();
 		AsymmetricKeyPair ak = KeyPairGenerator.generateAsymmetricKeyPair();
 		
-		ak.encrypt(enc, ak.getPGPPublicKey());
+//		ak.encrypt(enc, ak.getPGPPublicKey());
 	}
 }
 
