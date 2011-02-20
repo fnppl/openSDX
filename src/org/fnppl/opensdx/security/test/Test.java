@@ -45,10 +45,8 @@ import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPSignatureSubpacketVector;
 import org.bouncycastle.openpgp.PGPUtil;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
-import org.fnppl.opensdx.security.KeyPairGenerator;
 import org.fnppl.opensdx.security.KeyRingCollection;
 import org.fnppl.opensdx.security.PublicKey;
-import org.fnppl.opensdx.security.SignAndVerify;
 
 
 import com.sun.corba.se.impl.oa.poa.ActiveObjectMap.Key;

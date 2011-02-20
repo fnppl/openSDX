@@ -57,9 +57,9 @@ public class TSAServerMain {
 	}
 	
 	public void readKeys(File f, char[] pass_mantra) throws Exception {
-		KeyRingCollection krc = KeyRingCollection.fromFile(f, pass_mantra);
-		//get the relevant sign-key from that collection
-		this.sign_keys = krc.getSomeRandomKeyPair();
+//		KeyRingCollection krc = KeyRingCollection.fromFile(f, pass_mantra);
+//		//get the relevant sign-key from that collection
+//		this.sign_keys = krc.getSomeRandomKeyPair();
 	}
 	
 	public void handleSocket(final Socket s) throws Exception {

@@ -28,7 +28,6 @@ package org.fnppl.opensdx.demo;
 import java.io.*;
 import java.util.*;
 
-import org.fnppl.opensdx.security.KeyPairGenerator;
 
 /**
  * Demonstrates a simple Key Pair Generation

@@ -32,10 +32,10 @@ import java.security.*;
 
 import org.bouncycastle.crypto.engines.*;
 import org.bouncycastle.crypto.*; 
+import org.bouncycastle.crypto.modes.*;
 import org.bouncycastle.crypto.encodings.*;
 import org.bouncycastle.crypto.paddings.*;
 import org.bouncycastle.crypto.params.*;
-import org.bouncycastle.jce.provider.symmetric.AES.KeyGen;
 
 
 
@@ -56,64 +56,108 @@ public class SymmetricKey {
 	private final static int keybits = 256;//ok, doing so fails the aes128-rule and may fall into US-weapons-regulation
 	private final static int blockbits = 128;
 	
-//	private byte[] initVector = null;
+	private byte[] initVector = null;
 	private byte[] keyBytes = null;
 	
-	public SymmetricKey(byte[] key_bytes
-//			, byte[] iv
+	public SymmetricKey(byte[] key_bytes, byte[] iv
 			) {
 		this.keyBytes = key_bytes;
-//		this.initVector = iv;
+		this.initVector = iv;
 	}
 	
-	public static SymmetricKey getRandomKey() {		
+	public static SymmetricKey getRandomKey() {
 		SecureRandom sc = new SecureRandom();//TODO HT 20.02.2011 - quite good, but should swirl it twice with tiger, or aes/rijndael itself		
 		byte[] aes_key_bytes = new byte[keybits/8]; //yep. please be aware of non-8-dividable bits - however, should be 128 for various reasons
-//        byte[] iv = new byte[blockbits/8];
+        
+		byte[] iv = new byte[blockbits/8];
         sc.nextBytes(aes_key_bytes);
-//        sc.nextBytes(iv);
+        sc.nextBytes(iv);
         
         //now should swirl those byte one more time...
         
-        return new SymmetricKey(aes_key_bytes);
+        return new SymmetricKey(aes_key_bytes, iv);
 	}
 	
-	public void encrypt(InputStream in, OutputStream out, byte[] k) throws Exception {
-	    if(k.length != 32) {
-	    	throw new Exception("Me wants 256 bit-key (=32 bytes)");
-	    }
+	public void encrypt(InputStream in, OutputStream out) throws Exception {
+//		if(key.length!=initvector.length || key.length!=keybits/8) {
+//			throw new Exception("invalid params");
+//		}
+		
+		CBCBlockCipher aesCBC = new CBCBlockCipher(new AESEngine());
+		
+		KeyParameter kp = new KeyParameter(keyBytes);
+		ParametersWithIV aesCBCParams = new ParametersWithIV(kp, initVector);
+		
+	    PaddedBufferedBlockCipher aesCipher = new PaddedBufferedBlockCipher(
+	    		aesCBC,
+	            new PKCS7Padding()
+	    	);
 	    
-	    //http://www.bouncycastle.org/docs/docs1.6/org/bouncycastle/crypto/BlockCipher.html
-	    CipherParameters cp = new KeyParameter(keyBytes);
-	    BlockCipher aes = new AESEngine();
-
-	    // (http://www.bouncycastle.org/docs/docs1.6/org/bouncycastle/crypto/paddings/BlockCipherPadding.html):
-	    BlockCipherPadding padd = new ZeroBytePadding();
-	    BufferedBlockCipher bufferedAES = new PaddedBufferedBlockCipher(aes, padd);
-
-	    aes.init(true, cp);
-
-//	    int inputOffset = 0;
-//	    int inputLength = input.length;
-//	    int maximumOutputLength = bufferedAES.getOutputSize(inputLength);	    
-//	    byte[] output = new byte[maximumOutputLength];
-//	    int outputOffset = 0;
-//	    int outputLength = 0;
-
-	    int bytesProcessed;
-
-	    int read = 0;
-	    byte[] buff = new byte[128];
-	    while((read=in.read(buff)) != -1) {
-	    	byte[] bt = new byte[bufferedAES.getOutputSize(read)];
-	    	
-	    	bufferedAES.processBytes(buff, 0, read, bt, 0);
-	    	
-	    	out.write(bt);
-	    }
-	    out.flush();
-	    in.close();
-	    //out.close()
+	    aesCBC.init(true, aesCBCParams);
+	    int read = -1;
+	    byte[] buff = new byte[128/8];//blocksize
+		while((read=in.read(buff)) != -1) {
+			byte[] ou = new byte[read];
+			
+			int rg = aesCipher.processBytes(buff, 0, read, ou, 0);
+			out.write(buff, 0, read);
+		}
+		read = aesCipher.doFinal(buff, 0);
+		out.write(buff, 0, read);
+			
+	}
+	public byte[] encrypt(byte[] b) throws Exception {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		decrypt(new ByteArrayInputStream(b), out);
+		
+		return out.toByteArray();
+	 }
+	public byte[] decrypt(byte[] b) throws Exception {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		decrypt(new ByteArrayInputStream(b), out);
+		
+		return out.toByteArray();
+	 }
+	public void decrypt(InputStream in, OutputStream out) throws Exception {
+//		if(key.length!=initvector.length || key.length!=keybits/8) {
+//			throw new Exception("invalid params");
+//		}
+		
+		CBCBlockCipher aesCBC = new CBCBlockCipher(new AESEngine());
+		
+		KeyParameter kp = new KeyParameter(keyBytes);
+		ParametersWithIV aesCBCParams = new ParametersWithIV(kp, initVector);
+		
+	    PaddedBufferedBlockCipher aesCipher = new PaddedBufferedBlockCipher(
+	    		aesCBC,
+	            new PKCS7Padding()
+	    	);
+	    
+	    aesCBC.init(false, aesCBCParams);
+	    int read = -1;
+	    byte[] buff = new byte[128/8];//blocksize
+		while((read=in.read(buff)) != -1) {
+			byte[] ou = new byte[read];
+			
+			int rg = aesCipher.processBytes(buff, 0, read, ou, 0);
+			out.write(buff, 0, read);
+		}
+		read = aesCipher.doFinal(buff, 0);
+		out.write(buff, 0, read);
+	}
+	
+	public static void main(String[] args) throws Exception {
+		SymmetricKey l = SymmetricKey.getRandomKey();
+		
+		byte[] test = "ich will encoded werden...".getBytes();
+		
+		byte[] enc = l.encrypt(test); 
+		byte[] dec = l.decrypt(enc);
+		
+		System.out.println("BEFORE: "+(new String(test)));
+		System.out.println("ENC: "+SecurityHelper.HexDecoder.encode(enc));
+		System.out.println("AFTER: "+(new String(dec)));
+		
 	}
 }
 

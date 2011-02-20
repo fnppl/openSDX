@@ -97,66 +97,69 @@ public class Signature {
 	}
 	
 	private static PGPSignature createSignature(InputStream in, AsymmetricKeyPair kp) throws Exception {
-		BufferedInputStream bin = null;
-		if(in instanceof BufferedInputStream) {
-			bin = (BufferedInputStream)in;
-		}
-		else {
-			bin = new BufferedInputStream(in);
-		}
-    	PGPPrivateKey pgpPrivKey = kp.getPGPPrivateKey();
-    	PGPPublicKey pgpPubKey = kp.getPGPPublicKey();
-    	PGPSignatureGenerator sGen = new PGPSignatureGenerator(
-    			pgpPubKey.getAlgorithm(), //HT 20.02.2011 @beboe: warum der pubkey-algo??? 
-//    			pgpPrivKey.getKey().getAlgorithm(), //HT 20.02.2011 warum geht das hier nicht???
-    			PGPUtil.SHA1,
-    			"BC"
-    		);
-    	sGen.initSign(PGPSignature.BINARY_DOCUMENT, pgpPrivKey);
-    	byte[] buff = new byte[512];
-    	int read = 0;
-    	while ((read=in.read(buff)) != -1) {
-    		sGen.update(buff, 0, read);
-    	}
-    	return sGen.generate();
+		return null;
+//		BufferedInputStream bin = null;
+//		if(in instanceof BufferedInputStream) {
+//			bin = (BufferedInputStream)in;
+//		}
+//		else {
+//			bin = new BufferedInputStream(in);
+//		}
+//    	PGPPrivateKey pgpPrivKey = kp.getPGPPrivateKey();
+//    	PGPPublicKey pgpPubKey = kp.getPGPPublicKey();
+//    	PGPSignatureGenerator sGen = new PGPSignatureGenerator(
+//    			pgpPubKey.getAlgorithm(), //HT 20.02.2011 @beboe: warum der pubkey-algo??? 
+////    			pgpPrivKey.getKey().getAlgorithm(), //HT 20.02.2011 warum geht das hier nicht???
+//    			PGPUtil.SHA1,
+//    			"BC"
+//    		);
+//    	sGen.initSign(PGPSignature.BINARY_DOCUMENT, pgpPrivKey);
+//    	byte[] buff = new byte[512];
+//    	int read = 0;
+//    	while ((read=in.read(buff)) != -1) {
+//    		sGen.update(buff, 0, read);
+//    	}
+//    	return sGen.generate();
     }
 	
 	
 	public boolean tryVerification() throws Exception {
-		BufferedInputStream inData = new BufferedInputStream(new FileInputStream(signedFile));
-    	BufferedInputStream inSig = new BufferedInputStream(PGPUtil.getDecoderStream(new FileInputStream(signature)));
-    	
-    	PGPObjectFactory pgpFact = new PGPObjectFactory(inSig);
-    	PGPSignatureList p3 = null;
-    	Object o = pgpFact.nextObject();//TODO HT 20.02.2011 @beboe - what else can there be???
-    	if (o instanceof PGPCompressedData) {
-    		PGPCompressedData c1 = (PGPCompressedData)o;
-    		pgpFact = new PGPObjectFactory(c1.getDataStream());
-    		p3 = (PGPSignatureList)pgpFact.nextObject();
-    	} else {
-    		p3 = (PGPSignatureList)o;
-    	}
-    	PGPSignature sig = p3.get(0);
-    	
-    	try {
-	    	PublicKey pk = keycoll.getPublicKey(sig.getKeyID());
-	    	
-	    	PGPPublicKey key = pk.getPGPPublicKey();
-	    	sig.initVerify(key, "BC");
-	    	int read = 0;
-	    	byte[] buff = new byte[1024];
-	    	while ((read=inData.read(buff)) != -1) {
-	    		sig.update(buff, 0, read);
-	    	}
-	    	return sig.verify();
-    	} catch (Exception ex) {
-    		if (ex.getMessage().startsWith("NO MATCHING KEY FOUND")) {
-    			System.out.println("NO MATCHING KEY FOUND!");
-    		} else {
-    			ex.printStackTrace();
-    		}
-    		return false;
-    	}
+		return false;
+//		
+//		BufferedInputStream inData = new BufferedInputStream(new FileInputStream(signedFile));
+//    	BufferedInputStream inSig = new BufferedInputStream(PGPUtil.getDecoderStream(new FileInputStream(signature)));
+//    	
+//    	PGPObjectFactory pgpFact = new PGPObjectFactory(inSig);
+//    	PGPSignatureList p3 = null;
+//    	Object o = pgpFact.nextObject();//TODO HT 20.02.2011 @beboe - what else can there be???
+//    	if (o instanceof PGPCompressedData) {
+//    		PGPCompressedData c1 = (PGPCompressedData)o;
+//    		pgpFact = new PGPObjectFactory(c1.getDataStream());
+//    		p3 = (PGPSignatureList)pgpFact.nextObject();
+//    	} else {
+//    		p3 = (PGPSignatureList)o;
+//    	}
+//    	PGPSignature sig = p3.get(0);
+//    	
+//    	try {
+//	    	PublicKey pk = keycoll.getPublicKey(sig.getKeyID());
+//	    	
+//	    	PGPPublicKey key = pk.getPGPPublicKey();
+//	    	sig.initVerify(key, "BC");
+//	    	int read = 0;
+//	    	byte[] buff = new byte[1024];
+//	    	while ((read=inData.read(buff)) != -1) {
+//	    		sig.update(buff, 0, read);
+//	    	}
+//	    	return sig.verify();
+//    	} catch (Exception ex) {
+//    		if (ex.getMessage().startsWith("NO MATCHING KEY FOUND")) {
+//    			System.out.println("NO MATCHING KEY FOUND!");
+//    		} else {
+//    			ex.printStackTrace();
+//    		}
+//    		return false;
+//    	}
     	
 //    	inData.close();
 //    	inSig.close();

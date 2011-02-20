@@ -30,8 +30,6 @@ import java.util.Properties;
 import java.util.Vector;
 
 import org.fnppl.opensdx.common.Util;
-import org.fnppl.opensdx.security.KeyPairGenerator;
-import org.fnppl.opensdx.security.SignAndVerify;
 
 /**
  * 
