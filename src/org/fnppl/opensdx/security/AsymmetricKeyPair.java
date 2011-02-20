@@ -72,8 +72,12 @@ public class AsymmetricKeyPair {
 		return keyid;
 	}
 	
+	String keyhex = null;
 	public String getKeyIDHex() {
-		return SecurityHelper.HexDecoder.encode(BigInteger.valueOf(getKeyID()).toByteArray());		
+		if(keyhex == null) {
+			keyhex = SecurityHelper.HexDecoder.encode(BigInteger.valueOf(getKeyID()).toByteArray());
+		}
+		return keyhex;		
 	}
 
 	public AsymmetricKeyPair(AsymmetricCipherKeyPair keyPair) {
@@ -84,6 +88,9 @@ public class AsymmetricKeyPair {
 
 		this.rpub = (RSAKeyParameters)pub;
 		this.rpriv = (RSAPrivateCrtKeyParameters)priv;
+		
+		this.pubkey = new PublicKey(rpub);
+		this.privkey = new PrivateKey(rpriv);
 	}
 	
 //	public AsymmetricKeyPair(PGPKeyPair kp) {

@@ -39,9 +39,11 @@ public class PrivateKey {
 		SecurityHelper.ensureBC();
 	}
 	
-	private PGPPrivateKey key;
+	private RSAPrivateCrtKeyParameters key;
 	
-	public PrivateKey(PGPPrivateKey key) {
+	
+	public PrivateKey(RSAPrivateCrtKeyParameters key) {
+//	public PrivateKey(PGPPrivateKey key) {
 		this.key = key;
 	}
 	
@@ -53,12 +55,12 @@ public class PrivateKey {
 //		key = ((PGPSecretKeyRingCollection)pgpRings.getKeyRings().next())
 //	}
 	
-	public PGPPrivateKey getPGPPrivateKey() {
-		return key;
-	}
-	
-	public byte[] getRawEncoded() throws Exception {
-		return key.getKey().getEncoded();
-	}
+//	public PGPPrivateKey getPGPPrivateKey() {
+//		return key;
+//	}
+//	
+//	public byte[] getRawEncoded() throws Exception {
+//		return key.getKey().getEncoded();
+//	}
 }
 

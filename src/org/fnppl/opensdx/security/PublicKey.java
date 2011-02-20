@@ -37,6 +37,7 @@ import org.bouncycastle.crypto.params.*;
 import org.bouncycastle.crypto.engines.RSAEngine;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.RSAKeyParameters;
 
 
 public class PublicKey {
@@ -45,26 +46,28 @@ public class PublicKey {
 	}
 	
 //	private PGPPublicKey key;
+	private RSAKeyParameters pub;
 	
-	public PublicKey() {
+	private PublicKey() {
 		
 	}
-	public PublicKey(PGPPublicKey key) {
-		this.key = key;
+
+	public PublicKey(RSAKeyParameters key) {
+		this.pub = key;
 	}
 	
-	public PublicKey(String fromASC) throws Exception {
-		//TODO really that complicated?
-		InputStream keyIn = PGPUtil.getDecoderStream(new ByteArrayInputStream(fromASC.getBytes()));
-		PGPPublicKeyRingCollection pgpRings = new PGPPublicKeyRingCollection(keyIn);
-		key = ((PGPPublicKeyRing)pgpRings.getKeyRings().next()).getPublicKey();
-	}
+//	public PublicKey(String fromASC) throws Exception {
+//		//TODO really that complicated?
+//		InputStream keyIn = PGPUtil.getDecoderStream(new ByteArrayInputStream(fromASC.getBytes()));
+//		PGPPublicKeyRingCollection pgpRings = new PGPPublicKeyRingCollection(keyIn);
+//		key = ((PGPPublicKeyRing)pgpRings.getKeyRings().next()).getPublicKey();
+//	}
+//	
+//	public PGPPublicKey getPGPPublicKey() {
+//		return key;
+//	}
 	
-	public PGPPublicKey getPGPPublicKey() {
-		return key;
-	}
-	
-	public byte[] getRawEncoded() throws Exception {
-		return key.getKey("BC").getEncoded();
-	}
+//	public byte[] getRawEncoded() throws Exception {
+//		return key.getKey("BC").getEncoded();
+//	}
 }
