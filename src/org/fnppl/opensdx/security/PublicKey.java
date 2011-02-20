@@ -23,16 +23,21 @@ package org.fnppl.opensdx.security;
  * If not, see <http://www.gnu.org/licenses/>.
  *      
  */
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
+import java.io.*;
 
+import org.bouncycastle.crypto.AsymmetricBlockCipher;
+import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
 import org.bouncycastle.openpgp.PGPUtil;
+
+import java.security.Key;
+import org.bouncycastle.crypto.params.*;
+import org.bouncycastle.crypto.engines.RSAEngine;
+import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.params.KeyParameter;
+
 
 public class PublicKey {
 	static {
@@ -54,5 +59,9 @@ public class PublicKey {
 	
 	public PGPPublicKey getPGPPublicKey() {
 		return key;
+	}
+	
+	public byte[] getRawEncoded() throws Exception {
+		return key.getKey("BC").getEncoded();
 	}
 }

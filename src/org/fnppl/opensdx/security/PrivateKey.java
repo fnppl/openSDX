@@ -1,5 +1,4 @@
 package org.fnppl.opensdx.security;
-
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -26,26 +25,40 @@ package org.fnppl.opensdx.security;
  */
 
 import java.io.*;
+import java.security.Key;
 
-import java.util.*;
+import org.bouncycastle.crypto.*;
+import org.bouncycastle.openpgp.*;
+import org.bouncycastle.crypto.params.*;
 
 
-/**
- * Class for signing and verifying File using openpgp and bouncycastle.org implementations
- * digest algo is SHA1
- * 
- * @author Bertram Boedeker <bboedeker@gmx.de>
- * @author Henning Thieß <ht@fnppl.org>
- */
 
-public class SignAndVerify {
-		
-	public static Signature createSignatureFile(File f, AsymmetricKeyPair kp) throws Exception {
-		return Signature.createSignature(f, kp);
+
+public class PrivateKey {
+	static {
+		SecurityHelper.ensureBC();
 	}
 	
-	public static boolean verifySignature(File signed, File signature, KeyRingCollection coll) throws Exception {
-		Signature s = new Signature(signature, signed, coll);		
-		return s.tryVerification();
+	private PGPPrivateKey key;
+	
+	public PrivateKey(PGPPrivateKey key) {
+		this.key = key;
+	}
+	
+//	public PrivateKey(String fromASC) throws Exception {
+//		//TODO really that complicated?
+//		InputStream keyIn = PGPUtil.getDecoderStream(new ByteArrayInputStream(fromASC.getBytes()));
+//		PGPSecretKeyRingCollection pgpRings = new PGPSecretKeyRingCollection(keyIn);
+//		
+//		key = ((PGPSecretKeyRingCollection)pgpRings.getKeyRings().next())
+//	}
+	
+	public PGPPrivateKey getPGPPrivateKey() {
+		return key;
+	}
+	
+	public byte[] getRawEncoded() throws Exception {
+		return key.getKey().getEncoded();
 	}
 }
+

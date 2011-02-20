@@ -50,6 +50,7 @@ import org.bouncycastle.openpgp.PGPUtil;
 /*
  * @author Henning Thieß <ht@fnppl.org>
  * 
+ * moved a lot from "SignAndVerify"
  */
 
 public class Signature {
@@ -57,11 +58,21 @@ public class Signature {
 		SecurityHelper.ensureBC();
 	}
 	
+	
 	private File signature;
 	private File signedFile;
 	private AsymmetricKeyPair keypair;
 	
+	private KeyRingCollection keycoll; //may totally be null
+	
 	//TODO HT 20.02.2011 - add byte-array/stream-based constructor
+	
+	
+	public Signature(File signature, File signedfile, KeyRingCollection keycoll) {
+		this.signature = signature;
+		this.signedFile = signedfile;
+		this.keycoll = keycoll;
+	}
 	
 	public Signature(File signature, File signedfile, AsymmetricKeyPair keypair) {
 		this.signature = signature;
@@ -85,7 +96,7 @@ public class Signature {
 		return new Signature(signaturefile, tosign, keypair);
 	}
 	
-	public static PGPSignature createSignature(InputStream in, AsymmetricKeyPair kp) throws Exception {
+	private static PGPSignature createSignature(InputStream in, AsymmetricKeyPair kp) throws Exception {
 		BufferedInputStream bin = null;
 		if(in instanceof BufferedInputStream) {
 			bin = (BufferedInputStream)in;
@@ -108,5 +119,46 @@ public class Signature {
     		sGen.update(buff, 0, read);
     	}
     	return sGen.generate();
+    }
+	
+	
+	public boolean tryVerification() throws Exception {
+		BufferedInputStream inData = new BufferedInputStream(new FileInputStream(signedFile));
+    	BufferedInputStream inSig = new BufferedInputStream(PGPUtil.getDecoderStream(new FileInputStream(signature)));
+    	
+    	PGPObjectFactory pgpFact = new PGPObjectFactory(inSig);
+    	PGPSignatureList p3 = null;
+    	Object o = pgpFact.nextObject();//TODO HT 20.02.2011 @beboe - what else can there be???
+    	if (o instanceof PGPCompressedData) {
+    		PGPCompressedData c1 = (PGPCompressedData)o;
+    		pgpFact = new PGPObjectFactory(c1.getDataStream());
+    		p3 = (PGPSignatureList)pgpFact.nextObject();
+    	} else {
+    		p3 = (PGPSignatureList)o;
+    	}
+    	PGPSignature sig = p3.get(0);
+    	
+    	try {
+	    	PublicKey pk = keycoll.getPublicKey(sig.getKeyID());
+	    	
+	    	PGPPublicKey key = pk.getPGPPublicKey();
+	    	sig.initVerify(key, "BC");
+	    	int read = 0;
+	    	byte[] buff = new byte[1024];
+	    	while ((read=inData.read(buff)) != -1) {
+	    		sig.update(buff, 0, read);
+	    	}
+	    	return sig.verify();
+    	} catch (Exception ex) {
+    		if (ex.getMessage().startsWith("NO MATCHING KEY FOUND")) {
+    			System.out.println("NO MATCHING KEY FOUND!");
+    		} else {
+    			ex.printStackTrace();
+    		}
+    		return false;
+    	}
+    	
+//    	inData.close();
+//    	inSig.close();
     }
 }
