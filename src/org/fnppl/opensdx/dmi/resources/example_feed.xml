@@ -39,6 +39,9 @@
 	the receiving party SHOULD then give a report in the desired-action-calls which information, it just *ignored*
 	the receiving party MUST follow the basics.
 	
+	the term "our" and "your" is always from the standpoint of the document-sending party.
+	
+	
 	HT 20110214
 	from my point of view, a *feed* with only one product is much more desirable in terms of error-isolation/correction
 	in these days, it should never be a problem to have computers work on this in a proper manner 
@@ -48,8 +51,8 @@
 	<feedinfo>
 		<onlytest>true</onlytest><!-- MUST testmode true|false -->
 		<feedid>kaakka</feedid><!-- MUST id is provided by sender; should be unique -->
-		<creationdatetime>2010-10-01 00:00:00 GMT</creationdatetime><!-- MUST datetime of creation of this feed -->
-		<effectivedatetime>2010-10-01 00:00:00 GMT</effectivedatetime><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
+		<creationdatetime>2010-10-01 00:00:00 GMT+00</creationdatetime><!-- MUST datetime of creation of this feed -->
+		<effectivedatetime>2010-10-01 00:00:00 GMT+00</effectivedatetime><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
 		<creator>
 			<email>user@sendingparty.nät</email><!-- should be an email-address of the *user* on the sending side -->
 			<userid>1919kdkdk12929</userid><!-- should be an unique id of the *user* on the sending side-->
@@ -185,6 +188,9 @@
 			<labelordernum></labelordernum><!-- COULD -->
 			<amzn></amzn><!-- COULD ; amazon-id-stuff -->
 			<isbn></isbn><!-- COULD -->
+			<finetunesid></finetunesid><!-- COULD -->
+			<ourid>ourid</ourid><!-- COULD -->
+			<yourid></yourid><!-- COULD -->
 		</ids><!-- MUST -->
 		<displayname></displayname><!-- MUST this is how this should be displayed in pos -->
 		<name></name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
@@ -196,9 +202,9 @@
 				<type>label</type><!-- MUST e.g. label|composer|texter|writer|conductor -->
 				<ids>
 					<gvl></gvl><!-- gvl -->
-					<finetunes></finetunes><!-- finetunes-strange-id -->
-					<own></own><!-- must be unique for that contributor/sender/licensor -->
-					<your></your><!-- if given some kind of "your" id: thats it -->
+					<finetunesid></finetunesid><!-- finetunes-strange-id -->
+					<ourid></ourid><!-- must be unique for that contributor/sender/licensor -->
+					<yourid></yourid><!-- if given some kind of "your" id: thats it -->
 					<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->
 				</ids><!-- MUST -->
 				<www>
