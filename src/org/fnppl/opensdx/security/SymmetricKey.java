@@ -39,6 +39,11 @@ import org.bouncycastle.openpgp.*;
  * hrmpf. most probably not used in this context - hooray for Rijndael_256 !!!
  */
 
+/*
+ * @author Henning Thieß <ht@fnppl.org>
+ * 
+ */
+
 public class SymmetricKey {
 	static {
 		SecurityHelper.ensureBC();
