@@ -35,6 +35,11 @@
 
 	the term "our" and "your" is always from the standpoint of the document-sending party.
 
+	and yes, gzip-compression if this whole document seems totally usefull and inevitable...
+	
+	the signature of this document is to be given (at least) on the transferred document (so the receiver can check on that before degzipping tons of data)
+	in the case of transferred document is gzipped, the sender should also sign the original document
+	
  -->
 
 <usagereport>
@@ -55,6 +60,12 @@
 			<overallin>EUR 88888888.99</overallin>
 			<alloweddeductions>EUR 10.00</alloweddeductions>
 		</perrata><!-- could if this is a per-rata-related report -->
+		
+		<overall>
+			<overallroyaltydue>EUR 8888.99</overallroyaltydue>
+			<overallusages>9191919</overallusages>
+			<overallusageamount>12929299999</overallusageamount>
+		</overall>
 		
 		<creator>
 			<email>user@sendingparty.nät</email><!-- should be an email-address of the *user* on the sending side -->
@@ -197,6 +208,9 @@
 			<playlength>400</playlength><!-- in s. -->
 			<playedlength>20</playedlength><!-- in s. usually: playlength ; e.g.: where the customer stopped listening -->
 			
+			<usagedatetimefrom>2011-01-10 00:00:00 GMT+00</usagedatetimefrom>
+			<usagedatetimeto>2011-01-11 23:59:59 GMT+00</usagedatetimeto>
+			
 			<ids>
 				<grid></grid><!-- COULD grid -->
 				<upc></upc><!-- SHOULD ean/upc -->
@@ -237,6 +251,72 @@
 		</usage1>
 		<!-- and a lot more usages... -->
 	</usages>
+	
+	
+	<returns><!-- returns MUST be stated separately  -->
+		<return1>
+			<returnid></returnid><!-- MUST ; at least: reportid+returnid# -->
+			<usageid></usageid><!-- MUST ; at least: reportid+usage# -->
+			<type>bundle</type><!-- bundle|item -->
+			<usagetype>download</usagetype><!-- stream|upgrade|download|rent -->
+			<channel>MAIN</channel><!-- MUST ; e.g. MAIN -->
+			<name1></name1><!-- SHOULD a trivial name explaining this ; e.g. productname -->
+			<name2></name2><!-- COULD a trivial name explaining this ; e.g. productversion -->
+			<name3></name3><!-- COULD a trivial name explaining this ; e.g. labelname -->
+			<name4></name4><!-- COULD a trivial name explaining this ; e.g. artistname -->
+			<name5></name5><!-- COULD a trivial name explaining this ; e.g. trackname -->
+			
+			<playlength>400</playlength><!-- in s. -->
+			<playedlength>20</playedlength><!-- in s. usually: playlength ; e.g.: where the customer stopped listening -->
+			
+			<returndatetimefrom>2011-01-10 00:00:00 GMT+00</returndatetimefrom>
+			<returndatetimeto>2011-01-11 23:59:59 GMT+00</returndatetimeto>
+			
+			<usagedatetimefrom>2011-01-10 00:00:00 GMT+00</usagedatetimefrom>
+			<usagedatetimeto>2011-01-11 23:59:59 GMT+00</usagedatetimeto>
+			
+			<ids>
+				<grid></grid><!-- COULD grid -->
+				<upc></upc><!-- SHOULD ean/upc -->
+				<isrc></isrc><!-- SHOULD isrc - not applicable on bundle-level, but for  -->
+				<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->
+				<labelordernum></labelordernum><!-- COULD -->
+				<amzn></amzn><!-- COULD ; amazon-id-stuff -->
+				<isbn></isbn><!-- COULD -->
+				<finetunesid></finetunesid><!-- COULD -->
+				<ourid></ourid><!-- COULD -->
+				<yourid></yourid><!-- COULD -->
+			</ids><!-- MUST -->
+			
+			<customer>
+				<customerid></customerid><!-- unique on pos-side -->
+				<country></country>
+				<city></city>
+				<postcode></postcode>
+				<gender></gender>
+				<age></age>
+				<birthday></birthday>
+				<email></email>
+			</customer>
+			
+			<country></country><!-- MUST; this is/could be distinct from customers main-country -->
+			<city></city><!-- SHOULD ; this is/could be distinct from customers main-city -->
+			<postcode></postcode><!-- SHOULD ; this is/could be distinct from customers main-postcode -->
+			
+			<isp></isp><!-- SHOULD -->
+			<ipv4></ipv4><!-- SHOULD -->
+			<ipv6></ipv6><!-- SHOULD -->
+			
+			<paytype>VOUCHER</paytype><!-- MUST voucher, direct debit, creditcard(VISA,MASTER etc.), deposit, flat -->
+			<paidmoney>EUR 0.04</paidmoney>
+			<amount>1</amount><!-- if this is an aggregated usage (e.g. aggregated on one country/product), then this is the -->
+			<royaltydue>EUR 0.03</royaltydue><!-- overall ; already multiplied by amount though -->
+			<ratapermille>0.9000001</ratapermille><!-- if this is a per-rata deal: per mille of gross of this usage -->
+		</return1>
+		<!-- and hopefully no more returns... -->
+	</returns>
 </usagereport>
+
+
 
  
