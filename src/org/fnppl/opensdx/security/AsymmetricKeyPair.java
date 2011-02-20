@@ -1,6 +1,7 @@
 package org.fnppl.opensdx.security;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigInteger;
 
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.crypto.CipherParameters;
@@ -72,7 +73,7 @@ public class AsymmetricKeyPair {
 	}
 	
 	public String getKeyIDHex() {
-		return "0x"+Long.toHexString(getKeyID());
+		return SecurityHelper.HexDecoder.encode(BigInteger.valueOf(getKeyID()).toByteArray());		
 	}
 
 	public AsymmetricKeyPair(AsymmetricCipherKeyPair keyPair) {
@@ -81,8 +82,8 @@ public class AsymmetricKeyPair {
 		CipherParameters pub = keyPair.getPublic();
 		CipherParameters priv = keyPair.getPrivate();
 
-		rpub = (RSAKeyParameters)pub;
-		rpriv = (RSAPrivateCrtKeyParameters)priv;
+		this.rpub = (RSAKeyParameters)pub;
+		this.rpriv = (RSAPrivateCrtKeyParameters)priv;
 	}
 	
 //	public AsymmetricKeyPair(PGPKeyPair kp) {

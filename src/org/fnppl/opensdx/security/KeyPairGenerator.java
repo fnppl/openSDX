@@ -71,9 +71,11 @@ public class KeyPairGenerator {
 		RSAKeyPairGenerator generator = new RSAKeyPairGenerator();
 		generator.init(kk);
 
+		long j = System.currentTimeMillis();
 		System.out.println("Starting RSA keypairgeneration...");
 		AsymmetricCipherKeyPair keyPair = generator.generateKeyPair();
-		System.out.println("ENDED RSA keypairgeneration... -> "+keyPair.getClass().getName());
+		j = System.currentTimeMillis() - j;
+		System.out.println("ENDED RSA keypairgeneration... "+j+"ms -> "+keyPair.getClass().getName());
 		
 		CipherParameters pub = keyPair.getPublic();
 		CipherParameters priv = keyPair.getPrivate();
