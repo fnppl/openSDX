@@ -37,6 +37,8 @@ import org.bouncycastle.crypto.encodings.*;
 import org.bouncycastle.crypto.paddings.*;
 import org.bouncycastle.crypto.params.*;
 
+import com.sun.crypto.provider.AESCipher;
+
 
 
 /*
@@ -84,31 +86,44 @@ public class SymmetricKey {
 //		}
 		
 		CBCBlockCipher aesCBC = new CBCBlockCipher(new AESEngine());
-		
 		KeyParameter kp = new KeyParameter(keyBytes);
 		ParametersWithIV aesCBCParams = new ParametersWithIV(kp, initVector);
 		
 	    PaddedBufferedBlockCipher aesCipher = new PaddedBufferedBlockCipher(
 	    		aesCBC,
 	            new PKCS7Padding()
-	    	);
+	    	);	    
+	    aesCipher.init(true, aesCBCParams);
 	    
-	    aesCBC.init(true, aesCBCParams);
 	    int read = -1;
-	    byte[] buff = new byte[128/8];//blocksize
-		while((read=in.read(buff)) != -1) {
-			byte[] ou = new byte[read];
+	    int or = 0;
+	    int rr = 0;
+	    byte[] buff = new byte[16];
+	    byte[] buff2 = new byte[48];
+	    while((read=in.read(buff)) != -1) {
+	    	rr += read;
+			int rg = aesCipher.processBytes(buff, 0, read, buff2, 0);
+//			System.err.println("READ: "+read);
+//			System.err.println("PROCESS_BYTES_RETURN: "+rg);
 			
-			int rg = aesCipher.processBytes(buff, 0, read, ou, 0);
-			out.write(buff, 0, read);
+			out.write(buff2, 0, rg);
+			or += rg;
 		}
-		read = aesCipher.doFinal(buff, 0);
-		out.write(buff, 0, read);
-			
+//		int oss = aesCipher.getOutputSize(rr);
+		
+//		System.err.println("BYTES_WRITTEN_OVERALL: "+or);
+//		System.err.println("BYTES_READ_OVERALL: "+rr);
+//		System.err.println("AESCIPHER.getOutputSize("+rr+"): "+oss);
+		
+//		int rest = oss - or;
+		read = aesCipher.doFinal(buff2, 0);
+//		System.err.println("READ_LAST: "+read);
+		
+		out.write(buff2, 0, read);	
 	}
 	public byte[] encrypt(byte[] b) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		decrypt(new ByteArrayInputStream(b), out);
+		encrypt(new ByteArrayInputStream(b), out);
 		
 		return out.toByteArray();
 	 }
@@ -133,23 +148,38 @@ public class SymmetricKey {
 	            new PKCS7Padding()
 	    	);
 	    
-	    aesCBC.init(false, aesCBCParams);
+	    aesCipher.init(false, aesCBCParams);
 	    int read = -1;
 	    byte[] buff = new byte[128/8];//blocksize
 		while((read=in.read(buff)) != -1) {
-			byte[] ou = new byte[read];
-			
+			byte[] ou = new byte[buff.length];
+//			System.err.println("read: "+read);
+
 			int rg = aesCipher.processBytes(buff, 0, read, ou, 0);
-			out.write(buff, 0, read);
+			out.write(ou, 0, rg);
+//			System.err.println("rg: "+rg);
 		}
+
+		buff = new byte[2*128/8];//blocksize
 		read = aesCipher.doFinal(buff, 0);
 		out.write(buff, 0, read);
 	}
 	
 	public static void main(String[] args) throws Exception {
 		SymmetricKey l = SymmetricKey.getRandomKey();
+		System.out.println("INITVECTOR: "+SecurityHelper.HexDecoder.encode(l.initVector));
+		System.out.println("KEY: "+SecurityHelper.HexDecoder.encode(l.keyBytes));
 		
-		byte[] test = "ich will encoded werden...".getBytes();
+		
+//		INITVECTOR: 1D8BEE695B7F4EFF6F7B947F1B197B97
+//		KEY: 9034F3A02E7DBD9870D7FC23FCD0E3CA5B9292F7F2314B495DBF042078632B24
+		
+//		byte[] key = SecurityHelper.HexDecoder.decode("9034F3A02E7DBD9870D7FC23FCD0E3CA5B9292F7F2314B495DBF042078632B24");
+//		byte[] init = SecurityHelper.HexDecoder.decode("2A8BEE695B7F4EFF6F7B947F1B197B97");
+		
+//		SymmetricKey l = new SymmetricKey(key, init);
+//		
+		byte[] test = "ich asda will encoded werden...".getBytes();
 		
 		byte[] enc = l.encrypt(test); 
 		byte[] dec = l.decrypt(enc);
@@ -267,3 +297,33 @@ public class SymmetricKey {
 //    }
 //}
 
+//private static byte[] cipherData(PaddedBufferedBlockCipher cipher, byte[] data)
+//throws Exception
+//{
+//int minSize = cipher.getOutputSize(data.length);
+//byte[] outBuf = new byte[minSize];
+//int length1 = cipher.processBytes(data, 0, data.length, outBuf, 0);
+//int length2 = cipher.doFinal(outBuf, length1);
+//int actualLength = length1 + length2;
+//byte[] result = new byte[actualLength];
+//System.arraycopy(outBuf, 0, result, 0, result.length);
+//return result;
+//}
+//
+//private static byte[] decrypt(byte[] cipher, byte[] key, byte[] iv) throws Exception
+//{
+//PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(
+//    new AESEngine()));
+//CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(key), iv);
+//aes.init(false, ivAndKey);
+//return cipherData(aes, cipher);
+//}
+//
+//private static byte[] encrypt(byte[] plain, byte[] key, byte[] iv) throws Exception
+//{
+//PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(
+//    new AESEngine()));
+//CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(key), iv);
+//aes.init(true, ivAndKey);
+//return cipherData(aes, plain);
+//}
