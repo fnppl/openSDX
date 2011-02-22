@@ -48,6 +48,10 @@ public class AsymmetricKeyPair {
 	static {
 		SecurityHelper.ensureBC();
 	}
+	
+	private char[] storepass = null;
+	
+	
 //	public static final int TYPE_UNDEFINED = -1;
 	public static final int TYPE_RSA = 0;
 //	public static final int TYPE_DSA = 1; //dont want this...
@@ -74,9 +78,7 @@ public class AsymmetricKeyPair {
 	public long getKeyID() {
 		
 		if(keyid == -1) {
-			org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
-			byte[] kk = rpub.getModulus().toByteArray();
-			keyid = sha1.doFinal(kk, 0);			
+			keyid = SecurityHelper.getSHA1(rpub.getModulus().toByteArray());
 		}
 		
 		return keyid;
@@ -85,7 +87,7 @@ public class AsymmetricKeyPair {
 	String keyhex = null;
 	public String getKeyIDHex() {
 		if(keyhex == null) {
-			keyhex = SecurityHelper.HexDecoder.encode(BigInteger.valueOf(getKeyID()).toByteArray());
+			keyhex = SecurityHelper.HexDecoder.encode(BigInteger.valueOf(getKeyID()).toByteArray(),':',-1);
 		}
 		return keyhex;		
 	}

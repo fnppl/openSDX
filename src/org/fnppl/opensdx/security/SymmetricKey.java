@@ -54,6 +54,7 @@ public class SymmetricKey {
 	static {
 		SecurityHelper.ensureBC();
 	}
+
 	
 	private final static int keybits = 256;//ok, doing so fails the aes128-rule and may fall into US-weapons-regulation
 	private final static int blockbits = 128;
@@ -69,7 +70,7 @@ public class SymmetricKey {
 	
 	public static SymmetricKey getRandomKey() {
 		SecureRandom sc = new SecureRandom();//TODO HT 20.02.2011 - quite good, but should swirl it twice with tiger, or aes/rijndael itself		
-		byte[] aes_key_bytes = new byte[keybits/8]; //yep. please be aware of non-8-dividable bits - however, should be 128 for various reasons
+		byte[] aes_key_bytes = new byte[keybits / 8]; //yep. please be aware of non-8-dividable bits - however, should be 128 for various reasons
         
 		byte[] iv = new byte[blockbits/8];
         sc.nextBytes(aes_key_bytes);
@@ -78,6 +79,23 @@ public class SymmetricKey {
         //now should swirl those byte one more time...
         
         return new SymmetricKey(aes_key_bytes, iv);
+	}
+	
+	
+	public static SymmetricKey getKeyFromPass(char[] pass, byte[] iv) throws Exception {
+		if(iv.length != blockbits/8) {
+			throw new RuntimeException("Invalid InitVector-Size: "+iv.length+" expected: "+(blockbits/8));
+		}
+		byte[] aes_key_bytes = new byte[keybits / 8];
+		
+		int sha256 = SecurityHelper.getSHA256(String.valueOf(pass).getBytes("UTF-8"));
+		byte[] ll = BigInteger.valueOf(sha256).toByteArray();
+		for(int i=0; i<ll.length; i++) {
+			aes_key_bytes[i] = ll[i];
+		}
+		
+		SymmetricKey sk = new SymmetricKey(ll, iv);
+		return sk;
 	}
 	
 	public void encrypt(InputStream in, OutputStream out) throws Exception {
@@ -167,8 +185,8 @@ public class SymmetricKey {
 	
 	public static void main(String[] args) throws Exception {
 		SymmetricKey l = SymmetricKey.getRandomKey();
-		System.out.println("INITVECTOR: "+SecurityHelper.HexDecoder.encode(l.initVector));
-		System.out.println("KEY: "+SecurityHelper.HexDecoder.encode(l.keyBytes));
+		System.out.println("INITVECTOR: "+SecurityHelper.HexDecoder.encode(l.initVector,':',-1));
+		System.out.println("KEY: "+SecurityHelper.HexDecoder.encode(l.keyBytes,':',-1));
 		
 		
 //		INITVECTOR: 1D8BEE695B7F4EFF6F7B947F1B197B97
@@ -185,7 +203,7 @@ public class SymmetricKey {
 		byte[] dec = l.decrypt(enc);
 		
 		System.out.println("BEFORE: "+(new String(test)));
-		System.out.println("ENC: "+SecurityHelper.HexDecoder.encode(enc));
+		System.out.println("ENC: "+SecurityHelper.HexDecoder.encode(enc,':',-1));
 		System.out.println("AFTER: "+(new String(dec)));
 		
 	}

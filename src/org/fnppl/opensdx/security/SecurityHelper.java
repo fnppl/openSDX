@@ -262,7 +262,15 @@ public class SecurityHelper {
 	            throw new RuntimeException(e.getMessage(), e);
 	        }
 	    }
-
+	}
+	
+	public static int getSHA1(byte[] data) {
+		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+		return sha1.doFinal(data, 0);
+	}
+	public static int getSHA256(byte[] data) {
+		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();
+		return sha256.doFinal(data, 0);
 	}
 }
 

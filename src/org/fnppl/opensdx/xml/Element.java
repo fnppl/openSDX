@@ -31,6 +31,8 @@ package org.fnppl.opensdx.xml;
  * 
  */
 
+import java.util.*;
+
 public class Element {
 	private org.jdom.Element base = null;
 	
@@ -47,5 +49,37 @@ public class Element {
 	}
 	public String getName() {
 		return base.getName();
+	}
+	public Element getChild(String name) {
+		//beware double-invoke!!!
+		return new Element(base.getChild("name"));
+	}
+	public String getChildText(String name) {
+		//beware double-invoke!!!
+		return base.getChildText("name");
+	}
+	public int getChildInt(String name) {
+		//beware double-invoke!!!
+		return Integer.parseInt(base.getChildText("name"));
+	}
+	public String getText() {
+		//beware double-invoke!!!
+		return base.getText();
+	}
+	public Vector<Element> getChildren() {
+		Vector<Element> ret = new Vector<Element>();
+		List l = base.getChildren();
+		for(int i=0;i<l.size();i++) {
+			ret.addElement((Element)l.get(i));
+		}
+		return ret;
+	}
+	public Vector<Element> getChildren(String name) {
+		Vector<Element> ret = new Vector<Element>();
+		List l = base.getChildren(name);
+		for(int i=0;i<l.size();i++) {
+			ret.addElement((Element)l.get(i));
+		}
+		return ret;
 	}
 }
