@@ -1,20 +1,5 @@
 package org.fnppl.opensdx.security;
 
-import java.io.ByteArrayOutputStream;
-import java.math.BigInteger;
-import java.security.SecureRandom;
-
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
-import org.bouncycastle.crypto.CipherParameters;
-import org.bouncycastle.crypto.engines.RSAEngine;
-import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
-import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.crypto.params.RSAKeyGenerationParameters;
-import org.bouncycastle.crypto.params.RSAKeyParameters;
-import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
-
-import org.bouncycastle.openpgp.*;
-
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -40,6 +25,18 @@ import org.bouncycastle.openpgp.*;
  *      
  */
 
+import java.io.*;
+import java.math.*;
+import java.security.*;
+import java.util.*;
+
+import org.bouncycastle.crypto.*;
+import org.bouncycastle.crypto.engines.*;
+import org.bouncycastle.crypto.generators.*;
+import org.bouncycastle.crypto.params.*;
+
+import org.bouncycastle.openpgp.*;
+
 /*
  * 
  */
@@ -63,9 +60,9 @@ public class AsymmetricKeyPair {
 	private PublicKey pubkey = null;
 	private PrivateKey privkey = null;
 	
-	private AsymmetricCipherKeyPair keypair = null;
-	private RSAKeyParameters rpub = null;
-	private RSAPrivateCrtKeyParameters rpriv = null;
+//	private AsymmetricCipherKeyPair keypair = null;
+//	private RSAKeyParameters rpub = null;
+//	private RSAPrivateCrtKeyParameters rpriv = null;
 	
 	private int	type = -1; 
 	private int	usage = USAGE_WHATEVER;
@@ -78,7 +75,7 @@ public class AsymmetricKeyPair {
 	public long getKeyID() {
 		
 		if(keyid == -1) {
-			keyid = SecurityHelper.getSHA1(rpub.getModulus().toByteArray());
+			keyid = SecurityHelper.getSHA1(pubkey.getModulus().toByteArray());
 		}
 		
 		return keyid;
@@ -92,17 +89,28 @@ public class AsymmetricKeyPair {
 		return keyhex;		
 	}
 
+	public AsymmetricKeyPair(byte[] modulus, byte[] pub_exponent, byte[] priv_exponent) {
+		int algo = TYPE_RSA;
+		
+//		RSAPublicKeySpec sp = new RSAPublicKeySpec(new BigInteger(modulus), new BigInteger(pub_exponent));
+//		RSAPKeySpec sp = new RSAPublicKeySpec(new BigInteger(modulus), new BigInteger(pub_exponent));
+		
+		org.bouncycastle.crypto.params.RSAKeyParameters pub = new RSAKeyParameters(false, new BigInteger(modulus), new BigInteger(pub_exponent));	
+		org.bouncycastle.crypto.params.RSAKeyParameters priv = new RSAKeyParameters(true, new BigInteger(modulus), new BigInteger(priv_exponent));
+		
+//		RSAPrivateCrtKey kk = new RSAPrivateCrtKeyParameters(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	}
 	public AsymmetricKeyPair(AsymmetricCipherKeyPair keyPair) {
 		int algo = TYPE_RSA;
 
 		CipherParameters pub = keyPair.getPublic();
 		CipherParameters priv = keyPair.getPrivate();
 		
-		this.rpub = (RSAKeyParameters)pub;
-		this.rpriv = (RSAPrivateCrtKeyParameters)priv;
+		RSAKeyParameters rpub = (RSAKeyParameters)pub;
+		RSAPrivateCrtKeyParameters rpriv = (RSAPrivateCrtKeyParameters)priv;
 		
-		this.pubkey = new PublicKey(rpub);
-		this.privkey = new PrivateKey(rpriv);
+		this.pubkey = new PublicKey(rpub.getModulus(), rpub.getExponent());
+		this.privkey = new PrivateKey(rpriv.getModulus(), rpriv.getExponent());
 		
 		this.bitcount = rpub.getModulus().bitLength();
 	}
@@ -138,6 +146,9 @@ public class AsymmetricKeyPair {
 	}
 	public int getBitCount() {
 		return bitcount;
+	}
+	public int getUsage() {
+		return usage;
 	}
 	public boolean isRSA() {
 		if (type==TYPE_RSA) return true;
@@ -208,9 +219,28 @@ public class AsymmetricKeyPair {
 		return new AsymmetricKeyPair(keyPair );
 	}
 	
+	public byte[] encryptWithPublicKey(byte[] me) throws Exception {
+		return pubkey.encrypt(me);
+	}
+	public byte[] decryptWithPrivateKey(byte[] me) throws Exception {
+		return privkey.decrypt(me, pubkey);
+	}
+	public byte[] sign(byte[] me) throws Exception {
+		return privkey.sign(me, pubkey);
+	}
+	public boolean verify(byte[] signature, byte[] plain) throws Exception {
+		return Arrays.equals(pubkey.decrypt(signature), plain);
+	}
+	
 	public static void main(String[] args) throws Exception {
 		AsymmetricKeyPair ak = generateAsymmetricKeyPair();
 		System.out.println("BitCount: "+ak.getBitCount());
+		
+		String tc = new String("I am to encode...");
+		byte[] data = ak.encryptWithPublicKey(tc.getBytes());
+		System.out.println("ENCODED: "+SecurityHelper.HexDecoder.encode(data, '\0', -1));
+		byte[] dec = ak.decryptWithPrivateKey(data);
+		System.out.println("DECODED: "+SecurityHelper.HexDecoder.encode(dec, '\0', -1)+" -> "+(new String(dec)));
 	}
 }
 

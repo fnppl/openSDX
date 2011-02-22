@@ -90,6 +90,7 @@ public class SymmetricKey {
 		
 		int sha256 = SecurityHelper.getSHA256(String.valueOf(pass).getBytes("UTF-8"));
 		byte[] ll = BigInteger.valueOf(sha256).toByteArray();
+		System.err.println("getKeyFromPass:: ll.length:"+ll.length+"\taes_key_bytes.length:"+aes_key_bytes.length);
 		for(int i=0; i<ll.length; i++) {
 			aes_key_bytes[i] = ll[i];
 		}

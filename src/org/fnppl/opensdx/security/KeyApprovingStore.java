@@ -27,6 +27,7 @@ package org.fnppl.opensdx.security;
  */
 
 import java.io.*;
+import java.math.BigInteger;
 import java.util.*;
 import org.fnppl.opensdx.xml.*;
 
@@ -76,7 +77,9 @@ public class KeyApprovingStore {
 			} //identities
 			
 //			AsymmetricKeyPair akp = new AsymmetricKeyPair();
-			String shafp = kp.getChildText("sha1fingerprint");
+			String Sshafp = kp.getChildText("sha1fingerprint");
+			int sha1fp = (new BigInteger(SecurityHelper.HexDecoder.decode(Sshafp))).intValue();
+			
 			String authoritativekeyserver = kp.getChildText("authoritativekeyserver");
 			String usage = kp.getChildText("usage");
 			String type = kp.getChildText("type");
@@ -84,14 +87,22 @@ public class KeyApprovingStore {
 			String Salgo = kp.getChildText("algo");
 			int bits = kp.getChildInt("bits");
 			String Smodulus = kp.getChildText("modulus");
+			byte[] modulus = SecurityHelper.HexDecoder.decode(Smodulus);
+			int modsha1 = SecurityHelper.getSHA1(modulus);
+			if(modsha1 != sha1fp) {
+				System.err.println("Uargsn. sha1fingerprint given does not match calculated sha1 for given modulus ("+sha1fp+"!="+modsha1+")");
+				continue;
+			}
 			
 			Element pubkey = kp.getChild("pubkey");
 			String pubkey_exponent = pubkey.getChildText("exponent");
 			
 			Element privkey = kp.getChild("privkey");
-			Element exponent = kp.getChild("exponent");
-			if(exponent.getChild("locked") != null) {
-				Element lk = exponent.getChild("locked");
+			Element Eexponent = kp.getChild("exponent");
+			
+			byte[] exponent = null;
+			if(Eexponent.getChild("locked") != null) {
+				Element lk = Eexponent.getChild("locked");
 				String mantraname = lk.getChildText("mantraname");
 				String Slock_algo = lk.getChildText("algo");
 				String Sinitv = lk.getChildText("initvector");
@@ -101,16 +112,23 @@ public class KeyApprovingStore {
 				
 				try {
 					String pp = null;
-					System.out.println("Please enter Passphrase for "+mantraname+": ");
+					System.out.print("!!!! ENSURE NOONE IS WATCHING YOUR SCREEN !!!! \n\nKeyID "+Sshafp+"@"+authoritativekeyserver+"\nPlease enter Passphrase for Mantra: \""+mantraname+"\": ");
 					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 					pp = br.readLine();
 				
 					SymmetricKey sk = SymmetricKey.getKeyFromPass(pp.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
-					
+					exponent = sk.decrypt(bytes);
 				} catch(Exception ex) {
 					ex.printStackTrace();
-				}
+				}				
 			}
+			else {
+				//never should go here!!!
+				System.err.println("You should never see me - there seems to be a private key unlocked in your keystore: "+Sshafp+"@"+authoritativekeyserver);
+				exponent = SecurityHelper.HexDecoder.decode(Eexponent.getText());
+			}
+			
+			
 			
 			String gpgkeyserverid = kp.getChildText("gpgkeyserverid");
 		}

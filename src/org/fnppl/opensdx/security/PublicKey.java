@@ -24,6 +24,7 @@ package org.fnppl.opensdx.security;
  *      
  */
 import java.io.*;
+import java.math.BigInteger;
 
 import org.bouncycastle.crypto.AsymmetricBlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
@@ -34,7 +35,11 @@ import org.bouncycastle.openpgp.PGPUtil;
 
 import java.security.Key;
 import org.bouncycastle.crypto.params.*;
+import org.bouncycastle.crypto.encodings.OAEPEncoding;
+import org.bouncycastle.crypto.engines.RSABlindedEngine;
+import org.bouncycastle.crypto.engines.RSABlindingEngine;
 import org.bouncycastle.crypto.engines.RSAEngine;
+import org.bouncycastle.crypto.generators.RSABlindingFactorGenerator;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
@@ -47,27 +52,82 @@ public class PublicKey {
 	
 //	private PGPPublicKey key;
 	private RSAKeyParameters pub;
+//	private BigInteger modulus = null;
+//	private BigInteger exponent = null;
 	
 	private PublicKey() {
 		
 	}
 
+	public BigInteger getModulus() {
+		return pub.getModulus();
+	}
+	
+//	org.bouncycastle.crypto.params.RSAKeyParameters pub = new RSAKeyParameters(false, new BigInteger(modulus), new BigInteger(pub_exponent));
+	public PublicKey(BigInteger modulus, BigInteger exponent) {
+//		this.modulus = modulus;
+//		this.exponent = exponent;
+		this.pub = new RSAKeyParameters(false, modulus, exponent);
+	}
 	public PublicKey(RSAKeyParameters key) {
 		this.pub = key;
 	}
-	
-//	public PublicKey(String fromASC) throws Exception {
-//		//TODO really that complicated?
-//		InputStream keyIn = PGPUtil.getDecoderStream(new ByteArrayInputStream(fromASC.getBytes()));
-//		PGPPublicKeyRingCollection pgpRings = new PGPPublicKeyRingCollection(keyIn);
-//		key = ((PGPPublicKeyRing)pgpRings.getKeyRings().next()).getPublicKey();
+//	public static BigInteger generateBlindingFactor(PublicKey pubKey) {
+//		return generateBlindingFactor(pubKey.pub);
 //	}
-//	
-//	public PGPPublicKey getPGPPublicKey() {
-//		return key;
-//	}
-	
-//	public byte[] getRawEncoded() throws Exception {
-//		return key.getKey("BC").getEncoded();
-//	}
+//	public static BigInteger generateBlindingFactor(RSAKeyParameters pubKey) {
+////		http://forums.oracle.com/forums/thread.jspa?threadID=1525914
+//			
+//		RSABlindingFactorGenerator gen = new RSABlindingFactorGenerator();
+// 
+//        gen.init(pubKey);
+// 
+//        return gen.generateBlindingFactor();
+//    }
+	public byte[] encrypt(byte[] data) throws Exception {
+//		RSABlindingEngine rsae = new RSABlindingEngine();
+		RSABlindedEngine rsab = new RSABlindedEngine();
+		
+//		RSABlindingParameters bp = new RSABlindingParameters(
+//				pub, 
+//				generateBlindingFactor(pub)
+//			);
+		
+//		OAEPEncoding oaep = new OAEPEncoding(rsae);
+		OAEPEncoding oaep = new OAEPEncoding(rsab);
+		oaep.init(
+				true, //für encrypt: true
+				pub
+//				bp
+			);
+		
+		if(data.length > rsab.getInputBlockSize()) {
+			throw new RuntimeException("PublicKey.encrypt::data.length("+data.length+") too long - max is: "+oaep.getInputBlockSize());
+		}
+		
+		return oaep.processBlock(data, 0, data.length);
+	}
+	public byte[] decrypt(byte[] data) throws Exception {
+//		RSABlindingEngine rsae = new RSABlindingEngine();
+		
+		RSABlindedEngine rsae = new RSABlindedEngine();
+		
+//		RSABlindingParameters bp = new RSABlindingParameters(
+//				pub, 
+//				generateBlindingFactor(pub)
+//			);
+		
+		OAEPEncoding oaep = new OAEPEncoding(rsae);
+		oaep.init(
+				false, //für encrypt: true
+				pub
+//				bp
+			);
+		
+		if(data.length > rsae.getInputBlockSize()) {
+			throw new RuntimeException("PublicKey.decrypt::data.length("+data.length+") too long - max is: "+oaep.getInputBlockSize());
+		}
+		
+		return oaep.processBlock(data, 0, data.length);
+	}
 }

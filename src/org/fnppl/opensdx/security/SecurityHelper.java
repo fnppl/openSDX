@@ -112,7 +112,7 @@ public class SecurityHelper {
 	            out.write(ENCODING_TABLE[(v >>> 4)]);
 	            out.write(ENCODING_TABLE[v & 0xf]);
 	            
-	            if(pad == '\0') {
+	            if(pad != '\0') {
 	            	out.write(pad);
 	            }
 	            if(wrapat!=-1 && i>0 && i%wrapat==0) {

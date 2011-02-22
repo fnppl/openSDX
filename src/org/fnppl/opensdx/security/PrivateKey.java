@@ -25,13 +25,15 @@ package org.fnppl.opensdx.security;
  */
 
 import java.io.*;
+import java.math.BigInteger;
 import java.security.Key;
 
 import org.bouncycastle.crypto.*;
 import org.bouncycastle.openpgp.*;
+import org.bouncycastle.crypto.encodings.*;
+import org.bouncycastle.crypto.engines.*;
+import org.bouncycastle.crypto.modes.*;
 import org.bouncycastle.crypto.params.*;
-
-
 
 
 public class PrivateKey {
@@ -39,12 +41,15 @@ public class PrivateKey {
 		SecurityHelper.ensureBC();
 	}
 	
-	private RSAPrivateCrtKeyParameters key;
+	private RSAKeyParameters priv;
 	
-	
-	public PrivateKey(RSAPrivateCrtKeyParameters key) {
-//	public PrivateKey(PGPPrivateKey key) {
-		this.key = key;
+	public PrivateKey(BigInteger modulus, BigInteger exponent) {
+//		this.modulus = modulus;
+//		this.exponent = exponent;
+		this.priv = new RSAKeyParameters(true, modulus, exponent);
+	}
+	public PrivateKey(RSAKeyParameters key) {
+		this.priv = key;
 	}
 	
 //	public PrivateKey(String fromASC) throws Exception {
@@ -62,5 +67,52 @@ public class PrivateKey {
 //	public byte[] getRawEncoded() throws Exception {
 //		return key.getKey().getEncoded();
 //	}
+	
+	public byte[] sign(byte[] data, PublicKey pubkey) throws Exception {
+		return decrypt(data, pubkey);
+	}
+	public byte[] decrypt(byte[] data, PublicKey pubkey) throws Exception {
+//		RSABlindingEngine rsae = new RSABlindingEngine();
+		RSABlindedEngine rsae = new RSABlindedEngine();
+		
+//		RSABlindingParameters bp = new RSABlindingParameters(
+//				priv, 
+//				PublicKey.generateBlindingFactor(pubkey)
+//			);
+		
+		OAEPEncoding oaep = new OAEPEncoding(rsae);
+		oaep.init(
+				false, //für encrypt: true
+//				bp
+				priv
+			);
+		if(data.length > rsae.getInputBlockSize()) {
+			throw new RuntimeException("PrivateKey.encrypt::data.length("+data.length+") too long - max is: "+rsae.getInputBlockSize());
+		}
+		
+		return oaep.processBlock(data, 0, data.length);
+	}
+	public byte[] encrypt(byte[] data, PublicKey pubkey) throws Exception {
+		RSABlindedEngine rsae = new RSABlindedEngine();
+		
+//		RSABlindingEngine rsae = new RSABlindingEngine();
+//		
+//		RSABlindingParameters bp = new RSABlindingParameters(
+//				priv, 
+//				PublicKey.generateBlindingFactor(pubkey)
+//			);
+		
+		OAEPEncoding oaep = new OAEPEncoding(rsae);
+		oaep.init(
+				true, //für encrypt: true
+//				bp
+				priv
+			);
+		if(data.length > rsae.getInputBlockSize()) {
+			throw new RuntimeException("PrivateKey.encrypt::data.length("+data.length+") too long - max is: "+rsae.getInputBlockSize());
+		}
+		
+		return oaep.processBlock(data, 0, data.length);
+	}
 }
 
