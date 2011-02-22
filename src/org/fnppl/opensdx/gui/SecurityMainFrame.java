@@ -1,6 +1,10 @@
 package org.fnppl.opensdx.gui;
 
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
 import javax.swing.*;
 
 /*
@@ -55,6 +59,40 @@ public class SecurityMainFrame extends JFrame {
 		GridBagLayout gb = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();		
 		jp.setLayout(gb);
+	}
+
+	private static final MouseListener consumeMouseListener 
+	= new MouseAdapter(){
+		@Override
+		public void mousePressed(MouseEvent e){ e.consume(); }
+		@Override
+		public void mouseReleased(MouseEvent e){ e.consume(); }
+		@Override
+		public void mouseClicked(MouseEvent e){ e.consume(); }
+	};
+
+	public void lockUI(){
+		JRootPane r = getRootPane();
+		Component l = r.getGlassPane();
+
+		l.addMouseListener(consumeMouseListener);
+		l.setVisible(true);
+		l.setEnabled(true);
+
+		l.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+		//		MainFrame.getInstance().setEnabled(false);    	
+	}
+	public void releaseUILock() {
+		JRootPane r = getRootPane();
+		Component l = r.getGlassPane();
+
+		l.removeMouseListener(consumeMouseListener);
+		l.setVisible(false);
+		l.setEnabled(false);
+
+		//		MainFrame.getInstance().setEnabled(true);
+		l.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 	}
 	
 	public static void main(String[] args) {

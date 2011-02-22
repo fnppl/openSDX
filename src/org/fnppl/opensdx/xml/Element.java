@@ -40,4 +40,12 @@ public class Element {
 	protected Element(org.jdom.Element e) {
 		base = e;
 	}	
+	
+	public Element setAttribute(String name, String value) {
+		base.setAttribute(name, value);
+		return this;
+	}
+	public String getName() {
+		return base.getName();
+	}
 }

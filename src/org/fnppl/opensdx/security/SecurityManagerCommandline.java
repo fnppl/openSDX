@@ -30,7 +30,7 @@ import java.util.*;
 import org.fnppl.opensdx.xml.*;
 
 public class SecurityManagerCommandline {
-	
+	private KeyApprovingStore store = null;
 	
 	public static void main(String[] args) throws Exception {
 		

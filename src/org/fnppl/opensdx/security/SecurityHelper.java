@@ -103,16 +103,24 @@ public class SecurityHelper {
 	     * @return the number of bytes produced.
 	     * @throws IOException If encoding fails.
 	     */
-	    public static int encode(final byte[] data, final int off, final int length, 
-	            final OutputStream out) throws IOException {
-	        for (int i = off; i < (off + length); i++) {
+	    public static void encode(final byte[] data, final int off, final int length, 
+	            final OutputStream out, char pad, int wrapat) throws IOException {
+	        
+	    	for (int i = off; i < (off + length); i++) {
 	            int v = data[i] & 0xff;
 
 	            out.write(ENCODING_TABLE[(v >>> 4)]);
 	            out.write(ENCODING_TABLE[v & 0xf]);
+	            
+	            if(pad == '\0') {
+	            	out.write(pad);
+	            }
+	            if(wrapat!=-1 && i>0 && i%wrapat==0) {
+	            	out.write('\n');
+	            }
 	        }
 
-	        return length * 2;
+//	        return length * 2;
 	    }
 
 	    /**
@@ -121,7 +129,7 @@ public class SecurityHelper {
 	     * @return True if the given character should be ignored.
 	     */
 	    private static boolean ignore(final char c) {
-	        return (c == '\n' || c == '\r' || c == '\t' || c == ' ');
+	        return (c == '\n' || c == '\r' || c == ':' || c == '\t' || c == ' ');
 	    }
 
 	    /**
@@ -221,10 +229,10 @@ public class SecurityHelper {
 	     * @param data Input data to encode.
 	     * @return the number of bytes produced.
 	     */
-	    public static String encode(final byte[] data) {
+	    public static String encode(final byte[] data, char pad, int wrapat) {
 	        try {
 	            final ByteArrayOutputStream out = new ByteArrayOutputStream();
-	            encode(data, 0, data.length, out);
+	            encode(data, 0, data.length, out, pad, wrapat);
 	            out.close();
 	            return new String(out.toByteArray());
 	        } catch (IOException e) {
@@ -241,7 +249,12 @@ public class SecurityHelper {
 	    public static byte[] decode(final String data) {
 	        try {
 	            final ByteArrayOutputStream out = new ByteArrayOutputStream();
-	            decode(data, out);
+	            if(data.toLowerCase().indexOf("0x")==0) {
+	            	decode(data.substring(2), out);
+	            }
+	            else {
+	            	decode(data, out);
+	            }
 	            out.close();
 	            return out.toByteArray();
 	        } catch (IOException e) {

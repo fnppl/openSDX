@@ -48,9 +48,13 @@ public class AsymmetricKeyPair {
 	static {
 		SecurityHelper.ensureBC();
 	}
-	public static final int TYPE_UNDEFINED = -1;
+//	public static final int TYPE_UNDEFINED = -1;
 	public static final int TYPE_RSA = 0;
-	public static final int TYPE_DSA = 1; //dont want this...
+//	public static final int TYPE_DSA = 1; //dont want this...
+	
+	public static final int USAGE_SIGN = 0;
+	public static final int USAGE_CRYPT = 1;
+	public static final int USAGE_WHATEVER = 2;
 	
 	private PublicKey pubkey = null;
 	private PrivateKey privkey = null;
@@ -60,12 +64,15 @@ public class AsymmetricKeyPair {
 	private RSAPrivateCrtKeyParameters rpriv = null;
 	
 	private int	type = -1; 
+	private int	usage = USAGE_WHATEVER;
+	private int bitcount = 0;
 	
 	private AsymmetricKeyPair() {		
 	}
 	
 	int keyid = -1;
 	public long getKeyID() {
+		
 		if(keyid == -1) {
 			org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
 			byte[] kk = rpub.getModulus().toByteArray();
@@ -88,12 +95,14 @@ public class AsymmetricKeyPair {
 
 		CipherParameters pub = keyPair.getPublic();
 		CipherParameters priv = keyPair.getPrivate();
-
+		
 		this.rpub = (RSAKeyParameters)pub;
 		this.rpriv = (RSAPrivateCrtKeyParameters)priv;
 		
 		this.pubkey = new PublicKey(rpub);
 		this.privkey = new PrivateKey(rpriv);
+		
+		this.bitcount = rpub.getModulus().bitLength();
 	}
 	
 //	public AsymmetricKeyPair(PGPKeyPair kp) {
@@ -125,7 +134,9 @@ public class AsymmetricKeyPair {
 	public int getType() {
 		return type;
 	}
-	
+	public int getBitCount() {
+		return bitcount;
+	}
 	public boolean isRSA() {
 		if (type==TYPE_RSA) return true;
 		return false;
@@ -187,11 +198,17 @@ public class AsymmetricKeyPair {
 		System.out.println("***PRIV***\nEXP: "+rpriv.getExponent()+"\nMOD: "+rpriv.getModulus());
 		System.out.println("\n\n***PUB***\nEXP: "+rpub.getExponent()+"\nMOD: "+rpub.getModulus());
 		
+//		System.out.println("BITCOUNT_PRIV_EXP: "+rpriv.getExponent().bitLength());
+//		System.out.println("BITCOUNT_PRIV_MOD: "+rpriv.getModulus().bitLength());
+//		System.out.println("BITCOUNT_PUB_EXP: "+rpub.getExponent().bitLength());
+//		System.out.println("BITCOUNT_PUB_MOD: "+rpub.getModulus().bitLength());
+
 		return new AsymmetricKeyPair(keyPair );
 	}
 	
 	public static void main(String[] args) throws Exception {
-		generateAsymmetricKeyPair();
+		AsymmetricKeyPair ak = generateAsymmetricKeyPair();
+		System.out.println("BitCount: "+ak.getBitCount());
 	}
 }
 

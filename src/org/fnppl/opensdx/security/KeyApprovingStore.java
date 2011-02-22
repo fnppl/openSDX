@@ -26,11 +26,26 @@ package org.fnppl.opensdx.security;
  *      
  */
 
+import java.io.*;
+import java.util.*;
+import org.fnppl.opensdx.xml.*;
 
 public class KeyApprovingStore {
-
-	public static void main(String[] args) throws Exception {
+	private File f = null;
+	
+	public KeyApprovingStore() {
 		
+	}
+	public static KeyApprovingStore fromFile(File f) throws Exception {
+		Document d = Document.fromFile(f);
+		Element e = d.getRootElement();
+		if(!e.getName().equals("keystore")) {
+			throw new Exception("KeyStorefile must have \"keystore\" as root-element");
+		}
+		KeyApprovingStore kas = new KeyApprovingStore();
+		
+		
+		return kas;
 	}
 }
 

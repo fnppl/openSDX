@@ -1,4 +1,7 @@
-package org.fnppl.opensdx.xml;
+package org.fnppl.opensdx.security;
+
+import org.fnppl.opensdx.common.Territory;
+
 
 /*
  * Copyright (C) 2010-2011 
@@ -25,43 +28,28 @@ package org.fnppl.opensdx.xml;
  *      
  */
 
-/*
- * basically this class mimics the org.jdom-stuff.
- * why is it here? because we want to be independent of jdoms-implementation!
- * 
- */
 
-import java.io.*;
-import org.jdom.*;
-import org.jdom.input.*;
-import org.jdom.output.*;
-
-public class Document {
-	private org.jdom.Document base = null;
-	private Element rt = null;
+public class Identity {
+	String email = null;
+	String mnemonic = null;
+	String phone = null;
+//	Territory country = null;
+	String country = null;
+	String region = null;
+	String postcode = null;
+	String company = null;
+	String unit = null;
+	String subunit = null;
 	
-	private Document() {
-		
-	}
-	private Document(org.jdom.Document dc) {
-		this.base = dc;
-		rt = new Element(base.getRootElement());
-		
-	}
+	String function = null;
+	String surname = null;
+	String middlename = null;
+	String name = null;
 	
-	public static Document fromFile(File f) throws Exception {
-//		XMLHelper.fromFile(f);
-		
-		SAXBuilder sax = new SAXBuilder();		
-		Document ret = new Document(sax.build(f));
-		
-		return ret;
-	}
+	String note = null;
 	
-	
-	public Element getRootElement() {		
-		return rt;
+	public Identity() {
+		
 	}
 }
-
 
