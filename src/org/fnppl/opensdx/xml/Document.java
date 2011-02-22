@@ -31,6 +31,34 @@ package org.fnppl.opensdx.xml;
  * 
  */
 
-public class Document {
+import java.io.*;
+import org.jdom.*;
+import org.jdom.input.*;
+import org.jdom.output.*;
 
+public class Document {
+	org.jdom.Document base = null;
+	
+	private Document() {
+		
+	}
+	private Document(org.jdom.Document dc) {
+		this.base = dc;
+	}
+	
+	public Document fromFile(File f) throws Exception {
+//		XMLHelper.fromFile(f);
+		
+		SAXBuilder sax = new SAXBuilder();		
+		Document ret = new Document(sax.build(f));
+		
+		return ret;
+	}
+	
+	public Element getRootElement() {
+		//HT 22.02.2011 - be aware of multiple calls...
+		return new Element(base.getRootElement());
+	}
 }
+
+

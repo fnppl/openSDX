@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.xml;
+package org.fnppl.opensdx.security;
 
 /*
  * Copyright (C) 2010-2011 
@@ -25,19 +25,16 @@ package org.fnppl.opensdx.xml;
  *      
  */
 
-/*
- * basically this class mimics the org.jdom-stuff.
- * why is it here? because we want to be independent of jdoms-implementation!
- * 
- */
+import java.io.*;
+import java.util.*;
+import org.fnppl.opensdx.xml.*;
 
-public class Element {
-	private org.jdom.Element base = null;
+public class SecurityManagerCommandline {
 	
-	public Element(String name) {
-		base = new org.jdom.Element(name);
+	
+	public static void main(String[] args) throws Exception {
+		
 	}
-	protected Element(org.jdom.Element e) {
-		base = e;
-	}	
 }
+
+

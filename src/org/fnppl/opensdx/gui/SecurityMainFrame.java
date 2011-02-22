@@ -1,4 +1,7 @@
-package org.fnppl.opensdx.xml;
+package org.fnppl.opensdx.gui;
+
+import java.awt.*;
+import javax.swing.*;
 
 /*
  * Copyright (C) 2010-2011 
@@ -25,19 +28,39 @@ package org.fnppl.opensdx.xml;
  *      
  */
 
-/*
- * basically this class mimics the org.jdom-stuff.
- * why is it here? because we want to be independent of jdoms-implementation!
- * 
- */
 
-public class Element {
-	private org.jdom.Element base = null;
-	
-	public Element(String name) {
-		base = new org.jdom.Element(name);
+public class SecurityMainFrame extends JFrame {
+	private static SecurityMainFrame instance = null;
+	public static SecurityMainFrame getInstance() {
+		if(instance == null) {
+			instance = new SecurityMainFrame();
+		}
+		return instance;
 	}
-	protected Element(org.jdom.Element e) {
-		base = e;
-	}	
+	private SecurityMainFrame() {
+		super("fnppl.org :: openSDX :: SecurityMainFrame");
+		
+		setSize(1024, 768);
+	}
+	
+	public void makeMenuBar() {
+		JMenuBar jb = new JMenuBar();
+		setJMenuBar(jb);
+	}
+	private void buildUi() {
+		makeMenuBar();
+		
+		JPanel jp = new JPanel();
+		setContentPane(jp);
+		GridBagLayout gb = new GridBagLayout();
+		GridBagConstraints c = new GridBagConstraints();		
+		jp.setLayout(gb);
+	}
+	
+	public static void main(String[] args) {
+		SecurityMainFrame s = SecurityMainFrame.getInstance();
+		s.buildUi();
+		s.setVisible(true);
+	}
 }
+
