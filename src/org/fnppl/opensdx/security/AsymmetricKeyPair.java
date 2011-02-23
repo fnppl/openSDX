@@ -46,27 +46,10 @@ public class AsymmetricKeyPair {
 	static {
 		SecurityHelper.ensureBC();
 	}
-	
-	private char[] storepass = null;
-	private Vector<Identity> identities = null;
-	
-//	public static final int TYPE_UNDEFINED = -1;
-	public static final int TYPE_RSA = 0;
-//	public static final int TYPE_DSA = 1; //dont want this...
-	
-	public static final int USAGE_SIGN = 0;
-	public static final int USAGE_CRYPT = 1;
-	public static final int USAGE_WHATEVER = 2;
-	
+
 	private PublicKey pubkey = null;
 	private PrivateKey privkey = null;
-	
-//	private AsymmetricCipherKeyPair keypair = null;
-//	private RSAKeyParameters rpub = null;
-//	private RSAPrivateCrtKeyParameters rpriv = null;
-	
-	private int	type = -1; 
-	private int	usage = USAGE_WHATEVER;
+		
 	private int bitcount = 0;
 	
 	private AsymmetricKeyPair() {		

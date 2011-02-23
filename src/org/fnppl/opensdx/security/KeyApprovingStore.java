@@ -33,7 +33,7 @@ import org.fnppl.opensdx.xml.*;
 
 public class KeyApprovingStore {
 	private File f = null;
-	private 
+	private Vector<OSDXKeyObject> keys = null;
 	
 	public KeyApprovingStore() {
 		
@@ -49,78 +49,10 @@ public class KeyApprovingStore {
 		Element keys = e.getChild("keys");
 		Vector<Element> ves = e.getChildren("keypair");
 		
-		for(int i=0;i<ves.size();i++) {
-			Element kp = ves.elementAt(i);
-			Vector<Element> ids = kp.getChildren("identities");
-			for(int j=0;j<ids.size();j++) {
-				Element id = ids.elementAt(j);
-				//TODO
-				Identity idd = Identity.fromElement(id);
-				
-				boolean ok = idd.validate(SecurityHelper.HexDecoder.decode(id.getChildText("sha1")));
-				if(ok) {
-					
-				}
-				else {
-					
-				}
-			} //identities
+		for(int i=0; i<ves.size(); i++) {
+			Element ee = ves.elementAt(i);
+			OSDXKeyObject osdxk = OSDXKeyObject.fromElement(ee);
 			
-//			AsymmetricKeyPair akp = new AsymmetricKeyPair();
-			String Sshafp = kp.getChildText("sha1fingerprint");
-			byte[] sha1fp = SecurityHelper.HexDecoder.decode(Sshafp);
-			
-			String authoritativekeyserver = kp.getChildText("authoritativekeyserver");
-			String usage = kp.getChildText("usage");
-			String type = kp.getChildText("type");
-			String parentkeyid = kp.getChildText("parentkeyid");
-			String Salgo = kp.getChildText("algo");
-			int bits = kp.getChildInt("bits");
-			String Smodulus = kp.getChildText("modulus");
-			byte[] modulus = SecurityHelper.HexDecoder.decode(Smodulus);
-			byte[] modsha1 = SecurityHelper.getSHA1(modulus);
-			if(!Arrays.equals(modsha1, sha1fp)) {
-				System.err.println("Uargsn. sha1fingerprint given does not match calculated sha1 for given modulus ("+sha1fp+"!="+modsha1+")");
-				continue;
-			}
-			
-			Element pubkey = kp.getChild("pubkey");
-			String pubkey_exponent = pubkey.getChildText("exponent");
-			
-			Element privkey = kp.getChild("privkey");
-			Element Eexponent = kp.getChild("exponent");
-			
-			byte[] exponent = null;
-			if(Eexponent.getChild("locked") != null) {
-				Element lk = Eexponent.getChild("locked");
-				String mantraname = lk.getChildText("mantraname");
-				String Slock_algo = lk.getChildText("algo");
-				String Sinitv = lk.getChildText("initvector");
-				String Spadding = lk.getChildText("padding");
-				String Sbytes = lk.getChildText("bytes");
-				byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
-				
-				try {
-					String pp = null;
-					System.out.print("!!!! ENSURE NOONE IS WATCHING YOUR SCREEN !!!! \n\nKeyID "+Sshafp+"@"+authoritativekeyserver+"\nPlease enter Passphrase for Mantra: \""+mantraname+"\": ");
-					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-					pp = br.readLine();
-				
-					SymmetricKey sk = SymmetricKey.getKeyFromPass(pp.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
-					exponent = sk.decrypt(bytes);
-				} catch(Exception ex) {
-					ex.printStackTrace();
-				}				
-			}
-			else {
-				//never should go here!!!
-				System.err.println("You should never see me - there seems to be a private key unlocked in your keystore: "+Sshafp+"@"+authoritativekeyserver);
-				exponent = SecurityHelper.HexDecoder.decode(Eexponent.getText());
-			}
-			
-			
-			
-			String gpgkeyserverid = kp.getChildText("gpgkeyserverid");
 		}
 		
 		return kas;
