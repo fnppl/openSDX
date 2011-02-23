@@ -33,10 +33,12 @@ import org.fnppl.opensdx.xml.*;
 
 public class KeyApprovingStore {
 	private File f = null;
+	private 
 	
 	public KeyApprovingStore() {
 		
 	}
+	
 	public static KeyApprovingStore fromFile(File f) throws Exception {
 		Document d = Document.fromFile(f);
 		Element e = d.getRootElement();

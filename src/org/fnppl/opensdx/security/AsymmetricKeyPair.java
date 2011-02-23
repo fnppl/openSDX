@@ -48,7 +48,7 @@ public class AsymmetricKeyPair {
 	}
 	
 	private char[] storepass = null;
-	
+	private Vector<Identity> identities = null;
 	
 //	public static final int TYPE_UNDEFINED = -1;
 	public static final int TYPE_RSA = 0;
