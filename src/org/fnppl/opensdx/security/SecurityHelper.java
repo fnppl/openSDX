@@ -264,13 +264,25 @@ public class SecurityHelper {
 	    }
 	}
 	
-	public static int getSHA1(byte[] data) {
+	public static byte[] getSHA1(byte[] data) {
+		byte[] ret = new byte[160];
 		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
-		return sha1.doFinal(data, 0);
+		sha1.doFinal(ret, 0);
+		return ret;
 	}
-	public static int getSHA256(byte[] data) {
-		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();
-		return sha256.doFinal(data, 0);
+	public static byte[] getSHA256(byte[] data) {
+		byte[] ret = new byte[256];
+		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();		
+//		sha256.update(data, 0, data.length);
+//		return sha256.doFinal();
+		sha256.doFinal(ret, 0);
+		return ret;
+	}
+	public static byte[] getMD5(byte[] data) {
+		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
+		byte[] ret = new byte[md5.getDigestSize()];
+		md5.doFinal(ret, 0);
+		return ret;
 	}
 }
 

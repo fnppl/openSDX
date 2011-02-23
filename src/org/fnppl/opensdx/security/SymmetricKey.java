@@ -88,14 +88,13 @@ public class SymmetricKey {
 		}
 		byte[] aes_key_bytes = new byte[keybits / 8];
 		
-		int sha256 = SecurityHelper.getSHA256(String.valueOf(pass).getBytes("UTF-8"));
-		byte[] ll = BigInteger.valueOf(sha256).toByteArray();
-		System.err.println("getKeyFromPass:: ll.length:"+ll.length+"\taes_key_bytes.length:"+aes_key_bytes.length);
-		for(int i=0; i<ll.length; i++) {
-			aes_key_bytes[i] = ll[i];
+		byte[] sha256 = SecurityHelper.getSHA256(String.valueOf(pass).getBytes("UTF-8"));
+		System.err.println("getKeyFromPass:: ll.length:"+sha256.length+"\taes_key_bytes.length:"+aes_key_bytes.length);
+		for(int i=0; i<aes_key_bytes.length; i++) {
+			aes_key_bytes[i] = sha256[i];
 		}
 		
-		SymmetricKey sk = new SymmetricKey(ll, iv);
+		SymmetricKey sk = new SymmetricKey(aes_key_bytes, iv);
 		return sk;
 	}
 	

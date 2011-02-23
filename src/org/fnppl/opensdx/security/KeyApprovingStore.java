@@ -78,7 +78,7 @@ public class KeyApprovingStore {
 			
 //			AsymmetricKeyPair akp = new AsymmetricKeyPair();
 			String Sshafp = kp.getChildText("sha1fingerprint");
-			int sha1fp = (new BigInteger(SecurityHelper.HexDecoder.decode(Sshafp))).intValue();
+			byte[] sha1fp = SecurityHelper.HexDecoder.decode(Sshafp);
 			
 			String authoritativekeyserver = kp.getChildText("authoritativekeyserver");
 			String usage = kp.getChildText("usage");
@@ -88,8 +88,8 @@ public class KeyApprovingStore {
 			int bits = kp.getChildInt("bits");
 			String Smodulus = kp.getChildText("modulus");
 			byte[] modulus = SecurityHelper.HexDecoder.decode(Smodulus);
-			int modsha1 = SecurityHelper.getSHA1(modulus);
-			if(modsha1 != sha1fp) {
+			byte[] modsha1 = SecurityHelper.getSHA1(modulus);
+			if(!Arrays.equals(modsha1, sha1fp)) {
 				System.err.println("Uargsn. sha1fingerprint given does not match calculated sha1 for given modulus ("+sha1fp+"!="+modsha1+")");
 				continue;
 			}

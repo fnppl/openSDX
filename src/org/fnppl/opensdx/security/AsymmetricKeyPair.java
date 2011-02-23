@@ -71,11 +71,11 @@ public class AsymmetricKeyPair {
 	private AsymmetricKeyPair() {		
 	}
 	
-	int keyid = -1;
-	public long getKeyID() {
+	String keyid = null;
+	public String getKeyID() {
 		
-		if(keyid == -1) {
-			keyid = SecurityHelper.getSHA1(pubkey.getModulus().toByteArray());
+		if(keyid == null) {
+			keyid = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(pubkey.getModulus().toByteArray()), '\0', -1);
 		}
 		
 		return keyid;
@@ -84,7 +84,7 @@ public class AsymmetricKeyPair {
 	String keyhex = null;
 	public String getKeyIDHex() {
 		if(keyhex == null) {
-			keyhex = SecurityHelper.HexDecoder.encode(BigInteger.valueOf(getKeyID()).toByteArray(),':',-1);
+			keyid = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(pubkey.getModulus().toByteArray()), ':', -1);
 		}
 		return keyhex;		
 	}
@@ -208,8 +208,8 @@ public class AsymmetricKeyPair {
 		RSAKeyParameters rpub = (RSAKeyParameters)pub;
 		RSAPrivateCrtKeyParameters rpriv = (RSAPrivateCrtKeyParameters)priv;
 		
-		System.out.println("***PRIV***\nEXP: "+rpriv.getExponent()+"\nMOD: "+rpriv.getModulus());
-		System.out.println("\n\n***PUB***\nEXP: "+rpub.getExponent()+"\nMOD: "+rpub.getModulus());
+//		System.out.println("***PRIV***\nEXP: "+rpriv.getExponent()+"\nMOD: "+rpriv.getModulus());
+//		System.out.println("\n\n***PUB***\nEXP: "+rpub.getExponent()+"\nMOD: "+rpub.getModulus());
 		
 //		System.out.println("BITCOUNT_PRIV_EXP: "+rpriv.getExponent().bitLength());
 //		System.out.println("BITCOUNT_PRIV_MOD: "+rpriv.getModulus().bitLength());
@@ -237,10 +237,25 @@ public class AsymmetricKeyPair {
 		System.out.println("BitCount: "+ak.getBitCount());
 		
 		String tc = new String("I am to encode...");
+		
 		byte[] data = ak.encryptWithPublicKey(tc.getBytes());
 		System.out.println("ENCODED: "+SecurityHelper.HexDecoder.encode(data, '\0', -1));
 		byte[] dec = ak.decryptWithPrivateKey(data);
 		System.out.println("DECODED: "+SecurityHelper.HexDecoder.encode(dec, '\0', -1)+" -> "+(new String(dec)));
+		
+		byte[] sha256bytes = SecurityHelper.getSHA256(tc.getBytes());
+		byte[] md5 = SecurityHelper.getMD5(tc.getBytes());
+		
+		byte[] mega = new byte[sha256bytes.length+md5.length];
+		System.arraycopy(sha256bytes, 0, mega, 0, sha256bytes.length);
+		System.arraycopy(md5, 0, mega, sha256bytes.length, md5.length);
+		
+		String s = SecurityHelper.HexDecoder.encode(mega, ':', -1);
+		System.out.println("MEGA_STRING: "+s);
+		
+		byte[] signature = ak.sign(mega);
+		System.out.println("SIGNATURE: "+SecurityHelper.HexDecoder.encode(signature, '\0', -1));
+		System.out.println("SIGNATURE_VERIFIED: "+ak.verify(signature, mega));
 	}
 }
 
