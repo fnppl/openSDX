@@ -133,14 +133,18 @@ public class PublicKey {
 		
 		return oaep.processBlock(data, 0, data.length);
 	}
-	public byte[] encryptPKCS7(byte[] data) throws Exception {
+	public byte[] encryptPKCSed7(byte[] data) throws Exception {
+		//input here is a full rsa-block...
 		RSAEngine rsae = new RSAEngine();
 //		org.bouncycastle.crypto.encodings.PKCS1Encoding enc = new PKCS1Encoding(rsae);
 //		enc.init(true, pub);
 //	    return enc.processBlock(data, 0, data.length);
 
 		rsae.init(true, pub);
-	    
+//		System.out.println("pub.encryptpkcs7.outputLength: "+rsae.getOutputBlockSize());
+//		System.out.println("pub.encryptpkcs7.inputBlockSize: "+rsae.getInputBlockSize());
+		
+		
 //		PKCS7Padding pad = new PKCS7Padding();
 //		byte[] kk = new byte[rsae.getInputBlockSize()];
 //		System.arraycopy(data, 0, kk, 0, data.length);

@@ -230,20 +230,18 @@ public class AsymmetricKeyPair {
 		return privkey.sign(me);
 	}
 	public boolean verify(byte[] signature, byte[] plain) throws Exception {
-		byte[] testsig = pubkey.encryptPKCS7(signature);
-		System.out.println("TEST_SIGNATURE: "+SecurityHelper.HexDecoder.encode(testsig, '\0', -1));
+		byte[] ka = pubkey.encryptPKCSed7(signature);
 		
-		
-//		byte[] plainpad = new byte[testsig.length];
-//		System.arraycopy(plain, 0, plainpad, 0, plain.length);
-//		
-//		PKCS7Padding pad = new PKCS7Padding();
-//		int k = pad.addPadding(plainpad, plainpad.length);
-//		System.out.println("verify.addpadding: "+k);
+//		System.out.println("SIGNATURE_DEC:\t"+SecurityHelper.HexDecoder.encode(ka, ':', -1));
+		int pad = ka[ka.length-1];
+		byte[] real = new byte[ka.length-1 - pad];
+		for(int i=0;i<real.length;i++) {
+			real[i] = ka[i+1];
+		}
 		
 		return Arrays.equals(
-				testsig, 
-				plain
+				plain, 
+				real
 			);
 	}
 	
@@ -266,10 +264,16 @@ public class AsymmetricKeyPair {
 		System.arraycopy(md5, 0, mega, sha256bytes.length, md5.length);
 		
 		String s = SecurityHelper.HexDecoder.encode(mega, ':', -1);
-		System.out.println("\n\nMEGA_STRING: "+s);
+		System.out.println("\n\nMEGA_STRING:\t\t"+s);
 		
 		byte[] signature = ak.sign(mega);
-		System.out.println("SIGNATURE(mega): "+SecurityHelper.HexDecoder.encode(signature, '\0', -1));
+		System.out.println("SIGNATURE(mega).length: "+signature.length);
+		System.out.println("SIGNATURE(mega): "+SecurityHelper.HexDecoder.encode(signature, ':', -1));
+		
+//		byte[] testsig = ak.pubkey.encryptPKCS7(signature);
+//		System.out.println("TEST_SIGNATURE.length: "+testsig.length);
+//		System.out.println("TEST_SIGNATURE: "+SecurityHelper.HexDecoder.encode(testsig, ':', -1));
+		
 		System.out.println("SIGNATURE_VERIFIED: "+ak.verify(signature, mega));
 	}
 }

@@ -73,28 +73,23 @@ public class PrivateKey {
 	
 	
 	public byte[] sign(byte[] data) throws Exception {
-//		RSAEngine rsae = new RSAEngine();
-//		org.bouncycastle.crypto.encodings.PKCS1Encoding enc = new PKCS1Encoding(rsae);
-//		enc.init(false, priv);
-//	    return enc.processBlock(data, 0, data.length);
-	    
 		RSAEngine rsae = new RSAEngine();
 		rsae.init(
 				false, 
 				priv
 			);
-	    		
-		byte[] kk = rsae.processBlock(data, 0, data.length);
-		return kk;
+		byte[] filleddata = new byte[rsae.getInputBlockSize()-1];
 		
-//		byte[] ret = new byte[rsae.getInputBlockSize()];
-//		PKCS7Padding pad = new PKCS7Padding();
-//		System.arraycopy(kk, 0, ret, 0, kk.length);
-//		int k = pad.addPadding(ret, kk.length);
-//		System.out.println("addpadding: "+k);
+		System.arraycopy(data, 0, filleddata, 0, data.length);
+		PKCS7Padding pad = new PKCS7Padding();
+		int k = pad.addPadding(filleddata, data.length);
 
-//		return ret;
+//		System.out.println("SIGN_PLAINBLOATED:\t"+SecurityHelper.HexDecoder.encode(filleddata, ':', -1));
+//		System.out.println("SIGN_PLAINBLOATED.length:\t"+filleddata.length);
 		
+		return rsae.processBlock(filleddata, 0, filleddata.length);
+		
+//		return ret;
 //		OAEPEncoding oaep = new OAEPEncoding(rsae);
 //		oaep.init(
 //				false, //für encrypt: true
