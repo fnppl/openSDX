@@ -51,6 +51,7 @@ public class AsymmetricKeyPair {
 	private PrivateKey privkey = null;
 		
 	private int bitcount = 0;
+	private int type = 0;
 	
 	private AsymmetricKeyPair() {		
 	}
@@ -74,7 +75,7 @@ public class AsymmetricKeyPair {
 	}
 
 	public AsymmetricKeyPair(byte[] modulus, byte[] pub_exponent, byte[] priv_exponent) {
-		int algo = TYPE_RSA;
+		int algo = OSDXKeyObject.ALGO_RSA;
 		
 //		RSAPublicKeySpec sp = new RSAPublicKeySpec(new BigInteger(modulus), new BigInteger(pub_exponent));
 //		RSAPKeySpec sp = new RSAPublicKeySpec(new BigInteger(modulus), new BigInteger(pub_exponent));
@@ -85,8 +86,8 @@ public class AsymmetricKeyPair {
 //		RSAPrivateCrtKey kk = new RSAPrivateCrtKeyParameters(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 	}
 	public AsymmetricKeyPair(AsymmetricCipherKeyPair keyPair) {
-		int algo = TYPE_RSA;
-
+		int algo = OSDXKeyObject.ALGO_RSA;
+		
 		CipherParameters pub = keyPair.getPublic();
 		CipherParameters priv = keyPair.getPrivate();
 		
@@ -131,11 +132,11 @@ public class AsymmetricKeyPair {
 	public int getBitCount() {
 		return bitcount;
 	}
-	public int getUsage() {
-		return usage;
-	}
+	
 	public boolean isRSA() {
-		if (type==TYPE_RSA) return true;
+		if (type == OSDXKeyObject.ALGO_RSA) {
+			return true;
+		}
 		return false;
 	}
 
