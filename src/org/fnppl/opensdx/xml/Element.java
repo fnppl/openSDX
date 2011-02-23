@@ -66,6 +66,10 @@ public class Element {
 		//beware double-invoke!!!
 		return base.getText();
 	}
+	public void addContent(String name, String value) {
+		base.addContent((new org.jdom.Element(name)).setText(value));
+	}
+	
 	public Vector<Element> getChildren() {
 		Vector<Element> ret = new Vector<Element>();
 		List l = base.getChildren();

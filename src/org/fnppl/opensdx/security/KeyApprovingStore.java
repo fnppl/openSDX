@@ -53,27 +53,15 @@ public class KeyApprovingStore {
 			for(int j=0;j<ids.size();j++) {
 				Element id = ids.elementAt(j);
 				//TODO
+				Identity idd = Identity.fromElement(id);
 				
-//				<identity>
-//				<email>jaja@kakak.nät</email><!-- MUST -->
-//				<mnemonic></mnemonic><!-- SHOULD ; shorthandle for this identities-purpose "residency" or "work" or whatever -->
-//				<phone>+44 99 00202021</phone><!-- COULD -->
-//				<country></country><!-- COULD -->
-//				<region></region><!-- COULD -->
-//				<postcode></postcode><!-- COULD -->		
-//				<company></company><!-- COULD -->
-//				<unit></unit><!-- COULD -->
-//				<subunit></subunit><!-- COULD -->
-//				
-//				<function></function><!-- COULD ; function of that person -->
-//				<surname></surname><!-- COULD -->
-//				<middlename></middlename><!-- COULD -->
-//				<name></name><!-- COULD -->
-//				
-//				<note></note><!-- COULD -->
-//				<sha1></sha1><!-- sha1 as hex of concat of all above fields (also empty ones) -->
-//				<!-- please be aware of the exact order of these fields... -->
-
+				boolean ok = idd.validate(SecurityHelper.HexDecoder.decode(id.getChildText("sha1")));
+				if(ok) {
+					
+				}
+				else {
+					
+				}
 			} //identities
 			
 //			AsymmetricKeyPair akp = new AsymmetricKeyPair();
