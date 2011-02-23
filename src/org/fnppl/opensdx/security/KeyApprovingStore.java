@@ -73,7 +73,7 @@ public class KeyApprovingStore {
 //				<note></note><!-- COULD -->
 //				<sha1></sha1><!-- sha1 as hex of concat of all above fields (also empty ones) -->
 //				<!-- please be aware of the exact order of these fields... -->
-//			</identity>
+
 			} //identities
 			
 //			AsymmetricKeyPair akp = new AsymmetricKeyPair();
@@ -136,5 +136,4 @@ public class KeyApprovingStore {
 		return kas;
 	}
 }
-
 
