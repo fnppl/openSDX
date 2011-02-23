@@ -33,6 +33,7 @@ import java.util.*;
 import org.bouncycastle.crypto.*;
 import org.bouncycastle.crypto.engines.*;
 import org.bouncycastle.crypto.generators.*;
+import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.crypto.params.*;
 
 import org.bouncycastle.openpgp.*;
@@ -226,10 +227,24 @@ public class AsymmetricKeyPair {
 		return privkey.decrypt(me, pubkey);
 	}
 	public byte[] sign(byte[] me) throws Exception {
-		return privkey.sign(me, pubkey);
+		return privkey.sign(me);
 	}
 	public boolean verify(byte[] signature, byte[] plain) throws Exception {
-		return Arrays.equals(pubkey.decrypt(signature), plain);
+		byte[] testsig = pubkey.encryptPKCS7(signature);
+		System.out.println("TEST_SIGNATURE: "+SecurityHelper.HexDecoder.encode(testsig, '\0', -1));
+		
+		
+//		byte[] plainpad = new byte[testsig.length];
+//		System.arraycopy(plain, 0, plainpad, 0, plain.length);
+//		
+//		PKCS7Padding pad = new PKCS7Padding();
+//		int k = pad.addPadding(plainpad, plainpad.length);
+//		System.out.println("verify.addpadding: "+k);
+		
+		return Arrays.equals(
+				testsig, 
+				plain
+			);
 	}
 	
 	public static void main(String[] args) throws Exception {
@@ -251,10 +266,10 @@ public class AsymmetricKeyPair {
 		System.arraycopy(md5, 0, mega, sha256bytes.length, md5.length);
 		
 		String s = SecurityHelper.HexDecoder.encode(mega, ':', -1);
-		System.out.println("MEGA_STRING: "+s);
+		System.out.println("\n\nMEGA_STRING: "+s);
 		
 		byte[] signature = ak.sign(mega);
-		System.out.println("SIGNATURE: "+SecurityHelper.HexDecoder.encode(signature, '\0', -1));
+		System.out.println("SIGNATURE(mega): "+SecurityHelper.HexDecoder.encode(signature, '\0', -1));
 		System.out.println("SIGNATURE_VERIFIED: "+ak.verify(signature, mega));
 	}
 }

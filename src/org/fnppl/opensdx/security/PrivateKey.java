@@ -27,12 +27,15 @@ package org.fnppl.opensdx.security;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.Key;
+import java.security.SecureRandom;
 
 import org.bouncycastle.crypto.*;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.crypto.encodings.*;
 import org.bouncycastle.crypto.engines.*;
 import org.bouncycastle.crypto.modes.*;
+import org.bouncycastle.crypto.paddings.PKCS7Padding;
+import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.*;
 
 
@@ -68,8 +71,41 @@ public class PrivateKey {
 //		return key.getKey().getEncoded();
 //	}
 	
-	public byte[] sign(byte[] data, PublicKey pubkey) throws Exception {
-		return decrypt(data, pubkey);
+	
+	public byte[] sign(byte[] data) throws Exception {
+//		RSAEngine rsae = new RSAEngine();
+//		org.bouncycastle.crypto.encodings.PKCS1Encoding enc = new PKCS1Encoding(rsae);
+//		enc.init(false, priv);
+//	    return enc.processBlock(data, 0, data.length);
+	    
+		RSAEngine rsae = new RSAEngine();
+		rsae.init(
+				false, 
+				priv
+			);
+	    		
+		byte[] kk = rsae.processBlock(data, 0, data.length);
+		return kk;
+		
+//		byte[] ret = new byte[rsae.getInputBlockSize()];
+//		PKCS7Padding pad = new PKCS7Padding();
+//		System.arraycopy(kk, 0, ret, 0, kk.length);
+//		int k = pad.addPadding(ret, kk.length);
+//		System.out.println("addpadding: "+k);
+
+//		return ret;
+		
+//		OAEPEncoding oaep = new OAEPEncoding(rsae);
+//		oaep.init(
+//				false, //für encrypt: true
+////				bp
+//				priv
+//			);
+//		if(data.length > rsae.getInputBlockSize()) {
+//			throw new RuntimeException("PrivateKey.encrypt::data.length("+data.length+") too long - max is: "+rsae.getInputBlockSize());
+//		}
+//		
+//		return oaep.processBlock(data, 0, data.length);
 	}
 	public byte[] decrypt(byte[] data, PublicKey pubkey) throws Exception {
 //		RSABlindingEngine rsae = new RSABlindingEngine();

@@ -34,8 +34,11 @@ import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
 import org.bouncycastle.openpgp.PGPUtil;
 
 import java.security.Key;
+
+import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.crypto.params.*;
 import org.bouncycastle.crypto.encodings.OAEPEncoding;
+import org.bouncycastle.crypto.encodings.PKCS1Encoding;
 import org.bouncycastle.crypto.engines.RSABlindedEngine;
 import org.bouncycastle.crypto.engines.RSABlindingEngine;
 import org.bouncycastle.crypto.engines.RSAEngine;
@@ -129,5 +132,34 @@ public class PublicKey {
 		}
 		
 		return oaep.processBlock(data, 0, data.length);
+	}
+	public byte[] encryptPKCS7(byte[] data) throws Exception {
+		RSAEngine rsae = new RSAEngine();
+//		org.bouncycastle.crypto.encodings.PKCS1Encoding enc = new PKCS1Encoding(rsae);
+//		enc.init(true, pub);
+//	    return enc.processBlock(data, 0, data.length);
+
+		rsae.init(true, pub);
+	    
+//		PKCS7Padding pad = new PKCS7Padding();
+//		byte[] kk = new byte[rsae.getInputBlockSize()];
+//		System.arraycopy(data, 0, kk, 0, data.length);
+//		pad.addPadding(kk, data.length);
+		
+//		return rsae.processBlock(kk, 0, kk.length);
+		
+		return rsae.processBlock(data, 0, data.length);
+		
+//		OAEPEncoding oaep = new OAEPEncoding(rsae);
+//		oaep.init(
+//				false, //für encrypt: true
+////				bp
+//				priv
+//			);
+//		if(data.length > rsae.getInputBlockSize()) {
+//			throw new RuntimeException("PrivateKey.encrypt::data.length("+data.length+") too long - max is: "+rsae.getInputBlockSize());
+//		}
+//		
+//		return oaep.processBlock(data, 0, data.length);
 	}
 }
