@@ -56,7 +56,7 @@
 		<sha256>adadasdasd</sha256>
 		<dataname>kaldad</dataname><!-- optional dataname -->
 	</data>
-	<signature>
+	<signoff>
 		<keyid>kjakdjadkjajd@keys.fnppl.org</keyid>
 		<pubkey>
 			<algo>RSA</algo><!-- RSA ; others not implemented yet -->
@@ -66,6 +66,6 @@
 		</pubkey><!-- given, but should be verified from server/yourself... -->
 		
 		<bytes>asdasd</bytes><!-- as hex-string with ":" or " " separation... looks nicer... -->
-	</signature>
+	</signoff>
 </signature>
 

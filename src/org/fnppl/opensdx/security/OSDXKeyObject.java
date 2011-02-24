@@ -25,11 +25,24 @@ package org.fnppl.opensdx.security;
  */
 import java.io.*;
 import java.math.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.fnppl.opensdx.xml.Element;
 
 public class OSDXKeyObject {
+	final static String RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
+	final static String RFC1123_CUT = "yyyy-MM-dd HH:mm:ss zzz";
+	final static String RFC1036 = "EEEE, dd-MMM-yy HH:mm:ss zzz";
+	final static String ASCTIME = "EEE MMM dd HH:mm:ss yyyy zzz";
+	
+	final static Locale ml = new Locale("en", "DE");
+	static SimpleDateFormat datemeGMT = new SimpleDateFormat(RFC1123_CUT, ml);
+	static {
+		datemeGMT.setTimeZone(java.util.TimeZone.getTimeZone("GMT+00:00"));
+	}
+	
+	
 //	public static final int ALGO_UNDEFINED = -1;
 	public static final int ALGO_RSA = 0;
 //	public static final int ALGO_DSA = 1; //dont want this...
@@ -61,6 +74,8 @@ public class OSDXKeyObject {
 	private OSDXKeyObject parentosdxkeyobject = null;
 	private String parentkeyid = null;//could be the parentkey is not loaded - then *only* the id is present
 	private String authoritativekeyserver = null;
+	private String datasource = null;
+	private long datainsertdatetime = -1;
 	
 	private int	level = LEVEL_MASTER;
 	private int	usage = USAGE_WHATEVER;
@@ -116,6 +131,12 @@ public class OSDXKeyObject {
 		String authoritativekeyserver = kp.getChildText("authoritativekeyserver");
 		ret.authoritativekeyserver = authoritativekeyserver;
 		
+		String datasource = kp.getChildText("datasource");
+		ret.datasource = datasource;
+		
+		String datainsertdatetime = kp.getChildText("datainsertdatetime");
+		ret.datainsertdatetime = datemeGMT.parse(datainsertdatetime).getTime();
+		
 		String usage = kp.getChildText("usage");
 		ret.usage = usage_name.indexOf(usage);
 		
@@ -169,6 +190,24 @@ public class OSDXKeyObject {
 		String gpgkeyserverid = kp.getChildText("gpgkeyserverid");
 		
 		return ret;
+	}
+	
+	public static void main(String[] args) throws Exception {
+		String l = "2011-02-24 21:21:36 GMT+00:00";
+		String l2 = "2011-02-24 15:00:00 GMT+01:00";		
+		System.out.println("1: "+datemeGMT.format(new Date()));
+		System.out.println("2: "+datemeGMT.parse(l));		
+		System.out.println("3: "+datemeGMT.parse(l2));
+		
+		System.out.println("4: "+datemeGMT.format(datemeGMT.parse(l)));		
+		System.out.println("5: "+datemeGMT.format(datemeGMT.parse(l2)));
+		
+//		1: 2011-02-24 21:26:51 GMT+00:00
+//		2: Thu Feb 24 22:21:36 CET 2011
+//		3: Thu Feb 24 15:00:00 CET 2011
+//		4: 2011-02-24 21:21:36 GMT+00:00
+//		5: 2011-02-24 14:00:00 GMT+00:00
+
 	}
 }
 

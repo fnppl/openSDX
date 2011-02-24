@@ -75,8 +75,8 @@
 	<feedinfo>
 		<onlytest>true</onlytest><!-- MUST testmode true|false -->
 		<feedid>kaakka</feedid><!-- MUST id is provided by sender; should be unique -->
-		<creationdatetime>2010-10-01 00:00:00 GMT+00</creationdatetime><!-- MUST datetime of creation of this feed -->
-		<effectivedatetime>2010-10-01 00:00:00 GMT+00</effectivedatetime><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
+		<creationdatetime>2010-10-01 00:00:00 GMT+00:00</creationdatetime><!-- MUST datetime of creation of this feed -->
+		<effectivedatetime>2010-10-01 00:00:00 GMT+00:00</effectivedatetime><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
 		<creator>
 			<email>user@sendingparty.nät</email><!-- should be an email-address of the *user* on the sending side -->
 			<userid>1919kdkdk12929</userid><!-- should be an unique id of the *user* on the sending side-->
@@ -304,8 +304,8 @@
 			DE asdasd
 			</teasertext>
 			
-			<physical_release_datetime>1960-02-13 00:00:00 GMT+00</physical_release_datetime>
-			<digital_release_datetime>1960-02-13 00:00:00 GMT+00</digital_release_datetime>
+			<physical_release_datetime>1960-02-13 00:00:00 GMT+00:00</physical_release_datetime>
+			<digital_release_datetime>1960-02-13 00:00:00 GMT+00:00</digital_release_datetime>
 			
 			<related>
 				<physical_distributor></physical_distributor><!-- COULD (one of) the physical distributors  -->
@@ -343,8 +343,8 @@
 				<!-- U more territories -->
 			</territorial>
 			<timeframe>
-				<from>1960-02-13 00:00:00 GMT+01</from><!-- MUST ; most-recent-release-date from which on receiver may use this -->
-				<to>2050-02-13 23:59:59 GMT+01</to><!-- MUST ; cancellation-date -->
+				<from>1960-02-13 00:00:00 GMT+01:00</from><!-- MUST ; most-recent-release-date from which on receiver may use this -->
+				<to>2050-02-13 23:59:59 GMT+01:00</to><!-- MUST ; cancellation-date -->
 			</timeframe>
 				
 			<pricing>
@@ -437,8 +437,8 @@
 					DE asdasd
 					</teasertext>
 			
-					<physical_release_datetime>1960-02-13 00:00:00 GMT+00</physical_release_datetime>
-					<digital_release_datetime>1960-02-13 00:00:00 GMT+00</digital_release_datetime>
+					<physical_release_datetime>1960-02-13 00:00:00 GMT+00:00</physical_release_datetime>
+					<digital_release_datetime>1960-02-13 00:00:00 GMT+00:00</digital_release_datetime>
 			
 					<playlength>987</playlength><!-- MUST ; in seconds ; at least for media-files -->
 					
@@ -481,7 +481,7 @@
 								<url></url><!-- MUST ; should be tls -->
 								<user></user><!-- COULD ; http-basic-header-auth -->
 								<pass></pass><!-- COULD ; http-basic-header-auth -->
-								<expiresdatetime>2011-06-10 20:24:00 GMT+00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
+								<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
 							</http><!-- http means that, this file is not delivered, but it can be pulled by the receiving parties ; integrity is assured by checksums -->
 						</location>
 						<checksums>
@@ -501,7 +501,7 @@
 								<path></path>
 								<user></user><!-- COULD ; -->
 								<pass></pass><!-- COULD ; -->
-								<expiresdatetime>2011-06-10 20:24:00 GMT+00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
+								<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
 							</ftp><!-- http means that, this file is not delivered, but it can be pulled by the receiving parties ; integrity is assured by checksums -->
 						</location>
 						<checksums>

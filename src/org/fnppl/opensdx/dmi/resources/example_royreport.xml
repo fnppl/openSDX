@@ -71,9 +71,9 @@
 		<reportid>kaakka</reportid><!-- MUST id is provided by sender; should be unique -->
 		<reportname>Q5 2010 reports</reportname><!-- COULD trivial name -->
 		<onlytest>true</onlytest><!-- MUST testmode true|false -->
-		<creationdatetime>2010-10-01 00:00:00 GMT+00</creationdatetime><!-- MUST datetime of creation of this feed -->
-		<covereddatetimefrom>2010-10-01 00:00:00 GMT+00</covereddatetimefrom><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
-		<covereddatetimeto>2010-10-20 23:59:59 GMT+00</covereddatetimeto><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
+		<creationdatetime>2010-10-01 00:00:00 GMT+00:00</creationdatetime><!-- MUST datetime of creation of this feed -->
+		<covereddatetimefrom>2010-10-01 00:00:00 GMT+00:00</covereddatetimefrom><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
+		<covereddatetimeto>2010-10-20 23:59:59 GMT+00:00</covereddatetimeto><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
 		
 		<reportedchannels>
 			<channel1></channel1><!-- MUST ; could be *ALL* -->
@@ -232,8 +232,8 @@
 			<playlength>400</playlength><!-- in s. -->
 			<playedlength>20</playedlength><!-- in s. usually: playlength ; e.g.: where the customer stopped listening -->
 			
-			<usagedatetimefrom>2011-01-10 00:00:00 GMT+00</usagedatetimefrom>
-			<usagedatetimeto>2011-01-11 23:59:59 GMT+00</usagedatetimeto>
+			<usagedatetimefrom>2011-01-10 00:00:00 GMT+00:00</usagedatetimefrom>
+			<usagedatetimeto>2011-01-11 23:59:59 GMT+00:00</usagedatetimeto>
 			
 			<ids>
 				<grid></grid><!-- COULD grid -->
@@ -293,11 +293,11 @@
 			<playlength>400</playlength><!-- in s. -->
 			<playedlength>20</playedlength><!-- in s. usually: playlength ; e.g.: where the customer stopped listening -->
 			
-			<returndatetimefrom>2011-01-10 00:00:00 GMT+00</returndatetimefrom>
-			<returndatetimeto>2011-01-11 23:59:59 GMT+00</returndatetimeto>
+			<returndatetimefrom>2011-01-10 00:00:00 GMT+00:00</returndatetimefrom>
+			<returndatetimeto>2011-01-11 23:59:59 GMT+00:00</returndatetimeto>
 			
-			<usagedatetimefrom>2011-01-10 00:00:00 GMT+00</usagedatetimefrom>
-			<usagedatetimeto>2011-01-11 23:59:59 GMT+00</usagedatetimeto>
+			<usagedatetimefrom>2011-01-10 00:00:00 GMT+00:00</usagedatetimefrom>
+			<usagedatetimeto>2011-01-11 23:59:59 GMT+00:00</usagedatetimeto>
 			
 			<ids>
 				<grid></grid><!-- COULD grid -->
