@@ -64,8 +64,8 @@
 			<modulus></modulus><!-- as hex-string with or without leading 0x ; only for RSA?! -->
 			<exponent></exponent><!-- as hex-string with or without leading 0x -->
 		</pubkey><!-- given, but should be verified from server/yourself... -->
-		
-		<bytes>asdasd</bytes><!-- as hex-string with ":" or " " separation... looks nicer... -->
+		<sha1>asdad</sha1>
+		<signaturebytes>asdasd</signaturebytes><!-- as hex-string with ":" or " " separation... looks nicer... -->
 	</signoff>
 </signature>
 

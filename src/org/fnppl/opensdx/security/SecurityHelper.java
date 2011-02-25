@@ -270,6 +270,18 @@ public class SecurityHelper {
 		sha1.doFinal(ret, 0);
 		return ret;
 	}
+	public static byte[] getSHA1(InputStream in) throws Exception {
+		byte[] ret = new byte[160];
+		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+		int read = -1;
+		byte[] buff = new byte[1024];
+		while((read=in.read(buff))!=-1) {
+			sha1.update(buff, 0, read);
+		}
+		
+		sha1.doFinal(ret, 0);
+		return ret;
+	}
 	public static byte[] getSHA256(byte[] data) {
 		byte[] ret = new byte[256];
 		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();		

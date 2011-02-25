@@ -57,19 +57,18 @@ public class AsymmetricKeyPair {
 	}
 	
 	String keyid = null;
-	public String getKeyID() {
-		
+	public String getKeyID() {		
 		if(keyid == null) {
 			keyid = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(pubkey.getModulus().toByteArray()), '\0', -1);
 		}
 		
 		return keyid;
 	}
-	
+
 	String keyhex = null;
 	public String getKeyIDHex() {
 		if(keyhex == null) {
-			keyid = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(pubkey.getModulus().toByteArray()), ':', -1);
+			keyhex = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(pubkey.getModulus().toByteArray()), ':', -1);
 		}
 		return keyhex;		
 	}
@@ -131,6 +130,12 @@ public class AsymmetricKeyPair {
 	}
 	public int getBitCount() {
 		return bitcount;
+	}
+	public String getModulusAsHex() {
+		return SecurityHelper.HexDecoder.encode(pubkey.getModulus().toByteArray(), '\0', -1);
+	}
+	public String getPublicExponentAsHex() {
+		return SecurityHelper.HexDecoder.encode(pubkey.getExponent().toByteArray(), '\0', -1);
 	}
 	
 	public boolean isRSA() {

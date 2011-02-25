@@ -81,6 +81,8 @@ public class OSDXKeyObject {
 	private int	usage = USAGE_WHATEVER;
 	private int	algo = ALGO_RSA;
 
+	private String modulussha1 = null;
+	
 	private char[] storepass = null;
 	private Vector<Identity> identities = new Vector<Identity>();
 	
@@ -133,6 +135,8 @@ public class OSDXKeyObject {
 		
 		String datasource = kp.getChildText("datasource");
 		ret.datasource = datasource;
+		
+		ret.modulussha1 = Sshafp;
 		
 		String datainsertdatetime = kp.getChildText("datainsertdatetime");
 		ret.datainsertdatetime = datemeGMT.parse(datainsertdatetime).getTime();
@@ -190,6 +194,32 @@ public class OSDXKeyObject {
 		String gpgkeyserverid = kp.getChildText("gpgkeyserverid");
 		
 		return ret;
+	}
+	
+	public boolean allowsSigning() {
+		return usage == USAGE_SIGN || usage == USAGE_WHATEVER;
+	}
+	public String getKeyID() {
+		return modulussha1+"@"+authoritativekeyserver;
+	}
+	public Element getSimplePubKeyElement() {
+		Element ret = new Element("pubkey");
+		ret.addContent("algo", algo_name.elementAt(algo));
+		ret.addContent("bits", ""+akp.getBitCount());
+		ret.addContent("modulus", akp.getModulusAsHex());
+		ret.addContent("exponent", akp.getPublicExponentAsHex());
+		
+		
+//		<bits>3072</bits><!-- well, yes, count yourself, but nice to *see* it -->
+//		<modulus></modulus><!-- as hex-string with or without leading 0x ; only for RSA?! -->
+//		<exponent></exponent><!-- as hex-string with or without leading 0x -->
+//		</pubkey><!-- given, but should be verified from server/yourself... -->
+//
+		return ret;
+	}
+	
+	public byte[] signSHA1(byte[] sha1) throws Exception {
+		return akp.sign(sha1);
 	}
 	
 	public static void main(String[] args) throws Exception {

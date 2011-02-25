@@ -69,6 +69,9 @@ public class Element {
 	public void addContent(String name, String value) {
 		base.addContent((new org.jdom.Element(name)).setText(value));
 	}
+	public void addContent(Element e) {
+		base.addContent(e.base);
+	}
 	
 	public Vector<Element> getChildren() {
 		Vector<Element> ret = new Vector<Element>();

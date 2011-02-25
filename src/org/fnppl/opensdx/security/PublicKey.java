@@ -65,6 +65,9 @@ public class PublicKey {
 	public BigInteger getModulus() {
 		return pub.getModulus();
 	}
+	public BigInteger getExponent() {
+		return pub.getExponent();
+	}
 	
 //	org.bouncycastle.crypto.params.RSAKeyParameters pub = new RSAKeyParameters(false, new BigInteger(modulus), new BigInteger(pub_exponent));
 	public PublicKey(BigInteger modulus, BigInteger exponent) {
