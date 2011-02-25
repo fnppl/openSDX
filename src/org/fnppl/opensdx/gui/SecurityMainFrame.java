@@ -1,6 +1,8 @@
 package org.fnppl.opensdx.gui;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -42,13 +44,41 @@ public class SecurityMainFrame extends JFrame {
 		return instance;
 	}
 	private SecurityMainFrame() {
-		super("fnppl.org :: openSDX :: SecurityMainFrame");
+		super("fnppl.org :: openSDX :: SecurityMainFrame");		
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		setSize(1024, 768);
 	}
 	
 	public void makeMenuBar() {
+		ActionListener ja = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String cmd = e.getActionCommand();
+				
+				if(cmd.equalsIgnoreCase("quit")) {
+					System.exit(0);
+				}
+			}
+		};
+		
 		JMenuBar jb = new JMenuBar();
+		JMenu jm = new JMenu("File");
+		JMenuItem jmi = null;
+		
+		jmi = new JMenuItem("OpenKeyStore");
+		jmi.setActionCommand("openkeystore");
+		jmi.addActionListener(ja);
+		
+		jmi = new JMenuItem("WriteKeyStore");
+		jmi.setActionCommand("writekeystore");
+		jmi.addActionListener(ja);
+		
+		
+		jmi = new JMenuItem("Quit");
+		jmi.setActionCommand("quit");
+		jmi.addActionListener(ja);
+		
+		
 		setJMenuBar(jb);
 	}
 	private void buildUi() {
