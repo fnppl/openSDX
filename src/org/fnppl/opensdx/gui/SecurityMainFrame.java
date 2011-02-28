@@ -126,6 +126,19 @@ public class SecurityMainFrame extends JFrame {
 	}
 	
 	public static void main(String[] args) {
+		//HT 28.02.2011
+//		1. Select/Open Keystore 
+//		2. Save Keystore 
+//		3. Create Key(s) 
+//		4. Create Identities 
+//		5. Modify Identities
+//		6. Add arbitrary (foreign) keys (pubkeys) to keystore
+//		7. Sign arbitrary files
+//		8. Check signature of arbitrary files
+//		10. encrypt arbitrary files (AES)
+//		11. decrypt arbitrary files (AES)
+//		12. Modify Keys (in terms of deletion/revokation/submission to server)
+		
 		SecurityMainFrame s = SecurityMainFrame.getInstance();
 		s.buildUi();
 		s.setVisible(true);
