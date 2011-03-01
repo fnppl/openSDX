@@ -241,7 +241,7 @@ public class OSDXKeyObject {
 		String gpgkeyserverid = kp.getChildText("gpgkeyserverid");
 		
 		return ret;
-	}
+	}//fromElement
 	
 	public boolean allowsSigning() {
 		return usage == USAGE_SIGN || usage == USAGE_WHATEVER;
