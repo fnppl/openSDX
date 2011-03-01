@@ -1,9 +1,10 @@
 package org.fnppl.opensdx.security.test;
+
 /*
  * Copyright (C) 2010-2011 
 
  * 							fine people e.V. <opensdx@fnppl.org> 
- * 							Bertram Boedeker <bboedeker@gmx.de>
+ * 							Henning Thieß <ht@fnppl.org>
  * 
  * 							http://fnppl.org
  * 
@@ -22,9 +23,15 @@ package org.fnppl.opensdx.security.test;
  * You should have received a copy of the GNU Lesser General Public License
  * and GNU General Public License along with openSDX.
  * If not, see <http://www.gnu.org/licenses/>.
- * 
  *      
  */
+
+/**
+ * 
+ * @author Bertram Bödeker <bboedeker@gmx.de>
+ *
+ */
+
 import java.io.File;
 import java.math.BigInteger;
 import java.util.Vector;

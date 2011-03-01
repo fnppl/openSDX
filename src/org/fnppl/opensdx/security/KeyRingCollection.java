@@ -40,6 +40,7 @@ import org.fnppl.opensdx.common.Util;
 /**
  * @author Bertram Boedeker <bbodeker@gmx.de>
  * @author Henning Thieß <ht@fnppl.org>
+ * 
  */
 
 public class KeyRingCollection {

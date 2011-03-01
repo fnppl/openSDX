@@ -33,7 +33,7 @@ import org.fnppl.opensdx.common.Util;
 
 /**
  * 
- * @author Bertram Boedeker
+ * @author Bertram Bödeker <bboedeker@gmx.de>
  *
  */
 public class CreateSignedPackage {

@@ -41,7 +41,7 @@ import java.util.zip.ZipOutputStream;
 
 /**
  * 
- * @author Bertram Boedeker
+ * @author Bertram Bödeker <bboedeker@gmx.de>
  *
  */
 public class Util {

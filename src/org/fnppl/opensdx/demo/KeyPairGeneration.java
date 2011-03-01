@@ -32,7 +32,7 @@ import java.util.*;
 /**
  * Demonstrates a simple Key Pair Generation
  * 
- * @author Bertram Boedeker
+ * @author Bertram Bödeker <bboedeker@gmx.de>
  *
  */
 public class KeyPairGeneration {
