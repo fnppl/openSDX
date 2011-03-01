@@ -31,7 +31,12 @@ package org.fnppl.opensdx.xml;
  * 
  */
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
+
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 public class Element {
 	private org.jdom.Element base = null;
@@ -52,15 +57,19 @@ public class Element {
 	}
 	public Element getChild(String name) {
 		//beware double-invoke!!!
-		return new Element(base.getChild("name"));
+		org.jdom.Element b = base.getChild(name);
+		if (b==null) return null;
+		return new Element(b);
 	}
 	public String getChildText(String name) {
 		//beware double-invoke!!!
-		return base.getChildText("name");
+		String s = base.getChildText(name);
+		if (s==null) return ""; //TODO ist das sinn der sache??
+		return s;
 	}
 	public int getChildInt(String name) {
 		//beware double-invoke!!!
-		return Integer.parseInt(base.getChildText("name"));
+		return Integer.parseInt(base.getChildText(name));
 	}
 	public String getText() {
 		//beware double-invoke!!!
@@ -77,7 +86,7 @@ public class Element {
 		Vector<Element> ret = new Vector<Element>();
 		List l = base.getChildren();
 		for(int i=0;i<l.size();i++) {
-			ret.addElement((Element)l.get(i));
+			ret.add(new Element((org.jdom.Element)l.get(i)));
 		}
 		return ret;
 	}
@@ -85,8 +94,17 @@ public class Element {
 		Vector<Element> ret = new Vector<Element>();
 		List l = base.getChildren(name);
 		for(int i=0;i<l.size();i++) {
-			ret.addElement((Element)l.get(i));
+			ret.add(new Element((org.jdom.Element)l.get(i)));
 		}
 		return ret;
+	}
+	
+	public void output(OutputStream out) {
+		try {
+			XMLOutputter outp= new XMLOutputter(Format.getPrettyFormat());
+			outp.output(base, out);       
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

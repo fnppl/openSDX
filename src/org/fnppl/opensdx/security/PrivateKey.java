@@ -145,5 +145,10 @@ public class PrivateKey {
 		
 		return oaep.processBlock(data, 0, data.length);
 	}
+	
+	public byte[] getEncrytedPrivateKey(SymmetricKey sk) throws Exception {
+		return sk.encrypt(priv.getExponent().toByteArray());
+	}
+	
 }
 

@@ -69,6 +69,19 @@ public class PublicKey {
 		return pub.getExponent();
 	}
 	
+	public int getBitCount() {
+		return pub.getModulus().bitLength();
+	}
+	public String getModulusAsHex() {
+		return SecurityHelper.HexDecoder.encode(pub.getModulus().toByteArray(), '\0', -1);
+	}
+	public byte[] getModulusBytes() {
+		return pub.getModulus().toByteArray();
+	}
+	public String getPublicExponentAsHex() {
+		return SecurityHelper.HexDecoder.encode(pub.getExponent().toByteArray(), '\0', -1);
+	}
+	
 //	org.bouncycastle.crypto.params.RSAKeyParameters pub = new RSAKeyParameters(false, new BigInteger(modulus), new BigInteger(pub_exponent));
 	public PublicKey(BigInteger modulus, BigInteger exponent) {
 //		this.modulus = modulus;
@@ -168,5 +181,10 @@ public class PublicKey {
 //		}
 //		
 //		return oaep.processBlock(data, 0, data.length);
+	}
+	
+	public String getKeyID() {
+		String keyid = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(pub.getModulus().toByteArray()), '\0', -1);
+		return keyid;
 	}
 }

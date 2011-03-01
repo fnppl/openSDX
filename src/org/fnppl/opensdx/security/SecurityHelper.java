@@ -112,7 +112,7 @@ public class SecurityHelper {
 	            out.write(ENCODING_TABLE[(v >>> 4)]);
 	            out.write(ENCODING_TABLE[v & 0xf]);
 	            
-	            if(pad != '\0') {
+	            if(pad != '\0' && i < (off + length)-1) {
 	            	out.write(pad);
 	            }
 	            if(wrapat!=-1 && i>0 && i%wrapat==0) {
@@ -265,13 +265,15 @@ public class SecurityHelper {
 	}
 	
 	public static byte[] getSHA1(byte[] data) {
-		byte[] ret = new byte[160];
+		byte[] ret = new byte[20]; //160 bit = 20 byte
 		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+		sha1.update(data,0,data.length);
 		sha1.doFinal(ret, 0);
 		return ret;
 	}
+	
 	public static byte[] getSHA1(InputStream in) throws Exception {
-		byte[] ret = new byte[160];
+		byte[] ret = new byte[20];//160 bit = 20 byte
 		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
 		int read = -1;
 		byte[] buff = new byte[1024];
@@ -283,16 +285,16 @@ public class SecurityHelper {
 		return ret;
 	}
 	public static byte[] getSHA256(byte[] data) {
-		byte[] ret = new byte[256];
+		byte[] ret = new byte[32]; //256 bit = 32 byte
 		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();		
-//		sha256.update(data, 0, data.length);
-//		return sha256.doFinal();
+		sha256.update(data, 0, data.length);
 		sha256.doFinal(ret, 0);
 		return ret;
 	}
 	public static byte[] getMD5(byte[] data) {
 		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
 		byte[] ret = new byte[md5.getDigestSize()];
+		md5.update(data, 0, data.length);
 		md5.doFinal(ret, 0);
 		return ret;
 	}

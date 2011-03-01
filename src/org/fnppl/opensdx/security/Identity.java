@@ -2,6 +2,7 @@ package org.fnppl.opensdx.security;
 
 import java.util.Arrays;
 
+import org.bouncycastle.jce.provider.JDKMessageDigest.SHA1;
 import org.fnppl.opensdx.common.Territory;
 
 import org.fnppl.opensdx.xml.Element;
@@ -51,6 +52,7 @@ public class Identity {
 	String name = null;
 	
 	String note = null;
+	String sha1FromElement = null;
 	
 	private Identity() {
 		
@@ -74,8 +76,16 @@ public class Identity {
 		idd.name = id.getChildText("name");
 		idd.note = id.getChildText("note");
 		
+		idd.sha1FromElement = id.getChildText("sha1");
+		
 		return idd;
 	}
+	
+	public boolean validate() throws Exception {
+		String sha1 = SecurityHelper.HexDecoder.encode(calcSHA1(), '\0', -1);
+		return sha1.equals(sha1FromElement);
+	}
+	
 	public Element toElement() {
 		Element id = new Element("identity");
 		
@@ -93,17 +103,30 @@ public class Identity {
 		id.addContent("middlename", middlename);
 		id.addContent("name", name);
 		id.addContent("note", note);
+		try {
+			byte[] sha1b = calcSHA1();
+			id.addContent("sha1", SecurityHelper.HexDecoder.encode(sha1b, '\0', -1));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		//TODO addContent: datapath
 		
 		return id;
 	}
 	
 	public boolean validate(byte[] sha1b) throws Exception {
-		byte[] ret = new byte[160];
+		byte[] _sha1b = calcSHA1();
+		return Arrays.equals(_sha1b, sha1b);
+	}
+	
+	
+	public byte[] calcSHA1() throws Exception {
+		byte[] ret = new byte[20];  //160bit = 20 byte
 		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
 		
 		byte[] k = null;
 		k = email.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = mnemonic.getBytes("UTF-8"); sha1.update(k, 0, k.length);
+		k = mnemonic.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		k = phone.getBytes("UTF-8"); sha1.update(k, 0, k.length);
 		k = country.getBytes("UTF-8"); sha1.update(k, 0, k.length);
 		k = region.getBytes("UTF-8"); sha1.update(k, 0, k.length);
@@ -118,8 +141,8 @@ public class Identity {
 		k = note.getBytes("UTF-8"); sha1.update(k, 0, k.length);
 		
 		sha1.doFinal(ret, 0);
-		
-		return Arrays.equals(ret, sha1b);
+		//System.out.println("sha1: "+SecurityHelper.HexDecoder.encode(ret, ':', -1));
+		return ret;
 	}
 }
 

@@ -34,26 +34,41 @@ import org.fnppl.opensdx.xml.*;
 public class KeyApprovingStore {
 	private File f = null;
 	private Vector<OSDXKeyObject> keys = null;
+	//TODO private Vector<OSDXKeyLogObject> keylogs = null;
+	
 	
 	public KeyApprovingStore() {
 		
 	}
 	
 	public static KeyApprovingStore fromFile(File f) throws Exception {
+		System.out.println("loading keystore from file : "+f.getAbsolutePath());
 		Document d = Document.fromFile(f);
 		Element e = d.getRootElement();
 		if(!e.getName().equals("keystore")) {
 			throw new Exception("KeyStorefile must have \"keystore\" as root-element");
 		}
-		KeyApprovingStore kas = new KeyApprovingStore();
-		Element keys = e.getChild("keys");
-		Vector<Element> ves = e.getChildren("keypair");
 		
-		for(int i=0; i<ves.size(); i++) {
-			Element ee = ves.elementAt(i);
-			OSDXKeyObject osdxk = OSDXKeyObject.fromElement(ee);
+		KeyApprovingStore kas = new KeyApprovingStore();
+		kas.f = f;
+		
+		Element keys = e.getChild("keys");
+		
+		//add all keypairs as OSDXKeyObject
+		Vector<Element> ves = keys.getChildren("keypair");
+		if (ves.size()>0) {
+			System.out.println("keypairs found: "+ves.size());
+			kas.keys = new Vector<OSDXKeyObject>();
+			for(int i=0; i<ves.size(); i++) {
+				Element ee = ves.elementAt(i);
+				OSDXKeyObject osdxk = OSDXKeyObject.fromElement(ee);
+				kas.keys.add(osdxk);
+			}	
+		} else {
+			//TODO no keypairs in store
 			
 		}
+		
 		
 		return kas;
 	}

@@ -86,7 +86,8 @@ public class OSDXKeyObject {
 	private char[] storepass = null;
 	private Vector<Identity> identities = new Vector<Identity>();
 	
-	private AsymmetricKeyPair akp ;
+	private AsymmetricKeyPair akp = null;
+	private PublicKey pubKey = null;
 	
 //	private AsymmetricCipherKeyPair keypair = null;
 //	private RSAKeyParameters rpub = null;
@@ -102,7 +103,9 @@ public class OSDXKeyObject {
 	
 	public static OSDXKeyObject fromElement(Element kp) throws Exception {
 		OSDXKeyObject ret = new OSDXKeyObject();
+		System.out.println("adding keyobject");
 		
+		//first check sha1fingerprint
 		String Sshafp = kp.getChildText("sha1fingerprint");
 		byte[] sha1fp = SecurityHelper.HexDecoder.decode(Sshafp);//sha1-checksum of moduluss
 		String Smodulus = kp.getChildText("modulus");
@@ -112,34 +115,57 @@ public class OSDXKeyObject {
 			System.err.println("Uargsn. sha1fingerprint given does not match calculated sha1 for given modulus ("+sha1fp+"!="+modsha1+")");
 			return null;
 		}
-
-		Vector<Element> ids = kp.getChildren("identities");
-		for(int j=0;j<ids.size();j++) {
-			Element id = ids.elementAt(j);
-			//TODO
-			Identity idd = Identity.fromElement(id);
-			
-			boolean ok = idd.validate(SecurityHelper.HexDecoder.decode(id.getChildText("sha1")));
-			if(ok) {
-				ret.identities.addElement(idd);
-			}
-			else {
-				
+		ret.modulussha1 = Sshafp;
+		
+		//fingerprint ok -> go on with identities
+		Element ids = kp.getChild("identities");
+		if (ids!=null) {
+			Vector<Element> idc = ids.getChildren("identity");
+			if (idc!=null) {
+				System.out.println("identities found: "+idc.size());
+				for(int j=0;j<idc.size();j++) {
+					Element id = idc.elementAt(j);
+					
+					Identity idd = Identity.fromElement(id);
+					System.out.println("adding id: "+idd.email);
+					
+					boolean ok = idd.validate(SecurityHelper.HexDecoder.decode(id.getChildText("sha1")));
+					if(ok) {
+						ret.identities.addElement(idd);
+					} else {
+						System.out.println(" -> ERROR adding "+idd.email+": SHA1 NOT VALID");
+					}
+				}
 			}
 		} //identities
 		
-		
+		//go on with other fields
 		
 		String authoritativekeyserver = kp.getChildText("authoritativekeyserver");
 		ret.authoritativekeyserver = authoritativekeyserver;
+		System.out.println("authoritativekeyserver: "+authoritativekeyserver);
 		
-		String datasource = kp.getChildText("datasource");
-		ret.datasource = datasource;
 		
-		ret.modulussha1 = Sshafp;
+		//datapath
+		Element dp = kp.getChild("datapath");
+		boolean dsOK = false;
+		if (dp!=null) {
+			Element step1 = dp.getChild("step1");
+			if (step1!=null) {	
+				String datasource = step1.getChildText("datasource");
+				ret.datasource = datasource;
+				System.out.println("datasource: "+datasource);
+				
+				String datainsertdatetime = step1.getChildText("datainsertdatetime");
+				ret.datainsertdatetime = datemeGMT.parse(datainsertdatetime).getTime();
+				System.out.println("datainsertdatetime: "+datainsertdatetime);
+				dsOK = true;
+			}
+		}
+		if (!dsOK) {
+			System.out.println("CAUTION datasource and datainsertdatetime NOT found.");
+		}
 		
-		String datainsertdatetime = kp.getChildText("datainsertdatetime");
-		ret.datainsertdatetime = datemeGMT.parse(datainsertdatetime).getTime();
 		
 		String usage = kp.getChildText("usage");
 		ret.usage = usage_name.indexOf(usage);
@@ -154,42 +180,63 @@ public class OSDXKeyObject {
 		int bits = kp.getChildInt("bits");
 		ret.algo = algo_name.indexOf("Salgo");
 		
+		
+		
+		//add asymetric keypair or public key only
 		Element pubkey = kp.getChild("pubkey");
 		String pubkey_exponentS = pubkey.getChildText("exponent");
 		byte[] pubkey_exponent = SecurityHelper.HexDecoder.decode(pubkey_exponentS);
 		
+		
 		Element privkey = kp.getChild("privkey");
-		Element Eexponent = kp.getChild("exponent");
-		
-		byte[] exponent = null;
-		if(Eexponent.getChild("locked") != null) {
-			Element lk = Eexponent.getChild("locked");
-			String mantraname = lk.getChildText("mantraname");
-			String Slock_algo = lk.getChildText("algo");
-			String Sinitv = lk.getChildText("initvector");
-			String Spadding = lk.getChildText("padding");
-			String Sbytes = lk.getChildText("bytes");
-			byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
+		if (privkey==null) {
+			//public key only
+			PublicKey pk = new PublicKey(new BigInteger(modulus), new BigInteger(pubkey_exponent));
+			ret.pubKey = pk;
+		} else {
+			//asymetric keypair
+			Element Eexponent = privkey.getChild("exponent");
+			byte[] exponent = null;
+			if(Eexponent.getChild("locked") != null) {
+				Element lk = Eexponent.getChild("locked");
+				String mantraname = lk.getChildText("mantraname");
+				String Sinitv = lk.getChildText("initvector");
+				String Sbytes = lk.getChildText("bytes");
+				
+				//check algo and padding
+				String Slock_algo = lk.getChildText("algo");
+				String Spadding = lk.getChildText("padding");
+				if (!Slock_algo.equals("AES@256")||!Spadding.equals("CBC/PKCS#5")) {
+					throw new RuntimeException("UNLOCKING METHOD NOT IMPLEMENTED, please use AES@265 encryption with CBC/PKCS#5 padding");
+				}
+				
+				byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
+				
+				try {
+					String pp = null;
+					System.out.print("!!!! ENSURE NOONE IS WATCHING YOUR SCREEN !!!! \n\nKeyID "+Sshafp+"@"+authoritativekeyserver+"\nPlease enter Passphrase for Mantra: \""+mantraname+"\": ");
+					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+					pp = br.readLine();
+				
+					SymmetricKey sk = SymmetricKey.getKeyFromPass(pp.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
+					
+					exponent = sk.decrypt(bytes);
+				} catch(Exception ex) {
+					ex.printStackTrace();
+				}				
+			}
+			else {
+				//never should go here!!!
+				System.err.println("You should never see me - there seems to be a private key unlocked in your keystore: "+Sshafp+"@"+authoritativekeyserver);
+				exponent = SecurityHelper.HexDecoder.decode(Eexponent.getText());
+			}
 			
-			try {
-				String pp = null;
-				System.out.print("!!!! ENSURE NOONE IS WATCHING YOUR SCREEN !!!! \n\nKeyID "+Sshafp+"@"+authoritativekeyserver+"\nPlease enter Passphrase for Mantra: \""+mantraname+"\": ");
-				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-				pp = br.readLine();
-			
-				SymmetricKey sk = SymmetricKey.getKeyFromPass(pp.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
-				exponent = sk.decrypt(bytes);
-			} catch(Exception ex) {
-				ex.printStackTrace();
-			}				
-		}
-		else {
-			//never should go here!!!
-			System.err.println("You should never see me - there seems to be a private key unlocked in your keystore: "+Sshafp+"@"+authoritativekeyserver);
-			exponent = SecurityHelper.HexDecoder.decode(Eexponent.getText());
+			AsymmetricKeyPair askp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
+			ret.akp = askp;
 		}
 		
-		AsymmetricKeyPair askp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
+		
+		//go on
 		
 		String gpgkeyserverid = kp.getChildText("gpgkeyserverid");
 		
@@ -202,20 +249,31 @@ public class OSDXKeyObject {
 	public String getKeyID() {
 		return modulussha1+"@"+authoritativekeyserver;
 	}
+	
+	
 	public Element getSimplePubKeyElement() {
-		Element ret = new Element("pubkey");
-		ret.addContent("algo", algo_name.elementAt(algo));
-		ret.addContent("bits", ""+akp.getBitCount());
-		ret.addContent("modulus", akp.getModulusAsHex());
-		ret.addContent("exponent", akp.getPublicExponentAsHex());
-		
+		if (akp!=null) {
+			Element ret = new Element("pubkey");
+			ret.addContent("algo", algo_name.elementAt(algo));
+			ret.addContent("bits", ""+akp.getBitCount());
+			ret.addContent("modulus", akp.getModulusAsHex());
+			ret.addContent("exponent", akp.getPublicExponentAsHex());
+			return ret;
+		} else if (pubKey!=null) {
+			Element ret = new Element("pubkey");
+			ret.addContent("algo", algo_name.elementAt(algo));
+			ret.addContent("bits", ""+pubKey.getBitCount());
+			ret.addContent("modulus", pubKey.getModulusAsHex());
+			ret.addContent("exponent", pubKey.getPublicExponentAsHex());
+			return ret;
+		}
 		
 //		<bits>3072</bits><!-- well, yes, count yourself, but nice to *see* it -->
 //		<modulus></modulus><!-- as hex-string with or without leading 0x ; only for RSA?! -->
 //		<exponent></exponent><!-- as hex-string with or without leading 0x -->
 //		</pubkey><!-- given, but should be verified from server/yourself... -->
 //
-		return ret;
+		return null;
 	}
 	
 	public byte[] signSHA1(byte[] sha1) throws Exception {

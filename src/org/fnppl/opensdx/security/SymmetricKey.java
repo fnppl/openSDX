@@ -38,6 +38,7 @@ import org.bouncycastle.crypto.paddings.*;
 import org.bouncycastle.crypto.params.*;
 
 import com.sun.crypto.provider.AESCipher;
+import com.sun.org.apache.bcel.internal.generic.AASTORE;
 
 
 
@@ -89,12 +90,15 @@ public class SymmetricKey {
 		byte[] aes_key_bytes = new byte[keybits / 8];
 		
 		byte[] sha256 = SecurityHelper.getSHA256(String.valueOf(pass).getBytes("UTF-8"));
-		System.err.println("getKeyFromPass:: ll.length:"+sha256.length+"\taes_key_bytes.length:"+aes_key_bytes.length);
+		//System.err.println("getKeyFromPass:: ll.length:"+sha256.length+"\taes_key_bytes.length:"+aes_key_bytes.length);
 		for(int i=0; i<aes_key_bytes.length; i++) {
 			aes_key_bytes[i] = sha256[i];
 		}
 		
 		SymmetricKey sk = new SymmetricKey(aes_key_bytes, iv);
+		
+		//System.out.println("INITVECTOR: "+SecurityHelper.HexDecoder.encode(sk.initVector,':',-1));
+		//System.out.println("KEY: "+SecurityHelper.HexDecoder.encode(sk.keyBytes,':',-1));
 		return sk;
 	}
 	
@@ -183,10 +187,36 @@ public class SymmetricKey {
 		out.write(buff, 0, read);
 	}
 	
+	public byte[] getInitVector() {
+		return initVector;
+	}
+	
 	public static void main(String[] args) throws Exception {
-		SymmetricKey l = SymmetricKey.getRandomKey();
-		System.out.println("INITVECTOR: "+SecurityHelper.HexDecoder.encode(l.initVector,':',-1));
-		System.out.println("KEY: "+SecurityHelper.HexDecoder.encode(l.keyBytes,':',-1));
+	
+		//test encryption of private key
+		AsymmetricKeyPair akp = AsymmetricKeyPair.generateAsymmetricKeyPair();
+		
+		String initv = "00112233445566778899AABBCCDDEEFF";
+		String pp = "password";
+		SymmetricKey sk = SymmetricKey.getKeyFromPass(pp.toCharArray(), SecurityHelper.HexDecoder.decode(initv));
+
+		byte[] encPrivKey =  akp.getEncrytedPrivateKey(sk);
+		byte[] decPrivKey = sk.decrypt(encPrivKey);
+		System.out.println("PUB_KEY_MODULUS     : "+akp.getModulusAsHex());
+		System.out.println("PUB_KEY_EXP     : "+akp.getPublicExponentAsHex());
+		System.out.println("ENC_PRIV_KEY_EXP: "+SecurityHelper.HexDecoder.encode(encPrivKey,'\0',-1));
+		System.out.println("DEC_PRIV_KEY_EXP: "+SecurityHelper.HexDecoder.encode(decPrivKey,'\0',-1));
+		System.out.println("keyid           : "+akp.getKeyID());             
+		
+		
+//		SymmetricKey l = SymmetricKey.getRandomKey();
+//		System.out.println("INITVECTOR: "+SecurityHelper.HexDecoder.encode(l.initVector,':',-1));
+//		System.out.println("KEY: "+SecurityHelper.HexDecoder.encode(l.keyBytes,':',-1));
+		
+		
+//		byte[] sha256 = SecurityHelper.getSHA256(String.valueOf(pp.toCharArray()).getBytes("UTF-8"));
+//		System.out.println("pass: "+pp);
+//		System.out.println("key: "+SecurityHelper.HexDecoder.encode(sha256,'\0',-1));
 		
 		
 //		INITVECTOR: 1D8BEE695B7F4EFF6F7B947F1B197B97
@@ -194,17 +224,17 @@ public class SymmetricKey {
 		
 //		byte[] key = SecurityHelper.HexDecoder.decode("9034F3A02E7DBD9870D7FC23FCD0E3CA5B9292F7F2314B495DBF042078632B24");
 //		byte[] init = SecurityHelper.HexDecoder.decode("2A8BEE695B7F4EFF6F7B947F1B197B97");
-		
-//		SymmetricKey l = new SymmetricKey(key, init);
 //		
-		byte[] test = "ich asda will encoded werden...".getBytes();
-		
-		byte[] enc = l.encrypt(test); 
-		byte[] dec = l.decrypt(enc);
-		
-		System.out.println("BEFORE: "+(new String(test)));
-		System.out.println("ENC: "+SecurityHelper.HexDecoder.encode(enc,':',-1));
-		System.out.println("AFTER: "+(new String(dec)));
+//		SymmetricKey l = new SymmetricKey(key, init);
+////		
+//		byte[] test = "ich asda will encoded werden...".getBytes();
+//		
+//		byte[] enc = l.encrypt(test); 
+//		byte[] dec = l.decrypt(enc);
+//		
+//		System.out.println("BEFORE: "+(new String(test)));
+//		System.out.println("ENC: "+SecurityHelper.HexDecoder.encode(enc,':',-1));
+//		System.out.println("AFTER: "+(new String(dec)));
 		
 	}
 }

@@ -84,6 +84,7 @@ public class AsymmetricKeyPair {
 		
 //		RSAPrivateCrtKey kk = new RSAPrivateCrtKeyParameters(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 	}
+	
 	public AsymmetricKeyPair(AsymmetricCipherKeyPair keyPair) {
 		int algo = OSDXKeyObject.ALGO_RSA;
 		
@@ -133,6 +134,9 @@ public class AsymmetricKeyPair {
 	}
 	public String getModulusAsHex() {
 		return SecurityHelper.HexDecoder.encode(pubkey.getModulus().toByteArray(), '\0', -1);
+	}
+	public byte[] getModulus() {
+		return pubkey.getModulus().toByteArray();
 	}
 	public String getPublicExponentAsHex() {
 		return SecurityHelper.HexDecoder.encode(pubkey.getExponent().toByteArray(), '\0', -1);
@@ -264,6 +268,10 @@ public class AsymmetricKeyPair {
 //		System.out.println("TEST_SIGNATURE: "+SecurityHelper.HexDecoder.encode(testsig, ':', -1));
 		
 		System.out.println("SIGNATURE_VERIFIED: "+ak.verify(signature, mega));
+	}
+	
+	public byte[] getEncrytedPrivateKey(SymmetricKey sk) throws Exception {
+		return privkey.getEncrytedPrivateKey(sk);
 	}
 }
 
