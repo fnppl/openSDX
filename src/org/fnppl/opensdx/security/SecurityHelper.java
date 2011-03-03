@@ -283,6 +283,39 @@ public class SecurityHelper {
 	    }
 	}
 	
+	public static byte[] getSHA1MD5(byte[] data) {
+		byte[] ret = new byte[20 + 16]; //160 bit = 20 byte + md5 128bit = 16
+		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+		sha1.update(data, 0,data.length);
+		sha1.doFinal(ret, 0);
+		
+		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
+		md5.update(data, 0, data.length);
+		md5.doFinal(ret, 20);
+		
+		return ret;
+	}
+	
+	public static byte[] getSHA1MD5(InputStream in) throws Exception {
+		byte[] ret = new byte[20 + 16];//160 bit = 20 byte + 128bit = 16 byte
+		
+		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
+		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+		
+		int read = -1;
+		byte[] buff = new byte[1024];
+		while((read=in.read(buff))!=-1) {
+			sha1.update(buff, 0, read);
+			md5.update(buff, 0, read);
+		}
+		
+		sha1.doFinal(ret, 0);
+		md5.doFinal(ret, 20);
+		
+		return ret;
+	}
+	
+	
 	public static byte[] getSHA1(byte[] data) {
 		byte[] ret = new byte[20]; //160 bit = 20 byte
 		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();

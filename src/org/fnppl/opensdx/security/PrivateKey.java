@@ -98,14 +98,11 @@ public class PrivateKey {
 				priv
 			);
 		byte[] filleddata = new byte[rsae.getInputBlockSize()-1];
+		for(int i=0; i<filleddata.length; i++) {
+			filleddata[i] = data[i % data.length];//HT 2011-03-03 better some initvectorpadddup!!!
+		}
 		
-		System.arraycopy(data, 0, filleddata, 0, data.length);
-		PKCS7Padding pad = new PKCS7Padding();
-		int k = pad.addPadding(filleddata, data.length);
-
-		
-		System.out.println("SIGN_PLAINBLOATED:\t"+SecurityHelper.HexDecoder.encode(filleddata, '\0', -1));
-		System.out.println("SIGN_PLAINBLOATED.length:\t"+filleddata.length);
+		System.out.println("PrivKey_SIGN_PLAINBLOATED:\t"+SecurityHelper.HexDecoder.encode(filleddata, ':', 80));
 		
 		return rsae.processBlock(filleddata, 0, filleddata.length);
 		

@@ -207,16 +207,22 @@ public class PublicKey {
 	public boolean verify(byte[] signature, byte[] plain) throws Exception {
 		byte[] ka = encryptPKCSed7(signature);
 		
-		System.out.println("SIGNATURE_DEC    \t:"+SecurityHelper.HexDecoder.encode(ka, '\0', -1));
-		int pad = ka[ka.length-1];
-		System.out.println("pad length :"+pad);
-		byte[] real = new byte[ka.length-1-pad];
-		for(int i=0;i<real.length;i++) {
-			real[i] = ka[i+1];
+		
+		System.out.println("PubKey_verify: SIGNATURE_DEC (length: "+ka.length+") \t:"+SecurityHelper.HexDecoder.encode(ka, ':', 80));
+		
+		byte[] real = new byte[ka.length-1];
+		System.arraycopy(ka, 1, real, 0, real.length);
+		
+		byte[] filleddata = new byte[real.length];
+		for(int i=0; i<filleddata.length; i++) {
+			filleddata[i] = plain[i % plain.length];//HT 2011-03-03 better some initvectorpadddup!!!
 		}
-		System.out.println("SIGNATURE_DEC_cut \t:"+SecurityHelper.HexDecoder.encode(real, '\0', -1));
+		
+		
+		System.out.println("PubKey_verify: PLAIN(COMPARE1; length: "+filleddata.length+")\n:"+SecurityHelper.HexDecoder.encode(filleddata, ':', 80));
+		System.out.println("PubKey_verify: SIGNATURE_DEC_cut (COMPARE2; length: "+real.length+")\n:"+SecurityHelper.HexDecoder.encode(real, ':', 80));
 		return Arrays.equals(
-				plain, 
+				filleddata, 
 				real
 			);
 	}

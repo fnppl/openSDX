@@ -257,29 +257,26 @@ public class AsymmetricKeyPair {
 		String tc = new String("I am to encode...");
 		
 		byte[] data = ak.encryptWithPublicKey(tc.getBytes());
-		System.out.println("ENCODED: "+SecurityHelper.HexDecoder.encode(data, '\0', -1));
+		System.out.println("ENCODED: "+SecurityHelper.HexDecoder.encode(data, ':', 80));
 		byte[] dec = ak.decryptWithPrivateKey(data);
-		System.out.println("DECODED: "+SecurityHelper.HexDecoder.encode(dec, '\0', -1)+" -> "+(new String(dec)));
+		System.out.println("DECODED: "+SecurityHelper.HexDecoder.encode(dec, ':', 80)+" -> "+(new String(dec)));
 		
-		byte[] sha256bytes = SecurityHelper.getSHA256(tc.getBytes());
-		byte[] md5 = SecurityHelper.getMD5(tc.getBytes());
+		System.out.println("\n\n\n");
 		
-		byte[] mega = new byte[sha256bytes.length+md5.length];
-		System.arraycopy(sha256bytes, 0, mega, 0, sha256bytes.length);
-		System.arraycopy(md5, 0, mega, sha256bytes.length, md5.length);
+		byte[] sha1andmd5 = SecurityHelper.getSHA1MD5(tc.getBytes());
 		
-		System.out.println("\n\nsha256:\t\t\t"+SecurityHelper.HexDecoder.encode(sha256bytes, '\0', -1));
-		System.out.println("md5   :\t\t\t"+SecurityHelper.HexDecoder.encode(md5, '\0', -1));
+		String s = SecurityHelper.HexDecoder.encode(sha1andmd5, ':', 80);
+		System.out.println("SHA1_AND_MD5 length:\t"+sha1andmd5.length);//sollten 36 bytes sein
+		System.out.println("SHA1_AND_MD5:\t\t"+s);
 		
-		String s = SecurityHelper.HexDecoder.encode(mega, '\0', -1);
-		System.out.println("MEGA_STRING:\t\t"+s);
-		System.out.println("MEGA_STRING length:\t"+mega.length);
+		System.out.println("\nSignature creation stage...");
 		
-		byte[] signature = ak.sign(mega);
-		System.out.println("SIGNATURE(mega).length: "+signature.length);
-		System.out.println("SIGNATURE(mega): "+SecurityHelper.HexDecoder.encode(signature, '\0', -1));
-				
-		System.out.println("SIGNATURE_VERIFIED: "+ak.verify(signature, mega));
+		byte[] signature = ak.sign(sha1andmd5);
+		System.out.println("SIGNATURE(sha1andmd5).length: "+signature.length);
+		System.out.println("SIGNATURE(sha1andmd5): "+SecurityHelper.HexDecoder.encode(signature, ':', 80));
+		
+		System.out.println("\nVerification-Stage...");
+		System.out.println("SIGNATURE_VERIFIED: "+ak.verify(signature, sha1andmd5));
 	}
 	
 	public byte[] getEncrytedPrivateKey(SymmetricKey sk) throws Exception {
