@@ -98,6 +98,11 @@ public class Signature {
 		
 	}
 	
+	public static Signature fromFile(File f) throws Exception {
+		Document d = Document.fromFile(f);
+		return fromElement(d.getRootElement());
+	}
+	
 	public static Signature fromElement(Element e) throws Exception {
 		Element ed = e.getChild("data");
 		Element es = e.getChild("signoff");
@@ -130,7 +135,7 @@ public class Signature {
 		ep.addContent("modulus", pubkey.getModulusAsHex());
 		ep.addContent("exponent", pubkey.getPublicExponentAsHex());
 		es.addContent(ep);
-		es.addContent("sha1",SecurityHelper.HexDecoder.encode(datamd5,':',-1));
+		es.addContent("sha1",SecurityHelper.HexDecoder.encode(signoffsha1,':',-1));
 		es.addContent("signaturebytes",SecurityHelper.HexDecoder.encode(signaturebytes,':',-1));
 		e.addContent(es);
 		return e;
@@ -141,6 +146,7 @@ public class Signature {
 		s.datamd5 = md5;
 		s.datasha256 = sha256;
 		s.dataname = dataname;
+		
 		byte[] data = SecurityHelper.concat(sha256, md5);
 		SignoffElement es = SignoffElement.getSignoffElement(data, key);
 		Element epk = es.getChild("pubkey");
@@ -149,6 +155,12 @@ public class Signature {
 		s.pubkey = new PublicKey(mod, exp);
 		s.signoffsha1 = SecurityHelper.HexDecoder.decode(es.getChildText("sha1"));
 		s.signaturebytes = SecurityHelper.HexDecoder.decode(es.getChildText("signaturebytes"));
+		
+		System.out.println("md5            : "+SecurityHelper.HexDecoder.encode(s.datamd5,'\0',-1));
+		System.out.println("sha256         : "+SecurityHelper.HexDecoder.encode(s.datasha256,'\0',-1));
+		System.out.println("signoffsha1    : "+SecurityHelper.HexDecoder.encode(s.signoffsha1,'\0',-1));
+		System.out.println("signaturebytes : "+SecurityHelper.HexDecoder.encode(s.signaturebytes,'\0',-1));
+		
 		return s;
 	}
 	
@@ -226,20 +238,53 @@ public class Signature {
 //    }
 	
 	
+	public boolean tryVerificationFile(File f) throws Exception {
+		FileInputStream in = new FileInputStream(f);
+		boolean verified = tryVerificationMD5_SHA256(in);
+		return verified;
+		
+	}
 	
-	
-	public boolean tryVerification(byte[] data) throws Exception {
+	public boolean tryVerificationMD5_SHA256(InputStream in) throws Exception {
 		//check md5 and sha256
-		byte[] md5 = SecurityHelper.getMD5(data);
-		if (!md5.equals(datamd5)) return false;
-		byte[] sha256bytes = SecurityHelper.getSHA256(data);
-		if (!sha256bytes.equals(datasha256)) return false;
+		byte[] concat = SecurityHelper.getSHA256MD5(in);
+		byte[] sha256bytes = Arrays.copyOfRange(concat, 0, 32);
+		if (!Arrays.equals(sha256bytes, datasha256)) {
+			System.out.println("|"+SecurityHelper.HexDecoder.encode(sha256bytes, '\0',-1)+"|");
+			System.out.println("|"+SecurityHelper.HexDecoder.encode(datasha256, '\0',-1)+"|");
+			System.out.println("sha256 does NOT match.");
+			return false;
+		}
+		byte[] md5 = Arrays.copyOfRange(concat, 32, concat.length);
+		if (!Arrays.equals(md5, datamd5)) {
+			System.out.println("|"+SecurityHelper.HexDecoder.encode(md5, '\0',-1)+"|");
+			System.out.println("|"+SecurityHelper.HexDecoder.encode(datamd5, '\0',-1)+"|");
+			System.out.println("md5 does NOT match.");
+			return false;
+		}
 		
 		//check signature
-		byte[] concat = new byte[sha256bytes.length+md5.length];
-		System.arraycopy(sha256bytes, 0, concat, 0, sha256bytes.length);
-		System.arraycopy(md5, 0, concat, sha256bytes.length, md5.length);
-		return pubkey.verify(signaturebytes, concat); 
+		byte[] sha1 = SecurityHelper.getSHA1(concat);
+		System.out.println("sha1        : "+SecurityHelper.HexDecoder.encode(sha1, '\0', -1));
+		System.out.println("signoffsha1 : "+SecurityHelper.HexDecoder.encode(signoffsha1, '\0', -1));
+		
+		if (!Arrays.equals(sha1, signoffsha1)) return false;
+		return pubkey.verify(signaturebytes, sha1);
+	}
+	
+	
+//	public boolean tryVerification(byte[] data) throws Exception {
+//		//check md5 and sha256
+//		byte[] md5 = SecurityHelper.getMD5(data);
+//		if (!md5.equals(datamd5)) return false;
+//		byte[] sha256bytes = SecurityHelper.getSHA256(data);
+//		if (!sha256bytes.equals(datasha256)) return false;
+//		
+//		//check signature
+//		byte[] concat = new byte[sha256bytes.length+md5.length];
+//		System.arraycopy(sha256bytes, 0, concat, 0, sha256bytes.length);
+//		System.arraycopy(md5, 0, concat, sha256bytes.length, md5.length);
+//		return pubkey.verify(signaturebytes, concat); 
 		
 		//return false;
 //		
@@ -280,5 +325,30 @@ public class Signature {
     	
 //    	inData.close();
 //    	inSig.close();
-    }
+//    }
+	
+	public static void main(String arg[]) {
+		try {
+			//File toSign = new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml");
+			File toSign = new File("/home/neo/how_i_met_your_mother_s5_d1.iso");
+			File output = new File("himym_example_keystore_signature.xml");
+			
+			KeyApprovingStore store = KeyApprovingStore.fromFile(new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml"));
+			OSDXKeyObject key = store.getAllKeys().firstElement();
+			
+			System.out.println("\n\ncreating signature");
+			Signature.createSignatureFile(toSign, output, key);
+			
+			System.out.println("\n\nverifing signature:");
+			Signature s = Signature.fromFile(output);
+			boolean v = s.tryVerificationFile(toSign);
+			if (v) {
+				System.out.println("signature verified.");
+			} else {
+				System.out.println("signature NOT verified.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

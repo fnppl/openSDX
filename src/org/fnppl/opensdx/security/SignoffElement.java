@@ -65,7 +65,6 @@ public class SignoffElement extends Element {
 			return null;
 		}
 		byte[] sha1 = SecurityHelper.getSHA1(in);
-		
 		SignoffElement ret = new SignoffElement();
 		String keyid = key.getKeyID();
 		Element e = key.getSimplePubKeyElement();

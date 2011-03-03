@@ -315,6 +315,26 @@ public class SecurityHelper {
 		return ret;
 	}
 	
+	public static byte[] getSHA256MD5(InputStream in) {
+	
+		byte[] ret = new byte[48]; ////256 bit = 32 byte + 128bit = 16 byte
+		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
+		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();
+		int l = 0;
+		byte[] buffer = new byte[512];
+		try {
+			while ((l=in.read(buffer))>0) {
+				md5.update(buffer, 0, l);
+				sha256.update(buffer, 0, l);
+			}
+			sha256.doFinal(ret, 0);
+			md5.doFinal(ret, 32);
+			return ret;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
 	public static byte[] getSHA1(byte[] data) {
 		byte[] ret = new byte[20]; //160 bit = 20 byte
