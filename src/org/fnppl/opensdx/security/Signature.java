@@ -329,9 +329,8 @@ public class Signature {
 	
 	public static void main(String arg[]) {
 		try {
-			//File toSign = new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml");
-			File toSign = new File("/home/neo/how_i_met_your_mother_s5_d1.iso");
-			File output = new File("himym_example_keystore_signature.xml");
+			File toSign = new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml");
+			File output = new File("example_keystore_signature.xml");
 			
 			KeyApprovingStore store = KeyApprovingStore.fromFile(new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml"));
 			OSDXKeyObject key = store.getAllKeys().firstElement();
