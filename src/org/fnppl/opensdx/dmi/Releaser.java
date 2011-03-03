@@ -11,8 +11,8 @@ package org.fnppl.opensdx.dmi;
 /*
  * Software license
  *
- * For those parts of this file, which are identified as software, rather than documentation, this software-license applies / shall be applied. 
- * 
+ * As far as this file or parts of this file is/are software, rather than documentation, this software-license applies / shall be applied.
+ *  
  * This file is part of openSDX
  * openSDX is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -33,7 +33,7 @@ package org.fnppl.opensdx.dmi;
 /*
  * Documentation license
  * 
- * For those parts of this file, which are identified as documentation, rather than software, this documentation-license applies / shall be applied.
+ * As far as this file or parts of this file is/are documentation, rather than software, this documentation-license applies / shall be applied.
  * 
  * This file is part of openSDX.
  * Permission is granted to copy, distribute and/or modify this document 
@@ -44,6 +44,7 @@ package org.fnppl.opensdx.dmi;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+
 import org.fnppl.opensdx.common.*;
 public class Releaser extends ContractPartnerSubUnit {
 	

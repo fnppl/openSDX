@@ -12,8 +12,8 @@ package org.fnppl.opensdx.security;
 /*
  * Software license
  *
- * For those parts of this file, which are identified as software, rather than documentation, this software-license applies / shall be applied. 
- * 
+ * As far as this file or parts of this file is/are software, rather than documentation, this software-license applies / shall be applied.
+ *  
  * This file is part of openSDX
  * openSDX is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -34,7 +34,7 @@ package org.fnppl.opensdx.security;
 /*
  * Documentation license
  * 
- * For those parts of this file, which are identified as documentation, rather than software, this documentation-license applies / shall be applied.
+ * As far as this file or parts of this file is/are documentation, rather than software, this documentation-license applies / shall be applied.
  * 
  * This file is part of openSDX.
  * Permission is granted to copy, distribute and/or modify this document 
