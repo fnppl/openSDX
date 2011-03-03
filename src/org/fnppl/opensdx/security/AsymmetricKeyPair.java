@@ -123,6 +123,11 @@ public class AsymmetricKeyPair {
 		this.bitcount = rpub.getModulus().bitLength();
 	}
 	
+	public boolean hasPrivateKey() {
+		if (privkey==null) return false;
+		return true;
+	}
+	
 //	public AsymmetricKeyPair(PGPKeyPair kp) {
 //		keypair = kp;
 //		int algo = keypair.getPublicKey().getAlgorithm();
@@ -160,6 +165,9 @@ public class AsymmetricKeyPair {
 	}
 	public byte[] getModulus() {
 		return pubkey.getModulus().toByteArray();
+	}
+	public byte[] getPublicExponent() {
+		return pubkey.getExponent().toByteArray();
 	}
 	public String getPublicExponentAsHex() {
 		return SecurityHelper.HexDecoder.encode(pubkey.getExponent().toByteArray(), '\0', -1);
@@ -242,6 +250,7 @@ public class AsymmetricKeyPair {
 	public byte[] decryptWithPrivateKey(byte[] me) throws Exception {
 		return privkey.decrypt(me);
 	}
+	
 	public byte[] sign(byte[] plain) throws Exception {
 		return privkey.sign(plain);
 	}

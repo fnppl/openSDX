@@ -49,6 +49,7 @@ import java.math.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.xml.Element;
 
 public class OSDXKeyObject {
@@ -108,6 +109,7 @@ public class OSDXKeyObject {
 	private Vector<Identity> identities = new Vector<Identity>();
 	
 	private AsymmetricKeyPair akp = null;
+	private Element lockedPrivateKey = null;
 	
 //	private AsymmetricCipherKeyPair keypair = null;
 //	private RSAKeyParameters rpub = null;
@@ -208,43 +210,47 @@ public class OSDXKeyObject {
 		byte[] exponent = null;
 		
 		Element privkey = kp.getChild("privkey");
+		
 		if (privkey!=null) {
 			//asymetric keypair
 			Element Eexponent = privkey.getChild("exponent");
 			if(Eexponent.getChild("locked") != null) {
-				Element lk = Eexponent.getChild("locked");
-				String mantraname = lk.getChildText("mantraname");
-				String Sinitv = lk.getChildText("initvector");
-				String Sbytes = lk.getChildText("bytes");
+				//only ask for password when key is used for the first time -> see unlockPrivateKey
+				ret.lockedPrivateKey = Eexponent.getChild("locked");
 				
-				//check algo and padding
-				String Slock_algo = lk.getChildText("algo");
-				String Spadding = lk.getChildText("padding");
-				if (!Slock_algo.equals("AES@256")||!Spadding.equals("CBC/PKCS#5")) {
-					throw new RuntimeException("UNLOCKING METHOD NOT IMPLEMENTED, please use AES@265 encryption with CBC/PKCS#5 padding");
-				}
-				
-				byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
-				
-				try {
-					String pp = null;
-					System.out.print("!!!! ENSURE NOONE IS WATCHING YOUR SCREEN !!!! \n\nKeyID "+Sshafp+"@"+authoritativekeyserver+"\nPlease enter Passphrase for Mantra: \""+mantraname+"\": ");
-					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-					pp = br.readLine();
-				
-					SymmetricKey sk = SymmetricKey.getKeyFromPass(pp.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
-					
-					exponent = sk.decrypt(bytes);
-				} catch(Exception ex) {
-					ex.printStackTrace();
-				}				
+//				Element lk = Eexponent.getChild("locked");
+//				String mantraname = lk.getChildText("mantraname");
+//				String Sinitv = lk.getChildText("initvector");
+//				String Sbytes = lk.getChildText("bytes");
+//				
+//				//check algo and padding
+//				String Slock_algo = lk.getChildText("algo");
+//				String Spadding = lk.getChildText("padding");
+//				if (!Slock_algo.equals("AES@256")||!Spadding.equals("CBC/PKCS#5")) {
+//					throw new RuntimeException("UNLOCKING METHOD NOT IMPLEMENTED, please use AES@265 encryption with CBC/PKCS#5 padding");
+//				}
+//				
+//				byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
+//				
+//				try {
+//					String pp = null;
+//					System.out.print("!!!! ENSURE NOONE IS WATCHING YOUR SCREEN !!!! \n\nKeyID "+Sshafp+"@"+authoritativekeyserver+"\nPlease enter Passphrase for Mantra: \""+mantraname+"\": ");
+//					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+//					pp = br.readLine();
+//				
+//					SymmetricKey sk = SymmetricKey.getKeyFromPass(pp.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
+//					
+//					exponent = sk.decrypt(bytes);
+//				} catch(Exception ex) {
+//					ex.printStackTrace();
+//				}				
 			} else {
 				//never should go here!!!
 				System.err.println("You should never see me - there seems to be a private key unlocked in your keystore: "+Sshafp+"@"+authoritativekeyserver);
 				exponent = SecurityHelper.HexDecoder.decode(Eexponent.getText());
 			}
 		}
-		//exponent == null if no private key present
+		//exponent == null if no private key present or private key is locked
 		AsymmetricKeyPair askp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
 		ret.akp = askp;
 		
@@ -282,7 +288,43 @@ public class OSDXKeyObject {
 	}
 	
 	public byte[] signSHA1(byte[] sha1) throws Exception {
+		unlockPrivateKey();
 		return akp.sign(sha1);
+	}
+	
+	private final void unlockPrivateKey() {
+		if (!akp.hasPrivateKey() && lockedPrivateKey != null) { //only once
+			String mantraname = lockedPrivateKey.getChildText("mantraname");
+			String Sinitv = lockedPrivateKey.getChildText("initvector");
+			String Sbytes = lockedPrivateKey.getChildText("bytes");
+			
+			//check algo and padding
+			String Slock_algo = lockedPrivateKey.getChildText("algo");
+			String Spadding = lockedPrivateKey.getChildText("padding");
+			if (!Slock_algo.equals("AES@256")||!Spadding.equals("CBC/PKCS#5")) {
+				throw new RuntimeException("UNLOCKING METHOD NOT IMPLEMENTED, please use AES@265 encryption with CBC/PKCS#5 padding");
+			}
+			
+			byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
+
+			try {
+				//String pp = null;
+				//System.out.print("!!!! ENSURE NOONE IS WATCHING YOUR SCREEN !!!! \n\nKeyID "+modulussha1+"@"+authoritativekeyserver+"\nPlease enter Passphrase for Mantra: \""+mantraname+"\": ");
+				//BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+				//pp = br.readLine();
+				String pp = Dialogs.ShowPasswordDialog("UNLOCK PRIVATE KEY", "KeyID: "+modulussha1+"@"+authoritativekeyserver+"\nPlease enter passphrase for mantra: \""+mantraname+"\"");
+				//System.out.println(pp);
+				if (pp!=null) {
+					SymmetricKey sk = SymmetricKey.getKeyFromPass(pp.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
+					byte[] exponent = sk.decrypt(bytes);
+					byte[] modulus = akp.getModulus();
+					byte[] pubkey_exponent = akp.getPublicExponent();
+					akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
+				}
+			} catch(Exception ex) {
+				ex.printStackTrace();
+			}			
+		}
 	}
 	
 	public static void main(String[] args) throws Exception {
