@@ -44,13 +44,12 @@ package org.fnppl.opensdx.security;
  * 
  */
 
-import java.io.*;
-import java.math.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.xml.Element;
+
 
 public class OSDXKeyObject {
 	final static String RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
@@ -96,17 +95,16 @@ public class OSDXKeyObject {
 	private OSDXKeyObject parentosdxkeyobject = null;
 	private String parentkeyid = null;//could be the parentkey is not loaded - then *only* the id is present
 	private String authoritativekeyserver = null;
-	private String datasource = null;
-	private long datainsertdatetime = -1;
+	private String modulussha1 = null;
+	private Vector<Identity> identities = new Vector<Identity>();
+	private Vector<DataSourceStep> datapath = new Vector<DataSourceStep>();
+	private String gpgkeyserverid = null;
 	
 	private int	level = LEVEL_MASTER;
 	private int	usage = USAGE_WHATEVER;
 	private int	algo = ALGO_RSA;
 
-	private String modulussha1 = null;
-	
 	private char[] storepass = null;
-	private Vector<Identity> identities = new Vector<Identity>();
 	
 	private AsymmetricKeyPair akp = null;
 	private Element lockedPrivateKey = null;
@@ -172,15 +170,12 @@ public class OSDXKeyObject {
 		Element dp = kp.getChild("datapath");
 		boolean dsOK = false;
 		if (dp!=null) {
-			Element step1 = dp.getChild("step1");
-			if (step1!=null) {	
-				String datasource = step1.getChildText("datasource");
-				ret.datasource = datasource;
-				System.out.println("datasource: "+datasource);
-				
-				String datainsertdatetime = step1.getChildText("datainsertdatetime");
-				ret.datainsertdatetime = datemeGMT.parse(datainsertdatetime).getTime();
-				System.out.println("datainsertdatetime: "+datainsertdatetime);
+			ret.datapath = new Vector<DataSourceStep>();
+			Vector<Element> steps = dp.getChildren();
+			for (Element st : steps)
+			if (st.getName().startsWith("step")) {
+				DataSourceStep dst = DataSourceStep.fromElemet(st);
+				ret.datapath.add(dst);
 				dsOK = true;
 			}
 		}
@@ -256,13 +251,17 @@ public class OSDXKeyObject {
 		
 		//go on
 		
-		String gpgkeyserverid = kp.getChildText("gpgkeyserverid");
+		ret.gpgkeyserverid = kp.getChildText("gpgkeyserverid");
 		
 		return ret;
 	}//fromElement
 	
 	public boolean allowsSigning() {
-		return usage == USAGE_SIGN || usage == USAGE_WHATEVER;
+		//double check: signing not possible without private key
+		if (akp.hasPrivateKey() || lockedPrivateKey != null) {
+			return usage == USAGE_SIGN || usage == USAGE_WHATEVER;
+		}
+		return false;
 	}
 	public String getKeyID() {
 		return modulussha1+"@"+authoritativekeyserver;
@@ -312,7 +311,7 @@ public class OSDXKeyObject {
 				//System.out.print("!!!! ENSURE NOONE IS WATCHING YOUR SCREEN !!!! \n\nKeyID "+modulussha1+"@"+authoritativekeyserver+"\nPlease enter Passphrase for Mantra: \""+mantraname+"\": ");
 				//BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 				//pp = br.readLine();
-				String pp = Dialogs.ShowPasswordDialog("UNLOCK PRIVATE KEY", "KeyID: "+modulussha1+"@"+authoritativekeyserver+"\nPlease enter passphrase for mantra: \""+mantraname+"\"");
+				String pp = Dialogs.showPasswordDialog("UNLOCK PRIVATE KEY", "KeyID: "+modulussha1+"@"+authoritativekeyserver+"\nPlease enter passphrase for mantra: \""+mantraname+"\"");
 				//System.out.println(pp);
 				if (pp!=null) {
 					SymmetricKey sk = SymmetricKey.getKeyFromPass(pp.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
@@ -325,6 +324,86 @@ public class OSDXKeyObject {
 				ex.printStackTrace();
 			}			
 		}
+	}
+	
+	public Element toElement() throws Exception {
+		Element e = new Element("key");
+		Element ekp = new Element("keypair");
+		e.addContent(ekp);
+		//identities
+		if (identities!=null && identities.size()>0) {
+			Element eids = new Element("identities");
+			for (Identity id : identities) {
+				eids.addContent(id.toElement());
+			}
+		}
+		ekp.addContent("sha1fingerprint",modulussha1);
+		ekp.addContent("authoritativekeyserver",authoritativekeyserver);
+		
+		//datapath
+		Element edp = new Element("datapath");
+		for (int i=0;i<datapath.size();i++) {
+			Element edss = new Element("step"+(i+1));
+			edss.addContent("datasource",datapath.get(i).getDataSource());
+			edss.addContent("datainsertdatetime", datapath.get(i).getDataInsertDatetimeString());
+			edp.addContent(edss);
+		}
+		ekp.addContent(edp);
+		
+		ekp.addContent("usage",usage_name.get(usage));
+		ekp.addContent("level",level_name.get(level));
+		ekp.addContent("parentkeyid",parentkeyid);
+		ekp.addContent("algo",algo_name.get(algo));
+		ekp.addContent("bits",""+akp.getBitCount());
+		ekp.addContent("modulus",akp.getModulusAsHex());
+		
+		//pubkey
+		Element epk = new Element("pubkey");
+		epk.addContent("exponent",akp.getPublicExponentAsHex());
+		ekp.addContent(epk);
+		
+		//privkey
+		if (lockedPrivateKey!=null) {
+			
+			Element el = new Element("locked");
+			el.addContent("mantraname",lockedPrivateKey.getChildText("mantraname"));
+			el.addContent("algo",lockedPrivateKey.getChildText("algo"));
+			el.addContent("initvector",lockedPrivateKey.getChildText("initvector"));
+			el.addContent("padding",lockedPrivateKey.getChildText("padding"));
+			el.addContent("bytes",lockedPrivateKey.getChildText("bytes"));
+			
+			Element eexp = new Element("exponent");
+			eexp.addContent(el);
+			Element esk = new Element("privkey");
+			esk.addContent(eexp);
+			ekp.addContent(esk);
+			
+		} else if (akp.hasPrivateKey()) {
+			String[] ans = Dialogs.showNewMantraPasswordDialog();
+			if (ans!=null) {
+				byte[] iv = SecurityHelper.getRandomBytes(16);
+				SymmetricKey sk = SymmetricKey.getKeyFromPass(ans[1].toCharArray(), iv);
+				byte[] encprivkey = akp.getEncrytedPrivateKey(sk);
+				Element el = new Element("locked");
+				el.addContent("mantraname",ans[0]);
+				el.addContent("algo","AES@256");
+				el.addContent("initvector",SecurityHelper.HexDecoder.encode(iv, '\0',-1));
+				el.addContent("padding","CBC/PKCS#5");
+				el.addContent("bytes",SecurityHelper.HexDecoder.encode(encprivkey, '\0',-1));
+				
+				Element eexp = new Element("exponent");
+				eexp.addContent(el);
+				Element esk = new Element("privkey");
+				esk.addContent(eexp);
+				ekp.addContent(esk);
+			} else {
+				System.out.println("CAUTION: private key NOT saved.");
+			}
+		}// -- end privkey
+		
+		ekp.addContent("gpgkeyserverid", gpgkeyserverid);
+		
+		return e;
 	}
 	
 	public static void main(String[] args) throws Exception {

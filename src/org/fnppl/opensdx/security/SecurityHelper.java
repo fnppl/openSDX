@@ -45,6 +45,7 @@ package org.fnppl.opensdx.security;
  * 
  */
 
+import java.security.SecureRandom;
 import java.security.Security;
 import java.io.*;
 import java.util.*;
@@ -410,6 +411,13 @@ public class SecurityHelper {
 		System.arraycopy(a, 0, c, 0, a.length);
 		System.arraycopy(b, 0, c, a.length, b.length);
 		return c;
+	}
+	
+	public static byte[] getRandomBytes(int bytecount) {
+		SecureRandom sc = new SecureRandom();//TODO HT 20.02.2011 - quite good, but should swirl it twice with tiger, or aes/rijndael itself		
+		byte[] rb = new byte[bytecount];
+        sc.nextBytes(rb);
+        return rb;
 	}
 	
 }

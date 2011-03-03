@@ -142,6 +142,9 @@ public class Signature {
 	}
 	
 	public static Signature createSignature(byte[] md5, byte[] sha256, String dataname, OSDXKeyObject key) throws Exception{
+		if (!key.allowsSigning()) {
+			throw new RuntimeException("ERROR: key does not allow signing.");
+		}
 		Signature s = new Signature();
 		s.datamd5 = md5;
 		s.datasha256 = sha256;
@@ -337,6 +340,7 @@ public class Signature {
 			
 			System.out.println("\n\ncreating signature");
 			Signature.createSignatureFile(toSign, output, key);
+			
 			
 			System.out.println("\n\nverifing signature:");
 			Signature s = Signature.fromFile(output);

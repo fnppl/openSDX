@@ -54,11 +54,26 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 public class Dialogs {
 
+	public static int CANCEL = -2;
+	public static int OK = 0;
+	public static int YES = 1;
+	public static int NO = -1;
 	
-	public static final String ShowPasswordDialog(String head, String message) {
+	public static int showYES_NO_Dialog(String title, String message) {
+		if (message.contains("\n")) {
+			message = "<HTML><BODY>"+message.replace("\n", "<BR>")+"</BODY><HTML>";
+		}
+		int ans = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
+		if (ans == JOptionPane.YES_OPTION) return YES;
+		return NO;
+	}
+	
+	public static final String showPasswordDialog(String head, String message) {
 		JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 		if (message.contains("\n")) {
@@ -74,6 +89,31 @@ public class Dialogs {
 	    //JOptionPane.showMessageDialog(null,p,head,JOptionPane.OK_OPTION);
 	    if (ans == JOptionPane.OK_OPTION && pf.getPassword()!=null) {
 	    	return new String(pf.getPassword());
+	    }
+	    return null;
+	}
+	
+	public static final String[] showNewMantraPasswordDialog() {
+		JPanel p = new JPanel();
+		p.setLayout(new BorderLayout());
+		
+		JPanel pMantra = new JPanel();
+		pMantra.setBorder(new TitledBorder("mantraname:"));
+		JTextField text = new JTextField();
+		pMantra.add(text,BorderLayout.CENTER);
+		
+		JPanel pPassword = new JPanel();
+		pPassword.setBorder(new TitledBorder("passphrase:"));
+		JPasswordField pf = new JPasswordField();		
+		pf.setEchoChar('*');
+		pPassword.add(pf,BorderLayout.SOUTH);
+		
+		p.add(pMantra, BorderLayout.CENTER);
+		p.add(pPassword, BorderLayout.SOUTH);
+	    int ans = JOptionPane.showConfirmDialog(null,p,"NEW PASSWORD",JOptionPane.OK_CANCEL_OPTION);
+	    //JOptionPane.showMessageDialog(null,p,head,JOptionPane.OK_OPTION);
+	    if (ans == JOptionPane.OK_OPTION && pf.getPassword()!=null) {
+	    	return new String[] {text.getText(),new String(pf.getPassword())};
 	    }
 	    return null;
 	}

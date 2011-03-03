@@ -49,6 +49,8 @@ package org.fnppl.opensdx.security;
 import java.io.*;
 import java.math.BigInteger;
 import java.util.*;
+
+import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.xml.*;
 
 public class KeyApprovingStore {
@@ -95,6 +97,37 @@ public class KeyApprovingStore {
 	
 	public Vector<OSDXKeyObject> getAllKeys() {
 		return keys;
+	}
+	
+	public Vector<OSDXKeyObject> getAllSigningKeys() {
+		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
+		for (OSDXKeyObject k : keys) {
+			if (k.allowsSigning()) {
+				skeys.add(k);
+			}
+		}
+		return skeys;
+	}
+	
+	public void toFile(File file) throws Exception {
+		Element root = new Element("keystore");
+		//keys
+		Element ek = new Element("keys");
+		for (OSDXKeyObject k : keys) {
+			ek.addContent(k.toElement());
+		}
+		ek.addContent("sha1localproof",""); //TODO calculate
+		root.addContent(ek);
+		
+		//keylog
+		//TODO add keylogs
+		
+		Document d = Document.buildDocument(root);
+		
+		if (!file.exists() || Dialogs.YES == Dialogs.showYES_NO_Dialog("OVERWRITE?", "File \""+file.getName()+"\" exits?\nAll comments will be deleted.\nDo you really want to overwrite?")) {
+			d.writeToFile(file);
+		}
+		
 	}
 }
 
