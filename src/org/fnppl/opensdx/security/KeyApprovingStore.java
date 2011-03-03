@@ -92,5 +92,9 @@ public class KeyApprovingStore {
 		
 		return kas;
 	}
+	
+	public Vector<OSDXKeyObject> getAllKeys() {
+		return keys;
+	}
 }
 

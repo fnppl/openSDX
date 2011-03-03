@@ -52,7 +52,7 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 public class Element {
-	private org.jdom.Element base = null;
+	protected org.jdom.Element base = null;
 	
 	public Element(String name) {
 		base = new org.jdom.Element(name);
@@ -120,4 +120,5 @@ public class Element {
 			e.printStackTrace();
 		}
 	}
+	
 }

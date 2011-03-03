@@ -70,7 +70,7 @@ public class AsymmetricKeyPair {
 	private PrivateKey privkey = null;
 		
 	private int bitcount = 0;
-	private int type = 0;
+	private int type = 0;  //TODO what for? algo? padding?
 	
 	private AsymmetricKeyPair() {		
 	}
@@ -93,19 +93,23 @@ public class AsymmetricKeyPair {
 	}
 
 	public AsymmetricKeyPair(byte[] modulus, byte[] pub_exponent, byte[] priv_exponent) {
-		int algo = OSDXKeyObject.ALGO_RSA;
+		type = OSDXKeyObject.ALGO_RSA;
+		//public key
+		org.bouncycastle.crypto.params.RSAKeyParameters rpub = new RSAKeyParameters(false, new BigInteger(modulus), new BigInteger(pub_exponent));	
+		this.pubkey = new PublicKey(rpub.getModulus(), rpub.getExponent());
+		this.bitcount = rpub.getModulus().bitLength();
 		
-//		RSAPublicKeySpec sp = new RSAPublicKeySpec(new BigInteger(modulus), new BigInteger(pub_exponent));
-//		RSAPKeySpec sp = new RSAPublicKeySpec(new BigInteger(modulus), new BigInteger(pub_exponent));
-		
-		org.bouncycastle.crypto.params.RSAKeyParameters pub = new RSAKeyParameters(false, new BigInteger(modulus), new BigInteger(pub_exponent));	
-		org.bouncycastle.crypto.params.RSAKeyParameters priv = new RSAKeyParameters(true, new BigInteger(modulus), new BigInteger(priv_exponent));
-		
-//		RSAPrivateCrtKey kk = new RSAPrivateCrtKeyParameters(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+		//private key
+		if (priv_exponent!=null) { //only if priv_exponent available
+			org.bouncycastle.crypto.params.RSAKeyParameters rpriv = new RSAKeyParameters(true, new BigInteger(modulus), new BigInteger(priv_exponent));
+			this.privkey = new PrivateKey(rpriv.getModulus(), rpriv.getExponent());
+		} else {
+			privkey = null;
+		}
 	}
 	
 	public AsymmetricKeyPair(AsymmetricCipherKeyPair keyPair) {
-		int algo = OSDXKeyObject.ALGO_RSA;
+		type = OSDXKeyObject.ALGO_RSA;
 		
 		CipherParameters pub = keyPair.getPublic();
 		CipherParameters priv = keyPair.getPrivate();
@@ -236,25 +240,14 @@ public class AsymmetricKeyPair {
 		return pubkey.encrypt(me);
 	}
 	public byte[] decryptWithPrivateKey(byte[] me) throws Exception {
-		return privkey.decrypt(me, pubkey);
+		return privkey.decrypt(me);
 	}
-	public byte[] sign(byte[] me) throws Exception {
-		return privkey.sign(me);
+	public byte[] sign(byte[] plain) throws Exception {
+		return privkey.sign(plain);
 	}
+	
 	public boolean verify(byte[] signature, byte[] plain) throws Exception {
-		byte[] ka = pubkey.encryptPKCSed7(signature);
-		
-//		System.out.println("SIGNATURE_DEC:\t"+SecurityHelper.HexDecoder.encode(ka, ':', -1));
-		int pad = ka[ka.length-1];
-		byte[] real = new byte[ka.length-1 - pad];
-		for(int i=0;i<real.length;i++) {
-			real[i] = ka[i+1];
-		}
-		
-		return Arrays.equals(
-				plain, 
-				real
-			);
+		return pubkey.verify(signature, plain);
 	}
 	
 	public static void main(String[] args) throws Exception {
@@ -275,17 +268,17 @@ public class AsymmetricKeyPair {
 		System.arraycopy(sha256bytes, 0, mega, 0, sha256bytes.length);
 		System.arraycopy(md5, 0, mega, sha256bytes.length, md5.length);
 		
-		String s = SecurityHelper.HexDecoder.encode(mega, ':', -1);
-		System.out.println("\n\nMEGA_STRING:\t\t"+s);
+		System.out.println("\n\nsha256:\t\t\t"+SecurityHelper.HexDecoder.encode(sha256bytes, '\0', -1));
+		System.out.println("md5   :\t\t\t"+SecurityHelper.HexDecoder.encode(md5, '\0', -1));
+		
+		String s = SecurityHelper.HexDecoder.encode(mega, '\0', -1);
+		System.out.println("MEGA_STRING:\t\t"+s);
+		System.out.println("MEGA_STRING length:\t"+mega.length);
 		
 		byte[] signature = ak.sign(mega);
 		System.out.println("SIGNATURE(mega).length: "+signature.length);
-		System.out.println("SIGNATURE(mega): "+SecurityHelper.HexDecoder.encode(signature, ':', -1));
-		
-//		byte[] testsig = ak.pubkey.encryptPKCS7(signature);
-//		System.out.println("TEST_SIGNATURE.length: "+testsig.length);
-//		System.out.println("TEST_SIGNATURE: "+SecurityHelper.HexDecoder.encode(testsig, ':', -1));
-		
+		System.out.println("SIGNATURE(mega): "+SecurityHelper.HexDecoder.encode(signature, '\0', -1));
+				
 		System.out.println("SIGNATURE_VERIFIED: "+ak.verify(signature, mega));
 	}
 	

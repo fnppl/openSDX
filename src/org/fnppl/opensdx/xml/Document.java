@@ -45,6 +45,7 @@ package org.fnppl.opensdx.xml;
  * 
  */
 import java.io.*;
+
 import org.jdom.*;
 import org.jdom.input.*;
 import org.jdom.output.*;
@@ -71,9 +72,24 @@ public class Document {
 		return ret;
 	}
 	
-	
 	public Element getRootElement() {		
 		return rt;
+	}
+	
+	public static Document buildDocument(Element root) {
+		Document d = new Document();
+		d.base = null;
+		d.rt = root;
+		return d;
+	}
+	
+	public void writeToFile(File file) throws Exception {
+		FileOutputStream out = new FileOutputStream(file);
+		String head = "<?xml version= \"1.0\" encoding=\"UTF-8\"?>\n";
+		out.write(head.getBytes("UTF-8"));
+		rt.output(out);
+		out.flush();
+		out.close();
 	}
 }
 

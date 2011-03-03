@@ -108,7 +108,6 @@ public class OSDXKeyObject {
 	private Vector<Identity> identities = new Vector<Identity>();
 	
 	private AsymmetricKeyPair akp = null;
-	private PublicKey pubKey = null;
 	
 //	private AsymmetricCipherKeyPair keypair = null;
 //	private RSAKeyParameters rpub = null;
@@ -199,25 +198,19 @@ public class OSDXKeyObject {
 		
 		String Salgo = kp.getChildText("algo");
 		int bits = kp.getChildInt("bits");
-		ret.algo = algo_name.indexOf("Salgo");
+		ret.algo = algo_name.indexOf(Salgo);
 		
 		
-		
-		//add asymetric keypair or public key only
+		//add asymetric keypair or public key part only
 		Element pubkey = kp.getChild("pubkey");
 		String pubkey_exponentS = pubkey.getChildText("exponent");
 		byte[] pubkey_exponent = SecurityHelper.HexDecoder.decode(pubkey_exponentS);
-		
+		byte[] exponent = null;
 		
 		Element privkey = kp.getChild("privkey");
-		if (privkey==null) {
-			//public key only
-			PublicKey pk = new PublicKey(new BigInteger(modulus), new BigInteger(pubkey_exponent));
-			ret.pubKey = pk;
-		} else {
+		if (privkey!=null) {
 			//asymetric keypair
 			Element Eexponent = privkey.getChild("exponent");
-			byte[] exponent = null;
 			if(Eexponent.getChild("locked") != null) {
 				Element lk = Eexponent.getChild("locked");
 				String mantraname = lk.getChildText("mantraname");
@@ -245,17 +238,15 @@ public class OSDXKeyObject {
 				} catch(Exception ex) {
 					ex.printStackTrace();
 				}				
-			}
-			else {
+			} else {
 				//never should go here!!!
 				System.err.println("You should never see me - there seems to be a private key unlocked in your keystore: "+Sshafp+"@"+authoritativekeyserver);
 				exponent = SecurityHelper.HexDecoder.decode(Eexponent.getText());
 			}
-			
-			AsymmetricKeyPair askp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
-			ret.akp = askp;
 		}
-		
+		//exponent == null if no private key present
+		AsymmetricKeyPair askp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
+		ret.akp = askp;
 		
 		//go on
 		
@@ -279,13 +270,6 @@ public class OSDXKeyObject {
 			ret.addContent("bits", ""+akp.getBitCount());
 			ret.addContent("modulus", akp.getModulusAsHex());
 			ret.addContent("exponent", akp.getPublicExponentAsHex());
-			return ret;
-		} else if (pubKey!=null) {
-			Element ret = new Element("pubkey");
-			ret.addContent("algo", algo_name.elementAt(algo));
-			ret.addContent("bits", ""+pubKey.getBitCount());
-			ret.addContent("modulus", pubKey.getModulusAsHex());
-			ret.addContent("exponent", pubKey.getPublicExponentAsHex());
 			return ret;
 		}
 		

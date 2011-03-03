@@ -45,6 +45,7 @@ package org.fnppl.opensdx.security;
  * 
  */
 import java.io.*;
+import java.math.BigInteger;
 import java.util.*;
 
 import org.bouncycastle.bcpg.ArmoredInputStream;
@@ -64,7 +65,8 @@ import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPSignatureGenerator;
 import org.bouncycastle.openpgp.PGPSignatureList;
 import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
-import org.bouncycastle.openpgp.PGPUtil;
+import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.xml.Element;
 
 /*
  * @author Henning Thieß <ht@fnppl.org>
@@ -78,45 +80,127 @@ public class Signature {
 	}
 	
 	
-	private File signature;
-	private File signedFile;
-	private AsymmetricKeyPair keypair;
+	//private File signature;
+	//private File signedFile;
+	//private AsymmetricKeyPair keypair = null;
+	//private KeyApprovingStore keystore = null; //may totally be null
 	
-	private KeyRingCollection keycoll; //may totally be null
 	
 	//TODO HT 20.02.2011 - add byte-array/stream-based constructor
+	private byte[] datamd5 = null;
+	private byte[] datasha256 = null;
+	private String dataname = null;
+	private PublicKey pubkey = null;
+	private byte[] signoffsha1 = null;
+	private byte[] signaturebytes = null;
 	
-	
-	public Signature(File signature, File signedfile, KeyRingCollection keycoll) {
-		this.signature = signature;
-		this.signedFile = signedfile;
-		this.keycoll = keycoll;
-	}
-	
-	public Signature(File signature, File signedfile, AsymmetricKeyPair keypair) {
-		this.signature = signature;
-		this.signedFile = signedfile;
-		this.keypair = keypair;
-	}
-	
-	public static Signature createSignature(File tosign, AsymmetricKeyPair keypair) throws Exception {
-		File s = new File(tosign.getParentFile(), tosign.getName()+".asc");
-		return createSignature(tosign, s, keypair);
-	}
-	public static Signature createSignature(File tosign, File signaturefile, AsymmetricKeyPair keypair) throws Exception {
-		FileInputStream in = new FileInputStream(tosign);
-		ArmoredOutputStream out = new ArmoredOutputStream(new FileOutputStream(signaturefile));
-    	BCPGOutputStream bOut = new BCPGOutputStream(out);
-		PGPSignature sig = createSignature(in, keypair);
-		sig.encode(bOut);
-		bOut.close();
-		out.close();
+	private Signature() {
 		
-		return new Signature(signaturefile, tosign, keypair);
 	}
 	
-	private static PGPSignature createSignature(InputStream in, AsymmetricKeyPair kp) throws Exception {
-		return null;
+	public static Signature fromElement(Element e) throws Exception {
+		Element ed = e.getChild("data");
+		Element es = e.getChild("signoff");
+		Element epk = es.getChild("pubkey");
+		
+		Signature s = new Signature();
+		s.datamd5 = SecurityHelper.HexDecoder.decode(ed.getChildText("md5"));
+		s.datasha256 = SecurityHelper.HexDecoder.decode(ed.getChildText("sha256"));
+		s.dataname = ed.getChildText("dataname");
+		BigInteger mod = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("modulus")));
+		BigInteger exp = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("exponent")));
+		s.pubkey = new PublicKey(mod, exp);
+		s.signoffsha1 = SecurityHelper.HexDecoder.decode(es.getChildText("sha1"));
+		s.signaturebytes = SecurityHelper.HexDecoder.decode(es.getChildText("signaturebytes"));
+		return s;
+	}
+	
+	public Element toElement() {
+		Element e = new Element("signature");
+		Element ed = new Element("data");
+		ed.addContent("md5", SecurityHelper.HexDecoder.encode(datamd5,'\0',-1));
+		ed.addContent("sha256",SecurityHelper.HexDecoder.encode(datasha256,'\0',-1));
+		ed.addContent("dataname",dataname);
+		e.addContent(ed);
+		Element es = new Element("signoff");
+		es.addContent("keyid", pubkey.getKeyID());
+		Element ep = new Element("pubkey");
+		ep.addContent("algo", "RSA"); //TODO check algo
+		ep.addContent("bits", ""+pubkey.getBitCount());
+		ep.addContent("modulus", pubkey.getModulusAsHex());
+		ep.addContent("exponent", pubkey.getPublicExponentAsHex());
+		es.addContent(ep);
+		es.addContent("sha1",SecurityHelper.HexDecoder.encode(datamd5,':',-1));
+		es.addContent("signaturebytes",SecurityHelper.HexDecoder.encode(signaturebytes,':',-1));
+		e.addContent(es);
+		return e;
+	}
+	
+	public static Signature createSignature(byte[] md5, byte[] sha256, String dataname, OSDXKeyObject key) throws Exception{
+		Signature s = new Signature();
+		s.datamd5 = md5;
+		s.datasha256 = sha256;
+		s.dataname = dataname;
+		byte[] data = SecurityHelper.concat(sha256, md5);
+		SignoffElement es = SignoffElement.getSignoffElement(data, key);
+		Element epk = es.getChild("pubkey");
+		BigInteger mod = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("modulus")));
+		BigInteger exp = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("exponent")));
+		s.pubkey = new PublicKey(mod, exp);
+		s.signoffsha1 = SecurityHelper.HexDecoder.decode(es.getChildText("sha1"));
+		s.signaturebytes = SecurityHelper.HexDecoder.decode(es.getChildText("signaturebytes"));
+		return s;
+	}
+	
+	
+	public static Signature createSignature(File toSign, OSDXKeyObject key) throws Exception {
+		FileInputStream in = new FileInputStream(toSign);
+		byte[] md5 = SecurityHelper.getMD5(in);
+		in.close();
+		in = new FileInputStream(toSign);
+		byte[] sha256 = SecurityHelper.getSHA256(in);
+		in.close();
+		return createSignature(md5, sha256, toSign.getName(), key);
+	}
+	
+	public static void createSignatureFile(File toSign, File output, OSDXKeyObject key) throws Exception {
+		Signature s = createSignature(toSign, key);
+		Document doc = Document.buildDocument(s.toElement());
+		doc.writeToFile(output);
+	}
+		
+	
+	 
+//	public Signature(File signature, File signedfile, KeyApprovingStore keystore) {
+//		this.signature = signature;
+//		this.signedFile = signedfile;
+//		this.keystore = keystore;
+//	}
+//	
+//	public Signature(File signature, File signedfile, AsymmetricKeyPair keypair) {
+//		this.signature = signature;
+//		this.signedFile = signedfile;
+//		this.keypair = keypair;
+//	}
+//	
+//	public static Signature createSignature(File tosign, AsymmetricKeyPair keypair) throws Exception {
+//		File s = new File(tosign.getParentFile(), tosign.getName()+".asc");
+//		return createSignature(tosign, s, keypair);
+//	}
+//	public static Signature createSignature(File tosign, File signaturefile, AsymmetricKeyPair keypair) throws Exception {
+//		FileInputStream in = new FileInputStream(tosign);
+//		ArmoredOutputStream out = new ArmoredOutputStream(new FileOutputStream(signaturefile));
+//    	BCPGOutputStream bOut = new BCPGOutputStream(out);
+//		PGPSignature sig = createSignature(in, keypair);
+//		sig.encode(bOut);
+//		bOut.close();
+//		out.close();
+//		
+//		return new Signature(signaturefile, tosign, keypair);
+//	}
+//	
+//	private static PGPSignature createSignature(InputStream in, AsymmetricKeyPair kp) throws Exception {
+//		return null;
 //		BufferedInputStream bin = null;
 //		if(in instanceof BufferedInputStream) {
 //			bin = (BufferedInputStream)in;
@@ -139,11 +223,25 @@ public class Signature {
 //    		sGen.update(buff, 0, read);
 //    	}
 //    	return sGen.generate();
-    }
+//    }
 	
 	
-	public boolean tryVerification() throws Exception {
-		return false;
+	
+	
+	public boolean tryVerification(byte[] data) throws Exception {
+		//check md5 and sha256
+		byte[] md5 = SecurityHelper.getMD5(data);
+		if (!md5.equals(datamd5)) return false;
+		byte[] sha256bytes = SecurityHelper.getSHA256(data);
+		if (!sha256bytes.equals(datasha256)) return false;
+		
+		//check signature
+		byte[] concat = new byte[sha256bytes.length+md5.length];
+		System.arraycopy(sha256bytes, 0, concat, 0, sha256bytes.length);
+		System.arraycopy(md5, 0, concat, sha256bytes.length, md5.length);
+		return pubkey.verify(signaturebytes, concat); 
+		
+		//return false;
 //		
 //		BufferedInputStream inData = new BufferedInputStream(new FileInputStream(signedFile));
 //    	BufferedInputStream inSig = new BufferedInputStream(PGPUtil.getDecoderStream(new FileInputStream(signature)));

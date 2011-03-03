@@ -103,8 +103,9 @@ public class PrivateKey {
 		PKCS7Padding pad = new PKCS7Padding();
 		int k = pad.addPadding(filleddata, data.length);
 
-//		System.out.println("SIGN_PLAINBLOATED:\t"+SecurityHelper.HexDecoder.encode(filleddata, ':', -1));
-//		System.out.println("SIGN_PLAINBLOATED.length:\t"+filleddata.length);
+		
+		System.out.println("SIGN_PLAINBLOATED:\t"+SecurityHelper.HexDecoder.encode(filleddata, '\0', -1));
+		System.out.println("SIGN_PLAINBLOATED.length:\t"+filleddata.length);
 		
 		return rsae.processBlock(filleddata, 0, filleddata.length);
 		
@@ -121,7 +122,7 @@ public class PrivateKey {
 //		
 //		return oaep.processBlock(data, 0, data.length);
 	}
-	public byte[] decrypt(byte[] data, PublicKey pubkey) throws Exception {
+	public byte[] decrypt(byte[] data) throws Exception {
 //		RSABlindingEngine rsae = new RSABlindingEngine();
 		RSABlindedEngine rsae = new RSABlindedEngine();
 		

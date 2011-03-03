@@ -54,6 +54,7 @@ import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
 import org.bouncycastle.openpgp.PGPUtil;
 
 import java.security.Key;
+import java.util.Arrays;
 
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.crypto.params.*;
@@ -201,6 +202,23 @@ public class PublicKey {
 //		}
 //		
 //		return oaep.processBlock(data, 0, data.length);
+	}
+	
+	public boolean verify(byte[] signature, byte[] plain) throws Exception {
+		byte[] ka = encryptPKCSed7(signature);
+		
+		System.out.println("SIGNATURE_DEC    \t:"+SecurityHelper.HexDecoder.encode(ka, '\0', -1));
+		int pad = ka[ka.length-1];
+		System.out.println("pad length :"+pad);
+		byte[] real = new byte[ka.length-1-pad];
+		for(int i=0;i<real.length;i++) {
+			real[i] = ka[i+1];
+		}
+		System.out.println("SIGNATURE_DEC_cut \t:"+SecurityHelper.HexDecoder.encode(real, '\0', -1));
+		return Arrays.equals(
+				plain, 
+				real
+			);
 	}
 	
 	public String getKeyID() {

@@ -310,6 +310,24 @@ public class SecurityHelper {
 		sha256.doFinal(ret, 0);
 		return ret;
 	}
+	public static byte[] getSHA256(InputStream in) {
+		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();		
+		int l = 0;
+		byte[] buffer = new byte[512];
+		try {
+			while ((l=in.read(buffer))>0) {
+				sha256.update(buffer, 0, l);
+			}
+			byte[] ret = new byte[32]; //256 bit = 32 byte
+			sha256.doFinal(ret, 0);
+			return ret;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
 	public static byte[] getMD5(byte[] data) {
 		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
 		byte[] ret = new byte[md5.getDigestSize()];
@@ -317,5 +335,29 @@ public class SecurityHelper {
 		md5.doFinal(ret, 0);
 		return ret;
 	}
+	
+	public static byte[] getMD5(InputStream in) {
+		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
+		int l = 0;
+		byte[] buffer = new byte[512];
+		try {
+			while ((l=in.read(buffer))>0) {
+				md5.update(buffer, 0, l);
+			}
+			byte[] ret = new byte[md5.getDigestSize()];
+			md5.doFinal(ret, 0);
+			return ret;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	public static byte[] concat(byte[] a, byte[] b) {
+		byte[] c = new byte[a.length+b.length];
+		System.arraycopy(a, 0, c, 0, a.length);
+		System.arraycopy(b, 0, c, a.length, b.length);
+		return c;
+	}
+	
 }
 
