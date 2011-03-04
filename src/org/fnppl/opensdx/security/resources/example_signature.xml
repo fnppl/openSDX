@@ -46,13 +46,12 @@
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
-
  -->
-
 
 <signature>
 	<data>
 		<md5>kalksdlkad</md5>
+		<sha1>adadasdasd</sha1>
 		<sha256>adadasdasd</sha256>
 		<dataname>kaldad</dataname><!-- optional dataname -->
 	</data>
@@ -64,7 +63,6 @@
 			<modulus></modulus><!-- as hex-string with or without leading 0x ; only for RSA?! -->
 			<exponent></exponent><!-- as hex-string with or without leading 0x -->
 		</pubkey><!-- given, but should be verified from server/yourself... -->
-		<sha1>asdad</sha1>
 		<signaturebytes>asdasd</signaturebytes><!-- as hex-string with ":" or " " separation... looks nicer... -->
 	</signoff>
 </signature>

@@ -287,9 +287,9 @@ public class OSDXKeyObject {
 		return null;
 	}
 	
-	public byte[] signSHA1(byte[] sha1) throws Exception {
+	public byte[] signSHA256(byte[] sha256) throws Exception {
 		unlockPrivateKey();
-		return akp.sign(sha1);
+		return akp.sign(sha256);
 	}
 	
 	private final void unlockPrivateKey() {

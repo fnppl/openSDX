@@ -66,7 +66,7 @@ public class SignoffElement extends Element {
 		if(!key.allowsSigning()) {
 			return null;
 		}
-		byte[] sha1 = SecurityHelper.getSHA1(in);
+		byte[] sha256 = SecurityHelper.getSHA256(in);
 		SignoffElement ret = new SignoffElement();
 		String keyid = key.getKeyID();
 		Element e = key.getSimplePubKeyElement();
@@ -74,8 +74,8 @@ public class SignoffElement extends Element {
 		ret.addContent("keyid", keyid);
 		ret.addContent(e);
 	
-		byte[] bytes = key.signSHA1(sha1);
-		ret.addContent("sha1", SecurityHelper.HexDecoder.encode(sha1, '\0', -1));		
+		byte[] bytes = key.signSHA256(sha256);
+		ret.addContent("sha256", SecurityHelper.HexDecoder.encode(sha256, '\0', -1));		
 		ret.addContent("signaturebytes", SecurityHelper.HexDecoder.encode(bytes, '\0', -1));
 		
 //		<signoff>
