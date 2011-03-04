@@ -153,7 +153,7 @@ public class KeyApprovingStore {
 		ek.addContent("sha1localproof",SecurityHelper.HexDecoder.encode(sha1localproof, '\0',-1));
 		root.addContent(ek);
 		
-		//keysSignoff = null;
+		//keysSignoff = null; //for testing
 		if (keysSignoff!=null && Arrays.equals(keysSHA1localproof, sha1localproof)) {
 			//old signature still fits
 			ek.addContent(XMLHelper.cloneElement(keysSignoff));
@@ -163,9 +163,18 @@ public class KeyApprovingStore {
 				System.out.println("old sig keys localproof: "+SecurityHelper.HexDecoder.encode(keysSHA1localproof,'\0',-1));
 			System.out.println("new sig keys localproof: "+SecurityHelper.HexDecoder.encode(sha1localproof,'\0',-1));
 			keysSHA1localproof = sha1localproof;
-			OSDXKeyObject signoffkey = getAllSigningKeys().firstElement(); //TODO select key
-			keysSignoff = SignoffElement.getSignoffElement(sha1localproof, signoffkey);
-			ek.addContent(keysSignoff);
+			Vector<OSDXKeyObject> signoffkeys = getAllSigningKeys();
+			Vector<String> keynames = new Vector<String>();
+			for (int i=0;i<signoffkeys.size();i++) {
+				keynames.add(signoffkeys.get(i).getKeyID());
+			}
+			int ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign all keypairs in keystore", keynames);
+			if (ans>=0) {
+				keysSignoff = SignoffElement.getSignoffElement(sha1localproof, signoffkeys.get(ans));
+				ek.addContent(keysSignoff);
+			} else {
+				throw new Exception("KeyStore:  signoff of localproof of keypairs failed.");
+			}
 		}
 		
 		
@@ -173,9 +182,19 @@ public class KeyApprovingStore {
 		if (keylogs!=null && keylogs.size()>0) {
 			for (KeyLog kl : keylogs) {
 				boolean v = kl.verifySHA1localproofAndSignoff();
+				//v  = false; //for testing
 				if (!v) {
-					OSDXKeyObject signoffkey = getAllSigningKeys().firstElement(); //TODO select key
-					kl.signoff(signoffkey);
+					Vector<OSDXKeyObject> signoffkeys = getAllSigningKeys();
+					Vector<String> keynames = new Vector<String>();
+					for (int i=0;i<signoffkeys.size();i++) {
+						keynames.add(signoffkeys.get(i).getKeyID());
+					}
+					int ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign keylog in keystore", keynames);
+					if (ans>=0) {
+						kl.signoff(signoffkeys.get(ans));
+					} else {
+						throw new Exception("KeyStore:  signoff of localproof of keylog failed.");
+					}
 				}
 				root.addContent(kl.toElement());
 			}

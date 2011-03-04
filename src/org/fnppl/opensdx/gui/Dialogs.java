@@ -51,6 +51,7 @@ package org.fnppl.opensdx.gui;
  * 
  */
 import java.awt.BorderLayout;
+import java.util.Vector;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -118,5 +119,19 @@ public class Dialogs {
 	    	return new String[] {text.getText(),new String(pf.getPassword())};
 	    }
 	    return null;
+	}
+	
+	public static int showSelectDialog(String title, String message, Vector<String> values) {
+		String[] select = new String[values.size()];
+		for (int i=0;i<select.length;i++) {
+			select[i] = values.get(i);
+		}
+		String ans = (String)JOptionPane.showInputDialog(null,message,title,JOptionPane.QUESTION_MESSAGE,null,select,select[0]); 
+		if (ans!=null) {
+			for (int i=0;i<select.length;i++) {
+				if (select[i].equals(ans)) return i;
+			}
+		}
+		return -1;
 	}
 }
