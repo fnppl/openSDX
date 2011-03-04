@@ -328,16 +328,16 @@ public class OSDXKeyObject {
 	}
 	
 	public Element toElement() throws Exception {
-		Element e = new Element("key");
 		Element ekp = new Element("keypair");
-		e.addContent(ekp);
 		//identities
 		if (identities!=null && identities.size()>0) {
 			Element eids = new Element("identities");
 			for (Identity id : identities) {
 				eids.addContent(id.toElement());
 			}
+			ekp.addContent(eids);
 		}
+		
 		ekp.addContent("sha1fingerprint",modulussha1);
 		ekp.addContent("authoritativekeyserver",authoritativekeyserver);
 		
@@ -404,7 +404,7 @@ public class OSDXKeyObject {
 		
 		ekp.addContent("gpgkeyserverid", gpgkeyserverid);
 		
-		return e;
+		return ekp;
 	}
 	
 	public static void main(String[] args) throws Exception {

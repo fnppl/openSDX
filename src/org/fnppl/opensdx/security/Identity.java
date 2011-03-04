@@ -47,11 +47,13 @@ package org.fnppl.opensdx.security;
  */
 
 import java.util.Arrays;
+import java.util.Vector;
 
 import org.bouncycastle.jce.provider.JDKMessageDigest.SHA1;
 import org.fnppl.opensdx.common.Territory;
 
 import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLHelper;
 
 
 
@@ -75,11 +77,14 @@ public class Identity {
 	String note = null;
 	String sha1FromElement = null;
 	
+	Vector<DataSourceStep> datapath = null;
+	
+	
 	private Identity() {
 		
 	}
 	
-	public static Identity fromElement(Element id) {
+	public static Identity fromElement(Element id) throws Exception {
 		Identity idd = new Identity();
 		idd.email = id.getChildText("email");
 		idd.mnemonic = id.getChildText("mnemonic");
@@ -98,6 +103,23 @@ public class Identity {
 		idd.note = id.getChildText("note");
 		
 		idd.sha1FromElement = id.getChildText("sha1");
+		
+		//datapath
+		Element dp = id.getChild("datapath");
+		boolean dsOK = false;
+		if (dp!=null) {
+			idd.datapath = new Vector<DataSourceStep>();
+			Vector<Element> steps = dp.getChildren();
+			for (Element st : steps)
+			if (st.getName().startsWith("step")) {
+				DataSourceStep dst = DataSourceStep.fromElemet(st);
+				idd.datapath.add(dst);
+				dsOK = true;
+			}
+		}
+		if (!dsOK) {
+			System.out.println("CAUTION datasource and datainsertdatetime NOT found.");
+		}
 		
 		return idd;
 	}
@@ -126,11 +148,20 @@ public class Identity {
 		id.addContent("note", note);
 		try {
 			byte[] sha1b = calcSHA1();
-			id.addContent("sha1", SecurityHelper.HexDecoder.encode(sha1b, '\0', -1));
+			id.addContent("sha1", SecurityHelper.HexDecoder.encode(sha1b, ':', -1));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		//TODO addContent: datapath
+		
+		//datapath
+		Element edp = new Element("datapath");
+		for (int i=0;i<datapath.size();i++) {
+			Element edss = new Element("step"+(i+1));
+			edss.addContent("datasource",datapath.get(i).getDataSource());
+			edss.addContent("datainsertdatetime", datapath.get(i).getDataInsertDatetimeString());
+			edp.addContent(edss);
+		}
+		id.addContent(edp);
 		
 		return id;
 	}

@@ -92,4 +92,22 @@ public class SignoffElement extends Element {
 		
 		return ret;
 	}
+	
+	public static boolean verifySignoff(Element signoff, byte[] data) throws Exception {
+		byte[] datasha1 = SecurityHelper.getSHA1(data);
+		byte[] signoffsha1 = SecurityHelper.HexDecoder.decode(signoff.getChildText("sha1"));
+		if (!Arrays.equals(datasha1, signoffsha1)) {
+			System.out.println("data SHA1 does not match signature SHA1");
+			System.out.println("data SHA1: "+SecurityHelper.HexDecoder.encode(datasha1, '\0', -1));
+			System.out.println("sign SHA1: "+SecurityHelper.HexDecoder.encode(signoffsha1, '\0', -1));
+			return false;
+		}
+		
+		Element epk = signoff.getChild("pubkey");
+		BigInteger mod = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("modulus")));
+		BigInteger exp = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("exponent")));
+		PublicKey pubkey = new PublicKey(mod, exp);
+		byte[] signaturebytes = SecurityHelper.HexDecoder.decode(signoff.getChildText("signaturebytes"));
+		return pubkey.verify(signaturebytes, signoffsha1);
+	}
 }

@@ -52,6 +52,7 @@ import java.io.*;
 import java.util.*;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.fnppl.opensdx.xml.Element;
 
 /*
  * @author Henning Thieß <ht@fnppl.org>
@@ -358,6 +359,32 @@ public class SecurityHelper {
 		sha1.doFinal(ret, 0);
 		return ret;
 	}
+	public static byte[] getSHA1LocalProof(Vector<Element> ve) throws Exception {
+		byte[] ret = new byte[20];//160 bit = 20 byte
+		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+		for (Element e : ve) {
+			rekursiveUpdateSHA1(sha1, e);
+		}
+		sha1.doFinal(ret, 0);
+		return ret;
+	}
+	
+	private static void rekursiveUpdateSHA1(org.bouncycastle.crypto.digests.SHA1Digest sha1, Element e) {
+		Vector<Element> ve = e.getChildren();
+		if (ve.size()>0) {
+			for (Element el : ve) {
+				rekursiveUpdateSHA1(sha1, el);
+			}
+		} else {
+			String t = e.getText();
+			if (t!=null && t.length()>0) {
+				//System.out.println(""+e.getName()+" : "+e.getText());
+				byte[] b = t.getBytes();
+				sha1.update(b, 0, b.length);
+			}
+		}
+	}
+	
 	public static byte[] getSHA256(byte[] data) {
 		byte[] ret = new byte[32]; //256 bit = 32 byte
 		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();		
