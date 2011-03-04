@@ -111,6 +111,7 @@ public class Element {
 		for(int i=0;i<l.size();i++) {
 			ret.add(new Element((org.jdom.Element)l.get(i)));
 		}
+		
 		return ret;
 	}
 	

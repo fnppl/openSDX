@@ -210,7 +210,7 @@ public class PublicKey {
 		byte[] ka = encryptPKCSed7(signature);
 		
 		
-		System.out.println("PubKey_verify: SIGNATURE_DEC (length: "+ka.length+") \t:"+SecurityHelper.HexDecoder.encode(ka, ':', 80));
+		//System.out.println("PubKey_verify: SIGNATURE_DEC (length: "+ka.length+") \t:"+SecurityHelper.HexDecoder.encode(ka, ':', 80));
 		
 		byte[] real = new byte[ka.length-1];
 		System.arraycopy(ka, 1, real, 0, real.length);
@@ -221,8 +221,8 @@ public class PublicKey {
 		}
 		
 		
-		System.out.println("PubKey_verify: PLAIN(COMPARE1; length: "+filleddata.length+")\n:"+SecurityHelper.HexDecoder.encode(filleddata, ':', 80));
-		System.out.println("PubKey_verify: SIGNATURE_DEC_cut (COMPARE2; length: "+real.length+")\n:"+SecurityHelper.HexDecoder.encode(real, ':', 80));
+		//System.out.println("PubKey_verify: PLAIN(COMPARE1; length: "+filleddata.length+")\n:"+SecurityHelper.HexDecoder.encode(filleddata, ':', 80));
+		//System.out.println("PubKey_verify: SIGNATURE_DEC_cut (COMPARE2; length: "+real.length+")\n:"+SecurityHelper.HexDecoder.encode(real, ':', 80));
 		return Arrays.equals(
 				filleddata, 
 				real

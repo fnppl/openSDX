@@ -173,7 +173,7 @@ public class AsymmetricKeyPair {
 		return pubkey.getExponent().toByteArray();
 	}
 	public String getPublicExponentAsHex() {
-		return SecurityHelper.HexDecoder.encode(pubkey.getExponent().toByteArray(), '\0', -1);
+		return "0x"+SecurityHelper.HexDecoder.encode(pubkey.getExponent().toByteArray(), '\0', -1);
 	}
 	
 	public boolean isRSA() {

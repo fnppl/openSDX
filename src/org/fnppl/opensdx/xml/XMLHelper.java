@@ -1,5 +1,7 @@
 package org.fnppl.opensdx.xml;
 
+import java.util.Vector;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -59,4 +61,31 @@ package org.fnppl.opensdx.xml;
 
 public class XMLHelper {
 
+	
+	public static Element cloneElement(Element e) {
+		Element c = new Element(e.getName());
+		rekursiveAddContent(e, c);
+		return c;
+	}
+	
+	private static void rekursiveAddContent(Element from, Element to) {
+		Vector<Element> ve = from.getChildren();
+		if (ve.size()>0) {
+			for (Element el : ve) {
+				if (el.getChildren()==null || el.getChildren().size()==0) {
+					rekursiveAddContent(el, to);
+				} else {
+					//System.out.println("adding element: "+el.getName());
+					Element sub = new Element(el.getName());
+					to.addContent(sub);
+					rekursiveAddContent(el, sub);
+				}
+			}
+		} else {
+			String n = from.getName();
+			String t = from.getText();
+			//System.out.println("adding value: "+n+" : "+t);
+			to.addContent(n,t);
+		}
+	}
 }
