@@ -96,7 +96,7 @@ public class PrivateKey {
 	public byte[] sign(byte[] data) throws Exception {
 		RSAEngine rsae = new RSAEngine();
 		rsae.init(
-				false, 
+				false,
 				priv
 			);
 		byte[] filleddata = new byte[rsae.getInputBlockSize()-1];

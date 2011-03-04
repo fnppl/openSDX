@@ -286,58 +286,88 @@ public class SecurityHelper {
 	    }
 	}
 	
-	public static byte[] getSHA1MD5(byte[] data) {
-		byte[] ret = new byte[20 + 16]; //160 bit = 20 byte + md5 128bit = 16
-		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
-		sha1.update(data, 0,data.length);
-		sha1.doFinal(ret, 0);
+//	public static byte[] getSHA1MD5(byte[] data) {
+//		byte[] ret = new byte[20 + 16]; //160 bit = 20 byte + md5 128bit = 16
+//		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+//		sha1.update(data, 0,data.length);
+//		sha1.doFinal(ret, 0);
+//		
+//		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
+//		md5.update(data, 0, data.length);
+//		md5.doFinal(ret, 20);
+//		
+//		return ret;
+//	}
+	
+	public static byte[][] getMD5SHA1SHA256(byte[] data) {
+		byte[] ret = new byte[16 + 20 + 32]; //160 bit = 20 byte + md5 128bit = 16 + sha256 256bit = 32 byte 
+		byte[] md5ret = new byte[16];
+		byte[] sha1ret = new byte[20];
+		byte[] sha256ret = new byte[32];
 		
 		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
 		md5.update(data, 0, data.length);
-		md5.doFinal(ret, 20);
+		md5.doFinal(ret, 0);
 		
-		return ret;
-	}
-	
-	public static byte[] getSHA1MD5(InputStream in) throws Exception {
-		byte[] ret = new byte[20 + 16];//160 bit = 20 byte + 128bit = 16 byte
-		
-		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
 		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+		sha1.update(data, 0,data.length);
+		sha1.doFinal(ret, 16);
 		
-		int read = -1;
-		byte[] buff = new byte[1024];
-		while((read=in.read(buff))!=-1) {
-			sha1.update(buff, 0, read);
-			md5.update(buff, 0, read);
-		}
-		
-		sha1.doFinal(ret, 0);
-		md5.doFinal(ret, 20);
-		
-		return ret;
-	}
-	
-	public static byte[] getSHA256MD5(InputStream in) {
-	
-		byte[] ret = new byte[48]; ////256 bit = 32 byte + 128bit = 16 byte
-		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
 		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();
-		int l = 0;
-		byte[] buffer = new byte[512];
-		try {
-			while ((l=in.read(buffer))>0) {
-				md5.update(buffer, 0, l);
-				sha256.update(buffer, 0, l);
-			}
-			sha256.doFinal(ret, 0);
-			md5.doFinal(ret, 32);
-			return ret;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
+		sha256.update(data, 0,data.length);
+		sha256.doFinal(ret, 16+20);
+		
+		System.arraycopy(ret, 0, md5ret, 0, md5ret.length);
+		System.arraycopy(ret, 16, sha1ret, 0, sha1ret.length);
+		System.arraycopy(ret, 16+20, sha256ret, 0, sha256ret.length);
+		
+		return new byte[][]{
+				ret,
+				md5ret,
+				sha1ret,
+				sha256ret
+		};
 	}
+	
+//	public static byte[] getSHA1MD5(InputStream in) throws Exception {
+//		byte[] ret = new byte[20 + 16];//160 bit = 20 byte + 128bit = 16 byte
+//		
+//		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
+//		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+//		
+//		int read = -1;
+//		byte[] buff = new byte[1024];
+//		while((read=in.read(buff))!=-1) {
+//			sha1.update(buff, 0, read);
+//			md5.update(buff, 0, read);
+//		}
+//		
+//		sha1.doFinal(ret, 0);
+//		md5.doFinal(ret, 20);
+//		
+//		return ret;
+//	}
+	
+//	public static byte[] getSHA256MD5(InputStream in) {
+//	
+//		byte[] ret = new byte[48]; ////256 bit = 32 byte + 128bit = 16 byte
+//		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
+//		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();
+//		int l = 0;
+//		byte[] buffer = new byte[512];
+//		try {
+//			while ((l=in.read(buffer))>0) {
+//				md5.update(buffer, 0, l);
+//				sha256.update(buffer, 0, l);
+//			}
+//			sha256.doFinal(ret, 0);
+//			md5.doFinal(ret, 32);
+//			return ret;
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		return null;
+//	}
 	
 	public static byte[] getSHA1(byte[] data) {
 		byte[] ret = new byte[20]; //160 bit = 20 byte

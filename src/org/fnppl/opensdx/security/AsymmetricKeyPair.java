@@ -257,9 +257,33 @@ public class AsymmetricKeyPair {
 	public byte[] sign(byte[] plain) throws Exception {
 		return privkey.sign(plain);
 	}
+	public byte[] sign(byte[] md5, byte[] sha1, byte[] sha256) throws Exception {
+		byte[] dd = new byte[16+20+32];
+		Arrays.fill(dd, (byte)0);
+		
+		if(md5 != null) {
+			System.arraycopy(md5, 0, dd, 0, md5.length);
+		}
+		if(sha1 != null) {
+			System.arraycopy(sha1, 0, dd, 0+16, sha1.length);
+		}
+		if(sha256 != null) {
+			System.arraycopy(sha1, 0, dd, 0+16+20, sha256.length);
+		}
+		
+		return privkey.sign(dd);
+	}
 	
-	public boolean verify(byte[] signature, byte[] plain) throws Exception {
-		return pubkey.verify(signature, plain);
+//	public boolean verify(byte[] signature, byte[] plain) throws Exception {
+//		return pubkey.verify(signature, plain);
+//	}
+	public boolean verify(byte[] signature, byte[] md5, byte[] sha1, byte[] sha256) throws Exception {
+		return pubkey.verify(
+				signature, 
+				md5,
+				sha1,
+				sha256
+			);
 	}
 	
 	public static void main(String[] args) throws Exception {
@@ -275,20 +299,30 @@ public class AsymmetricKeyPair {
 		
 		System.out.println("\n\n\n");
 		
-		byte[] sha1andmd5 = SecurityHelper.getSHA1MD5(tc.getBytes());
+		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(tc.getBytes());
+		byte[] md5sha1sha256 = kk[0];
+		byte[] md5 = kk[1];
+		byte[] sha1 = kk[2];
+		byte[] sha256 = kk[3];
 		
-		String s = SecurityHelper.HexDecoder.encode(sha1andmd5, ':', 80);
-		System.out.println("SHA1_AND_MD5 length:\t"+sha1andmd5.length);//sollten 36 bytes sein
+		String s = SecurityHelper.HexDecoder.encode(md5sha1sha256, ':', 80);
+		System.out.println("SHA1_AND_MD5 length:\t"+md5sha1sha256.length);//sollten 36 bytes sein
 		System.out.println("SHA1_AND_MD5:\t\t"+s);
 		
 		System.out.println("\nSignature creation stage...");
 		
-		byte[] signature = ak.sign(sha1andmd5);
-		System.out.println("SIGNATURE(sha1andmd5).length: "+signature.length);
-		System.out.println("SIGNATURE(sha1andmd5): "+SecurityHelper.HexDecoder.encode(signature, ':', 80));
+		byte[] signature = ak.sign(md5, sha1, sha256);//just show-off - could have also taken the full-array
+		System.out.println("SIGNATURE(md5sha1sha256).length: "+signature.length);
+		System.out.println("SIGNATURE(md5sha1sha256): "+SecurityHelper.HexDecoder.encode(signature, ':', 80));
 		
 		System.out.println("\nVerification-Stage...");
-		System.out.println("SIGNATURE_VERIFIED: "+ak.verify(signature, sha1andmd5));
+		System.out.println("SIGNATURE_VERIFIED: "+ak.verify(
+				signature, 
+				md5,
+				sha1,
+				sha256
+			)
+		);
 	}
 	
 	public byte[] getEncrytedPrivateKey(SymmetricKey sk) throws Exception {

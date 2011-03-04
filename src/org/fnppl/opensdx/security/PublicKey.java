@@ -206,27 +206,66 @@ public class PublicKey {
 //		return oaep.processBlock(data, 0, data.length);
 	}
 	
-	public boolean verify(byte[] signature, byte[] plain) throws Exception {
+//	public boolean verify(byte[] signature, byte[] plain) throws Exception {
+//		byte[] ka = encryptPKCSed7(signature);
+//		
+//		//System.out.println("PubKey_verify: SIGNATURE_DEC (length: "+ka.length+") \t:"+SecurityHelper.HexDecoder.encode(ka, ':', 80));
+//		
+//		byte[] real = new byte[ka.length-1];
+//		System.arraycopy(ka, 1, real, 0, real.length);
+//		
+//		byte[] filleddata = new byte[real.length];
+//		for(int i=0; i<filleddata.length; i++) {
+//			filleddata[i] = plain[i % plain.length];//HT 2011-03-03 better some initvectorpadddup!!!
+//		}
+//		
+//		//System.out.println("PubKey_verify: PLAIN(COMPARE1; length: "+filleddata.length+")\n:"+SecurityHelper.HexDecoder.encode(filleddata, ':', 80));
+//		//System.out.println("PubKey_verify: SIGNATURE_DEC_cut (COMPARE2; length: "+real.length+")\n:"+SecurityHelper.HexDecoder.encode(real, ':', 80));
+//		return Arrays.equals(
+//				filleddata, 
+//				real
+//			);
+//	}
+	public boolean verify(byte[] signature, byte[] md5, byte[] sha1, byte[] sha256) throws Exception {
 		byte[] ka = encryptPKCSed7(signature);
-		
 		
 		//System.out.println("PubKey_verify: SIGNATURE_DEC (length: "+ka.length+") \t:"+SecurityHelper.HexDecoder.encode(ka, ':', 80));
 		
 		byte[] real = new byte[ka.length-1];
-		System.arraycopy(ka, 1, real, 0, real.length);
+		System.arraycopy(ka, 1, real, 0, real.length);//0x00 header killr
 		
-		byte[] filleddata = new byte[real.length];
-		for(int i=0; i<filleddata.length; i++) {
-			filleddata[i] = plain[i % plain.length];//HT 2011-03-03 better some initvectorpadddup!!!
+		byte[] md5Check = new byte[16];
+		byte[] sha1Check = new byte[20];
+		byte[] sha256Check = new byte[32];
+		
+		System.arraycopy(real, 0, md5Check, 0, md5Check.length);
+		System.arraycopy(real, 16, sha1Check, 0, sha1Check.length);
+		System.arraycopy(real, 16+20, sha256Check, 0, sha256Check.length);
+		
+		boolean succeededone = false;
+		if(md5 != null) {
+			if(!Arrays.equals(md5, md5Check)) {
+				return false;
+			}
+			succeededone = true;
+		}
+		if(sha1 != null) {
+			if(!Arrays.equals(sha1, sha1Check)) {
+				return false;
+			}
+			succeededone = true;
+		}
+		if(sha256 != null) {
+			if(!Arrays.equals(sha256, sha256Check)) {
+				return false;
+			}
+			succeededone = true;
 		}
 		
+		return succeededone;//false if all hash-arrays were NULL
 		
 		//System.out.println("PubKey_verify: PLAIN(COMPARE1; length: "+filleddata.length+")\n:"+SecurityHelper.HexDecoder.encode(filleddata, ':', 80));
 		//System.out.println("PubKey_verify: SIGNATURE_DEC_cut (COMPARE2; length: "+real.length+")\n:"+SecurityHelper.HexDecoder.encode(real, ':', 80));
-		return Arrays.equals(
-				filleddata, 
-				real
-			);
 	}
 	
 	public String getKeyID() {
