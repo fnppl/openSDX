@@ -100,7 +100,10 @@ public class KeyApprovingStore {
 			
 			//check signoff
 			kas.keysSignoff = keys.getChild("signoff");
-			boolean verifyKeysSignoff = SignoffElement.verifySignoff(kas.keysSignoff, kas.keysSHA1localproof);
+			boolean verifyKeysSignoff = SignoffElement.verifySignoff(
+					kas.keysSignoff, 
+					kas.keysSHA1localproof
+				);
 			//verifyKeysSignoff = true;
 			if(!verifyKeysSignoff) {
 				throw new Exception("KeyStore:  signoff of localproof of keypairs failed.");

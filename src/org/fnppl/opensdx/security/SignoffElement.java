@@ -57,57 +57,67 @@ public class SignoffElement extends Element {
 		super("signoff");
 	}
 	
-	public static SignoffElement getSignoffElement(byte[] data, OSDXKeyObject key) throws Exception {
-		ByteArrayInputStream bin = new ByteArrayInputStream(data);
-		
-		return getSignoffElement(bin, key);
-	}
-	public static SignoffElement getSignoffElement(InputStream in, OSDXKeyObject key) throws Exception {
-		if(!key.allowsSigning()) {
-			return null;
-		}
-		byte[] sha256 = SecurityHelper.getSHA256(in);
-		SignoffElement ret = new SignoffElement();
-		String keyid = key.getKeyID();
-		Element e = key.getSimplePubKeyElement();
-		
-		ret.addContent("keyid", keyid);
-		ret.addContent(e);
+	//HT 2011-03-06 quite unused - overruled by signature.java - most probably to be erased soon.
 	
-		byte[] bytes = key.signSHA256(sha256);
-		ret.addContent("sha256", SecurityHelper.HexDecoder.encode(sha256, '\0', -1));		
-		ret.addContent("signaturebytes", SecurityHelper.HexDecoder.encode(bytes, '\0', -1));
-		
-//		<signoff>
-//		<keyid>kjakdjadkjajd@keys.fnppl.org</keyid>
-//		<pubkey>
-//			<algo>RSA</algo><!-- RSA ; others not implemented yet -->
-//			<bits>3072</bits><!-- well, yes, count yourself, but nice to *see* it -->
-//			<modulus></modulus><!-- as hex-string with or without leading 0x ; only for RSA?! -->
-//			<exponent></exponent><!-- as hex-string with or without leading 0x -->
-//			</pubkey><!-- given, but should be verified from server/yourself... -->
+	
+//	public static SignoffElement getSignoffElement(Signature s) {
+//		return null;
+//	}
+//	public static SignoffElement fromElement(Element s) {
+//		return null;
+//	}
+	
+//	public static SignoffElement getSignoffElement(byte[] data, OSDXKeyObject key) throws Exception {
+//		ByteArrayInputStream bin = new ByteArrayInputStream(data);
+//		
+//		return getSignoffElement(bin, key);
+//	}
+//	public static SignoffElement getSignoffElement(InputStream in, OSDXKeyObject key) throws Exception {
+//		if(!key.allowsSigning()) {
+//			return null;
+//		}
+//		byte[] sha256 = SecurityHelper.getSHA256(in);
+//		SignoffElement ret = new SignoffElement();
+//		String keyid = key.getKeyID();
+//		Element e = key.getSimplePubKeyElement();
+//		
+//		ret.addContent("keyid", keyid);
+//		ret.addContent(e);
 //	
-//			<bytes>asdasd</bytes><!-- as hex-string with ":" or " " separation... looks nicer... -->
-//			</signoff>
-		
-		return ret;
-	}
-	
-	public static boolean verifySignoff(Element signoff, byte[] data) throws Exception {
-		byte[] datasha1 = SecurityHelper.getSHA1(data);
-		byte[] signoffsha1 = SecurityHelper.HexDecoder.decode(signoff.getChildText("sha1"));
-		if (!Arrays.equals(datasha1, signoffsha1)) {
-			System.out.println("data SHA1 does not match signature SHA1");
-			System.out.println("data SHA1: "+SecurityHelper.HexDecoder.encode(datasha1, '\0', -1));
-			System.out.println("sign SHA1: "+SecurityHelper.HexDecoder.encode(signoffsha1, '\0', -1));
-			return false;
-		}
-		
-		Element epk = signoff.getChild("pubkey");
-		BigInteger mod = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("modulus")));
-		BigInteger exp = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("exponent")));
-		PublicKey pubkey = new PublicKey(mod, exp);
-		byte[] signaturebytes = SecurityHelper.HexDecoder.decode(signoff.getChildText("signaturebytes"));
-		return pubkey.verify(signaturebytes, signoffsha1);
-	}
+//		byte[] bytes = key.sign(md5, sha1, sha256, datetime);
+//		ret.addContent("sha256", SecurityHelper.HexDecoder.encode(sha256, '\0', -1));		
+//		ret.addContent("signaturebytes", SecurityHelper.HexDecoder.encode(bytes, '\0', -1));
+//		
+////		<signoff>
+////		<keyid>kjakdjadkjajd@keys.fnppl.org</keyid>
+////		<pubkey>
+////			<algo>RSA</algo><!-- RSA ; others not implemented yet -->
+////			<bits>3072</bits><!-- well, yes, count yourself, but nice to *see* it -->
+////			<modulus></modulus><!-- as hex-string with or without leading 0x ; only for RSA?! -->
+////			<exponent></exponent><!-- as hex-string with or without leading 0x -->
+////			</pubkey><!-- given, but should be verified from server/yourself... -->
+////	
+////			<bytes>asdasd</bytes><!-- as hex-string with ":" or " " separation... looks nicer... -->
+////			</signoff>
+//		
+//		return ret;
+//	}
+//	
+//	public static boolean verifySignoff(Element signoff, byte[] data) throws Exception {
+//		byte[] datasha1 = SecurityHelper.getSHA1(data);
+//		byte[] signoffsha1 = SecurityHelper.HexDecoder.decode(signoff.getChildText("sha1"));
+//		if (!Arrays.equals(datasha1, signoffsha1)) {
+//			System.out.println("data SHA1 does not match signature SHA1");
+//			System.out.println("data SHA1: "+SecurityHelper.HexDecoder.encode(datasha1, '\0', -1));
+//			System.out.println("sign SHA1: "+SecurityHelper.HexDecoder.encode(signoffsha1, '\0', -1));
+//			return false;
+//		}
+//		
+//		Element epk = signoff.getChild("pubkey");
+//		BigInteger mod = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("modulus")));
+//		BigInteger exp = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("exponent")));
+//		PublicKey pubkey = new PublicKey(mod, exp);
+//		byte[] signaturebytes = SecurityHelper.HexDecoder.decode(signoff.getChildText("signaturebytes"));
+//		return pubkey.verify(signaturebytes, signoffsha1);
+//	}
 }

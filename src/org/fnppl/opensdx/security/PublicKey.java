@@ -226,7 +226,14 @@ public class PublicKey {
 //				real
 //			);
 //	}
-	public boolean verify(byte[] signature, byte[] md5, byte[] sha1, byte[] sha256) throws Exception {
+	public boolean verify(
+			byte[] signature, 
+			byte[] md5, 
+			byte[] sha1, 
+			byte[] sha256,
+			long timestamp
+			) throws Exception {
+		
 		byte[] ka = encryptPKCSed7(signature);
 		
 		//System.out.println("PubKey_verify: SIGNATURE_DEC (length: "+ka.length+") \t:"+SecurityHelper.HexDecoder.encode(ka, ':', 80));
@@ -237,10 +244,14 @@ public class PublicKey {
 		byte[] md5Check = new byte[16];
 		byte[] sha1Check = new byte[20];
 		byte[] sha256Check = new byte[32];
+		byte[] tscheck = new byte[6];
+		
 		
 		System.arraycopy(real, 0, md5Check, 0, md5Check.length);
 		System.arraycopy(real, 16, sha1Check, 0, sha1Check.length);
 		System.arraycopy(real, 16+20, sha256Check, 0, sha256Check.length);
+		System.arraycopy(real, 16+20+32, tscheck, 0, tscheck.length);
+		long ts = (new BigInteger(tscheck)).longValue();
 		
 		boolean succeededone = false;
 		if(md5 != null) {
@@ -261,8 +272,14 @@ public class PublicKey {
 			}
 			succeededone = true;
 		}
+		if(timestamp != -1) {
+			if(ts != timestamp) {
+				return false;
+			}
+//			succeededone = true; //naht. this is no hash
+		}
 		
-		return succeededone;//false if all hash-arrays were NULL
+		return succeededone; //false if all hash-arrays were NULL ; also false if the timestamp mathed...
 		
 		//System.out.println("PubKey_verify: PLAIN(COMPARE1; length: "+filleddata.length+")\n:"+SecurityHelper.HexDecoder.encode(filleddata, ':', 80));
 		//System.out.println("PubKey_verify: SIGNATURE_DEC_cut (COMPARE2; length: "+real.length+")\n:"+SecurityHelper.HexDecoder.encode(real, ':', 80));

@@ -252,6 +252,9 @@ public class SecurityHelper {
 	     * @return the number of bytes produced.
 	     */
 	    public static String encode(final byte[] data, char pad, int wrapat) {
+	    	if(data == null) {
+	    		return null;
+	    	}
 	        try {
 	            final ByteArrayOutputStream out = new ByteArrayOutputStream();
 	            encode(data, 0, data.length, out, pad, wrapat);
@@ -269,6 +272,9 @@ public class SecurityHelper {
 	     * @return A byte array representing the decoded input data.
 	     */
 	    public static byte[] decode(final String data) {
+	    	if(data == null) {
+	    		return null;
+	    	}
 	        try {
 	            final ByteArrayOutputStream out = new ByteArrayOutputStream();
 	            if(data.toLowerCase().indexOf("0x")==0) {
@@ -315,6 +321,48 @@ public class SecurityHelper {
 		
 		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();
 		sha256.update(data, 0,data.length);
+		sha256.doFinal(ret, 16+20);
+		
+		System.arraycopy(ret, 0, md5ret, 0, md5ret.length);
+		System.arraycopy(ret, 16, sha1ret, 0, sha1ret.length);
+		System.arraycopy(ret, 16+20, sha256ret, 0, sha256ret.length);
+		
+		return new byte[][]{
+				ret,
+				md5ret,
+				sha1ret,
+				sha256ret
+		};
+	}
+	public static byte[][] getMD5SHA1SHA256(File f) throws Exception {
+		FileInputStream fin_ = new FileInputStream(f);
+		BufferedInputStream fin = new BufferedInputStream(fin_);
+		
+		byte[][] ret =  getMD5SHA1SHA256(fin);
+		fin.close();
+		
+		return ret;
+	}
+	public static byte[][] getMD5SHA1SHA256(InputStream fin) throws Exception {
+		byte[] ret = new byte[16 + 20 + 32]; //160 bit = 20 byte + md5 128bit = 16 + sha256 256bit = 32 byte 
+		byte[] md5ret = new byte[16];
+		byte[] sha1ret = new byte[20];
+		byte[] sha256ret = new byte[32];
+		
+		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
+		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();
+		
+		int read = -1;
+		byte[] buff = new byte[4096];
+		while((read=fin.read(buff))!=-1) {
+			md5.update(buff, 0, read);
+			sha1.update(buff, 0, read);
+			sha256.update(buff, 0, read);
+		}
+		
+		sha1.doFinal(ret, 16);
+		md5.doFinal(ret, 0);
 		sha256.doFinal(ret, 16+20);
 		
 		System.arraycopy(ret, 0, md5ret, 0, md5ret.length);

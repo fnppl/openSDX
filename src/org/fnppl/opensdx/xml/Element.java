@@ -91,6 +91,9 @@ public class Element {
 		return base.getText();
 	}
 	public void addContent(String name, String value) {
+//		if(value == null) {
+//			return;
+//		}
 		base.addContent((new org.jdom.Element(name)).setText(value));
 	}
 	public void addContent(Element e) {

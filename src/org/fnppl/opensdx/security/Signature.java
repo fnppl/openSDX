@@ -81,19 +81,14 @@ public class Signature {
 		SecurityHelper.ensureBC();
 	}
 	
-	
-	//private File signature;
-	//private File signedFile;
-	//private AsymmetricKeyPair keypair = null;
-	//private KeyApprovingStore keystore = null; //may totally be null
-	
-	
-	//TODO HT 20.02.2011 - add byte-array/stream-based constructor
 	private byte[] datamd5 = null;
-	private byte[] datasha256 = null;
+	private byte[] datasha1 = null;
+	private byte[] datasha256 = null;	
 	private String dataname = null;
+	private long signdatetime = -1;
+	
 	private PublicKey pubkey = null;
-	private byte[] signoffsha1 = null;
+//	private byte[] signoffsha1 = null;
 	private byte[] signaturebytes = null;
 	
 	private Signature() {
@@ -112,12 +107,17 @@ public class Signature {
 		
 		Signature s = new Signature();
 		s.datamd5 = SecurityHelper.HexDecoder.decode(ed.getChildText("md5"));
+		s.datasha1 = SecurityHelper.HexDecoder.decode(ed.getChildText("sha1"));
 		s.datasha256 = SecurityHelper.HexDecoder.decode(ed.getChildText("sha256"));
+		
+		s.signdatetime = OSDXKeyObject.datemeGMT.parse(ed.getChildText("signdatetime")).getTime();
+		
 		s.dataname = ed.getChildText("dataname");
 		BigInteger mod = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("modulus")));
 		BigInteger exp = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("exponent")));
 		s.pubkey = new PublicKey(mod, exp);
-		s.signoffsha1 = SecurityHelper.HexDecoder.decode(es.getChildText("sha1"));
+//		s.signoffsha1 = SecurityHelper.HexDecoder.decode(es.getChildText("sha1"));
+		
 		s.signaturebytes = SecurityHelper.HexDecoder.decode(es.getChildText("signaturebytes"));
 		return s;
 	}
@@ -125,10 +125,15 @@ public class Signature {
 	public Element toElement() {
 		Element e = new Element("signature");
 		Element ed = new Element("data");
-		ed.addContent("md5", SecurityHelper.HexDecoder.encode(datamd5,'\0',-1));
-		ed.addContent("sha256",SecurityHelper.HexDecoder.encode(datasha256,'\0',-1));
+		if(datamd5 != null) ed.addContent("md5", SecurityHelper.HexDecoder.encode(datamd5,':',-1));
+		if(datasha1 != null) ed.addContent("sha1", SecurityHelper.HexDecoder.encode(datasha1,':',-1));
+		if(datasha256 != null) ed.addContent("sha256", SecurityHelper.HexDecoder.encode(datasha256,':',-1));
+		
+		ed.addContent("signdatetime", OSDXKeyObject.datemeGMT.format(new Date(signdatetime)));
+		
 		ed.addContent("dataname",dataname);
 		e.addContent(ed);
+		
 		Element es = new Element("signoff");
 		es.addContent("keyid", pubkey.getKeyID());
 		Element ep = new Element("pubkey");
@@ -137,33 +142,53 @@ public class Signature {
 		ep.addContent("modulus", pubkey.getModulusAsHex());
 		ep.addContent("exponent", pubkey.getPublicExponentAsHex());
 		es.addContent(ep);
-		es.addContent("sha1",SecurityHelper.HexDecoder.encode(signoffsha1,':',-1));
-		es.addContent("signaturebytes",SecurityHelper.HexDecoder.encode(signaturebytes,':',-1));
+//		es.addContent("sha1",SecurityHelper.HexDecoder.encode(signoffsha1,':',-1));
+		es.addContent("signaturebytes", SecurityHelper.HexDecoder.encode(signaturebytes,':',-1));
 		e.addContent(es);
 		return e;
 	}
 	
-	public static Signature createSignature(byte[] md5, byte[] sha256, String dataname, OSDXKeyObject key) throws Exception{
+	public static Signature createSignature(
+			byte[] md5, 
+			byte[] sha1, 
+			byte[] sha256,
+			String dataname, 
+			OSDXKeyObject key) throws Exception {
+		
 		if (!key.allowsSigning()) {
 			throw new RuntimeException("ERROR: key does not allow signing.");
 		}
+		
 		Signature s = new Signature();
 		s.datamd5 = md5;
+		s.datasha1 = sha1;
 		s.datasha256 = sha256;
 		s.dataname = dataname;
+		s.signdatetime = System.currentTimeMillis();//HT 2011-03-06 TODO: Signing_TIMESERVER
 		
-		byte[] data = SecurityHelper.concat(sha256, md5);
-		SignoffElement es = SignoffElement.getSignoffElement(data, key);
-		Element epk = es.getChild("pubkey");
-		BigInteger mod = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("modulus")));
-		BigInteger exp = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("exponent")));
-		s.pubkey = new PublicKey(mod, exp);
-		s.signoffsha1 = SecurityHelper.HexDecoder.decode(es.getChildText("sha1"));
-		s.signaturebytes = SecurityHelper.HexDecoder.decode(es.getChildText("signaturebytes"));
+//		byte[] data = SecurityHelper.concat(sha256, md5);
+//		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(tc.getBytes());
+//		byte[] md5sha1sha256 = kk[0];
+//		byte[] md5 = kk[1];
+//		byte[] sha1 = kk[2];
+//		byte[] sha256 = kk[3];
+		s.signaturebytes = key.sign(md5, sha1, sha256, s.signdatetime);
+		
+		s.pubkey = key.getPubKey();
+		
+//		SignoffElement es = SignoffElement.getSignoffElement(data, key);
+//		Element epk = es.getChild("pubkey");
+//		BigInteger mod = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("modulus")));
+//		BigInteger exp = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("exponent")));
+//		s.pubkey = new PublicKey(mod, exp);
+//		s.signoffsha1 = SecurityHelper.HexDecoder.decode(es.getChildText("sha1"));
+//		s.signaturebytes = SecurityHelper.HexDecoder.decode(es.getChildText("signaturebytes"));
 		
 		System.out.println("md5            : "+SecurityHelper.HexDecoder.encode(s.datamd5,'\0',-1));
+		System.out.println("sha1           : "+SecurityHelper.HexDecoder.encode(s.datasha1,'\0',-1));
 		System.out.println("sha256         : "+SecurityHelper.HexDecoder.encode(s.datasha256,'\0',-1));
-		System.out.println("signoffsha1    : "+SecurityHelper.HexDecoder.encode(s.signoffsha1,'\0',-1));
+		System.out.println("signdatetime   : "+OSDXKeyObject.datemeGMT.format((new Date(s.signdatetime))));
+//		System.out.println("signoffsha1    : "+SecurityHelper.HexDecoder.encode(s.signoffsha1,'\0',-1));
 		System.out.println("signaturebytes : "+SecurityHelper.HexDecoder.encode(s.signaturebytes,'\0',-1));
 		
 		return s;
@@ -171,13 +196,13 @@ public class Signature {
 	
 	
 	public static Signature createSignature(File toSign, OSDXKeyObject key) throws Exception {
-		FileInputStream in = new FileInputStream(toSign);
-		byte[] md5 = SecurityHelper.getMD5(in);
-		in.close();
-		in = new FileInputStream(toSign);
-		byte[] sha256 = SecurityHelper.getSHA256(in);
-		in.close();
-		return createSignature(md5, sha256, toSign.getName(), key);
+		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(toSign);
+		byte[] md5sha1sha256 = kk[0];
+		byte[] md5 = kk[1];
+		byte[] sha1 = kk[2];
+		byte[] sha256 = kk[3];
+		
+		return createSignature(md5, sha1, sha256, toSign.getName(), key);
 	}
 	
 	public static void createSignatureFile(File toSign, File output, OSDXKeyObject key) throws Exception {
@@ -245,36 +270,62 @@ public class Signature {
 	
 	public boolean tryVerificationFile(File f) throws Exception {
 		FileInputStream in = new FileInputStream(f);
-		boolean verified = tryVerificationMD5_SHA256(in);
+		BufferedInputStream bin = new BufferedInputStream(in);
+		boolean verified = tryVerificationMD5SHA1SHA256(bin);
+		in.close();
+		
 		return verified;
 		
 	}
 	
-	public boolean tryVerificationMD5_SHA256(InputStream in) throws Exception {
-		//check md5 and sha256
-		byte[] concat = SecurityHelper.getSHA256MD5(in);
-		byte[] sha256bytes = Arrays.copyOfRange(concat, 0, 32);
-		if (!Arrays.equals(sha256bytes, datasha256)) {
-			System.out.println("|"+SecurityHelper.HexDecoder.encode(sha256bytes, '\0',-1)+"|");
-			System.out.println("|"+SecurityHelper.HexDecoder.encode(datasha256, '\0',-1)+"|");
-			System.out.println("sha256 does NOT match.");
-			return false;
-		}
-		byte[] md5 = Arrays.copyOfRange(concat, 32, concat.length);
-		if (!Arrays.equals(md5, datamd5)) {
-			System.out.println("|"+SecurityHelper.HexDecoder.encode(md5, '\0',-1)+"|");
-			System.out.println("|"+SecurityHelper.HexDecoder.encode(datamd5, '\0',-1)+"|");
-			System.out.println("md5 does NOT match.");
-			return false;
-		}
+	public boolean tryVerificationMD5SHA1SHA256(InputStream in) throws Exception {
+		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(in);
+		byte[] md5sha1sha256 = kk[0];
+		byte[] md5 = kk[1];
+		byte[] sha1 = kk[2];
+		byte[] sha256 = kk[3];
 		
-		//check signature
-		byte[] sha1 = SecurityHelper.getSHA1(concat);
-		System.out.println("sha1        : "+SecurityHelper.HexDecoder.encode(sha1, '\0', -1));
-		System.out.println("signoffsha1 : "+SecurityHelper.HexDecoder.encode(signoffsha1, '\0', -1));
+		boolean ok = pubkey.verify(
+				signaturebytes, 
+				md5, 
+				sha1, 
+				sha256, 
+				signdatetime
+			);
+		return ok;
 		
-		if (!Arrays.equals(sha1, signoffsha1)) return false;
-		return pubkey.verify(signaturebytes, sha1);
+//		ak.verify(
+//				signature, 
+//				md5,
+//				sha1,
+//				sha256,
+//				ll
+//			)
+//		);
+		
+//		byte[] concat = SecurityHelper.getSHA256MD5(in);
+//		byte[] sha256bytes = Arrays.copyOfRange(concat, 0, 32);
+//		if (!Arrays.equals(sha256bytes, datasha256)) {
+//			System.out.println("|"+SecurityHelper.HexDecoder.encode(sha256bytes, '\0',-1)+"|");
+//			System.out.println("|"+SecurityHelper.HexDecoder.encode(datasha256, '\0',-1)+"|");
+//			System.out.println("sha256 does NOT match.");
+//			return false;
+//		}
+//		byte[] md5 = Arrays.copyOfRange(concat, 32, concat.length);
+//		if (!Arrays.equals(md5, datamd5)) {
+//			System.out.println("|"+SecurityHelper.HexDecoder.encode(md5, '\0',-1)+"|");
+//			System.out.println("|"+SecurityHelper.HexDecoder.encode(datamd5, '\0',-1)+"|");
+//			System.out.println("md5 does NOT match.");
+//			return false;
+//		}
+//		
+//		//check signature
+//		byte[] sha1 = SecurityHelper.getSHA1(concat);
+//		System.out.println("sha1        : "+SecurityHelper.HexDecoder.encode(sha1, '\0', -1));
+//		System.out.println("signoffsha1 : "+SecurityHelper.HexDecoder.encode(signoffsha1, '\0', -1));
+//		
+//		if (!Arrays.equals(sha1, signoffsha1)) return false;
+//		return pubkey.verify(signaturebytes, sha1);
 	}
 	
 	

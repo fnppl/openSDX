@@ -50,9 +50,10 @@
 
 <signature>
 	<data>
-		<md5>kalksdlkad</md5>
-		<sha1>adadasdasd</sha1>
-		<sha256>adadasdasd</sha256>
+		<md5>kalksdlkad</md5><!-- optional, but should be there ; there MUST be one data-hash-value given (md5, sha1 or sha256 - recommended to provide all three -->
+		<sha1>adadasdasd</sha1><!-- optional, but should be there ; there MUST be one data-hash-value given (md5, sha1 or sha256 - recommended to provide all three -->
+		<sha256>adadasdasd</sha256><!-- optional, but should be there ; there MUST be one data-hash-value given (md5, sha1 or sha256 - recommended to provide all three -->
+		<signdatetime>2011-01-01 23:20:00 GMT+00</signdatetime><!-- MUST -->
 		<dataname>kaldad</dataname><!-- optional dataname -->
 	</data>
 	<signoff>

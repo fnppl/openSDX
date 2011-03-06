@@ -45,6 +45,7 @@ package org.fnppl.opensdx.security;
  * 
  */
 
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -59,7 +60,7 @@ public class OSDXKeyObject {
 	final static String ASCTIME = "EEE MMM dd HH:mm:ss yyyy zzz";
 	
 	final static Locale ml = new Locale("en", "DE");
-	static SimpleDateFormat datemeGMT = new SimpleDateFormat(RFC1123_CUT, ml);
+	public final static SimpleDateFormat datemeGMT = new SimpleDateFormat(RFC1123_CUT, ml);
 	static {
 		datemeGMT.setTimeZone(java.util.TimeZone.getTimeZone("GMT+00:00"));
 	}
@@ -122,6 +123,13 @@ public class OSDXKeyObject {
 //		this.akp = akp;
 //	}
 	
+	public PublicKey getPubKey() {
+		PublicKey ll = new PublicKey(
+				new BigInteger(akp.getModulus()), 
+				new BigInteger(akp.getPublicExponent())
+			);
+		return ll;
+	}
 	public static OSDXKeyObject fromElement(Element kp) throws Exception {
 		OSDXKeyObject ret = new OSDXKeyObject();
 		System.out.println("adding keyobject");
@@ -287,13 +295,20 @@ public class OSDXKeyObject {
 		return null;
 	}
 	
-	public byte[] signSHA256(
+	public byte[] sign(
 			byte[] md5, 
 			byte[] sha1, 
-			byte[] sha256
+			byte[] sha256,
+			long datetime
 	) throws Exception {
 		unlockPrivateKey();
-		return akp.sign(sha256);
+		
+		return akp.sign(
+				md5, 
+				sha1, 
+				sha256, 
+				datetime
+			);
 	}
 	
 	private final void unlockPrivateKey() {
@@ -342,7 +357,7 @@ public class OSDXKeyObject {
 			ekp.addContent(eids);
 		}
 		
-		ekp.addContent("sha1fingerprint",modulussha1);
+		ekp.addContent("sha1fingerprint", modulussha1);
 		ekp.addContent("authoritativekeyserver",authoritativekeyserver);
 		
 		//datapath

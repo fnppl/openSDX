@@ -254,11 +254,17 @@ public class AsymmetricKeyPair {
 		return privkey.decrypt(me);
 	}
 	
-	public byte[] sign(byte[] plain) throws Exception {
-		return privkey.sign(plain);
-	}
-	public byte[] sign(byte[] md5, byte[] sha1, byte[] sha256) throws Exception {
-		byte[] dd = new byte[16+20+32];
+//	public byte[] sign(byte[] plain) throws Exception {
+//		return privkey.sign(plain);
+//	}
+	public byte[] sign(
+			byte[] md5, //16 bytes
+			byte[] sha1,  //20 bytes
+			byte[] sha256, //32 bytes
+			long datetime //6 bytes
+		) throws Exception {
+		
+		byte[] dd = new byte[16+20+32+6];
 		Arrays.fill(dd, (byte)0);
 		
 		if(md5 != null) {
@@ -270,6 +276,9 @@ public class AsymmetricKeyPair {
 		if(sha256 != null) {
 			System.arraycopy(sha1, 0, dd, 0+16+20, sha256.length);
 		}
+		BigInteger b = BigInteger.valueOf(datetime);
+		byte[] ts = b.toByteArray();
+		System.arraycopy(ts, 0, dd, 0+16+20+32, ts.length);
 		
 		return privkey.sign(dd);
 	}
@@ -277,16 +286,28 @@ public class AsymmetricKeyPair {
 //	public boolean verify(byte[] signature, byte[] plain) throws Exception {
 //		return pubkey.verify(signature, plain);
 //	}
-	public boolean verify(byte[] signature, byte[] md5, byte[] sha1, byte[] sha256) throws Exception {
+	public boolean verify(
+			byte[] signature, 
+			byte[] md5, 
+			byte[] sha1, 
+			byte[] sha256, 
+			long timestamp
+		) throws Exception {
+		
 		return pubkey.verify(
 				signature, 
 				md5,
 				sha1,
-				sha256
+				sha256,
+				timestamp
 			);
 	}
 	
 	public static void main(String[] args) throws Exception {
+//		BigInteger b = BigInteger.valueOf(System.currentTimeMillis());
+//		byte[] ts = b.toByteArray();
+//		System.out.println("long as byte-array.lenght: "+ts.length);
+		
 		AsymmetricKeyPair ak = generateAsymmetricKeyPair();
 		System.out.println("BitCount: "+ak.getBitCount());
 		
@@ -304,6 +325,7 @@ public class AsymmetricKeyPair {
 		byte[] md5 = kk[1];
 		byte[] sha1 = kk[2];
 		byte[] sha256 = kk[3];
+		long ll = System.currentTimeMillis();
 		
 		String s = SecurityHelper.HexDecoder.encode(md5sha1sha256, ':', 80);
 		System.out.println("SHA1_AND_MD5 length:\t"+md5sha1sha256.length);//sollten 36 bytes sein
@@ -311,7 +333,13 @@ public class AsymmetricKeyPair {
 		
 		System.out.println("\nSignature creation stage...");
 		
-		byte[] signature = ak.sign(md5, sha1, sha256);//just show-off - could have also taken the full-array
+		byte[] signature = ak.sign(
+				md5, 
+				sha1, 
+				sha256, 
+				ll
+			); //just show-off - could have also taken the full-array
+		
 		System.out.println("SIGNATURE(md5sha1sha256).length: "+signature.length);
 		System.out.println("SIGNATURE(md5sha1sha256): "+SecurityHelper.HexDecoder.encode(signature, ':', 80));
 		
@@ -320,7 +348,8 @@ public class AsymmetricKeyPair {
 				signature, 
 				md5,
 				sha1,
-				sha256
+				sha256,
+				ll
 			)
 		);
 	}
