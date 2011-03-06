@@ -3,6 +3,7 @@ package org.fnppl.opensdx.security;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.fnppl.opensdx.security.SecurityHelper.HexDecoder;
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLHelper;
 
@@ -72,20 +73,32 @@ public class KeyLog {
 		}
 		
 		//check signoff
-		Element signoff = ekeylog.getChild("signoff");
+		Element signature = ekeylog.getChild("signature");
+		Signature s = Signature.fromElement(signature);
+		
 		return SignoffElement.verifySignoff(signoff, bsha1);
 	}
 	
 	public void signoff(OSDXKeyObject key) throws Exception {
 		byte[] bsha1 = SecurityHelper.getSHA1LocalProof(ekeylog.getChildren("action"));
-		SignoffElement s = SignoffElement.getSignoffElement(bsha1, key);
+		
+		Signature s =  Signature.createSignature(
+				null, 
+				bsha1, 
+				null, 
+				"localsignoff for sha1 "+HexDecoder.encode(bsha1, ':', -1), 
+				key
+			);
+		
+//		SignoffElement s = SignoffElement.getSignoffElement(bsha1, key);
 		Element e = new Element("keylog");
 		Vector<Element> ea = ekeylog.getChildren("action");
 		for (Element el : ea) {
 			e.addContent(XMLHelper.cloneElement(el));
 		}
-		e.addContent("sha1localproof",SecurityHelper.HexDecoder.encode(bsha1, ':', -1));
-		e.addContent(s);
+		e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(bsha1, ':', -1));
+		
+		e.addContent(s.toElement());
 		ekeylog = e;
 	}
 	
