@@ -1,5 +1,6 @@
 package org.fnppl.opensdx.security;
 
+import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -61,7 +62,7 @@ public class KeyLog {
 		
 	}
 
-	public boolean verifySHA1localproofAndSignoff() throws Exception{
+	public boolean verifySHA1localproofAndSignoff() throws Exception {
 		//check localproof
 		byte[] sha1localproof =  SecurityHelper.HexDecoder.decode(ekeylog.getChildText("sha1localproof"));
 		byte[] bsha1 = SecurityHelper.getSHA1LocalProof(ekeylog.getChildren("action"));
@@ -75,7 +76,7 @@ public class KeyLog {
 		//check signoff
 		Element signature = ekeylog.getChild("signature");
 		Signature s = Signature.fromElement(signature);
-		
+		s.tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(s.));
 		return SignoffElement.verifySignoff(signoff, bsha1);
 	}
 	
