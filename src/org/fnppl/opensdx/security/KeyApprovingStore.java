@@ -172,7 +172,7 @@ public class KeyApprovingStore {
 				keynames.add(signoffkeys.get(i).getKeyID());
 			}
 			int ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign all keypairs in keystore", keynames);
-			if (ans>=0) {
+			if (ans >= 0) {
 				keysSignoff = SignoffElement.getSignoffElement(sha1localproof, signoffkeys.get(ans));
 				ek.addContent(keysSignoff);
 			} else {
