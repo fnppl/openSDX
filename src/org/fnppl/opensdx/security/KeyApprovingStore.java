@@ -56,8 +56,11 @@ import org.fnppl.opensdx.xml.*;
 public class KeyApprovingStore {
 	private File f = null;
 	private Vector<OSDXKeyObject> keys = null;
-	private byte[] keysSHA1localproof = null;
-	private Element keysSignoff = null;
+//	private byte[] keysSHA1localproof = null;	
+//	private Element keysSignoff = null;
+	
+	private Signature keySignature = null;
+	
 	private Vector<KeyLog> keylogs = null;
 	
 	
@@ -88,24 +91,21 @@ public class KeyApprovingStore {
 				OSDXKeyObject osdxk = OSDXKeyObject.fromElement(ee);
 				kas.keys.add(osdxk);
 			}
+			
 			//check sha1localproof
-			kas.keysSHA1localproof =  SecurityHelper.HexDecoder.decode(keys.getChildText("sha1localproof"));
+//			kas.keysSHA1localproof =  SecurityHelper.HexDecoder.decode(keys.getChildText("sha1localproof"));
+			byte[] sha1localproof = SecurityHelper.HexDecoder.decode(keys.getChildText("sha1localproof"));
 			byte[] bsha1 = SecurityHelper.getSHA1LocalProof(ves);
 			
-			if (!Arrays.equals(bsha1, kas.keysSHA1localproof)) {
-				System.out.println("sha1localproof target: "+SecurityHelper.HexDecoder.encode(kas.keysSHA1localproof, '\0', -1));
-				System.out.println("sha1localproof real  : "+SecurityHelper.HexDecoder.encode(bsha1, '\0', -1));
+			if (!Arrays.equals(bsha1, sha1localproof)) {
+				System.out.println("sha1localproof given_in_xml:\t"+SecurityHelper.HexDecoder.encode(sha1localproof, ':', -1));
+				System.out.println("sha1localproof calculated:  \t"+SecurityHelper.HexDecoder.encode(bsha1, ':', -1));
 				throw new Exception("KeyStore: localproof of keypairs failed.");
 			}
 			
-			//check signoff
-			kas.keysSignoff = keys.getChild("signoff");
-			boolean verifyKeysSignoff = SignoffElement.verifySignoff(
-					kas.keysSignoff, 
-					kas.keysSHA1localproof
-				);
-			//verifyKeysSignoff = true;
-			if(!verifyKeysSignoff) {
+			Signature s = Signature.fromElement(keys.getChild("signature"));
+			boolean ok = s.tryVerificationMD5SHA1SHA256(sha1localproof);
+			if(!ok) {
 				throw new Exception("KeyStore:  signoff of localproof of keypairs failed.");
 			}
 			
@@ -152,31 +152,27 @@ public class KeyApprovingStore {
 		}
 		
 		byte[] sha1localproof = SecurityHelper.getSHA1LocalProof(ek.getChildren("keypair"));
-		ek.addContent("sha1localproof",SecurityHelper.HexDecoder.encode(sha1localproof, '\0',-1));
+		ek.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1localproof, ':',-1));
 		root.addContent(ek);
 		
-		//keysSignoff = null; //for testing
-		if (keysSignoff!=null && Arrays.equals(keysSHA1localproof, sha1localproof)) {
-			//old signature still fits
-			ek.addContent(XMLHelper.cloneElement(keysSignoff));
+		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(sha1localproof);
+		byte[] md5sha1sha256 = kk[0];
+		byte[] md5 = kk[1];
+		byte[] sha1 = kk[2];
+		byte[] sha256 = kk[3];
+		
+		Vector<OSDXKeyObject> signoffkeys = getAllSigningKeys();
+		Vector<String> keynames = new Vector<String>();
+		for (int i=0; i<signoffkeys.size(); i++) {
+			keynames.add(signoffkeys.get(i).getKeyID());
+		}
+		int ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign all keypairs in keystore", keynames);
+		if (ans >= 0) {
+			Signature s = Signature.createSignature(md5,sha1,sha256, "sign of localproof-sha1 of keys", signoffkeys.elementAt(ans));
+			ek.addContent(s.toElement());
+			
 		} else {
-			//new signature needed
-			if (keysSignoff!=null)
-				System.out.println("old sig keys localproof: "+SecurityHelper.HexDecoder.encode(keysSHA1localproof,'\0',-1));
-			System.out.println("new sig keys localproof: "+SecurityHelper.HexDecoder.encode(sha1localproof,'\0',-1));
-			keysSHA1localproof = sha1localproof;
-			Vector<OSDXKeyObject> signoffkeys = getAllSigningKeys();
-			Vector<String> keynames = new Vector<String>();
-			for (int i=0;i<signoffkeys.size();i++) {
-				keynames.add(signoffkeys.get(i).getKeyID());
-			}
-			int ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign all keypairs in keystore", keynames);
-			if (ans >= 0) {
-				keysSignoff = SignoffElement.getSignoffElement(sha1localproof, signoffkeys.get(ans));
-				ek.addContent(keysSignoff);
-			} else {
-				throw new Exception("KeyStore:  signoff of localproof of keypairs failed.");
-			}
+			throw new Exception("KeyStore:  signoff of localproof of keypairs failed.");
 		}
 		
 		
@@ -186,14 +182,14 @@ public class KeyApprovingStore {
 				boolean v = kl.verifySHA1localproofAndSignoff();
 				//v  = false; //for testing
 				if (!v) {
-					Vector<OSDXKeyObject> signoffkeys = getAllSigningKeys();
-					Vector<String> keynames = new Vector<String>();
+					signoffkeys = getAllSigningKeys();
+					keynames = new Vector<String>();
 					for (int i=0;i<signoffkeys.size();i++) {
 						keynames.add(signoffkeys.get(i).getKeyID());
 					}
-					int ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign keylog in keystore", keynames);
-					if (ans>=0) {
-						kl.signoff(signoffkeys.get(ans));
+					ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign keylog in keystore", keynames);
+					if (ans >= 0) {
+						kl.signoff(signoffkeys.elementAt(ans));
 					} else {
 						throw new Exception("KeyStore:  signoff of localproof of keylog failed.");
 					}
@@ -207,7 +203,6 @@ public class KeyApprovingStore {
 		if (!file.exists() || Dialogs.YES == Dialogs.showYES_NO_Dialog("OVERWRITE?", "File \""+file.getName()+"\" exits?\nAll comments will be deleted.\nDo you really want to overwrite?")) {
 			d.writeToFile(file);
 		}
-		
 	}
 }
 

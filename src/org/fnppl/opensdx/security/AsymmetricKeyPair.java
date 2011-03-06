@@ -274,7 +274,7 @@ public class AsymmetricKeyPair {
 			System.arraycopy(sha1, 0, dd, 0+16, sha1.length);
 		}
 		if(sha256 != null) {
-			System.arraycopy(sha1, 0, dd, 0+16+20, sha256.length);
+			System.arraycopy(sha256, 0, dd, 0+16+20, sha256.length);
 		}
 		BigInteger b = BigInteger.valueOf(datetime);
 		byte[] ts = b.toByteArray();

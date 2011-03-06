@@ -278,6 +278,9 @@ public class Signature {
 		
 	}
 	
+	public boolean tryVerificationMD5SHA1SHA256(byte[] in) throws Exception {
+		return tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(in));
+	}
 	public boolean tryVerificationMD5SHA1SHA256(InputStream in) throws Exception {
 		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(in);
 		byte[] md5sha1sha256 = kk[0];

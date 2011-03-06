@@ -76,20 +76,20 @@ public class KeyLog {
 		//check signoff
 		Element signature = ekeylog.getChild("signature");
 		Signature s = Signature.fromElement(signature);
-		s.tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(s.));
-		return SignoffElement.verifySignoff(signoff, bsha1);
+		
+//		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(bsha1);
+//		byte[] md5sha1sha256 = kk[0];
+//		byte[] md5 = kk[1];
+//		byte[] sha1 = kk[2];
+//		byte[] sha256 = kk[3];
+		
+		return s.tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(bsha1));
+		
+//		return SignoffElement.verifySignoff(signoff, bsha1);
 	}
 	
 	public void signoff(OSDXKeyObject key) throws Exception {
 		byte[] bsha1 = SecurityHelper.getSHA1LocalProof(ekeylog.getChildren("action"));
-		
-		Signature s =  Signature.createSignature(
-				null, 
-				bsha1, 
-				null, 
-				"localsignoff for sha1 "+HexDecoder.encode(bsha1, ':', -1), 
-				key
-			);
 		
 //		SignoffElement s = SignoffElement.getSignoffElement(bsha1, key);
 		Element e = new Element("keylog");
@@ -98,6 +98,14 @@ public class KeyLog {
 			e.addContent(XMLHelper.cloneElement(el));
 		}
 		e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(bsha1, ':', -1));
+		
+		Signature s =  Signature.createSignature(
+				null, 
+				bsha1, 
+				null, 
+				"localsignoff for sha1 "+HexDecoder.encode(bsha1, ':', -1), 
+				key
+			);
 		
 		e.addContent(s.toElement());
 		ekeylog = e;
