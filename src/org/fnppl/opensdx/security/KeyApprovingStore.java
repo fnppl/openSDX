@@ -111,7 +111,6 @@ public class KeyApprovingStore {
 			
 		} else {
 			//TODO no keypairs in store
-			
 		}
 		
 		//add keylog (includes verify localproof and signoff)
