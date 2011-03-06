@@ -47,6 +47,9 @@ package org.fnppl.opensdx.gui;
  */
 
 import java.awt.*;
+import java.io.*;
+import java.util.*;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -55,9 +58,13 @@ import java.awt.event.MouseListener;
 
 import javax.swing.*;
 
+import org.fnppl.opensdx.security.KeyApprovingStore;
 
 
 public class SecurityMainFrame extends JFrame {
+	private KeyApprovingStore currentKeyStore = null;
+	private File lastDir = new File(System.getProperty("user.home"));
+	
 	private static SecurityMainFrame instance = null;
 	public static SecurityMainFrame getInstance() {
 		if(instance == null) {
@@ -72,6 +79,30 @@ public class SecurityMainFrame extends JFrame {
 		setSize(1024, 768);
 	}
 	
+	public boolean openDefauktKeyStore() {
+		File f = new File(System.getProperty("user.home"));
+		f = new File(f, "openSDX");
+		if(!f.exists()) {
+			f.mkdirs();
+		}
+		
+		f = new File(f, "defaultKeyStore.xml");
+		
+		return openKeyStore(f);
+	}
+	public boolean openKeyStore(File f) {
+		try {
+			if(f.exists()) {
+				KeyApprovingStore kas = KeyApprovingStore.fromFile(f);
+				this.currentKeyStore = kas;
+				return true;
+			}
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+		return false;
+	}
+	
 	public void makeMenuBar() {
 		ActionListener ja = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -80,26 +111,92 @@ public class SecurityMainFrame extends JFrame {
 				if(cmd.equalsIgnoreCase("quit")) {
 					System.exit(0);
 				}
+				else if(cmd.equalsIgnoreCase("createnewkeystore")) {
+					JOptionPane.showMessageDialog(instance, "createnewkeystore :: popup");
+				}
+				else if(cmd.equalsIgnoreCase("openkeystore")) {
+					JOptionPane.showMessageDialog(instance, "openkeystore :: popup");
+				}
+				else if(cmd.equalsIgnoreCase("writekeystore")) {
+					JOptionPane.showMessageDialog(instance, "writekeystore :: popup");
+				}
+				else if(cmd.equalsIgnoreCase("generatekeypair")) {
+					JOptionPane.showMessageDialog(instance, "generatekeystore :: popup");
+				}
+				else if(cmd.equalsIgnoreCase("encryptfile")) {
+					JOptionPane.showMessageDialog(instance, "encryptfile :: popup");
+				}
+				else if(cmd.equalsIgnoreCase("decryptfile")) {
+					JOptionPane.showMessageDialog(instance, "decryptfile :: popup");
+				}
+				else if(cmd.equalsIgnoreCase("signfile")) {
+					JOptionPane.showMessageDialog(instance, "signfile :: popup");
+				}
+				else if(cmd.equalsIgnoreCase("verifysignature")) {
+					JOptionPane.showMessageDialog(instance, "verifysignature :: popup");
+				}
 			}
 		};
 		
 		JMenuBar jb = new JMenuBar();
 		JMenu jm = new JMenu("File");
+		jb.add(jm);
 		JMenuItem jmi = null;
+		
+		jmi = new JMenuItem("CreateNewKeyStore");
+		jmi.setActionCommand("createnewkeystore");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
 		
 		jmi = new JMenuItem("OpenKeyStore");
 		jmi.setActionCommand("openkeystore");
 		jmi.addActionListener(ja);
+		jm.add(jmi);
 		
-		jmi = new JMenuItem("WriteKeyStore");
+		jmi = new JMenuItem("CloseKeyStore");
 		jmi.setActionCommand("writekeystore");
 		jmi.addActionListener(ja);
-		
+		jm.add(jmi);
 		
 		jmi = new JMenuItem("Quit");
 		jmi.setActionCommand("quit");
 		jmi.addActionListener(ja);
+		jm.add(jmi);
 		
+		
+		jm = new JMenu("Keys");
+		jb.add(jm);
+		
+		jmi = new JMenuItem("GenerateKeyPair");
+		jmi.setActionCommand("generatekeypair");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+		
+		jm = new JMenu("Signature");
+		jb.add(jm);
+		
+		jmi = new JMenuItem("VerifySignature");
+		jmi.setActionCommand("verifysignature");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+		
+		jmi = new JMenuItem("SignFile");
+		jmi.setActionCommand("signfile");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+		
+		jm = new JMenu("<html>Encryption<br>Decryption</html>");
+		jb.add(jm);
+		
+		jmi = new JMenuItem("EncryptFile");
+		jmi.setActionCommand("encryptfile");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+		
+		jmi = new JMenuItem("DecryptFile");
+		jmi.setActionCommand("decryptfile");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
 		
 		setJMenuBar(jb);
 	}
@@ -163,6 +260,7 @@ public class SecurityMainFrame extends JFrame {
 		
 		SecurityMainFrame s = SecurityMainFrame.getInstance();
 		s.buildUi();
+		s.openDefauktKeyStore();
 		s.setVisible(true);
 	}
 }
