@@ -57,6 +57,11 @@ public class DataSourceStep {
 		
 	}
 	
+	public DataSourceStep(String source, long datetime) {
+		datasource = source;
+		datainsertdatetime = datetime;
+	}
+	
 	public static DataSourceStep fromElemet(Element step) throws Exception {
 		DataSourceStep s = new DataSourceStep();
 		s.datasource = step.getChildText("datasource");
@@ -64,6 +69,7 @@ public class DataSourceStep {
 		s.datainsertdatetime = OSDXKeyObject.datemeGMT.parse(datainsertdatetime).getTime();
 		return s;
 	}
+	
 	
 	public String getDataSource() {
 		return datasource;

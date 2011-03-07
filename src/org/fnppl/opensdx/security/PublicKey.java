@@ -236,7 +236,7 @@ public class PublicKey {
 		
 		byte[] ka = encryptPKCSed7(signature);
 		
-		//System.out.println("PubKey_verify: SIGNATURE_DEC (length: "+ka.length+") \t:"+SecurityHelper.HexDecoder.encode(ka, ':', 80));
+		System.out.println("PubKey_verify: SIGNATURE_DEC (length: "+ka.length+") \t:"+SecurityHelper.HexDecoder.encode(ka, ':', 80));
 		
 		byte[] real = new byte[ka.length-1];
 		System.arraycopy(ka, 1, real, 0, real.length);//0x00 header killr

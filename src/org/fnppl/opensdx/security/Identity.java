@@ -58,6 +58,7 @@ import org.fnppl.opensdx.xml.XMLHelper;
 
 
 public class Identity {
+	
 	String email = null;
 	String mnemonic = null;
 	String phone = null;
@@ -82,6 +83,26 @@ public class Identity {
 	
 	private Identity() {
 		
+	}
+	
+	public static Identity newEmptyIdentity() throws Exception {
+		Identity idd = new Identity();
+		idd.email = "";
+		idd.mnemonic = "";
+		idd.phone = "";
+		idd.country = "";
+		idd.region = "";
+		idd.postcode = "";
+		idd.company = "";
+		idd.unit = "";
+		idd.subunit = "";
+		idd.function = "";
+		idd.surname = "";
+		idd.middlename = "";
+		idd.name = "";
+		idd.note = "";
+		idd.datapath = new Vector<DataSourceStep>();
+		return idd;
 	}
 	
 	public static Identity fromElement(Element id) throws Exception {
@@ -177,24 +198,144 @@ public class Identity {
 		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
 		
 		byte[] k = null;
-		k = email.getBytes("UTF-8"); sha1.update(k, 0, k.length);
+		k = email.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		k = mnemonic.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
-		k = phone.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = country.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = region.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = postcode.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = company.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = unit.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = subunit.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = function.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = surname.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = middlename.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = name.getBytes("UTF-8"); sha1.update(k, 0, k.length);
-		k = note.getBytes("UTF-8"); sha1.update(k, 0, k.length);
+		k = phone.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
+		k = country.getBytes("UTF-8");if (k.length>0) sha1.update(k, 0, k.length);
+		k = region.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
+		k = postcode.getBytes("UTF-8");if (k.length>0) sha1.update(k, 0, k.length);
+		k = company.getBytes("UTF-8");if (k.length>0) sha1.update(k, 0, k.length);
+		k = unit.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
+		k = subunit.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
+		k = function.getBytes("UTF-8");if (k.length>0) sha1.update(k, 0, k.length);
+		k = surname.getBytes("UTF-8"); if (k.length>0)sha1.update(k, 0, k.length);
+		k = middlename.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
+		k = name.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
+		k = note.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		
 		sha1.doFinal(ret, 0);
 		//System.out.println("sha1: "+SecurityHelper.HexDecoder.encode(ret, ':', -1));
 		return ret;
+	}
+	
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getMnemonic() {
+		return mnemonic;
+	}
+
+	public void setMnemonic(String mnemonic) {
+		this.mnemonic = mnemonic;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	public String getRegion() {
+		return region;
+	}
+
+	public void setRegion(String region) {
+		this.region = region;
+	}
+
+	public String getPostcode() {
+		return postcode;
+	}
+
+	public void setPostcode(String postcode) {
+		this.postcode = postcode;
+	}
+
+	public String getCompany() {
+		return company;
+	}
+
+	public void setCompany(String company) {
+		this.company = company;
+	}
+
+	public String getUnit() {
+		return unit;
+	}
+
+	public void setUnit(String unit) {
+		this.unit = unit;
+	}
+
+	public String getSubunit() {
+		return subunit;
+	}
+
+	public void setSubunit(String subunit) {
+		this.subunit = subunit;
+	}
+
+	public String getFunction() {
+		return function;
+	}
+
+	public void setFunction(String function) {
+		this.function = function;
+	}
+
+	public String getSurname() {
+		return surname;
+	}
+
+	public void setSurname(String surname) {
+		this.surname = surname;
+	}
+
+	public String getMiddlename() {
+		return middlename;
+	}
+
+	public void setMiddlename(String middlename) {
+		this.middlename = middlename;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	public Vector<DataSourceStep> getDatapath() {
+		return datapath;
+	}
+
+	public void setDatapath(Vector<DataSourceStep> datapath) {
+		this.datapath = datapath;
 	}
 }
 

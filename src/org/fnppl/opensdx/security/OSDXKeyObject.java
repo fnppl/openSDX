@@ -77,7 +77,7 @@ public class OSDXKeyObject {
 	public static final int USAGE_SIGN = 0;
 	public static final int USAGE_CRYPT = 1;
 	public static final int USAGE_WHATEVER = 2;
-	private static final Vector<String> usage_name = new Vector<String>();
+	public static final Vector<String> usage_name = new Vector<String>();
 	static {
 		usage_name.addElement("ONLYSIGN");
 		usage_name.addElement("ONLYCRYPT");
@@ -87,7 +87,7 @@ public class OSDXKeyObject {
 	public static final int LEVEL_MASTER = 0;
 	public static final int LEVEL_REVOKE = 1;
 	public static final int LEVEL_SUB = 2;
-	private static final Vector<String> level_name = new Vector<String>();
+	public static final Vector<String> level_name = new Vector<String>();
 	static {
 		level_name.addElement("MASTER");
 		level_name.addElement("REVOKE");
@@ -130,6 +130,19 @@ public class OSDXKeyObject {
 			);
 		return ll;
 	}
+	
+	public static OSDXKeyObject fromKeyPair(AsymmetricKeyPair kp) throws Exception {
+		OSDXKeyObject ret = new OSDXKeyObject();
+		ret.akp = kp;
+		ret.level = LEVEL_MASTER;
+		ret.authoritativekeyserver = "LOCAL";
+		ret.modulussha1 = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(kp.getModulus()), '\0', -1);
+		ret.datapath = new Vector<DataSourceStep>();
+		ret.datapath.add(new DataSourceStep("LOCAL", System.currentTimeMillis()));
+		
+		return ret;
+	}
+		
 	public static OSDXKeyObject fromElement(Element kp) throws Exception {
 		OSDXKeyObject ret = new OSDXKeyObject();
 		System.out.println("adding keyobject");
@@ -424,6 +437,60 @@ public class OSDXKeyObject {
 		ekp.addContent("gpgkeyserverid", gpgkeyserverid);
 		
 		return ekp;
+	}
+	
+	public String getLevelName() {
+		return level_name.get(level);
+	}
+	
+	public void setLevel(int level) {
+		this.level = level;
+	}
+	
+	public String getUsageName() {
+		return usage_name.get(usage);
+	}
+	
+	public int getUsage() {
+		return usage;
+	}
+	
+	public void setUsage(int u) {
+		usage = u;
+	}
+	
+	public Vector<Identity> getIdentities() {
+		return identities;
+	}
+	public Vector<DataSourceStep> getDatapath() {
+		return datapath;
+	}
+	
+	public String getAuthoritativekeyserver() {
+		return authoritativekeyserver;
+	}
+	
+	public void addIdentity(Identity id) {
+		identities.add(id);
+	}
+	
+	public String getParentKeyID() {
+		if (parentosdxkeyobject!=null) return parentosdxkeyobject.getKeyID();
+		else return parentkeyid;
+	}
+	
+	public void setParentKey(OSDXKeyObject parent) {
+		parentosdxkeyobject = parent;
+		parentkeyid = parent.getKeyID();
+	}
+	
+	public void setParentKeyID(String id) {
+		parentkeyid = id;
+		parentosdxkeyobject = null;
+	}
+	
+	public boolean hasPrivateKey() {
+		return lockedPrivateKey!=null || akp.hasPrivateKey();
 	}
 	
 	public static void main(String[] args) throws Exception {

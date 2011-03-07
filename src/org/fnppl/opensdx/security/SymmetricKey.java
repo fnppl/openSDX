@@ -191,7 +191,9 @@ public class SymmetricKey {
 	            new PKCS7Padding()
 	    	);
 	    
-	    aesCipher.init(false, aesCBCParams);
+	    //aesCipher.init(false, aesCBCParams);
+	    aesCipher.init(true, aesCBCParams); //TODO pad block corrupted error when false. WHY??
+	    
 	    int read = -1;
 	    byte[] buff = new byte[128/8];//blocksize
 		while((read=in.read(buff)) != -1) {

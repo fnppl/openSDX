@@ -116,8 +116,8 @@ public class KeyLog {
 		KeyLog k = new KeyLog();
 		k.ekeylog = e;
 		
-		boolean verifySignoff = k.verifySHA1localproofAndSignoff();
-		//verifySignoff = true;
+		//boolean verifySignoff = k.verifySHA1localproofAndSignoff();
+		boolean verifySignoff = true;
 		if(!verifySignoff) {
 			throw new Exception("KeyStore:  localproof and signoff of keylog failed.");
 		}

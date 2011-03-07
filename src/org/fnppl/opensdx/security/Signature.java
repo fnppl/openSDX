@@ -165,6 +165,7 @@ public class Signature {
 		s.datasha256 = sha256;
 		s.dataname = dataname;
 		s.signdatetime = System.currentTimeMillis();//HT 2011-03-06 TODO: Signing_TIMESERVER
+		s.signdatetime = s.signdatetime - s.signdatetime%1000; //BB 2011-03-07 no milliseconds in datemeGMT format
 		
 //		byte[] data = SecurityHelper.concat(sha256, md5);
 //		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(tc.getBytes());
@@ -187,7 +188,7 @@ public class Signature {
 		System.out.println("md5            : "+SecurityHelper.HexDecoder.encode(s.datamd5,'\0',-1));
 		System.out.println("sha1           : "+SecurityHelper.HexDecoder.encode(s.datasha1,'\0',-1));
 		System.out.println("sha256         : "+SecurityHelper.HexDecoder.encode(s.datasha256,'\0',-1));
-		System.out.println("signdatetime   : "+OSDXKeyObject.datemeGMT.format((new Date(s.signdatetime))));
+		System.out.println("signdatetime   : "+OSDXKeyObject.datemeGMT.format((new Date(s.signdatetime)))+" long = "+s.signdatetime);
 //		System.out.println("signoffsha1    : "+SecurityHelper.HexDecoder.encode(s.signoffsha1,'\0',-1));
 		System.out.println("signaturebytes : "+SecurityHelper.HexDecoder.encode(s.signaturebytes,'\0',-1));
 		
@@ -281,12 +282,19 @@ public class Signature {
 	public boolean tryVerificationMD5SHA1SHA256(byte[] in) throws Exception {
 		return tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(in));
 	}
+	
 	public boolean tryVerificationMD5SHA1SHA256(InputStream in) throws Exception {
 		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(in);
 		byte[] md5sha1sha256 = kk[0];
 		byte[] md5 = kk[1];
 		byte[] sha1 = kk[2];
 		byte[] sha256 = kk[3];
+		
+		System.out.println("md5            : "+SecurityHelper.HexDecoder.encode(md5,'\0',-1));
+		System.out.println("sha1           : "+SecurityHelper.HexDecoder.encode(sha1,'\0',-1));
+		System.out.println("sha256         : "+SecurityHelper.HexDecoder.encode(sha256,'\0',-1));
+		System.out.println("signdatetime   : "+OSDXKeyObject.datemeGMT.format((new Date(signdatetime)))+" long = "+signdatetime);
+		
 		
 		boolean ok = pubkey.verify(
 				signaturebytes, 

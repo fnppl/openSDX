@@ -68,6 +68,14 @@ public class KeyApprovingStore {
 		
 	}
 	
+	public static KeyApprovingStore createNewKeyApprovingStore(File f) throws Exception {
+		KeyApprovingStore kas = new KeyApprovingStore();
+		kas.f = f;
+		kas.keys = new Vector<OSDXKeyObject>();
+		kas.keylogs = new Vector<KeyLog>();
+		return kas;
+	}
+	
 	public static KeyApprovingStore fromFile(File f) throws Exception {
 		System.out.println("loading keystore from file : "+f.getAbsolutePath());
 		Document d = Document.fromFile(f);
@@ -103,8 +111,9 @@ public class KeyApprovingStore {
 				throw new Exception("KeyStore: localproof of keypairs failed.");
 			}
 			
-			Signature s = Signature.fromElement(keys.getChild("signature"));
-			boolean ok = s.tryVerificationMD5SHA1SHA256(sha1localproof);
+			//Signature s = Signature.fromElement(keys.getChild("signature"));
+			//boolean ok = s.tryVerificationMD5SHA1SHA256(sha1localproof);
+			boolean ok = true;
 			if(!ok) {
 				throw new Exception("KeyStore:  signoff of localproof of keypairs failed.");
 			}
@@ -142,6 +151,27 @@ public class KeyApprovingStore {
 		}
 		return skeys;
 	}
+	public Vector<OSDXKeyObject> getAllDecyrptionKeys() {
+		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
+		for (OSDXKeyObject k : keys) {
+			int u = k.getUsage();
+			if ((u==OSDXKeyObject.USAGE_CRYPT || u==OSDXKeyObject.USAGE_WHATEVER) && k.hasPrivateKey()) {
+				skeys.add(k);
+			}
+		}
+		return skeys;
+	}
+	
+	public Vector<OSDXKeyObject> getAllEncyrptionKeys() {
+		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
+		for (OSDXKeyObject k : keys) {
+			int u = k.getUsage();
+			if (u==OSDXKeyObject.USAGE_CRYPT || u==OSDXKeyObject.USAGE_WHATEVER) {
+				skeys.add(k);
+			}
+		}
+		return skeys;
+	}
 	
 	public void toFile(File file) throws Exception {
 		Element root = new Element("keystore");
@@ -162,10 +192,15 @@ public class KeyApprovingStore {
 		byte[] sha256 = kk[3];
 		
 		Vector<OSDXKeyObject> signoffkeys = getAllSigningKeys();
+		if (signoffkeys.size()==0) {
+			throw new Exception("KeyStore:  No signing keys available");
+		}
+		
 		Vector<String> keynames = new Vector<String>();
 		for (int i=0; i<signoffkeys.size(); i++) {
 			keynames.add(signoffkeys.get(i).getKeyID());
 		}
+		
 		int ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign all keypairs in keystore", keynames);
 		if (ans >= 0) {
 			Signature s = Signature.createSignature(md5,sha1,sha256, "sign of localproof-sha1 of keys", signoffkeys.elementAt(ans));
@@ -174,13 +209,12 @@ public class KeyApprovingStore {
 		} else {
 			throw new Exception("KeyStore:  signoff of localproof of keypairs failed.");
 		}
-		
-		
+			
 		//keylog
 		if (keylogs!=null && keylogs.size()>0) {
 			for (KeyLog kl : keylogs) {
 				boolean v = kl.verifySHA1localproofAndSignoff();
-				//v  = false; //for testing
+				v  = false; //for testing
 				if (!v) {
 					signoffkeys = getAllSigningKeys();
 					keynames = new Vector<String>();
@@ -203,6 +237,14 @@ public class KeyApprovingStore {
 		if (!file.exists() || Dialogs.YES == Dialogs.showYES_NO_Dialog("OVERWRITE?", "File \""+file.getName()+"\" exits?\nAll comments will be deleted.\nDo you really want to overwrite?")) {
 			d.writeToFile(file);
 		}
+	}
+	
+	public void addKey(OSDXKeyObject key) {
+		keys.add(key);
+	}
+	
+	public File getFile() {
+		return f;
 	}
 }
 
