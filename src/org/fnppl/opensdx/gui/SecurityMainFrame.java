@@ -573,7 +573,6 @@ public class SecurityMainFrame extends JFrame {
 		JButton addID = new JButton("add identity");
 		addID.setPreferredSize(new Dimension(150,25));
 		addID.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					Identity id = Identity.newEmptyIdentity();
@@ -587,7 +586,6 @@ public class SecurityMainFrame extends JFrame {
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
-				
 			}
 		});
 		pb.add(addID);
@@ -595,7 +593,6 @@ public class SecurityMainFrame extends JFrame {
 		JButton removeID = new JButton("remove identity");
 		removeID.setPreferredSize(new Dimension(150,25));
 		removeID.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					int[] sel = edit.getSelectedRows();
@@ -637,7 +634,6 @@ public class SecurityMainFrame extends JFrame {
 		JButton ok = new JButton("ok");
 		ok.setPreferredSize(new Dimension(150,25));
 		ok.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				isOK[0] = true;
 				d.dispose();
@@ -675,7 +671,6 @@ public class SecurityMainFrame extends JFrame {
 		JButton ok = new JButton("ok");
 		ok.setPreferredSize(new Dimension(200,30));
 		ok.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				isOK[0] = true;
 				d.dispose();
