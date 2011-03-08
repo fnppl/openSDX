@@ -110,6 +110,7 @@ public class OSDXKeyObject {
 	
 	private AsymmetricKeyPair akp = null;
 	private Element lockedPrivateKey = null;
+	private boolean unsavedChanges = false;
 	
 //	private AsymmetricCipherKeyPair keypair = null;
 //	private RSAKeyParameters rpub = null;
@@ -139,7 +140,7 @@ public class OSDXKeyObject {
 		ret.modulussha1 = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(kp.getModulus()), '\0', -1);
 		ret.datapath = new Vector<DataSourceStep>();
 		ret.datapath.add(new DataSourceStep("LOCAL", System.currentTimeMillis()));
-		
+		ret.unsavedChanges = true;
 		return ret;
 	}
 		
@@ -433,9 +434,9 @@ public class OSDXKeyObject {
 				System.out.println("CAUTION: private key NOT saved.");
 			}
 		}// -- end privkey
-		
 		ekp.addContent("gpgkeyserverid", gpgkeyserverid);
 		
+		unsavedChanges = false;
 		return ekp;
 	}
 	
@@ -444,6 +445,7 @@ public class OSDXKeyObject {
 	}
 	
 	public void setLevel(int level) {
+		unsavedChanges = true;
 		this.level = level;
 	}
 	
@@ -456,6 +458,7 @@ public class OSDXKeyObject {
 	}
 	
 	public void setUsage(int u) {
+		unsavedChanges = true;
 		usage = u;
 	}
 	
@@ -471,27 +474,48 @@ public class OSDXKeyObject {
 	}
 	
 	public void addIdentity(Identity id) {
+		unsavedChanges = true;
 		identities.add(id);
 	}
 	
+	public void removeIdentity(Identity id) {
+		unsavedChanges = true;
+		identities.remove(id);
+	}
 	public String getParentKeyID() {
 		if (parentosdxkeyobject!=null) return parentosdxkeyobject.getKeyID();
 		else return parentkeyid;
 	}
 	
 	public void setParentKey(OSDXKeyObject parent) {
+		unsavedChanges = true;
 		parentosdxkeyobject = parent;
 		parentkeyid = parent.getKeyID();
 	}
 	
 	public void setParentKeyID(String id) {
+		unsavedChanges = true;
 		parentkeyid = id;
 		parentosdxkeyobject = null;
+	}
+	
+	public boolean hasUnsavedChanges() {
+		if (unsavedChanges) return true;
+		else {
+			for (Identity id : identities) {
+				if (id.hasUnsavedChanges()) {
+					System.out.println("unsaved changes in id: "+id.getEmail());
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public boolean hasPrivateKey() {
 		return lockedPrivateKey!=null || akp.hasPrivateKey();
 	}
+	
 	
 	public static void main(String[] args) throws Exception {
 		String l = "2011-02-24 21:21:36 GMT+00:00";

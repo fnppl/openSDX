@@ -76,10 +76,10 @@ public class Identity {
 	String name = null;
 	
 	String note = null;
-	String sha1FromElement = null;
+	byte[] sha1FromElement = null;
 	
 	Vector<DataSourceStep> datapath = null;
-	
+	private boolean unsavedChanges = false;
 	
 	private Identity() {
 		
@@ -102,6 +102,7 @@ public class Identity {
 		idd.name = "";
 		idd.note = "";
 		idd.datapath = new Vector<DataSourceStep>();
+		idd.unsavedChanges = true;
 		return idd;
 	}
 	
@@ -123,7 +124,7 @@ public class Identity {
 		idd.name = id.getChildText("name");
 		idd.note = id.getChildText("note");
 		
-		idd.sha1FromElement = id.getChildText("sha1");
+		idd.sha1FromElement = SecurityHelper.HexDecoder.decode(id.getChildText("sha1"));
 		
 		//datapath
 		Element dp = id.getChild("datapath");
@@ -146,8 +147,9 @@ public class Identity {
 	}
 	
 	public boolean validate() throws Exception {
-		String sha1 = SecurityHelper.HexDecoder.encode(calcSHA1(), '\0', -1);
-		return sha1.equals(sha1FromElement);
+		byte[] sha1 = calcSHA1();
+		//String ssha1 = SecurityHelper.HexDecoder.encode(sha1, '\0', -1);
+		return Arrays.equals(sha1,sha1FromElement);
 	}
 	
 	public Element toElement() {
@@ -170,6 +172,7 @@ public class Identity {
 		try {
 			byte[] sha1b = calcSHA1();
 			id.addContent("sha1", SecurityHelper.HexDecoder.encode(sha1b, ':', -1));
+			sha1FromElement = sha1b;
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -183,7 +186,7 @@ public class Identity {
 			edp.addContent(edss);
 		}
 		id.addContent(edp);
-		
+		unsavedChanges = false;
 		return id;
 	}
 	
@@ -223,6 +226,7 @@ public class Identity {
 	}
 
 	public void setEmail(String email) {
+		unsavedChanges = true;
 		this.email = email;
 	}
 
@@ -231,6 +235,7 @@ public class Identity {
 	}
 
 	public void setMnemonic(String mnemonic) {
+		unsavedChanges = true;
 		this.mnemonic = mnemonic;
 	}
 
@@ -239,6 +244,7 @@ public class Identity {
 	}
 
 	public void setPhone(String phone) {
+		unsavedChanges = true;
 		this.phone = phone;
 	}
 
@@ -247,6 +253,7 @@ public class Identity {
 	}
 
 	public void setCountry(String country) {
+		unsavedChanges = true;
 		this.country = country;
 	}
 
@@ -255,6 +262,7 @@ public class Identity {
 	}
 
 	public void setRegion(String region) {
+		unsavedChanges = true;
 		this.region = region;
 	}
 
@@ -263,6 +271,7 @@ public class Identity {
 	}
 
 	public void setPostcode(String postcode) {
+		unsavedChanges = true;
 		this.postcode = postcode;
 	}
 
@@ -271,6 +280,7 @@ public class Identity {
 	}
 
 	public void setCompany(String company) {
+		unsavedChanges = true;
 		this.company = company;
 	}
 
@@ -279,6 +289,7 @@ public class Identity {
 	}
 
 	public void setUnit(String unit) {
+		unsavedChanges = true;
 		this.unit = unit;
 	}
 
@@ -287,6 +298,7 @@ public class Identity {
 	}
 
 	public void setSubunit(String subunit) {
+		unsavedChanges = true;
 		this.subunit = subunit;
 	}
 
@@ -295,6 +307,7 @@ public class Identity {
 	}
 
 	public void setFunction(String function) {
+		unsavedChanges = true;
 		this.function = function;
 	}
 
@@ -303,6 +316,7 @@ public class Identity {
 	}
 
 	public void setSurname(String surname) {
+		unsavedChanges = true;
 		this.surname = surname;
 	}
 
@@ -311,6 +325,7 @@ public class Identity {
 	}
 
 	public void setMiddlename(String middlename) {
+		unsavedChanges = true;
 		this.middlename = middlename;
 	}
 
@@ -319,6 +334,7 @@ public class Identity {
 	}
 
 	public void setName(String name) {
+		unsavedChanges = true;
 		this.name = name;
 	}
 
@@ -327,6 +343,7 @@ public class Identity {
 	}
 
 	public void setNote(String note) {
+		unsavedChanges = true;
 		this.note = note;
 	}
 
@@ -335,7 +352,12 @@ public class Identity {
 	}
 
 	public void setDatapath(Vector<DataSourceStep> datapath) {
+		unsavedChanges = true;
 		this.datapath = datapath;
+	}
+	
+	public boolean hasUnsavedChanges() {
+		return unsavedChanges;
 	}
 }
 

@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.security.SecurityHelper.HexDecoder;
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLHelper;
@@ -56,7 +57,7 @@ import org.fnppl.opensdx.xml.XMLHelper;
 public class KeyLog {
 
 	private Element ekeylog;
-	
+	private boolean verified = false;
 	
 	private KeyLog() {
 		
@@ -109,24 +110,32 @@ public class KeyLog {
 		
 		e.addContent(s.toElement());
 		ekeylog = e;
+		verified = true;
 	}
 	
 	
 	public static KeyLog fromElement(Element e)  throws Exception {
 		KeyLog k = new KeyLog();
 		k.ekeylog = e;
-		
-		//boolean verifySignoff = k.verifySHA1localproofAndSignoff();
-		boolean verifySignoff = true;
-		if(!verifySignoff) {
-			throw new Exception("KeyStore:  localproof and signoff of keylog failed.");
+		k.verified = false;
+		try {
+			k.verified = k.verifySHA1localproofAndSignoff();
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
-		
+		if(!k.verified) {
+			int a = Dialogs.showYES_NO_Dialog("Verification failed", "KeyStore:  localproof and signoff of keylog failed.\nIgnore?");
+			if (a!=Dialogs.YES) 
+				throw new Exception("KeyStore:  localproof and signoff of keylog failed.");
+		}
 		return k;
 	}
 	
-	public Element toElement() {
+	public boolean isVerified() {
+		return verified;
+	}
 	
+	public Element toElement() {
 		return XMLHelper.cloneElement(ekeylog);
 	}
 }

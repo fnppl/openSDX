@@ -191,8 +191,8 @@ public class SymmetricKey {
 	            new PKCS7Padding()
 	    	);
 	    
-	    //aesCipher.init(false, aesCBCParams);
-	    aesCipher.init(true, aesCBCParams); //TODO pad block corrupted error when false. WHY??
+	    aesCipher.init(false, aesCBCParams);
+	   // aesCipher.init(true, aesCBCParams); //TODO pad block corrupted error when false. WHY??
 	    
 	    int read = -1;
 	    byte[] buff = new byte[128/8];//blocksize
@@ -225,6 +225,7 @@ public class SymmetricKey {
 
 		byte[] encPrivKey =  akp.getEncrytedPrivateKey(sk);
 		byte[] decPrivKey = sk.decrypt(encPrivKey);
+		
 		System.out.println("PUB_KEY_MODULUS     : "+akp.getModulusAsHex());
 		System.out.println("PUB_KEY_EXP     : "+akp.getPublicExponentAsHex());
 		System.out.println("ENC_PRIV_KEY_EXP: "+SecurityHelper.HexDecoder.encode(encPrivKey,'\0',-1));
@@ -250,14 +251,14 @@ public class SymmetricKey {
 //		
 //		SymmetricKey l = new SymmetricKey(key, init);
 ////		
-//		byte[] test = "ich asda will encoded werden...".getBytes();
+		byte[] test = "ich asda will encoded werden...".getBytes();
 //		
-//		byte[] enc = l.encrypt(test); 
-//		byte[] dec = l.decrypt(enc);
-//		
-//		System.out.println("BEFORE: "+(new String(test)));
-//		System.out.println("ENC: "+SecurityHelper.HexDecoder.encode(enc,':',-1));
-//		System.out.println("AFTER: "+(new String(dec)));
+		byte[] enc = sk.encrypt(test); 
+		byte[] dec = sk.decrypt(enc);
+		
+		System.out.println("BEFORE: "+(new String(test)));
+		System.out.println("ENC: "+SecurityHelper.HexDecoder.encode(enc,':',-1));
+		System.out.println("AFTER: "+(new String(dec)));
 		
 	}
 }

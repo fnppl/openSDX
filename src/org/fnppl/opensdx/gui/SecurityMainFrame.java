@@ -71,18 +71,25 @@ import org.fnppl.opensdx.security.DataSourceStep;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.OSDXKeyObject;
+import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.Signature;
+import org.fnppl.opensdx.security.SymmetricKey;
+import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.xml.Element;
+
+import sun.misc.BASE64Encoder;
 
 
 public class SecurityMainFrame extends JFrame {
 	private KeyApprovingStore currentKeyStore = null;
-	private boolean currentStoreChanged = false;
 	
 	//private File lastDir = new File(System.getProperty("user.home"));
 	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
 	
 	private JTable tKeysIDs;
 	private KeysAndIdentitiesTableModel mKeysIDs;
+	
+	private JTable tKeylogs;
 	
 	
 	private static SecurityMainFrame instance = null;
@@ -244,12 +251,12 @@ public class SecurityMainFrame extends JFrame {
 		jm = new JMenu("<html>Encryption<br>Decryption</html>");
 		jb.add(jm);
 		
-		jmi = new JMenuItem("EncryptFile");
+		jmi = new JMenuItem("EncryptFile (symmetric)");
 		jmi.setActionCommand("encryptfile");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
 		
-		jmi = new JMenuItem("DecryptFile");
+		jmi = new JMenuItem("DecryptFile (symmetric)");
 		jmi.setActionCommand("decryptfile");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
@@ -266,6 +273,7 @@ public class SecurityMainFrame extends JFrame {
 		jp.setLayout(gb);
 		
 		
+		//keys and identities
 		tKeysIDs = new JTable();
 		tKeysIDs.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent ev) {
@@ -274,7 +282,6 @@ public class SecurityMainFrame extends JFrame {
 						int col = tKeysIDs.columnAtPoint(ev.getPoint());
 						if (row>=0 && row<tKeysIDs.getModel().getRowCount() && col>=0 && col<tKeysIDs.getModel().getColumnCount()) {
 							showKeyEditDialog(currentKeyStore.getAllKeys().get(row),false);
-							currentStoreChanged = true;
 							tKeysIDs.setModel(new KeysAndIdentitiesTableModel(currentKeyStore.getAllKeys()));
 							fitAllColumnWidth(tKeysIDs);
 						}
@@ -287,24 +294,115 @@ public class SecurityMainFrame extends JFrame {
 		pKI.setLayout(new BorderLayout());
 		pKI.setBorder(new TitledBorder("Keys and Identities"));
 		pKI.add(new JScrollPane(tKeysIDs), BorderLayout.CENTER);
-		
 
+
+		//keylogs
+		tKeylogs = new JTable();
+		tKeylogs.setModel(new DefaultTableModel(new String[]{"keylog","test","bla"}, 5));
+		JPanel pKL = new JPanel();
+		pKL.setLayout(new BorderLayout());
+		pKL.setBorder(new TitledBorder("Keylogs"));
+		pKL.add(new JScrollPane(tKeylogs), BorderLayout.CENTER);
 		
 		
-		addComponent(jp,gb,pKI,0,0,1,1,1.0,1.0);
 		
+		addComponent(jp,gb,pKI,0,0,1,1,1.0,0.5);
+		//addComponent(jp,gb,pKL,0,1,1,1,1.0,0.5);
 		
 	}
 	
+	private static void addComponent(Container cont, GridBagLayout gbl, Component c, int x, int y, int w, int h, double wx, double wy) {
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.gridx = x;
+		gbc.gridy = y;
+		gbc.gridwidth = w;
+		gbc.gridheight = h;
+		gbc.weightx = wx;
+		gbc.weighty = wy;
+		gbc.insets = new Insets(5, 5, 5, 5);
+		gbl.setConstraints(c, gbc);
+		cont.add(c);
+	}
 	
 
 	private void decryptFile() {
-		//TODO decrypt
-		Dialogs.showMessage("feature not implented.");
+		File f = Dialogs.chooseOpenFile("Please select file for decryption", lastDir.getAbsolutePath(), "");
+		if (f!=null) {
+			try {
+				Document d = Document.fromFile(f);
+				Element e = d.getRootElement();
+				String mantra = e.getChildText("mantraname");
+				
+				String p = Dialogs.showPasswordDialog("Enter password", "Please enter password for mantra:\n"+mantra);
+				if (p!=null) {
+				
+					if (!Arrays.equals(
+						SecurityHelper.getSHA1(p.getBytes()),
+						SecurityHelper.HexDecoder.decode(e.getChildText("pass_sha1"))
+					)) {
+						Dialogs.showMessage("Sorry, wrong password.");
+						return;
+					}
+							
+					byte[] initv = SecurityHelper.HexDecoder.decode(e.getChildText("initvector"));
+					SymmetricKey key = SymmetricKey.getKeyFromPass(p.toCharArray(), initv);
+					
+					File fdec = new File(f.getParent(),e.getChildText("dataname")+".dec");
+					File fenc = new File(f.getAbsolutePath().substring(0,f.getAbsolutePath().lastIndexOf('.')));
+					
+					FileInputStream in = new FileInputStream(fenc);
+					FileOutputStream out = new FileOutputStream(fdec);
+					
+					key.decrypt(in, out);
+					in.close();
+					out.close();
+					
+					Dialogs.showMessage("Decryption succeeded.");
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
 	}
 
 	private void encryptFile() {
-		Dialogs.showMessage("feature not implented.");
+		//Dialogs.showMessage("feature not implented.");
+		File f = Dialogs.chooseOpenFile("Please select file for encryption", lastDir.getAbsolutePath(), "");
+		if (f!=null) {
+			String[] p = Dialogs.showNewMantraPasswordDialog();
+			if (p!=null) {
+				try {
+					byte[] initv = SecurityHelper.getRandomBytes(16);
+					File fxml = new File(f.getAbsolutePath()+".enc.xml");
+					File fenc = new File(f.getAbsolutePath()+".enc");
+					
+					
+					SymmetricKey key = SymmetricKey.getKeyFromPass(p[1].toCharArray(), initv);
+					
+					FileInputStream in = new FileInputStream(f);
+					FileOutputStream out = new FileOutputStream(fenc);
+					key.encrypt(in, out);
+					in.close();
+					out.close();
+					
+					Element e = new Element("symmetric_encrytion");
+					e.addContent("dataname",f.getName());
+					e.addContent("mantraname",p[0]);
+					e.addContent("pass_sha1",SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(p[1].getBytes()), ':', -1));
+					e.addContent("algo","AES@256");
+					e.addContent("initvector",SecurityHelper.HexDecoder.encode(initv, ':', -1));
+					e.addContent("padding","CBC/PKCS#5");
+					Document d = Document.buildDocument(e);
+					d.writeToFile(fxml);
+					Dialogs.showMessage("Encryption succeeded.");
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+		
+		
 //		if (currentKeyStore!=null) {
 //			Vector<OSDXKeyObject> keys = currentKeyStore.getAllEncyrptionKeys(); 
 //			if (keys.size()==0) {
@@ -320,7 +418,21 @@ public class SecurityMainFrame extends JFrame {
 //				int a = Dialogs.showSelectDialog("Select key", "Please select key for encyption", keyids);
 //				if (a>=0) {
 //					OSDXKeyObject key = keys.get(a);
-//					//TODO encrypt
+//					try {
+//						FileInputStream in = new FileInputStream(f);
+//						byte[] bytes = new byte[in.available()];
+//						byte[] crypt = key.encryptWithPublicKey(bytes);
+//						Element ae = new Element("asymmetric_encrytion");
+//						ae.addContent("dataname",f.getName());
+//						ae.addContent("key id", key.getKeyID());
+//						String b64 = new BASE64Encoder().encode(crypt);
+//						ae.addContent("bytes_base64", b64);
+//						
+//						Document d = Document.buildDocument(ae);
+//						d.writeToFile(new File(f.getAbsolutePath()+"_asym-enc.xml"));
+//					} catch (Exception ex) {
+//						ex.printStackTrace();
+//					}
 //				}
 //			}
 //		}
@@ -415,7 +527,6 @@ public class SecurityMainFrame extends JFrame {
 							}
 							Identity id = key.getIdentities().get(row-firstID);
 							showIdentityEditDialog(id,false);
-							currentStoreChanged = true;
 							edit.setModel(new KeyTableModel(key));
 							fitAllColumnWidth(edit);
 						}
@@ -457,7 +568,8 @@ public class SecurityMainFrame extends JFrame {
 		
 		JPanel pb = new JPanel();
 		p.add(pb,BorderLayout.SOUTH);
-		pb.setLayout(new FlowLayout());
+		pb.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
 		JButton addID = new JButton("add identity");
 		addID.setPreferredSize(new Dimension(150,25));
 		addID.addActionListener(new ActionListener() {
@@ -480,8 +592,48 @@ public class SecurityMainFrame extends JFrame {
 		});
 		pb.add(addID);
 		
+		JButton removeID = new JButton("remove identity");
+		removeID.setPreferredSize(new Dimension(150,25));
+		removeID.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					int[] sel = edit.getSelectedRows();
+					if (sel==null) Dialogs.showMessage("Sorry, no identities selected.");
+					
+					Vector<Identity> ids = new Vector<Identity>(); 
+					for (int i=0;i<sel.length;i++) {
+						String name = (String)edit.getModel().getValueAt(sel[i],0); 
+						if (name.startsWith("identity")) {
+							int no = Integer.parseInt(name.substring(9))-1;
+							ids.add(key.getIdentities().get(no));
+							
+						}
+					}
+					if (ids.size()>0) {
+						String txt = "Are you sure you want to remove the following id(s)?";
+						for (Identity id : ids) txt += "\n"+id.getEmail();
+						int a = Dialogs.showYES_NO_Dialog("Confirm removal",txt);
+						if (a==Dialogs.YES) {
+							for (Identity id : ids)
+								key.removeIdentity(id);
+							edit.setModel(new KeyTableModel(key));
+							fitAllColumnWidth(edit);
+							edit.validate();
+						}
+					} else {
+						Dialogs.showMessage("Sorry, no identities selected.");
+					}
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		pb.add(removeID);
+		
 		
 		JPanel ps = new JPanel();
+		ps.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		JButton ok = new JButton("ok");
 		ok.setPreferredSize(new Dimension(150,25));
 		ok.addActionListener(new ActionListener() {
@@ -543,19 +695,6 @@ public class SecurityMainFrame extends JFrame {
 		d.setVisible(true);
 		return isOK[0];
 	}
-	
-	private static void addComponent(Container cont, GridBagLayout gbl, Component c, int x, int y, int w, int h, double wx, double wy) {
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.gridx = x;
-		gbc.gridy = y;
-		gbc.gridwidth = w;
-		gbc.gridheight = h;
-		gbc.weightx = wx;
-		gbc.weighty = wy;
-		gbl.setConstraints(c, gbc);
-		cont.add(c);
-	}
 
 	private static final MouseListener consumeMouseListener 
 	= new MouseAdapter(){
@@ -593,14 +732,13 @@ public class SecurityMainFrame extends JFrame {
 	
 	
 	public void closeCurrentStore() {
-		if (currentStoreChanged && currentKeyStore!=null) {
+		if (currentKeyStore!=null && currentKeyStore.hasUnsavedChanges()) {
 			int a = Dialogs.showYES_NO_Dialog("Save keystore", "Your current keystore has unsaved changes.\nDo you want to save it?");
 			if (a==Dialogs.YES) {
 				writeCurrentKeyStore(false);
 			}
 		}
 		currentKeyStore = null;
-		currentStoreChanged = false;
 		initUICurrentKeyStore();
 	}
 	
@@ -612,7 +750,6 @@ public class SecurityMainFrame extends JFrame {
 				boolean ok = showKeyEditDialog(k, true);
 				if (ok) {
 					currentKeyStore.addKey(k);
-					currentStoreChanged = true;
 					tKeysIDs.setModel(tKeysIDs.getModel()); //update
 				}
 				releaseUILock();
@@ -631,7 +768,6 @@ public class SecurityMainFrame extends JFrame {
 		if (f!=null && f.exists()) {
 			try {
 				boolean open = openKeyStore(f);
-				currentStoreChanged = false;
 				return open;
 			} catch (Exception e) {
 				Dialogs.showMessage("ERROR: could not create keystore in file "+f.getAbsolutePath());
@@ -652,8 +788,6 @@ public class SecurityMainFrame extends JFrame {
 			if (f!=null) {
 				try {
 					currentKeyStore.toFile(f);
-					currentKeyStore = null;
-					currentStoreChanged = false;
 					return true;
 				} catch (Exception ex) {
 					Dialogs.showMessage("ERROR: keystore could not be saved to "+currentKeyStore.getFile().getAbsolutePath());
@@ -670,7 +804,6 @@ public class SecurityMainFrame extends JFrame {
 		if (f!=null) {
 			try {
 				currentKeyStore = KeyApprovingStore.createNewKeyApprovingStore(f);
-				currentStoreChanged = true;
 				initUICurrentKeyStore();
 			} catch (Exception e) {
 				Dialogs.showMessage("ERROR: could not create keystore in file "+f.getAbsolutePath());

@@ -303,6 +303,10 @@ public class AsymmetricKeyPair {
 			);
 	}
 	
+	public byte[] getEncrytedPrivateKey(SymmetricKey sk) throws Exception {
+		return privkey.getEncrytedPrivateKey(sk);
+	}
+	
 	public static void main(String[] args) throws Exception {
 //		BigInteger b = BigInteger.valueOf(System.currentTimeMillis());
 //		byte[] ts = b.toByteArray();
@@ -354,8 +358,5 @@ public class AsymmetricKeyPair {
 		);
 	}
 	
-	public byte[] getEncrytedPrivateKey(SymmetricKey sk) throws Exception {
-		return privkey.getEncrytedPrivateKey(sk);
-	}
 }
 
