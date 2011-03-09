@@ -99,7 +99,10 @@ public class KeyServerMain {
 
 	public KeyServerMain() throws Exception {
 		//read keystore
-		keystore = KeyApprovingStore.fromFile(new File("server_testkeystore.xml"));
+		File f = new File("server_testkeystore.xml");
+		if (!f.exists()) f = new File("../server_testkeystore.xml");
+		
+		keystore = KeyApprovingStore.fromFile(f);
 		id_keys = new  HashMap<String, Vector<OSDXKeyObject>>();
 		keyid_key = new HashMap<String, OSDXKeyObject>();
 		keyid_log = new HashMap<String, Vector<KeyLog>>();
