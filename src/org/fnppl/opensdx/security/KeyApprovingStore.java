@@ -276,6 +276,10 @@ public class KeyApprovingStore {
 		keys.add(key);
 	}
 	
+	public Vector<KeyLog> getKeyLogs() {
+		return keylogs;
+	}
+	
 	public File getFile() {
 		return f;
 	}

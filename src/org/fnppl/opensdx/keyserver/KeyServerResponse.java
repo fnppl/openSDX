@@ -50,12 +50,47 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import org.fnppl.opensdx.security.*;
+import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.xml.Element;
+
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 
 
 public class KeyServerResponse {
 	public int retcode = 404;//fail
+	private StringBuffer header;
+	private Element contentElement;
+	
+	public KeyServerResponse(String serverid) {
+		header = new StringBuffer();
+		header.append("HTTP/1.1 200 OK\n");
+		header.append("Server: "+serverid+"\n");
+		contentElement = null;
+	}
 	
 	public void toOutput(OutputStream out) throws Exception {
 		//write it to the outputstream...
+		if (contentElement!=null) {
+			ByteOutputStream contentout = new ByteOutputStream();
+			Document xml = Document.buildDocument(contentElement);
+			xml.output(contentout);
+			byte[] content = contentout.getBytes();
+			header.append("Content-Type: text/xml\n");
+			header.append("Content-Length: "+content.length+"\n");
+			header.append("\n");
+			out.write(header.toString().getBytes("UTF-8"));
+			out.write(content);
+			out.write("\n".toString().getBytes("UTF-8"));
+		} else {
+			out.write(header.toString().getBytes("UTF-8"));
+		}
+	}
+	
+	public void addHeaderValue(String name, String value) {
+		header.append(name+": "+value+"\n");
+	}
+	
+	public void setContentElement(Element e) {
+		contentElement = e;
 	}
 }

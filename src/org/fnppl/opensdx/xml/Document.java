@@ -69,8 +69,22 @@ public class Document {
 //		XMLHelper.fromFile(f);
 		
 		SAXBuilder sax = new SAXBuilder();		
+		
 		Document ret = new Document(sax.build(f));
 		
+		return ret;
+	}
+	
+	public static Document fromStream(InputStream in) throws Exception {
+		SAXBuilder sax = new SAXBuilder();
+		Document ret = new Document(sax.build(in));
+		return ret;
+	}
+	
+	public static Document fromString(String xml) throws Exception {
+		SAXBuilder sax = new SAXBuilder();
+		System.out.println("|"+xml);
+		Document ret = new Document(sax.build(new StringReader(xml)));
 		return ret;
 	}
 	
@@ -87,11 +101,15 @@ public class Document {
 	
 	public void writeToFile(File file) throws Exception {
 		FileOutputStream out = new FileOutputStream(file);
+		output(out);
+		out.flush();
+		out.close();
+	}
+	
+	public void output(OutputStream out) throws Exception {
 		String head = "<?xml version= \"1.0\" encoding=\"UTF-8\"?>\n";
 		out.write(head.getBytes("UTF-8"));
 		rt.output(out);
-		out.flush();
-		out.close();
 	}
 }
 

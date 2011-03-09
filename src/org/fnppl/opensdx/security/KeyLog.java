@@ -138,4 +138,8 @@ public class KeyLog {
 	public Element toElement() {
 		return XMLHelper.cloneElement(ekeylog);
 	}
+	
+	public String getKeyIDTo() {
+		return ekeylog.getChild("action").getChild("to").getChildText("keyid");
+	}
 }

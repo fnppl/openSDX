@@ -65,10 +65,12 @@ public class KeyServerRequest {
 		String zeile = null;
 		zeile = readHeaderLine(in);//cmdline
 		
-		ret.method = zeile.substring(0, zeile.indexOf(" "));
-		ret.cmd = zeile.substring(zeile.indexOf(" ")+1);
-		String proto = ret.cmd.substring(ret.cmd.indexOf(" ")+1); // HTTP/1.0 or HTTP/1.1
-		ret.cmd = ret.cmd.substring(0, ret.cmd.indexOf(" "));
+		String[] t = zeile.split(" ");
+		ret.method = t[0];
+		ret.cmd = t[1];
+		String proto = t[2]; // HTTP/1.0 or HTTP/1.1
+		
+		//System.out.println("Method: "+ret.method+", cmd: "+ret.cmd+", proto: "+proto);
 		
 		while((zeile=readHeaderLine(in)) != null) {
 			if(zeile.length() == 0) {
@@ -76,23 +78,32 @@ public class KeyServerRequest {
 			}
 			
 			String header_name = zeile.substring(0, zeile.indexOf(" "));
+			if (header_name.endsWith(":")) header_name = header_name.substring(0,header_name.length()-1);
 			String header_value = zeile.substring(zeile.indexOf(" ")+1);
+			System.out.println("adding header: "+header_name+"|"+header_value);
 			
 			ret.headers.put(header_name, header_value);//multiple-headers not possible then...
 		}
+		System.out.println("KeyServerRequest | end of request");
 		
 		return ret;
 	}
 	
+	public String getHeaderValue(String headerName) {
+		return headers.get(headerName);
+	}
+	
 	private static String readHeaderLine(InputStream in) throws Exception {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		if (in.available()==0) return null;
         
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
         //HEADERS are ASCII
         
         byte[] b = new byte[1];
-        int r = 0;
+        int r = -1;
 
         char last='\r';
+        
         
         while((r=in.read(b)) > 0) {
             char m = (char)b[0];
@@ -107,9 +118,11 @@ public class KeyServerRequest {
         if(r<0 && bout.size()==0) {
             return null;
         }
-        
-        return new String(bout.toByteArray(), "ASCII");
+        String s = new String(bout.toByteArray(), "ASCII");
+        System.out.println("KeyServerRequest | "+s);
+        return s;
     }
+	
 }
 
 
