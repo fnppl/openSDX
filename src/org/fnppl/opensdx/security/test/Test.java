@@ -97,7 +97,7 @@ public class Test {
 			
 			Element ekp = generateMasterKeyPair(ids, mantraname, sk);
 			
-			ekp.output(System.out);
+			//ekp.output(System.out);
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();

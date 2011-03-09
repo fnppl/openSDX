@@ -125,14 +125,7 @@ public class Element {
 		return ret;
 	}
 	
-	public void output(OutputStream out) {
-		try {
-			XMLOutputter outp= new XMLOutputter(Format.getPrettyFormat());
-			outp.output(base, out);       
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+	
 	
 	
 }

@@ -94,7 +94,7 @@ public class Document {
 	
 	public static Document buildDocument(Element root) {
 		Document d = new Document();
-		d.base = null;
+		d.base = new org.jdom.Document((org.jdom.Element)root.base.detach());
 		d.rt = root;
 		return d;
 	}
@@ -106,10 +106,21 @@ public class Document {
 		out.close();
 	}
 	
-	public void output(OutputStream out) throws Exception {
-		String head = "<?xml version= \"1.0\" encoding=\"UTF-8\"?>\n";
-		out.write(head.getBytes("UTF-8"));
-		rt.output(out);
+//	public void output(OutputStream out) throws Exception {
+//		String head = "<?xml version= \"1.0\" encoding=\"UTF-8\"?>\n";
+//		out.write(head.getBytes("UTF-8"));
+//		rt.output(out);
+//	}
+	public void output(OutputStream out) {
+		try {
+			Format f = Format.getPrettyFormat();
+			f.setEncoding("UTF-8");
+			XMLOutputter outp = new XMLOutputter(f);
+			outp.output(base, out);      
+			out.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
 

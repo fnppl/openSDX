@@ -1,13 +1,12 @@
 package org.fnppl.opensdx.keyserver;
 
-
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
  * 							http://fnppl.org
-*/
+ */
 
 /*
  * Software license
@@ -62,7 +61,6 @@ import org.fnppl.opensdx.security.KeyLog;
 import org.fnppl.opensdx.security.OSDXKeyObject;
 import org.fnppl.opensdx.xml.Element;
 
-
 /*
  * HT 2011-02-20
  * I am a bit bored of twiggling around with annoying formats, frameworks and paddings and whatever
@@ -85,44 +83,45 @@ import org.fnppl.opensdx.xml.Element;
  */
 
 public class KeyServerMain {
-	
+
 	private static String serverid = "OSDX KeyServer v0.1";
-	
+
 	int port = -1;
 	Inet4Address address = null;
-	
+
 	private KeyApprovingStore keystore;
-	private HashMap<String,Vector<OSDXKeyObject>> id_keys; 
-	private HashMap<String,OSDXKeyObject> keyid_key; 
-	private HashMap<String,Vector<KeyLog>> keyid_log; 
-	
+	private HashMap<String, Vector<OSDXKeyObject>> id_keys;
+	private HashMap<String, OSDXKeyObject> keyid_key;
+	private HashMap<String, Vector<KeyLog>> keyid_log;
 
 	public KeyServerMain() throws Exception {
-		//read keystore
+		// read keystore
 		File f = new File("server_testkeystore.xml");
-		if (!f.exists()) f = new File("../server_testkeystore.xml");
-		
+
 		keystore = KeyApprovingStore.fromFile(f);
-		id_keys = new  HashMap<String, Vector<OSDXKeyObject>>();
+		id_keys = new HashMap<String, Vector<OSDXKeyObject>>();
 		keyid_key = new HashMap<String, OSDXKeyObject>();
 		keyid_log = new HashMap<String, Vector<KeyLog>>();
 		Vector<OSDXKeyObject> keys = keystore.getAllKeys();
-		if(keys!=null) {
+		if (keys != null) {
 			for (OSDXKeyObject k : keys) {
 				keyid_key.put(k.getKeyID(), k);
+				System.out.println("adding keyid_key: "+k.getKeyID()+"::OSDXKeyObject");
 				Vector<Identity> ids = k.getIdentities();
-				if (ids!=null) {
+				if (ids != null) {
 					for (Identity id : ids) {
 						if (!id_keys.containsKey(id.getEmail())) {
-							id_keys.put(id.getEmail(), new Vector<OSDXKeyObject>());
+							id_keys.put(id.getEmail(),
+									new Vector<OSDXKeyObject>());
 						}
 						id_keys.get(id.getEmail()).add(k);
+						System.out.println("adding id_keys: "+id.getEmail()+"::"+k.getKeyID());
 					}
 				}
 			}
 		}
 		Vector<KeyLog> keylogs = keystore.getKeyLogs();
-		if (keylogs!=null) {
+		if (keylogs != null) {
 			for (KeyLog l : keylogs) {
 				String keyid = l.getKeyIDTo();
 				if (!keyid_log.containsKey(keyid)) {
@@ -134,39 +133,38 @@ public class KeyServerMain {
 	}
 
 	public KeyServerResponse prepareResponse(KeyServerRequest request, BufferedInputStream in) throws Exception {
-		//yeah, switch cmd/method - stuff whatever...
+		// yeah, switch cmd/method - stuff whatever...
 		
-		if(request.method.equals("POST")) {
-			String reqcmd = request.getHeaderValue("Request");
-			System.out.println(reqcmd);
-			if (reqcmd!=null) {
-				if (reqcmd.equals("masterpubkeys")) {
-					return handleMasterPubKeyRequest(request);
-				}
+		String cmd = request.cmd;
+		System.out.println("KeyServerRequest | Method: "+request.method+"\tCmd: "+request.cmd);
+		
+		if (request.method.equals("POST")) {
 			
+		} else if (request.method.equals("HEAD")) {
+			throw new Exception("NOT IMPLEMENTED"); // correct would be to fire a HTTP_ERR
+		} else if (request.method.equals("GET")) {
+			if (cmd.equals("/masterpubkeys")) {
+				return handleMasterPubKeyRequest(request);
+			} else if (cmd.equals("/identities")) {
+				return handleIdentitiesRequest(request);
 			}
-		} else if(request.method.equals("HEAD")) {
-			throw new Exception("NOT IMPLEMENTED"); //correct would be to fire a HTTP_ERR
 		}
-		else if(request.method.equals("GET")) {
-
-		}
-		System.out.println("KeyServerResponse | ::request command not recognized.");
+		System.out.println("KeyServerResponse| ::request command not recognized.");
 		return null;
 	}
-	
+
 	private KeyServerResponse handleMasterPubKeyRequest(KeyServerRequest request) {
 		System.out.println("KeyServerResponse | ::handleMasterPubKeyRequest");
 		String id = request.getHeaderValue("Identity");
-		if (id!=null) {
+		if (id != null) {
 			KeyServerResponse resp = new KeyServerResponse(serverid);
 			resp.addHeaderValue("Response", "masterpubkeys");
 			resp.addHeaderValue("Identity", id);
-			
+
 			Element e = new Element("masterpubkeysresponse");
-		
+
 			Vector<OSDXKeyObject> keys = id_keys.get(id);
-			if (keys!=null && keys.size()>0) {
+			if (keys != null && keys.size() > 0) {
 				for (OSDXKeyObject k : keys) {
 					e.addContent(k.getSimplePubKeyElement());
 				}
@@ -174,36 +172,65 @@ public class KeyServerMain {
 			resp.setContentElement(e);
 			return resp;
 		}
+		System.out.println("KeyServerResponse | ::error in request");
 		return null;
 	}
 	
+	private KeyServerResponse handleIdentitiesRequest(KeyServerRequest request) {
+		System.out.println("KeyServerResponse | ::handleIdentitiesRequest");
+		String id = request.getHeaderValue("KeyID");
+		
+		if (id != null) {
+			KeyServerResponse resp = new KeyServerResponse(serverid);
+			resp.addHeaderValue("Response", "identities");
+			resp.addHeaderValue("KeyID", id);
 
-//	public void readKeys(File f, char[] pass_mantra) throws Exception {
-////		KeyRingCollection krc = KeyRingCollection.fromFile(f, pass_mantra);
-////		//get the relevant sign-key from that collection
-////		this.sign_keys = krc.getSomeRandomKeyPair();
-//	}
+			Element e = new Element("identitiesresponse");
+
+			OSDXKeyObject key = keyid_key.get(id);
+			if (key != null) {
+				Vector<Identity> ids = key.getIdentities();
+				for (Identity aid : ids) {
+					e.addContent(aid.toElement());
+				}
+			}
+			resp.setContentElement(e);
+			return resp;
+		}
+		return null;
+	}
+
+	// public void readKeys(File f, char[] pass_mantra) throws Exception {
+	// // KeyRingCollection krc = KeyRingCollection.fromFile(f, pass_mantra);
+	// // //get the relevant sign-key from that collection
+	// // this.sign_keys = krc.getSomeRandomKeyPair();
+	// }
 
 	public void handleSocket(final Socket s) throws Exception {
-		//check on *too* many requests from one ip
+		// check on *too* many requests from one ip
 		Thread t = new Thread() {
 			public void run() {
-				//should add entry to current_working_threads...
+				// should add entry to current_working_threads...
 				try {
 					InputStream _in = s.getInputStream();
 					BufferedInputStream in = new BufferedInputStream(_in);
 					KeyServerRequest request = KeyServerRequest.fromInputStream(in);
-					KeyServerResponse response = prepareResponse(request, in);//this is ok since the response is small and can be kept in mem - no need for directly kick it on socket... 
-					System.out.println("KeyServerSocket   | ::response ready");
-					if (response!=null) {
+					KeyServerResponse response = prepareResponse(request, in); //this is ok since the request is small and can be kept in ram
+					
+					System.out.println("KeyServerSocket  | ::response ready");
+					if (response != null) {
+						System.out.print("SENDING THIS::");
 						response.toOutput(System.out);
+						System.out.println("::/SENDING_THIS");
+						
 						OutputStream out = s.getOutputStream();
 						response.toOutput(out);
 						out.flush();
+						out.close();
 					} else {
-						//TODO send error
+						// TODO send error
 					}
-				} catch(Exception ex) {
+				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			}
@@ -212,18 +239,18 @@ public class KeyServerMain {
 	}
 
 	public void startService() throws Exception {
-		System.out.println("Starting Server on port "+port);
+		System.out.println("Starting Server on port " + port);
 		ServerSocket so = new ServerSocket(port);
-		if(address!=null) {
+		if (address != null) {
 			throw new RuntimeException("Not yet implemented...");
 		}
-		while(true) {
+		while (true) {
 			try {
 				final Socket me = so.accept();
 				handleSocket(me);
-			} catch(Exception ex) {
+			} catch (Exception ex) {
 				ex.printStackTrace();
-				Thread.sleep(250);//cooldown...
+				Thread.sleep(250);// cooldown...
 			}
 		}
 	}

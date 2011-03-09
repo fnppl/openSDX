@@ -1,9 +1,11 @@
 package org.fnppl.opensdx.keyserver;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Hashtable;
 
+import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.Document;
 
 public class OSDXKeyServerClientResponse {
@@ -12,42 +14,16 @@ public class OSDXKeyServerClientResponse {
 	public Document doc;
 	public String status;
 
+	
 	public static OSDXKeyServerClientResponse fromStream(InputStream in, long timeout) throws Exception {
 		OSDXKeyServerClientResponse re = new OSDXKeyServerClientResponse();
 		re.headers = new Hashtable<String, String>();
 		re.doc = null;
 
-
-		boolean responseReady = false;
-		String contentType = null;
-		int contentLen = -1;
-		boolean startContent = false;
-
-		//StringBuffer content = new StringBuffer();
-
-		long startTime = System.currentTimeMillis();
-		while (System.currentTimeMillis()<startTime+timeout || responseReady) {
-			String z = readLine(in);
-			if (z!=null) {
-				if (re.status==null) re.status = z;
-				if (z.equals("") && !startContent) {
-					startContent = true;
-				} else {
-					if (!startContent) {
-						//header
-						String[] p = parseHeader(z);
-						re.headers.put(p[0], p[1]);
-						System.out.println("h: "+z);
-					}
-				}
-				if (startContent) {
-					System.out.println("c: ::StartContent::");
-					if (re.headers.containsKey("Content-Type") && re.headers.get("Content-Type").equals("text/xml")) {
-						re.doc = Document.fromStream(in);
-					}
-					//content.append(z);
-				}
-			}
+		readHeader(in, re);
+		System.out.println("::header end::");
+		if (re.headers.containsKey("Content-Type") && re.headers.get("Content-Type").equals("text/xml")) {
+			readXMLContent(in, re);
 		}
 
 		System.out.println("OSDXKeyServerClient | end requestMasterPubKeys");
@@ -55,8 +31,41 @@ public class OSDXKeyServerClientResponse {
 		if (re.doc!=null) {
 			re.doc.output(System.out);
 		}
-		
 		return re;
+	}
+	
+	private static void readXMLContent(InputStream in, OSDXKeyServerClientResponse re) throws Exception {
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		int read = 0;
+		byte[] buff = new byte[1024];
+		while((read=in.read(buff))!=-1) {
+			bout.write(buff, 0, read);
+		}
+		String s = new String(bout.toByteArray());
+		String last = s.substring(s.lastIndexOf(">"));
+		System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last.getBytes("UTF-8"), ':',-1));
+		s = s.substring(0, s.lastIndexOf(">")+3);
+		String last2 = s.substring(s.lastIndexOf(">"));
+		System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last2.getBytes("UTF-8"), ':',-1));
+		
+		//System.out.println("GOT THIS AS DOC: ::"+s+"::");
+		re.doc = Document.fromStream(new ByteArrayInputStream(s.getBytes()));
+		//re.doc = Document.fromStream(new ByteArrayInputStream(bout.toByteArray()));
+	}
+	
+	private static void readHeader(InputStream in, OSDXKeyServerClientResponse re) throws Exception {
+		String zeile = null;
+
+		while ((zeile=readLine(in))!=null) {
+			if(zeile.length()==0) {
+				return;//heade-ende
+			}
+			//header
+			String[] p = parseHeader(zeile);
+			re.headers.put(p[0], p[1]);
+			System.out.println("h: "+zeile);
+		}
+
 	}
 
 	private static String[] parseHeader(String zeile) {
@@ -68,7 +77,7 @@ public class OSDXKeyServerClientResponse {
 	}
 
 	private static String readLine(InputStream in) throws Exception {
-		if (in.available()<=0) return null;
+		//if (in.available()<=0) return null;
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 
 		//HEADERS are ASCII
@@ -87,8 +96,8 @@ public class OSDXKeyServerClientResponse {
 			}  
 		}
 
-		if(bout.size()==0) {
-			return "";
+		if(r<0 && bout.size()==0) {
+			return null;
 		}
 		String s = new String(bout.toByteArray(), "ASCII");
 		// System.out.println("OSDXKeyServerClient | "+s);

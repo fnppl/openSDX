@@ -94,7 +94,7 @@ public class KeyServerRequest {
 	}
 	
 	private static String readHeaderLine(InputStream in) throws Exception {
-		if (in.available()==0) return null;
+		//if (in.available()==0) return null;
         
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
         //HEADERS are ASCII
@@ -119,7 +119,7 @@ public class KeyServerRequest {
             return null;
         }
         String s = new String(bout.toByteArray(), "ASCII");
-        System.out.println("KeyServerRequest | "+s);
+        //System.out.println("KeyServerRequest | "+s);
         return s;
     }
 	

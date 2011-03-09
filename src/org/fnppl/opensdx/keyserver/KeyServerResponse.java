@@ -63,8 +63,8 @@ public class KeyServerResponse {
 	
 	public KeyServerResponse(String serverid) {
 		header = new StringBuffer();
-		header.append("HTTP/1.1 200 OK\n");
-		header.append("Server: "+serverid+"\n");
+		header.append("HTTP/1.1 200 OK\r\n");
+		header.append("Server: "+serverid+"\r\n");
 		contentElement = null;
 	}
 	
@@ -72,18 +72,24 @@ public class KeyServerResponse {
 		//write it to the outputstream...
 		if (contentElement!=null) {
 			ByteOutputStream contentout = new ByteOutputStream();
+			
 			Document xml = Document.buildDocument(contentElement);
-			xml.output(contentout);
+			//xml.output(contentout);
+			
 			byte[] content = contentout.getBytes();
-			header.append("Content-Type: text/xml\n");
-			header.append("Content-Length: "+content.length+"\n");
-			header.append("\n");
-			out.write(header.toString().getBytes("UTF-8"));
+			out.write(header.toString().getBytes("ASCII"));
+			
+			out.write("Content-Type: text/xml\r\n".getBytes("ASCII"));
+			out.write(("Content-Length: "+content.length+"\r\n").getBytes("ASCII"));
+			out.write("\r\n".getBytes("ASCII"));
+			xml.output(out);
+			out.flush();
+			
 			out.write(content);
-			out.write("\n".toString().getBytes("UTF-8"));
 		} else {
-			out.write(header.toString().getBytes("UTF-8"));
+			out.write(header.toString().getBytes("ASCII"));
 		}
+		out.flush();
 	}
 	
 	public void addHeaderValue(String name, String value) {
