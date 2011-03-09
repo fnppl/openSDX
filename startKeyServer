@@ -1,0 +1,2 @@
+java -cp "./bin:lib/jdom.jar:lib/bcprov-jdk16-145.jar" org.fnppl.opensdx.keyserver.KeyServerMain
+
