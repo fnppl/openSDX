@@ -19,7 +19,8 @@ public class OSDXKeyServerClientResponse {
 		OSDXKeyServerClientResponse re = new OSDXKeyServerClientResponse();
 		re.headers = new Hashtable<String, String>();
 		re.doc = null;
-
+		re.status = readLine(in);
+		
 		readHeader(in, re);
 		System.out.println("::header end::");
 		if (re.headers.containsKey("Content-Type") && re.headers.get("Content-Type").equals("text/xml")) {

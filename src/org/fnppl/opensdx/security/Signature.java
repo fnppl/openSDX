@@ -185,13 +185,13 @@ public class Signature {
 //		s.signoffsha1 = SecurityHelper.HexDecoder.decode(es.getChildText("sha1"));
 //		s.signaturebytes = SecurityHelper.HexDecoder.decode(es.getChildText("signaturebytes"));
 		
-		System.out.println("md5            : "+SecurityHelper.HexDecoder.encode(s.datamd5,'\0',-1));
-		System.out.println("sha1           : "+SecurityHelper.HexDecoder.encode(s.datasha1,'\0',-1));
-		System.out.println("sha256         : "+SecurityHelper.HexDecoder.encode(s.datasha256,'\0',-1));
-		System.out.println("signdatetime   : "+OSDXKeyObject.datemeGMT.format((new Date(s.signdatetime)))+" long = "+s.signdatetime);
-//		System.out.println("signoffsha1    : "+SecurityHelper.HexDecoder.encode(s.signoffsha1,'\0',-1));
-		System.out.println("signaturebytes : "+SecurityHelper.HexDecoder.encode(s.signaturebytes,'\0',-1));
-		
+//		System.out.println("md5            : "+SecurityHelper.HexDecoder.encode(s.datamd5,'\0',-1));
+//		System.out.println("sha1           : "+SecurityHelper.HexDecoder.encode(s.datasha1,'\0',-1));
+//		System.out.println("sha256         : "+SecurityHelper.HexDecoder.encode(s.datasha256,'\0',-1));
+//		System.out.println("signdatetime   : "+OSDXKeyObject.datemeGMT.format((new Date(s.signdatetime)))+" long = "+s.signdatetime);
+////		System.out.println("signoffsha1    : "+SecurityHelper.HexDecoder.encode(s.signoffsha1,'\0',-1));
+//		System.out.println("signaturebytes : "+SecurityHelper.HexDecoder.encode(s.signaturebytes,'\0',-1));
+//		
 		return s;
 	}
 	
@@ -290,10 +290,10 @@ public class Signature {
 		byte[] sha1 = kk[2];
 		byte[] sha256 = kk[3];
 		
-		System.out.println("md5            : "+SecurityHelper.HexDecoder.encode(md5,'\0',-1));
-		System.out.println("sha1           : "+SecurityHelper.HexDecoder.encode(sha1,'\0',-1));
-		System.out.println("sha256         : "+SecurityHelper.HexDecoder.encode(sha256,'\0',-1));
-		System.out.println("signdatetime   : "+OSDXKeyObject.datemeGMT.format((new Date(signdatetime)))+" long = "+signdatetime);
+//		System.out.println("md5            : "+SecurityHelper.HexDecoder.encode(md5,'\0',-1));
+//		System.out.println("sha1           : "+SecurityHelper.HexDecoder.encode(sha1,'\0',-1));
+//		System.out.println("sha256         : "+SecurityHelper.HexDecoder.encode(sha256,'\0',-1));
+//		System.out.println("signdatetime   : "+OSDXKeyObject.datemeGMT.format((new Date(signdatetime)))+" long = "+signdatetime);
 		
 		
 		boolean ok = pubkey.verify(

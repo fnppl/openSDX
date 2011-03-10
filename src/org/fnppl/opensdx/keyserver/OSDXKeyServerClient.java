@@ -60,6 +60,7 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.BCPGInputStream;
@@ -67,11 +68,13 @@ import org.bouncycastle.bcpg.BCPGOutputStream;
 import org.bouncycastle.crypto.RuntimeCryptoException;
 import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPSignatureGenerator;
+import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyLog;
 import org.fnppl.opensdx.security.OSDXKeyObject;
 import org.fnppl.opensdx.security.PublicKey;
 import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.security.Signature;
 import org.fnppl.opensdx.tsas.TsaServerRequest;
 import org.fnppl.opensdx.tsas.TsaServerResponse;
 import org.fnppl.opensdx.xml.Document;
@@ -83,6 +86,7 @@ public class OSDXKeyServerClient {
 	private Socket socket = null;
 	private long timeout = 2000;
 	private String host = null;
+	
 	
 	public OSDXKeyServerClient() {
 		
@@ -120,7 +124,7 @@ public class OSDXKeyServerClient {
 	    if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
 	    if (re.doc!=null) {
 	    	Element e = re.doc.getRootElement();
-	    	if (!e.getName().equals("masterpubkeysresponse")) throw new RuntimeException("ERROR: Wrong format in keyserver's response");
+	    	if (!e.getName().equals("pubkeys")) throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 	    	Vector<PublicKey> ret = new Vector<PublicKey>();
 	 	    Vector<Element> pks = e.getChildren("pubkey");
 	 	    for (Element pk : pks) {
@@ -131,31 +135,25 @@ public class OSDXKeyServerClient {
 	    	return ret;	 
 	    }
 	    return null;
-	    
-		//example request
-		
-//		GET /masterpubkeys HTTP/1.1
-//		Host: keys.fnppl.org
-//		Identity: bla@fnppl.org		
-	
+
 	    //example response
 
-//	    HTTP/1.1 200 OK
-//	    Server: OSDX KeyServer v0.1
-//	    Response: masterpubkeys
-//		Identity: bla@fnppl.org
-//	    Content-Type: text/xml
-//	    Content-Length: 1024
-//
-//	    <?xml version= "1.0" encoding="UTF-8"?>
-//	    <masterpubkeysresponse>
-//	      <pubkey>
-//	        <algo>RSA</algo>
-//	        <bits>3072</bits>
-//	        <modulus>00AEAE639723B8E18EF2452C2457B92F91504FE7FC42FAD34E17D684B71CAA7DD277B876553F73F9D170326E8B7842BAEFB8D7A9FDBE84E5516EBCE93752CC6F33D382EC19799AB66AC19442F7E50DBCB266541319BE2E12D169EFCE9119BA3D196E6CA0CB48D3EECB69FD81C5C48E719F9B309B194397B668095BB797947AB8A052C134207D9774F3B84BBB75A19F3A3E99CAD65D8C05FC6E84FEA2092861251D2DD5EBCF011E24A01D9CD4E5EEA62FDF5402B46A3B6BDE22B66DD9D5EE72679CC65C73F4112EC2A8E89F18F4521AB1E39AEA919C40874FB25434527AA4687CE994AEECBE26010B6B9E239B5DBC5334131EBE3F58D6356516654D27ABCB5D80AE1245FB1AD05D621C7FBAA36ADCD1AF0FC4B89060907DCDEF8570D55BD7B435CE88AEB4F94BCF0411FE2499408FD5A987AFA3A6EFFD4F2B4E2FAE25A4A2269C0493F0A96F7DAB1E24E17EC1799FF664B74A020D17DD76169A91540084CFE1B988778B9DE515205C83A0259121749EF86329761394C7C47D90B518CD11F2928539</modulus>
-//	        <exponent>0x010001</exponent>
-//	      </pubkey>
-//	    </masterpubkeysresponse>
+		//HTTP/1.1 200 OK
+		//Server: OSDX KeyServer v0.1
+		//Response: masterpubkeys
+		//Identity: bla@fnppl.org
+		//Content-Type: text/xml
+		//Content-Length: 1024
+		//
+		//<?xml version= "1.0" encoding="UTF-8"?>
+		//<pubkeys>
+		//  <pubkey>
+		//    <algo>RSA</algo>
+		//    <bits>3072</bits>
+		//    <modulus>00AEAE639723B8E18EF2452C2457B92F91504FE7FC42FAD34E17D684B71CAA7DD277B876553F73F9D170326E8B7842BAEFB8D7A9FDBE84E5516EBCE93752CC6F33D382EC19799AB66AC19442F7E50DBCB266541319BE2E12D169EFCE9119BA3D196E6CA0CB48D3EECB69FD81C5C48E719F9B309B194397B668095BB797947AB8A052C134207D9774F3B84BBB75A19F3A3E99CAD65D8C05FC6E84FEA2092861251D2DD5EBCF011E24A01D9CD4E5EEA62FDF5402B46A3B6BDE22B66DD9D5EE72679CC65C73F4112EC2A8E89F18F4521AB1E39AEA919C40874FB25434527AA4687CE994AEECBE26010B6B9E239B5DBC5334131EBE3F58D6356516654D27ABCB5D80AE1245FB1AD05D621C7FBAA36ADCD1AF0FC4B89060907DCDEF8570D55BD7B435CE88AEB4F94BCF0411FE2499408FD5A987AFA3A6EFFD4F2B4E2FAE25A4A2269C0493F0A96F7DAB1E24E17EC1799FF664B74A020D17DD76169A91540084CFE1B988778B9DE515205C83A0259121749EF86329761394C7C47D90B518CD11F2928539</modulus>
+		//    <exponent>0x010001</exponent>
+		//  </pubkey>
+		//</pubkeys>
 
 	    
 	}
@@ -178,7 +176,7 @@ public class OSDXKeyServerClient {
 	    if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
 	    if (re.doc!=null) {
 	    	Element e = re.doc.getRootElement();
-	    	if (!e.getName().equals("identitiesresponse")) throw new RuntimeException("ERROR: Wrong format in keyserver's response");
+	    	if (!e.getName().equals("identities")) throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 	    	Vector<Identity> ret = new Vector<Identity>();
 	 	    Vector<Element> eid = e.getChildren("identity");
 	 	    for (Element id : eid) {
@@ -188,120 +186,307 @@ public class OSDXKeyServerClient {
 	    }
 	    return null;
 		
-		//example request
-		
-//		GET /identities HTTP/1.1
-//		Host: keys.fnppl.org
-//		KeyID: 001152352352643376@keys.fnppl.org
-			
+		//	    //example response
+		//
+		//HTTP/1.1 200 OK
+		//Server: OSDX KeyServer v0.1
+		//Response: identities
+		//Identity: bla@fnppl.org
+		//Content-Type: text/xml
+		//Content-Length: 1024
+		//
+		//<?xml version= "1.0" encoding="UTF-8"?>
+		//<identities>
+		//  <Identity>
+		//    ...
+		//  </Identitiy>
+		//</identities>
 	}
 	
 	//3. Ich, als fremder user, möchte beim keyserver den aktuellen (beim keyserver bekannten) status zu einem pubkey bekommen können (valid/revoked/etc.)
-	public int requestKeyStatus(String keyid) throws Exception {
-		throw new RuntimeException("not implemented");
-		//example request
+	public String requestKeyStatus(String keyid) throws Exception {
 		
-//		POST / HTTP/1.1
-//		Host: keys.fnppl.org
-//		Request: keystatus
+		//request
+		System.out.println("OSDXKeyServerClient | start request keystatus");
+		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+		req.setRequest("GET /keystatus HTTP/1.1");
+		req.addHeaderValue("Host", host);
+		req.addHeaderValue("KeyID", keyid);
+		req.send(socket);
+		
+		//processing response
+	    System.out.println("OSDXKeyServerClient | waiting for response");
+	    OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
+	    if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
+	    if (re.doc!=null) {
+	    	Element e = re.doc.getRootElement();
+	    	if (!e.getName().equals("keyid_keystatus")) throw new RuntimeException("ERROR: Wrong format in keyserver's response");
+	    	String status = e.getChildText("keystatus");
+	    	//TODO verify signature, really signed by rootkey from server? 
+	    	return status;	 
+	    }
+	    return null;
+	    
+	    //example response
+
+//	    HTTP/1.1 200 OK
+//	    Server: OSDX KeyServer v0.1
+//	    Response: keystatus
 //		KeyID: 001152352352643376@keys.fnppl.org
+//	    Content-Type: text/xml
+//	    Content-Length: 1024
+//
+//	    <?xml version= "1.0" encoding="UTF-8"?>
+//	    <keyid_keystatus>
+//	    	<keyid>001152352352643376@keys.fnppl.org</keyid>
+//	     	<keystatus>valid</keystatus>  <!--valid / revoked / approve pending -->
+//			<signature>
+//				<data>
+//					<md5>kalksdlkad</md5>
+//					<sha1>adadasdasd</sha1>
+//					<sha256>adadasdasd</sha256>
+//					<signdatetime>2011-01-01 23:20:00 GMT+00:00</signdatetime><!-- MUST -->
+//					<dataname>keyid and keystatus</dataname>
+//				</data>
+//				<signoff>
+//					<keyid>kjakdjadkjajd@keys.fnppl.org</keyid>
+//					<pubkey>
+//						<algo>RSA</algo>
+//						<bits>3072</bits>
+//						<modulus></modulus>
+//						<exponent></exponent>
+//					</pubkey>
+//					<signaturebytes>asdasd</signaturebytes><!-- as hex-string with ":" or " " separation... looks nicer... -->
+//				</signoff>
+//			</signature>	    
+//	    </keyid_keystatus>
+	    
 	}
 	
 	//4. Ich, als fremder user, möchte beim keyserver die keylogs eines (beliebigen) pubkeys bekommen können
 	public Vector<KeyLog> requestKeyLogs(String keyid) throws Exception {
-		throw new RuntimeException("not implemented");
-		//example request
 		
-//		POST / HTTP/1.1
-//		Host: keys.fnppl.org
-//		Request: keystatus
+		//request
+		System.out.println("OSDXKeyServerClient | start request keylogs");
+		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+		req.setRequest("GET /keylogs HTTP/1.1");
+		req.addHeaderValue("Host", host);
+		req.addHeaderValue("KeyID", keyid);
+		req.send(socket);
+		
+		//processing response
+	    System.out.println("OSDXKeyServerClient | waiting for response");
+	    OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
+	    if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
+	    if (re.doc!=null) {
+	    	Element e = re.doc.getRootElement();
+	    	if (!e.getName().equals("keylogs")) throw new RuntimeException("ERROR: Wrong format in keyserver's response");
+	    	Vector<Element> ekls = e.getChildren("keylog");
+	    	Vector<KeyLog> vkl = new Vector<KeyLog>();
+	    	for (Element ekl : ekls) {
+	    		vkl.add(KeyLog.fromElement(ekl));
+	    	}
+	    	return vkl;
+	    }
+	    return null;
+		
+	    //example response
+
+//	    HTTP/1.1 200 OK
+//	    Server: OSDX KeyServer v0.1
+//	    Response: keystatus
 //		KeyID: 001152352352643376@keys.fnppl.org
+//	    Content-Type: text/xml
+//	    Content-Length: 1024
+//
+//	    <?xml version= "1.0" encoding="UTF-8"?>
+//	    <keylogs>
+//	    	<keylog>
+//	    		...
+//	    	</keylog>
+//	    </keylogs>
+	    		
 	}
 	
 	//5. Ich, als fremder user, möchte beim keyserver die weiteren pubkeys zu einem parent-pubkey (MASTER) bekommen können
 	public Vector<PublicKey> requestSubKeys(String masterkeyid) throws Exception {
-		throw new RuntimeException("not implemented");
-		//example request
+		System.out.println("OSDXKeyServerClient | start requestSubKeys");
+
+		//request
+		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+		req.setRequest("GET /subkeys HTTP/1.1");
+		req.addHeaderValue("Host", host);
+		req.addHeaderValue("KeyID",masterkeyid);
+		req.send(socket);
 		
-//		POST / HTTP/1.1
-//		Host: keys.fnppl.org
-//		Request: subkeys
-//		KeyID: 001152352352643376@keys.fnppl.org
+		//processing response
+	    System.out.println("OSDXKeyServerClient | waiting for response");
+	    OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
+	    if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
+	    if (re.doc!=null) {
+	    	Element e = re.doc.getRootElement();
+	    	if (!e.getName().equals("pubkeys")) throw new RuntimeException("ERROR: Wrong format in keyserver's response");
+	    	Vector<PublicKey> ret = new Vector<PublicKey>();
+	 	    Vector<Element> pks = e.getChildren("pubkey");
+	 	    for (Element pk : pks) {
+	 	    	BigInteger modulus = new BigInteger(SecurityHelper.HexDecoder.decode(pk.getChildText("modulus")));
+	 	    	BigInteger exponent = new BigInteger(SecurityHelper.HexDecoder.decode(pk.getChildText("exponent")));
+	 	    	ret.add(new PublicKey(modulus, exponent));
+	 	    }
+	    	return ret;	 
+	    }
+	    return null;
+		
+	    //example response
+
+		//HTTP/1.1 200 OK
+		//Server: OSDX KeyServer v0.1
+		//Response: subkeys
+		//Parent KeyID: 001152352352643376@keys.fnppl.org
+		//Content-Type: text/xml
+		//Content-Length: 1024
+		//
+		//<?xml version= "1.0" encoding="UTF-8"?>
+		//<pubkeys>
+		//  <pubkey>
+		//    <algo>RSA</algo>
+		//    <bits>3072</bits>
+		//    <modulus>00AEAE639723B8E18EF2452C2457B92F91504FE7FC42FAD34E17D684B71CAA7DD277B876553F73F9D170326E8B7842BAEFB8D7A9FDBE84E5516EBCE93752CC6F33D382EC19799AB66AC19442F7E50DBCB266541319BE2E12D169EFCE9119BA3D196E6CA0CB48D3EECB69FD81C5C48E719F9B309B194397B668095BB797947AB8A052C134207D9774F3B84BBB75A19F3A3E99CAD65D8C05FC6E84FEA2092861251D2DD5EBCF011E24A01D9CD4E5EEA62FDF5402B46A3B6BDE22B66DD9D5EE72679CC65C73F4112EC2A8E89F18F4521AB1E39AEA919C40874FB25434527AA4687CE994AEECBE26010B6B9E239B5DBC5334131EBE3F58D6356516654D27ABCB5D80AE1245FB1AD05D621C7FBAA36ADCD1AF0FC4B89060907DCDEF8570D55BD7B435CE88AEB4F94BCF0411FE2499408FD5A987AFA3A6EFFD4F2B4E2FAE25A4A2269C0493F0A96F7DAB1E24E17EC1799FF664B74A020D17DD76169A91540084CFE1B988778B9DE515205C83A0259121749EF86329761394C7C47D90B518CD11F2928539</modulus>
+		//    <exponent>0x010001</exponent>
+		//  </pubkey>
+		//</pubkeys>
 		
 	}
 	
 	//   1. Ich, als user, möchte auf dem keyserver meinen MASTER-pubkey ablegen können
 	//   includes  2. Ich, als user, möchte, daß der keyserver meinen MASTER-pubkey per email-verifikation (der haupt-identity) akzeptiert (sonst ist der status pending oder so -> erst, wenn die email mit irgendeinem token-link drin aktiviert wurde, wird der pubkey akzeptiert)
 	public boolean putMasterKey(PublicKey masterkey, Identity id) throws Exception {
-		throw new RuntimeException("not implemented");
 		
-		//example request   //TODO Signature?
+		System.out.println("OSDXKeyServerClient | start put master key");
+
+		//request
+		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+		req.setRequest("POST /masterkey HTTP/1.1");
+		req.addHeaderValue("Host", host);
+		req.addHeaderValue("Identity", id.getEmail());
+		req.addHeaderValue("KeyID",masterkey.getKeyID());
+		Element e = new Element("masterpubkey");
+		e.addContent(masterkey.getSimplePubKeyElement());
+		e.addContent(id.toElement());
+		req.send(socket);
 		
-//		POST / HTTP/1.1
+		//processing response
+		System.out.println("OSDXKeyServerClient | waiting for response");
+		OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
+		if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
+		if (re.status.endsWith("OK")) return true;
+		
+		return false;
+		    
+		//example response
+
+		//HTTP/1.1 200 OK
+		//Server: OSDX KeyServer v0.1
+		//Response: masterkey
+		//KeyID: 001152352352643376@keys.fnppl.org
+		//Identitiy: bla@fnppl.org
+		//Message: please authenticate via email
+		//
+		
+		
+		//example request
+		
+//		POST /masterkey HTTP/1.1
 //		Host: keys.fnppl.org
-//		Request: masterpubkeydelivery
 //		Identity: bla@fnppl.org	
 //		KeyID: 001152352352643376@keys.fnppl.org
 //		Content-Type: text/xml
 //		Content-Length: 23523
 //
-//		<masterpubkeydelivery>
-//		
-//		<pubkey>
-//			<algo>RSA</algo>
-//			<bits>3072</bits>
-//			<modulus>0x010001</modulus>
-//			<exponent>425465254651654654984985644894</exponent>
-//		</pubkey>
-//		
-//		<identity>
-//			<email>jaja@kakak.nät</email><!-- MUST -->
-//			<mnemonic></mnemonic><!-- SHOULD ; shorthandle for this identities-purpose "residency" or "work" or whatever -->
-//			<phone>+44 99 00202021</phone><!-- COULD -->
-//			<country></country><!-- COULD -->
-//			<region></region><!-- COULD -->
-//			<postcode></postcode><!-- COULD -->		
-//			<company></company><!-- COULD -->
-//			<unit></unit><!-- COULD -->
-//			<subunit></subunit><!-- COULD -->
+//		<masterpubkey>
+//			<pubkey>
+//				<algo>RSA</algo>
+//				<bits>3072</bits>
+//				<modulus>0x010001</modulus>
+//				<exponent>425465254651654654984985644894</exponent>
+//			</pubkey>
 //			
-//			<function></function><!-- COULD ; function of that person -->
-//			<surname></surname><!-- COULD -->
-//			<middlename></middlename><!-- COULD -->
-//			<name></name><!-- COULD -->
-//			
-//			<note></note><!-- COULD -->
-//			<sha1>A7:DC:99:4D:64:7D:57:95:2A:4F:0F:D3:52:4E:29:6F:02:32:10:5A</sha1><!-- sha1 as hex of concat of all above fields (also empty ones) -->
-//			<!-- please be aware of the exact order of these fields... -->
-//			
-//			<!-- this data is set on client-side -->
-//			<datapath>
-//				<step1>
-//					<datasource>keys.fnppl.org</datasource><!-- keyserver or local -->
-//					<datainsertdatetime>2011-02-21 00:00:00 GMT+00:00</datainsertdatetime>
-//				</step1>
-//				<step2>
-//					<datasource>keys.fnppl.org</datasource><!-- step2 only valid when step1 != local -->
-//					<datainsertdatetime>2011-02-21 00:00:00 GMT+00:00</datainsertdatetime>
-//				</step2>
-//			</datapath>
-//	    </identity>
-//		</masterpubkeydelivery>
+//			<identity>
+//				<email>jaja@kakak.nät</email><!-- MUST -->
+//				<mnemonic></mnemonic><!-- SHOULD ; shorthandle for this identities-purpose "residency" or "work" or whatever -->
+//				<phone>+44 99 00202021</phone><!-- COULD -->
+//				<country></country><!-- COULD -->
+//				<region></region><!-- COULD -->
+//				<postcode></postcode><!-- COULD -->		
+//				<company></company><!-- COULD -->
+//				<unit></unit><!-- COULD -->
+//				<subunit></subunit><!-- COULD -->
+//				
+//				<function></function><!-- COULD ; function of that person -->
+//				<surname></surname><!-- COULD -->
+//				<middlename></middlename><!-- COULD -->
+//				<name></name><!-- COULD -->
+//				
+//				<note></note><!-- COULD -->
+//				<sha1>A7:DC:99:4D:64:7D:57:95:2A:4F:0F:D3:52:4E:29:6F:02:32:10:5A</sha1><!-- sha1 as hex of concat of all above fields (also empty ones) -->
+//				<!-- please be aware of the exact order of these fields... -->
+//				
+//				<!-- this data is set on client-side -->
+//				<datapath>
+//					<step1>
+//						<datasource>keys.fnppl.org</datasource><!-- keyserver or local -->
+//						<datainsertdatetime>2011-02-21 00:00:00 GMT+00:00</datainsertdatetime>
+//					</step1>
+//					<step2>
+//						<datasource>keys.fnppl.org</datasource><!-- step2 only valid when step1 != local -->
+//						<datainsertdatetime>2011-02-21 00:00:00 GMT+00:00</datainsertdatetime>
+//					</step2>
+//				</datapath>
+//		    </identity>
+//		</masterpubkey>
+		
 	}
 	
 	//3. Ich, als user, möchte auf dem keyserver meinen REVOKE-key für meinen master-key abspeichern können (der sollte sogar nicht sichtbar für irgendwen sonst sein!!!)
-	public boolean putRevokeKey(PublicKey revokekey, PublicKey relatedMasterKey) throws Exception {
-		throw new RuntimeException("not implemented");
-		//example request
+	public boolean putRevokeKey(PublicKey revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
+
+		System.out.println("OSDXKeyServerClient | start put revoke key");
+
+		//request
+		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+		req.setRequest("POST /revokekey HTTP/1.1");
+		req.addHeaderValue("Host", host);
+		Element e = new Element("revokekey");
+		e.addContent("masterkeyid", relatedMasterKey.getKeyID());
+		e.addContent(revokekey.getSimplePubKeyElement());
+		 //signoff with own masterkey
+		Vector<Element> toProof = new Vector<Element>();
+		toProof.add(e);
+		byte[] sha1 = SecurityHelper.getSHA1LocalProof(toProof);
+		byte[][] md5sha1sha256 = SecurityHelper.getMD5SHA1SHA256(sha1);
+		Signature sig = Signature.createSignature(md5sha1sha256[1], md5sha1sha256[2], md5sha1sha256[3], "masterkeyid and pubkey", relatedMasterKey);
+		e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1, ':', -1));
+		e.addContent(sig.toElement());
+		req.send(socket);
 		
-//		https://privacybox.de
+		//processing response
+		System.out.println("OSDXKeyServerClient | waiting for response");
+		OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
+		if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
+		if (re.status.endsWith("OK")) return true;
+		return false;
+
+		
+		
+		
+		//example request
 			
-//		POST /putrevokekey HTTP/1.1
+//		POST /revokekey HTTP/1.1
 //		Host: keys.fnppl.org
 //		Content-Type: text/xml
 //		Content-Length: 235
 //
-//		<revokekeydelivery>
+//		<revokekey>
 //			<masterkeyid>001152352352643376@keys.fnppl.org</masterkeyid>
 //			<pubkey>
 //				<algo>RSA</algo>
@@ -309,6 +494,7 @@ public class OSDXKeyServerClient {
 //				<modulus>0x010001</modulus>
 //				<exponent>425465254651654654984985644894</exponent>
 //			</pubkey>
+//			<sha1localproof>85:31:63:9E:83:F8:94:BA:39:91:6E:2E:B5:86:1C:57:1D:41:9A:90</sha1localproof>
 //			<signature>
 //				<data>
 //					<md5>kalksdlkad</md5>
@@ -328,13 +514,15 @@ public class OSDXKeyServerClient {
 //					<signaturebytes>asdasd</signaturebytes><!-- as hex-string with ":" or " " separation... looks nicer... -->
 //				</signoff>
 //			</signature>
-//		</revokekeydelivery>
+//		</revokekey>
 		
 	}
 
 	//   5. Ich, als user, möchte meine keylogs auf dem server ablegen können (ein löschen von keylogs ist NICHT möglich - für einen aktuellen status ist die "kette ist chronologisch abzuarbeiten")
-	public boolean putKeyLog(KeyLog revokekey) throws Exception {
+	public boolean putKeyLog(KeyLog keylog) throws Exception {
 		throw new RuntimeException("not implemented");
+		//TODO why should i do that?
+	
 		//example request
 		
 //		POST / HTTP/1.1
@@ -409,20 +597,54 @@ public class OSDXKeyServerClient {
 		//testing
 		OSDXKeyServerClient c = new OSDXKeyServerClient();
 		
-		c.connect("localhost", 8889);
-		Vector<PublicKey> keys = c.requestMasterPubKeys("test@fnppl.org");
-		for (PublicKey k : keys) {
-			System.out.println("public key: "+k.getKeyID());
-		}
-		c.close();
+//		c.connect("localhost", 8889);
+//		Vector<PublicKey> keys = c.requestMasterPubKeys("test@fnppl.org");
+//		for (PublicKey k : keys) {
+//			System.out.println("public key: "+k.getKeyID());
+//		}
+//		c.close();
 		
 		
-		c.connect("localhost", 8889);
-		Vector<Identity> ids = c.requestIdentities("85D9EB452CA5CD270CA9EC73724ACDAC9E6A6281@LOCAL");
-		for (Identity id : ids) {
-			System.out.println("identity email: "+id.getEmail());
-		}
-		c.close();
+//		c.connect("localhost", 8889);
+//		Vector<Identity> ids = c.requestIdentities("85D9EB452CA5CD270CA9EC73724ACDAC9E6A6281@LOCAL");
+//		for (Identity id : ids) {
+//			System.out.println("identity email: "+id.getEmail());
+//		}
+//		c.close();
+		
+//		c.connect("localhost", 8889);
+//		String status = c.requestKeyStatus("85D9EB452CA5CD270CA9EC73724ACDAC9E6A6281@LOCAL");
+//		System.out.println("key status: "+status);
+//		c.close();
+
+//		c.connect("localhost", 8889);
+//		Vector<KeyLog> keylogs = c.requestKeyLogs("85D9EB452CA5CD270CA9EC73724ACDAC9E6A6281@LOCAL");
+//		System.out.println("received "+keylogs.size()+" keylogs");
+//		c.close();
+
+//		c.connect("localhost", 8889);
+//		Vector<PublicKey> keys = c.requestSubKeys("85D9EB452CA5CD270CA9EC73724ACDAC9E6A6281@LOCAL");
+//		for (PublicKey k : keys) {
+//			System.out.println("public sub key: "+k.getKeyID());
+//		}
+//		c.close();
+
+		
+//		AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
+//		OSDXKeyObject key = OSDXKeyObject.fromKeyPair(kp);
+//		Identity id = Identity.newEmptyIdentity();
+//		id.setEmail("test@fnppl.org");
+
+//		c.connect("localhost", 8889);
+//		boolean ok = c.putMasterKey(key.getPubKey(), id);
+//		System.out.println("put master key: "+(ok?"OK":"FAILED"));
+//		c.close();
+
+//		c.connect("localhost", 8889);
+//		boolean ok2 = c.putRevokeKey(key.getPubKey(), key);
+//		System.out.println("put revoke key: "+(ok2?"OK":"FAILED"));
+//		c.close();
+		
 	}
 	
 }

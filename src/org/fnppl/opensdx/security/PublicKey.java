@@ -69,6 +69,7 @@ import org.bouncycastle.crypto.generators.RSABlindingFactorGenerator;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
+import org.fnppl.opensdx.xml.Element;
 
 
 public class PublicKey {
@@ -226,6 +227,17 @@ public class PublicKey {
 //				real
 //			);
 //	}
+	
+	public Element getSimplePubKeyElement() throws Exception {
+		Element ret = new Element("pubkey");
+		ret.addContent("algo", "RSA");
+		ret.addContent("bits", ""+getBitCount());
+		ret.addContent("modulus", getModulusAsHex());
+		ret.addContent("exponent", getPublicExponentAsHex());
+		return ret;
+	}
+	
+	
 	public boolean verify(
 			byte[] signature, 
 			byte[] md5, 
@@ -236,7 +248,7 @@ public class PublicKey {
 		
 		byte[] ka = encryptPKCSed7(signature);
 		
-		System.out.println("PubKey_verify: SIGNATURE_DEC (length: "+ka.length+") \t:"+SecurityHelper.HexDecoder.encode(ka, ':', 80));
+		//System.out.println("PubKey_verify: SIGNATURE_DEC (length: "+ka.length+") \t:"+SecurityHelper.HexDecoder.encode(ka, ':', 80));
 		
 		byte[] real = new byte[ka.length-1];
 		System.arraycopy(ka, 1, real, 0, real.length);//0x00 header killr

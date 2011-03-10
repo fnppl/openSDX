@@ -330,10 +330,29 @@ public class SecurityMainFrame extends JFrame {
 		File f = Dialogs.chooseOpenFile("Please select file for decryption", lastDir.getAbsolutePath(), "");
 		if (f!=null) {
 			try {
-				Document d = Document.fromFile(f);
-				Element e = d.getRootElement();
+				boolean detached = f.getName().toLowerCase().endsWith(".xml");
+				Element e = null;
+				FileInputStream in = null;
+				if (detached) {
+					e = Document.fromFile(f).getRootElement();
+				} else {
+					in = new FileInputStream(f);
+					String first = readLine(in);
+					StringBuffer b = new StringBuffer();
+					String z = null;
+					boolean terminationFound = false;
+					while (!terminationFound && (z=readLine(in))!=null) {
+						if (z.equals("#### openSDX encrypted file ####")) terminationFound = true;
+						else b.append(z);
+					}
+					if (terminationFound) {
+						e = Document.fromStream(new ByteArrayInputStream(b.toString().getBytes("UTF-8"))).getRootElement();
+					} else {
+						Dialogs.showMessage("Sorry, wrong file format");
+						return;
+					}
+				}
 				String mantra = e.getChildText("mantraname");
-				
 				String p = Dialogs.showPasswordDialog("Enter password", "Please enter password for mantra:\n"+mantra);
 				if (p!=null) {
 				
@@ -349,11 +368,13 @@ public class SecurityMainFrame extends JFrame {
 					SymmetricKey key = SymmetricKey.getKeyFromPass(p.toCharArray(), initv);
 					
 					File fdec = new File(f.getParent(),e.getChildText("dataname")+".dec");
-					File fenc = new File(f.getAbsolutePath().substring(0,f.getAbsolutePath().lastIndexOf('.')));
 					
-					FileInputStream in = new FileInputStream(fenc);
+					if (detached) {
+						File fenc = new File(f.getAbsolutePath().substring(0,f.getAbsolutePath().lastIndexOf('.')));
+						in = new FileInputStream(fenc);
+					}
+					
 					FileOutputStream out = new FileOutputStream(fdec);
-					
 					key.decrypt(in, out);
 					in.close();
 					out.close();
@@ -365,26 +386,37 @@ public class SecurityMainFrame extends JFrame {
 			}
 		}
 	}
+	
+	private static String readLine(InputStream in) throws Exception {
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		byte[] b = new byte[1];
+		int r = 0;
+		char last='\r';
+		while((r=in.read(b)) > 0) {
+			char m = (char)b[0];
+			if(m == '\n') {
+				break;
+			} else if(m != '\r') {
+				bout.write(b[0]);
+			}  
+		}
+		if(r<0 && bout.size()==0) {
+			return null;
+		}
+		String s = new String(bout.toByteArray(), "UTF-8");
+		return s;
+	}
 
 	private void encryptFile() {
 		//Dialogs.showMessage("feature not implented.");
 		File f = Dialogs.chooseOpenFile("Please select file for encryption", lastDir.getAbsolutePath(), "");
 		if (f!=null) {
+			int detached = Dialogs.showYES_NO_Dialog("Create detached metadata", "Do you want to create a detached metadata file?");
 			String[] p = Dialogs.showNewMantraPasswordDialog();
 			if (p!=null) {
 				try {
 					byte[] initv = SecurityHelper.getRandomBytes(16);
-					File fxml = new File(f.getAbsolutePath()+".enc.xml");
-					File fenc = new File(f.getAbsolutePath()+".enc");
-					
-					
 					SymmetricKey key = SymmetricKey.getKeyFromPass(p[1].toCharArray(), initv);
-					
-					FileInputStream in = new FileInputStream(f);
-					FileOutputStream out = new FileOutputStream(fenc);
-					key.encrypt(in, out);
-					in.close();
-					out.close();
 					
 					Element e = new Element("symmetric_encrytion");
 					e.addContent("dataname",f.getName());
@@ -394,48 +426,44 @@ public class SecurityMainFrame extends JFrame {
 					e.addContent("initvector",SecurityHelper.HexDecoder.encode(initv, ':', -1));
 					e.addContent("padding","CBC/PKCS#5");
 					Document d = Document.buildDocument(e);
-					d.writeToFile(fxml);
+					
+					if (detached == Dialogs.YES) {
+						encryptFileDetached(f,key,d);
+					} else {
+						encryptFileInline(f,key,d);
+					}
+					
 					Dialogs.showMessage("Encryption succeeded.");
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			}
 		}
+	}
+	
+	private void encryptFileDetached(File f, SymmetricKey key, Document d) throws Exception {
+		File fenc = new File(f.getAbsolutePath()+".enc");
+		FileInputStream in = new FileInputStream(f);
+		FileOutputStream out = new FileOutputStream(fenc);
+		key.encrypt(in, out);
+		in.close();
+		out.close();
 		
+		File fxml = new File(f.getAbsolutePath()+".enc.xml");
+		d.writeToFile(fxml);
+	}
+	
+	private void encryptFileInline(File f, SymmetricKey key, Document d) throws Exception {
+		File fenc = new File(f.getAbsolutePath()+".osdx");
 		
-//		if (currentKeyStore!=null) {
-//			Vector<OSDXKeyObject> keys = currentKeyStore.getAllEncyrptionKeys(); 
-//			if (keys.size()==0) {
-//				Dialogs.showMessage("Sorry, no encryption keys in keystore");
-//				return;
-//			}
-//			Vector<String> keyids = new Vector<String>();
-//			for (OSDXKeyObject k: keys) {
-//				keyids.add(k.getKeyID());
-//			}
-//			File f = Dialogs.chooseOpenFile("Please select file for encryption", lastDir.getAbsolutePath(), "");
-//			if (f!=null) {
-//				int a = Dialogs.showSelectDialog("Select key", "Please select key for encyption", keyids);
-//				if (a>=0) {
-//					OSDXKeyObject key = keys.get(a);
-//					try {
-//						FileInputStream in = new FileInputStream(f);
-//						byte[] bytes = new byte[in.available()];
-//						byte[] crypt = key.encryptWithPublicKey(bytes);
-//						Element ae = new Element("asymmetric_encrytion");
-//						ae.addContent("dataname",f.getName());
-//						ae.addContent("key id", key.getKeyID());
-//						String b64 = new BASE64Encoder().encode(crypt);
-//						ae.addContent("bytes_base64", b64);
-//						
-//						Document d = Document.buildDocument(ae);
-//						d.writeToFile(new File(f.getAbsolutePath()+"_asym-enc.xml"));
-//					} catch (Exception ex) {
-//						ex.printStackTrace();
-//					}
-//				}
-//			}
-//		}
+		FileInputStream in = new FileInputStream(f);
+		FileOutputStream out = new FileOutputStream(fenc);
+		out.write("#### openSDX symmetrical encrypted file ####\n".getBytes("UTF-8"));
+		d.output(out);
+		out.write("#### openSDX encrypted file ####\n".getBytes("UTF-8"));
+		key.encrypt(in, out);
+		in.close();
+		out.close();
 	}
 	
 	private void verifySignature() {

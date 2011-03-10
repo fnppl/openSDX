@@ -61,7 +61,9 @@ import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.PublicKey;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
+import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
+
 
 public class Test {
 	
@@ -97,7 +99,7 @@ public class Test {
 			
 			Element ekp = generateMasterKeyPair(ids, mantraname, sk);
 			
-			//ekp.output(System.out);
+			Document.buildDocument(ekp).output(System.out);
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -179,7 +181,7 @@ public class Test {
 
 			Element epk = generateGeneratePublicKeyElement(k, parentkeyid);
 
-			epk.output(System.out);
+			Document.buildDocument(epk).output(System.out);
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
