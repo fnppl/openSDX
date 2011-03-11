@@ -143,7 +143,7 @@ public class OSDXKeyObject {
 		ret.unsavedChanges = true;
 		return ret;
 	}
-		
+	
 	public static OSDXKeyObject fromElement(Element kp) throws Exception {
 		OSDXKeyObject ret = new OSDXKeyObject();
 		System.out.println("adding keyobject");
@@ -289,7 +289,9 @@ public class OSDXKeyObject {
 	public String getKeyID() {
 		return modulussha1+"@"+authoritativekeyserver;
 	}
-	
+	public String getKeyModulusSHA1() {
+		return modulussha1;
+	}
 	
 	public Element getSimplePubKeyElement() {
 		if (akp!=null) {
@@ -328,8 +330,7 @@ public class OSDXKeyObject {
 	private final void unlockPrivateKey() {
 		if (!akp.hasPrivateKey() && lockedPrivateKey != null) { //only once
 			String mantraname = lockedPrivateKey.getChildText("mantraname");
-			String Sinitv = lockedPrivateKey.getChildText("initvector");
-			String Sbytes = lockedPrivateKey.getChildText("bytes");
+			
 			
 			//check algo and padding
 			String Slock_algo = lockedPrivateKey.getChildText("algo");
@@ -338,25 +339,27 @@ public class OSDXKeyObject {
 				throw new RuntimeException("UNLOCKING METHOD NOT IMPLEMENTED, please use AES@265 encryption with CBC/PKCS#5 padding");
 			}
 			
-			byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
-
 			try {
-				//String pp = null;
-				//System.out.print("!!!! ENSURE NOONE IS WATCHING YOUR SCREEN !!!! \n\nKeyID "+modulussha1+"@"+authoritativekeyserver+"\nPlease enter Passphrase for Mantra: \""+mantraname+"\": ");
-				//BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-				//pp = br.readLine();
 				String pp = Dialogs.showPasswordDialog("UNLOCK PRIVATE KEY", "KeyID: "+modulussha1+"@"+authoritativekeyserver+"\nPlease enter passphrase for mantra: \""+mantraname+"\"");
-				//System.out.println(pp);
-				if (pp!=null) {
-					SymmetricKey sk = SymmetricKey.getKeyFromPass(pp.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
-					byte[] exponent = sk.decrypt(bytes);
-					byte[] modulus = akp.getModulus();
-					byte[] pubkey_exponent = akp.getPublicExponent();
-					akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
-				}
+				unlockPrivateKey(pp);
+				
 			} catch(Exception ex) {
 				ex.printStackTrace();
 			}			
+		}
+	}
+	
+	public void unlockPrivateKey(String password) throws Exception{
+		if (password!=null) {
+			String Sinitv = lockedPrivateKey.getChildText("initvector");
+			String Sbytes = lockedPrivateKey.getChildText("bytes");
+			byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
+			
+			SymmetricKey sk = SymmetricKey.getKeyFromPass(password.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
+			byte[] exponent = sk.decrypt(bytes);
+			byte[] modulus = akp.getModulus();
+			byte[] pubkey_exponent = akp.getPublicExponent();
+			akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
 		}
 	}
 	

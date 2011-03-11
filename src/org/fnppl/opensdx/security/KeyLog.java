@@ -113,23 +113,31 @@ public class KeyLog {
 		verified = true;
 	}
 	
-	
 	public static KeyLog fromElement(Element e)  throws Exception {
+		return fromElement(e, true);
+	}
+	
+	public static KeyLog fromElement(Element e, boolean tryVerification)  throws Exception {
 		KeyLog k = new KeyLog();
 		k.ekeylog = e;
 		k.verified = false;
-		try {
-			k.verified = k.verifySHA1localproofAndSignoff();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		if(!k.verified) {
-			int a = Dialogs.showYES_NO_Dialog("Verification failed", "KeyStore:  localproof and signoff of keylog failed.\nIgnore?");
-			if (a!=Dialogs.YES) 
-				throw new Exception("KeyStore:  localproof and signoff of keylog failed.");
+		if (tryVerification) {
+			try {
+				k.verified = k.verifySHA1localproofAndSignoff();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			if(!k.verified) {
+				int a = Dialogs.showYES_NO_Dialog("Verification failed", "KeyStore:  localproof and signoff of keylog failed.\nIgnore?");
+				//int a = Dialogs.YES;
+				//System.out.println("CAUTION: KeyStore:  localproof and signoff of keylog failed, ignoring...");
+				if (a!=Dialogs.YES) 
+					throw new Exception("KeyStore:  localproof and signoff of keylog failed.");
+			}
 		}
 		return k;
 	}
+	
 	
 	public boolean isVerified() {
 		return verified;
@@ -139,7 +147,22 @@ public class KeyLog {
 		return XMLHelper.cloneElement(ekeylog);
 	}
 	
+	public long getDate() throws Exception {
+		return OSDXKeyObject.datemeGMT.parse(ekeylog.getChild("action").getChildText("date")).getTime();
+	}
+	public String getDateString() throws Exception {
+		return ekeylog.getChild("action").getChildText("date");
+	}
+	
 	public String getKeyIDTo() {
 		return ekeylog.getChild("action").getChild("to").getChildText("keyid");
+	}
+	public String getStatus() {
+		Element e = ekeylog.getChild("action");
+		String[] checkFor = new String[] {"approval","approval_pending","disapproval","revocation"};
+		for (String c : checkFor) {
+			if (e.getChild(c)!=null) return c;
+		}
+		return null;
 	}
 }

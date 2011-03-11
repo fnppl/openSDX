@@ -62,6 +62,7 @@ public class KeyApprovingStore {
 //	private Signature keySignature = null;
 	private Vector<KeyLog> keylogs = null;
 	private boolean unsavedChanges = false;
+	private OSDXKeyObject keystoreSigningKey = null;
 	
 	public KeyApprovingStore() {
 		
@@ -217,25 +218,35 @@ public class KeyApprovingStore {
 		byte[] sha1 = kk[2];
 		byte[] sha256 = kk[3];
 		
-		Vector<OSDXKeyObject> signoffkeys = getAllSigningKeys();
-		if (signoffkeys.size()==0) {
-			throw new Exception("KeyStore:  No signing keys available");
-		}
+		OSDXKeyObject signkey = keystoreSigningKey;
 		
-		Vector<String> keynames = new Vector<String>();
-		for (int i=0; i<signoffkeys.size(); i++) {
-			keynames.add(signoffkeys.get(i).getKeyID());
+		if (signkey == null) {
+			Vector<OSDXKeyObject> signoffkeys = getAllSigningKeys();
+			if (signoffkeys.size()==0) {
+				throw new Exception("KeyStore:  No signing keys available");
+			}
+			
+			Vector<String> keynames = new Vector<String>();
+			for (int i=0; i<signoffkeys.size(); i++) {
+				Vector<Identity> ids = signoffkeys.get(i).getIdentities();
+				String name = signoffkeys.get(i).getKeyID();
+				for (Identity id : ids) {
+					name += ", "+id.getEmail();
+				}
+				keynames.add(name);
+			}
+			
+			int ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign all unsigned keypairs and keylogs in keystore", keynames);
+			if (ans >= 0) {
+				signkey = signoffkeys.elementAt(ans); 
+			} else {
+				throw new Exception("KeyStore:  signoff of localproof of keypairs failed.");
+			}
 		}
+		Signature s = Signature.createSignature(md5,sha1,sha256, "sign of localproof-sha1 of keys", signkey);
+		ek.addContent(s.toElement());
 		
-		int ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign all keypairs in keystore", keynames);
-		if (ans >= 0) {
-			Signature s = Signature.createSignature(md5,sha1,sha256, "sign of localproof-sha1 of keys", signoffkeys.elementAt(ans));
-			ek.addContent(s.toElement());
-			
-		} else {
-			throw new Exception("KeyStore:  signoff of localproof of keypairs failed.");
-		}
-			
+		
 		//keylog
 		if (keylogs!=null && keylogs.size()>0) {
 			for (KeyLog kl : keylogs) {
@@ -247,17 +258,7 @@ public class KeyApprovingStore {
 					System.out.println("new signature for keylog needed...");
 				}
 				if (!v) {
-					signoffkeys = getAllSigningKeys();
-					keynames = new Vector<String>();
-					for (int i=0;i<signoffkeys.size();i++) {
-						keynames.add(signoffkeys.get(i).getKeyID());
-					}
-					ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign keylog in keystore", keynames);
-					if (ans >= 0) {
-						kl.signoff(signoffkeys.elementAt(ans));
-					} else {
-						throw new Exception("KeyStore:  signoff of localproof of keylog failed.");
-					}
+					kl.signoff(signkey);
 				}
 				root.addContent(kl.toElement());
 			}
@@ -271,17 +272,65 @@ public class KeyApprovingStore {
 		}
 	}
 	
+	
+	
+	
 	public void addKey(OSDXKeyObject key) {
 		unsavedChanges = true;
 		keys.add(key);
+	}
+	
+	public void addKeyLog(KeyLog kl) {
+		unsavedChanges = true;
+		if (keylogs==null) keylogs = new Vector<KeyLog>();
+		keylogs.add(kl);
 	}
 	
 	public Vector<KeyLog> getKeyLogs() {
 		return keylogs;
 	}
 	
+	public Vector<KeyLog> getKeyLogs(String keyid) {
+		if (keylogs==null) return null;
+		String kid = ""+keyid;
+		if (kid.indexOf('@')>=0) kid = kid.substring(0,kid.indexOf('@')-1);
+		Vector<KeyLog> ret = new Vector<KeyLog>();
+		for (KeyLog kl : keylogs) {
+			if (kl.getKeyIDTo().equals(kid)) {
+				ret.add(kl);
+			}
+		}
+		sortKeyLogsbyDate(ret);
+		return ret;
+	}
+	
+	public String[] getKeyStatusWithDate(String keyid) throws Exception {
+		Vector<KeyLog> kls = getKeyLogs(keyid);
+		if (kls==null || kls.size()==0) return null;
+		KeyLog kl = kls.lastElement();
+		return new String[] {kl.getStatus(), kl.getDateString()};
+	}
+	
+	public static void sortKeyLogsbyDate(Vector<KeyLog> keylogs) {
+		Collections.sort(keylogs, new Comparator<KeyLog>() { 
+			@Override
+			public int compare(KeyLog kl1, KeyLog kl2) {
+				try {
+					return (int)(kl1.getDate()-kl2.getDate());
+				}	catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				return 0;
+			}
+		});
+	}
+	
 	public File getFile() {
 		return f;
+	}
+	
+	public void setSigningKey(OSDXKeyObject key) {
+		keystoreSigningKey = key;
 	}
 }
 

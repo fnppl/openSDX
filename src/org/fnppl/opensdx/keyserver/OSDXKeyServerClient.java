@@ -86,14 +86,14 @@ public class OSDXKeyServerClient {
 	private Socket socket = null;
 	private long timeout = 2000;
 	private String host = null;
+	private int port = -1;
 	
-	
-	public OSDXKeyServerClient() {
-		
+	public OSDXKeyServerClient(String host, int port) {
+		this.host = host;
+		this.port = port;
 	}
 	
-	public void connect(String host, int port) throws Exception {
-		this.host = host;
+	public void connect() throws Exception {
 		socket = new Socket(host, port);
 		if (socket.isConnected()) {
 			System.out.println("Connection established.");
@@ -109,6 +109,7 @@ public class OSDXKeyServerClient {
 	
 	// 1. Ich, als fremder user, möchte beim keyserver (z.B. keys.fnppl.org) den/die (MASTER) pubkey(s) zu der identity thiess@finetunes.net suchen können
 	public Vector<PublicKey> requestMasterPubKeys(final String idemail) throws Exception {
+		connect();
 		System.out.println("OSDXKeyServerClient | start requestMasterPubKeys");
 
 		//request
@@ -121,6 +122,8 @@ public class OSDXKeyServerClient {
 		//processing response
 	    System.out.println("OSDXKeyServerClient | waiting for response");
 	    OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
+	    close();
+	    
 	    if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
 	    if (re.doc!=null) {
 	    	Element e = re.doc.getRootElement();
@@ -160,7 +163,7 @@ public class OSDXKeyServerClient {
 	
 	//2. Ich, als fremder user, möchte beim keyserver die weiteren identities (identity-details) zu einem pubkey bekommen können
 	public Vector<Identity> requestIdentities(String keyid) throws Exception {
-		
+		connect();
 		System.out.println("OSDXKeyServerClient | start requestMasterPubKeys");
 
 		//request
@@ -173,10 +176,15 @@ public class OSDXKeyServerClient {
 		//processing response
 	    System.out.println("OSDXKeyServerClient | waiting for response");
 	    OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
+	    close();
+	    
 	    if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
 	    if (re.doc!=null) {
 	    	Element e = re.doc.getRootElement();
-	    	if (!e.getName().equals("identities")) throw new RuntimeException("ERROR: Wrong format in keyserver's response");
+	    	if (!e.getName().equals("identities")) {
+	    		re.doc.output(System.out);
+	    		throw new RuntimeException("ERROR: Wrong format in keyserver's response");
+	    	}
 	    	Vector<Identity> ret = new Vector<Identity>();
 	 	    Vector<Element> eid = e.getChildren("identity");
 	 	    for (Element id : eid) {
@@ -204,8 +212,8 @@ public class OSDXKeyServerClient {
 	}
 	
 	//3. Ich, als fremder user, möchte beim keyserver den aktuellen (beim keyserver bekannten) status zu einem pubkey bekommen können (valid/revoked/etc.)
-	public String requestKeyStatus(String keyid) throws Exception {
-		
+	public String[] requestKeyStatus(String keyid) throws Exception {
+		connect();
 		//request
 		System.out.println("OSDXKeyServerClient | start request keystatus");
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
@@ -217,13 +225,19 @@ public class OSDXKeyServerClient {
 		//processing response
 	    System.out.println("OSDXKeyServerClient | waiting for response");
 	    OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
+	    close();
+	    
 	    if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
 	    if (re.doc!=null) {
 	    	Element e = re.doc.getRootElement();
 	    	if (!e.getName().equals("keyid_keystatus")) throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 	    	String status = e.getChildText("keystatus");
-	    	//TODO verify signature, really signed by rootkey from server? 
-	    	return status;	 
+	    	String date = e.getChildText("keystatus_date");
+	    	if (status!=null && date!=null) {
+	    		//TODO verify signature, really signed by rootkey from server?
+	    		//Signature sig = Signature.fromElement(e.getChild("signature"));
+		    	return new String[] {status,date};	
+	    	}
 	    }
 	    return null;
 	    
@@ -240,13 +254,15 @@ public class OSDXKeyServerClient {
 //	    <keyid_keystatus>
 //	    	<keyid>001152352352643376@keys.fnppl.org</keyid>
 //	     	<keystatus>valid</keystatus>  <!--valid / revoked / approve pending -->
+//			<keystatus_date>2011-02-21 00:00:00 GMT+00:00</keystatus_date>
+//			<sha1localproof>85:31:63:9E:83:F8:94:BA:39:91:6E:2E:B5:86:1C:57:1D:41:9A:90</sha1localproof>	    
 //			<signature>
 //				<data>
 //					<md5>kalksdlkad</md5>
 //					<sha1>adadasdasd</sha1>
 //					<sha256>adadasdasd</sha256>
 //					<signdatetime>2011-01-01 23:20:00 GMT+00:00</signdatetime><!-- MUST -->
-//					<dataname>keyid and keystatus</dataname>
+//					<dataname>keyid and keystatus and date</dataname>
 //				</data>
 //				<signoff>
 //					<keyid>kjakdjadkjajd@keys.fnppl.org</keyid>
@@ -265,7 +281,7 @@ public class OSDXKeyServerClient {
 	
 	//4. Ich, als fremder user, möchte beim keyserver die keylogs eines (beliebigen) pubkeys bekommen können
 	public Vector<KeyLog> requestKeyLogs(String keyid) throws Exception {
-		
+		connect();
 		//request
 		System.out.println("OSDXKeyServerClient | start request keylogs");
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
@@ -277,6 +293,8 @@ public class OSDXKeyServerClient {
 		//processing response
 	    System.out.println("OSDXKeyServerClient | waiting for response");
 	    OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
+	    close();
+	    
 	    if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
 	    if (re.doc!=null) {
 	    	Element e = re.doc.getRootElement();
@@ -294,7 +312,7 @@ public class OSDXKeyServerClient {
 
 //	    HTTP/1.1 200 OK
 //	    Server: OSDX KeyServer v0.1
-//	    Response: keystatus
+//	    Response: keylogs
 //		KeyID: 001152352352643376@keys.fnppl.org
 //	    Content-Type: text/xml
 //	    Content-Length: 1024
@@ -304,12 +322,17 @@ public class OSDXKeyServerClient {
 //	    	<keylog>
 //	    		...
 //	    	</keylog>
+//	    	<sha1localproof>bla</sha1localproof>
+//	    	<signature>
+//	    		...
+//	    	</signature>
 //	    </keylogs>
 	    		
 	}
 	
 	//5. Ich, als fremder user, möchte beim keyserver die weiteren pubkeys zu einem parent-pubkey (MASTER) bekommen können
 	public Vector<PublicKey> requestSubKeys(String masterkeyid) throws Exception {
+		connect();
 		System.out.println("OSDXKeyServerClient | start requestSubKeys");
 
 		//request
@@ -322,6 +345,8 @@ public class OSDXKeyServerClient {
 		//processing response
 	    System.out.println("OSDXKeyServerClient | waiting for response");
 	    OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
+	    close();
+	    
 	    if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
 	    if (re.doc!=null) {
 	    	Element e = re.doc.getRootElement();
@@ -339,30 +364,34 @@ public class OSDXKeyServerClient {
 		
 	    //example response
 
-		//HTTP/1.1 200 OK
-		//Server: OSDX KeyServer v0.1
-		//Response: subkeys
-		//Parent KeyID: 001152352352643376@keys.fnppl.org
-		//Content-Type: text/xml
-		//Content-Length: 1024
-		//
-		//<?xml version= "1.0" encoding="UTF-8"?>
-		//<pubkeys>
-		//  <pubkey>
-		//    <algo>RSA</algo>
-		//    <bits>3072</bits>
-		//    <modulus>00AEAE639723B8E18EF2452C2457B92F91504FE7FC42FAD34E17D684B71CAA7DD277B876553F73F9D170326E8B7842BAEFB8D7A9FDBE84E5516EBCE93752CC6F33D382EC19799AB66AC19442F7E50DBCB266541319BE2E12D169EFCE9119BA3D196E6CA0CB48D3EECB69FD81C5C48E719F9B309B194397B668095BB797947AB8A052C134207D9774F3B84BBB75A19F3A3E99CAD65D8C05FC6E84FEA2092861251D2DD5EBCF011E24A01D9CD4E5EEA62FDF5402B46A3B6BDE22B66DD9D5EE72679CC65C73F4112EC2A8E89F18F4521AB1E39AEA919C40874FB25434527AA4687CE994AEECBE26010B6B9E239B5DBC5334131EBE3F58D6356516654D27ABCB5D80AE1245FB1AD05D621C7FBAA36ADCD1AF0FC4B89060907DCDEF8570D55BD7B435CE88AEB4F94BCF0411FE2499408FD5A987AFA3A6EFFD4F2B4E2FAE25A4A2269C0493F0A96F7DAB1E24E17EC1799FF664B74A020D17DD76169A91540084CFE1B988778B9DE515205C83A0259121749EF86329761394C7C47D90B518CD11F2928539</modulus>
-		//    <exponent>0x010001</exponent>
-		//  </pubkey>
-		//</pubkeys>
+//		HTTP/1.1 200 OK
+//		Server: OSDX KeyServer v0.1
+//		Response: subkeys
+//		Parent KeyID: 001152352352643376@keys.fnppl.org
+//		Content-Type: text/xml
+//		Content-Length: 1024
+//		
+//		<?xml version= "1.0" encoding="UTF-8"?>
+//		<pubkeys>
+//		  <pubkey>
+//		    <algo>RSA</algo>
+//		    <bits>3072</bits>
+//		    <modulus>00AEAE639723B8E18EF2452C2457B92F91504FE7FC42FAD34E17D684B71CAA7DD277B876553F73F9D170326E8B7842BAEFB8D7A9FDBE84E5516EBCE93752CC6F33D382EC19799AB66AC19442F7E50DBCB266541319BE2E12D169EFCE9119BA3D196E6CA0CB48D3EECB69FD81C5C48E719F9B309B194397B668095BB797947AB8A052C134207D9774F3B84BBB75A19F3A3E99CAD65D8C05FC6E84FEA2092861251D2DD5EBCF011E24A01D9CD4E5EEA62FDF5402B46A3B6BDE22B66DD9D5EE72679CC65C73F4112EC2A8E89F18F4521AB1E39AEA919C40874FB25434527AA4687CE994AEECBE26010B6B9E239B5DBC5334131EBE3F58D6356516654D27ABCB5D80AE1245FB1AD05D621C7FBAA36ADCD1AF0FC4B89060907DCDEF8570D55BD7B435CE88AEB4F94BCF0411FE2499408FD5A987AFA3A6EFFD4F2B4E2FAE25A4A2269C0493F0A96F7DAB1E24E17EC1799FF664B74A020D17DD76169A91540084CFE1B988778B9DE515205C83A0259121749EF86329761394C7C47D90B518CD11F2928539</modulus>
+//		    <exponent>0x010001</exponent>
+//		  </pubkey>
+//		  <sha1localproof>bla</sha1localproof>
+//	      <signature>
+//	    	...
+//	      </signature>
+//		</pubkeys>
 		
 	}
 	
 	//   1. Ich, als user, möchte auf dem keyserver meinen MASTER-pubkey ablegen können
 	//   includes  2. Ich, als user, möchte, daß der keyserver meinen MASTER-pubkey per email-verifikation (der haupt-identity) akzeptiert (sonst ist der status pending oder so -> erst, wenn die email mit irgendeinem token-link drin aktiviert wurde, wird der pubkey akzeptiert)
 	public boolean putMasterKey(PublicKey masterkey, Identity id) throws Exception {
-		
-		System.out.println("OSDXKeyServerClient | start put master key");
+		connect();
+		System.out.println("OSDXKeyServerClient | start put master key: "+masterkey.getKeyID());
 
 		//request
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
@@ -373,14 +402,18 @@ public class OSDXKeyServerClient {
 		Element e = new Element("masterpubkey");
 		e.addContent(masterkey.getSimplePubKeyElement());
 		e.addContent(id.toElement());
+		req.setContentElement(e);
 		req.send(socket);
 		
 		//processing response
 		System.out.println("OSDXKeyServerClient | waiting for response");
-		OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
-		if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
-		if (re.status.endsWith("OK")) return true;
+		InputStream in = socket.getInputStream();
+		OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(in, timeout);
+		close();
 		
+		if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
+		close();
+		if (re.status.endsWith("OK")) return true;
 		return false;
 		    
 		//example response
@@ -449,7 +482,7 @@ public class OSDXKeyServerClient {
 	
 	//3. Ich, als user, möchte auf dem keyserver meinen REVOKE-key für meinen master-key abspeichern können (der sollte sogar nicht sichtbar für irgendwen sonst sein!!!)
 	public boolean putRevokeKey(PublicKey revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
-
+		connect();
 		System.out.println("OSDXKeyServerClient | start put revoke key");
 
 		//request
@@ -457,7 +490,7 @@ public class OSDXKeyServerClient {
 		req.setRequest("POST /revokekey HTTP/1.1");
 		req.addHeaderValue("Host", host);
 		Element e = new Element("revokekey");
-		e.addContent("masterkeyid", relatedMasterKey.getKeyID());
+		e.addContent("masterkeyid", relatedMasterKey.getKeyModulusSHA1());
 		e.addContent(revokekey.getSimplePubKeyElement());
 		 //signoff with own masterkey
 		Vector<Element> toProof = new Vector<Element>();
@@ -472,12 +505,11 @@ public class OSDXKeyServerClient {
 		//processing response
 		System.out.println("OSDXKeyServerClient | waiting for response");
 		OSDXKeyServerClientResponse re = OSDXKeyServerClientResponse.fromStream(socket.getInputStream(), timeout);
+		close();
+		
 		if (re==null) throw new RuntimeException("ERROR: Keyserver does not respond.");
 		if (re.status.endsWith("OK")) return true;
 		return false;
-
-		
-		
 		
 		//example request
 			
@@ -595,39 +627,29 @@ public class OSDXKeyServerClient {
 	
 	public static void main(String[] args) throws Exception {
 		//testing
-		OSDXKeyServerClient c = new OSDXKeyServerClient();
+		OSDXKeyServerClient c = new OSDXKeyServerClient("localhost", 8889);
 		
-//		c.connect("localhost", 8889);
+
 //		Vector<PublicKey> keys = c.requestMasterPubKeys("test@fnppl.org");
 //		for (PublicKey k : keys) {
 //			System.out.println("public key: "+k.getKeyID());
 //		}
-//		c.close();
+
 		
-		
-//		c.connect("localhost", 8889);
-//		Vector<Identity> ids = c.requestIdentities("85D9EB452CA5CD270CA9EC73724ACDAC9E6A6281@LOCAL");
+//		Vector<Identity> ids = c.requestIdentities("7610FF13E234ED7694333FF67F312E0DEA45AC99");
 //		for (Identity id : ids) {
 //			System.out.println("identity email: "+id.getEmail());
 //		}
-//		c.close();
-		
-//		c.connect("localhost", 8889);
-//		String status = c.requestKeyStatus("85D9EB452CA5CD270CA9EC73724ACDAC9E6A6281@LOCAL");
-//		System.out.println("key status: "+status);
-//		c.close();
 
-//		c.connect("localhost", 8889);
+		
 //		Vector<KeyLog> keylogs = c.requestKeyLogs("85D9EB452CA5CD270CA9EC73724ACDAC9E6A6281@LOCAL");
 //		System.out.println("received "+keylogs.size()+" keylogs");
-//		c.close();
 
-//		c.connect("localhost", 8889);
+		
 //		Vector<PublicKey> keys = c.requestSubKeys("85D9EB452CA5CD270CA9EC73724ACDAC9E6A6281@LOCAL");
 //		for (PublicKey k : keys) {
 //			System.out.println("public sub key: "+k.getKeyID());
 //		}
-//		c.close();
 
 		
 //		AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
@@ -635,15 +657,18 @@ public class OSDXKeyServerClient {
 //		Identity id = Identity.newEmptyIdentity();
 //		id.setEmail("test@fnppl.org");
 
-//		c.connect("localhost", 8889);
+
 //		boolean ok = c.putMasterKey(key.getPubKey(), id);
 //		System.out.println("put master key: "+(ok?"OK":"FAILED"));
-//		c.close();
 
-//		c.connect("localhost", 8889);
+	
+		String[] status = c.requestKeyStatus("C930CEEF52E4D6808A4253AC2C0EF5F6E578C603");
+		System.out.println("key status: "+status[0]+" from date: "+status[1]);
+
+
 //		boolean ok2 = c.putRevokeKey(key.getPubKey(), key);
 //		System.out.println("put revoke key: "+(ok2?"OK":"FAILED"));
-//		c.close();
+
 		
 	}
 	

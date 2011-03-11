@@ -49,16 +49,21 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.KeyLog;
 import org.fnppl.opensdx.security.OSDXKeyObject;
+import org.fnppl.opensdx.security.PublicKey;
+import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.security.Signature;
 import org.fnppl.opensdx.xml.Element;
 
 /*
@@ -85,15 +90,22 @@ import org.fnppl.opensdx.xml.Element;
 public class KeyServerMain {
 
 	private static String serverid = "OSDX KeyServer v0.1";
+	
 
 	int port = -1;
 	Inet4Address address = null;
 
 	private KeyApprovingStore keystore;
+	
 	private HashMap<String, Vector<OSDXKeyObject>> id_keys;
 	private HashMap<String, OSDXKeyObject> keyid_key;
 	private HashMap<String, Vector<KeyLog>> keyid_log;
-
+	private HashMap<String, Vector<OSDXKeyObject>> keyid_subkeys;
+	
+	private OSDXKeyObject keyServerSigningKey = null;
+	private String serverIDemail = "root_signing_key@fnppl.org";
+	private String serverSigningKeyPassword = "bla";
+	
 	public KeyServerMain() throws Exception {
 		// read keystore
 		File f = new File("server_testkeystore.xml");
@@ -102,33 +114,67 @@ public class KeyServerMain {
 		id_keys = new HashMap<String, Vector<OSDXKeyObject>>();
 		keyid_key = new HashMap<String, OSDXKeyObject>();
 		keyid_log = new HashMap<String, Vector<KeyLog>>();
+		keyid_subkeys = new HashMap<String, Vector<OSDXKeyObject>>();
 		Vector<OSDXKeyObject> keys = keystore.getAllKeys();
 		if (keys != null) {
 			for (OSDXKeyObject k : keys) {
-				keyid_key.put(k.getKeyID(), k);
-				System.out.println("adding keyid_key: "+k.getKeyID()+"::OSDXKeyObject");
-				Vector<Identity> ids = k.getIdentities();
-				if (ids != null) {
-					for (Identity id : ids) {
-						if (!id_keys.containsKey(id.getEmail())) {
-							id_keys.put(id.getEmail(),
-									new Vector<OSDXKeyObject>());
-						}
-						id_keys.get(id.getEmail()).add(k);
-						System.out.println("adding id_keys: "+id.getEmail()+"::"+k.getKeyID());
-					}
-				}
+				updateCache(k, null);
 			}
 		}
 		Vector<KeyLog> keylogs = keystore.getKeyLogs();
 		if (keylogs != null) {
 			for (KeyLog l : keylogs) {
-				String keyid = l.getKeyIDTo();
-				if (!keyid_log.containsKey(keyid)) {
-					keyid_log.put(keyid, new Vector<KeyLog>());
-				}
-				keyid_log.get(keyid).add(l);
+				updateCache(null, l);
 			}
+		}
+		
+		//serverSigningKey
+		if (id_keys.get(serverIDemail)!=null) {
+			keyServerSigningKey = id_keys.get(serverIDemail).firstElement();
+			keyServerSigningKey.unlockPrivateKey(serverSigningKeyPassword);
+		} else {
+			//generate new keypair if keystore not contains serverIDemail key
+			keyServerSigningKey = OSDXKeyObject.fromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+			Identity id = Identity.newEmptyIdentity();
+			id.setEmail(serverIDemail);
+			keyServerSigningKey.addIdentity(id);
+			keystore.addKey(keyServerSigningKey);
+			keystore.toFile(keystore.getFile());
+		}
+		keystore.setSigningKey(keyServerSigningKey);
+		
+	}
+	
+	private void updateCache(OSDXKeyObject k, KeyLog l) {
+		if (k!=null) {
+			keyid_key.put(k.getKeyModulusSHA1(), k);
+			System.out.println("adding keyid_key: "+k.getKeyModulusSHA1()+"::OSDXKeyObject");
+			Vector<Identity> ids = k.getIdentities();
+			if (ids != null) {
+				for (Identity id : ids) {
+					if (!id_keys.containsKey(id.getEmail())) {
+						id_keys.put(id.getEmail(),
+								new Vector<OSDXKeyObject>());
+					}
+					id_keys.get(id.getEmail()).add(k);
+					System.out.println("adding id_keys: "+id.getEmail()+"::"+k.getKeyModulusSHA1());
+				}
+			}
+			String parentKeyID = k.getParentKeyID();
+			if (parentKeyID!=null && parentKeyID.length()>0) {
+				if (!keyid_subkeys.containsKey(parentKeyID)) {
+					keyid_subkeys.put(parentKeyID, new Vector<OSDXKeyObject>());
+				}
+				keyid_subkeys.get(parentKeyID).add(k);
+				System.out.println("adding subkey: "+k.getKeyModulusSHA1()+" for parent key: "+parentKeyID);
+			}
+		}
+		if (l!=null) {
+			String keyid = l.getKeyIDTo();
+			if (!keyid_log.containsKey(keyid)) {
+				keyid_log.put(keyid, new Vector<KeyLog>());
+			}
+			keyid_log.get(keyid).add(l);
 		}
 	}
 
@@ -139,7 +185,11 @@ public class KeyServerMain {
 		System.out.println("KeyServerRequest | Method: "+request.method+"\tCmd: "+request.cmd);
 		
 		if (request.method.equals("POST")) {
-			
+			if (cmd.equals("/masterkey")) {
+				return handlePutMasterKeyRequest(request);
+			} else if (cmd.equals("/revokekey")) {
+				return handlePutRevokeKeyRequest(request);
+			}
 		} else if (request.method.equals("HEAD")) {
 			throw new Exception("NOT IMPLEMENTED"); // correct would be to fire a HTTP_ERR
 		} else if (request.method.equals("GET")) {
@@ -147,6 +197,12 @@ public class KeyServerMain {
 				return handleMasterPubKeyRequest(request);
 			} else if (cmd.equals("/identities")) {
 				return handleIdentitiesRequest(request);
+			} else if (cmd.equals("/keystatus")) {
+				return handleKeyStatusRequest(request);
+			} else if (cmd.equals("/keylogs")) {
+				return handleKeyLogsRequest(request);
+			} else if (cmd.equals("/subkeys")) {
+				return handleSubKeyRequest(request);
 			}
 		}
 		System.out.println("KeyServerResponse| ::request command not recognized.");
@@ -161,7 +217,7 @@ public class KeyServerMain {
 			resp.addHeaderValue("Response", "masterpubkeys");
 			resp.addHeaderValue("Identity", id);
 
-			Element e = new Element("masterpubkeysresponse");
+			Element e = new Element("pubkeys");
 
 			Vector<OSDXKeyObject> keys = id_keys.get(id);
 			if (keys != null && keys.size() > 0) {
@@ -185,9 +241,9 @@ public class KeyServerMain {
 			resp.addHeaderValue("Response", "identities");
 			resp.addHeaderValue("KeyID", id);
 
-			Element e = new Element("identitiesresponse");
+			Element e = new Element("identities");
 
-			OSDXKeyObject key = keyid_key.get(id);
+			OSDXKeyObject key = keyid_key.get(id); //TODO could be multiple keys for keyid collisions
 			if (key != null) {
 				Vector<Identity> ids = key.getIdentities();
 				for (Identity aid : ids) {
@@ -199,6 +255,152 @@ public class KeyServerMain {
 		}
 		return null;
 	}
+	
+	private KeyServerResponse handleKeyStatusRequest(KeyServerRequest request) throws Exception {
+		System.out.println("KeyServerResponse | ::handle key status request");
+		String id = request.getHeaderValue("KeyID");
+		
+		if (id != null) {
+			KeyServerResponse resp = new KeyServerResponse(serverid);
+			resp.addHeaderValue("Response", "keystatus");
+			resp.addHeaderValue("KeyID", id);
+
+			Element e = new Element("keyid_keystatus");
+			String[] ks = keystore.getKeyStatusWithDate(id);
+			if (ks!=null) {
+				e.addContent("keyid",id);
+				e.addContent("keystatus",ks[0]);
+				e.addContent("keystatus_date",ks[1]);
+				byte[] sha1proof = SecurityHelper.getSHA1LocalProof(e);
+				e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
+				e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "keyid and keystatus and date", keyServerSigningKey).toElement());
+			}
+			resp.setContentElement(e);
+			return resp;
+		}
+		return null;
+	}
+	
+	private KeyServerResponse handleKeyLogsRequest(KeyServerRequest request) throws Exception {
+		System.out.println("KeyServerResponse | ::handle keylog request");
+		String id = request.getHeaderValue("KeyID");
+
+		if (id != null) {
+			KeyServerResponse resp = new KeyServerResponse(serverid);
+			resp.addHeaderValue("Response", "keylogs");
+			resp.addHeaderValue("KeyID", id);
+
+			Element e = new Element("keylogs");
+			Vector<KeyLog> kls = keyid_log.get(id);
+			
+			if (kls!=null) {
+				for (KeyLog kl : kls) {
+					e.addContent(kl.toElement());
+				}
+				//signoff
+				byte[] sha1proof = SecurityHelper.getSHA1LocalProof(e);
+				e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
+				e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "keylogs", keyServerSigningKey).toElement());
+			}
+			resp.setContentElement(e);
+			return resp;
+		}
+		return null;
+	}
+	
+	private KeyServerResponse handleSubKeyRequest(KeyServerRequest request) throws Exception {
+		System.out.println("KeyServerResponse | ::handle subkey request");
+		String id = request.getHeaderValue("KeyID");
+
+		if (id != null) {
+			KeyServerResponse resp = new KeyServerResponse(serverid);
+			resp.addHeaderValue("Response", "subkeys");
+			resp.addHeaderValue("Parent KeyID", id);
+
+			Element e = new Element("pubkeys");
+			Vector<OSDXKeyObject> subkeys = keyid_subkeys.get(id);
+			if (subkeys!=null) {
+				for (OSDXKeyObject key : subkeys) {
+					e.addContent(key.getSimplePubKeyElement());
+				}
+				//signoff
+				byte[] sha1proof = SecurityHelper.getSHA1LocalProof(e);
+				e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
+				e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "keylogs", keyServerSigningKey).toElement());
+			}
+			resp.setContentElement(e);
+			return resp;
+		}
+		return null;
+	}
+	
+	private KeyServerResponse handlePutMasterKeyRequest(KeyServerRequest request) throws Exception {
+		System.out.println("KeyServerResponse | ::handle put masterkey request");
+		String keyid = request.getHeaderValue("KeyID");
+		String id = request.getHeaderValue("Identity");
+		System.out.print("GOT THIS CONTENT::");
+		request.xml.output(System.out);
+		System.out.println("::END OF CONTENT");
+		Element e = request.xml.getRootElement();
+		if (e.getName().equals("masterpubkey")) {
+			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
+			AsymmetricKeyPair akp = new AsymmetricKeyPair(pubkey.getModulusBytes(), pubkey.getPublicExponentBytes(), null);
+			
+			//generate key
+			OSDXKeyObject key = OSDXKeyObject.fromKeyPair(akp);
+			Identity idd = Identity.fromElement(e.getChild("identity"));
+			key.addIdentity(idd);
+			
+			//generate keylog for approve pending
+			Element ekl = new Element("keylog");
+			Element eac = new Element("action");
+			eac.addContent("date", OSDXKeyObject.datemeGMT.format(System.currentTimeMillis()));
+			eac.addContent("ip4", "na");
+			eac.addContent("ip6", "na");
+			Element ef = new Element("from");
+			ef.addContent("id",serverIDemail);
+			ef.addContent("keyid",keyServerSigningKey.getKeyID());
+			Element et = new Element("to");
+			et.addContent("id",idd.getEmail());
+			et.addContent("keyid",pubkey.getKeyID());
+			Element eap = new Element("approval_pending");
+			Element eo = new Element("of");
+			eo.addContent(idd.toElement());
+			eap.addContent(eo);
+			eac.addContent(ef);
+			eac.addContent(et);
+			eac.addContent(eap);
+			ekl.addContent(eac);
+			System.out.println("action element ready");
+			
+			//byte[] sha1proof = SecurityHelper.getSHA1LocalProof(ekl);
+			//e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
+			//e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "keylogs", keyServerSigningKey).toElement());
+			
+			KeyLog kl = KeyLog.fromElement(ekl,false);
+			kl.signoff(keyServerSigningKey);
+			
+			//save
+			keystore.addKey(key);
+			keystore.addKeyLog(kl);
+			updateCache(key, null);
+			
+			//send response
+			KeyServerResponse resp = new KeyServerResponse(serverid);
+			resp.addHeaderValue("Response", "subkeys");
+			resp.addHeaderValue("KeyID", keyid);
+			resp.addHeaderValue("Identity", id);
+			resp.addHeaderValue("Message", "please authenticate via email");
+			return resp;
+		}
+		return null;
+		
+	}
+	
+	private KeyServerResponse handlePutRevokeKeyRequest(KeyServerRequest request) throws Exception {
+		throw new Exception("not implemented");
+	}
+	
 
 	// public void readKeys(File f, char[] pass_mantra) throws Exception {
 	// // KeyRingCollection krc = KeyRingCollection.fromFile(f, pass_mantra);

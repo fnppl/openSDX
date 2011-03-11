@@ -102,6 +102,9 @@ public class PublicKey {
 	public byte[] getModulusBytes() {
 		return pub.getModulus().toByteArray();
 	}
+	public byte[] getPublicExponentBytes() {
+		return pub.getExponent().toByteArray();
+	}
 	public String getPublicExponentAsHex() {
 		return SecurityHelper.HexDecoder.encode(pub.getExponent().toByteArray(), '\0', -1);
 	}
@@ -235,6 +238,12 @@ public class PublicKey {
 		ret.addContent("modulus", getModulusAsHex());
 		ret.addContent("exponent", getPublicExponentAsHex());
 		return ret;
+	}
+	
+	public static PublicKey fromSimplePubKeyElement(Element e) throws Exception {
+		byte[] mod = SecurityHelper.HexDecoder.decode(e.getChildText("modulus"));
+		byte[] exp = SecurityHelper.HexDecoder.decode(e.getChildText("exponent"));
+		return new PublicKey(new BigInteger(mod),new BigInteger(exp));
 	}
 	
 	

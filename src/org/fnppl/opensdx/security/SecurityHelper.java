@@ -437,6 +437,12 @@ public class SecurityHelper {
 		sha1.doFinal(ret, 0);
 		return ret;
 	}
+	
+	public static byte[] getSHA1LocalProof(Element e) throws Exception {
+		Vector<Element> ve = new Vector<Element>();
+		ve.add(e);
+		return getSHA1LocalProof(ve);
+	}
 	public static byte[] getSHA1LocalProof(Vector<Element> ve) throws Exception {
 		byte[] ret = new byte[20];//160 bit = 20 byte
 		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();

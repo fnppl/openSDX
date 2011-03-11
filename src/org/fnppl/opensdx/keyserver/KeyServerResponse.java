@@ -74,7 +74,9 @@ public class KeyServerResponse {
 			ByteOutputStream contentout = new ByteOutputStream();
 			
 			Document xml = Document.buildDocument(contentElement);
-			//xml.output(contentout);
+			xml.output(contentout);
+			contentout.flush();
+			contentout.close();
 			
 			byte[] content = contentout.getBytes();
 			out.write(header.toString().getBytes("ASCII"));
@@ -82,9 +84,7 @@ public class KeyServerResponse {
 			out.write("Content-Type: text/xml\r\n".getBytes("ASCII"));
 			out.write(("Content-Length: "+content.length+"\r\n").getBytes("ASCII"));
 			out.write("\r\n".getBytes("ASCII"));
-			xml.output(out);
 			out.flush();
-			
 			out.write(content);
 		} else {
 			out.write(header.toString().getBytes("ASCII"));

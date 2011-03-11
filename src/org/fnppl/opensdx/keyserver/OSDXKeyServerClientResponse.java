@@ -22,16 +22,13 @@ public class OSDXKeyServerClientResponse {
 		re.status = readLine(in);
 		
 		readHeader(in, re);
-		System.out.println("::header end::");
+		//System.out.println("::header end::");
 		if (re.headers.containsKey("Content-Type") && re.headers.get("Content-Type").equals("text/xml")) {
 			readXMLContent(in, re);
 		}
-
+		//if (re.doc!=null) re.doc.output(System.out);
 		System.out.println("OSDXKeyServerClient | end requestMasterPubKeys");
-
-		if (re.doc!=null) {
-			re.doc.output(System.out);
-		}
+		
 		return re;
 	}
 	
@@ -44,10 +41,10 @@ public class OSDXKeyServerClientResponse {
 		}
 		String s = new String(bout.toByteArray());
 		String last = s.substring(s.lastIndexOf(">"));
-		System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last.getBytes("UTF-8"), ':',-1));
+		//System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last.getBytes("UTF-8"), ':',-1));
 		s = s.substring(0, s.lastIndexOf(">")+3);
 		String last2 = s.substring(s.lastIndexOf(">"));
-		System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last2.getBytes("UTF-8"), ':',-1));
+		//System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last2.getBytes("UTF-8"), ':',-1));
 		
 		//System.out.println("GOT THIS AS DOC: ::"+s+"::");
 		re.doc = Document.fromStream(new ByteArrayInputStream(s.getBytes()));
@@ -64,7 +61,7 @@ public class OSDXKeyServerClientResponse {
 			//header
 			String[] p = parseHeader(zeile);
 			re.headers.put(p[0], p[1]);
-			System.out.println("h: "+zeile);
+			//System.out.println("h: "+zeile);
 		}
 
 	}
