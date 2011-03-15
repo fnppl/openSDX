@@ -318,8 +318,8 @@ public class KeyServerMain {
 			Element ekl = new Element("keylog");
 			Element eac = new Element("action");
 			eac.addContent("date", OSDXKeyObject.datemeGMT.format(System.currentTimeMillis()));
-			eac.addContent("ip4", "na");
-			eac.addContent("ip6", "na");
+			eac.addContent("ipv4", "na");
+			eac.addContent("ipv6", "na");
 			Element ef = new Element("from");
 			ef.addContent("id",serverIDemail);
 			ef.addContent("keyid",keyServerSigningKey.getKeyID());
