@@ -57,6 +57,8 @@ import org.fnppl.opensdx.xml.Element;
 
 public class KeyServerRequest {
 	public Hashtable<String, String> headers = new Hashtable<String, String>();
+	public Hashtable<String, String> parameters = new Hashtable<String, String>();
+	
 	public String cmd = null;
 	public String method = null;
 	public Document xml;
@@ -66,11 +68,11 @@ public class KeyServerRequest {
 		//reject stupid requests (e.g. myriard-long single-lines in header)
 		KeyServerRequest ret = new KeyServerRequest();
 		ret.xml = null;
-		ret.headers = new Hashtable<String, String>();
-		
+//		ret.headers = new Hashtable<String, String>(); //already done in class-definition
+//		ret.parameters = new Hashtable<String, String>(); //already done in class-definition
 		
 		String zeile = null;
-		zeile = readLine(in);//cmdline
+		zeile = readLineASCII(in); //cmdline
 		
 		String[] t = zeile.split(" ");
 		ret.method = t[0];
@@ -79,53 +81,62 @@ public class KeyServerRequest {
 		
 		readHeader(in, ret);
 		System.out.println("::header end::");
-		if (ret.headers.containsKey("Content-Type") && ret.headers.get("Content-Type").equals("text/xml")) {
-			readXMLContent(in, ret);
+		//if (ret.headers.containsKey("Content-Type") && ret.headers.get("Content-Type").equals("text/xml")) {
+		if(ret.method.equals("POST")) {
+			readXMLPostContent(in, ret);
+		}
+		else if(ret.method.equals("GET")) {
+			//HT 2011-03-15 parse GET-params
 		}
 
 		System.out.println("KeyServerRequest | end of request");
 		
 		//-------------------------return ret;
 		
-	
-
 		return ret;
 	}
 	
-	private static void readXMLContent(InputStream in, KeyServerRequest re) throws Exception {
-		System.out.println("reading xml content");
-		while(in.available()==0) { //wait for data
-			Thread.sleep(100); 
-		}
+	private static void readXMLPostContent(InputStream in, KeyServerRequest re) throws Exception {
+		System.out.println("KeyServerRequest::reading xml POST content");
+//		while(in.available() == 0) { //wait for data
+//			Thread.sleep(100); 
+//		}
 		
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		int read = 0;
-		byte[] buff = new byte[1024];
+		int toread = Integer.parseInt(re.headers.get("Content-Length"));
+		System.out.println("KeyServerRequest::Content-length: "+toread);
+		byte[] buff = new byte[4096];
 		//while((read=in.read(buff))!=-1) {
-		while(in.available()>0) {
-			read = in.read(buff); 
+		while((read = in.read(buff,0, Math.min(buff.length, toread))) != -1) {
+//			read = in.read(buff); 
 			bout.write(buff, 0, read);
+			toread -= read;
+			if(toread == 0) {
+				break;
+			}
 		}
 		
 		String s = new String(bout.toByteArray());
-		System.out.println("GOT THIS AS DOC: ::"+s+"::");
+		s = URLDecoder.decode(s, "UTF-8"); //urlencoded-form-data
 		
+		System.out.println("KeyServerRequest::GOT THIS AS DOC: ::START::"+s+"::END::");
 		
-		String last = s.substring(s.lastIndexOf(">"));
-		System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last.getBytes("UTF-8"), ':',-1));
-		s = s.substring(0, s.lastIndexOf(">")+3);
-		String last2 = s.substring(s.lastIndexOf(">"));
-		System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last2.getBytes("UTF-8"), ':',-1));
+//		String last = s.substring(s.lastIndexOf(">"));
+//		System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last.getBytes("UTF-8"), ':',-1));
+//		s = s.substring(0, s.lastIndexOf(">")+3);
+//		String last2 = s.substring(s.lastIndexOf(">"));
+//		System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last2.getBytes("UTF-8"), ':',-1));
 		
-		System.out.println("GOT THIS AS DOC: ::"+s+"::");
+//		System.out.println("GOT THIS AS DOC: ::"+s+"::");
 		re.xml = Document.fromStream(new ByteArrayInputStream(s.getBytes()));
 	}
 	
 	private static void readHeader(InputStream in, KeyServerRequest re) throws Exception {
 		String zeile = null;
 
-		while ((zeile=readLine(in))!=null) {
-			if(zeile.length()==0) {
+		while ((zeile=readLineASCII(in)) != null) {
+			if(zeile.length() == 0) {
 				return;//heade-ende
 			}
 			//header
@@ -133,18 +144,20 @@ public class KeyServerRequest {
 			re.headers.put(p[0], p[1]);
 			System.out.println("h: "+zeile);
 		}
-
 	}
 	
 	private static String[] parseHeader(String zeile) {
+		StringTokenizer st = new StringTokenizer(zeile, " ");
 		String[] ret = new String[2];
-		ret[0] = zeile.substring(0, zeile.indexOf(" "));
-		if (ret[0].endsWith(":")) ret[0] = ret[0].substring(0,ret[0].length()-1);
-		ret[1] = zeile.substring(zeile.indexOf(" ")+1);
+		ret[0] = st.nextToken();
+		ret[0] = ret[0].substring(0, ret[0].length()-1);//cut off ":"
+		
+		ret[1] = st.nextToken();
+		
 		return ret;
 	}
 
-	private static String readLine(InputStream in) throws Exception {
+	private static String readLineASCII(InputStream in) throws Exception {
 		//if (in.available()<=0) return null;
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 
@@ -175,8 +188,9 @@ public class KeyServerRequest {
 	public String getHeaderValue(String headerName) {
 		return headers.get(headerName);
 	}
-
-	
+	public String getParamValue(String paramName) {
+		return parameters.get(paramName);
+	}
 }
 
 

@@ -88,10 +88,8 @@ import org.fnppl.opensdx.xml.Element;
  */
 
 public class KeyServerMain {
-
 	private static String serverid = "OSDX KeyServer v0.1";
 	
-
 	int port = -1;
 	Inet4Address address = null;
 
@@ -129,7 +127,7 @@ public class KeyServerMain {
 		}
 		
 		//serverSigningKey
-		if (id_keys.get(serverIDemail)!=null) {
+		if (id_keys.get(serverIDemail) != null) {
 			keyServerSigningKey = id_keys.get(serverIDemail).firstElement();
 			keyServerSigningKey.unlockPrivateKey(serverSigningKeyPassword);
 		} else {
@@ -190,9 +188,11 @@ public class KeyServerMain {
 			} else if (cmd.equals("/revokekey")) {
 				return handlePutRevokeKeyRequest(request);
 			}
-		} else if (request.method.equals("HEAD")) {
+		} 
+		else if (request.method.equals("HEAD")) {
 			throw new Exception("NOT IMPLEMENTED"); // correct would be to fire a HTTP_ERR
-		} else if (request.method.equals("GET")) {
+		} 
+		else if (request.method.equals("GET")) {
 			if (cmd.equals("/masterpubkeys")) {
 				return handleMasterPubKeyRequest(request);
 			} else if (cmd.equals("/identities")) {
@@ -205,7 +205,7 @@ public class KeyServerMain {
 				return handleSubKeyRequest(request);
 			}
 		}
-		System.out.println("KeyServerResponse| ::request command not recognized.");
+		System.err.println("KeyServerResponse| ::request command not recognized:: "+cmd);
 		return null;
 	}
 
@@ -214,8 +214,10 @@ public class KeyServerMain {
 		String id = request.getHeaderValue("Identity");
 		if (id != null) {
 			KeyServerResponse resp = new KeyServerResponse(serverid);
-			resp.addHeaderValue("Response", "masterpubkeys");
-			resp.addHeaderValue("Identity", id);
+			
+			//HT 2011-15-03 why needed?
+//			resp.addHeaderValue("Response", "masterpubkeys");
+//			resp.addHeaderValue("Identity", id);
 
 			Element e = new Element("pubkeys");
 
@@ -238,8 +240,10 @@ public class KeyServerMain {
 		
 		if (id != null) {
 			KeyServerResponse resp = new KeyServerResponse(serverid);
-			resp.addHeaderValue("Response", "identities");
-			resp.addHeaderValue("KeyID", id);
+
+			//HT 2011-15-03 why needed?
+//			resp.addHeaderValue("Response", "identities");
+//			resp.addHeaderValue("KeyID", id);
 
 			Element e = new Element("identities");
 
@@ -262,8 +266,9 @@ public class KeyServerMain {
 		
 		if (id != null) {
 			KeyServerResponse resp = new KeyServerResponse(serverid);
-			resp.addHeaderValue("Response", "keystatus");
-			resp.addHeaderValue("KeyID", id);
+			//HT 2011-15-03 why needed?
+//			resp.addHeaderValue("Response", "keystatus");
+//			resp.addHeaderValue("KeyID", id);
 
 			Element e = new Element("keyid_keystatus");
 			String[] ks = keystore.getKeyStatusWithDate(id);
@@ -287,8 +292,9 @@ public class KeyServerMain {
 
 		if (id != null) {
 			KeyServerResponse resp = new KeyServerResponse(serverid);
-			resp.addHeaderValue("Response", "keylogs");
-			resp.addHeaderValue("KeyID", id);
+			//HT 2011-15-03 why needed?
+//			resp.addHeaderValue("Response", "keylogs");
+//			resp.addHeaderValue("KeyID", id);
 
 			Element e = new Element("keylogs");
 			Vector<KeyLog> kls = keyid_log.get(id);
@@ -314,8 +320,9 @@ public class KeyServerMain {
 
 		if (id != null) {
 			KeyServerResponse resp = new KeyServerResponse(serverid);
-			resp.addHeaderValue("Response", "subkeys");
-			resp.addHeaderValue("Parent KeyID", id);
+			//HT 2011-15-03 why needed?
+//			resp.addHeaderValue("Response", "subkeys");
+//			resp.addHeaderValue("Parent KeyID", id);
 
 			Element e = new Element("pubkeys");
 			Vector<OSDXKeyObject> subkeys = keyid_subkeys.get(id);
@@ -387,10 +394,12 @@ public class KeyServerMain {
 			
 			//send response
 			KeyServerResponse resp = new KeyServerResponse(serverid);
-			resp.addHeaderValue("Response", "subkeys");
-			resp.addHeaderValue("KeyID", keyid);
-			resp.addHeaderValue("Identity", id);
-			resp.addHeaderValue("Message", "please authenticate via email");
+			
+			//HT 2011-15-03 why needed?
+//			resp.addHeaderValue("Response", "subkeys");
+//			resp.addHeaderValue("KeyID", keyid);
+//			resp.addHeaderValue("Identity", id);
+//			resp.addHeaderValue("Message", "please authenticate via email");
 			return resp;
 		}
 		return null;

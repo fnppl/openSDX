@@ -53,48 +53,61 @@ import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
-
-
 public class KeyServerResponse {
-	public int retcode = 404;//fail
-	private StringBuffer header;
+//	public int retcode = 404;//fail
+//	public String retcodeString = "FAYUL!";
+	public int retcode = 200;//fail
+	public String retcodeString = "OK";
+	public String contentType = "text/xml";
+	
+	private String serverid = null;
 	private Element contentElement;
 	
+	
 	public KeyServerResponse(String serverid) {
-		header = new StringBuffer();
-		header.append("HTTP/1.1 200 OK\r\n");
-		header.append("Server: "+serverid+"\r\n");
+		this.serverid = serverid;
 		contentElement = null;
+	}
+	public void setRetCode(int code, String msg) {
+		this.retcode = code;
+		this.retcodeString = msg;
 	}
 	
 	public void toOutput(OutputStream out) throws Exception {
 		//write it to the outputstream...
-		if (contentElement!=null) {
-			ByteOutputStream contentout = new ByteOutputStream();
+		if (contentElement != null) {
+			ByteArrayOutputStream contentout = new ByteArrayOutputStream();
 			
 			Document xml = Document.buildDocument(contentElement);
 			xml.output(contentout);
 			contentout.flush();
 			contentout.close();
 			
-			byte[] content = contentout.getBytes();
-			out.write(header.toString().getBytes("ASCII"));
+			byte[] content = contentout.toByteArray();
+			out.write((
+					"HTTP/1.1 "+retcode+" "+retcodeString+"\r\n" +
+					"Server: "+serverid+"\r\n" +
+					"Connection: close\r\n").getBytes("ASCII"));
 			
-			out.write("Content-Type: text/xml\r\n".getBytes("ASCII"));
+			out.write(("Content-Type: "+contentType+"\r\n").getBytes("ASCII"));
 			out.write(("Content-Length: "+content.length+"\r\n").getBytes("ASCII"));
 			out.write("\r\n".getBytes("ASCII"));
 			out.flush();
 			out.write(content);
-		} else {
-			out.write(header.toString().getBytes("ASCII"));
+		} 
+		else {
+			out.write((
+					"HTTP/1.1 "+retcode+" "+retcodeString+"\r\n" +
+					"Server: "+serverid+"\r\n" +
+					"Connection: close\r\n").getBytes("ASCII"));
+			out.write("\r\n".getBytes("ASCII"));
 		}
 		out.flush();
 	}
 	
-	public void addHeaderValue(String name, String value) {
-		header.append(name+": "+value+"\n");
-	}
+//	public void addHeaderValue(String name, String value) {
+//		header.append(name+": "+value+"\n");
+//	}
 	
 	public void setContentElement(Element e) {
 		contentElement = e;
