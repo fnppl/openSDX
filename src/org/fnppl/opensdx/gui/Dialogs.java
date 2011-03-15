@@ -74,8 +74,8 @@ public class Dialogs {
 	public static int YES = 1;
 	public static int NO = -1;
 	
-	public static String lastDir = ".";
-	public static Vector<String> lastDirs = new Vector<String>();
+	public static File lastDir = new File(System.getProperty("user.home"));
+	public static Vector<File> lastDirs = new Vector<File>();
 	public static boolean saveLastDir = true;
 	
 	public static int showYES_NO_Dialog(String title, String message) {
@@ -139,55 +139,71 @@ public class Dialogs {
 	    return null;
 	}
 	
-	public static int showSelectDialog(String title, String message, Vector<String> values) {
-		String[] select = new String[values.size()];
-		for (int i=0;i<select.length;i++) {
-			select[i] = values.get(i);
-		}
-		String ans = (String)JOptionPane.showInputDialog(null,message,title,JOptionPane.QUESTION_MESSAGE,null,select,select[0]); 
-		if (ans!=null) {
-			for (int i=0;i<select.length;i++) {
-				if (select[i].equals(ans)) return i;
-			}
-		}
-		return -1;
+	public static int showSelectDialog(String title, String message, Vector values) {
+		Object[] os = values.toArray();
+		
+//		File[] select = new File[values.size()];
+//		for (int i=0;i<select.length;i++) {
+//			select[i] = values.get(i);
+//		}
+		Object ans = (Object)JOptionPane.showInputDialog(null,message,title,JOptionPane.QUESTION_MESSAGE, null, os, os[0]);
+		return values.indexOf(ans);
+//		
+//		if (ans != null) {
+//			for (int i=0; i<select.length; i++) {
+//				if (select[i].equals(ans)) {
+//					return i;
+//				}
+//			}
+//		}
+//		return -1;
 	}
 	
-	public static File chooseSaveFile(String title, String dir, String selname) {
+	
+	public static File chooseSaveFile(String title, File dir, String selname) {
 		return chooseDialog(title,dir,selname,false,true); 
     }
-	public static File chooseSaveDirectory(String title, String dir, String selname) {
+	public static File chooseSaveDirectory(String title, File dir, String selname) {
 		return chooseDialog(title,dir,selname,false,false); 
     }
-	public static File chooseOpenDirectory(String title, String dir, String selname) {
+	public static File chooseOpenDirectory(String title, File dir, String selname) {
 		return chooseDialog(title,dir,selname,true,false); 
     }
-	public static File chooseOpenFile(String title, String dir, String selname) {
+	public static File chooseOpenFile(String title, File dir, String selname) {
 		return chooseDialog(title,dir,selname,true,true); 
     }
-	public static File chooseOpenFile(String title, String dir, String selname, String[] filter) {
+	public static File chooseOpenFile(String title, File dir, String selname, String[] filter) {
 		return chooseDialog(title,dir,selname,true,true, filter); 
     }
 	
-	public static File[] chooseOpenMultiFile(String title, String dir, String selname, String[] filter) {
+	public static File[] chooseOpenMultiFile(String title, File dir, String selname, String[] filter) {
 		return chooseDialog(title,dir,selname,true,true,true,filter); 
 	}
-	public static File[] chooseOpenMultiDirs(String title, String dir, String selname, String[] filter) {
+	public static File[] chooseOpenMultiDirs(String title, File dir, String selname, String[] filter) {
 		return chooseDialog(title,dir,selname,true,false,true,filter); 
     }
 	
-	private static File chooseDialog(String title, String dir, String selname ,boolean open, boolean filesonly) {
+	private static File chooseDialog(String title, File dir, String selname ,boolean open, boolean filesonly) {
 		File[] result = chooseDialog(title, dir, selname, open, filesonly,false,null); 
 		if ((result==null)||(result.length==0)) return null;
 		else return result[0];
 	}
-	private static File chooseDialog(String title, String dir, String selname ,boolean open, boolean filesonly, String[] filter) {
+	private static File chooseDialog(String title, File dir, String selname ,boolean open, boolean filesonly, String[] filter) {
 		File[] result = chooseDialog(title, dir, selname, open, filesonly,false,filter); 
 		if ((result==null)||(result.length==0)) return null;
 		else return result[0];
 	}
 	
-	public static File[] chooseDialog(String title, String dir, String selname ,boolean open, boolean filesonly, boolean multi, String[] filter) {
+	public static File[] chooseDialog(
+			String title, 
+			File dir, 
+			String selname,
+			boolean open, 
+			boolean filesonly, 
+			boolean multi, 
+			String[] filter
+		) {
+		
 		final JFileChooser fd = new JFileChooser(title);
 		fd.setDialogTitle(title);
 		
@@ -195,41 +211,32 @@ public class Dialogs {
 			final JButton buSel = new JButton("v");
 			buSel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-					int sel = Dialogs.showSelectDialog("Select Directory","Last visited directories", lastDirs);
-					if (sel>=0)
-						fd.setCurrentDirectory(new File(lastDirs.get(sel)));
+					int sel = Dialogs.showSelectDialog(
+							"Select Directory",
+							"Last visited directories", 
+						lastDirs
+					);
+					if (sel>=0) {
+						fd.setCurrentDirectory(lastDirs.elementAt(sel));
+					}
 				}
 			});	
 			fd.setAccessory(buSel);
 		}
-		
-		File selFile = null;
-		if (dir == null) dir = lastDir;
-		if (dir != null && !dir.equals("")) {
-			File sDir = new File(dir);
-			if (sDir.exists()) {
-				if (selname == null || selname.length()==0) selname = ".";
-				selFile = new File(sDir.getAbsolutePath()+File.separator+selname);
-			}
+		fd.setCurrentDirectory(dir);
+		if(selname != null && selname.length()>0) {
+			fd.setSelectedFile(new File(dir, selname));
 		}
 		
-		if (selFile == null) {
-			if (dir == lastDir) {
-				selFile = new File(dir + File.separator + selname);
-			} else {
-				selFile = new File(selname);
-			}
-		}
-		
-		fd.setSelectedFile(selFile);
 		if (filesonly) {
 			fd.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		} else {
 			fd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		}
 		fd.setMultiSelectionEnabled(multi);
-		if (filter==null)
+		if (filter == null) {
 			filter = new String[] {"*.*","*.xml","*.csv"};
+		}
 
 		FileFilter[] ff = new FileFilter[filter.length];
 		final String[] finalFilter = filter;
@@ -272,22 +279,27 @@ public class Dialogs {
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
 	    	if (multi) {
 	    		result = fd.getSelectedFiles();
-	    	} else {
+	    	} 
+	    	else {
 	    		result = new File[1];
 	    		result[0] = fd.getSelectedFile();
 	    	}
 	    	if (saveLastDir) {
 		    	if (result[0].isDirectory()) {
-		    		lastDir = result[0].getAbsolutePath();
-		    	} else { 
-		    		lastDir = result[0].getParent();
+		    		lastDir = result[0];
+		    	} 
+		    	else { 
+		    		lastDir = result[0].getParentFile();
 		    	}
+		    	
 		    	int ind = lastDirs.indexOf(lastDir); 
-		    	if (ind>=0) {
+		    	if (ind >= 0) {
 		    		lastDirs.remove(ind);
 		    	}
 		    	lastDirs.add(0,lastDir);
-		    	if (lastDirs.size()>15) lastDirs.setSize(15);
+		    	if (lastDirs.size()>15) {
+		    		lastDirs.setSize(15);
+		    	}
 	    	}
 	    }		 
 		return result;

@@ -64,7 +64,7 @@ import org.fnppl.opensdx.xml.*;
 public class SecurityMainFrame extends JFrame {
 	private KeyApprovingStore currentKeyStore = null;
 	
-	private File lastDir = new File(System.getProperty("user.home"));
+	private File lastDir = getDefaultDir(); //new File(System.getProperty("user.home"));
 //	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
 	
 	private JTable tKeysIDs;
@@ -95,13 +95,16 @@ public class SecurityMainFrame extends JFrame {
 		closeCurrentStore();
 		System.exit(0);
 	}
-	
-	public boolean openDefauktKeyStore() {
+	public static File getDefaultDir() {
 		File f = new File(System.getProperty("user.home"));
 		f = new File(f, "openSDX");
 		if(!f.exists()) {
 			f.mkdirs();
 		}
+		return f;
+	}
+	public boolean openDefauktKeyStore() {
+		File f = getDefaultDir();
 		
 		f = new File(f, "defaultKeyStore.xml");
 		
@@ -308,8 +311,8 @@ public class SecurityMainFrame extends JFrame {
 	
 
 	private void decryptFile() {
-		File f = Dialogs.chooseOpenFile("Please select file for decryption", lastDir.getAbsolutePath(), "");
-		if (f!=null) {
+		File f = Dialogs.chooseOpenFile("Please select file for decryption", lastDir, "");
+		if (f != null) {
 			try {
 				boolean detached = f.getName().toLowerCase().endsWith(".xml");
 				Element e = null;
@@ -390,7 +393,7 @@ public class SecurityMainFrame extends JFrame {
 
 	private void encryptFile() {
 		//Dialogs.showMessage("feature not implented.");
-		File f = Dialogs.chooseOpenFile("Please select file for encryption", lastDir.getAbsolutePath(), "");
+		File f = Dialogs.chooseOpenFile("Please select file for encryption", lastDir, "");
 		if (f!=null) {
 			int detached = Dialogs.showYES_NO_Dialog("Create detached metadata", "Do you want to create a detached metadata file?");
 			String[] p = Dialogs.showNewMantraPasswordDialog();
@@ -449,7 +452,7 @@ public class SecurityMainFrame extends JFrame {
 	
 	private void verifySignature() {
 		if (currentKeyStore!=null) {
-			File f = Dialogs.chooseOpenFile("Please select signature file for verification", lastDir.getAbsolutePath(), "");
+			File f = Dialogs.chooseOpenFile("Please select signature file for verification", lastDir, "");
 			if (f!=null && f.exists()) {
 				try {
 					Signature s = Signature.fromFile(f);
@@ -460,7 +463,7 @@ public class SecurityMainFrame extends JFrame {
 						if (!origFile.exists()) origFile = null;
 					}
 					if (origFile == null) {
-						origFile = Dialogs.chooseOpenFile("Please select original file for signature verification", lastDir.getAbsolutePath(), "");
+						origFile = Dialogs.chooseOpenFile("Please select original file for signature verification", lastDir, "");
 					}
 					if (origFile != null) {
 						boolean v = s.tryVerificationFile(origFile);
@@ -489,7 +492,7 @@ public class SecurityMainFrame extends JFrame {
 			for (OSDXKeyObject k: keys) {
 				keyids.add(k.getKeyID());
 			}
-			File f = Dialogs.chooseOpenFile("Please select file for signing", lastDir.getAbsolutePath(), "");
+			File f = Dialogs.chooseOpenFile("Please select file for signing", lastDir, "");
 			if (f!=null) {
 				int a = Dialogs.showSelectDialog("Select key", "Please select key for signing", keyids);
 				if (a>=0) {
@@ -768,7 +771,7 @@ public class SecurityMainFrame extends JFrame {
 	
 	public boolean openKeystore() {
 		closeCurrentStore();
-		File f = Dialogs.chooseOpenFile("Select keystore filename", lastDir.getAbsolutePath(), "mykeystore.xml");
+		File f = Dialogs.chooseOpenFile("Select keystore filename", lastDir, "mykeystore.xml");
 		if (f!=null && f.exists()) {
 			try {
 				boolean open = openKeyStore(f);
