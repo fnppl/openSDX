@@ -50,47 +50,27 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
+import javax.swing.border.*;
+import javax.swing.event.*;
+import javax.swing.table.*;
 
-import org.fnppl.opensdx.security.AsymmetricKeyPair;
-import org.fnppl.opensdx.security.DataSourceStep;
-import org.fnppl.opensdx.security.Identity;
-import org.fnppl.opensdx.security.KeyApprovingStore;
-import org.fnppl.opensdx.security.OSDXKeyObject;
-import org.fnppl.opensdx.security.SecurityHelper;
-import org.fnppl.opensdx.security.Signature;
-import org.fnppl.opensdx.security.SymmetricKey;
-import org.fnppl.opensdx.xml.Document;
-import org.fnppl.opensdx.xml.Element;
-
-import sun.misc.BASE64Encoder;
+import org.fnppl.opensdx.security.*;
+import org.fnppl.opensdx.xml.*;
 
 
 public class SecurityMainFrame extends JFrame {
 	private KeyApprovingStore currentKeyStore = null;
 	
-	//private File lastDir = new File(System.getProperty("user.home"));
-	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
+	private File lastDir = new File(System.getProperty("user.home"));
+//	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
 	
 	private JTable tKeysIDs;
 	private KeysAndIdentitiesTableModel mKeysIDs;
 	
 	private JTable tKeylogs;
-	
 	
 	private static SecurityMainFrame instance = null;
 	public static SecurityMainFrame getInstance() {
@@ -135,7 +115,8 @@ public class SecurityMainFrame extends JFrame {
 			tKeysIDs.setModel(mKeysIDs);
 			fitAllColumnWidth(tKeysIDs);
 			
-		} else {
+		}
+		else {
 			this.getContentPane().setVisible(false);
 			mKeysIDs = new KeysAndIdentitiesTableModel(null);
 			tKeysIDs.setModel(mKeysIDs);
