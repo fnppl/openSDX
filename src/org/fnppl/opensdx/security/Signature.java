@@ -88,7 +88,6 @@ public class Signature {
 	private long signdatetime = -1;
 	
 	private PublicKey pubkey = null;
-//	private byte[] signoffsha1 = null;
 	private byte[] signaturebytes = null;
 	
 	private Signature() {

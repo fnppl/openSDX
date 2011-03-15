@@ -133,14 +133,17 @@ public class OSDXKeyObject {
 	}
 	
 	public static OSDXKeyObject fromKeyPair(AsymmetricKeyPair kp) throws Exception {
+		//TODO HT 15.03.2011
+		
 		OSDXKeyObject ret = new OSDXKeyObject();
 		ret.akp = kp;
 		ret.level = LEVEL_MASTER;
 		ret.authoritativekeyserver = "LOCAL";
-		ret.modulussha1 = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(kp.getModulus()), '\0', -1);
+		ret.modulussha1 = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(kp.getModulus()), ':', -1);
 		ret.datapath = new Vector<DataSourceStep>();
 		ret.datapath.add(new DataSourceStep("LOCAL", System.currentTimeMillis()));
 		ret.unsavedChanges = true;
+		
 		return ret;
 	}
 	
@@ -375,7 +378,7 @@ public class OSDXKeyObject {
 		}
 		
 		ekp.addContent("sha1fingerprint", modulussha1);
-		ekp.addContent("authoritativekeyserver",authoritativekeyserver);
+		ekp.addContent("authoritativekeyserver", authoritativekeyserver);
 		
 		//datapath
 		Element edp = new Element("datapath");
@@ -389,23 +392,22 @@ public class OSDXKeyObject {
 		
 		ekp.addContent("usage",usage_name.get(usage));
 		ekp.addContent("level",level_name.get(level));
-		ekp.addContent("parentkeyid",parentkeyid);
+		ekp.addContent("parentkeyid", parentkeyid);
 		ekp.addContent("algo",algo_name.get(algo));
-		ekp.addContent("bits",""+akp.getBitCount());
-		ekp.addContent("modulus",akp.getModulusAsHex());
+		ekp.addContent("bits", ""+akp.getBitCount());
+		ekp.addContent("modulus", SecurityHelper.HexDecoder.encode(akp.getModulus(), ':', -1));
 		
 		//pubkey
 		Element epk = new Element("pubkey");
-		epk.addContent("exponent",akp.getPublicExponentAsHex());
+		epk.addContent("exponent", SecurityHelper.HexDecoder.encode(akp.getPublicExponent(), ':', -1));
 		ekp.addContent(epk);
 		
 		//privkey
-		if (lockedPrivateKey!=null) {
-			
+		if (lockedPrivateKey != null) {
 			Element el = new Element("locked");
 			el.addContent("mantraname",lockedPrivateKey.getChildText("mantraname"));
 			el.addContent("algo",lockedPrivateKey.getChildText("algo"));
-			el.addContent("initvector",lockedPrivateKey.getChildText("initvector"));
+			el.addContent("initvector", lockedPrivateKey.getChildText("initvector"));
 			el.addContent("padding",lockedPrivateKey.getChildText("padding"));
 			el.addContent("bytes",lockedPrivateKey.getChildText("bytes"));
 			
@@ -415,18 +417,19 @@ public class OSDXKeyObject {
 			esk.addContent(eexp);
 			ekp.addContent(esk);
 			
-		} else if (akp.hasPrivateKey()) {
+		} 
+		else if (akp.hasPrivateKey()) {
 			String[] ans = Dialogs.showNewMantraPasswordDialog();
-			if (ans!=null) {
+			if (ans != null) {
 				byte[] iv = SecurityHelper.getRandomBytes(16);
 				SymmetricKey sk = SymmetricKey.getKeyFromPass(ans[1].toCharArray(), iv);
 				byte[] encprivkey = akp.getEncrytedPrivateKey(sk);
 				Element el = new Element("locked");
 				el.addContent("mantraname",ans[0]);
 				el.addContent("algo","AES@256");
-				el.addContent("initvector",SecurityHelper.HexDecoder.encode(iv, '\0',-1));
+				el.addContent("initvector", SecurityHelper.HexDecoder.encode(iv, ':',-1));
 				el.addContent("padding","CBC/PKCS#5");
-				el.addContent("bytes",SecurityHelper.HexDecoder.encode(encprivkey, '\0',-1));
+				el.addContent("bytes", SecurityHelper.HexDecoder.encode(encprivkey, ':',-1));
 				
 				Element eexp = new Element("exponent");
 				eexp.addContent(el);

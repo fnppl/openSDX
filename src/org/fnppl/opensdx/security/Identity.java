@@ -46,26 +46,20 @@ package org.fnppl.opensdx.security;
  * 
  */
 
-import java.util.Arrays;
-import java.util.Vector;
-
-import org.bouncycastle.jce.provider.JDKMessageDigest.SHA1;
-import org.fnppl.opensdx.common.Territory;
-
-import org.fnppl.opensdx.xml.Element;
-import org.fnppl.opensdx.xml.XMLHelper;
-
-
+import java.util.*;
+import java.net.*;
+import java.io.*;
+import org.fnppl.opensdx.xml.*;
 
 public class Identity {
-	
 	String email = null;
 	String mnemonic = null;
-	String phone = null;
-//	Territory country = null;
+	
 	String country = null;
 	String region = null;
+	String city = null;
 	String postcode = null;
+	
 	String company = null;
 	String unit = null;
 	String subunit = null;
@@ -74,6 +68,8 @@ public class Identity {
 	String surname = null;
 	String middlename = null;
 	String name = null;
+	
+	String phone = null;
 	
 	String note = null;
 	byte[] sha1FromElement = null;
@@ -89,17 +85,23 @@ public class Identity {
 		Identity idd = new Identity();
 		idd.email = "";
 		idd.mnemonic = "";
-		idd.phone = "";
+		
 		idd.country = "";
 		idd.region = "";
+		idd.city = "";
 		idd.postcode = "";
+		
 		idd.company = "";
 		idd.unit = "";
 		idd.subunit = "";
 		idd.function = "";
+		
 		idd.surname = "";
 		idd.middlename = "";
 		idd.name = "";
+		
+		idd.phone = "";
+		
 		idd.note = "";
 		idd.datapath = new Vector<DataSourceStep>();
 		idd.unsavedChanges = true;
@@ -110,9 +112,11 @@ public class Identity {
 		Identity idd = new Identity();
 		idd.email = id.getChildText("email");
 		idd.mnemonic = id.getChildText("mnemonic");
-		idd.phone = id.getChildText("phone");
+		
 		idd.country = id.getChildText("country");
 		idd.region = id.getChildText("region");
+		idd.city = id.getChildText("city");
+		
 		idd.postcode = id.getChildText("postcode");
 		idd.company = id.getChildText("company");
 		idd.unit = id.getChildText("unit");
@@ -122,6 +126,9 @@ public class Identity {
 		idd.surname = id.getChildText("surname");
 		idd.middlename = id.getChildText("middlename");
 		idd.name = id.getChildText("name");
+		
+		idd.phone = id.getChildText("phone");
+		
 		idd.note = id.getChildText("note");
 		
 		idd.sha1FromElement = SecurityHelper.HexDecoder.decode(id.getChildText("sha1"));
@@ -157,17 +164,22 @@ public class Identity {
 		
 		id.addContent("email", email);
 		id.addContent("mnemonic", mnemonic);
-		id.addContent("phone", phone);
+		
 		id.addContent("country", country);
 		id.addContent("region", region);
+		id.addContent("city", city);
 		id.addContent("postcode", postcode);
+		
 		id.addContent("company", company);
 		id.addContent("unit", unit);
 		id.addContent("subunit", subunit);
 		id.addContent("function", function);
+		
 		id.addContent("surname", surname);
 		id.addContent("middlename", middlename);
 		id.addContent("name", name);
+		
+		id.addContent("phone", phone);
 		id.addContent("note", note);
 		try {
 			byte[] sha1b = calcSHA1();
@@ -203,9 +215,9 @@ public class Identity {
 		byte[] k = null;
 		k = email.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		k = mnemonic.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
-		k = phone.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		k = country.getBytes("UTF-8");if (k.length>0) sha1.update(k, 0, k.length);
 		k = region.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
+		k = city.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		k = postcode.getBytes("UTF-8");if (k.length>0) sha1.update(k, 0, k.length);
 		k = company.getBytes("UTF-8");if (k.length>0) sha1.update(k, 0, k.length);
 		k = unit.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
@@ -214,6 +226,7 @@ public class Identity {
 		k = surname.getBytes("UTF-8"); if (k.length>0)sha1.update(k, 0, k.length);
 		k = middlename.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		k = name.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
+		k = phone.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);		
 		k = note.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		
 		sha1.doFinal(ret, 0);
@@ -255,6 +268,14 @@ public class Identity {
 	public void setCountry(String country) {
 		unsavedChanges = true;
 		this.country = country;
+	}
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		unsavedChanges = true;
+		this.city = city;
 	}
 
 	public String getRegion() {

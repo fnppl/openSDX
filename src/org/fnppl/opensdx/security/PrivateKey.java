@@ -68,29 +68,11 @@ public class PrivateKey {
 	private RSAKeyParameters priv;
 	
 	public PrivateKey(BigInteger modulus, BigInteger exponent) {
-//		this.modulus = modulus;
-//		this.exponent = exponent;
 		this.priv = new RSAKeyParameters(true, modulus, exponent);
 	}
 	public PrivateKey(RSAKeyParameters key) {
 		this.priv = key;
 	}
-	
-//	public PrivateKey(String fromASC) throws Exception {
-//		//TODO really that complicated?
-//		InputStream keyIn = PGPUtil.getDecoderStream(new ByteArrayInputStream(fromASC.getBytes()));
-//		PGPSecretKeyRingCollection pgpRings = new PGPSecretKeyRingCollection(keyIn);
-//		
-//		key = ((PGPSecretKeyRingCollection)pgpRings.getKeyRings().next())
-//	}
-	
-//	public PGPPrivateKey getPGPPrivateKey() {
-//		return key;
-//	}
-//	
-//	public byte[] getRawEncoded() throws Exception {
-//		return key.getKey().getEncoded();
-//	}
 	
 	
 	public byte[] sign(byte[] data) throws Exception {
@@ -107,28 +89,9 @@ public class PrivateKey {
 		System.out.println("PrivKey_SIGN_PLAINBLOATED:\t"+SecurityHelper.HexDecoder.encode(filleddata, ':', 80));
 		
 		return rsae.processBlock(filleddata, 0, filleddata.length);
-		
-//		return ret;
-//		OAEPEncoding oaep = new OAEPEncoding(rsae);
-//		oaep.init(
-//				false, //für encrypt: true
-////				bp
-//				priv
-//			);
-//		if(data.length > rsae.getInputBlockSize()) {
-//			throw new RuntimeException("PrivateKey.encrypt::data.length("+data.length+") too long - max is: "+rsae.getInputBlockSize());
-//		}
-//		
-//		return oaep.processBlock(data, 0, data.length);
 	}
 	public byte[] decrypt(byte[] data) throws Exception {
-//		RSABlindingEngine rsae = new RSABlindingEngine();
 		RSABlindedEngine rsae = new RSABlindedEngine();
-		
-//		RSABlindingParameters bp = new RSABlindingParameters(
-//				priv, 
-//				PublicKey.generateBlindingFactor(pubkey)
-//			);
 		
 		OAEPEncoding oaep = new OAEPEncoding(rsae);
 		oaep.init(

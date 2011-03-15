@@ -56,16 +56,11 @@ import org.fnppl.opensdx.xml.*;
 public class KeyApprovingStore {
 	private File f = null;
 	private Vector<OSDXKeyObject> keys = null;
-//	private byte[] keysSHA1localproof = null;	
-//	private Element keysSignoff = null;
-	
-//	private Signature keySignature = null;
 	private Vector<KeyLog> keylogs = null;
 	private boolean unsavedChanges = false;
 	private OSDXKeyObject keystoreSigningKey = null;
 	
 	public KeyApprovingStore() {
-		
 	}
 	
 	public static KeyApprovingStore createNewKeyApprovingStore(File f) throws Exception {
@@ -202,7 +197,7 @@ public class KeyApprovingStore {
 	public void toFile(File file) throws Exception {
 		this.f = file;
 		Element root = new Element("keystore");
-		//keys
+
 		Element ek = new Element("keys");
 		for (OSDXKeyObject k : keys) {
 			ek.addContent(k.toElement());

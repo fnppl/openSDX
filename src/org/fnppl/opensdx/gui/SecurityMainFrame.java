@@ -662,6 +662,8 @@ public class SecurityMainFrame extends JFrame {
 		d.add(ps, BorderLayout.SOUTH);
 		d.setModal(true);
 		
+		Helper.centerMe(d, null);
+		
 		d.setVisible(true);
 		
 		return isOK[0];
@@ -699,6 +701,7 @@ public class SecurityMainFrame extends JFrame {
 		d.add(ps, BorderLayout.SOUTH);
 		d.setModal(true);
 		
+		Helper.centerMe(d, null);
 		
 		d.setVisible(true);
 		return isOK[0];
