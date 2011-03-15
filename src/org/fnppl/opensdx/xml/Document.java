@@ -122,6 +122,22 @@ public class Document {
 			e.printStackTrace();
 		}
 	}
+	public String toString() {
+		try {
+			Format f = Format.getPrettyFormat();
+			f.setEncoding("UTF-8");
+			XMLOutputter outp = new XMLOutputter(f);
+			StringWriter sw = new StringWriter();
+			outp.output(base, sw);      
+			sw.flush();
+			
+			return sw.toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
 }
 
 

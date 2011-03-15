@@ -1,12 +1,9 @@
 package org.fnppl.opensdx.keyserver;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.Hashtable;
-
-import org.fnppl.opensdx.security.SecurityHelper;
-import org.fnppl.opensdx.xml.Document;
+import java.io.*;
+import java.util.*;
+import org.fnppl.opensdx.security.*;
+import org.fnppl.opensdx.xml.*;
 
 public class OSDXKeyServerClientResponse {
 
@@ -15,7 +12,7 @@ public class OSDXKeyServerClientResponse {
 	public String status;
 
 	
-	public static OSDXKeyServerClientResponse fromStream(InputStream in, long timeout) throws Exception {
+	public static OSDXKeyServerClientResponse fromStream(BufferedInputStream in, long timeout) throws Exception {
 		OSDXKeyServerClientResponse re = new OSDXKeyServerClientResponse();
 		re.headers = new Hashtable<String, String>();
 		re.doc = null;
@@ -32,7 +29,7 @@ public class OSDXKeyServerClientResponse {
 		return re;
 	}
 	
-	private static void readXMLContent(InputStream in, OSDXKeyServerClientResponse re) throws Exception {
+	private static void readXMLContent(BufferedInputStream in, OSDXKeyServerClientResponse re) throws Exception {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		int read = 0;
 		byte[] buff = new byte[1024];
@@ -51,7 +48,7 @@ public class OSDXKeyServerClientResponse {
 		//re.doc = Document.fromStream(new ByteArrayInputStream(bout.toByteArray()));
 	}
 	
-	private static void readHeader(InputStream in, OSDXKeyServerClientResponse re) throws Exception {
+	private static void readHeader(BufferedInputStream in, OSDXKeyServerClientResponse re) throws Exception {
 		String zeile = null;
 
 		while ((zeile=readLine(in))!=null) {
@@ -74,7 +71,7 @@ public class OSDXKeyServerClientResponse {
 		return ret;
 	}
 
-	private static String readLine(InputStream in) throws Exception {
+	private static String readLine(BufferedInputStream in) throws Exception {
 		//if (in.available()<=0) return null;
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 

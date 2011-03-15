@@ -45,26 +45,13 @@ package org.fnppl.opensdx.keyserver;
  * 
  */
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.math.BigInteger;
-import java.net.Inet4Address;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.HashMap;
-import java.util.Vector;
+import java.net.*;
+import java.util.*;
 
-import org.fnppl.opensdx.security.AsymmetricKeyPair;
-import org.fnppl.opensdx.security.Identity;
-import org.fnppl.opensdx.security.KeyApprovingStore;
-import org.fnppl.opensdx.security.KeyLog;
-import org.fnppl.opensdx.security.OSDXKeyObject;
-import org.fnppl.opensdx.security.PublicKey;
-import org.fnppl.opensdx.security.SecurityHelper;
-import org.fnppl.opensdx.security.Signature;
-import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.security.*;
+import org.fnppl.opensdx.xml.*;
 
 /*
  * HT 2011-02-20
@@ -176,38 +163,7 @@ public class KeyServerMain {
 		}
 	}
 
-	public KeyServerResponse prepareResponse(KeyServerRequest request, BufferedInputStream in) throws Exception {
-		// yeah, switch cmd/method - stuff whatever...
-		
-		String cmd = request.cmd;
-		System.out.println("KeyServerRequest | Method: "+request.method+"\tCmd: "+request.cmd);
-		
-		if (request.method.equals("POST")) {
-			if (cmd.equals("/masterkey")) {
-				return handlePutMasterKeyRequest(request);
-			} else if (cmd.equals("/revokekey")) {
-				return handlePutRevokeKeyRequest(request);
-			}
-		} 
-		else if (request.method.equals("HEAD")) {
-			throw new Exception("NOT IMPLEMENTED"); // correct would be to fire a HTTP_ERR
-		} 
-		else if (request.method.equals("GET")) {
-			if (cmd.equals("/masterpubkeys")) {
-				return handleMasterPubKeyRequest(request);
-			} else if (cmd.equals("/identities")) {
-				return handleIdentitiesRequest(request);
-			} else if (cmd.equals("/keystatus")) {
-				return handleKeyStatusRequest(request);
-			} else if (cmd.equals("/keylogs")) {
-				return handleKeyLogsRequest(request);
-			} else if (cmd.equals("/subkeys")) {
-				return handleSubKeyRequest(request);
-			}
-		}
-		System.err.println("KeyServerResponse| ::request command not recognized:: "+cmd);
-		return null;
-	}
+	
 
 	private KeyServerResponse handleMasterPubKeyRequest(KeyServerRequest request) {
 		System.out.println("KeyServerResponse | ::handleMasterPubKeyRequest");
@@ -425,7 +381,7 @@ public class KeyServerMain {
 				try {
 					InputStream _in = s.getInputStream();
 					BufferedInputStream in = new BufferedInputStream(_in);
-					KeyServerRequest request = KeyServerRequest.fromInputStream(in);
+					KeyServerRequest request = KeyServerRequest.fromInputStream(in, s.getInetAddress().getHostAddress());
 					KeyServerResponse response = prepareResponse(request, in); //this is ok since the request is small and can be kept in ram
 					
 					System.out.println("KeyServerSocket  | ::response ready");
@@ -435,11 +391,15 @@ public class KeyServerMain {
 						System.out.println("::/SENDING_THIS");
 						
 						OutputStream out = s.getOutputStream();
-						response.toOutput(out);
-						out.flush();
-						out.close();
-					} else {
+						BufferedOutputStream bout = new BufferedOutputStream(out);
+						response.toOutput(bout);
+						bout.flush();
+						bout.close();
+					} 
+					else {
 						// TODO send error
+						Exception ex = new Exception("RESPONSE COULD NOT BE CREATED");
+						throw ex;
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
@@ -464,6 +424,44 @@ public class KeyServerMain {
 				Thread.sleep(250);// cooldown...
 			}
 		}
+	}
+	
+	public KeyServerResponse prepareResponse(KeyServerRequest request, BufferedInputStream in) throws Exception {
+		// yeah, switch cmd/method - stuff whatever...
+		
+		String cmd = request.cmd;
+		System.out.println((new Date())+" :: "+request.ipv4+" :: KeyServerRequest | Method: "+request.method+"\tCmd: "+request.cmd);
+		
+		if (request.method.equals("POST")) {
+			if (cmd.equals("/masterkey")) {
+				return handlePutMasterKeyRequest(request);
+			} 
+			else if (cmd.equals("/revokekey")) {
+				return handlePutRevokeKeyRequest(request);
+			}
+		} 
+		else if (request.method.equals("GET")) {
+			if (cmd.equals("/masterpubkeys")) {
+				return handleMasterPubKeyRequest(request);
+			} else if (cmd.equals("/identities")) {
+				return handleIdentitiesRequest(request);
+			} else if (cmd.equals("/keystatus")) {
+				return handleKeyStatusRequest(request);
+			} else if (cmd.equals("/keylogs")) {
+				return handleKeyLogsRequest(request);
+			} else if (cmd.equals("/subkeys")) {
+				return handleSubKeyRequest(request);
+			}
+		}
+//		else if (request.method.equals("HEAD")) {
+//			throw new Exception("NOT IMPLEMENTED"); // correct would be to fire a HTTP_ERR
+//		}
+		else {
+			throw new Exception("NOT IMPLEMENTED::METHOD: "+request.method); // correct would be to fire a HTTP_ERR
+		}
+		
+		System.err.println("KeyServerResponse| ::request command not recognized:: "+cmd);
+		return null;
 	}
 
 	public static void main(String[] args) throws Exception {
