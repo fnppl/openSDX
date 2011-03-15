@@ -5,6 +5,8 @@ import java.util.*;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
+//http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
+
 public class OSDXKeyServerClientResponse {
 
 	public Hashtable<String, String> headers = null;

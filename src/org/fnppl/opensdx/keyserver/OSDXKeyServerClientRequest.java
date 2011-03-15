@@ -14,6 +14,8 @@ import org.fnppl.opensdx.xml.*;
 
 //import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 
+//http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
+
 public class OSDXKeyServerClientRequest {
 	public final static String XMLDOCPARAMNAME = "xmldocument";//check out KeyServerRequest
 

@@ -74,6 +74,8 @@ import org.fnppl.opensdx.xml.*;
  * 
  */
 
+//http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
+
 public class KeyServerMain {
 	private static String serverid = "OSDX KeyServer v0.1";
 	

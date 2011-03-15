@@ -53,6 +53,8 @@ import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
+//http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
+
 public class KeyServerResponse {
 //	public int retcode = 404;//fail
 //	public String retcodeString = "FAYUL!";
