@@ -328,7 +328,7 @@ public class SecurityMainFrame extends JFrame {
 					String z = null;
 					boolean terminationFound = false;
 					while (!terminationFound && (z=readLine(in))!=null) {
-						if (z.equals("#### openSDX encrypted file ####")) terminationFound = true;
+						if (z.equals("#### openSDX symmetrical encrypted file ####")) terminationFound = true;
 						else b.append(z);
 					}
 					if (terminationFound) {
@@ -448,7 +448,8 @@ public class SecurityMainFrame extends JFrame {
 		FileOutputStream out = new FileOutputStream(fenc);
 		out.write("#### openSDX symmetrical encrypted file ####\n".getBytes("UTF-8"));
 		d.output(out);
-		out.write("#### openSDX encrypted file ####\n".getBytes("UTF-8"));
+//		out.write("\n".getBytes("UTF-8"));
+		out.write("#### openSDX symmetrical encrypted file ####\n".getBytes("UTF-8"));
 		key.encrypt(in, out);
 		in.close();
 		out.close();
