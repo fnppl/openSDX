@@ -112,7 +112,7 @@ public class SecurityMainFrame extends JFrame {
 	}
 
 	private void initUICurrentKeyStore() {
-		if (currentKeyStore!=null) {
+		if (currentKeyStore != null) {
 			this.getContentPane().setVisible(true);
 			mKeysIDs = new KeysAndIdentitiesTableModel(currentKeyStore.getAllKeys());
 			tKeysIDs.setModel(mKeysIDs);
@@ -293,6 +293,7 @@ public class SecurityMainFrame extends JFrame {
 		addComponent(jp,gb,pKI,0,0,1,1,1.0,0.5);
 		//addComponent(jp,gb,pKL,0,1,1,1,1.0,0.5);
 		
+		Helper.centerMe(this, null);
 	}
 	
 	private static void addComponent(Container cont, GridBagLayout gbl, Component c, int x, int y, int w, int h, double wx, double wy) {

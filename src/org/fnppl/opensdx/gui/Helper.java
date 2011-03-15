@@ -49,6 +49,10 @@ import java.awt.*;
 import java.util.*;
 import java.io.*;
 
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JWindow;
+
 
 /**
  * @author Henning Thieß <ht@fnppl.org>
@@ -56,5 +60,93 @@ import java.io.*;
  */
 
 public class Helper {
+	public static void centerMe(Container toCenter, Container relativeTo) {
+    	Toolkit tk = Toolkit.getDefaultToolkit();
+    	
+        Dimension d = tk.getScreenSize();
+        
+        Dimension i = toCenter.getSize();
+        
+        int dwidth = d.width-i.width;
+        int dheight = d.height-i.height;
+        
+        if(relativeTo == null) {        	
+            //hier nur auf dem Screen zentrieren
+            if(toCenter instanceof JDialog) { 
+                JDialog jd = (JDialog)toCenter;
+                jd.setLocationRelativeTo(null);
+                jd.setLocation(dwidth/2,dheight/2);
+            }
+            else if(toCenter instanceof JFrame) { 
+                JFrame jd = (JFrame)toCenter;
+                jd.setLocationRelativeTo(null);
+                jd.setLocation(dwidth/2,dheight/2);
+            }
+            else if(toCenter instanceof JWindow) { 
+                JWindow jd = (JWindow)toCenter;
+                jd.setLocationRelativeTo(null);
+                jd.setLocation(dwidth/2,dheight/2);
+            }
+        }
+        else if(relativeTo instanceof JDialog) {
+            JDialog jf = (JDialog)relativeTo;
+            
+            d = jf.getSize();
+            
+            dwidth = d.width-i.width;
+            dheight = d.height-i.height;
+            
+            dwidth = dwidth/2;
+            dheight = dheight/2;
+            
+            Point f = jf.getLocation();
+            
+            dwidth += f.getX();
+            dheight += f.getY();
+            
+            if(toCenter instanceof JDialog) { 
+                JDialog jd = (JDialog)toCenter;
+                jd.setLocation(dwidth,dheight);
+            }
+            else if(toCenter instanceof JFrame) { 
+                JFrame jd = (JFrame)toCenter;
+                jd.setLocation(dwidth,dheight);
+            }
+            else if(toCenter instanceof JWindow) { 
+                JWindow jd = (JWindow)toCenter;
+                jd.setLocation(dwidth,dheight);
+            }
+        }
+        else if(relativeTo instanceof JFrame) {
+            JFrame jf = (JFrame)relativeTo;
+            
+            d = jf.getSize();
+            
+            dwidth = d.width-i.width;
+            dheight = d.height-i.height;
+            
+            dwidth = dwidth/2;
+            dheight = dheight/2;
+            
+            Point f = jf.getLocation();
+            
+            dwidth += f.getX();
+            dheight += f.getY();
+            
+            if(toCenter instanceof JDialog) { 
+                JDialog jd = (JDialog)toCenter;
+                jd.setLocation(dwidth,dheight);
+            }
+            else if(toCenter instanceof JFrame) { 
+                JFrame jd = (JFrame)toCenter;
+                jd.setLocation(dwidth,dheight);
+            }
+            else if(toCenter instanceof JWindow) { 
+                JWindow jd = (JWindow)toCenter;
+                jd.setLocation(dwidth,dheight);
+            }
+        }
+    }
+
 
 }
