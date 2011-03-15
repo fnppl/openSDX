@@ -76,7 +76,6 @@ public class SymmetricKey {
 	static {
 		SecurityHelper.ensureBC();
 	}
-
 	
 	private final static int keybits = 256;//ok, doing so fails the aes128-rule and may fall into US-weapons-regulation
 	private final static int blockbits = 128;
@@ -226,10 +225,10 @@ public class SymmetricKey {
 		byte[] encPrivKey =  akp.getEncrytedPrivateKey(sk);
 		byte[] decPrivKey = sk.decrypt(encPrivKey);
 		
-		System.out.println("PUB_KEY_MODULUS     : "+akp.getModulusAsHex());
-		System.out.println("PUB_KEY_EXP     : "+akp.getPublicExponentAsHex());
-		System.out.println("ENC_PRIV_KEY_EXP: "+SecurityHelper.HexDecoder.encode(encPrivKey,'\0',-1));
-		System.out.println("DEC_PRIV_KEY_EXP: "+SecurityHelper.HexDecoder.encode(decPrivKey,'\0',-1));
+		System.out.println("PUB_KEY_MODULUS     : "+SecurityHelper.HexDecoder.encode(akp.getModulus(),':',-1));
+		System.out.println("PUB_KEY_EXP     : "+SecurityHelper.HexDecoder.encode(akp.getPublicExponent(),':',-1));
+		System.out.println("ENC_PRIV_KEY_EXP: "+SecurityHelper.HexDecoder.encode(encPrivKey,':',-1));
+		System.out.println("DEC_PRIV_KEY_EXP: "+SecurityHelper.HexDecoder.encode(decPrivKey,':',-1));
 		System.out.println("keyid           : "+akp.getKeyID());             
 		
 		

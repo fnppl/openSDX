@@ -158,7 +158,7 @@ public class Test {
 		eloc.addContent("mantraname",mantraname);
 		eloc.addContent("algo","AES@256");
 		eloc.addContent("initvector",SecurityHelper.HexDecoder.encode(sk.getInitVector(),'\0',-1));
-		eloc.addContent("padding","CBC/PKCS#5");
+		eloc.addContent("padding","CBC/PKCS#7");
 		eloc.addContent("bytes",SecurityHelper.HexDecoder.encode(kp.getEncrytedPrivateKey(sk),'\0',-1));
 		eexp.addContent(eloc);
 		esk.addContent(eexp);

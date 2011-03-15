@@ -320,7 +320,8 @@ public class SecurityMainFrame extends JFrame {
 				FileInputStream in = null;
 				if (detached) {
 					e = Document.fromFile(f).getRootElement();
-				} else {
+				} 
+				else {
 					in = new FileInputStream(f);
 					String first = readLine(in);
 					StringBuffer b = new StringBuffer();
@@ -332,18 +333,18 @@ public class SecurityMainFrame extends JFrame {
 					}
 					if (terminationFound) {
 						e = Document.fromStream(new ByteArrayInputStream(b.toString().getBytes("UTF-8"))).getRootElement();
-					} else {
+					} 
+					else {
 						Dialogs.showMessage("Sorry, wrong file format");
 						return;
 					}
 				}
 				String mantra = e.getChildText("mantraname");
 				String p = Dialogs.showPasswordDialog("Enter password", "Please enter password for mantra:\n"+mantra);
-				if (p!=null) {
-				
+				if (p != null) {
 					if (!Arrays.equals(
-						SecurityHelper.getSHA1(p.getBytes()),
-						SecurityHelper.HexDecoder.decode(e.getChildText("pass_sha1"))
+						SecurityHelper.getSHA256(p.getBytes()),
+						SecurityHelper.HexDecoder.decode(e.getChildText("pass_sha256"))
 					)) {
 						Dialogs.showMessage("Sorry, wrong password.");
 						return;
@@ -355,7 +356,7 @@ public class SecurityMainFrame extends JFrame {
 					File fdec = new File(f.getParent(),e.getChildText("dataname")+".dec");
 					
 					if (detached) {
-						File fenc = new File(f.getAbsolutePath().substring(0,f.getAbsolutePath().lastIndexOf('.')));
+						File fenc = new File(f.getAbsolutePath().substring(0, f.getAbsolutePath().lastIndexOf('.')));
 						in = new FileInputStream(fenc);
 					}
 					
@@ -395,27 +396,29 @@ public class SecurityMainFrame extends JFrame {
 	private void encryptFile() {
 		//Dialogs.showMessage("feature not implented.");
 		File f = Dialogs.chooseOpenFile("Please select file for encryption", lastDir, "");
-		if (f!=null) {
+		if (f != null) {
 			int detached = Dialogs.showYES_NO_Dialog("Create detached metadata", "Do you want to create a detached metadata file?");
 			String[] p = Dialogs.showNewMantraPasswordDialog();
-			if (p!=null) {
+			if (p != null) {
 				try {
 					byte[] initv = SecurityHelper.getRandomBytes(16);
 					SymmetricKey key = SymmetricKey.getKeyFromPass(p[1].toCharArray(), initv);
 					
 					Element e = new Element("symmetric_encrytion");
-					e.addContent("dataname",f.getName());
+					e.addContent("dataname", f.getName());
+					e.addContent("origlength", ""+f.length());
+					e.addContent("lastmodified", OSDXKeyObject.datemeGMT.format(new Date(f.lastModified())));
 					e.addContent("mantraname",p[0]);
-					e.addContent("pass_sha1",SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(p[1].getBytes()), ':', -1));
+					e.addContent("pass_sha256", SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA256(p[1].getBytes()), ':', -1));
 					e.addContent("algo","AES@256");
-					e.addContent("initvector",SecurityHelper.HexDecoder.encode(initv, ':', -1));
-					e.addContent("padding","CBC/PKCS#5");
+					e.addContent("initvector", SecurityHelper.HexDecoder.encode(initv, ':', -1));
+					e.addContent("padding", "CBC/PKCS#7");
 					Document d = Document.buildDocument(e);
 					
 					if (detached == Dialogs.YES) {
-						encryptFileDetached(f,key,d);
+						encryptFileDetached(f, key, d);
 					} else {
-						encryptFileInline(f,key,d);
+						encryptFileInline(f, key, d);
 					}
 					
 					Dialogs.showMessage("Encryption succeeded.");

@@ -334,12 +334,11 @@ public class OSDXKeyObject {
 		if (!akp.hasPrivateKey() && lockedPrivateKey != null) { //only once
 			String mantraname = lockedPrivateKey.getChildText("mantraname");
 			
-			
 			//check algo and padding
 			String Slock_algo = lockedPrivateKey.getChildText("algo");
 			String Spadding = lockedPrivateKey.getChildText("padding");
-			if (!Slock_algo.equals("AES@256")||!Spadding.equals("CBC/PKCS#5")) {
-				throw new RuntimeException("UNLOCKING METHOD NOT IMPLEMENTED, please use AES@265 encryption with CBC/PKCS#5 padding");
+			if (!Slock_algo.equals("AES@256")||!Spadding.equals("CBC/PKCS#7")) {
+				throw new RuntimeException("UNLOCKING METHOD NOT IMPLEMENTED, please use AES@265 encryption with CBC/PKCS#7 padding");
 			}
 			
 			try {
@@ -428,7 +427,7 @@ public class OSDXKeyObject {
 				el.addContent("mantraname",ans[0]);
 				el.addContent("algo","AES@256");
 				el.addContent("initvector", SecurityHelper.HexDecoder.encode(iv, ':',-1));
-				el.addContent("padding","CBC/PKCS#5");
+				el.addContent("padding", "CBC/PKCS#7");
 				el.addContent("bytes", SecurityHelper.HexDecoder.encode(encprivkey, ':',-1));
 				
 				Element eexp = new Element("exponent");
