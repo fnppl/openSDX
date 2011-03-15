@@ -788,7 +788,7 @@ public class SecurityMainFrame extends JFrame {
 		if (currentKeyStore!=null) {
 			File f = null;
 			if (chooseFile) {
-				f = Dialogs.chooseSaveFile("Select keystore filename", lastDir.getAbsolutePath(), "mykeystore.xml");
+				f = Dialogs.chooseSaveFile("Select keystore filename", lastDir, "mykeystore.xml");
 			} else {
 				f = currentKeyStore.getFile();
 			}
@@ -807,7 +807,7 @@ public class SecurityMainFrame extends JFrame {
 	
 	public void createKeyStore() {
 		closeCurrentStore();
-		File f = Dialogs.chooseSaveFile("Select keystore filename", lastDir.getAbsolutePath(), "mykeystore.xml");
+		File f = Dialogs.chooseSaveFile("Select keystore filename", lastDir, "mykeystore.xml");
 		if (f!=null) {
 			try {
 				currentKeyStore = KeyApprovingStore.createNewKeyApprovingStore(f);

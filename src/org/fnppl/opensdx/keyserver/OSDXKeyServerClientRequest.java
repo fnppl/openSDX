@@ -5,11 +5,7 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 
-import org.fnppl.opensdx.security.Identity;
-import org.fnppl.opensdx.security.OSDXKeyObject;
-import org.fnppl.opensdx.security.PublicKey;
-import org.fnppl.opensdx.security.SecurityHelper;
-import org.fnppl.opensdx.security.Signature;
+import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
 //import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
