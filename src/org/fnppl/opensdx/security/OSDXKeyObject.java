@@ -96,8 +96,10 @@ public class OSDXKeyObject {
 	
 	private OSDXKeyObject parentosdxkeyobject = null;
 	private String parentkeyid = null;//could be the parentkey is not loaded - then *only* the id is present
+	
 	private String authoritativekeyserver = null;
-	private String modulussha1 = null;
+	//private String modulussha1 = null;
+	private byte[] modulussha1 = null;
 	private Vector<Identity> identities = new Vector<Identity>();
 	private Vector<DataSourceStep> datapath = new Vector<DataSourceStep>();
 	private String gpgkeyserverid = null;
@@ -139,7 +141,7 @@ public class OSDXKeyObject {
 		ret.akp = kp;
 		ret.level = LEVEL_MASTER;
 		ret.authoritativekeyserver = "LOCAL";
-		ret.modulussha1 = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(kp.getModulus()), ':', -1);
+		ret.modulussha1 = SecurityHelper.getSHA1(kp.getModulus());
 		ret.datapath = new Vector<DataSourceStep>();
 		ret.datapath.add(new DataSourceStep("LOCAL", System.currentTimeMillis()));
 		ret.unsavedChanges = true;
@@ -161,7 +163,7 @@ public class OSDXKeyObject {
 			System.err.println("Uargsn. sha1fingerprint given does not match calculated sha1 for given modulus ("+sha1fp+"!="+modsha1+")");
 			return null;
 		}
-		ret.modulussha1 = Sshafp;
+		ret.modulussha1 = modsha1;
 		
 		//fingerprint ok -> go on with identities
 		Element ids = kp.getChild("identities");
@@ -217,7 +219,14 @@ public class OSDXKeyObject {
 		ret.level = level_name.indexOf(level);
 		
 		String parentkeyid = kp.getChildText("parentkeyid");
-		ret.parentkeyid = parentkeyid;
+		int iAt = parentkeyid.indexOf('@');
+		if (iAt>0) {
+			byte[] parentid = SecurityHelper.HexDecoder.decode(parentkeyid.substring(0,iAt));
+			ret.parentkeyid = SecurityHelper.HexDecoder.encode(parentid,':',-1)+parentkeyid.substring(iAt);
+		} else {
+			byte[] parentid = SecurityHelper.HexDecoder.decode(parentkeyid);
+			ret.parentkeyid = SecurityHelper.HexDecoder.encode(parentid,':',-1);
+		}
 		
 		String Salgo = kp.getChildText("algo");
 		int bits = kp.getChildInt("bits");
@@ -290,10 +299,12 @@ public class OSDXKeyObject {
 		return false;
 	}
 	public String getKeyID() {
-		return modulussha1+"@"+authoritativekeyserver;
+		return getKeyModulusSHA1()+"@"+authoritativekeyserver;
 	}
+	
 	public String getKeyModulusSHA1() {
-		return modulussha1;
+		//return modulussha1;
+		return SecurityHelper.HexDecoder.encode(modulussha1, ':', -1);
 	}
 	
 	public Element getSimplePubKeyElement() {
@@ -373,7 +384,7 @@ public class OSDXKeyObject {
 			ekp.addContent(eids);
 		}
 		
-		ekp.addContent("sha1fingerprint", modulussha1);
+		ekp.addContent("sha1fingerprint", getKeyModulusSHA1());
 		ekp.addContent("authoritativekeyserver", authoritativekeyserver);
 		
 		//datapath
@@ -388,7 +399,7 @@ public class OSDXKeyObject {
 		
 		ekp.addContent("usage",usage_name.get(usage));
 		ekp.addContent("level",level_name.get(level));
-		ekp.addContent("parentkeyid", parentkeyid);
+		ekp.addContent("parentkeyid", getParentKeyID());
 		ekp.addContent("algo",algo_name.get(algo));
 		ekp.addContent("bits", ""+akp.getBitCount());
 		ekp.addContent("modulus", SecurityHelper.HexDecoder.encode(akp.getModulus(), ':', -1));

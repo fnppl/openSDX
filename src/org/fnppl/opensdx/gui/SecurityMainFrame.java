@@ -370,13 +370,17 @@ public class SecurityMainFrame extends JFrame {
 	}
 	
 	private void updateUI() {
-		JPanel jp = new JPanel();
-		setContentPane(jp);
 		
+		JPanel p = new JPanel();
+		JScrollPane scroll = new JScrollPane(p);
+		setContentPane(scroll);
 		
-		GridBagLayout gb = new GridBagLayout();		
+		//GridBagLayout gb = new GridBagLayout();		
 		//jp.setLayout(gb);
-		jp.setLayout(new BoxLayout(jp,BoxLayout.Y_AXIS));
+		
+		p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+		
+		
 		if (currentKeyStore!=null) {
 			Vector<OSDXKeyObject> all = currentKeyStore.getAllKeys();
 			int y = 0;
@@ -386,8 +390,7 @@ public class SecurityMainFrame extends JFrame {
 					Vector<OSDXKeyObject> revokekeys = currentKeyStore.getRevokeKeys(key.getKeyID());
 					Vector<OSDXKeyObject> subkeys = currentKeyStore.getSubKeys(key.getKeyID());
 					Component comp = buildComponent(key, revokekeys, subkeys);
-					//addComponent(jp,gb,comp,0,y,1,1,1.0,0.5);
-					jp.add(comp);
+					p.add(comp);
 					y++;
 				}
 			}
