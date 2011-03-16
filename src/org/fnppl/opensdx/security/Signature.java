@@ -67,6 +67,7 @@ import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPSignatureGenerator;
 import org.bouncycastle.openpgp.PGPSignatureList;
 import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
+import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
@@ -403,7 +404,7 @@ public class Signature {
 			File toSign = new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml");
 			File output = new File("example_keystore_signature.xml");
 			
-			KeyApprovingStore store = KeyApprovingStore.fromFile(new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml"));
+			KeyApprovingStore store = KeyApprovingStore.fromFile(new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml"), new DefaultMessageHandler());
 			OSDXKeyObject key = store.getAllKeys().firstElement();
 			
 			System.out.println("\n\ncreating signature");

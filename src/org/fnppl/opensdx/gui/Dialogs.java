@@ -58,7 +58,9 @@ import java.io.File;
 import java.util.Vector;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -111,10 +113,14 @@ public class Dialogs {
 	    return null;
 	}
 	
-	public static final String[] showNewMantraPasswordDialog() {
+	public static final String[] showNewMantraPasswordDialog(String message) {
+		if (message.contains("\n")) {
+			message = "<HTML><BODY>"+message.replace("\n", "<BR>")+"</BODY><HTML>";
+		}
 		JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
-		
+		p.add(new JLabel(message),BorderLayout.NORTH);
+
 		JPanel pMantra = new JPanel();
 		pMantra.setBorder(new TitledBorder("mantraname:"));
 		JTextField text = new JTextField();
@@ -137,6 +143,20 @@ public class Dialogs {
 	    	return new String[] {text.getText(),new String(pf.getPassword())};
 	    }
 	    return null;
+	}
+	
+	public static JDialog getWaitDialog(final String message) {
+		final String msg;
+		if (message.contains("\n")) {
+			msg = "<HTML><BODY>"+message.replace("\n", "<BR>")+"</BODY><HTML>";
+		} else {
+			msg = message;
+		}
+			
+		Object[] options = { "Cancel" } ;
+        JOptionPane optionPane = new JOptionPane(msg,JOptionPane.INFORMATION_MESSAGE,JOptionPane.CANCEL_OPTION, null,options, options[0]);
+        JDialog d = optionPane.createDialog(null, "Please wait..." );
+		return d;
 	}
 	
 	public static int showSelectDialog(String title, String message, Vector values) {

@@ -49,7 +49,7 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import org.fnppl.opensdx.gui.Dialogs;
+import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.xml.Element;
 
 
@@ -314,14 +314,8 @@ public class OSDXKeyObject {
 		return null;
 	}
 	
-	public byte[] sign(
-			byte[] md5, 
-			byte[] sha1, 
-			byte[] sha256,
-			long datetime
-	) throws Exception {
-		unlockPrivateKey();
-		
+	public byte[] sign(byte[] md5,byte[] sha1,byte[] sha256,long datetime) throws Exception {
+		if (!isPrivateKeyUnlocked()) throw new RuntimeException("ERROR: Private Key is locked!");
 		return akp.sign(
 				md5, 
 				sha1, 
@@ -330,7 +324,11 @@ public class OSDXKeyObject {
 			);
 	}
 	
-	private final void unlockPrivateKey() {
+	public boolean isPrivateKeyUnlocked() {
+		return akp.hasPrivateKey(); 
+	}
+	
+	public final void unlockPrivateKey(MessageHandler mh) {
 		if (!akp.hasPrivateKey() && lockedPrivateKey != null) { //only once
 			String mantraname = lockedPrivateKey.getChildText("mantraname");
 			
@@ -342,12 +340,11 @@ public class OSDXKeyObject {
 			}
 			
 			try {
-				String pp = Dialogs.showPasswordDialog("UNLOCK PRIVATE KEY", "KeyID: "+modulussha1+"@"+authoritativekeyserver+"\nPlease enter passphrase for mantra: \""+mantraname+"\"");
+				String pp = mh.requestPassword(getKeyID(), mantraname);
 				unlockPrivateKey(pp);
-				
 			} catch(Exception ex) {
 				ex.printStackTrace();
-			}			
+			}
 		}
 	}
 	
@@ -365,7 +362,7 @@ public class OSDXKeyObject {
 		}
 	}
 	
-	public Element toElement() throws Exception {
+	public Element toElement(MessageHandler mh) throws Exception {
 		Element ekp = new Element("keypair");
 		//identities
 		if (identities!=null && identities.size()>0) {
@@ -418,7 +415,7 @@ public class OSDXKeyObject {
 			
 		} 
 		else if (akp.hasPrivateKey()) {
-			String[] ans = Dialogs.showNewMantraPasswordDialog();
+			String[] ans = mh.requestNewPasswordAndMantra("Saving Key: "+getKeyID()+"\nLevel: "+getLevelName()+"\n");
 			if (ans != null) {
 				byte[] iv = SecurityHelper.getRandomBytes(16);
 				SymmetricKey sk = SymmetricKey.getKeyFromPass(ans[1].toCharArray(), iv);
@@ -487,6 +484,22 @@ public class OSDXKeyObject {
 		unsavedChanges = true;
 		identities.remove(id);
 	}
+	
+	public void moveIdentityAtPositionUp(int oldPosition) {
+		if (oldPosition>0 && oldPosition<identities.size()) {
+			Identity id = identities.remove(oldPosition);
+			identities.add(oldPosition-1, id);
+			unsavedChanges = true;
+		}
+	}
+	public void moveIdentityAtPositionDown(int oldPosition) {
+		if (oldPosition>=0 && oldPosition<identities.size()-1) {
+			Identity id = identities.remove(oldPosition);
+			identities.add(oldPosition+1, id);
+			unsavedChanges = true;
+		}
+	}
+	
 	public String getParentKeyID() {
 		if (parentosdxkeyobject!=null) return parentosdxkeyobject.getKeyID();
 		else return parentkeyid;
@@ -517,6 +530,20 @@ public class OSDXKeyObject {
 		return false;
 	}
 	
+	public boolean isMaster() {
+		if (level == LEVEL_MASTER) return true;
+		else return false;
+	}
+	
+	public boolean isRevoke() {
+		if (level == LEVEL_REVOKE) return true;
+		else return false;
+	}
+	
+	public boolean isSub() {
+		if (level == LEVEL_SUB) return true;
+		else return false;
+	}
 	public boolean hasPrivateKey() {
 		return lockedPrivateKey!=null || akp.hasPrivateKey();
 	}

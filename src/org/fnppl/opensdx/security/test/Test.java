@@ -55,6 +55,7 @@ import java.io.File;
 import java.math.BigInteger;
 import java.util.Vector;
 
+import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
@@ -77,7 +78,7 @@ public class Test {
 		
 		//try to read from example_keystore.xml
 		try {
-			KeyApprovingStore store = KeyApprovingStore.fromFile(new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml"));
+			KeyApprovingStore store = KeyApprovingStore.fromFile(new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml"), new DefaultMessageHandler());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -50,6 +50,10 @@ import java.math.BigInteger;
 import java.net.*;
 import java.util.*;
 
+import javax.swing.DefaultBoundedRangeModel;
+
+import org.fnppl.opensdx.gui.DefaultMessageHandler;
+import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
@@ -83,6 +87,7 @@ public class KeyServerMain {
 	Inet4Address address = null;
 
 	private KeyApprovingStore keystore;
+	private MessageHandler messageHandler = new DefaultMessageHandler();
 	
 	private HashMap<String, Vector<OSDXKeyObject>> id_keys;
 	private HashMap<String, OSDXKeyObject> keyid_key;
@@ -97,7 +102,7 @@ public class KeyServerMain {
 		// read keystore
 		File f = new File("server_testkeystore.xml");
 
-		keystore = KeyApprovingStore.fromFile(f);
+		keystore = KeyApprovingStore.fromFile(f, messageHandler);
 		id_keys = new HashMap<String, Vector<OSDXKeyObject>>();
 		keyid_key = new HashMap<String, OSDXKeyObject>();
 		keyid_log = new HashMap<String, Vector<KeyLog>>();

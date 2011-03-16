@@ -62,15 +62,21 @@ import org.fnppl.opensdx.xml.*;
 
 
 public class SecurityMainFrame extends JFrame {
+	
+	private int maxWidth = 1200;
+	
 	private KeyApprovingStore currentKeyStore = null;
+	private MessageHandler messageHandler = new DefaultMessageHandler();
 	
 	private File lastDir = getDefaultDir(); //new File(System.getProperty("user.home"));
 //	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
 	
-	private JTable tKeysIDs;
-	private KeysAndIdentitiesTableModel mKeysIDs;
+//	private JTable tKeysIDs;
+//	private KeysAndIdentitiesTableModel mKeysIDs;
+//	private JTable tKeylogs;
 	
-	private JTable tKeylogs;
+	private HashMap<String, String> props = new HashMap<String, String>(); //GUI layout properties
+	
 	
 	private static SecurityMainFrame instance = null;
 	public static SecurityMainFrame getInstance() {
@@ -107,32 +113,33 @@ public class SecurityMainFrame extends JFrame {
 		File f = getDefaultDir();
 		
 		f = new File(f, "defaultKeyStore.xml");
-		
-		return openKeyStore(f);
+		if (f.exists()) return openKeyStore(f);
+		return false;
 	}
 
-	private void initUICurrentKeyStore() {
-		if (currentKeyStore != null) {
-			this.getContentPane().setVisible(true);
-			mKeysIDs = new KeysAndIdentitiesTableModel(currentKeyStore.getAllKeys());
-			tKeysIDs.setModel(mKeysIDs);
-			fitAllColumnWidth(tKeysIDs);
-			
-		}
-		else {
-			this.getContentPane().setVisible(false);
-			mKeysIDs = new KeysAndIdentitiesTableModel(null);
-			tKeysIDs.setModel(mKeysIDs);
-			fitAllColumnWidth(tKeysIDs);
-		}
-	}
+//	private void initUICurrentKeyStore() {
+//		if (currentKeyStore != null) {
+//			this.getContentPane().setVisible(true);
+//			mKeysIDs = new KeysAndIdentitiesTableModel(currentKeyStore.getAllKeys());
+//			tKeysIDs.setModel(mKeysIDs);
+//			fitAllColumnWidth(tKeysIDs);
+//			
+//		}
+//		else {
+//			this.getContentPane().setVisible(false);
+//			mKeysIDs = new KeysAndIdentitiesTableModel(null);
+//			tKeysIDs.setModel(mKeysIDs);
+//			fitAllColumnWidth(tKeysIDs);
+//		}
+//		updateUI();
+//	}
 
 	public boolean openKeyStore(File f) {
 		try {
 			if(f.exists()) {
-				KeyApprovingStore kas = KeyApprovingStore.fromFile(f);
+				KeyApprovingStore kas = KeyApprovingStore.fromFile(f, messageHandler);
 				this.currentKeyStore = kas;
-				initUICurrentKeyStore();
+				updateUI();
 				return true;
 			}
 		} catch(Exception ex) {
@@ -161,8 +168,11 @@ public class SecurityMainFrame extends JFrame {
 				else if(cmd.equalsIgnoreCase("writekeystore")) {
 					writeCurrentKeyStore(true);
 				}
-				else if(cmd.equalsIgnoreCase("generatekeypair")) {
-					generateKeyPair(true);
+				else if(cmd.equalsIgnoreCase("generatemasterkeyset")) {
+					generateMasterKeySet();
+				}
+				else if(cmd.equalsIgnoreCase("generatemasterkey")) {
+					generateMasterKeyPair();
 				}
 				else if(cmd.equalsIgnoreCase("encryptfile")) {
 					encryptFile();
@@ -214,8 +224,13 @@ public class SecurityMainFrame extends JFrame {
 		jm = new JMenu("Keys");
 		jb.add(jm);
 		
-		jmi = new JMenuItem("GenerateKeyPair");
-		jmi.setActionCommand("generatekeypair");
+		jmi = new JMenuItem("Generate new MASTER Key Set");
+		jmi.setActionCommand("generatemasterkeyset");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+		
+		jmi = new JMenuItem("Generate new MASTER Key");
+		jmi.setActionCommand("generatemasterkey");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
 		
@@ -258,59 +273,461 @@ public class SecurityMainFrame extends JFrame {
 		
 		
 		//keys and identities
-		tKeysIDs = new JTable();
-		tKeysIDs.addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent ev) {
-					if (ev.getClickCount()>1) {
-						int row = tKeysIDs.rowAtPoint(ev.getPoint());
-						int col = tKeysIDs.columnAtPoint(ev.getPoint());
-						if (row>=0 && row<tKeysIDs.getModel().getRowCount() && col>=0 && col<tKeysIDs.getModel().getColumnCount()) {
-							showKeyEditDialog(currentKeyStore.getAllKeys().get(row),false);
-							tKeysIDs.setModel(new KeysAndIdentitiesTableModel(currentKeyStore.getAllKeys()));
-							fitAllColumnWidth(tKeysIDs);
-						}
-					}
-				}
-		});
-		initUICurrentKeyStore();
+//		tKeysIDs = new JTable();
+//		tKeysIDs.addMouseListener(new MouseAdapter() {
+//				public void mouseClicked(MouseEvent ev) {
+//					if (ev.getClickCount()>1) {
+//						int row = tKeysIDs.rowAtPoint(ev.getPoint());
+//						int col = tKeysIDs.columnAtPoint(ev.getPoint());
+//						if (row>=0 && row<tKeysIDs.getModel().getRowCount() && col>=0 && col<tKeysIDs.getModel().getColumnCount()) {
+//							showKeyEditDialog(currentKeyStore.getAllKeys().get(row),false);
+//							tKeysIDs.setModel(new KeysAndIdentitiesTableModel(currentKeyStore.getAllKeys()));
+//							fitAllColumnWidth(tKeysIDs);
+//						}
+//					}
+//				}
+//		});
+//		initUICurrentKeyStore();
 		
-		JPanel pKI = new JPanel();
-		pKI.setLayout(new BorderLayout());
-		pKI.setBorder(new TitledBorder("Keys and Identities"));
-		pKI.add(new JScrollPane(tKeysIDs), BorderLayout.CENTER);
-
-
-		//keylogs
-		tKeylogs = new JTable();
-		tKeylogs.setModel(new DefaultTableModel(new String[]{"keylog","test","bla"}, 5));
-		JPanel pKL = new JPanel();
-		pKL.setLayout(new BorderLayout());
-		pKL.setBorder(new TitledBorder("Keylogs"));
-		pKL.add(new JScrollPane(tKeylogs), BorderLayout.CENTER);
+//		JPanel pKI = new JPanel();
+//		pKI.setLayout(new BorderLayout());
+//		pKI.setBorder(new TitledBorder("Keys and Identities"));
+//		pKI.add(new JScrollPane(tKeysIDs), BorderLayout.CENTER);
+//
+//
+//		//keylogs
+//		tKeylogs = new JTable();
+//		tKeylogs.setModel(new DefaultTableModel(new String[]{"keylog","test","bla"}, 5));
+//		JPanel pKL = new JPanel();
+//		pKL.setLayout(new BorderLayout());
+//		pKL.setBorder(new TitledBorder("Keylogs"));
+//		pKL.add(new JScrollPane(tKeylogs), BorderLayout.CENTER);
+//		
+//		
+//		
+//		addComponent(jp,gb,pKI,0,0,1,1,1.0,0.5);
+//		
+//		
 		
-		
-		
-		addComponent(jp,gb,pKI,0,0,1,1,1.0,0.5);
 		//addComponent(jp,gb,pKL,0,1,1,1,1.0,0.5);
 		
 		Helper.centerMe(this, null);
 	}
 	
-	private static void addComponent(Container cont, GridBagLayout gbl, Component c, int x, int y, int w, int h, double wx, double wy) {
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.gridx = x;
-		gbc.gridy = y;
-		gbc.gridwidth = w;
-		gbc.gridheight = h;
-		gbc.weightx = wx;
-		gbc.weighty = wy;
-		gbc.insets = new Insets(5, 5, 5, 5);
-		gbl.setConstraints(c, gbc);
-		cont.add(c);
+	private void updateUI() {
+		JPanel jp = new JPanel();
+		setContentPane(jp);
+		
+		
+		GridBagLayout gb = new GridBagLayout();		
+		//jp.setLayout(gb);
+		jp.setLayout(new BoxLayout(jp,BoxLayout.Y_AXIS));
+		if (currentKeyStore!=null) {
+			Vector<OSDXKeyObject> all = currentKeyStore.getAllKeys();
+			int y = 0;
+			for (int i=0;i<all.size();i++) {
+				OSDXKeyObject key = all.get(i);
+				if (key.isMaster()) {
+					Vector<OSDXKeyObject> revokekeys = currentKeyStore.getRevokeKeys(key.getKeyID());
+					Vector<OSDXKeyObject> subkeys = currentKeyStore.getSubKeys(key.getKeyID());
+					Component comp = buildComponent(key, revokekeys, subkeys);
+					//addComponent(jp,gb,comp,0,y,1,1,1.0,0.5);
+					jp.add(comp);
+					y++;
+				}
+			}
+		}
+		validate();
 	}
 	
+	private Component buildComponent(OSDXKeyObject masterkey, Vector<OSDXKeyObject> revokekeys, Vector<OSDXKeyObject> subkeys) {
+		final JPanel p = new JPanel();
+		p.setBorder(new TitledBorder("KeyGroup:"));
+		p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
+		p.add(buildComponentMasterKey(masterkey));
+		for (OSDXKeyObject key : revokekeys) {
+			p.add(buildComponentRevokeKey(key));
+		}
+		for (OSDXKeyObject key : subkeys) {
+			p.add(buildComponentSubKey(key));
+		}
+		return p;
+	}
+	
+	private Component buildComponentMasterKey(final OSDXKeyObject key) {
+		final JPanel p = new JPanel();
+		p.setLayout(new BorderLayout());
+		
+		final JPanel content = new JPanel();
+		content.setLayout(new BorderLayout());
+				
+		JPanel a = new JPanel();
+		int y = 0;
+		GridBagLayout gb = new GridBagLayout();		
+		a.setLayout(gb);
+		
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = GridBagConstraints.FIRST_LINE_START;
+		c.insets = new Insets(5, 5, 0, 0);
+		
+		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
+		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
+		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
+		
+		final Vector<Identity> ids = key.getIdentities();
+		if (ids.size()>0) {
+			ActionListener editRemoveListener = new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String cmd = e.getActionCommand();
+					if (cmd.indexOf(":")<=0) return;
+					String[] sno = cmd.split(":");
+					String c = sno[0]; 
+					int no = Integer.parseInt(sno[1]);
+					if (c.equals("remove")) {
+						String txt = "Are you sure you want to remove the following id:\n"+ids.get(no).getEmail()+"?";
+						int a = Dialogs.showYES_NO_Dialog("Confirm removal",txt);
+						if (a==Dialogs.YES) {
+							key.removeIdentity(ids.get(no));
+							updateUI();
+						}
+					} else if (c.equals("edit")) {
+						showIdentityEditDialog(ids.get(no),false);
+						updateUI();
+					} else if (c.equals("up")) {
+						key.moveIdentityAtPositionUp(no);
+						updateUI();
+					}  else if (c.equals("down")) {
+						key.moveIdentityAtPositionDown(no);
+						updateUI();
+					}
+				}
+			};
+			for (int i=0;i<ids.size();i++) {
+				y++;
+				addIdentityPart(i, ids.size()-1, ids.get(i), a, c, y, editRemoveListener);
+			}
+		}
+		
+		Vector<DataSourceStep> dp = key.getDatapath();
+		for (int i=0;i<dp.size();i++) {
+			y++;
+			DataSourceStep s = dp.get(i);
+			addLabelTextFieldPart("datapath "+(i+1)+":", s.getDataSource()+" at "+s.getDataInsertDatetimeString(), a, c, y);
+		}
 
+
+		final int w = 600;
+		final int h = y*30 + 80;
+
+		JButton head = createHeaderButton("MASTER Key:       "+key.getKeyID(), key.getKeyID(), content, p, w, h);
+		
+		JPanel b = new JPanel();
+		b.setLayout(new FlowLayout(FlowLayout.LEFT));
+		int buWidth = 200;
+		JButton bu = new JButton("add identity");
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Identity id = Identity.newEmptyIdentity();
+					boolean ok = showIdentityEditDialog(id, true);
+					if (ok) {
+						key.addIdentity(id);
+						updateUI();
+					}
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		b.add(bu);
+		
+		bu = new JButton("generate REVOKE Key");
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				generateRevokeKey(key);
+			}
+		});
+		b.add(bu);
+		
+		bu = new JButton("generate SUB Key");
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				generateSubKey(key);
+			}
+		});
+		b.add(bu);
+		
+		p.add(head, BorderLayout.NORTH);
+		
+		JScrollPane scrollContent = new JScrollPane(content);
+		p.add(scrollContent, BorderLayout.CENTER);
+		
+		content.add(a,BorderLayout.CENTER);
+		content.add(b,BorderLayout.SOUTH);
+		
+		return p;
+	}
+	
+	private void addLabelTextFieldPart(String textLabel, String textValue, JPanel a, GridBagConstraints c, int y) {
+		JLabel l = new JLabel(textLabel);
+		l.setPreferredSize(new Dimension(200,20));
+		c.weightx = 0;
+		c.weighty = 0.1;
+		c.fill = GridBagConstraints.NONE;
+		c.gridx = 0;
+		c.gridy = y;
+		a.add(l, c);
+		
+		JTextField t = new JTextField(textValue);
+		t.setEditable(false);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.gridx = 1;
+		c.gridy = y;
+		c.gridwidth = 5;
+		a.add(t,c);
+	}
+	
+	private void addIdentityPart(int i, int maxI, Identity id, JPanel a, GridBagConstraints c, int y, ActionListener al) {
+		
+	JLabel l = new JLabel("identity "+(i+1)+":");
+	c.weightx = 0;
+	c.weighty = 0.1;
+	c.fill = GridBagConstraints.NONE;
+	c.gridx = 0;
+	c.gridy = y;
+	a.add(l, c);
+	
+	JTextField t = new JTextField(id.getEmail());
+	t.setEditable(false);
+	c.weightx = 1;
+	c.fill = GridBagConstraints.HORIZONTAL;
+	c.gridx = 1;
+	c.gridy = y;
+	c.gridwidth = 1;
+	a.add(t,c);
+	
+	JButton b = new JButton("edit");
+	b.setActionCommand("edit:"+i);
+	b.addActionListener(al);
+	b.setPreferredSize(new Dimension(80, 20));
+	c.weightx = 0;
+	c.fill = GridBagConstraints.NONE;
+	c.gridx = 2;
+	c.gridy = y;
+	c.gridwidth = 1;
+	a.add(b,c);
+	
+	b = new JButton("remove");
+	b.setActionCommand("remove:"+i);
+	b.addActionListener(al);
+	b.setPreferredSize(new Dimension(100, 20));
+	c.weightx = 0;
+	c.fill = GridBagConstraints.NONE;
+	c.gridx = 3;
+	c.gridy = y;
+	c.gridwidth = 1;
+	a.add(b,c);
+	
+	if (i!=0) {
+		b = new JButton("up");
+		b.setActionCommand("up:"+i);
+		b.addActionListener(al);
+		b.setPreferredSize(new Dimension(80, 20));
+		c.weightx = 0;
+		c.fill = GridBagConstraints.NONE;
+		c.gridx = 4;
+		c.gridy = y;
+		c.gridwidth = 1;
+		a.add(b,c);
+	}
+	if (i<maxI) {
+		b = new JButton("down");
+		b.setActionCommand("down:"+i);
+		b.addActionListener(al);
+		b.setPreferredSize(new Dimension(80, 20));
+		c.weightx = 0;
+		c.fill = GridBagConstraints.NONE;
+		c.gridx = 5;
+		c.gridy = y;
+		c.gridwidth = 1;
+		a.add(b,c);
+	}
+	}
+	
+	private Component buildComponentRevokeKey(OSDXKeyObject key) {
+		final JPanel p = new JPanel();
+		p.setLayout(new BorderLayout());
+		
+		final JPanel content = new JPanel();
+		content.setLayout(new BorderLayout());
+				
+		JPanel a = new JPanel();
+		int y = 0;
+		GridBagLayout gb = new GridBagLayout();		
+		a.setLayout(gb);
+		
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = GridBagConstraints.FIRST_LINE_START;
+		c.insets = new Insets(5, 5, 0, 0);
+		
+		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
+		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
+		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
+		
+		Vector<DataSourceStep> dp = key.getDatapath();
+		for (int i=0;i<dp.size();i++) {
+			y++;
+			DataSourceStep s = dp.get(i);
+			addLabelTextFieldPart("datapath "+(i+1)+":", s.getDataSource()+" at "+s.getDataInsertDatetimeString(), a, c, y);
+		}
+
+
+		final int w = 600;
+		final int h = y*30 + 80;
+
+		JButton head = createHeaderButton("REVOKE Key:      "+key.getKeyID(), key.getKeyID(), content, p, w, h);
+		
+//		JPanel b = new JPanel();
+//		b.setLayout(new FlowLayout(FlowLayout.LEFT));
+//		JButton bu = new JButton("remove");
+//		bu.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				
+//			}
+//		});
+//		b.add(bu);
+//		content.add(b,BorderLayout.SOUTH);
+		
+		p.add(head, BorderLayout.NORTH);
+		JScrollPane scrollContent = new JScrollPane(content);
+		p.add(scrollContent, BorderLayout.CENTER);
+		content.add(a,BorderLayout.CENTER);
+		
+		return p;
+	}
+	
+	private JButton createHeaderButton(final String title, final String keyID, final JPanel content, final JPanel p, final int w,final int h) {
+		
+		final JButton head = new JButton("+   "+title);
+		String visible = props.get(keyID);
+		if (visible==null || visible.equals("NOT VISIBLE")) {
+			props.put(keyID,"NOT VISIBLE");
+			head.setText("+   "+title);
+			p.setPreferredSize(new Dimension(w,28));
+			p.setMinimumSize(new Dimension(10,0));
+			p.setMaximumSize(new Dimension(maxWidth,28));
+			content.setVisible(false);
+		} else {
+			props.put(keyID,"VISIBLE");
+			head.setText("-   "+title);
+			p.setPreferredSize(new Dimension(w,h));
+			p.setMinimumSize(new Dimension(10,0));
+			p.setMaximumSize(new Dimension(maxWidth,h));
+			content.setVisible(true);
+		}
+		
+		head.setHorizontalAlignment(JButton.LEFT);
+		head.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (content.isVisible()) {
+					props.put(keyID,"NOT VISIBLE");
+					head.setText("+   "+title);
+					p.setPreferredSize(new Dimension(w,28));
+					p.setMinimumSize(new Dimension(10,0));
+					p.setMaximumSize(new Dimension(maxWidth,28));
+					content.setVisible(false);
+				} else {
+					props.put(keyID,"VISIBLE");
+					head.setText("-   "+title);
+					p.setPreferredSize(new Dimension(w,h));
+					p.setMinimumSize(new Dimension(10,0));
+					p.setMaximumSize(new Dimension(maxWidth,h));
+					content.setVisible(true);
+					props.put(keyID,"VISIBLE");
+				}
+			}
+		});
+		return head;
+	}
+	
+	private Component buildComponentSubKey(final OSDXKeyObject key) {
+		final JPanel p = new JPanel();
+		p.setLayout(new BorderLayout());
+		
+		final JPanel content = new JPanel();
+		content.setLayout(new BorderLayout());
+				
+		JPanel a = new JPanel();
+		int y = 0;
+		GridBagLayout gb = new GridBagLayout();		
+		a.setLayout(gb);
+		
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = GridBagConstraints.FIRST_LINE_START;
+		c.insets = new Insets(5, 5, 0, 0);
+		
+		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
+		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
+		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
+		
+		Vector<DataSourceStep> dp = key.getDatapath();
+		for (int i=0;i<dp.size();i++) {
+			y++;
+			DataSourceStep s = dp.get(i);
+			addLabelTextFieldPart("datapath "+(i+1)+":", s.getDataSource()+" at "+s.getDataInsertDatetimeString(), a, c, y);
+		}
+
+
+		final int w = 600;
+		final int h = y*30 + 80;
+
+		JButton head = createHeaderButton("SUB Key:      "+key.getKeyID(), key.getKeyID(), content, p, w, h);
+		
+		JPanel b = new JPanel();
+		b.setLayout(new FlowLayout(FlowLayout.LEFT));
+		JButton bu = new JButton("sign file");
+		bu.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				File f = Dialogs.chooseOpenFile("Please select file for signing", lastDir, "");
+				if (f!=null && f.exists()) {
+					signFile(key,f);
+				}
+			}
+		});
+		b.add(bu);
+		content.add(b,BorderLayout.SOUTH);
+		
+		p.add(head, BorderLayout.NORTH);
+		JScrollPane scrollContent = new JScrollPane(content);
+		p.add(scrollContent, BorderLayout.CENTER);
+		content.add(a,BorderLayout.CENTER);
+		
+		return p;
+	}
+	
+//	private static void addComponent(Container cont, GridBagLayout gbl, Component c, int x, int y, int w, int h, double wx, double wy) {
+//		GridBagConstraints gbc = new GridBagConstraints();
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.gridx = x;
+//		gbc.gridy = y;
+//		gbc.gridwidth = w;
+//		gbc.gridheight = h;
+//		gbc.weightx = wx;
+//		gbc.weighty = wy;
+//		gbc.insets = new Insets(5, 5, 5, 5);
+//		gbl.setConstraints(c, gbc);
+//		cont.add(c);
+//	}
+	
+	
 	private void decryptFile() {
 		File f = Dialogs.chooseOpenFile("Please select file for decryption", lastDir, "");
 		if (f != null) {
@@ -398,7 +815,7 @@ public class SecurityMainFrame extends JFrame {
 		File f = Dialogs.chooseOpenFile("Please select file for encryption", lastDir, "");
 		if (f != null) {
 			int detached = Dialogs.showYES_NO_Dialog("Create detached metadata", "Do you want to create a detached metadata file?");
-			String[] p = Dialogs.showNewMantraPasswordDialog();
+			String[] p = Dialogs.showNewMantraPasswordDialog("Passphrase for encryption of file:\n"+f.getName());
 			if (p != null) {
 				try {
 					byte[] initv = SecurityHelper.getRandomBytes(16);
@@ -502,176 +919,239 @@ public class SecurityMainFrame extends JFrame {
 				int a = Dialogs.showSelectDialog("Select key", "Please select key for signing", keyids);
 				if (a>=0) {
 					OSDXKeyObject key = keys.get(a);
-					try {
-						File fileout = new File(f.getAbsolutePath()+"_signature.xml");
-						Signature.createSignatureFile(f, fileout, key);
-						if (fileout.exists())
-							Dialogs.showMessage("Signature creation succeeded. \nfile: "+fileout.getAbsolutePath());
-					} catch (Exception ex) {
-						Dialogs.showMessage("ERROR: Creating signature for file: "+f.getAbsolutePath()+" failed");
-						ex.printStackTrace();
-					}
+					signFile(key,f);
 				}
 			}
 		}
-	}	
+	}
 	
+	private void signFile(OSDXKeyObject key, File file) {
+		try {
+			File fileout = new File(file.getAbsolutePath()+"_signature.xml");
+			Signature.createSignatureFile(file, fileout, key);
+			if (fileout.exists())
+				Dialogs.showMessage("Signature creation succeeded. \nfile: "+fileout.getAbsolutePath());
+		} catch (Exception ex) {
+			Dialogs.showMessage("ERROR: Creating signature for file: "+file.getAbsolutePath()+" failed");
+			ex.printStackTrace();
+		}
+	}
 	
-	private boolean showKeyEditDialog(final OSDXKeyObject key, boolean canCancel) {
-		final JDialog d = new JDialog(instance);
-		d.setTitle("Edit Key");
-		
-		final boolean[] isOK = new boolean[] {!canCancel};
-		
-		JPanel p = new JPanel();
-		p.setLayout(new BorderLayout());
-		p.setBorder(new TitledBorder("Edit Key: "+key.getKeyID()));
-		
-		final JTable edit = new JTable();
-		edit.setModel(new KeyTableModel(key));
-		fitAllColumnWidth(edit);
-		
-		edit.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent ev) {
-				if (ev.getClickCount()>1) {
-					int row = edit.rowAtPoint(ev.getPoint());
-					int col = edit.columnAtPoint(ev.getPoint());
-					if (row>=0 && row<edit.getModel().getRowCount() && col>=0 && col<edit.getModel().getColumnCount()) {
-						if (((String)edit.getValueAt(row, 0)).startsWith("identity")) {
-							int firstID = row;
-							while (firstID>0 && ((String)edit.getValueAt(firstID-1, 0)).startsWith("identity")) {
-								firstID--;
-							}
-							Identity id = key.getIdentities().get(row-firstID);
-							showIdentityEditDialog(id,false);
-							edit.setModel(new KeyTableModel(key));
-							fitAllColumnWidth(edit);
-						}
-						if (edit.getValueAt(row, 0).equals("level")) {
-							int a = Dialogs.showSelectDialog("Select Level", "Please select key level", OSDXKeyObject.level_name);
-							if (a>=0) {
-								key.setLevel(a);
-								edit.setModel(edit.getModel()); //update
-							}
-						}
-						if (edit.getValueAt(row, 0).equals("usage")) {
-							int a = Dialogs.showSelectDialog("Select Usage", "Please select key usage", OSDXKeyObject.usage_name);
-							if (a>=0) {
-								key.setUsage(a);
-								edit.setModel(edit.getModel()); //update
-							}
-						}
-						if (edit.getValueAt(row, 0).equals("parentkeyid")) {
-							Vector<OSDXKeyObject> keys = currentKeyStore.getAllSigningKeys(); 
-							if (keys.size()>0) {
-								Vector<String> keyids = new Vector<String>();
-								for (OSDXKeyObject k: keys) {
-									keyids.add(k.getKeyID());
-								}
-								int a = Dialogs.showSelectDialog("Select parent key id", "Please select parent key id", keyids);
-								if (a>=0) {
-									key.setParentKey(keys.get(a));
-									edit.setModel(edit.getModel()); //update
-								}
-							}
-						}
-						
-					}
-					
-				}
-			}
-		});
-		p.add(new JScrollPane(edit), BorderLayout.CENTER);
-		
-		JPanel pb = new JPanel();
-		p.add(pb,BorderLayout.SOUTH);
-		pb.setLayout(new FlowLayout(FlowLayout.LEFT));
-		
-		JButton addID = new JButton("add identity");
-		addID.setPreferredSize(new Dimension(150,25));
-		addID.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+	private void generateRevokeKey(final OSDXKeyObject parentKey) {
+		final JDialog d = Dialogs.getWaitDialog("Generating new REVOKE Key,\nplease wait...");
+	   Thread t = new Thread() {
+	    	public void run() {
 				try {
-					Identity id = Identity.newEmptyIdentity();
-					boolean ok = showIdentityEditDialog(id, true);
-					if (ok) {
-						key.addIdentity(id);
-						edit.setModel(new KeyTableModel(key));
-						fitAllColumnWidth(edit);
-						edit.validate();
-					}
-				} catch (Exception e1) {
-					e1.printStackTrace();
+					AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
+					OSDXKeyObject k = OSDXKeyObject.fromKeyPair(kp);
+					k.setLevel(OSDXKeyObject.LEVEL_REVOKE);
+					k.setUsage(OSDXKeyObject.USAGE_SIGN);
+					k.setParentKey(parentKey);
+					currentKeyStore.addKey(k);
+					releaseUILock();
+					updateUI();
+				} catch (Exception ex) {
+					releaseUILock();
+					Dialogs.showMessage("ERROR: could not generate new keypair.");
+					ex.printStackTrace();
 				}
-			}
-		});
-		pb.add(addID);
-		
-		JButton removeID = new JButton("remove identity");
-		removeID.setPreferredSize(new Dimension(150,25));
-		removeID.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					int[] sel = edit.getSelectedRows();
-					if (sel==null) Dialogs.showMessage("Sorry, no identities selected.");
-					
-					Vector<Identity> ids = new Vector<Identity>(); 
-					for (int i=0;i<sel.length;i++) {
-						String name = (String)edit.getModel().getValueAt(sel[i],0); 
-						if (name.startsWith("identity")) {
-							int no = Integer.parseInt(name.substring(9))-1;
-							ids.add(key.getIdentities().get(no));
-							
-						}
-					}
-					if (ids.size()>0) {
-						String txt = "Are you sure you want to remove the following id(s)?";
-						for (Identity id : ids) txt += "\n"+id.getEmail();
-						int a = Dialogs.showYES_NO_Dialog("Confirm removal",txt);
-						if (a==Dialogs.YES) {
-							for (Identity id : ids)
-								key.removeIdentity(id);
-							edit.setModel(new KeyTableModel(key));
-							fitAllColumnWidth(edit);
-							edit.validate();
-						}
-					} else {
-						Dialogs.showMessage("Sorry, no identities selected.");
-					}
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
-			}
-		});
-		pb.add(removeID);
-		
-		
-		JPanel ps = new JPanel();
-		ps.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		JButton ok = new JButton("ok");
-		ok.setPreferredSize(new Dimension(150,25));
-		ok.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				isOK[0] = true;
 				d.dispose();
 			}
-		});
-		ps.add(ok);
-		
-		
-		d.setLayout(new BorderLayout());
-		
-		d.setSize(700, 400);
-		d.add(p, BorderLayout.CENTER);
-		d.add(ps, BorderLayout.SOUTH);
-		d.setModal(true);
-		
-		Helper.centerMe(d, null);
-		
-		d.setVisible(true);
-		
-		return isOK[0];
+	    };    
+	    t.start() ;
+	    d.show();
+	    if (t.isAlive()) {
+	    	t.stop();
+	    	releaseUILock();
+			updateUI();
+	    }
 	}
+	
+	private void generateSubKey(final OSDXKeyObject parentKey) {
+		final JDialog d = Dialogs.getWaitDialog("Generating new SUB Key,\nplease wait...");
+	    Thread t = new Thread() {
+	    	public void run() {
+				try {
+					AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
+					OSDXKeyObject k = OSDXKeyObject.fromKeyPair(kp);
+					k.setLevel(OSDXKeyObject.LEVEL_SUB);
+					k.setUsage(OSDXKeyObject.USAGE_SIGN);
+					k.setParentKey(parentKey);
+					currentKeyStore.addKey(k);
+					releaseUILock();
+					updateUI();
+				} catch (Exception ex) {
+					releaseUILock();
+					Dialogs.showMessage("ERROR: could not generate new keypair.");
+					ex.printStackTrace();
+				}
+				d.dispose();
+			}
+	    };    
+	    t.start() ;
+	    d.show();
+	    if (t.isAlive()) {
+	    	t.stop();
+	    	releaseUILock();
+			updateUI();
+	    }
+	}
+	
+//	private boolean showKeyEditDialog(final OSDXKeyObject key, boolean canCancel) {
+//		final JDialog d = new JDialog(instance);
+//		d.setTitle("Edit Key");
+//		
+//		final boolean[] isOK = new boolean[] {!canCancel};
+//		
+//		JPanel p = new JPanel();
+//		p.setLayout(new BorderLayout());
+//		p.setBorder(new TitledBorder("Edit Key: "+key.getKeyID()));
+//		
+//		final JTable edit = new JTable();
+//		edit.setModel(new KeyTableModel(key));
+//		fitAllColumnWidth(edit);
+//		
+//		edit.addMouseListener(new MouseAdapter() {
+//			public void mouseClicked(MouseEvent ev) {
+//				if (ev.getClickCount()>1) {
+//					int row = edit.rowAtPoint(ev.getPoint());
+//					int col = edit.columnAtPoint(ev.getPoint());
+//					if (row>=0 && row<edit.getModel().getRowCount() && col>=0 && col<edit.getModel().getColumnCount()) {
+//						if (((String)edit.getValueAt(row, 0)).startsWith("identity")) {
+//							int firstID = row;
+//							while (firstID>0 && ((String)edit.getValueAt(firstID-1, 0)).startsWith("identity")) {
+//								firstID--;
+//							}
+//							Identity id = key.getIdentities().get(row-firstID);
+//							showIdentityEditDialog(id,false);
+//							edit.setModel(new KeyTableModel(key));
+//							fitAllColumnWidth(edit);
+//						}
+//						if (edit.getValueAt(row, 0).equals("level")) {
+//							int a = Dialogs.showSelectDialog("Select Level", "Please select key level", OSDXKeyObject.level_name);
+//							if (a>=0) {
+//								key.setLevel(a);
+//								edit.setModel(edit.getModel()); //update
+//							}
+//						}
+//						if (edit.getValueAt(row, 0).equals("usage")) {
+//							int a = Dialogs.showSelectDialog("Select Usage", "Please select key usage", OSDXKeyObject.usage_name);
+//							if (a>=0) {
+//								key.setUsage(a);
+//								edit.setModel(edit.getModel()); //update
+//							}
+//						}
+//						if (edit.getValueAt(row, 0).equals("parentkeyid")) {
+//							Vector<OSDXKeyObject> keys = currentKeyStore.getAllSigningKeys(); 
+//							if (keys.size()>0) {
+//								Vector<String> keyids = new Vector<String>();
+//								for (OSDXKeyObject k: keys) {
+//									keyids.add(k.getKeyID());
+//								}
+//								int a = Dialogs.showSelectDialog("Select parent key id", "Please select parent key id", keyids);
+//								if (a>=0) {
+//									key.setParentKey(keys.get(a));
+//									edit.setModel(edit.getModel()); //update
+//								}
+//							}
+//						}
+//						
+//					}
+//					
+//				}
+//			}
+//		});
+//		p.add(new JScrollPane(edit), BorderLayout.CENTER);
+//		
+//		JPanel pb = new JPanel();
+//		p.add(pb,BorderLayout.SOUTH);
+//		pb.setLayout(new FlowLayout(FlowLayout.LEFT));
+//		
+//		JButton addID = new JButton("add identity");
+//		addID.setPreferredSize(new Dimension(150,25));
+//		addID.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				try {
+//					Identity id = Identity.newEmptyIdentity();
+//					boolean ok = showIdentityEditDialog(id, true);
+//					if (ok) {
+//						key.addIdentity(id);
+//						edit.setModel(new KeyTableModel(key));
+//						fitAllColumnWidth(edit);
+//						edit.validate();
+//					}
+//				} catch (Exception e1) {
+//					e1.printStackTrace();
+//				}
+//			}
+//		});
+//		pb.add(addID);
+//		
+//		JButton removeID = new JButton("remove identity");
+//		removeID.setPreferredSize(new Dimension(150,25));
+//		removeID.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				try {
+//					int[] sel = edit.getSelectedRows();
+//					if (sel==null) Dialogs.showMessage("Sorry, no identities selected.");
+//					
+//					Vector<Identity> ids = new Vector<Identity>(); 
+//					for (int i=0;i<sel.length;i++) {
+//						String name = (String)edit.getModel().getValueAt(sel[i],0); 
+//						if (name.startsWith("identity")) {
+//							int no = Integer.parseInt(name.substring(9))-1;
+//							ids.add(key.getIdentities().get(no));
+//							
+//						}
+//					}
+//					if (ids.size()>0) {
+//						String txt = "Are you sure you want to remove the following id(s)?";
+//						for (Identity id : ids) txt += "\n"+id.getEmail();
+//						int a = Dialogs.showYES_NO_Dialog("Confirm removal",txt);
+//						if (a==Dialogs.YES) {
+//							for (Identity id : ids)
+//								key.removeIdentity(id);
+//							edit.setModel(new KeyTableModel(key));
+//							fitAllColumnWidth(edit);
+//							edit.validate();
+//						}
+//					} else {
+//						Dialogs.showMessage("Sorry, no identities selected.");
+//					}
+//				} catch (Exception e1) {
+//					e1.printStackTrace();
+//				}
+//			}
+//		});
+//		pb.add(removeID);
+//		
+//		
+//		JPanel ps = new JPanel();
+//		ps.setLayout(new FlowLayout(FlowLayout.RIGHT));
+//		JButton ok = new JButton("ok");
+//		ok.setPreferredSize(new Dimension(150,25));
+//		ok.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				isOK[0] = true;
+//				d.dispose();
+//			}
+//		});
+//		ps.add(ok);
+//		
+//		
+//		d.setLayout(new BorderLayout());
+//		
+//		d.setSize(700, 400);
+//		d.add(p, BorderLayout.CENTER);
+//		d.add(ps, BorderLayout.SOUTH);
+//		d.setModal(true);
+//		
+//		Helper.centerMe(d, null);
+//		
+//		d.setVisible(true);
+//		
+//		return isOK[0];
+//	}
 	
 	private boolean showIdentityEditDialog(Identity id, boolean canCancel) {
 		final JDialog d = new JDialog(instance);
@@ -684,6 +1164,11 @@ public class SecurityMainFrame extends JFrame {
 		JTable edit = new JTable();
 		edit.setModel(new IdentityTableModel(id));
 		fitAllColumnWidth(edit);
+		edit.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		TableColumn column = edit.getColumnModel().getColumn(0);
+		column.setPreferredWidth(100);
+		column.setMaxWidth(100);
+		
 		p.add(new JScrollPane(edit), BorderLayout.CENTER);
 			
 		JPanel ps = new JPanel();
@@ -754,21 +1239,19 @@ public class SecurityMainFrame extends JFrame {
 			}
 		}
 		currentKeyStore = null;
-		initUICurrentKeyStore();
+		updateUI();
 	}
 	
-	public void generateKeyPair(boolean master) {
+	public void generateMasterKeyPair() {
 		if (currentKeyStore!=null) {
 			try {
 				AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
 				OSDXKeyObject k = OSDXKeyObject.fromKeyPair(kp);
-				boolean ok = showKeyEditDialog(k, true);
-				if (ok) {
-					currentKeyStore.addKey(k);
-					tKeysIDs.setModel(tKeysIDs.getModel()); //update
-				}
+				k.setUsage(OSDXKeyObject.USAGE_SIGN);
+				k.setLevel(OSDXKeyObject.LEVEL_MASTER);
+				currentKeyStore.addKey(k);
+				updateUI();
 				releaseUILock();
-				initUICurrentKeyStore();
 			} catch (Exception ex) {
 				releaseUILock();
 				Dialogs.showMessage("ERROR: could not generate new keypair.");
@@ -776,6 +1259,61 @@ public class SecurityMainFrame extends JFrame {
 			}
 		}
 	}
+	
+	public void generateMasterKeySet() {
+		if (currentKeyStore!=null) {
+			boolean ok = false;
+			final Identity id;
+			try {
+				id = Identity.newEmptyIdentity();
+				ok = showIdentityEditDialog(id, true);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if (!ok) return;
+			
+			final JDialog wait = Dialogs.getWaitDialog("Generating new MASTER KEY, REVOKE KEY, SUB KEY set,\n please wait ...");
+			Thread t = new Thread() {
+				public void run() {
+					try {
+						AsymmetricKeyPair masterkp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
+						AsymmetricKeyPair revokekp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
+						AsymmetricKeyPair subkp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
+						
+						OSDXKeyObject masterkey = OSDXKeyObject.fromKeyPair(masterkp);
+						masterkey.setLevel(OSDXKeyObject.LEVEL_MASTER);
+						masterkey.setUsage(OSDXKeyObject.USAGE_SIGN);
+						
+						OSDXKeyObject revokekey = OSDXKeyObject.fromKeyPair(revokekp);
+						revokekey.setLevel(OSDXKeyObject.LEVEL_REVOKE);
+						revokekey.setUsage(OSDXKeyObject.USAGE_SIGN);
+						revokekey.setParentKey(masterkey);
+						
+						OSDXKeyObject subkey = OSDXKeyObject.fromKeyPair(subkp);
+						subkey.setLevel(OSDXKeyObject.LEVEL_SUB);
+						subkey.setUsage(OSDXKeyObject.USAGE_SIGN);
+						subkey.setParentKey(masterkey);
+						
+						currentKeyStore.addKey(masterkey);
+						currentKeyStore.addKey(revokekey);
+						currentKeyStore.addKey(subkey);
+						
+						wait.dispose();
+						releaseUILock();
+						updateUI();
+					} catch (Exception ex) {
+						releaseUILock();
+						Dialogs.showMessage("ERROR: could not generate new keypair.");
+						ex.printStackTrace();
+					}
+				}
+			};
+			t.start();
+			wait.setVisible(true);
+			
+		}
+	}
+
 	
 	public boolean openKeystore() {
 		closeCurrentStore();
@@ -818,8 +1356,8 @@ public class SecurityMainFrame extends JFrame {
 		File f = Dialogs.chooseSaveFile("Select keystore filename", lastDir, "mykeystore.xml");
 		if (f!=null) {
 			try {
-				currentKeyStore = KeyApprovingStore.createNewKeyApprovingStore(f);
-				initUICurrentKeyStore();
+				currentKeyStore = KeyApprovingStore.createNewKeyApprovingStore(f, messageHandler);
+				updateUI();
 			} catch (Exception e) {
 				Dialogs.showMessage("ERROR: could not create keystore in file "+f.getAbsolutePath());
 				e.printStackTrace();
@@ -899,154 +1437,157 @@ public class SecurityMainFrame extends JFrame {
 		s.setVisible(true);
 	}
 	
-	class KeyTableModel extends DefaultTableModel {
-	
-		private String[] header = new String[] {"name","value"};
-		private Vector<String> rows = new Vector<String>();
-		
-		private OSDXKeyObject key;
-		private Vector<Identity> ids;
-		private Vector<DataSourceStep> datapath;
-		private int startIds = 0;
-		private int startDataPath = 0;
-		
-		public KeyTableModel(OSDXKeyObject key) {
-			this.key = key;
-			ids = key.getIdentities();
-			datapath = key.getDatapath();
-			
-			rows = new Vector<String>();
-			rows.add("id");
-			rows.add("level");
-			rows.add("usage");
-			rows.add("parentkeyid");
-			rows.add("authoritativekeyserver");
-			startIds = rows.size();
-			for (int i=0;i<ids.size();i++) {
-				rows.add("identity "+(i+1));
-			}
-			startDataPath = rows.size();
-			for (int i=0;i<datapath.size();i++) {
-				rows.add("datapath "+(i+1));
-			}
-			
-		}
-		
- 		public Class<?> getColumnClass(int columnIndex) {
-			return String.class;
-		}
-	
-		public int getColumnCount() {
-			return header.length;
-		}
-	
-		public String getColumnName(int columnIndex) {
-			return header[columnIndex];
-		}
-	
-		public int getRowCount() {
-			if (rows==null) return 0;
-			return rows.size();
-		}
-	
-		public Object getValueAt(int rowIndex, int columnIndex) {
-			if (columnIndex==0) {
-				return rows.get(rowIndex);
-			}
-			if (rowIndex==0)
-				return key.getKeyID();
-			else if (rowIndex==1) {
-				return key.getLevelName();
-			}
-			else if (rowIndex==2)
-				return key.getUsageName();
-			else if (rowIndex==3)
-				return key.getParentKeyID();
-			else if (rowIndex==4)
-				return key.getAuthoritativekeyserver();
-			else if (rowIndex>=startIds && rowIndex<startIds+ids.size())
-				return ids.get(rowIndex-startIds).getEmail();
-			else if (rowIndex>=startDataPath && rowIndex<startDataPath+datapath.size()) {
-				DataSourceStep s = datapath.get(rowIndex-startDataPath);
-				return s.getDataSource()+" at "+s.getDataInsertDatetimeString();
-			}
-			return null;
-		}
-	
-		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			if (columnIndex==1) {
-				if (rowIndex == 3) return true;
-			}
-			return false;
-		}
-	
-		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-			if (columnIndex==1) {
-				if (rowIndex == 3) {
-					key.setParentKeyID((String)aValue);
-				}
-			}
-		}
-	}
-	
-	class KeysAndIdentitiesTableModel extends DefaultTableModel {
-		
-		private String[] header = new String[] {"key id","level","usage","identities", "parent key id"};
-		private Vector<OSDXKeyObject> keys;
-		
-		public KeysAndIdentitiesTableModel(Vector<OSDXKeyObject> keys) {
-			this.keys = keys;
-		}
-		
- 		public Class<?> getColumnClass(int columnIndex) {
-			return String.class;
-		}
-	
-		public int getColumnCount() {
-			return header.length;
-		}
-	
-		public String getColumnName(int columnIndex) {
-			return header[columnIndex];
-		}
-	
-		public int getRowCount() {
-			if (keys==null) return 0;
-			return keys.size();
-		}
-	
-		public Object getValueAt(int rowIndex, int columnIndex) {
-			OSDXKeyObject k = keys.get(rowIndex);
-			if (columnIndex==0)
-				return k.getKeyID();
-			else if (columnIndex==1)
-				return k.getLevelName();
-			else if (columnIndex==2)
-				return k.getUsageName();
-			else if (columnIndex==3) {
-				String ids = null;
-				for (Identity id : k.getIdentities()) { 
-					if (ids==null) ids = id.getEmail();
-					else ids += ", "+id.getEmail();
-				}
-				return ids;
-			} else if (columnIndex==4) {
-				String p = k.getParentKeyID();
-				if (p==null || p.length()==0) return "[no parent]";
-				return p;
-			}
-			
-			return null;
-		}
-	
-		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			return false;
-		}
-	
-		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-			//do nothing
-		}
-	}
+//	class KeyTableModel extends DefaultTableModel {
+//	
+//		private String[] header = new String[] {"name","value"};
+//		private Vector<String> rows = new Vector<String>();
+//		
+//		private OSDXKeyObject key;
+//		private Vector<Identity> ids;
+//		private Vector<DataSourceStep> datapath;
+//		private int startIds = 0;
+//		private int startDataPath = 0;
+//		
+//		public KeyTableModel(OSDXKeyObject key) {
+//			this.key = key;
+//			ids = key.getIdentities();
+//			datapath = key.getDatapath();
+//			
+//			rows = new Vector<String>();
+//			rows.add("id");
+//			rows.add("level");
+//			rows.add("usage");
+//			rows.add("parentkeyid");
+//			rows.add("authoritativekeyserver");
+//			startIds = rows.size();
+//			for (int i=0;i<ids.size();i++) {
+//				rows.add("identity "+(i+1));
+//			}
+//			startDataPath = rows.size();
+//			for (int i=0;i<datapath.size();i++) {
+//				rows.add("datapath "+(i+1));
+//			}
+//			
+//		}
+//		
+// 		public Class<?> getColumnClass(int columnIndex) {
+//			return String.class;
+//		}
+//	
+//		public int getColumnCount() {
+//			return header.length;
+//		}
+//	
+//		public String getColumnName(int columnIndex) {
+//			return header[columnIndex];
+//		}
+//	
+//		public int getRowCount() {
+//			if (rows==null) return 0;
+//			return rows.size();
+//		}
+//	
+//		public Object getValueAt(int rowIndex, int columnIndex) {
+//			if (columnIndex==0) {
+//				return rows.get(rowIndex);
+//			}
+//			if (rowIndex==0)
+//				return key.getKeyID();
+//			else if (rowIndex==1) {
+//				return key.getLevelName();
+//			}
+//			else if (rowIndex==2)
+//				return key.getUsageName();
+//			else if (rowIndex==3)
+//				return key.getParentKeyID();
+//			else if (rowIndex==4)
+//				return key.getAuthoritativekeyserver();
+//			else if (rowIndex>=startIds && rowIndex<startIds+ids.size())
+//				return ids.get(rowIndex-startIds).getEmail();
+//			else if (rowIndex>=startDataPath && rowIndex<startDataPath+datapath.size()) {
+//				DataSourceStep s = datapath.get(rowIndex-startDataPath);
+//				return s.getDataSource()+" at "+s.getDataInsertDatetimeString();
+//			}
+//			return null;
+//		}
+//	
+//		public boolean isCellEditable(int rowIndex, int columnIndex) {
+//			if (columnIndex==1) {
+//				if (rowIndex == 3) return true;
+//			}
+//			return false;
+//		}
+//	
+//		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+//			if (columnIndex==1) {
+//				if (rowIndex == 3) {
+//					key.setParentKeyID((String)aValue);
+//				}
+//			}
+//		}
+//		
+//		
+//		
+//	}
+//	
+//	class KeysAndIdentitiesTableModel extends DefaultTableModel {
+//		
+//		private String[] header = new String[] {"key id","level","usage","identities", "parent key id"};
+//		private Vector<OSDXKeyObject> keys;
+//		
+//		public KeysAndIdentitiesTableModel(Vector<OSDXKeyObject> keys) {
+//			this.keys = keys;
+//		}
+//		
+// 		public Class<?> getColumnClass(int columnIndex) {
+//			return String.class;
+//		}
+//	
+//		public int getColumnCount() {
+//			return header.length;
+//		}
+//	
+//		public String getColumnName(int columnIndex) {
+//			return header[columnIndex];
+//		}
+//	
+//		public int getRowCount() {
+//			if (keys==null) return 0;
+//			return keys.size();
+//		}
+//	
+//		public Object getValueAt(int rowIndex, int columnIndex) {
+//			OSDXKeyObject k = keys.get(rowIndex);
+//			if (columnIndex==0)
+//				return k.getKeyID();
+//			else if (columnIndex==1)
+//				return k.getLevelName();
+//			else if (columnIndex==2)
+//				return k.getUsageName();
+//			else if (columnIndex==3) {
+//				String ids = null;
+//				for (Identity id : k.getIdentities()) { 
+//					if (ids==null) ids = id.getEmail();
+//					else ids += ", "+id.getEmail();
+//				}
+//				return ids;
+//			} else if (columnIndex==4) {
+//				String p = k.getParentKeyID();
+//				if (p==null || p.length()==0) return "[no parent]";
+//				return p;
+//			}
+//			
+//			return null;
+//		}
+//	
+//		public boolean isCellEditable(int rowIndex, int columnIndex) {
+//			return false;
+//		}
+//	
+//		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+//			//do nothing
+//		}
+//	}
 	
 	class IdentityTableModel extends DefaultTableModel {
 		
@@ -1066,6 +1607,7 @@ public class SecurityMainFrame extends JFrame {
 			rows.add("phone");
 			rows.add("country");
 			rows.add("region");
+			rows.add("city");
 			rows.add("postcode");
 			rows.add("company");
 			rows.add("unit");
@@ -1115,25 +1657,27 @@ public class SecurityMainFrame extends JFrame {
 			else if (rowIndex==4)
 				return id.getRegion();
 			else if (rowIndex==5)
-				return id.getPostcode();
+				return id.getCity();
 			else if (rowIndex==6)
-				return id.getCompany();
+				return id.getPostcode();
 			else if (rowIndex==7)
-				return id.getUnit();
+				return id.getCompany();
 			else if (rowIndex==8)
-				return id.getSubunit();
+				return id.getUnit();
 			else if (rowIndex==9)
-				return id.getFunction();
+				return id.getSubunit();
 			else if (rowIndex==10)
-				return id.getSurname();
+				return id.getFunction();
 			else if (rowIndex==11)
-				return id.getMiddlename();
+				return id.getSurname();
 			else if (rowIndex==12)
-				return id.getName();
+				return id.getMiddlename();
 			else if (rowIndex==13)
+				return id.getName();
+			else if (rowIndex==14)
 				return id.getNote();
-			else if (rowIndex>=14 && rowIndex<14+datapath.size()) {
-				DataSourceStep s = datapath.get(rowIndex-14);
+			else if (rowIndex>=15 && rowIndex<15+datapath.size()) {
+				DataSourceStep s = datapath.get(rowIndex-15);
 				return s.getDataSource()+" at "+s.getDataInsertDatetimeString();
 			}
 			return null;
@@ -1147,38 +1691,26 @@ public class SecurityMainFrame extends JFrame {
 	
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			if (columnIndex==0) return;
-			
 			String s = (String)aValue;
-			if (rowIndex==0)
-				id.setEmail(s);
-			else if (rowIndex==1)
-				id.setMnemonic(s);
-			else if (rowIndex==2)
-				id.setPhone(s);
-			else if (rowIndex==3)
-				id.setCountry(s);
-			else if (rowIndex==4)
-				id.setRegion(s);
-			else if (rowIndex==5)
-				id.setPostcode(s);
-			else if (rowIndex==6)
-				id.setCompany(s);
-			else if (rowIndex==7)
-				id.setUnit(s);
-			else if (rowIndex==8)
-				id.setSubunit(s);
-			else if (rowIndex==9)
-				id.setFunction(s);
-			else if (rowIndex==10)
-				id.setSurname(s);
-			else if (rowIndex==11)
-				id.setMiddlename(s);
-			else if (rowIndex==12)
-				id.setName(s);
-			else if (rowIndex==13)
-				id.setNote(s);
+			if      (rowIndex== 0) id.setEmail(s);
+			else if (rowIndex== 1) id.setMnemonic(s);
+			else if (rowIndex== 2) id.setPhone(s);
+			else if (rowIndex== 3) id.setCountry(s);
+			else if (rowIndex== 4) id.setRegion(s);
+			else if (rowIndex== 5) id.setCity(s);
+			else if (rowIndex== 6) id.setPostcode(s);
+			else if (rowIndex== 7) id.setCompany(s);
+			else if (rowIndex== 8) id.setUnit(s);
+			else if (rowIndex== 9) id.setSubunit(s);
+			else if (rowIndex==10) id.setFunction(s);
+			else if (rowIndex==11) id.setSurname(s);
+			else if (rowIndex==12) id.setMiddlename(s);
+			else if (rowIndex==13) id.setName(s);
+			else if (rowIndex==14) id.setNote(s);
 		}
 	}
+
+
 	
 }
 
