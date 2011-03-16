@@ -103,6 +103,8 @@
 			</knownkeys>
 			<sha1localproof>akakakak</sha1localproof>
 		</keyserver>
+		
+		<sha1localproof>akakakak</sha1localproof>
 	</defaultkeyservers>
 	
 	<knownapprovedkeys>
