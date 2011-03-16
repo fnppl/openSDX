@@ -435,7 +435,7 @@ public class SecurityMainFrame extends JFrame {
 		final Vector<Identity> ids = key.getIdentities();
 		if (ids.size()>0) {
 			ActionListener editRemoveListener = new ActionListener() {
-				@Override
+				
 				public void actionPerformed(ActionEvent e) {
 					String cmd = e.getActionCommand();
 					if (cmd.indexOf(":")<=0) return;
@@ -696,7 +696,7 @@ public class SecurityMainFrame extends JFrame {
 		
 		head.setHorizontalAlignment(JButton.LEFT);
 		head.addActionListener(new ActionListener() {
-			@Override
+			
 			public void actionPerformed(ActionEvent e) {
 				if (content.isVisible()) {
 					props.put(keyID,"NOT VISIBLE");
@@ -756,7 +756,7 @@ public class SecurityMainFrame extends JFrame {
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JButton bu = new JButton("sign file");
 		bu.addActionListener(new ActionListener() {
-			@Override
+			
 			public void actionPerformed(ActionEvent e) {
 				File f = Dialogs.chooseOpenFile("Please select file for signing", lastDir, "");
 				if (f!=null && f.exists()) {
