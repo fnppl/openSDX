@@ -51,6 +51,7 @@ import java.io.*;
 import java.util.*;
 
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -76,7 +77,9 @@ public class SecurityMainFrame extends JFrame {
 //	private JTable tKeylogs;
 	
 	private HashMap<String, String> props = new HashMap<String, String>(); //GUI layout properties
-	
+	private ImageIcon iconUp;
+	private ImageIcon iconDown;
+	private ImageIcon iconRemove;
 	
 	private static SecurityMainFrame instance = null;
 	public static SecurityMainFrame getInstance() {
@@ -95,6 +98,58 @@ public class SecurityMainFrame extends JFrame {
 			}
 		});
 		setSize(1024, 768);
+		initIcons();
+	}
+	
+	private void initIcons() {
+		int w = 20;
+		int h = 14;
+		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = img.createGraphics();
+		AlphaComposite clear = AlphaComposite.getInstance(AlphaComposite.CLEAR, 1.0F);
+		AlphaComposite full = AlphaComposite.getInstance(AlphaComposite.DST_OVER, 1.0F);
+	    g.setComposite(clear);
+	    g.fillRect(0,0,w,h);
+	    g.setComposite(full);
+	    g.setColor(Color.BLACK);
+	    
+	    int s = 4;
+	    int posP = h*6/10;
+	    int[] xPoints = new int[] {w/2, w   , w/2+s, w/2+s, w/2-s, w/2-s, 0   };
+	    int[] yPoints = new int[] {h  , posP, posP , 0    , 0    , posP , posP};
+	    g.fillPolygon(xPoints, yPoints, xPoints.length);
+	    img.flush();
+	    iconDown = new ImageIcon(img);
+	    
+
+	    posP = h-posP;
+	    img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		g = img.createGraphics();
+	    g.setComposite(clear);
+	    g.fillRect(0,0,w,h);
+	    g.setComposite(full);
+	    g.setColor(Color.BLACK);
+	    
+	    xPoints = new int[] {w/2, w   , w/2+s, w/2+s, w/2-s, w/2-s, 0   };
+	    yPoints = new int[] {0  , posP, posP , h    , h    , posP , posP};
+	    g.fillPolygon(xPoints, yPoints, xPoints.length);
+	    img.flush();
+	    iconUp = new ImageIcon(img);
+	    
+	    posP = h-posP;
+	    img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		g = img.createGraphics();
+	    g.setComposite(clear);
+	    g.fillRect(0,0,w,h);
+	    g.setComposite(full);
+	    g.setColor(Color.RED);
+	    
+
+	    xPoints = new int[] {0,s,w/2,w-s,w,  w/2+s/2,  w,w-s,w/2,s,0,   w/2-s/2};
+	    yPoints = new int[] {0,0,h/2-s/2,0,0,    h/2,    h,h,h/2+s/2,h,h,   h/2};
+	    g.fillPolygon(xPoints, yPoints, xPoints.length);
+	    img.flush();
+	    iconRemove = new ImageIcon(img);
 	}
 	
 	public void quit() {
@@ -522,10 +577,12 @@ public class SecurityMainFrame extends JFrame {
 	c.gridwidth = 1;
 	a.add(b,c);
 	
-	b = new JButton("remove");
+	//b = new JButton("remove");
+	b = new JButton(iconRemove);
 	b.setActionCommand("remove:"+i);
+	b.setToolTipText("remove identitiy");
 	b.addActionListener(al);
-	b.setPreferredSize(new Dimension(100, 20));
+	b.setPreferredSize(new Dimension(30, 20));
 	c.weightx = 0;
 	c.fill = GridBagConstraints.NONE;
 	c.gridx = 3;
@@ -534,10 +591,11 @@ public class SecurityMainFrame extends JFrame {
 	a.add(b,c);
 	
 	if (i!=0) {
-		b = new JButton("up");
+		//b = new JButton("up");
+		b = new JButton(iconUp);
 		b.setActionCommand("up:"+i);
 		b.addActionListener(al);
-		b.setPreferredSize(new Dimension(80, 20));
+		b.setPreferredSize(new Dimension(30, 20));
 		c.weightx = 0;
 		c.fill = GridBagConstraints.NONE;
 		c.gridx = 4;
@@ -546,10 +604,11 @@ public class SecurityMainFrame extends JFrame {
 		a.add(b,c);
 	}
 	if (i<maxI) {
-		b = new JButton("down");
+		//b = new JButton("down");
+		b = new JButton(iconDown);
 		b.setActionCommand("down:"+i);
 		b.addActionListener(al);
-		b.setPreferredSize(new Dimension(80, 20));
+		b.setPreferredSize(new Dimension(30, 20));
 		c.weightx = 0;
 		c.fill = GridBagConstraints.NONE;
 		c.gridx = 5;
