@@ -65,12 +65,14 @@ public class OSDXKeyServerClient {
 		this.port = port;
 	}
 	
-	public void connect() throws Exception {
+	public boolean connect() throws Exception {
 		socket = new Socket(host, port);
 		if (socket.isConnected()) {
 			System.out.println("Connection established.");
+			return true;
 		} else {
 			System.out.println("ERROR: Connection to server could NOT be established!");
+			return false;
 		}
 	}
 	
@@ -79,9 +81,12 @@ public class OSDXKeyServerClient {
 			socket.close();
 	}
 	public OSDXKeyServerClientResponse send(OSDXKeyServerClientRequest req) throws Exception {
-		connect();
+		if (!connect()) {
+			return null;
+		}
+		
 		System.out.println("OSDXKeyServerClient | start "+req.getURI());
-
+		//req.toOutput(System.out);
 		req.send(socket);
 		
 		//processing response
@@ -199,9 +204,10 @@ public class OSDXKeyServerClient {
 	//   1. Ich, als user, möchte auf dem keyserver meinen MASTER-pubkey ablegen können
 	//   includes  2. Ich, als user, möchte, daß der keyserver meinen MASTER-pubkey per email-verifikation (der haupt-identity) akzeptiert (sonst ist der status pending oder so -> erst, wenn die email mit irgendeinem token-link drin aktiviert wurde, wird der pubkey akzeptiert)
 	public boolean putMasterKey(PublicKey masterkey, Identity id) throws Exception {
+		
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutMasterKey(host, masterkey, id);
 		OSDXKeyServerClientResponse resp = send(req);
-
+		if (resp==null || resp.status == null) return false;
 		if (resp.status.endsWith("OK")) {
 			return true;
 		}

@@ -167,6 +167,7 @@ public class Dialogs {
 //			select[i] = values.get(i);
 //		}
 		Object ans = (Object)JOptionPane.showInputDialog(null,message,title,JOptionPane.QUESTION_MESSAGE, null, os, os[0]);
+		if (ans==null) return -1;
 		return values.indexOf(ans);
 //		
 //		if (ans != null) {

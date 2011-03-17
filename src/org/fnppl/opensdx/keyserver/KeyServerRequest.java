@@ -163,16 +163,20 @@ public class KeyServerRequest {
 		}
 		
 		String s = new String(bout.toByteArray(), "ASCII");//alles ascii
-		StringTokenizer st = new StringTokenizer(s, "=");
-		while(st.hasMoreTokens()) {
-			String pn = URLDecoder.decode(st.nextToken(), "UTF-8");
-			String pv = URLDecoder.decode(st.nextToken(), "UTF-8");
 		
-			if(pn.equalsIgnoreCase(XMLDOCPARAMNAME)) {
-				re.xml = Document.fromStream(new ByteArrayInputStream(pv.getBytes("UTF-8")));
-			}
-			else {
-				re.parameters.put(pn, pv);
+		StringTokenizer trenn = new StringTokenizer(s, "&");
+		while (trenn.hasMoreTokens()) {
+			StringTokenizer st = new StringTokenizer(trenn.nextToken(), "=");
+			while(st.hasMoreTokens()) {
+				String pn = URLDecoder.decode(st.nextToken(), "UTF-8");
+				String pv = URLDecoder.decode(st.nextToken(), "UTF-8");
+				//System.out.println("***"+pn+"::::"+pv+"::::");
+				if(pn.equalsIgnoreCase(XMLDOCPARAMNAME)) {
+					re.xml = Document.fromStream(new ByteArrayInputStream(pv.getBytes("UTF-8")));
+				}
+				else {
+					re.parameters.put(pn, pv);
+				}
 			}
 		}
 	}

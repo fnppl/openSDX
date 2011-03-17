@@ -72,6 +72,7 @@ public class OSDXKeyServerClientRequest {
 				}
 			}
 		}
+		ret.append(" ");
 		ret.append(version);
 		return ret.toString();
 	}
@@ -83,7 +84,8 @@ public class OSDXKeyServerClientRequest {
 		return ret.toString();
 	}
 	
-	public void toOutput(BufferedOutputStream out) throws Exception {
+	//public void toOutput(BufferedOutputStream out) throws Exception {
+	public void toOutput(OutputStream out) throws Exception {
 		//write it to the outputstream...
 		if(contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
 			if (contentElement != null) {
@@ -94,12 +96,10 @@ public class OSDXKeyServerClientRequest {
 				toSend.append(URLEncoder.encode(xml.toString(), "UTF-8"));
 				Iterator<String> its = parameters.keySet().iterator();
 				while(its.hasNext()) {
+					toSend.append("&");
 					String pn = its.next();
 					String pv = parameters.get(pn);
 					toSend.append(URLEncoder.encode(pn, "UTF-8")+"="+URLEncoder.encode(pv, "UTF-8"));
-					if(its.hasNext()) {
-						toSend.append("&");
-					}
 				}
 				
 				byte[] content = toSend.toString().getBytes("ASCII");
@@ -160,7 +160,6 @@ public class OSDXKeyServerClientRequest {
 		}
 		OutputStream out = socket.getOutputStream();
 		BufferedOutputStream bout = new BufferedOutputStream(out);
-	//	toOutput(System.out);
 		toOutput(bout);
 		bout.flush();	
 	}
@@ -232,10 +231,12 @@ public class OSDXKeyServerClientRequest {
 	
 		return req;
 	}
+	
 	public static OSDXKeyServerClientRequest getRequestPutMasterKey(String host, PublicKey masterkey, Identity id) throws Exception {
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
 		req.setURI(host, "/masterkey");
 		req.togglePOSTMode();
+		
 		req.addRequestParam("KeyID", masterkey.getKeyID());		
 		req.addRequestParam("Identity", id.getEmail());
 	

@@ -135,6 +135,9 @@ public class KeyServerMain {
 		}
 		keystore.setSigningKey(keyServerSigningKey);
 		
+		Document d = Document.buildDocument(keyServerSigningKey.getSimplePubKeyElement());
+		System.out.println("KeyServerSigningKey:");
+		d.output(System.out);
 	}
 	
 	private void updateCache(OSDXKeyObject k, KeyLog l) {

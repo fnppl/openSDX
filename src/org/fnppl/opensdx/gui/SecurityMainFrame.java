@@ -58,6 +58,7 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+import org.fnppl.opensdx.keyserver.OSDXKeyServerClient;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
@@ -80,6 +81,7 @@ public class SecurityMainFrame extends JFrame {
 	
 	
 	private HashMap<String, String> props = new HashMap<String, String>(); //GUI layout properties
+	
 	private ImageIcon iconUp;
 	private ImageIcon iconDown;
 	private ImageIcon iconRemove;
@@ -512,6 +514,15 @@ public class SecurityMainFrame extends JFrame {
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				generateSubKey(key);
+			}
+		});
+		b.add(bu);
+		
+		bu = new JButton("upload to KeyServer");
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				uploadMasterKeyToKeyServer(key);
 			}
 		});
 		b.add(bu);
@@ -1178,6 +1189,39 @@ public class SecurityMainFrame extends JFrame {
 	    	releaseUILock();
 			updateUI();
 	    }
+	}
+	
+	private boolean uploadMasterKeyToKeyServer(OSDXKeyObject key) {
+		if (keyservers == null) {
+			Dialogs.showMessage("Sorry, no keyservers found.");
+			return false;
+		}
+		Vector<String> keyservernames = new Vector<String>();
+		for (KeyServerIdentity id : keyservers) {
+			keyservernames.add(id.getHost()+":"+id.getPort());
+		}
+		int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer for uploading MASTER Key.", keyservernames);
+		if (ans>=0) {
+			return uploadMasterKeyToKeyServer(key, keyservers.get(ans));
+		}
+		return false;
+	}
+
+	private boolean uploadMasterKeyToKeyServer(OSDXKeyObject key, KeyServerIdentity keyserver) {
+		OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
+		Vector<Identity> ids = key.getIdentities();
+		if (ids!=null && ids.size()!=0) {
+			try {
+				boolean ok = client.putMasterKey(key.getPubKey(), ids.get(0));
+				Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
+				return ok;
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		} else {
+			Dialogs.showMessage("Upload failed. No identity found.");
+		}
+		return false;
 	}
 	
 	private boolean showIdentityEditDialog(Identity id, boolean canCancel) {
