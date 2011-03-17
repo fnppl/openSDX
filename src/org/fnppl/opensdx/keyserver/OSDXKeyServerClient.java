@@ -147,6 +147,7 @@ public class OSDXKeyServerClient {
 	public String[] requestKeyStatus(String keyid) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestKeyStatus(host, keyid);
 		OSDXKeyServerClientResponse resp = send(req);
+		if (resp==null || resp.status == null) return null;
 		
 		Element e = resp.doc.getRootElement();
 		if (!e.getName().equals("keyid_keystatus")) {
@@ -169,6 +170,7 @@ public class OSDXKeyServerClient {
 	public Vector<KeyLog> requestKeyLogs(String keyid) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestKeyLogs(host, keyid);
 		OSDXKeyServerClientResponse resp = send(req);
+		if (resp==null || resp.status == null) return null;
 		
 		Element e = resp.doc.getRootElement();
 		if (!e.getName().equals("keylogs")) {
@@ -208,9 +210,7 @@ public class OSDXKeyServerClient {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutMasterKey(host, masterkey, id);
 		OSDXKeyServerClientResponse resp = send(req);
 		if (resp==null || resp.status == null) return false;
-		if (resp.status.endsWith("OK")) {
-			return true;
-		}
+		if (resp.status.endsWith("OK"))	return true;
 		return false;
 	}
 	
@@ -218,10 +218,8 @@ public class OSDXKeyServerClient {
 	public boolean putRevokeKey(PublicKey revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutRevokeKey(host, revokekey, relatedMasterKey);
 		OSDXKeyServerClientResponse resp = send(req);
-		
-		if (resp.status.endsWith("OK")) {
-			return true;
-		}
+		if (resp==null || resp.status == null) return false;
+		if (resp.status.endsWith("OK"))	return true;
 		return false;
 	}
 

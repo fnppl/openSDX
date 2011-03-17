@@ -176,6 +176,15 @@ public class KeyApprovingStore {
 		return ret;
 	}
 	
+	public OSDXKeyObject getKey(String keyid) {
+		for (OSDXKeyObject k : keys) {
+			if (k.getParentKeyID().equals(keyid)) {
+				return k;
+			}
+		}
+		return null;
+	}
+	
 	public Vector<OSDXKeyObject> getRevokeKeys(String keyid) {
 		Vector<OSDXKeyObject> ret = new Vector<OSDXKeyObject>();
 		for (OSDXKeyObject k : keys) {

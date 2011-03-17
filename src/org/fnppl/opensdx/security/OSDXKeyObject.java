@@ -532,6 +532,11 @@ public class OSDXKeyObject {
 		parentosdxkeyobject = null;
 	}
 	
+	
+	public void setAuthoritativeKeyServer(String aks) {
+		authoritativekeyserver = aks;
+		unsavedChanges = true;
+	}
 	public boolean hasUnsavedChanges() {
 		if (unsavedChanges) return true;
 		else {

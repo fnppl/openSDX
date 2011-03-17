@@ -48,6 +48,7 @@ package org.fnppl.opensdx.gui;
 
 import java.awt.*;
 import java.io.*;
+import java.security.KeyStore;
 import java.util.*;
 
 import java.awt.event.*;
@@ -631,7 +632,7 @@ public class SecurityMainFrame extends JFrame {
 	}
 	}
 	
-	private Component buildComponentRevokeKey(OSDXKeyObject key) {
+	private Component buildComponentRevokeKey(final OSDXKeyObject key) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 		
@@ -664,17 +665,24 @@ public class SecurityMainFrame extends JFrame {
 
 		JButton head = createHeaderButton("REVOKE Key:      "+key.getKeyID(), key.getKeyID(), content, p, w, h);
 		
-//		JPanel b = new JPanel();
-//		b.setLayout(new FlowLayout(FlowLayout.LEFT));
-//		JButton bu = new JButton("remove");
-//		bu.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				
-//			}
-//		});
-//		b.add(bu);
-//		content.add(b,BorderLayout.SOUTH);
+		JPanel b = new JPanel();
+		b.setLayout(new FlowLayout(FlowLayout.LEFT));
+		JButton bu = new JButton("upload to keyserver");
+		
+		String parent = key.getParentKeyID();
+		if (parent.toLowerCase().endsWith("@local")) {
+			bu.setEnabled(false);
+			bu.setToolTipText("Can only upload if authoritative keyserver of MASTER Key is not LOCAL");
+		}
+		
+		bu.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				uploadRevokeKeyToKeyServer(key);
+			}
+		});
+		b.add(bu);
+		content.add(b,BorderLayout.SOUTH);
 		
 		p.add(head, BorderLayout.NORTH);
 		JScrollPane scrollContent = new JScrollPane(content);
@@ -1206,15 +1214,68 @@ public class SecurityMainFrame extends JFrame {
 		}
 		return false;
 	}
+	
+	private boolean uploadRevokeKeyToKeyServer(OSDXKeyObject key) {
+		String parent = key.getParentKeyID();
+		int iAt = parent.indexOf('@');
+		if (iAt<0 || parent.toLowerCase().endsWith("@local")) {
+			Dialogs.showMessage("Can only upload if authoritative keyserver of MASTER Key is not LOCAL");
+			return false;
+		}
+		if (keyservers==null || keyservers.size()==0) {
+			Dialogs.showMessage("No keyserver available.");
+			return false;
+		}
+		
+		String host = parent.substring(iAt+1).toLowerCase();
+		KeyServerIdentity keyserver = null;
+		for (KeyServerIdentity kid : keyservers) {
+			if (kid.getHost().toLowerCase().equals(host)) {
+				keyserver = kid;
+				break;
+			}
+		}
+		if (keyserver!=null) {
+			try {
+				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the REVOKE Key:\n"+key.getKeyID()+"\nfor MASTER Key: "+parent+"\nto KeyServer: "+keyserver.getHost()+"?\nThis will also change your authoritative keyserver for this key.");
+				if (confirm==Dialogs.YES) {
+					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
+					OSDXKeyObject masterkey = currentKeyStore.getKey(parent);
+					if (!masterkey.isPrivateKeyUnlocked()) masterkey.unlockPrivateKey(messageHandler);
+					boolean ok = client.putRevokeKey(key.getPubKey(), masterkey);
+					key.setAuthoritativeKeyServer(keyserver.getHost());
+					props.put(key.getKeyID(), "VISIBLE");
+					updateUI();
+					Dialogs.showMessage("Upload of REVOKE Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
+					return ok;
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}	
+		}
+		return false;
+	}
 
 	private boolean uploadMasterKeyToKeyServer(OSDXKeyObject key, KeyServerIdentity keyserver) {
-		OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
 		Vector<Identity> ids = key.getIdentities();
 		if (ids!=null && ids.size()!=0) {
 			try {
-				boolean ok = client.putMasterKey(key.getPubKey(), ids.get(0));
-				Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
-				return ok;
+				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"?\nThis will also change your authoritative keyserver for this key.");
+				if (confirm==Dialogs.YES) {
+					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
+					boolean ok = client.putMasterKey(key.getPubKey(), ids.get(0));
+					Vector<OSDXKeyObject> childkeys = currentKeyStore.getRevokeKeys(key.getKeyID());
+					childkeys.addAll(currentKeyStore.getSubKeys(key.getKeyID()));
+					
+					key.setAuthoritativeKeyServer(keyserver.getHost());
+					for (OSDXKeyObject k : childkeys) {
+						k.setParentKey(key);
+					}
+					props.put(key.getKeyID(), "VISIBLE");
+					updateUI();
+					Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
+					return ok;
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
