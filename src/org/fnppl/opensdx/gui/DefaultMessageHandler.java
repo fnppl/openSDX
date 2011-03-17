@@ -17,9 +17,9 @@ public class DefaultMessageHandler implements MessageHandler {
 
 	public OSDXKeyObject requestMasterSigningKey(KeyApprovingStore keystore) throws Exception {
 		OSDXKeyObject signkey = null;
-		Vector<OSDXKeyObject> signoffkeys = keystore.getAllSigningKeys();
+		Vector<OSDXKeyObject> signoffkeys = keystore.getAllSigningMasterKeys();
 		if (signoffkeys.size()==0) {
-			throw new Exception("KeyStore:  No signing keys available");
+			Dialogs.showMessage("Sorry, no masterkeys for signing available.");
 		}
 		
 		Vector<String> keynames = new Vector<String>();
@@ -33,7 +33,7 @@ public class DefaultMessageHandler implements MessageHandler {
 		}
 		
 		
-		int ans = Dialogs.showSelectDialog("Select signing key", "Please select a key to sign all unsigned keypairs and keylogs in keystore", keynames);
+		int ans = Dialogs.showSelectDialog("Select signing key", "Please select a MASTER key to sign all unsigned keypairs and keylogs in keystore", keynames);
 		if (ans >= 0) {
 			signkey = signoffkeys.elementAt(ans); 
 		} else {

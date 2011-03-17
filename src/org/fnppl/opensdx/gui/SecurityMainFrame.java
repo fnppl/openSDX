@@ -69,12 +69,15 @@ public class SecurityMainFrame extends JFrame {
 	private KeyApprovingStore currentKeyStore = null;
 	private MessageHandler messageHandler = new DefaultMessageHandler();
 	
+	private File configFile = new File("src/org/fnppl/opensdx/security/resources/config.xml"); 
+	private Vector<KeyServerIdentity> keyservers = null;
+	private Vector<PublicKey> knownpublickeys = null;
+	
 	private File lastDir = getDefaultDir(); //new File(System.getProperty("user.home"));
 //	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
 	
-//	private JTable tKeysIDs;
-//	private KeysAndIdentitiesTableModel mKeysIDs;
-//	private JTable tKeylogs;
+
+	
 	
 	private HashMap<String, String> props = new HashMap<String, String>(); //GUI layout properties
 	private ImageIcon iconUp;
@@ -98,7 +101,32 @@ public class SecurityMainFrame extends JFrame {
 			}
 		});
 		setSize(1024, 768);
-		initIcons();
+		
+		readConfig();
+	}
+	
+	private void readConfig() {
+		try {
+			Element root = Document.fromFile(configFile).getRootElement();
+			if (root.getChild("defaultkeyservers")!=null) {
+				keyservers = new Vector<KeyServerIdentity>();
+				Vector<Element> v = root.getChild("defaultkeyservers").getChildren("keyserver");
+				for (Element e : v) {
+					keyservers.add(KeyServerIdentity.fromElement(e));
+				}
+			}
+			if (root.getChild("knownapprovedkeys")!=null) {
+				knownpublickeys = new Vector<PublicKey>();
+				Vector<Element> v = root.getChild("knownapprovedkeys").getChildren("pubkey");
+				for (Element e : v) {
+					knownpublickeys.add(PublicKey.fromSimplePubKeyElement(e));
+				}
+			}
+			//TODO check localproofs and signatures 
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 	
 	private void initIcons() {
@@ -319,55 +347,12 @@ public class SecurityMainFrame extends JFrame {
 	}
 	
 	private void buildUi() {
+		initIcons();
 		makeMenuBar();
-		
-		JPanel jp = new JPanel();
-		setContentPane(jp);
-		GridBagLayout gb = new GridBagLayout();		
-		jp.setLayout(gb);
-		
-		
-		//keys and identities
-//		tKeysIDs = new JTable();
-//		tKeysIDs.addMouseListener(new MouseAdapter() {
-//				public void mouseClicked(MouseEvent ev) {
-//					if (ev.getClickCount()>1) {
-//						int row = tKeysIDs.rowAtPoint(ev.getPoint());
-//						int col = tKeysIDs.columnAtPoint(ev.getPoint());
-//						if (row>=0 && row<tKeysIDs.getModel().getRowCount() && col>=0 && col<tKeysIDs.getModel().getColumnCount()) {
-//							showKeyEditDialog(currentKeyStore.getAllKeys().get(row),false);
-//							tKeysIDs.setModel(new KeysAndIdentitiesTableModel(currentKeyStore.getAllKeys()));
-//							fitAllColumnWidth(tKeysIDs);
-//						}
-//					}
-//				}
-//		});
-//		initUICurrentKeyStore();
-		
-//		JPanel pKI = new JPanel();
-//		pKI.setLayout(new BorderLayout());
-//		pKI.setBorder(new TitledBorder("Keys and Identities"));
-//		pKI.add(new JScrollPane(tKeysIDs), BorderLayout.CENTER);
-//
-//
-//		//keylogs
-//		tKeylogs = new JTable();
-//		tKeylogs.setModel(new DefaultTableModel(new String[]{"keylog","test","bla"}, 5));
-//		JPanel pKL = new JPanel();
-//		pKL.setLayout(new BorderLayout());
-//		pKL.setBorder(new TitledBorder("Keylogs"));
-//		pKL.add(new JScrollPane(tKeylogs), BorderLayout.CENTER);
-//		
-//		
-//		
-//		addComponent(jp,gb,pKI,0,0,1,1,1.0,0.5);
-//		
-//		
-		
-		//addComponent(jp,gb,pKL,0,1,1,1,1.0,0.5);
-		
+		updateUI();
 		Helper.centerMe(this, null);
 	}
+	
 	
 	private void updateUI() {
 		
@@ -375,11 +360,7 @@ public class SecurityMainFrame extends JFrame {
 		JScrollPane scroll = new JScrollPane(p);
 		setContentPane(scroll);
 		
-		//GridBagLayout gb = new GridBagLayout();		
-		//jp.setLayout(gb);
-		
 		p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
-		
 		
 		if (currentKeyStore!=null) {
 			Vector<OSDXKeyObject> all = currentKeyStore.getAllKeys();
@@ -394,6 +375,22 @@ public class SecurityMainFrame extends JFrame {
 					y++;
 				}
 			}
+		}
+		if (keyservers!=null) {
+			JPanel pk = new JPanel();
+			pk.setBorder(new TitledBorder("KeyServers:"));
+			pk.setLayout(new BoxLayout(pk, BoxLayout.PAGE_AXIS));
+			for (KeyServerIdentity ksid : keyservers) {
+				pk.add(buildComponentKeyServer(ksid));
+			}
+			p.add(pk);
+		}
+		if (knownpublickeys!=null) {
+			JPanel pk = new JPanel();
+			pk.setBorder(new TitledBorder("Known Public Keys:"));
+			pk.setLayout(new BoxLayout(pk, BoxLayout.PAGE_AXIS));
+			pk.add(buildComponentKnownKeys(knownpublickeys));
+			p.add(pk);
 		}
 		validate();
 	}
@@ -531,6 +528,10 @@ public class SecurityMainFrame extends JFrame {
 	}
 	
 	private void addLabelTextFieldPart(String textLabel, String textValue, JPanel a, GridBagConstraints c, int y) {
+		addLabelTextFieldPart(textLabel, textValue, a, c, y, false);
+	}
+	
+	private JTextField addLabelTextFieldPart(String textLabel, String textValue, JPanel a, GridBagConstraints c, int y, boolean edit) {
 		JLabel l = new JLabel(textLabel);
 		l.setPreferredSize(new Dimension(200,20));
 		c.weightx = 0;
@@ -541,13 +542,14 @@ public class SecurityMainFrame extends JFrame {
 		a.add(l, c);
 		
 		JTextField t = new JTextField(textValue);
-		t.setEditable(false);
+		t.setEditable(edit);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.gridx = 1;
 		c.gridy = y;
 		c.gridwidth = 5;
 		a.add(t,c);
+		return t;
 	}
 	
 	private void addIdentityPart(int i, int maxI, Identity id, JPanel a, GridBagConstraints c, int y, ActionListener al) {
@@ -580,7 +582,6 @@ public class SecurityMainFrame extends JFrame {
 	c.gridwidth = 1;
 	a.add(b,c);
 	
-	//b = new JButton("remove");
 	b = new JButton(iconRemove);
 	b.setActionCommand("remove:"+i);
 	b.setToolTipText("remove identitiy");
@@ -594,7 +595,6 @@ public class SecurityMainFrame extends JFrame {
 	a.add(b,c);
 	
 	if (i!=0) {
-		//b = new JButton("up");
 		b = new JButton(iconUp);
 		b.setActionCommand("up:"+i);
 		b.addActionListener(al);
@@ -607,7 +607,6 @@ public class SecurityMainFrame extends JFrame {
 		a.add(b,c);
 	}
 	if (i<maxI) {
-		//b = new JButton("down");
 		b = new JButton(iconDown);
 		b.setActionCommand("down:"+i);
 		b.addActionListener(al);
@@ -766,6 +765,125 @@ public class SecurityMainFrame extends JFrame {
 		});
 		b.add(bu);
 		content.add(b,BorderLayout.SOUTH);
+		
+		p.add(head, BorderLayout.NORTH);
+		JScrollPane scrollContent = new JScrollPane(content);
+		p.add(scrollContent, BorderLayout.CENTER);
+		content.add(a,BorderLayout.CENTER);
+		
+		return p;
+	}
+	
+	private Component buildComponentKeyServer(final KeyServerIdentity keyserver) {
+		final JPanel p = new JPanel();
+		p.setLayout(new BorderLayout());
+		
+		final JPanel content = new JPanel();
+		content.setLayout(new BorderLayout());
+				
+		JPanel a = new JPanel();
+		int y = 0;
+		GridBagLayout gb = new GridBagLayout();		
+		a.setLayout(gb);
+		
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = GridBagConstraints.FIRST_LINE_START;
+		c.insets = new Insets(5, 5, 0, 0);
+		String host = keyserver.getHost();
+		int port = keyserver.getPort();
+		
+		final JTextField tHost = addLabelTextFieldPart("host:", host, a, c, y,true); y++;
+		final JTextField tPort = addLabelTextFieldPart("port:", ""+port, a, c, y,true); y++;
+		final JButton bu = new JButton("save changes");
+		bu.setEnabled(false);
+		DocumentListener chListen = new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				action();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				action();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				action();
+			}
+			private void action() {
+				if (tHost.getText().equals(keyserver.getHost()) && tPort.getText().equals(""+keyserver.getPort())) {
+					bu.setEnabled(false);
+				} else {
+					bu.setEnabled(true);
+				}
+			}
+		};
+		tHost.getDocument().addDocumentListener(chListen);
+		tPort.getDocument().addDocumentListener(chListen);
+		
+		Vector<PublicKey> keys = keyserver.getKnownKeys();
+		
+		for (int i=0;i<keys.size();i++) {
+			y++;
+			addLabelTextFieldPart("known public key "+(i+1)+":", keys.get(i).getKeyID(), a, c, y);
+		}
+
+		final int w = 600;
+		final int h = y*30 + 80;
+
+		JButton head = createHeaderButton("KeyServer:      "+host, host+":"+port, content, p, w, h);
+		
+		JPanel b = new JPanel();
+		b.setLayout(new FlowLayout(FlowLayout.LEFT));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				keyserver.setHost(tHost.getText());
+				try {
+					int port = Integer.parseInt(tPort.getText());
+					keyserver.setPort(port);
+				} catch (Exception ex) {
+					tPort.setText(""+keyserver.getPort());
+				}
+				props.put(keyserver.getHost()+":"+keyserver.getPort(), "VISIBLE");
+				updateUI();
+			}
+		});
+		
+		b.add(bu);
+		content.add(b,BorderLayout.SOUTH);
+		
+		p.add(head, BorderLayout.NORTH);
+		JScrollPane scrollContent = new JScrollPane(content);
+		p.add(scrollContent, BorderLayout.CENTER);
+		content.add(a,BorderLayout.CENTER);
+		
+		return p;
+	}
+	
+	private Component buildComponentKnownKeys(Vector<PublicKey> keys) {
+		final JPanel p = new JPanel();
+		p.setLayout(new BorderLayout());
+		
+		final JPanel content = new JPanel();
+		content.setLayout(new BorderLayout());
+				
+		JPanel a = new JPanel();
+		int y = -1;
+		GridBagLayout gb = new GridBagLayout();		
+		a.setLayout(gb);
+		
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = GridBagConstraints.FIRST_LINE_START;
+		c.insets = new Insets(5, 5, 0, 0);
+		
+		for (int i=0;i<keys.size();i++) {
+			y++;
+			addLabelTextFieldPart("known public key "+(i+1)+":", keys.get(i).getKeyID(), a, c, y);
+		}
+
+		final int w = 600;
+		final int h = y*30 + 80;
+
+		JButton head = createHeaderButton("known public keys:", "known public keys", content, p, w, h);
 		
 		p.add(head, BorderLayout.NORTH);
 		JScrollPane scrollContent = new JScrollPane(content);
@@ -967,14 +1085,15 @@ public class SecurityMainFrame extends JFrame {
 
 	private void signFile() {
 		if (currentKeyStore!=null) {
-			Vector<OSDXKeyObject> keys = currentKeyStore.getAllSigningKeys(); 
+			Vector<OSDXKeyObject> keys = currentKeyStore.getAllSigningSubKeys(); 
 			if (keys.size()==0) {
-				Dialogs.showMessage("Sorry, no signing keys in keystore");
+				Dialogs.showMessage("Sorry, no subkeys for signing in keystore");
 				return;
 			}
 			Vector<String> keyids = new Vector<String>();
 			for (OSDXKeyObject k: keys) {
-				keyids.add(k.getKeyID());
+				String id = k.getKeyID();
+				keyids.add(id);
 			}
 			File f = Dialogs.chooseOpenFile("Please select file for signing", lastDir, "");
 			if (f!=null) {
@@ -989,6 +1108,8 @@ public class SecurityMainFrame extends JFrame {
 	
 	private void signFile(OSDXKeyObject key, File file) {
 		try {
+			if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
+			
 			File fileout = new File(file.getAbsolutePath()+"_signature.xml");
 			Signature.createSignatureFile(file, fileout, key);
 			if (fileout.exists())
@@ -1058,162 +1179,6 @@ public class SecurityMainFrame extends JFrame {
 			updateUI();
 	    }
 	}
-	
-//	private boolean showKeyEditDialog(final OSDXKeyObject key, boolean canCancel) {
-//		final JDialog d = new JDialog(instance);
-//		d.setTitle("Edit Key");
-//		
-//		final boolean[] isOK = new boolean[] {!canCancel};
-//		
-//		JPanel p = new JPanel();
-//		p.setLayout(new BorderLayout());
-//		p.setBorder(new TitledBorder("Edit Key: "+key.getKeyID()));
-//		
-//		final JTable edit = new JTable();
-//		edit.setModel(new KeyTableModel(key));
-//		fitAllColumnWidth(edit);
-//		
-//		edit.addMouseListener(new MouseAdapter() {
-//			public void mouseClicked(MouseEvent ev) {
-//				if (ev.getClickCount()>1) {
-//					int row = edit.rowAtPoint(ev.getPoint());
-//					int col = edit.columnAtPoint(ev.getPoint());
-//					if (row>=0 && row<edit.getModel().getRowCount() && col>=0 && col<edit.getModel().getColumnCount()) {
-//						if (((String)edit.getValueAt(row, 0)).startsWith("identity")) {
-//							int firstID = row;
-//							while (firstID>0 && ((String)edit.getValueAt(firstID-1, 0)).startsWith("identity")) {
-//								firstID--;
-//							}
-//							Identity id = key.getIdentities().get(row-firstID);
-//							showIdentityEditDialog(id,false);
-//							edit.setModel(new KeyTableModel(key));
-//							fitAllColumnWidth(edit);
-//						}
-//						if (edit.getValueAt(row, 0).equals("level")) {
-//							int a = Dialogs.showSelectDialog("Select Level", "Please select key level", OSDXKeyObject.level_name);
-//							if (a>=0) {
-//								key.setLevel(a);
-//								edit.setModel(edit.getModel()); //update
-//							}
-//						}
-//						if (edit.getValueAt(row, 0).equals("usage")) {
-//							int a = Dialogs.showSelectDialog("Select Usage", "Please select key usage", OSDXKeyObject.usage_name);
-//							if (a>=0) {
-//								key.setUsage(a);
-//								edit.setModel(edit.getModel()); //update
-//							}
-//						}
-//						if (edit.getValueAt(row, 0).equals("parentkeyid")) {
-//							Vector<OSDXKeyObject> keys = currentKeyStore.getAllSigningKeys(); 
-//							if (keys.size()>0) {
-//								Vector<String> keyids = new Vector<String>();
-//								for (OSDXKeyObject k: keys) {
-//									keyids.add(k.getKeyID());
-//								}
-//								int a = Dialogs.showSelectDialog("Select parent key id", "Please select parent key id", keyids);
-//								if (a>=0) {
-//									key.setParentKey(keys.get(a));
-//									edit.setModel(edit.getModel()); //update
-//								}
-//							}
-//						}
-//						
-//					}
-//					
-//				}
-//			}
-//		});
-//		p.add(new JScrollPane(edit), BorderLayout.CENTER);
-//		
-//		JPanel pb = new JPanel();
-//		p.add(pb,BorderLayout.SOUTH);
-//		pb.setLayout(new FlowLayout(FlowLayout.LEFT));
-//		
-//		JButton addID = new JButton("add identity");
-//		addID.setPreferredSize(new Dimension(150,25));
-//		addID.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				try {
-//					Identity id = Identity.newEmptyIdentity();
-//					boolean ok = showIdentityEditDialog(id, true);
-//					if (ok) {
-//						key.addIdentity(id);
-//						edit.setModel(new KeyTableModel(key));
-//						fitAllColumnWidth(edit);
-//						edit.validate();
-//					}
-//				} catch (Exception e1) {
-//					e1.printStackTrace();
-//				}
-//			}
-//		});
-//		pb.add(addID);
-//		
-//		JButton removeID = new JButton("remove identity");
-//		removeID.setPreferredSize(new Dimension(150,25));
-//		removeID.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				try {
-//					int[] sel = edit.getSelectedRows();
-//					if (sel==null) Dialogs.showMessage("Sorry, no identities selected.");
-//					
-//					Vector<Identity> ids = new Vector<Identity>(); 
-//					for (int i=0;i<sel.length;i++) {
-//						String name = (String)edit.getModel().getValueAt(sel[i],0); 
-//						if (name.startsWith("identity")) {
-//							int no = Integer.parseInt(name.substring(9))-1;
-//							ids.add(key.getIdentities().get(no));
-//							
-//						}
-//					}
-//					if (ids.size()>0) {
-//						String txt = "Are you sure you want to remove the following id(s)?";
-//						for (Identity id : ids) txt += "\n"+id.getEmail();
-//						int a = Dialogs.showYES_NO_Dialog("Confirm removal",txt);
-//						if (a==Dialogs.YES) {
-//							for (Identity id : ids)
-//								key.removeIdentity(id);
-//							edit.setModel(new KeyTableModel(key));
-//							fitAllColumnWidth(edit);
-//							edit.validate();
-//						}
-//					} else {
-//						Dialogs.showMessage("Sorry, no identities selected.");
-//					}
-//				} catch (Exception e1) {
-//					e1.printStackTrace();
-//				}
-//			}
-//		});
-//		pb.add(removeID);
-//		
-//		
-//		JPanel ps = new JPanel();
-//		ps.setLayout(new FlowLayout(FlowLayout.RIGHT));
-//		JButton ok = new JButton("ok");
-//		ok.setPreferredSize(new Dimension(150,25));
-//		ok.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				isOK[0] = true;
-//				d.dispose();
-//			}
-//		});
-//		ps.add(ok);
-//		
-//		
-//		d.setLayout(new BorderLayout());
-//		
-//		d.setSize(700, 400);
-//		d.add(p, BorderLayout.CENTER);
-//		d.add(ps, BorderLayout.SOUTH);
-//		d.setModal(true);
-//		
-//		Helper.centerMe(d, null);
-//		
-//		d.setVisible(true);
-//		
-//		return isOK[0];
-//	}
 	
 	private boolean showIdentityEditDialog(Identity id, boolean canCancel) {
 		final JDialog d = new JDialog(instance);
@@ -1311,6 +1276,7 @@ public class SecurityMainFrame extends JFrame {
 				OSDXKeyObject k = OSDXKeyObject.fromKeyPair(kp);
 				k.setUsage(OSDXKeyObject.USAGE_SIGN);
 				k.setLevel(OSDXKeyObject.LEVEL_MASTER);
+				k.createLockedPrivateKey(messageHandler);
 				currentKeyStore.addKey(k);
 				updateUI();
 				releaseUILock();
@@ -1342,19 +1308,24 @@ public class SecurityMainFrame extends JFrame {
 						AsymmetricKeyPair revokekp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
 						AsymmetricKeyPair subkp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
 						
+						
 						OSDXKeyObject masterkey = OSDXKeyObject.fromKeyPair(masterkp);
 						masterkey.setLevel(OSDXKeyObject.LEVEL_MASTER);
 						masterkey.setUsage(OSDXKeyObject.USAGE_SIGN);
+						masterkey.createLockedPrivateKey(messageHandler);
 						
+
 						OSDXKeyObject revokekey = OSDXKeyObject.fromKeyPair(revokekp);
 						revokekey.setLevel(OSDXKeyObject.LEVEL_REVOKE);
 						revokekey.setUsage(OSDXKeyObject.USAGE_SIGN);
 						revokekey.setParentKey(masterkey);
+						revokekey.createLockedPrivateKey(messageHandler);
 						
 						OSDXKeyObject subkey = OSDXKeyObject.fromKeyPair(subkp);
 						subkey.setLevel(OSDXKeyObject.LEVEL_SUB);
 						subkey.setUsage(OSDXKeyObject.USAGE_SIGN);
 						subkey.setParentKey(masterkey);
+						subkey.createLockedPrivateKey(messageHandler);
 						
 						currentKeyStore.addKey(masterkey);
 						currentKeyStore.addKey(revokekey);

@@ -186,32 +186,48 @@ public class KeyApprovingStore {
 		return ret;
 	}
 	
-	public Vector<OSDXKeyObject> getAllSigningKeys() {
+	public Vector<OSDXKeyObject> getAllSigningSubKeys() {
 		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
 		for (OSDXKeyObject k : keys) {
-			if (k.allowsSigning()) {
-				skeys.add(k);
-			}
-		}
-		return skeys;
-	}
-	public Vector<OSDXKeyObject> getAllDecyrptionKeys() {
-		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
-		for (OSDXKeyObject k : keys) {
-			int u = k.getUsage();
-			if ((u==OSDXKeyObject.USAGE_CRYPT || u==OSDXKeyObject.USAGE_WHATEVER) && k.hasPrivateKey()) {
+			if (k.isSub() && k.allowsSigning()) {
 				skeys.add(k);
 			}
 		}
 		return skeys;
 	}
 	
-	public Vector<OSDXKeyObject> getAllEncyrptionKeys() {
+	public Vector<OSDXKeyObject> getAllSigningMasterKeys() {
 		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
 		for (OSDXKeyObject k : keys) {
-			int u = k.getUsage();
-			if (u==OSDXKeyObject.USAGE_CRYPT || u==OSDXKeyObject.USAGE_WHATEVER) {
+			if (k.isMaster() && k.allowsSigning()) {
 				skeys.add(k);
+			}
+		}
+		return skeys;
+	}
+	
+	
+	public Vector<OSDXKeyObject> getAllDecyrptionSubKeys() {
+		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
+		for (OSDXKeyObject k : keys) {
+			if (k.isSub()) {
+				int u = k.getUsage();
+				if ((u==OSDXKeyObject.USAGE_CRYPT || u==OSDXKeyObject.USAGE_WHATEVER) && k.hasPrivateKey()) {
+					skeys.add(k);
+				}
+			}
+		}
+		return skeys;
+	}
+	
+	public Vector<OSDXKeyObject> getAllEncyrptionSubKeys() {
+		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
+		for (OSDXKeyObject k : keys) {
+			if (k.isSub()) {
+				int u = k.getUsage();
+				if (u==OSDXKeyObject.USAGE_CRYPT || u==OSDXKeyObject.USAGE_WHATEVER) {
+					skeys.add(k);
+				}
 			}
 		}
 		return skeys;

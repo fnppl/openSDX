@@ -346,7 +346,7 @@ public class OSDXKeyObject {
 			//check algo and padding
 			String Slock_algo = lockedPrivateKey.getChildText("algo");
 			String Spadding = lockedPrivateKey.getChildText("padding");
-			if (!Slock_algo.equals("AES@256")||!Spadding.equals("CBC/PKCS#7")) {
+			if (!Slock_algo.equals("AES@256")||!Spadding.equals("CBC/PKCS#5")) {
 				throw new RuntimeException("UNLOCKING METHOD NOT IMPLEMENTED, please use AES@265 encryption with CBC/PKCS#7 padding");
 			}
 			
@@ -355,6 +355,26 @@ public class OSDXKeyObject {
 				unlockPrivateKey(pp);
 			} catch(Exception ex) {
 				ex.printStackTrace();
+			}
+		}
+	}
+	
+	public void createLockedPrivateKey(MessageHandler mh) throws Exception {
+		if (akp.hasPrivateKey()) {
+			String[] ans = mh.requestNewPasswordAndMantra("Saving Key: "+getKeyID()+"\nLevel: "+getLevelName()+"\n");
+			if (ans != null) {
+				byte[] iv = SecurityHelper.getRandomBytes(16);
+				SymmetricKey sk = SymmetricKey.getKeyFromPass(ans[1].toCharArray(), iv);
+				byte[] encprivkey = akp.getEncrytedPrivateKey(sk);
+				Element el = new Element("locked");
+				el.addContent("mantraname",ans[0]);
+				el.addContent("algo","AES@256");
+				el.addContent("initvector", SecurityHelper.HexDecoder.encode(iv, ':',-1));
+				el.addContent("padding", "CBC/PKCS#5");
+				el.addContent("bytes", SecurityHelper.HexDecoder.encode(encprivkey, ':',-1));				
+				lockedPrivateKey = el;
+			} else {
+				System.out.println("CAUTION: private key NOT saved.");
 			}
 		}
 	}
@@ -410,6 +430,10 @@ public class OSDXKeyObject {
 		ekp.addContent(epk);
 		
 		//privkey
+		if (lockedPrivateKey == null) {
+			createLockedPrivateKey(mh);
+		}
+		
 		if (lockedPrivateKey != null) {
 			Element el = new Element("locked");
 			el.addContent("mantraname",lockedPrivateKey.getChildText("mantraname"));
@@ -423,30 +447,10 @@ public class OSDXKeyObject {
 			Element esk = new Element("privkey");
 			esk.addContent(eexp);
 			ekp.addContent(esk);
-			
-		} 
-		else if (akp.hasPrivateKey()) {
-			String[] ans = mh.requestNewPasswordAndMantra("Saving Key: "+getKeyID()+"\nLevel: "+getLevelName()+"\n");
-			if (ans != null) {
-				byte[] iv = SecurityHelper.getRandomBytes(16);
-				SymmetricKey sk = SymmetricKey.getKeyFromPass(ans[1].toCharArray(), iv);
-				byte[] encprivkey = akp.getEncrytedPrivateKey(sk);
-				Element el = new Element("locked");
-				el.addContent("mantraname",ans[0]);
-				el.addContent("algo","AES@256");
-				el.addContent("initvector", SecurityHelper.HexDecoder.encode(iv, ':',-1));
-				el.addContent("padding", "CBC/PKCS#7");
-				el.addContent("bytes", SecurityHelper.HexDecoder.encode(encprivkey, ':',-1));
-				
-				Element eexp = new Element("exponent");
-				eexp.addContent(el);
-				Element esk = new Element("privkey");
-				esk.addContent(eexp);
-				ekp.addContent(esk);
-			} else {
-				System.out.println("CAUTION: private key NOT saved.");
-			}
+		} else {
+			System.out.println("CAUTION: private key NOT saved.");
 		}// -- end privkey
+		
 		ekp.addContent("gpgkeyserverid", gpgkeyserverid);
 		
 		unsavedChanges = false;

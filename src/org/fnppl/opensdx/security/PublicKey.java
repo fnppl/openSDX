@@ -307,7 +307,7 @@ public class PublicKey {
 	}
 	
 	public String getKeyID() {
-		String keyid = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(pub.getModulus().toByteArray()), '\0', -1);
+		String keyid = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(pub.getModulus().toByteArray()), ':', -1);
 		return keyid;
 	}
 }
