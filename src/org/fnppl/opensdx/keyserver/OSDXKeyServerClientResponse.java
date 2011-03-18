@@ -12,7 +12,6 @@ public class OSDXKeyServerClientResponse {
 	public Hashtable<String, String> headers = null;
 	public Document doc;
 	public String status;
-
 	
 	public static OSDXKeyServerClientResponse fromStream(BufferedInputStream in, long timeout) throws Exception {
 		OSDXKeyServerClientResponse re = new OSDXKeyServerClientResponse();
@@ -26,9 +25,20 @@ public class OSDXKeyServerClientResponse {
 			readXMLContent(in, re);
 		}
 		//if (re.doc!=null) re.doc.output(System.out);
+		
 		System.out.println("OSDXKeyServerClient | end requestMasterPubKeys");
 		
 		return re;
+	}
+	
+	public boolean hasErrorMessage() {
+		return (doc!=null && doc.getRootElement().getName().equals("errormessage"));
+	}
+	
+	public String getErrorMessage() {
+		if (hasErrorMessage())
+			return doc.getRootElement().getChildText("message");
+		return null;
 	}
 	
 	private static void readXMLContent(BufferedInputStream in, OSDXKeyServerClientResponse re) throws Exception {

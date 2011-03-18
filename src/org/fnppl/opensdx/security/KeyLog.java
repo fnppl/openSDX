@@ -150,12 +150,23 @@ public class KeyLog {
 	public long getDate() throws Exception {
 		return OSDXKeyObject.datemeGMT.parse(ekeylog.getChild("action").getChildText("date")).getTime();
 	}
-	public String getDateString() throws Exception {
+	public String getDateString() {
 		return ekeylog.getChild("action").getChildText("date");
+	}
+	
+	public String getKeyIDFrom() {
+		return ekeylog.getChild("action").getChild("from").getChildText("keyid");
 	}
 	
 	public String getKeyIDTo() {
 		return ekeylog.getChild("action").getChild("to").getChildText("keyid");
+	}
+	
+	public String getIPv4() {
+		return ekeylog.getChild("action").getChildText("ipv4");
+	}
+	public String getIPv6() {
+		return ekeylog.getChild("action").getChildText("ipv6");
 	}
 	public String getStatus() {
 		Element e = ekeylog.getChild("action");

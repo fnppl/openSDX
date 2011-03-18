@@ -59,6 +59,7 @@ public class OSDXKeyServerClient {
 	private long timeout = 2000;
 	private String host = null;
 	private int port = -1;
+	private String message = null;
 	
 	public OSDXKeyServerClient(String host, int port) {
 		this.host = host;
@@ -75,16 +76,19 @@ public class OSDXKeyServerClient {
 			return false;
 		}
 	}
-	
+
 	public void close() throws Exception {
 		if (socket != null)
 			socket.close();
 	}
+	
+	public String getMessage() {
+		return message;
+	}
 	public OSDXKeyServerClientResponse send(OSDXKeyServerClientRequest req) throws Exception {
 		if (!connect()) {
-			return null;
+			throw new RuntimeException("ERROR: Can not connect to keyserver.");
 		}
-		
 		System.out.println("OSDXKeyServerClient | start "+req.getURI());
 		//req.toOutput(System.out);
 		req.send(socket);
@@ -98,9 +102,6 @@ public class OSDXKeyServerClient {
 	    
 	    if(re == null) {
 	    	throw new RuntimeException("ERROR: Keyserver does not respond.");
-	    }
-	    if(re.doc == null) {
-	    	return null;	 
 	    }
 	    return re;
 	}
@@ -206,11 +207,17 @@ public class OSDXKeyServerClient {
 	//   1. Ich, als user, möchte auf dem keyserver meinen MASTER-pubkey ablegen können
 	//   includes  2. Ich, als user, möchte, daß der keyserver meinen MASTER-pubkey per email-verifikation (der haupt-identity) akzeptiert (sonst ist der status pending oder so -> erst, wenn die email mit irgendeinem token-link drin aktiviert wurde, wird der pubkey akzeptiert)
 	public boolean putMasterKey(PublicKey masterkey, Identity id) throws Exception {
-		
-		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutMasterKey(host, masterkey, id);
-		OSDXKeyServerClientResponse resp = send(req);
-		if (resp==null || resp.status == null) return false;
-		if (resp.status.endsWith("OK"))	return true;
+		try {
+			OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutMasterKey(host, masterkey, id);
+			OSDXKeyServerClientResponse resp = send(req);
+			if (resp==null || resp.status == null) return false;
+			if (resp.status.endsWith("OK"))	return true;
+			if (resp.hasErrorMessage()) {
+				message = resp.getErrorMessage();
+			}
+		} catch (Exception ex) {
+			message = ex.getMessage();
+		}
 		return false;
 	}
 	
@@ -218,8 +225,14 @@ public class OSDXKeyServerClient {
 	public boolean putRevokeKey(PublicKey revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutRevokeKey(host, revokekey, relatedMasterKey);
 		OSDXKeyServerClientResponse resp = send(req);
-		if (resp==null || resp.status == null) return false;
+		if (resp==null || resp.status == null) {
+			message = "Keyserver does not respond.";
+			return false;
+		}
 		if (resp.status.endsWith("OK"))	return true;
+		if (resp.hasErrorMessage()) {
+			message = resp.getErrorMessage();
+		}
 		return false;
 	}
 	
@@ -228,6 +241,9 @@ public class OSDXKeyServerClient {
 		OSDXKeyServerClientResponse resp = send(req);
 		if (resp==null || resp.status == null) return false;
 		if (resp.status.endsWith("OK"))	return true;
+		if (resp.hasErrorMessage()) {
+			message = resp.getErrorMessage();
+		}
 		return false;
 	}
 

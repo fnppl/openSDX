@@ -177,13 +177,8 @@ public class KeyApprovingStore {
 	}
 	
 	public OSDXKeyObject getKey(String keyid) {
-		if (keyid==null || keyid.length()==0) return null;
-		byte[] idbytes;
-		if (keyid.indexOf('@')>0) {
-			idbytes = SecurityHelper.HexDecoder.decode(keyid.substring(0,keyid.indexOf('@')));
-		} else {
-			idbytes = SecurityHelper.HexDecoder.decode(keyid);
-		}
+		byte[] idbytes = SecurityHelper.getBytesFromKeyID(keyid);
+		if (idbytes==null) return null;
 		for (OSDXKeyObject k : keys) {
 			if (Arrays.equals(k.getKeyModulusSHA1bytes(), idbytes)) {
 				return k;
@@ -271,6 +266,9 @@ public class KeyApprovingStore {
 		if (keystoreSigningKey == null) {
 			keystoreSigningKey = messageHandler.requestMasterSigningKey(this);
 		}
+		if (!keystoreSigningKey.isPrivateKeyUnlocked()) {
+			keystoreSigningKey.unlockPrivateKey(messageHandler);
+		}
 		
 		Signature s = Signature.createSignature(md5,sha1,sha256, "sign of localproof-sha1 of keys", keystoreSigningKey);
 		ek.addContent(s.toElement());
@@ -321,11 +319,11 @@ public class KeyApprovingStore {
 	
 	public Vector<KeyLog> getKeyLogs(String keyid) {
 		if (keylogs==null) return null;
-		String kid = ""+keyid;
-		if (kid.indexOf('@')>=0) kid = kid.substring(0,kid.indexOf('@')-1);
+		byte[] kidBytes = SecurityHelper.getBytesFromKeyID(keyid);
+		
 		Vector<KeyLog> ret = new Vector<KeyLog>();
 		for (KeyLog kl : keylogs) {
-			if (kl.getKeyIDTo().equals(kid)) {
+			if (Arrays.equals(kidBytes, SecurityHelper.getBytesFromKeyID(kl.getKeyIDTo()))) {
 				ret.add(kl);
 			}
 		}

@@ -53,4 +53,11 @@ public class DefaultMessageHandler implements MessageHandler {
 	public String[] requestNewPasswordAndMantra(String message) {
 		return Dialogs.showNewMantraPasswordDialog(message);
 	}
+
+	@Override
+	public void fireWrongPasswordMessage() {
+		Dialogs.showMessage("Sorry, wrong password!");
+	}
+	
+	
 }

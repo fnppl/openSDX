@@ -86,6 +86,7 @@ public class KeyServerMain {
 	int port = -1;
 	Inet4Address address = null;
 
+	private String keyserverName = "keys.fnppl.org";
 	private KeyApprovingStore keystore;
 	private MessageHandler messageHandler = new DefaultMessageHandler();
 	
@@ -93,6 +94,8 @@ public class KeyServerMain {
 	private HashMap<String, OSDXKeyObject> keyid_key;
 	private HashMap<String, Vector<KeyLog>> keyid_log;
 	private HashMap<String, Vector<OSDXKeyObject>> keyid_subkeys;
+	
+	
 	
 	private OSDXKeyObject keyServerSigningKey = null;
 	private String serverIDemail = "root_signing_key@fnppl.org";
@@ -173,6 +176,13 @@ public class KeyServerMain {
 		}
 	}
 
+	private void saveKeyStore() {
+		try {
+			keystore.toFile(keystore.getFile());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 
 	private KeyServerResponse handleMasterPubKeyRequest(KeyServerRequest request) {
@@ -321,8 +331,12 @@ public class KeyServerMain {
 			
 			//generate key
 			OSDXKeyObject key = OSDXKeyObject.fromKeyPair(akp);
+			key.setAuthoritativeKeyServer(serverIDemail);
 			Identity idd = Identity.fromElement(e.getChild("identity"));
 			key.addIdentity(idd);
+			key.setAuthoritativeKeyServer(keyserverName);
+			key.setLevel(OSDXKeyObject.LEVEL_MASTER);
+			key.setUsage(OSDXKeyObject.USAGE_SIGN);
 			
 			//generate keylog for approve pending
 			Element ekl = new Element("keylog");
@@ -357,6 +371,7 @@ public class KeyServerMain {
 			keystore.addKey(key);
 			keystore.addKeyLog(kl);
 			updateCache(key, null);
+			saveKeyStore();
 			
 			//send response
 			KeyServerResponse resp = new KeyServerResponse(serverid);
@@ -367,9 +382,12 @@ public class KeyServerMain {
 //			resp.addHeaderValue("Identity", id);
 //			resp.addHeaderValue("Message", "please authenticate via email");
 			return resp;
+		} else {
+			KeyServerResponse resp = new KeyServerResponse(serverid);
+			resp.setRetCode(404, "FAILED");
+			resp.createErrorMessageContent("missing masterpubkey");
+			return resp;
 		}
-		return null;
-		
 	}
 	
 	private KeyServerResponse handlePutRevokeKeyRequest(KeyServerRequest request) throws Exception {
@@ -388,13 +406,18 @@ public class KeyServerMain {
 			String masterkeyid = e.getChildText("masterkeyid");
 			OSDXKeyObject masterkey = keystore.getKey(masterkeyid);
 			if (masterkey==null) {
-				resp.setRetCode(404, "associatied masterkey is not on server.");
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("associatied masterkey is not on server.");
 				return resp;
 			}
 			//check masterkey approved
 			String[] ks = keystore.getKeyStatusWithDate(masterkey.getKeyID());
-			if (ks==null || !ks[0].equals("approved")) {
-				resp.setRetCode(404, "associatied masterkey is not approved.");
+			System.out.println("status: "+ks[0]);
+			
+			//if (ks==null || !ks[0].equals("approved")) { //TODO this is the right one
+			if (ks==null || !ks[0].startsWith("approv")) { //TODO this is for testing 
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("associatied masterkey is not approved.");
 				return resp;
 			}
 			
@@ -402,24 +425,48 @@ public class KeyServerMain {
 			
 			//check sha1localproof
 			byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
-			byte[] calcSha1localproof = SecurityHelper.getSHA1LocalProof(e.getChild("pubkey"));
+			Vector<Element> toProof = new Vector<Element>();
+			toProof.add(e.getChild("masterkeyid"));
+			toProof.add(e.getChild("pubkey"));
+			byte[] calcSha1localproof = SecurityHelper.getSHA1LocalProof(toProof);
+			
 			boolean verified = true;
 			if (!Arrays.equals(givenSha1localproof, calcSha1localproof)) {
+				//System.out.println("given sha1: "+SecurityHelper.HexDecoder.encode(givenSha1localproof, ':', -1));
+				//System.out.println("calc  sha1: "+SecurityHelper.HexDecoder.encode( calcSha1localproof, ':', -1));
 				verified = false;
 			}
+			if (verified) System.out.println("checking modulus");
+			
 			//check modulus belongs to keyid
-			byte[] givenModulus = SecurityHelper.HexDecoder.decode(e.getChild("pubkey").getChildText("modulus")); 
+			byte[] givenModulus = SecurityHelper.HexDecoder.decode(e.getChild("signature").getChild("signoff").getChild("pubkey").getChildText("modulus")); 
 			if (verified && !Arrays.equals(masterkey.getPubKey().getModulusBytes(),givenModulus)) {
 				verified = false;
+				System.out.println("given     modulus: "+SecurityHelper.HexDecoder.encode(givenModulus, ':', -1));
+				System.out.println("masterkey modulus: "+SecurityHelper.HexDecoder.encode(masterkey.getPubKey().getModulusBytes(), ':', -1));
+				System.out.println("modulus verification FAILED!");
 			}
+			
+			
 			//check signaturebytes match sha1localproof
 			if (verified) {
 				Signature sig = Signature.fromElement(e.getChild("signature"));
 				verified = sig.tryVerificationMD5SHA1SHA256(givenSha1localproof);
+				
+//				System.out.println("checking signaturebytes");	
+//				System.out.println("signature data   md5   : "+e.getChild("signature").getChild("data").getChildText("md5"));
+//				System.out.println("signature data   sha1  : "+e.getChild("signature").getChild("data").getChildText("sha1"));
+//				System.out.println("signature data   sha256: "+e.getChild("signature").getChild("data").getChildText("sha256"));
+//				byte[][] data = SecurityHelper.getMD5SHA1SHA256(givenSha1localproof);
+//				System.out.println("calc      data   md5   : "+SecurityHelper.HexDecoder.encode(data[1],':',-1));
+//				System.out.println("calc      data   sha1  : "+SecurityHelper.HexDecoder.encode(data[2],':',-1));
+//				System.out.println("calc      data   sha256: "+SecurityHelper.HexDecoder.encode(data[3],':',-1));
+				
 			}
 			//if any of above checks failed: signature NOT verified!
 			if (!verified) {
-				resp.setRetCode(403, "signature could not be verified.");
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("signature could not be verified.");
 				return resp;
 			}
 			
@@ -460,10 +507,13 @@ public class KeyServerMain {
 			keystore.addKey(key);
 			keystore.addKeyLog(kl);
 			updateCache(key, null);
+			saveKeyStore();
 
-			return resp;
+		} else {
+			resp.setRetCode(404, "FAILED");
+			resp.createErrorMessageContent("missing revokekey");
 		}
-		return null;
+		return resp;
 	}
 	
 	private KeyServerResponse handlePutSubKeyRequest(KeyServerRequest request) throws Exception {

@@ -366,6 +366,7 @@ public class SecurityMainFrame extends JFrame {
 		p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
 
 		if (currentKeyStore!=null) {
+			//keys
 			Vector<OSDXKeyObject> all = currentKeyStore.getAllKeys();
 			int y = 0;
 			for (int i=0;i<all.size();i++) {
@@ -377,6 +378,18 @@ public class SecurityMainFrame extends JFrame {
 					p.add(comp);
 					y++;
 				}
+			}
+			
+			//keylogs
+			Vector<KeyLog> keylogs = currentKeyStore.getKeyLogs();
+				if (keylogs!=null && keylogs.size()>0) {
+				JPanel pk = new JPanel();
+				pk.setBorder(new TitledBorder("Key Log in KeyStore:"));
+				pk.setLayout(new BoxLayout(pk, BoxLayout.PAGE_AXIS));
+				for (KeyLog keylog : keylogs) {
+					pk.add(buildComponentKeyLog(keylog));
+				}
+			p.add(pk);
 			}
 		}
 		if (keyservers!=null) {
@@ -400,7 +413,8 @@ public class SecurityMainFrame extends JFrame {
 
 	private Component buildComponent(OSDXKeyObject masterkey, Vector<OSDXKeyObject> revokekeys, Vector<OSDXKeyObject> subkeys) {
 		final JPanel p = new JPanel();
-		p.setBorder(new TitledBorder("KeyGroup:"));
+		String identities = masterkey.getIDEmails();
+		p.setBorder(new TitledBorder("KeyGroup:"+(identities!=null?"   "+identities:"")));
 		p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
 		p.add(buildComponentMasterKey(masterkey));
 		for (OSDXKeyObject key : revokekeys) {
@@ -916,6 +930,42 @@ public class SecurityMainFrame extends JFrame {
 
 		return p;
 	}
+	
+	private Component buildComponentKeyLog(KeyLog keylog) {
+		final JPanel p = new JPanel();
+		p.setLayout(new BorderLayout());
+
+		final JPanel content = new JPanel();
+		content.setLayout(new BorderLayout());
+
+		JPanel a = new JPanel();
+		int y = 0;
+		GridBagLayout gb = new GridBagLayout();		
+		a.setLayout(gb);
+
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = GridBagConstraints.FIRST_LINE_START;
+		c.insets = new Insets(5, 5, 0, 0);
+		
+		addLabelTextFieldPart("from keyid :", keylog.getKeyIDFrom(), a, c, y);y++;
+		addLabelTextFieldPart("to keyid :", keylog.getKeyIDTo(), a, c, y);y++;
+		addLabelTextFieldPart("status :", keylog.getStatus(), a, c, y);y++;
+		addLabelTextFieldPart("date :", keylog.getDateString(), a, c, y);y++;
+		addLabelTextFieldPart("IPv4 :", keylog.getIPv4(), a, c, y);y++;
+		addLabelTextFieldPart("IPv6 :", keylog.getIPv6(), a, c, y);
+		
+		final int w = 600;
+		final int h = y*30 + 80;
+
+		JButton head = createHeaderButton("KeyLog for KeyID: "+keylog.getKeyIDTo(),"KeyLog for KeyID: "+keylog.getKeyIDTo() , content, p, w, h);
+
+		p.add(head, BorderLayout.NORTH);
+		JScrollPane scrollContent = new JScrollPane(content);
+		p.add(scrollContent, BorderLayout.CENTER);
+		content.add(a,BorderLayout.CENTER);
+
+		return p;
+	}
 
 	//	private static void addComponent(Container cont, GridBagLayout gbl, Component c, int x, int y, int w, int h, double wx, double wy) {
 	//		GridBagConstraints gbc = new GridBagConstraints();
@@ -1255,7 +1305,8 @@ public class SecurityMainFrame extends JFrame {
 						Dialogs.showMessage("Upload of REVOKE Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
 						return ok;
 					} else {
-						Dialogs.showMessage("Upload of REVOKE Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!");
+						String msg = client.getMessage();
+						Dialogs.showMessage("Upload of REVOKE Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
 						return false;
 					}
 				}
@@ -1301,7 +1352,8 @@ public class SecurityMainFrame extends JFrame {
 						Dialogs.showMessage("Upload of SUB Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
 						return ok;
 					} else {
-						Dialogs.showMessage("Upload of SUB Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!");
+						String msg = client.getMessage();
+						Dialogs.showMessage("Upload of SUB Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
 						return false;
 					}
 				}
@@ -1319,7 +1371,7 @@ public class SecurityMainFrame extends JFrame {
 				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"?\nThis will also change your authoritative keyserver for this key.");
 				if (confirm==Dialogs.YES) {
 					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
-					boolean ok = client.putMasterKey(key.getPubKey(), ids.get(0));
+					boolean ok =client.putMasterKey(key.getPubKey(), ids.get(0));
 					if (ok) {
 						Vector<OSDXKeyObject> childkeys = currentKeyStore.getRevokeKeys(key.getKeyID());
 						childkeys.addAll(currentKeyStore.getSubKeys(key.getKeyID()));
@@ -1333,7 +1385,8 @@ public class SecurityMainFrame extends JFrame {
 						Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
 						return ok;
 					} else {
-						Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!");
+						String msg = client.getMessage();
+						Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
 						return false;
 					}
 				}

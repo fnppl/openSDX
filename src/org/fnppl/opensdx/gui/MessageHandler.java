@@ -17,4 +17,5 @@ public interface MessageHandler {
 	public boolean requestOverwriteFile(File file);
 	public String requestPassword(String keyid, String mantra);
 	public String[] requestNewPasswordAndMantra(String message);
+	public void fireWrongPasswordMessage();
 }

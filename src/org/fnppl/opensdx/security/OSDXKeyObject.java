@@ -339,6 +339,17 @@ public class OSDXKeyObject {
 			);
 	}
 	
+	public String getIDEmails() {
+		if (identities!=null && identities.size()>0) {
+			String ids = identities.get(0).getEmail();
+			for (int i=1;i<identities.size();i++) {
+				ids += ", "+identities.get(i).getEmail();
+			}
+			return ids;
+		}
+		return null;
+	}
+	
 	public boolean isPrivateKeyUnlocked() {
 		return akp.hasPrivateKey(); 
 	}
@@ -358,7 +369,11 @@ public class OSDXKeyObject {
 				String pp = mh.requestPassword(getKeyID(), mantraname);
 				unlockPrivateKey(pp);
 			} catch(Exception ex) {
-				ex.printStackTrace();
+				if (ex.getMessage().startsWith("pad block corrupted")) {
+					mh.fireWrongPasswordMessage();
+				} else {
+					ex.printStackTrace();
+				}
 			}
 		}
 	}

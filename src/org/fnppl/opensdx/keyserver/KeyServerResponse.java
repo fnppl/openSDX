@@ -107,6 +107,12 @@ public class KeyServerResponse {
 		out.flush();
 	}
 	
+	public void createErrorMessageContent(String msg) {
+		Element em = new Element("errormessage");
+		em.addContent("message",msg);
+		setContentElement(em);
+	}
+	
 //	public void addHeaderValue(String name, String value) {
 //		header.append(name+": "+value+"\n");
 //	}
