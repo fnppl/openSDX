@@ -177,8 +177,15 @@ public class KeyApprovingStore {
 	}
 	
 	public OSDXKeyObject getKey(String keyid) {
+		if (keyid==null || keyid.length()==0) return null;
+		byte[] idbytes;
+		if (keyid.indexOf('@')>0) {
+			idbytes = SecurityHelper.HexDecoder.decode(keyid.substring(0,keyid.indexOf('@')));
+		} else {
+			idbytes = SecurityHelper.HexDecoder.decode(keyid);
+		}
 		for (OSDXKeyObject k : keys) {
-			if (k.getParentKeyID().equals(keyid)) {
+			if (Arrays.equals(k.getKeyModulusSHA1bytes(), idbytes)) {
 				return k;
 			}
 		}

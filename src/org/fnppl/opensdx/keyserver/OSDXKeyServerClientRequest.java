@@ -269,4 +269,25 @@ public class OSDXKeyServerClientRequest {
 		
 		return req;
 	}
+	
+	public static OSDXKeyServerClientRequest getRequestPutSubKey(String host, PublicKey subkey, OSDXKeyObject relatedMasterKey) throws Exception {
+		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+		req.setURI(host, "/subkey");
+		
+		Element e = new Element("subkey");
+		e.addContent("masterkeyid", relatedMasterKey.getKeyModulusSHA1());
+		e.addContent(subkey.getSimplePubKeyElement());
+		 //signoff with own masterkey
+		Vector<Element> toProof = new Vector<Element>();
+		toProof.add(e);
+		byte[] sha1 = SecurityHelper.getSHA1LocalProof(toProof);
+		byte[][] md5sha1sha256 = SecurityHelper.getMD5SHA1SHA256(sha1);
+		Signature sig = Signature.createSignature(md5sha1sha256[1], md5sha1sha256[2], md5sha1sha256[3], "masterkeyid and pubkey", relatedMasterKey);
+		e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1, ':', -1));
+		e.addContent(sig.toElement());
+		
+		req.setContentElement(e);
+		
+		return req;
+	}
 }

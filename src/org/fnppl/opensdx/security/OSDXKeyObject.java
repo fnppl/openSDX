@@ -307,6 +307,10 @@ public class OSDXKeyObject {
 		return SecurityHelper.HexDecoder.encode(modulussha1, ':', -1);
 	}
 	
+	public byte[] getKeyModulusSHA1bytes() {
+		return modulussha1;
+	}
+	
 	public Element getSimplePubKeyElement() {
 		if (akp!=null) {
 			Element ret = new Element("pubkey");

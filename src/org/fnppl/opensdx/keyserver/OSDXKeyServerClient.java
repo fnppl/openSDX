@@ -222,6 +222,14 @@ public class OSDXKeyServerClient {
 		if (resp.status.endsWith("OK"))	return true;
 		return false;
 	}
+	
+	public boolean putSubKey(PublicKey revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
+		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutSubKey(host, revokekey, relatedMasterKey);
+		OSDXKeyServerClientResponse resp = send(req);
+		if (resp==null || resp.status == null) return false;
+		if (resp.status.endsWith("OK"))	return true;
+		return false;
+	}
 
 	//   5. Ich, als user, möchte meine keylogs auf dem server ablegen können (ein löschen von keylogs ist NICHT möglich - für einen aktuellen status ist die "kette ist chronologisch abzuarbeiten")
 	public boolean putKeyLog(KeyLog keylog) throws Exception {

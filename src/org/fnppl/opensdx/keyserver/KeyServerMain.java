@@ -373,9 +373,102 @@ public class KeyServerMain {
 	}
 	
 	private KeyServerResponse handlePutRevokeKeyRequest(KeyServerRequest request) throws Exception {
-		throw new Exception("not implemented");
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		
+		System.out.println("KeyServerResponse | ::handle put revokekey request");
+		
+		System.out.print("GOT THIS CONTENT::");
+		request.xml.output(System.out);
+		System.out.println("::END OF CONTENT");
+		
+		Element e = request.xml.getRootElement();
+		if (e.getName().equals("revokekey")) {
+			
+			//check masterkey on server
+			String masterkeyid = e.getChildText("masterkeyid");
+			OSDXKeyObject masterkey = keystore.getKey(masterkeyid);
+			if (masterkey==null) {
+				resp.setRetCode(404, "associatied masterkey is not on server.");
+				return resp;
+			}
+			//check masterkey approved
+			String[] ks = keystore.getKeyStatusWithDate(masterkey.getKeyID());
+			if (ks==null || !ks[0].equals("approved")) {
+				resp.setRetCode(404, "associatied masterkey is not approved.");
+				return resp;
+			}
+			
+			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
+			
+			//check sha1localproof
+			byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
+			byte[] calcSha1localproof = SecurityHelper.getSHA1LocalProof(e.getChild("pubkey"));
+			boolean verified = true;
+			if (!Arrays.equals(givenSha1localproof, calcSha1localproof)) {
+				verified = false;
+			}
+			//check modulus belongs to keyid
+			byte[] givenModulus = SecurityHelper.HexDecoder.decode(e.getChild("pubkey").getChildText("modulus")); 
+			if (verified && !Arrays.equals(masterkey.getPubKey().getModulusBytes(),givenModulus)) {
+				verified = false;
+			}
+			//check signaturebytes match sha1localproof
+			if (verified) {
+				Signature sig = Signature.fromElement(e.getChild("signature"));
+				verified = sig.tryVerificationMD5SHA1SHA256(givenSha1localproof);
+			}
+			//if any of above checks failed: signature NOT verified!
+			if (!verified) {
+				resp.setRetCode(403, "signature could not be verified.");
+				return resp;
+			}
+			
+			//put subkey in keystore
+			AsymmetricKeyPair akp = new AsymmetricKeyPair(pubkey.getModulusBytes(), pubkey.getPublicExponentBytes(), null);
+			//generate key
+			OSDXKeyObject key = OSDXKeyObject.fromKeyPair(akp);
+			key.setLevel(OSDXKeyObject.LEVEL_REVOKE);
+			key.setUsage(OSDXKeyObject.USAGE_SIGN);
+			key.setParentKey(masterkey);
+			
+			
+			//generate keylog for approval
+			Element ekl = new Element("keylog");
+			Element eac = new Element("action");
+			eac.addContent("date", OSDXKeyObject.datemeGMT.format(System.currentTimeMillis()));
+			eac.addContent("ipv4", "na");
+			eac.addContent("ipv6", "na");
+			Element ef = new Element("from");
+			ef.addContent("id",serverIDemail);
+			ef.addContent("keyid",keyServerSigningKey.getKeyID());
+			Element et = new Element("to");
+			et.addContent("id",masterkey.getIdentities().get(0).getEmail());
+			et.addContent("keyid",pubkey.getKeyID());
+			Element eap = new Element("approval");
+			Element eo = new Element("of");
+			eo.addContent("parentkeyid",masterkey.getKeyID());
+			eap.addContent(eo);
+			eac.addContent(ef);
+			eac.addContent(et);
+			eac.addContent(eap);
+			ekl.addContent(eac);
+			
+			KeyLog kl = KeyLog.fromElement(ekl,false);
+			kl.signoff(keyServerSigningKey);
+		
+			//save
+			keystore.addKey(key);
+			keystore.addKeyLog(kl);
+			updateCache(key, null);
+
+			return resp;
+		}
+		return null;
 	}
 	
+	private KeyServerResponse handlePutSubKeyRequest(KeyServerRequest request) throws Exception {
+		throw new Exception("not implemented.");
+	}
 
 	// public void readKeys(File f, char[] pass_mantra) throws Exception {
 	// // KeyRingCollection krc = KeyRingCollection.fromFile(f, pass_mantra);
@@ -448,6 +541,9 @@ public class KeyServerMain {
 			} 
 			else if (cmd.equals("/revokekey")) {
 				return handlePutRevokeKeyRequest(request);
+			}
+			else if (cmd.equals("/subkey")) {
+				return handlePutSubKeyRequest(request);
 			}
 		} 
 		else if (request.method.equals("GET")) {
