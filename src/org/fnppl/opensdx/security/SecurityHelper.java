@@ -552,14 +552,32 @@ public class SecurityHelper {
         return rb;
 	}
 	
-	public static boolean checkElementsSHA1localproofAndSignature(Element e, OSDXKeyObject signingKey) {
+	public static boolean checkElementsSHA1localproofAndSignature(Element e, Vector<PublicKey> trustedKeys) {
+		try {
+			PublicKey signingKey = null;
+			byte[] modulus = SecurityHelper.HexDecoder.decode(e.getChild("signature").getChild("signoff").getChild("pubkey").getChildText("modulus"));
+			for (PublicKey k: trustedKeys) {
+				if (Arrays.equals(k.getModulusBytes(), modulus)) {
+					signingKey = k;
+					break;
+				}
+			}
+			//TODO if (signingKey == null) try to find approved signing key on server
+			return SecurityHelper.checkElementsSHA1localproofAndSignature(e, signingKey);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+	}
+	
+	public static boolean checkElementsSHA1localproofAndSignature(Element e, PublicKey signingKey) {
 		//check sha1localproof
 		byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
 		//build toProof <- all content but sha1localproof and Signature
 		Vector<Element> toProof = new Vector<Element>();
 		Vector<Element> children = e.getChildren();
 		for (Element c : children) {
-			if (!c.getName().equals("sha1localproof") && !c.getName().equals("Signature")) {
+			if (!c.getName().equals("sha1localproof") && !c.getName().equals("signature")) {
 				toProof.add(c);
 			}
 		}
@@ -579,10 +597,10 @@ public class SecurityHelper {
 		
 		//check modulus belongs to keyid
 		byte[] givenModulus = SecurityHelper.HexDecoder.decode(e.getChild("signature").getChild("signoff").getChild("pubkey").getChildText("modulus")); 
-		if (verified && !Arrays.equals(signingKey.getPubKey().getModulusBytes(),givenModulus)) {
+		if (verified && !Arrays.equals(signingKey.getModulusBytes(),givenModulus)) {
 			verified = false;
 			System.out.println("given     modulus: "+SecurityHelper.HexDecoder.encode(givenModulus, ':', -1));
-			System.out.println("masterkey modulus: "+SecurityHelper.HexDecoder.encode(signingKey.getPubKey().getModulusBytes(), ':', -1));
+			System.out.println("masterkey modulus: "+SecurityHelper.HexDecoder.encode(signingKey.getModulusBytes(), ':', -1));
 			System.out.println("modulus verification FAILED!");
 		}
 		

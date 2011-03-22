@@ -289,7 +289,7 @@ public class OSDXKeyServerClientRequest {
 		e.addContent(masterkey.getSimplePubKeyElement());
 		e.addContent(id.toElement());
 		req.setContentElement(e);
-		//signoff not necessary
+		req.setSignoffKey(masterkey); //self-signoff with masterkey
 		return req;
 	}
 	
@@ -301,8 +301,12 @@ public class OSDXKeyServerClientRequest {
 		Element e = new Element("revokekey");
 		e.addContent("masterkeyid", relatedMasterKey.getKeyModulusSHA1());
 		e.addContent(revokekey.getSimplePubKeyElement());
+		 //self signoff with revokekey
+		byte[] sha1proof = SecurityHelper.getSHA1LocalProof(e);
+		e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
+		e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", revokekey).toElement());
 		req.setContentElement(e);
-		req.setSignoffKey(relatedMasterKey); //Signoff with masterkey
+		req.setSignoffKey(relatedMasterKey); //signoff with masterkeyy
 		return req;
 	}
 	
@@ -315,6 +319,20 @@ public class OSDXKeyServerClientRequest {
 		e.addContent(subkey.getSimplePubKeyElement());
 		
 		req.setSignoffKey(relatedMasterKey); //Signoff with masterkey
+		req.setContentElement(e);
+		
+		return req;
+	}
+	
+	public static OSDXKeyServerClientRequest getRequestPutKeyLogs(String host, Vector<KeyLog> keylogs, OSDXKeyObject signingKey) throws Exception {
+		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+		req.setURI(host, "/keylogs");
+		
+		Element e = new Element("keylogs");
+		for (KeyLog k : keylogs) {
+			e.addContent(k.toElement());
+		}
+		req.setSignoffKey(signingKey); //Signoff
 		req.setContentElement(e);
 		
 		return req;

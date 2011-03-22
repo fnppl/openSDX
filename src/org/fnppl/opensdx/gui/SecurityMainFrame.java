@@ -1289,17 +1289,17 @@ public class SecurityMainFrame extends JFrame {
 				KeyServerIdentity keyserver = keyservers.get(ans);
 				OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
 				try {
-					Vector<String> masterkeys = client.requestMasterPubKeys(email);
+					Vector<String> masterkeys = client.requestMasterPubKeys(email, knownpublickeys);
 					String kt = "";
 					if (masterkeys!=null && masterkeys.size()>0) {
 						for (String masterkey : masterkeys) {
-							OSDXKeyObject mkey = client.requestPublicKey(masterkey);
+							OSDXKeyObject mkey = client.requestPublicKey(masterkey, knownpublickeys);
 							currentKeyStore.addKey(mkey);
 							kt += "\n  MASTER: "+mkey.getKeyID();
-							Vector<String> subkeys = client.requestSubKeys(masterkey);
+							Vector<String> subkeys = client.requestSubKeys(masterkey, knownpublickeys);
 							if (subkeys!=null && subkeys.size()>0) {
 								for (String subkey : subkeys) {
-									OSDXKeyObject skey = client.requestPublicKey(subkey);
+									OSDXKeyObject skey = client.requestPublicKey(subkey, knownpublickeys);
 									currentKeyStore.addKey(skey);
 									kt += "\n    -> "+subkey;	
 								}
@@ -1361,6 +1361,8 @@ public class SecurityMainFrame extends JFrame {
 					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
 					OSDXKeyObject masterkey = currentKeyStore.getKey(parent);
 					if (!masterkey.isPrivateKeyUnlocked()) masterkey.unlockPrivateKey(messageHandler);
+					if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
+					
 					boolean ok = client.putRevokeKey(key, masterkey);
 					if (ok) {
 						key.setAuthoritativeKeyServer(keyserver.getHost());

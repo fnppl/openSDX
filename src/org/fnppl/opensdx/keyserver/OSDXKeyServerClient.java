@@ -107,7 +107,7 @@ public class OSDXKeyServerClient {
 	}
 	
 	// 1. Ich, als fremder user, möchte beim keyserver (z.B. keys.fnppl.org) den/die (MASTER) pubkey(s) zu der identity thiess@finetunes.net suchen können
-	public Vector<String> requestMasterPubKeys(final String idemail) throws Exception {
+	public Vector<String> requestMasterPubKeys(final String idemail, Vector<PublicKey> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestMasterPubKeys(host, idemail);
 		OSDXKeyServerClientResponse resp = send(req);
 		
@@ -120,7 +120,11 @@ public class OSDXKeyServerClient {
 		for (Element k : keyids) {
 			ret.add(k.getText());
 		}
-	 	//TODO verify signature
+		//verify signature
+		boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
+		if (!verify) {
+			throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+		}
 		return ret;
 	}
 	
@@ -144,7 +148,7 @@ public class OSDXKeyServerClient {
 	
 	
 	//2. Ich, als fremder user, möchte beim keyserver die weiteren identities (identity-details) zu einem pubkey bekommen können
-	public Vector<Identity> requestIdentities(String keyid) throws Exception {
+	public Vector<Identity> requestIdentities(String keyid, Vector<PublicKey> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestIdentities(host, keyid);
 		OSDXKeyServerClientResponse resp = send(req);
 		
@@ -158,12 +162,16 @@ public class OSDXKeyServerClient {
 	 	for (Element id : eid) {
 	 		ret.add(Identity.fromElement(id));
 	 	}
-	 	//TODO verify signature
+	 	//verify signature
+		boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
+		if (!verify) {
+			throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+		}
 	    return ret;
 	}
 	
 	//3. Ich, als fremder user, möchte beim keyserver den aktuellen (beim keyserver bekannten) status zu einem pubkey bekommen können (valid/revoked/etc.)
-	public KeyStatus requestKeyStatus(String keyid) throws Exception {
+	public KeyStatus requestKeyStatus(String keyid, Vector<PublicKey> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestKeyStatus(host, keyid);
 		OSDXKeyServerClientResponse resp = send(req);
 		if (resp==null || resp.status == null) return null;
@@ -173,13 +181,16 @@ public class OSDXKeyServerClient {
 			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 		}
 		KeyStatus ks = KeyStatus.fromElement(e);
-		//TODO verify signature		
-		
+		//verify signature
+		boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
+		if (!verify) {
+			throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+		}
 		return ks;
 	}
 	
 	//4. Ich, als fremder user, möchte beim keyserver die keylogs eines (beliebigen) pubkeys bekommen können
-	public Vector<KeyLog> requestKeyLogs(String keyid) throws Exception {
+	public Vector<KeyLog> requestKeyLogs(String keyid, Vector<PublicKey> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestKeyLogs(host, keyid);
 		OSDXKeyServerClientResponse resp = send(req);
 		if (resp==null || resp.status == null) return null;
@@ -193,12 +204,16 @@ public class OSDXKeyServerClient {
 		for (Element ekl : ekls) {
 			vkl.add(KeyLog.fromElement(ekl));
 		}
-		//TODO verify signature		
+		//verify signature
+		boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
+		if (!verify) {
+			throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+		}
 		return vkl;
 	}
 	
 	//5. Ich, als fremder user, möchte beim keyserver die weiteren pubkeys zu einem parent-pubkey (MASTER) bekommen können
-	public Vector<String> requestSubKeys(String masterkeyid) throws Exception {
+	public Vector<String> requestSubKeys(String masterkeyid, Vector<PublicKey> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestSubkeys(host, masterkeyid);
 		OSDXKeyServerClientResponse resp = send(req);
 
@@ -211,11 +226,15 @@ public class OSDXKeyServerClient {
 		for (Element k : keyids) {
 			ret.add(k.getText());
 		}		
-		//TODO verify signature		
+		//verify signature
+		boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
+		if (!verify) {
+			throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+		}
 		return ret;
 	}
 	
-	public OSDXKeyObject requestPublicKey(String keyid) throws Exception {
+	public OSDXKeyObject requestPublicKey(String keyid, Vector<PublicKey> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPublicKey(host, keyid);
 		OSDXKeyServerClientResponse resp = send(req);
 
@@ -226,8 +245,11 @@ public class OSDXKeyServerClient {
 		Vector<String> ret = new Vector<String>();
 		Element key = e.getChild("pubkey");
 		if (key!=null) {
-			//TODO verify signature
-			
+			//verify signature
+			boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
+			if (!verify) {
+				throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+			}
 		}	
 		return null;
 	}
@@ -276,75 +298,24 @@ public class OSDXKeyServerClient {
 	}
 
 	//   5. Ich, als user, möchte meine keylogs auf dem server ablegen können (ein löschen von keylogs ist NICHT möglich - für einen aktuellen status ist die "kette ist chronologisch abzuarbeiten")
-	public boolean putKeyLog(KeyLog keylog) throws Exception {
-		throw new RuntimeException("not implemented");
-		//TODO why should i do that?
 	
-		//example request
-		
-//		POST / HTTP/1.1
-//		Host: keys.fnppl.org
-//		Request: keylogdelivery
-//		Content-Type: text/xml
-//		Content-Length: 235
-//
-//		<keylogdelivery>
-//		  <keylog>
-//		    <action>
-//		      <date>2011-01-01 00:00:00 GMT+00:00</date>
-//		      <ipv4>919191</ipv4>
-//		      <ipv6>91921929</ipv6>
-//		      <from>
-//		        <keyid>kakaka@llalal.nät</keyid>
-//		        <sha1fingerprint />
-//		      </from>
-//		      <to>
-//		        <keyid>kakaka2@llalal.nät</keyid>
-//		        <sha1fingerprint />
-//		      </to>
-//		      <approval>
-//		        <of>
-//		          <identity>
-//		            <email>akakak@lalal</email>
-//		            <function />
-//		            <sha1 />
-//		          </identity>
-//		        </of>
-//		      </approval>
-//		      <datapath>
-//		        <step1>
-//		          <datasource>keys.fnppl.org</datasource>
-//		          <datainsertdatetime>2011-02-21 00:00:00 GMT+00:00</datainsertdatetime>
-//		        </step1>
-//		        <step2>
-//		          <datasource>keys.fnppl.org</datasource>
-//		          <datainsertdatetime>2011-02-21 00:00:00 GMT+00:00</datainsertdatetime>
-//		        </step2>
-//		      </datapath>
-//		    </action>
-//		    <sha1localproof>85:31:63:9E:83:F8:94:BA:39:91:6E:2E:B5:86:1C:57:1D:41:9A:90</sha1localproof>
-//		    <signature>
-//		      <data>
-//		        <sha1>85:31:63:9E:83:F8:94:BA:39:91:6E:2E:B5:86:1C:57:1D:41:9A:90</sha1>
-//		        <signdatetime>2011-03-09 09:27:44 GMT+00:00</signdatetime>
-//		        <dataname>localsignoff for sha1 85:31:63:9E:83:F8:94:BA:39:91:6E:2E:B5:86:1C:57:1D:41:9A:90</dataname>
-//		      </data>
-//		      <signoff>
-//		        <keyid>BEEE542006AF8301096BF0305AB4632E9982AA94</keyid>
-//		        <pubkey>
-//		          <algo>RSA</algo>
-//		          <bits>3072</bits>
-//		          <modulus>00CBFC6AE1B8C3B2E31DF52214F1CFB4EFBB9E77CAF63A61F85B8AAD1BB43A3C138F1FC1C8E7D6F3368E7985AC1719A07F77F16C4D26E7BCC0A3EE079F9132BA1ACA7E9E279852F6D2821EE3FCD9C3519D15B7DA34345597D1EA38B716891793E76D4C34270257C010E03B4D8F39BE1025931B6D104C4E52D542DA7A8A1CCD2368C3075D5C71DEE146FBBB77A0DD72DB14A444D556B12681497565B7D82B5F2DA30B667AE8D8E364993E9F2746AB3AA92FBF2B0A8376870CC9C890805EA27541B997B9196916DBAFF7D3F180A2DBD4D5A54F23006FEF4544345A0FD390CCEEEDB4C8C505DF7D11C4A8687E9BF865F1A28008355B17EDB31509A5F122856AB11DDC56A4D51F02A79908E2E89D0EA7EE80DEEAE2119C89D9C25BEDE96386504CEA40C95DCF630E78514FB28F8F9EC9BC280B4F0D2C798988B8E27348AAEA94A3FA58BDE172BE6D07D1FDFD493C632DCC2E45B79353231A92A1CD3924DF5DFB0AB20D889D89FCD26F0A32421CC669BC89F239FDC91636A638B55A784BF5846CFAD007</modulus>
-//		          <exponent>010001</exponent>
-//		        </pubkey>
-//		        <signaturebytes>19:17:23:BC:6A:0D:85:E2:78:77:89:62:81:4C:EB:15:9C:D9:BF:24:E4:95:48:B0:20:62:57:C1:85:4F:34:BE:AD:67:0F:6E:C9:9A:41:F1:BC:2F:80:4A:B5:2E:77:0B:80:1F:3E:B3:54:4A:FD:1A:2F:79:E7:76:6E:39:4C:0C:55:DB:C9:FC:E4:C8:49:F4:7D:02:2D:E3:D4:03:B3:47:70:7E:92:EB:9E:3B:E9:B8:BF:BE:87:2F:E3:C6:94:C9:42:84:D8:EB:49:C3:35:89:F8:A5:04:5E:41:0A:01:C2:93:96:90:E2:E6:60:53:AA:03:06:3E:EC:C9:7F:71:A9:84:84:51:A7:A4:EA:B0:D2:98:8B:87:7C:02:E5:91:93:0B:78:86:B5:5B:8D:05:44:EB:68:EA:1E:17:A4:60:49:49:F3:D7:27:1D:72:A5:BE:0C:31:B0:90:CE:17:1F:9F:84:27:8D:38:28:7C:A3:EA:BD:51:04:85:B1:82:AF:EE:62:16:CC:0D:14:F7:2A:7D:32:93:E8:36:80:E0:2D:6F:19:90:B9:22:10:84:C0:37:C3:FE:B8:21:FE:39:77:D9:41:D8:E7:86:68:F3:9E:8F:24:40:46:02:4F:71:49:DD:FD:7D:6F:2D:75:0F:5E:EA:FB:AB:A5:93:2E:FE:C8:1F:A9:D5:D6:C6:6D:E6:84:AF:BE:4B:01:B8:94:42:1B:53:69:BE:80:45:C8:43:06:45:0C:07:4E:FE:D4:35:92:38:EA:14:65:F8:26:71:82:26:B5:EC:38:24:90:D0:CD:50:1B:84:B5:B6:4F:46:B4:F8:FF:90:99:83:1F:9D:CA:7F:7C:21:46:10:EC:A5:3C:F2:2A:C2:05:9E:56:50:2A:56:7D:57:AA:A5:0D:4F:C8:0A:27:34:25:DA:1B:03:9B:E2:45:FC:55:B6:82:D7:8E:80:C9:4E:BE:33:7A:40:B5:03:73:30:FF:49:A0:FE:98:73:27:24:EA:20:47:DC:43:03</signaturebytes>
-//		      </signoff>
-//		    </signature>
-//		</keylogdelivery>
+	public boolean putKeyLog(KeyLog keylog, OSDXKeyObject signingKey) throws Exception {
+		Vector<KeyLog> keylogs = new Vector<KeyLog>();
+		keylogs.add(keylog);
+		return putKeyLogs(keylogs, signingKey);
 		
 	}
-	
-	//TODO
+	public boolean putKeyLogs(Vector<KeyLog> keylogs, OSDXKeyObject signingKey) throws Exception {
+		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutKeyLogs(host, keylogs, signingKey);
+		OSDXKeyServerClientResponse resp = send(req);
+		if (resp==null || resp.status == null) return false;
+		if (resp.status.endsWith("OK"))	return true;
+		if (resp.hasErrorMessage()) {
+			message = resp.getErrorMessage();
+		}
+		return false;
+	}
+
 	//   4. Ich, als user, möchte eigentlich, daß alle meine Aktionen auf meinem MASTER-key - bzw. allen meiner keys durch einen entsprechenden signature-proof des entsprechenden private-keys validierbar sind
 	//   6. Ich, als user, möchte alle kommunikation vom/zum keyserver mit einem vom keyserver definierten root-MASTER-key approveden key signiert wissen
 	//   7. Ich, als user, möchte diese keyserver-root-keys vordefiniert in meiner openSDX-suite finden, aber auch simpelst selbst nachrüsten können

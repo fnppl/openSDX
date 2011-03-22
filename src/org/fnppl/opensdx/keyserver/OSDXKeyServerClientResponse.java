@@ -9,6 +9,7 @@ import org.fnppl.opensdx.xml.*;
 
 public class OSDXKeyServerClientResponse {
 
+	public static boolean debug = true;
 	public Hashtable<String, String> headers = null;
 	public Document doc;
 	public String status;
@@ -18,13 +19,13 @@ public class OSDXKeyServerClientResponse {
 		re.headers = new Hashtable<String, String>();
 		re.doc = null;
 		re.status = readLine(in);
+		if (debug) System.out.println(re.status);
 		
 		readHeader(in, re);
-		//System.out.println("::header end::");
 		if (re.headers.containsKey("Content-Type") && re.headers.get("Content-Type").equals("text/xml")) {
 			readXMLContent(in, re);
 		}
-		//if (re.doc!=null) re.doc.output(System.out);
+		if (debug) if (re.doc!=null) re.doc.output(System.out);
 		
 		System.out.println("OSDXKeyServerClient | end requestMasterPubKeys");
 		
@@ -64,6 +65,7 @@ public class OSDXKeyServerClientResponse {
 		String zeile = null;
 
 		while ((zeile=readLine(in))!=null) {
+			if (debug) System.out.println(zeile);
 			if(zeile.length()==0) {
 				return;//heade-ende
 			}

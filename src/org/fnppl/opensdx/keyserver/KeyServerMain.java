@@ -358,7 +358,7 @@ public class KeyServerMain {
 			
 			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
 			
-			boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey);
+			boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey.getPubKey());
 			//if any of above checks failed: signature NOT verified!
 			if (!verified) {
 				resp.setRetCode(404, "FAILED");
@@ -442,7 +442,7 @@ public class KeyServerMain {
 			
 			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
 			
-			boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey);
+			boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey.getPubKey());
 			
 			if (!verified) {
 				resp.setRetCode(404, "FAILED");
