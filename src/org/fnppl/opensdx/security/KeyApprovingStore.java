@@ -61,7 +61,7 @@ public class KeyApprovingStore {
 	private boolean unsavedChanges = false;
 	private OSDXKeyObject keystoreSigningKey = null;
 	
-	public KeyApprovingStore() {
+	private KeyApprovingStore() {
 	}
 	
 	public static KeyApprovingStore createNewKeyApprovingStore(File f, MessageHandler mh) throws Exception {
@@ -331,11 +331,23 @@ public class KeyApprovingStore {
 		return ret;
 	}
 	
-	public String[] getKeyStatusWithDate(String keyid) throws Exception {
+	public KeyStatus getKeyStatus(String keyid) throws Exception {
 		Vector<KeyLog> kls = getKeyLogs(keyid);
 		if (kls==null || kls.size()==0) return null;
 		KeyLog kl = kls.lastElement();
-		return new String[] {kl.getStatus(), kl.getDateString()};
+		String status = kl.getStatus();
+		int validity = -1;
+		if (status.equals(KeyLog.APPROVAL)) validity =  KeyStatus.STATUS_VALID;
+		else if (status.equals(KeyLog.DISAPPROVAL)) validity =  KeyStatus.STATUS_UNAPPROVED;
+		else if (status.equals(KeyLog.APPROVAL_PENDING)) validity =  KeyStatus.STATUS_UNAPPROVED;
+		else if (status.equals(KeyLog.REVOCATION)) validity =  KeyStatus.STATUS_REVOKED;
+		
+		int approvalPoints = 100;
+		int datetimeValidFrom = 0;  //TODO get from key
+		int datetimeValidUntil = 0; //TODO
+		
+		KeyStatus ks = new KeyStatus(validity, approvalPoints, datetimeValidFrom, datetimeValidUntil);
+		return ks;
 	}
 	
 	public static void sortKeyLogsbyDate(Vector<KeyLog> keylogs) {

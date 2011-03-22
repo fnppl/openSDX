@@ -93,6 +93,10 @@ public class Dialogs {
 		JOptionPane.showMessageDialog(null, message);
 	}
 	
+	public static String showInputDialog(String title, String message) {
+		return JOptionPane.showInputDialog(null, message, title, JOptionPane.PLAIN_MESSAGE);
+	}
+	
 	public static final String showPasswordDialog(String head, String message) {
 		JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());

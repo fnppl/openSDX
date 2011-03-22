@@ -203,23 +203,6 @@ public class SecurityMainFrame extends JFrame {
 		return false;
 	}
 
-	//	private void initUICurrentKeyStore() {
-	//		if (currentKeyStore != null) {
-	//			this.getContentPane().setVisible(true);
-	//			mKeysIDs = new KeysAndIdentitiesTableModel(currentKeyStore.getAllKeys());
-	//			tKeysIDs.setModel(mKeysIDs);
-	//			fitAllColumnWidth(tKeysIDs);
-	//			
-	//		}
-	//		else {
-	//			this.getContentPane().setVisible(false);
-	//			mKeysIDs = new KeysAndIdentitiesTableModel(null);
-	//			tKeysIDs.setModel(mKeysIDs);
-	//			fitAllColumnWidth(tKeysIDs);
-	//		}
-	//		updateUI();
-	//	}
-
 	public boolean openKeyStore(File f) {
 		try {
 			if(f.exists()) {
@@ -365,6 +348,8 @@ public class SecurityMainFrame extends JFrame {
 
 		p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
 
+		Vector<PublicKey> storedPublicKeys = new Vector<PublicKey>(); 
+		
 		if (currentKeyStore!=null) {
 			//keys
 			Vector<OSDXKeyObject> all = currentKeyStore.getAllKeys();
@@ -377,8 +362,36 @@ public class SecurityMainFrame extends JFrame {
 					Component comp = buildComponent(key, revokekeys, subkeys);
 					p.add(comp);
 					y++;
+				} else {
+					if (!key.hasPrivateKey()) {
+						storedPublicKeys.add(key.getPubKey());
+					}
 				}
+				
 			}
+			
+			//known public keys from keystore
+			
+			JPanel kpkfks = new JPanel();
+			kpkfks.setBorder(new TitledBorder("Known public keys in keystore:"));
+			kpkfks.setLayout(new BoxLayout(kpkfks, BoxLayout.PAGE_AXIS));
+			kpkfks.add(buildComponentKnownKeys(storedPublicKeys));
+			
+			JPanel buP = new JPanel();
+			buP.setLayout(new FlowLayout(FlowLayout.LEFT));
+			
+			JButton bu = new JButton("request keys from server");
+			//bu.setPreferredSize(new Dimension(buWidth,25));
+			bu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					requestKeysFromServer();
+				}
+			});
+			buP.add(bu);
+			kpkfks.add(buP);
+			kpkfks.validate();
+			p.add(kpkfks);
+			
 			
 			//keylogs
 			Vector<KeyLog> keylogs = currentKeyStore.getKeyLogs();
@@ -916,6 +929,7 @@ public class SecurityMainFrame extends JFrame {
 		for (int i=0;i<keys.size();i++) {
 			y++;
 			addLabelTextFieldPart("known public key "+(i+1)+":", keys.get(i).getKeyID(), a, c, y);
+			//TODO status update, remove
 		}
 
 		final int w = 600;
@@ -1251,6 +1265,43 @@ public class SecurityMainFrame extends JFrame {
 			t.stop();
 			releaseUILock();
 			updateUI();
+		}
+	}
+	
+	protected void requestKeysFromServer() {
+		if (keyservers==null || keyservers.size()==0) {
+			Dialogs.showMessage("Sorry, no keyservers found.");
+			return;
+		}
+		
+		String email = Dialogs.showInputDialog("Request key", "Please enter corresponding email adresse for searching for public keys on keyserver.");
+		if (email!=null) {
+			Vector<String> keyservernames = new Vector<String>();
+			for (KeyServerIdentity id : keyservers) {
+				keyservernames.add(id.getHost()+":"+id.getPort());
+			}
+			int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer for uploading MASTER Key.", keyservernames);
+			if (ans>=0) {
+				KeyServerIdentity keyserver = keyservers.get(ans);
+				OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
+				try {
+					Vector<OSDXKeyObject> keys = client.requestPubKeys(email);
+					if (keys!=null && keys.size()>0) {
+						String kt = "";
+						for (OSDXKeyObject key : keys) {
+							kt += "\n"+key.getKeyID();
+							currentKeyStore.addKey(key);
+						}
+						updateUI();
+						Dialogs.showMessage("Added key(s) for \""+email+"\":"+kt);
+					} else {
+						Dialogs.showMessage("No keys for \""+email+"\" found on keyserver "+keyserver.getHost()+".");
+					}
+					
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
 		}
 	}
 

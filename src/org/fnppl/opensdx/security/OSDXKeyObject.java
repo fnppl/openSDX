@@ -149,6 +149,7 @@ public class OSDXKeyObject {
 		return ret;
 	}
 	
+	
 	public static OSDXKeyObject fromElement(Element kp) throws Exception {
 		OSDXKeyObject ret = new OSDXKeyObject();
 		System.out.println("adding keyobject");
@@ -469,6 +470,48 @@ public class OSDXKeyObject {
 		} else {
 			System.out.println("CAUTION: private key NOT saved.");
 		}// -- end privkey
+		
+		ekp.addContent("gpgkeyserverid", gpgkeyserverid);
+		
+		unsavedChanges = false;
+		return ekp;
+	}
+	
+	public Element toElementWithoutPrivateKey() throws Exception {
+		Element ekp = new Element("keypair");
+		//identities
+		if (identities!=null && identities.size()>0) {
+			Element eids = new Element("identities");
+			for (Identity id : identities) {
+				eids.addContent(id.toElement());
+			}
+			ekp.addContent(eids);
+		}
+		
+		ekp.addContent("sha1fingerprint", getKeyModulusSHA1());
+		ekp.addContent("authoritativekeyserver", authoritativekeyserver);
+		
+		//datapath
+		Element edp = new Element("datapath");
+		for (int i=0;i<datapath.size();i++) {
+			Element edss = new Element("step"+(i+1));
+			edss.addContent("datasource",datapath.get(i).getDataSource());
+			edss.addContent("datainsertdatetime", datapath.get(i).getDataInsertDatetimeString());
+			edp.addContent(edss);
+		}
+		ekp.addContent(edp);
+		
+		ekp.addContent("usage",usage_name.get(usage));
+		ekp.addContent("level",level_name.get(level));
+		ekp.addContent("parentkeyid", getParentKeyID());
+		ekp.addContent("algo",algo_name.get(algo));
+		ekp.addContent("bits", ""+akp.getBitCount());
+		ekp.addContent("modulus", SecurityHelper.HexDecoder.encode(akp.getModulus(), ':', -1));
+		
+		//pubkey
+		Element epk = new Element("pubkey");
+		epk.addContent("exponent", SecurityHelper.HexDecoder.encode(akp.getPublicExponent(), ':', -1));
+		ekp.addContent(epk);
 		
 		ekp.addContent("gpgkeyserverid", gpgkeyserverid);
 		

@@ -215,6 +215,14 @@ public class OSDXKeyServerClientRequest {
 	
 		return req;
 	}
+	public static OSDXKeyServerClientRequest getRequestPubKeys(String host, String idemail) {
+		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+		req.setURI(host, "/pubkeys");
+		req.toggleGETMode();
+		req.addRequestParam("Identity", idemail);		
+	
+		return req;
+	}
 	public static OSDXKeyServerClientRequest getRequestKeyLogs(String host, String keyid) {
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
 		req.setURI(host, "/keylogs");

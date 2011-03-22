@@ -56,6 +56,12 @@ import org.fnppl.opensdx.xml.XMLHelper;
 
 public class KeyLog {
 
+	public static String APPROVAL = "approval"; 
+	public static String APPROVAL_PENDING = "approval_pending";
+	public static String DISAPPROVAL = "disapproval";
+	public static String REVOCATION = "revocation";
+	private String[] checkFor = new String[] {APPROVAL, APPROVAL_PENDING, DISAPPROVAL, REVOCATION};
+	
 	private Element ekeylog;
 	private boolean verified = false;
 	
@@ -170,7 +176,6 @@ public class KeyLog {
 	}
 	public String getStatus() {
 		Element e = ekeylog.getChild("action");
-		String[] checkFor = new String[] {"approval","approval_pending","disapproval","revocation"};
 		for (String c : checkFor) {
 			if (e.getChild(c)!=null) return c;
 		}

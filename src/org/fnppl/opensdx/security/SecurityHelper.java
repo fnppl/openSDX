@@ -48,6 +48,7 @@ package org.fnppl.opensdx.security;
 
 import java.security.SecureRandom;
 import java.security.Security;
+import java.text.SimpleDateFormat;
 import java.io.*;
 import java.util.*;
 
@@ -60,6 +61,15 @@ import org.fnppl.opensdx.xml.Element;
  */
 
 public class SecurityHelper {
+	
+	final static String RFC1123_CUT = "yyyy-MM-dd HH:mm:ss zzz";
+	final static Locale ml = new Locale("en", "DE");
+	public final static SimpleDateFormat datemeGMT = new SimpleDateFormat(RFC1123_CUT, ml);
+	static {
+		datemeGMT.setTimeZone(java.util.TimeZone.getTimeZone("GMT+00:00"));
+	}
+	
+	
 	public static void ensureBC() {
 		if(Security.getProvider("BC")==null) {
 			Security.addProvider(new BouncyCastleProvider());
@@ -540,6 +550,64 @@ public class SecurityHelper {
 		byte[] rb = new byte[bytecount];
         sc.nextBytes(rb);
         return rb;
+	}
+	
+	public static boolean checkElementsSHA1localproofAndSignature(Element e, OSDXKeyObject signingKey) {
+		//check sha1localproof
+		byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
+		//build toProof <- all content but sha1localproof and Signature
+		Vector<Element> toProof = new Vector<Element>();
+		Vector<Element> children = e.getChildren();
+		for (Element c : children) {
+			if (!c.getName().equals("sha1localproof") && !c.getName().equals("Signature")) {
+				toProof.add(c);
+			}
+		}
+		boolean verified = true;
+		try {
+			byte[] calcSha1localproof = SecurityHelper.getSHA1LocalProof(toProof);
+			if (!Arrays.equals(givenSha1localproof, calcSha1localproof)) {
+				System.out.println("given sha1: "+SecurityHelper.HexDecoder.encode(givenSha1localproof, ':', -1));
+				System.out.println("calc  sha1: "+SecurityHelper.HexDecoder.encode( calcSha1localproof, ':', -1));
+				verified = false;
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+		//if (verified) System.out.println("checking modulus");
+		
+		//check modulus belongs to keyid
+		byte[] givenModulus = SecurityHelper.HexDecoder.decode(e.getChild("signature").getChild("signoff").getChild("pubkey").getChildText("modulus")); 
+		if (verified && !Arrays.equals(signingKey.getPubKey().getModulusBytes(),givenModulus)) {
+			verified = false;
+			System.out.println("given     modulus: "+SecurityHelper.HexDecoder.encode(givenModulus, ':', -1));
+			System.out.println("masterkey modulus: "+SecurityHelper.HexDecoder.encode(signingKey.getPubKey().getModulusBytes(), ':', -1));
+			System.out.println("modulus verification FAILED!");
+		}
+		
+		
+		//check signaturebytes match sha1localproof
+		if (verified) {
+			try {
+				Signature sig = Signature.fromElement(e.getChild("signature"));
+				verified = sig.tryVerificationMD5SHA1SHA256(givenSha1localproof);
+				return verified;
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				return false;
+			}
+//			System.out.println("checking signaturebytes");	
+//			System.out.println("signature data   md5   : "+e.getChild("signature").getChild("data").getChildText("md5"));
+//			System.out.println("signature data   sha1  : "+e.getChild("signature").getChild("data").getChildText("sha1"));
+//			System.out.println("signature data   sha256: "+e.getChild("signature").getChild("data").getChildText("sha256"));
+//			byte[][] data = SecurityHelper.getMD5SHA1SHA256(givenSha1localproof);
+//			System.out.println("calc      data   md5   : "+SecurityHelper.HexDecoder.encode(data[1],':',-1));
+//			System.out.println("calc      data   sha1  : "+SecurityHelper.HexDecoder.encode(data[2],':',-1));
+//			System.out.println("calc      data   sha256: "+SecurityHelper.HexDecoder.encode(data[3],':',-1));
+			
+		}
+		return false;
 	}
 	
 }

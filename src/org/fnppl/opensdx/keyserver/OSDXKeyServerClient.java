@@ -125,6 +125,23 @@ public class OSDXKeyServerClient {
 	}
 	
 	
+	public Vector<OSDXKeyObject> requestPubKeys(final String idemail) throws Exception {
+		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPubKeys(host, idemail);
+		OSDXKeyServerClientResponse resp = send(req);
+		
+		Element e = resp.doc.getRootElement();
+		if (!e.getName().equals("pubkeys")) {
+			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
+		}
+		Vector<OSDXKeyObject> ret = new Vector<OSDXKeyObject>();
+		Vector<Element> pks = e.getChildren("keypair");
+		for (Element pk : pks) {
+			OSDXKeyObject key = OSDXKeyObject.fromElement(pk);
+			ret.add(key);
+		}
+		return ret;
+	}
+	
 	
 	//2. Ich, als fremder user, möchte beim keyserver die weiteren identities (identity-details) zu einem pubkey bekommen können
 	public Vector<Identity> requestIdentities(String keyid) throws Exception {
@@ -155,7 +172,7 @@ public class OSDXKeyServerClient {
 			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 		}
 		String status = e.getChildText("keystatus");
-		String date = e.getChildText("keystatus_date");
+		String date = e.getChildText("keystatusdatetime");
 		if (status!=null && date!=null) {
 			//TODO verify signature, really signed by rootkey from server?
 			//Signature sig = Signature.fromElement(e.getChild("signature"));

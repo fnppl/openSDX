@@ -49,9 +49,11 @@ package org.fnppl.opensdx.keyserver;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLHelper;
 
 //http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 
@@ -63,8 +65,8 @@ public class KeyServerResponse {
 	public String contentType = "text/xml";
 	
 	private String serverid = null;
-	private Element contentElement;
-	
+	protected Element contentElement;
+	protected OSDXKeyObject signoffkey = null;
 	
 	public KeyServerResponse(String serverid) {
 		this.serverid = serverid;
@@ -75,12 +77,27 @@ public class KeyServerResponse {
 		this.retcodeString = msg;
 	}
 	
+	public void setSignoffKey(OSDXKeyObject signoffkey) {
+		this.signoffkey = signoffkey;
+	}
+	
 	public void toOutput(OutputStream out) throws Exception {
 		//write it to the outputstream...
 		if (contentElement != null) {
+			Element eContent = contentElement;
+			
+			//signoff if signoffkey present
+			if (signoffkey!=null) {
+				eContent = XMLHelper.cloneElement(contentElement);
+				//signoff
+				byte[] sha1proof = SecurityHelper.getSHA1LocalProof(eContent);
+				eContent.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
+				eContent.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", signoffkey).toElement());
+			}
+			
 			ByteArrayOutputStream contentout = new ByteArrayOutputStream();
 			
-			Document xml = Document.buildDocument(contentElement);
+			Document xml = Document.buildDocument(eContent);
 			xml.output(contentout);
 			contentout.flush();
 			contentout.close();
@@ -119,5 +136,120 @@ public class KeyServerResponse {
 	
 	public void setContentElement(Element e) {
 		contentElement = e;
+	}
+	
+	public static KeyServerResponse createMasterPubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<OSDXKeyObject>> id_keys, OSDXKeyObject signoffkey) {
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		String id = request.getParamValue("Identity");
+		if (id != null) {
+			Element e = new Element("masterpubkey_resonse");
+			e.addContent("id",id);
+			Vector<OSDXKeyObject> keys = id_keys.get(id);
+			if (keys != null && keys.size() > 0) {
+				//add key ids
+				for (OSDXKeyObject k : keys) {
+					e.addContent("keyid",k.getKeyID());
+				}
+				resp.setSignoffKey(signoffkey); //only signoff if real content
+			}
+			resp.setContentElement(e);
+			return resp;
+		}
+		resp.setRetCode(404, "FAILED");
+		resp.createErrorMessageContent("Missing parameter: Identity");
+		return null;
+	}
+	
+	public static KeyServerResponse createIdentityResponse(String serverid, KeyServerRequest request, HashMap<String, OSDXKeyObject> keyid_key, OSDXKeyObject signoffkey) {
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		String id = request.getParamValue("KeyID");
+		if (id != null) {
+			Element e = new Element("identities_response");
+			e.addContent("keyid",id);
+			OSDXKeyObject key = keyid_key.get(id);
+			if (key != null) {
+				Vector<Identity> ids = key.getIdentities();
+				for (Identity aid : ids) {
+					e.addContent(aid.toElement());
+				}
+				resp.setSignoffKey(signoffkey); //only signoff if real content
+			}
+			resp.setContentElement(e);
+			return resp;
+		}
+		resp.setRetCode(404, "FAILED");
+		resp.createErrorMessageContent("Missing parameter: KeyID");
+		return null;
+	}
+	
+	public static KeyServerResponse createKeyStatusyResponse(String serverid, KeyServerRequest request, KeyApprovingStore keystore, OSDXKeyObject signoffkey) {
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		String id = request.getParamValue("KeyID");
+		if (id != null) {
+			Element e = new Element("keystatus_response");
+			e.addContent("keyid",id);
+			try {
+				KeyStatus ks = keystore.getKeyStatus(id);
+				if (ks!=null) {
+					Vector<Element> status = ks.toElement().getChildren();
+					for (Element es : status) {
+						e.addContent(es);
+					}
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			resp.setContentElement(e);
+			resp.setSignoffKey(signoffkey);
+			return resp;
+		}
+		resp.setRetCode(404, "FAILED");
+		resp.createErrorMessageContent("Missing parameter: KeyID");
+		return null;
+	}
+	
+	public static KeyServerResponse createKeyLogResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<KeyLog>> keyid_log, OSDXKeyObject signoffkey) {
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		String id = request.getParamValue("KeyID");
+		if (id != null) {
+			Element e = new Element("keylogs_response");
+			e.addContent("keyid",id);
+			Vector<KeyLog> keylogs = keyid_log.get(id);
+			if (keylogs!=null && keylogs.size()>0) {
+				for (KeyLog log : keylogs) {
+					e.addContent(log.toElement());
+				}
+				
+			}
+			resp.setContentElement(e);
+			resp.setSignoffKey(signoffkey);
+			return resp;
+		}
+		resp.setRetCode(404, "FAILED");
+		resp.createErrorMessageContent("Missing parameter: KeyID");
+		return null;
+	}
+	
+	
+	public static KeyServerResponse createSubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<OSDXKeyObject>> keyid_subkeys, OSDXKeyObject signoffkey) {
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		String id = request.getParamValue("KeyID");
+		if (id != null) {
+			Element e = new Element("subkey_response");
+			e.addContent("parentkeyid", id);
+			Vector<OSDXKeyObject> subkeys = keyid_subkeys.get(id);
+			if (subkeys!=null && subkeys.size()>0) {
+				for (OSDXKeyObject key : subkeys) {
+					e.addContent("keyid",key.getKeyID());
+				}
+				
+			}
+			resp.setSignoffKey(signoffkey);
+			resp.setContentElement(e);
+			return resp;
+		}
+		resp.setRetCode(404, "FAILED");
+		resp.createErrorMessageContent("Missing parameter: KeyID");
+		return null;
 	}
 }
