@@ -84,7 +84,7 @@ public class KeyStatus {
 		validUntil = datetimeValidUntil;
 	}
 	
-	public KeyStatus fromElement(Element e) throws Exception {
+	public static KeyStatus fromElement(Element e) throws Exception {
 		KeyStatus k = new KeyStatus();
 		k.validityStatus = VALIDITY_NAME.indexOf(e.getChildText("validity_status"));
 		k.approvalPoints = e.getChildInt("approval_pojnts");

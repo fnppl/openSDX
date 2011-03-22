@@ -119,7 +119,7 @@ public class KeyServerMain {
 			keyServerSigningKey.unlockPrivateKey(serverSigningKeyPassword);
 		} else {
 			//generate new keypair if keystore not contains serverIDemail key
-			keyServerSigningKey = OSDXKeyObject.fromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+			keyServerSigningKey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
 			Identity id = Identity.newEmptyIdentity();
 			id.setEmail(serverIDemail);
 			keyServerSigningKey.addIdentity(id);
@@ -266,13 +266,12 @@ public class KeyServerMain {
 			AsymmetricKeyPair akp = new AsymmetricKeyPair(pubkey.getModulusBytes(), pubkey.getPublicExponentBytes(), null);
 			
 			//generate key
-			OSDXKeyObject key = OSDXKeyObject.fromKeyPair(akp);
+			OSDXKeyObject key = OSDXKeyObject.buildNewMasterKeyfromKeyPair(akp);
 			key.setAuthoritativeKeyServer(serverIDemail);
 			Identity idd = Identity.fromElement(e.getChild("identity"));
 			key.addIdentity(idd);
 			key.setAuthoritativeKeyServer(keyserverName);
-			key.setLevel(OSDXKeyObject.LEVEL_MASTER);
-			key.setUsage(OSDXKeyObject.USAGE_SIGN);
+
 			
 			//generate keylog for approve pending
 			Element ekl = new Element("keylog");
@@ -370,7 +369,7 @@ public class KeyServerMain {
 			//put key in keystore
 			AsymmetricKeyPair akp = new AsymmetricKeyPair(pubkey.getModulusBytes(), pubkey.getPublicExponentBytes(), null);
 			//generate key
-			OSDXKeyObject key = OSDXKeyObject.fromKeyPair(akp);
+			OSDXKeyObject key = OSDXKeyObject.buildNewMasterKeyfromKeyPair(akp);
 			key.setLevel(OSDXKeyObject.LEVEL_REVOKE);
 			key.setUsage(OSDXKeyObject.USAGE_SIGN);
 			key.setParentKey(masterkey);
@@ -454,7 +453,7 @@ public class KeyServerMain {
 			//put key in keystore
 			AsymmetricKeyPair akp = new AsymmetricKeyPair(pubkey.getModulusBytes(), pubkey.getPublicExponentBytes(), null);
 			//generate key
-			OSDXKeyObject key = OSDXKeyObject.fromKeyPair(akp);
+			OSDXKeyObject key = OSDXKeyObject.buildNewMasterKeyfromKeyPair(akp);
 			key.setLevel(OSDXKeyObject.LEVEL_SUB);
 			key.setUsage(OSDXKeyObject.USAGE_SIGN);
 			key.setParentKey(masterkey);

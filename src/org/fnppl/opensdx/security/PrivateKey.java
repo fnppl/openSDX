@@ -86,7 +86,7 @@ public class PrivateKey {
 			filleddata[i] = data[i % data.length];//HT 2011-03-03 better some initvectorpadddup!!!
 		}
 		
-		System.out.println("PrivKey_SIGN_PLAINBLOATED:\t"+SecurityHelper.HexDecoder.encode(filleddata, ':', 80));
+		//System.out.println("PrivKey_SIGN_PLAINBLOATED:\t"+SecurityHelper.HexDecoder.encode(filleddata, ':', 80));
 		
 		return rsae.processBlock(filleddata, 0, filleddata.length);
 	}

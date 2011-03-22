@@ -105,42 +105,42 @@ public class OSDXKeyServerClient {
 	    }
 	    return re;
 	}
+	
 	// 1. Ich, als fremder user, möchte beim keyserver (z.B. keys.fnppl.org) den/die (MASTER) pubkey(s) zu der identity thiess@finetunes.net suchen können
-	public Vector<PublicKey> requestMasterPubKeys(final String idemail) throws Exception {
+	public Vector<String> requestMasterPubKeys(final String idemail) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestMasterPubKeys(host, idemail);
 		OSDXKeyServerClientResponse resp = send(req);
 		
 		Element e = resp.doc.getRootElement();
-		if (!e.getName().equals("pubkeys")) {
+		if (!e.getName().equals("masterpubkeys_responset")) {
 			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 		}
-		Vector<PublicKey> ret = new Vector<PublicKey>();
-		Vector<Element> pks = e.getChildren("pubkey");
-		for (Element pk : pks) {
-			BigInteger modulus = new BigInteger(SecurityHelper.HexDecoder.decode(pk.getChildText("modulus")));
-			BigInteger exponent = new BigInteger(SecurityHelper.HexDecoder.decode(pk.getChildText("exponent")));
-			ret.add(new PublicKey(modulus, exponent));
+		Vector<String> ret = new Vector<String>();
+		Vector<Element> keyids = e.getChildren("keyid");
+		for (Element k : keyids) {
+			ret.add(k.getText());
 		}
+	 	//TODO verify signature
 		return ret;
 	}
 	
 	
-	public Vector<OSDXKeyObject> requestPubKeys(final String idemail) throws Exception {
-		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPubKeys(host, idemail);
-		OSDXKeyServerClientResponse resp = send(req);
-		
-		Element e = resp.doc.getRootElement();
-		if (!e.getName().equals("pubkeys")) {
-			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
-		}
-		Vector<OSDXKeyObject> ret = new Vector<OSDXKeyObject>();
-		Vector<Element> pks = e.getChildren("keypair");
-		for (Element pk : pks) {
-			OSDXKeyObject key = OSDXKeyObject.fromElement(pk);
-			ret.add(key);
-		}
-		return ret;
-	}
+//	public Vector<OSDXKeyObject> requestPubKeys(final String idemail) throws Exception {
+//		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPubKeys(host, idemail);
+//		OSDXKeyServerClientResponse resp = send(req);
+//		
+//		Element e = resp.doc.getRootElement();
+//		if (!e.getName().equals("pubkeys")) {
+//			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
+//		}
+//		Vector<OSDXKeyObject> ret = new Vector<OSDXKeyObject>();
+//		Vector<Element> pks = e.getChildren("keypair");
+//		for (Element pk : pks) {
+//			OSDXKeyObject key = OSDXKeyObject.fromElement(pk);
+//			ret.add(key);
+//		}
+//		return ret;
+//	}
 	
 	
 	//2. Ich, als fremder user, möchte beim keyserver die weiteren identities (identity-details) zu einem pubkey bekommen können
@@ -149,7 +149,7 @@ public class OSDXKeyServerClient {
 		OSDXKeyServerClientResponse resp = send(req);
 		
 	    Element e = resp.doc.getRootElement();
-	    if (!e.getName().equals("identities")) {
+	    if (!e.getName().equals("identities_response")) {
 	    	resp.doc.output(System.out);
 	    	throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 	    }
@@ -158,30 +158,24 @@ public class OSDXKeyServerClient {
 	 	for (Element id : eid) {
 	 		ret.add(Identity.fromElement(id));
 	 	}
-	    return ret;	    
+	 	//TODO verify signature
+	    return ret;
 	}
 	
 	//3. Ich, als fremder user, möchte beim keyserver den aktuellen (beim keyserver bekannten) status zu einem pubkey bekommen können (valid/revoked/etc.)
-	public String[] requestKeyStatus(String keyid) throws Exception {
+	public KeyStatus requestKeyStatus(String keyid) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestKeyStatus(host, keyid);
 		OSDXKeyServerClientResponse resp = send(req);
 		if (resp==null || resp.status == null) return null;
 		
 		Element e = resp.doc.getRootElement();
-		if (!e.getName().equals("keyid_keystatus")) {
+		if (!e.getName().equals("keystatus_response")) {
 			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 		}
-		String status = e.getChildText("keystatus");
-		String date = e.getChildText("keystatusdatetime");
-		if (status!=null && date!=null) {
-			//TODO verify signature, really signed by rootkey from server?
-			//Signature sig = Signature.fromElement(e.getChild("signature"));
-			return new String[] {
-					status,
-					date
-				};	
-		}
-		return null;
+		KeyStatus ks = KeyStatus.fromElement(e);
+		//TODO verify signature		
+		
+		return ks;
 	}
 	
 	//4. Ich, als fremder user, möchte beim keyserver die keylogs eines (beliebigen) pubkeys bekommen können
@@ -191,7 +185,7 @@ public class OSDXKeyServerClient {
 		if (resp==null || resp.status == null) return null;
 		
 		Element e = resp.doc.getRootElement();
-		if (!e.getName().equals("keylogs")) {
+		if (!e.getName().equals("keylogs_response")) {
 			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 		}
 		Vector<Element> ekls = e.getChildren("keylog");
@@ -199,31 +193,48 @@ public class OSDXKeyServerClient {
 		for (Element ekl : ekls) {
 			vkl.add(KeyLog.fromElement(ekl));
 		}
+		//TODO verify signature		
 		return vkl;
 	}
 	
 	//5. Ich, als fremder user, möchte beim keyserver die weiteren pubkeys zu einem parent-pubkey (MASTER) bekommen können
-	public Vector<PublicKey> requestSubKeys(String masterkeyid) throws Exception {
+	public Vector<String> requestSubKeys(String masterkeyid) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestSubkeys(host, masterkeyid);
 		OSDXKeyServerClientResponse resp = send(req);
 
 		Element e = resp.doc.getRootElement();
-		if (!e.getName().equals("pubkeys")) {
+		if (!e.getName().equals("subkeys_response")) {
 			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 		}
-		Vector<PublicKey> ret = new Vector<PublicKey>();
-		Vector<Element> pks = e.getChildren("pubkey");
-		for (Element pk : pks) {
-			BigInteger modulus = new BigInteger(SecurityHelper.HexDecoder.decode(pk.getChildText("modulus")));
-			BigInteger exponent = new BigInteger(SecurityHelper.HexDecoder.decode(pk.getChildText("exponent")));
-			ret.add(new PublicKey(modulus, exponent));
-		}
+		Vector<String> ret = new Vector<String>();
+		Vector<Element> keyids = e.getChildren("keyid");
+		for (Element k : keyids) {
+			ret.add(k.getText());
+		}		
+		//TODO verify signature		
 		return ret;
+	}
+	
+	public OSDXKeyObject requestPublicKey(String keyid) throws Exception {
+		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPublicKey(host, keyid);
+		OSDXKeyServerClientResponse resp = send(req);
+
+		Element e = resp.doc.getRootElement();
+		if (!e.getName().equals("pubkey_response")) {
+			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
+		}
+		Vector<String> ret = new Vector<String>();
+		Element key = e.getChild("pubkey");
+		if (key!=null) {
+			//TODO verify signature
+			
+		}	
+		return null;
 	}
 	
 	//   1. Ich, als user, möchte auf dem keyserver meinen MASTER-pubkey ablegen können
 	//   includes  2. Ich, als user, möchte, daß der keyserver meinen MASTER-pubkey per email-verifikation (der haupt-identity) akzeptiert (sonst ist der status pending oder so -> erst, wenn die email mit irgendeinem token-link drin aktiviert wurde, wird der pubkey akzeptiert)
-	public boolean putMasterKey(PublicKey masterkey, Identity id) throws Exception {
+	public boolean putMasterKey(OSDXKeyObject masterkey, Identity id) throws Exception {
 		try {
 			OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutMasterKey(host, masterkey, id);
 			OSDXKeyServerClientResponse resp = send(req);
@@ -239,7 +250,7 @@ public class OSDXKeyServerClient {
 	}
 	
 	//3. Ich, als user, möchte auf dem keyserver meinen REVOKE-key für meinen master-key abspeichern können (der sollte sogar nicht sichtbar für irgendwen sonst sein!!!)
-	public boolean putRevokeKey(PublicKey revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
+	public boolean putRevokeKey(OSDXKeyObject revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutRevokeKey(host, revokekey, relatedMasterKey);
 		OSDXKeyServerClientResponse resp = send(req);
 		if (resp==null || resp.status == null) {
@@ -253,8 +264,8 @@ public class OSDXKeyServerClient {
 		return false;
 	}
 	
-	public boolean putSubKey(PublicKey revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
-		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutSubKey(host, revokekey, relatedMasterKey);
+	public boolean putSubKey(OSDXKeyObject subkey, OSDXKeyObject relatedMasterKey) throws Exception {
+		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutSubKey(host, subkey, relatedMasterKey);
 		OSDXKeyServerClientResponse resp = send(req);
 		if (resp==null || resp.status == null) return false;
 		if (resp.status.endsWith("OK"))	return true;
@@ -376,8 +387,8 @@ public class OSDXKeyServerClient {
 //		System.out.println("put master key: "+(ok?"OK":"FAILED"));
 
 	
-		String[] status = c.requestKeyStatus("C930CEEF52E4D6808A4253AC2C0EF5F6E578C603");
-		System.out.println("key status: "+status[0]+" from date: "+status[1]);
+	//	String[] status = c.requestKeyStatus("C930CEEF52E4D6808A4253AC2C0EF5F6E578C603");
+	//	System.out.println("key status: "+status[0]+" from date: "+status[1]);
 
 
 //		boolean ok2 = c.putRevokeKey(key.getPubKey(), key);

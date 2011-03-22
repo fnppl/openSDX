@@ -27,6 +27,12 @@ public class OSDXKeyServerClientRequest {
 	private Element contentElement;
 	private Hashtable<String, String> parameters = new Hashtable<String, String>();
 	private Hashtable<String, String> headers = new Hashtable<String, String>();
+	protected OSDXKeyObject signoffkey = null;
+	
+	
+	public void setSignoffKey(OSDXKeyObject signoffkey) {
+		this.signoffkey = signoffkey;
+	}
 	
 	public String getURI() {
 		return uri;
@@ -89,7 +95,17 @@ public class OSDXKeyServerClientRequest {
 		//write it to the outputstream...
 		if(contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
 			if (contentElement != null) {
-				Document xml = Document.buildDocument(contentElement);
+				Element eContent = contentElement;
+				//signoff if signoffkey present
+				if (signoffkey!=null) {
+					eContent = XMLHelper.cloneElement(contentElement);
+					//signoff
+					byte[] sha1proof = SecurityHelper.getSHA1LocalProof(eContent);
+					eContent.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
+					eContent.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", signoffkey).toElement());
+				}
+				
+				Document xml = Document.buildDocument(eContent);
 				
 				StringBuffer toSend = new StringBuffer();
 				toSend.append(XMLDOCPARAMNAME+"=");
@@ -125,9 +141,20 @@ public class OSDXKeyServerClientRequest {
 		}
 		else if(contentType.equalsIgnoreCase("text/xml")) {
 			if (contentElement != null) {
+				Element eContent = contentElement;
+				//signoff if signoffkey present
+				if (signoffkey!=null) {
+					eContent = XMLHelper.cloneElement(contentElement);
+					//signoff
+					byte[] sha1proof = SecurityHelper.getSHA1LocalProof(eContent);
+					eContent.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
+					eContent.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", signoffkey).toElement());
+				}
+				
+				
 				ByteArrayOutputStream contentout = new ByteArrayOutputStream();
 				
-				Document xml = Document.buildDocument(contentElement);
+				Document xml = Document.buildDocument(eContent);
 				xml.output(contentout);
 				contentout.flush();
 				contentout.close();
@@ -215,22 +242,6 @@ public class OSDXKeyServerClientRequest {
 	
 		return req;
 	}
-	public static OSDXKeyServerClientRequest getRequestPubKeys(String host, String idemail) {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/pubkeys");
-		req.toggleGETMode();
-		req.addRequestParam("Identity", idemail);		
-	
-		return req;
-	}
-	public static OSDXKeyServerClientRequest getRequestKeyLogs(String host, String keyid) {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/keylogs");
-		req.toggleGETMode();
-		req.addRequestParam("KeyID", keyid);		
-	
-		return req;
-	}
 	public static OSDXKeyServerClientRequest getRequestSubkeys(String host, String masterkeyid) {
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
 		req.setURI(host, "/subkeys");
@@ -240,7 +251,33 @@ public class OSDXKeyServerClientRequest {
 		return req;
 	}
 	
-	public static OSDXKeyServerClientRequest getRequestPutMasterKey(String host, PublicKey masterkey, Identity id) throws Exception {
+	public static OSDXKeyServerClientRequest getRequestPublicKey(String host, String keyid) {
+		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+		req.setURI(host, "/pubkey");
+		req.toggleGETMode();
+		req.addRequestParam("KeyID", keyid);		
+	
+		return req;
+	}
+//	public static OSDXKeyServerClientRequest getRequestPubKeys(String host, String idemail) {
+//		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+//		req.setURI(host, "/pubkeys");
+//		req.toggleGETMode();
+//		req.addRequestParam("Identity", idemail);		
+//	
+//		return req;
+//	}
+	public static OSDXKeyServerClientRequest getRequestKeyLogs(String host, String keyid) {
+		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+		req.setURI(host, "/keylogs");
+		req.toggleGETMode();
+		req.addRequestParam("KeyID", keyid);		
+	
+		return req;
+	}
+	
+	
+	public static OSDXKeyServerClientRequest getRequestPutMasterKey(String host, OSDXKeyObject masterkey, Identity id) throws Exception {
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
 		req.setURI(host, "/masterkey");
 		req.togglePOSTMode();
@@ -252,48 +289,32 @@ public class OSDXKeyServerClientRequest {
 		e.addContent(masterkey.getSimplePubKeyElement());
 		e.addContent(id.toElement());
 		req.setContentElement(e);
-		
+		//signoff not necessary
 		return req;
 	}
 	
 	
-	public static OSDXKeyServerClientRequest getRequestPutRevokeKey(String host, PublicKey revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
+	public static OSDXKeyServerClientRequest getRequestPutRevokeKey(String host, OSDXKeyObject revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
 		req.setURI(host, "/revokekey");
 		
 		Element e = new Element("revokekey");
 		e.addContent("masterkeyid", relatedMasterKey.getKeyModulusSHA1());
 		e.addContent(revokekey.getSimplePubKeyElement());
-		 //signoff with own masterkey
-		Vector<Element> toProof = new Vector<Element>();
-		toProof.add(e);
-		byte[] sha1 = SecurityHelper.getSHA1LocalProof(toProof);
-		byte[][] md5sha1sha256 = SecurityHelper.getMD5SHA1SHA256(sha1);
-		Signature sig = Signature.createSignature(md5sha1sha256[1], md5sha1sha256[2], md5sha1sha256[3], "masterkeyid and pubkey", relatedMasterKey);
-		e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1, ':', -1));
-		e.addContent(sig.toElement());
-		
 		req.setContentElement(e);
-		
+		req.setSignoffKey(relatedMasterKey); //Signoff with masterkey
 		return req;
 	}
 	
-	public static OSDXKeyServerClientRequest getRequestPutSubKey(String host, PublicKey subkey, OSDXKeyObject relatedMasterKey) throws Exception {
+	public static OSDXKeyServerClientRequest getRequestPutSubKey(String host, OSDXKeyObject subkey, OSDXKeyObject relatedMasterKey) throws Exception {
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
 		req.setURI(host, "/subkey");
 		
 		Element e = new Element("subkey");
 		e.addContent("masterkeyid", relatedMasterKey.getKeyModulusSHA1());
 		e.addContent(subkey.getSimplePubKeyElement());
-		 //signoff with own masterkey
-		Vector<Element> toProof = new Vector<Element>();
-		toProof.add(e);
-		byte[] sha1 = SecurityHelper.getSHA1LocalProof(toProof);
-		byte[][] md5sha1sha256 = SecurityHelper.getMD5SHA1SHA256(sha1);
-		Signature sig = Signature.createSignature(md5sha1sha256[1], md5sha1sha256[2], md5sha1sha256[3], "masterkeyid and pubkey", relatedMasterKey);
-		e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1, ':', -1));
-		e.addContent(sig.toElement());
 		
+		req.setSignoffKey(relatedMasterKey); //Signoff with masterkey
 		req.setContentElement(e);
 		
 		return req;

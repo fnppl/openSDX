@@ -83,7 +83,7 @@ public class OSDXKeyObject {
 		usage_name.addElement("ONLYCRYPT");
 		usage_name.addElement("BOTH");
 	};
-	
+	public static final long ONE_YEAR = 31557600000L; //1 year = 31557600000 = 1000*60*60*24*365.25
 	public static final int LEVEL_MASTER = 0;
 	public static final int LEVEL_REVOKE = 1;
 	public static final int LEVEL_SUB = 2;
@@ -107,7 +107,9 @@ public class OSDXKeyObject {
 	private int	level = LEVEL_MASTER;
 	private int	usage = USAGE_WHATEVER;
 	private int	algo = ALGO_RSA;
-
+	private long validFrom = System.currentTimeMillis();
+	private long validUntil = validFrom + 25L*ONE_YEAR; //25 years
+	
 	private char[] storepass = null;
 	
 	private AsymmetricKeyPair akp = null;
@@ -134,16 +136,19 @@ public class OSDXKeyObject {
 		return ll;
 	}
 	
-	public static OSDXKeyObject fromKeyPair(AsymmetricKeyPair kp) throws Exception {
-		//TODO HT 15.03.2011
-		
+	public static OSDXKeyObject buildNewMasterKeyfromKeyPair(AsymmetricKeyPair kp) throws Exception {
+
 		OSDXKeyObject ret = new OSDXKeyObject();
 		ret.akp = kp;
 		ret.level = LEVEL_MASTER;
+		ret.usage = USAGE_SIGN;
 		ret.authoritativekeyserver = "LOCAL";
 		ret.modulussha1 = SecurityHelper.getSHA1(kp.getModulus());
 		ret.datapath = new Vector<DataSourceStep>();
-		ret.datapath.add(new DataSourceStep("LOCAL", System.currentTimeMillis()));
+		long now = System.currentTimeMillis();
+		ret.validFrom = now;
+		ret.validUntil = now + 25L*ONE_YEAR;
+		ret.datapath.add(new DataSourceStep("LOCAL", now));
 		ret.unsavedChanges = true;
 		
 		return ret;
@@ -211,7 +216,10 @@ public class OSDXKeyObject {
 		if (!dsOK) {
 			System.out.println("CAUTION datasource and datainsertdatetime NOT found.");
 		}
-		
+		String sValidFrom = kp.getChildText("valid_from");
+		String sValidUntil = kp.getChildText("valid_until");
+		ret.validFrom = datemeGMT.parse(sValidFrom).getTime();
+		ret.validUntil = datemeGMT.parse(sValidUntil).getTime();
 		
 		String usage = kp.getChildText("usage");
 		ret.usage = usage_name.indexOf(usage);
@@ -315,6 +323,9 @@ public class OSDXKeyObject {
 	public Element getSimplePubKeyElement() {
 		if (akp!=null) {
 			Element ret = new Element("pubkey");
+			ret.addContent("keyid",getKeyID());
+			ret.addContent("valid_from",getValidFromString());
+			ret.addContent("valid_until",getValidUntilString());
 			ret.addContent("algo", algo_name.elementAt(algo));
 			ret.addContent("bits", ""+akp.getBitCount());
 			ret.addContent("modulus", akp.getModulusAsHex());
@@ -436,7 +447,8 @@ public class OSDXKeyObject {
 			edp.addContent(edss);
 		}
 		ekp.addContent(edp);
-		
+		ekp.addContent("valid_from",getValidFromString());
+		ekp.addContent("valid_until",getValidUntilString());
 		ekp.addContent("usage",usage_name.get(usage));
 		ekp.addContent("level",level_name.get(level));
 		ekp.addContent("parentkeyid", getParentKeyID());
@@ -517,6 +529,31 @@ public class OSDXKeyObject {
 		
 		unsavedChanges = false;
 		return ekp;
+	}
+	
+	public String getValidFromString() {
+		return datemeGMT.format(validFrom);
+	}
+	
+	public String getValidUntilString() {
+		return datemeGMT.format(validUntil);
+	}
+	
+	public void setValidFrom(long datetime) {
+		unsavedChanges = true;
+		validFrom = datetime;
+	}
+	
+	public long getValidFrom() {
+		return validFrom;
+	}
+	
+	public long getValidUntil() {
+		return validUntil;
+	}
+	public void setValidUntil(long datetime) {
+		unsavedChanges = true;
+		validUntil = datetime;
 	}
 	
 	public String getLevelName() {
@@ -640,6 +677,11 @@ public class OSDXKeyObject {
 		
 		System.out.println("4: "+datemeGMT.format(datemeGMT.parse(l)));		
 		System.out.println("5: "+datemeGMT.format(datemeGMT.parse(l2)));
+		
+		long now = System.currentTimeMillis();
+		System.out.println("6: "+datemeGMT.format(now));		
+		System.out.println("7: "+datemeGMT.format(new Date(now)));		
+		
 		
 //		1: 2011-02-24 21:26:51 GMT+00:00
 //		2: Thu Feb 24 22:21:36 CET 2011

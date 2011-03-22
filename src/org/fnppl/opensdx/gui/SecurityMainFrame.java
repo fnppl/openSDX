@@ -457,6 +457,8 @@ public class SecurityMainFrame extends JFrame {
 
 		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
 		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
+		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
+		addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y); y++;
 		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
 
 		final Vector<Identity> ids = key.getIdentities();
@@ -677,6 +679,8 @@ public class SecurityMainFrame extends JFrame {
 
 		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
 		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
+		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
+		addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y); y++;
 		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
 
 		Vector<DataSourceStep> dp = key.getDatapath();
@@ -781,6 +785,8 @@ public class SecurityMainFrame extends JFrame {
 
 		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
 		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
+		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
+		addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y); y++;
 		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
 
 		Vector<DataSourceStep> dp = key.getDatapath();
@@ -1214,9 +1220,8 @@ public class SecurityMainFrame extends JFrame {
 			public void run() {
 				try {
 					AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
-					OSDXKeyObject k = OSDXKeyObject.fromKeyPair(kp);
+					OSDXKeyObject k = OSDXKeyObject.buildNewMasterKeyfromKeyPair(kp);
 					k.setLevel(OSDXKeyObject.LEVEL_REVOKE);
-					k.setUsage(OSDXKeyObject.USAGE_SIGN);
 					k.setParentKey(parentKey);
 					currentKeyStore.addKey(k);
 					releaseUILock();
@@ -1244,9 +1249,8 @@ public class SecurityMainFrame extends JFrame {
 			public void run() {
 				try {
 					AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
-					OSDXKeyObject k = OSDXKeyObject.fromKeyPair(kp);
+					OSDXKeyObject k = OSDXKeyObject.buildNewMasterKeyfromKeyPair(kp);
 					k.setLevel(OSDXKeyObject.LEVEL_SUB);
-					k.setUsage(OSDXKeyObject.USAGE_SIGN);
 					k.setParentKey(parentKey);
 					currentKeyStore.addKey(k);
 					releaseUILock();
@@ -1274,7 +1278,7 @@ public class SecurityMainFrame extends JFrame {
 			return;
 		}
 		
-		String email = Dialogs.showInputDialog("Request key", "Please enter corresponding email adresse for searching for public keys on keyserver.");
+		String email = Dialogs.showInputDialog("Request key", "Please enter corresponding email adresse for searching for keys on keyserver.");
 		if (email!=null) {
 			Vector<String> keyservernames = new Vector<String>();
 			for (KeyServerIdentity id : keyservers) {
@@ -1285,12 +1289,21 @@ public class SecurityMainFrame extends JFrame {
 				KeyServerIdentity keyserver = keyservers.get(ans);
 				OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
 				try {
-					Vector<OSDXKeyObject> keys = client.requestPubKeys(email);
-					if (keys!=null && keys.size()>0) {
-						String kt = "";
-						for (OSDXKeyObject key : keys) {
-							kt += "\n"+key.getKeyID();
-							currentKeyStore.addKey(key);
+					Vector<String> masterkeys = client.requestMasterPubKeys(email);
+					String kt = "";
+					if (masterkeys!=null && masterkeys.size()>0) {
+						for (String masterkey : masterkeys) {
+							OSDXKeyObject mkey = client.requestPublicKey(masterkey);
+							currentKeyStore.addKey(mkey);
+							kt += "\n  MASTER: "+mkey.getKeyID();
+							Vector<String> subkeys = client.requestSubKeys(masterkey);
+							if (subkeys!=null && subkeys.size()>0) {
+								for (String subkey : subkeys) {
+									OSDXKeyObject skey = client.requestPublicKey(subkey);
+									currentKeyStore.addKey(skey);
+									kt += "\n    -> "+subkey;	
+								}
+							}
 						}
 						updateUI();
 						Dialogs.showMessage("Added key(s) for \""+email+"\":"+kt);
@@ -1348,7 +1361,7 @@ public class SecurityMainFrame extends JFrame {
 					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
 					OSDXKeyObject masterkey = currentKeyStore.getKey(parent);
 					if (!masterkey.isPrivateKeyUnlocked()) masterkey.unlockPrivateKey(messageHandler);
-					boolean ok = client.putRevokeKey(key.getPubKey(), masterkey);
+					boolean ok = client.putRevokeKey(key, masterkey);
 					if (ok) {
 						key.setAuthoritativeKeyServer(keyserver.getHost());
 						props.put(key.getKeyID(), "VISIBLE");
@@ -1395,7 +1408,7 @@ public class SecurityMainFrame extends JFrame {
 					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
 					OSDXKeyObject masterkey = currentKeyStore.getKey(parent);
 					if (!masterkey.isPrivateKeyUnlocked()) masterkey.unlockPrivateKey(messageHandler);
-					boolean ok = client.putSubKey(key.getPubKey(), masterkey);
+					boolean ok = client.putSubKey(key, masterkey);
 					if (ok) {
 						key.setAuthoritativeKeyServer(keyserver.getHost());
 						props.put(key.getKeyID(), "VISIBLE");
@@ -1422,7 +1435,7 @@ public class SecurityMainFrame extends JFrame {
 				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"?\nThis will also change your authoritative keyserver for this key.");
 				if (confirm==Dialogs.YES) {
 					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
-					boolean ok =client.putMasterKey(key.getPubKey(), ids.get(0));
+					boolean ok =client.putMasterKey(key, ids.get(0));
 					if (ok) {
 						Vector<OSDXKeyObject> childkeys = currentKeyStore.getRevokeKeys(key.getKeyID());
 						childkeys.addAll(currentKeyStore.getSubKeys(key.getKeyID()));
@@ -1543,9 +1556,7 @@ public class SecurityMainFrame extends JFrame {
 		if (currentKeyStore!=null) {
 			try {
 				AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
-				OSDXKeyObject k = OSDXKeyObject.fromKeyPair(kp);
-				k.setUsage(OSDXKeyObject.USAGE_SIGN);
-				k.setLevel(OSDXKeyObject.LEVEL_MASTER);
+				OSDXKeyObject k = OSDXKeyObject.buildNewMasterKeyfromKeyPair(kp);
 				k.createLockedPrivateKey(messageHandler);
 				currentKeyStore.addKey(k);
 				updateUI();
@@ -1561,7 +1572,7 @@ public class SecurityMainFrame extends JFrame {
 	public void generateMasterKeySet() {
 		if (currentKeyStore!=null) {
 			boolean ok = false;
-			final Identity id;
+			Identity id = null;
 			try {
 				id = Identity.newEmptyIdentity();
 				ok = showIdentityEditDialog(id, true);
@@ -1569,7 +1580,7 @@ public class SecurityMainFrame extends JFrame {
 				e.printStackTrace();
 			}
 			if (!ok) return;
-
+			final Identity idd = id;
 			final JDialog wait = Dialogs.getWaitDialog("Generating new MASTER KEY, REVOKE KEY, SUB KEY set,\n please wait ...");
 			Thread t = new Thread() {
 				public void run() {
@@ -1579,21 +1590,17 @@ public class SecurityMainFrame extends JFrame {
 						AsymmetricKeyPair subkp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
 
 
-						OSDXKeyObject masterkey = OSDXKeyObject.fromKeyPair(masterkp);
-						masterkey.setLevel(OSDXKeyObject.LEVEL_MASTER);
-						masterkey.setUsage(OSDXKeyObject.USAGE_SIGN);
+						OSDXKeyObject masterkey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(masterkp);
 						masterkey.createLockedPrivateKey(messageHandler);
-
-
-						OSDXKeyObject revokekey = OSDXKeyObject.fromKeyPair(revokekp);
+						masterkey.addIdentity(idd);
+						
+						OSDXKeyObject revokekey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(revokekp);
 						revokekey.setLevel(OSDXKeyObject.LEVEL_REVOKE);
-						revokekey.setUsage(OSDXKeyObject.USAGE_SIGN);
 						revokekey.setParentKey(masterkey);
 						revokekey.createLockedPrivateKey(messageHandler);
 
-						OSDXKeyObject subkey = OSDXKeyObject.fromKeyPair(subkp);
+						OSDXKeyObject subkey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(subkp);
 						subkey.setLevel(OSDXKeyObject.LEVEL_SUB);
-						subkey.setUsage(OSDXKeyObject.USAGE_SIGN);
 						subkey.setParentKey(masterkey);
 						subkey.createLockedPrivateKey(messageHandler);
 
