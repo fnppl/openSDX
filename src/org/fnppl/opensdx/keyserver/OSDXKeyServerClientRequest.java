@@ -18,7 +18,7 @@ public class OSDXKeyServerClientRequest {
 	private final static String version = "HTTP/1.1";
 	private String method = "POST";
 	
-	private String contentType = "text/xml";
+	private String contentType = "application/x-www-form-urlencoded";
 	
 	private String uri;
 	private String host;
@@ -286,7 +286,6 @@ public class OSDXKeyServerClientRequest {
 	public static OSDXKeyServerClientRequest getRequestPutMasterKey(String host, OSDXKeyObject masterkey, Identity id) throws Exception {
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
 		req.setURI(host, "/masterkey");
-		req.togglePOSTMode();
 		
 		req.addRequestParam("KeyID", masterkey.getKeyID());		
 		req.addRequestParam("Identity", id.getEmail());
