@@ -129,8 +129,9 @@ public class KeyServerRequest {
 			}
 		}
 		
-		String s = new String(bout.toByteArray(), "ASCII");
-		s = URLDecoder.decode(s, "UTF-8"); //urlencoded-form-data
+		String s = new String(bout.toByteArray(), "UTF-8");
+		//String s = new String(bout.toByteArray(), "ASCII");
+		//s = URLDecoder.decode(s, "UTF-8"); //urlencoded-form-data
 		
 		System.out.println("KeyServerRequest::GOT THIS AS DOC: ::START::"+s+"::END::");
 		

@@ -307,6 +307,7 @@ public class OSDXKeyServerClientRequest {
 		e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", revokekey).toElement());
 		req.setContentElement(e);
 		req.setSignoffKey(relatedMasterKey); //signoff with masterkeyy
+		
 		return req;
 	}
 	

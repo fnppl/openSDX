@@ -57,7 +57,7 @@ import org.fnppl.opensdx.xml.Element;
 
 /*
  * @author Henning Thieß <ht@fnppl.org>
- * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
  */
 
 public class SecurityHelper {
@@ -74,16 +74,16 @@ public class SecurityHelper {
 
 	public static String getFormattedDate(long date) {
 		String s = datemeGMT.format(new Date(date));
-		System.out.println("\ns before: "+s);
-		s = s.replace("GMT+00:00", "GMT 00:00");
-		System.out.println("s after:  "+s+"\n");
+		//System.out.println("\ns before: "+s);
+		//s = s.replace("GMT+00:00", "GMT 00:00"); //TODO workaround
+		//System.out.println("s after:  "+s+"\n");
 		
-		//return s;
-		return "Hallo+Hallo";
+		return s;
+		//return "Hallo+Hallo";
 	}
 	public static long parseDate(String date) throws Exception {
-		return 50923486509234860L;
-		//return datemeGMT.parse(date).getTime();
+		//return 50923486509234860L;
+		return datemeGMT.parse(date).getTime();
 	}
 	
 	public static void ensureBC() {
@@ -482,13 +482,13 @@ public class SecurityHelper {
 	public static byte[] getSHA1LocalProof(Vector<Element> ve) throws Exception {
 		byte[] ret = new byte[20];//160 bit = 20 byte
 		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
-		System.out.println("--- sha1localproof ---");
+		//System.out.println("--- sha1localproof ---");
 		for (Element e : ve) {
 			rekursiveUpdateSHA1(sha1, e);
 		}
 		sha1.doFinal(ret, 0);
-		System.out.println("--- RESULT ----");
-		System.out.println(SecurityHelper.HexDecoder.encode(ret, ':',-1));
+		//System.out.println("--- RESULT ----");
+		//System.out.println(SecurityHelper.HexDecoder.encode(ret, ':',-1));
 		return ret;
 	}
 	
@@ -503,7 +503,7 @@ public class SecurityHelper {
 			if (t!=null && t.length()>0) {
 				try {
 					byte[] b = t.getBytes("UTF-8");
-					System.out.println(""+e.getName()+" : "+e.getText()+", "+HexDecoder.encode(b, ':', -1));
+					//System.out.println(""+e.getName()+" : "+e.getText()+", "+HexDecoder.encode(b, ':', -1));
 					sha1.update(b, 0, b.length);
 				} catch (Exception ex) {
 					ex.printStackTrace();
