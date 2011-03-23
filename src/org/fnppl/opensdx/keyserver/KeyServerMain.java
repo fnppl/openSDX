@@ -365,7 +365,7 @@ public class KeyServerMain {
 			
 			//verify revoke key signature
 			//check sha1localproof
-			byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
+			//byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
 			
 			
 			Vector<Element> sha1localproofs = e.getChildren("sha1localproof");
@@ -381,15 +381,23 @@ public class KeyServerMain {
 			toProof.add(e.getChild("masterkeyid"));
 			toProof.add(e.getChild("pubkey"));
 			//verify signature with rekovekey
-			boolean verified = SecurityHelper.checkSHA1localproofAndSignature(toProof, givenSha1localproof, Signature.fromElement(signatures.get(0)), pubkey);
-			
+			System.out.println("VERIFY revokekey signature");
+			boolean verified = SecurityHelper.checkSHA1localproofAndSignature(
+					toProof,
+					SecurityHelper.HexDecoder.decode(sha1localproofs.get(0).getText()),
+					Signature.fromElement(signatures.get(0)),
+					pubkey);
 			//verify signature with masterkey
 			if (verified) {
+				System.out.println("VERIFY masterkey signature");
 				toProof.add(sha1localproofs.get(0));
 				toProof.add(signatures.get(0));
-				verified = SecurityHelper.checkSHA1localproofAndSignature(toProof, givenSha1localproof, Signature.fromElement(signatures.get(1)), masterkey.getPubKey());
+				verified = SecurityHelper.checkSHA1localproofAndSignature(
+						toProof,
+						SecurityHelper.HexDecoder.decode(sha1localproofs.get(1).getText()),
+						Signature.fromElement(signatures.get(1)),
+						masterkey.getPubKey());
 			}
-			
 			//if any of above checks failed: signature NOT verified!
 			if (!verified) {
 				resp.setRetCode(404, "FAILED");
