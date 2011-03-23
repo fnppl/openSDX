@@ -122,6 +122,9 @@ public class KeyServerMain {
 			keyServerSigningKey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
 			Identity id = Identity.newEmptyIdentity();
 			id.setEmail(serverIDemail);
+			id.setIdentNum(1);
+			id.createSHA1();
+			
 			keyServerSigningKey.addIdentity(id);
 			keystore.addKey(keyServerSigningKey);
 			keystore.toFile(keystore.getFile());
@@ -276,7 +279,7 @@ public class KeyServerMain {
 			//generate keylog for approve pending
 			Element ekl = new Element("keylog");
 			Element eac = new Element("action");
-			eac.addContent("date", OSDXKeyObject.datemeGMT.format(System.currentTimeMillis()));
+			eac.addContent("date", SecurityHelper.getFormattedDate(System.currentTimeMillis()));
 			eac.addContent("ipv4", "na");
 			eac.addContent("ipv6", "na");
 			Element ef = new Element("from");
@@ -358,7 +361,35 @@ public class KeyServerMain {
 			
 			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
 			
-			boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey.getPubKey());
+			//boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey.getPubKey());
+			
+			//verify revoke key signature
+			//check sha1localproof
+			byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
+			
+			
+			Vector<Element> sha1localproofs = e.getChildren("sha1localproof");
+			for (Element el : sha1localproofs) {
+				System.out.println("sha1localproof :: "+el.getText());
+			}
+			Vector<Element> signatures = e.getChildren("signature");
+			for (Element el : signatures) {
+				System.out.println("signature :: "+el.getChild("signoff").getChildText("keyid"));
+			}
+			//build toProof
+			Vector<Element> toProof = new Vector<Element>();
+			toProof.add(e.getChild("masterkeyid"));
+			toProof.add(e.getChild("pubkey"));
+			//verify signature with rekovekey
+			boolean verified = SecurityHelper.checkSHA1localproofAndSignature(toProof, givenSha1localproof, Signature.fromElement(signatures.get(0)), pubkey);
+			
+			//verify signature with masterkey
+			if (verified) {
+				toProof.add(sha1localproofs.get(0));
+				toProof.add(signatures.get(0));
+				verified = SecurityHelper.checkSHA1localproofAndSignature(toProof, givenSha1localproof, Signature.fromElement(signatures.get(1)), masterkey.getPubKey());
+			}
+			
 			//if any of above checks failed: signature NOT verified!
 			if (!verified) {
 				resp.setRetCode(404, "FAILED");

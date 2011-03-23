@@ -88,8 +88,8 @@ public class KeyStatus {
 		KeyStatus k = new KeyStatus();
 		k.validityStatus = VALIDITY_NAME.indexOf(e.getChildText("validity_status"));
 		k.approvalPoints = e.getChildInt("approval_pojnts");
-		k.validFrom = SecurityHelper.datemeGMT.parse(e.getChildText("valid_from")).getTime();
-		k.validUntil = SecurityHelper.datemeGMT.parse(e.getChildText("valid_until")).getTime();
+		k.validFrom = SecurityHelper.parseDate(e.getChildText("valid_from"));
+		k.validUntil = SecurityHelper.parseDate(e.getChildText("valid_until"));
 		return k;
 	}
 	
@@ -97,8 +97,8 @@ public class KeyStatus {
 		Element e = new Element("keystatus");
 		e.addContent("validity_status", VALIDITY_NAME.get(validityStatus));
 		e.addContent("approval_points",""+approvalPoints);
-		e.addContent("valid_from",SecurityHelper.datemeGMT.format(validFrom));
-		e.addContent("valid_until",SecurityHelper.datemeGMT.format(validUntil));	
+		e.addContent("valid_from",SecurityHelper.getFormattedDate(validFrom));
+		e.addContent("valid_until",SecurityHelper.getFormattedDate(validUntil));	
 		return e;
 	}
 	

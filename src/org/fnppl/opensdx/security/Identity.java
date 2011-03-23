@@ -52,6 +52,7 @@ import java.io.*;
 import org.fnppl.opensdx.xml.*;
 
 public class Identity {
+	int identnum = 0;
 	String email = null;
 	String mnemonic = null;
 	
@@ -110,7 +111,14 @@ public class Identity {
 	
 	public static Identity fromElement(Element id) throws Exception {
 		Identity idd = new Identity();
+		
 		idd.email = id.getChildText("email");
+		try {
+			idd.identnum = Integer.parseInt(id.getChildText("identnum"));
+		} catch (Exception ex) {
+			idd.identnum = 0;
+			System.out.println("CAUTION: Wrong identnum in identity: "+idd.email);
+		}
 		idd.mnemonic = id.getChildText("mnemonic");
 		
 		idd.country = id.getChildText("country");
@@ -161,7 +169,8 @@ public class Identity {
 	
 	public Element toElement() {
 		Element id = new Element("identity");
-		
+
+		id.addContent("identnum", getIdentNumString());
 		id.addContent("email", email);
 		id.addContent("mnemonic", mnemonic);
 		
@@ -213,6 +222,7 @@ public class Identity {
 		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
 		
 		byte[] k = null;
+		k = getIdentNumString().getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		k = email.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		k = mnemonic.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		k = country.getBytes("UTF-8");if (k.length>0) sha1.update(k, 0, k.length);
@@ -230,10 +240,30 @@ public class Identity {
 		k = note.getBytes("UTF-8"); if (k.length>0) sha1.update(k, 0, k.length);
 		
 		sha1.doFinal(ret, 0);
-		//System.out.println("sha1: "+SecurityHelper.HexDecoder.encode(ret, ':', -1));
+		//System.out.println("calc sha1: "+SecurityHelper.HexDecoder.encode(ret, ':', -1));
 		return ret;
 	}
+	public void createSHA1() {
+		try {
+			sha1FromElement = calcSHA1();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 	
+	public String getIdentNumString() {
+		String sNo = ""+identnum;
+		while (sNo.length()<4) sNo = "0"+sNo;
+		return sNo;
+	}
+	public int getIdentNum() {
+		return identnum;
+	}
+	
+	public void setIdentNum(int i) {
+		unsavedChanges = true;
+		identnum = i;
+	}
 	public String getEmail() {
 		return email;
 	}

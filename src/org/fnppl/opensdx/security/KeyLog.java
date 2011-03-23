@@ -68,6 +68,33 @@ public class KeyLog {
 	private KeyLog() {
 		
 	}
+	
+	public static KeyLog buildNewKeyLog(String status, OSDXKeyObject from, OSDXKeyObject to, String ip4, String ip6, Identity id) throws Exception {
+	
+		Element e = new Element("keylog");
+		Element ea = new Element("action");
+		ea.addContent("date", SecurityHelper.getFormattedDate(System.currentTimeMillis()));
+		ea.addContent("ipv4",ip4);
+		ea.addContent("ipv6",ip6);
+		Element eFrom = new Element("from");
+		eFrom.addContent("keyid",from.getKeyID());
+		eFrom.addContent("sha1fingerprint", from.getKeyModulusSHA1());
+		ea.addContent(eFrom);
+		Element eTo = new Element("to");
+		eTo.addContent("keyid",to.getKeyID());
+		eTo.addContent("sha1fingerprint", to.getKeyModulusSHA1());
+		ea.addContent(eTo);
+		Element eStatus = new Element(status);
+		eStatus.addContent(id.toElement());
+		Element edp = new Element("datapath");
+		//TODO datapath
+		ea.addContent(edp);
+				
+		KeyLog kl = KeyLog.fromElement(e,false);
+		kl.signoff(from);
+		
+		return kl;
+	}
 
 	public boolean verifySHA1localproofAndSignoff() throws Exception {
 		//check localproof
@@ -96,25 +123,15 @@ public class KeyLog {
 	}
 	
 	public void signoff(OSDXKeyObject key) throws Exception {
-		byte[] bsha1 = SecurityHelper.getSHA1LocalProof(ekeylog.getChildren("action"));
-		
-//		SignoffElement s = SignoffElement.getSignoffElement(bsha1, key);
+		//copy elements
 		Element e = new Element("keylog");
 		Vector<Element> ea = ekeylog.getChildren("action");
 		for (Element el : ea) {
 			e.addContent(XMLHelper.cloneElement(el));
 		}
-		e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(bsha1, ':', -1));
+		//signoff
+		SecurityHelper.signoffElement(e, key);
 		
-		Signature s =  Signature.createSignature(
-				null, 
-				bsha1, 
-				null, 
-				"localsignoff for sha1 "+HexDecoder.encode(bsha1, ':', -1), 
-				key
-			);
-		
-		e.addContent(s.toElement());
 		ekeylog = e;
 		verified = true;
 	}
@@ -154,7 +171,7 @@ public class KeyLog {
 	}
 	
 	public long getDate() throws Exception {
-		return OSDXKeyObject.datemeGMT.parse(ekeylog.getChild("action").getChildText("date")).getTime();
+		return SecurityHelper.parseDate(ekeylog.getChild("action").getChildText("date"));
 	}
 	public String getDateString() {
 		return ekeylog.getChild("action").getChildText("date");

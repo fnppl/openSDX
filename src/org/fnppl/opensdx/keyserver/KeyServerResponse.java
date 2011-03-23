@@ -143,12 +143,14 @@ public class KeyServerResponse {
 		String id = request.getParamValue("Identity");
 		if (id != null) {
 			Element e = new Element("masterpubkey_resonse");
-			e.addContent("id",id);
+			e.addContent("identity",id);
 			Vector<OSDXKeyObject> keys = id_keys.get(id);
 			if (keys != null && keys.size() > 0) {
+				Element er = new Element("related_keys");
+				e.addContent(er);
 				//add key ids
 				for (OSDXKeyObject k : keys) {
-					e.addContent("keyid",k.getKeyID());
+					er.addContent("keyid",k.getKeyID());
 				}
 				resp.setSignoffKey(signoffkey); //only signoff if real content
 			}

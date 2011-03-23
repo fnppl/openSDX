@@ -110,7 +110,7 @@ public class Signature {
 		s.datasha1 = SecurityHelper.HexDecoder.decode(ed.getChildText("sha1"));
 		s.datasha256 = SecurityHelper.HexDecoder.decode(ed.getChildText("sha256"));
 		
-		s.signdatetime = OSDXKeyObject.datemeGMT.parse(ed.getChildText("signdatetime")).getTime();
+		s.signdatetime = SecurityHelper.parseDate(ed.getChildText("signdatetime"));
 		
 		s.dataname = ed.getChildText("dataname");
 		BigInteger mod = new BigInteger(SecurityHelper.HexDecoder.decode(epk.getChildText("modulus")));
@@ -129,7 +129,7 @@ public class Signature {
 		if(datasha1 != null) ed.addContent("sha1", SecurityHelper.HexDecoder.encode(datasha1,':',-1));
 		if(datasha256 != null) ed.addContent("sha256", SecurityHelper.HexDecoder.encode(datasha256,':',-1));
 		
-		ed.addContent("signdatetime", OSDXKeyObject.datemeGMT.format(new Date(signdatetime)));
+		ed.addContent("signdatetime", SecurityHelper.getFormattedDate(signdatetime));
 		
 		ed.addContent("dataname",dataname);
 		e.addContent(ed);
@@ -273,6 +273,9 @@ public class Signature {
 //    	return sGen.generate();
 //    }
 	
+	public PublicKey getPubKey() {
+		return pubkey;
+	}
 	
 	public boolean tryVerificationFile(File f) throws Exception {
 		FileInputStream in = new FileInputStream(f);

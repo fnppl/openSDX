@@ -54,18 +54,7 @@ import org.fnppl.opensdx.xml.Element;
 
 
 public class OSDXKeyObject {
-	final static String RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
-	final static String RFC1123_CUT = "yyyy-MM-dd HH:mm:ss zzz";
-	final static String RFC1036 = "EEEE, dd-MMM-yy HH:mm:ss zzz";
-	final static String ASCTIME = "EEE MMM dd HH:mm:ss yyyy zzz";
-	
-	final static Locale ml = new Locale("en", "DE");
-	public final static SimpleDateFormat datemeGMT = new SimpleDateFormat(RFC1123_CUT, ml);
-	static {
-		datemeGMT.setTimeZone(java.util.TimeZone.getTimeZone("GMT+00:00"));
-	}
-	
-	
+		
 //	public static final int ALGO_UNDEFINED = -1;
 	public static final int ALGO_RSA = 0;
 //	public static final int ALGO_DSA = 1; //dont want this...
@@ -182,7 +171,7 @@ public class OSDXKeyObject {
 					
 					Identity idd = Identity.fromElement(id);
 					System.out.println("adding id: "+idd.email);
-					
+					System.out.println("sha1: "+id.getChildText("sha1"));
 					boolean ok = idd.validate(SecurityHelper.HexDecoder.decode(id.getChildText("sha1")));
 					if(ok) {
 						ret.identities.addElement(idd);
@@ -218,8 +207,8 @@ public class OSDXKeyObject {
 		}
 		String sValidFrom = kp.getChildText("valid_from");
 		String sValidUntil = kp.getChildText("valid_until");
-		ret.validFrom = datemeGMT.parse(sValidFrom).getTime();
-		ret.validUntil = datemeGMT.parse(sValidUntil).getTime();
+		ret.validFrom = SecurityHelper.parseDate(sValidFrom);
+		ret.validUntil = SecurityHelper.parseDate(sValidUntil);
 		
 		String usage = kp.getChildText("usage");
 		ret.usage = usage_name.indexOf(usage);
@@ -532,11 +521,11 @@ public class OSDXKeyObject {
 	}
 	
 	public String getValidFromString() {
-		return datemeGMT.format(validFrom);
+		return SecurityHelper.getFormattedDate(validFrom);
 	}
 	
 	public String getValidUntilString() {
-		return datemeGMT.format(validUntil);
+		return SecurityHelper.getFormattedDate(validUntil);
 	}
 	
 	public void setValidFrom(long datetime) {
@@ -580,6 +569,13 @@ public class OSDXKeyObject {
 	
 	public Vector<Identity> getIdentities() {
 		return identities;
+	}
+	
+	public Identity getIdentity0001() {
+		for (Identity id : identities) {
+			if (id.getIdentNum()==1) return id;
+		}
+		return null;
 	}
 	public Vector<DataSourceStep> getDatapath() {
 		return datapath;
@@ -671,17 +667,18 @@ public class OSDXKeyObject {
 	public static void main(String[] args) throws Exception {
 		String l = "2011-02-24 21:21:36 GMT+00:00";
 		String l2 = "2011-02-24 15:00:00 GMT+01:00";		
-		System.out.println("1: "+datemeGMT.format(new Date()));
-		System.out.println("2: "+datemeGMT.parse(l));		
-		System.out.println("3: "+datemeGMT.parse(l2));
-		
-		System.out.println("4: "+datemeGMT.format(datemeGMT.parse(l)));		
-		System.out.println("5: "+datemeGMT.format(datemeGMT.parse(l2)));
-		
-		long now = System.currentTimeMillis();
-		System.out.println("6: "+datemeGMT.format(now));		
-		System.out.println("7: "+datemeGMT.format(new Date(now)));		
-		
+//		System.out.println("1: "+SecurityHelper.datemeGMT.format(new Date()));
+//		System.out.println("2: "+SecurityHelper.datemeGMT.parse(l));		
+//		System.out.println("3: "+SecurityHelper.datemeGMT.parse(l2));
+//		
+//		System.out.println("4: "+SecurityHelper.datemeGMT.format(SecurityHelper.datemeGMT.parse(l)));
+//		System.out.println("5: "+SecurityHelper.datemeGMT.format(SecurityHelper.datemeGMT.parse(l2)));
+//		
+//		long now = System.currentTimeMillis();
+//		now = now - now%1000;
+//		System.out.println("6: "+SecurityHelper.datemeGMT.format(now));		
+//		System.out.println("7: "+SecurityHelper.datemeGMT.format(new Date(now)));		
+//		
 		
 //		1: 2011-02-24 21:26:51 GMT+00:00
 //		2: Thu Feb 24 22:21:36 CET 2011

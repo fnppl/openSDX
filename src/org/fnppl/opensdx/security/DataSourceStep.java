@@ -66,7 +66,7 @@ public class DataSourceStep {
 		DataSourceStep s = new DataSourceStep();
 		s.datasource = step.getChildText("datasource");
 		String datainsertdatetime = step.getChildText("datainsertdatetime");
-		s.datainsertdatetime = OSDXKeyObject.datemeGMT.parse(datainsertdatetime).getTime();
+		s.datainsertdatetime = SecurityHelper.parseDate(datainsertdatetime);
 		return s;
 	}
 	
@@ -76,7 +76,7 @@ public class DataSourceStep {
 	}
 	
 	public String getDataInsertDatetimeString() {
-		return OSDXKeyObject.datemeGMT.format(datainsertdatetime);
+		return SecurityHelper.getFormattedDate(datainsertdatetime);
 	}
 	
 	public long getDataInsertDatetime() {

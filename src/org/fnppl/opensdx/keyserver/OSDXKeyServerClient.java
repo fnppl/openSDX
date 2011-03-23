@@ -90,7 +90,11 @@ public class OSDXKeyServerClient {
 			throw new RuntimeException("ERROR: Can not connect to keyserver.");
 		}
 		System.out.println("OSDXKeyServerClient | start "+req.getURI());
-		//req.toOutput(System.out);
+		
+		System.out.println("--- sending ---");
+		req.toOutput(System.out);
+		System.out.println("\n--- end of sending ---");
+		
 		req.send(socket);
 		
 		//processing response
@@ -116,14 +120,17 @@ public class OSDXKeyServerClient {
 			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 		}
 		Vector<String> ret = new Vector<String>();
-		Vector<Element> keyids = e.getChildren("keyid");
-		for (Element k : keyids) {
-			ret.add(k.getText());
-		}
-		//verify signature
-		boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
-		if (!verify) {
-			throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+		Element er = e.getChild("related_keys");
+		if (er!=null) {
+			Vector<Element> keyids = er.getChildren("keyid");
+			for (Element k : keyids) {
+				ret.add(k.getText());
+			}
+			//verify signature
+			boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
+			if (!verify) {
+				throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+			}
 		}
 		return ret;
 	}

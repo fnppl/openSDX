@@ -518,6 +518,7 @@ public class SecurityMainFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					Identity id = Identity.newEmptyIdentity();
+					id.setIdentNum(key.getIdentities().size()+1);
 					boolean ok = showIdentityEditDialog(id, true);
 					if (ok) {
 						key.addIdentity(id);
@@ -603,7 +604,7 @@ public class SecurityMainFrame extends JFrame {
 		c.gridy = y;
 		a.add(l, c);
 
-		JTextField t = new JTextField(id.getEmail());
+		JTextField t = new JTextField(id.getIdentNumString()+"    "+id.getEmail());
 		t.setEditable(false);
 		c.weightx = 1;
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -1098,7 +1099,7 @@ public class SecurityMainFrame extends JFrame {
 					Element e = new Element("symmetric_encrytion");
 					e.addContent("dataname", f.getName());
 					e.addContent("origlength", ""+f.length());
-					e.addContent("lastmodified", OSDXKeyObject.datemeGMT.format(new Date(f.lastModified())));
+					e.addContent("lastmodified", SecurityHelper.getFormattedDate(f.lastModified()));
 					e.addContent("mantraname",p[0]);
 					e.addContent("pass_sha256", SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA256(p[1].getBytes()), ':', -1));
 					e.addContent("algo","AES@256");
@@ -1431,13 +1432,15 @@ public class SecurityMainFrame extends JFrame {
 	}
 
 	private boolean uploadMasterKeyToKeyServer(OSDXKeyObject key, KeyServerIdentity keyserver) {
-		Vector<Identity> ids = key.getIdentities();
-		if (ids!=null && ids.size()!=0) {
+		Identity id = key.getIdentity0001();
+		if (id!=null) {
 			try {
-				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"?\nThis will also change your authoritative keyserver for this key.");
+				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+id.getEmail()+"\nto KeyServer: "+keyserver.getHost()+"?\nThis will also change your authoritative keyserver for this key.");
 				if (confirm==Dialogs.YES) {
+					if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
+					if (!key.isPrivateKeyUnlocked()) return false;
 					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
-					boolean ok =client.putMasterKey(key, ids.get(0));
+					boolean ok =client.putMasterKey(key, id);
 					if (ok) {
 						Vector<OSDXKeyObject> childkeys = currentKeyStore.getRevokeKeys(key.getKeyID());
 						childkeys.addAll(currentKeyStore.getSubKeys(key.getKeyID()));
@@ -1448,11 +1451,11 @@ public class SecurityMainFrame extends JFrame {
 						}
 						props.put(key.getKeyID(), "VISIBLE");
 						updateUI();
-						Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
+						Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+id.getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
 						return ok;
 					} else {
 						String msg = client.getMessage();
-						Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+ids.get(0).getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
+						Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+id.getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
 						return false;
 					}
 				}
@@ -1460,7 +1463,7 @@ public class SecurityMainFrame extends JFrame {
 				ex.printStackTrace();
 			}
 		} else {
-			Dialogs.showMessage("Upload failed. No identity found.");
+			Dialogs.showMessage("Upload failed. No identity with identnum 0001 found.");
 		}
 		return false;
 	}
@@ -1577,6 +1580,7 @@ public class SecurityMainFrame extends JFrame {
 			Identity id = null;
 			try {
 				id = Identity.newEmptyIdentity();
+				id.setIdentNum(1);
 				ok = showIdentityEditDialog(id, true);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -1728,6 +1732,7 @@ public class SecurityMainFrame extends JFrame {
 			return;
 		}
 	}
+	
 
 	public static void main(String[] args) {
 		//HT 28.02.2011
@@ -1914,6 +1919,7 @@ public class SecurityMainFrame extends JFrame {
 			datapath = id.getDatapath();
 
 			rows = new Vector<String>();
+			rows.add("identnum");
 			rows.add("email");
 			rows.add("mnemonic");
 			rows.add("phone");
@@ -1958,45 +1964,31 @@ public class SecurityMainFrame extends JFrame {
 			if (columnIndex==0) {
 				return rows.get(rowIndex);
 			}
-			if (rowIndex==0)
-				return id.getEmail();
-			else if (rowIndex==1)
-				return id.getMnemonic();
-			else if (rowIndex==2)
-				return id.getPhone();
-			else if (rowIndex==3)
-				return id.getCountry();
-			else if (rowIndex==4)
-				return id.getRegion();
-			else if (rowIndex==5)
-				return id.getCity();
-			else if (rowIndex==6)
-				return id.getPostcode();
-			else if (rowIndex==7)
-				return id.getCompany();
-			else if (rowIndex==8)
-				return id.getUnit();
-			else if (rowIndex==9)
-				return id.getSubunit();
-			else if (rowIndex==10)
-				return id.getFunction();
-			else if (rowIndex==11)
-				return id.getSurname();
-			else if (rowIndex==12)
-				return id.getMiddlename();
-			else if (rowIndex==13)
-				return id.getName();
-			else if (rowIndex==14)
-				return id.getNote();
-			else if (rowIndex>=15 && rowIndex<15+datapath.size()) {
-				DataSourceStep s = datapath.get(rowIndex-15);
+			if (rowIndex==0) return id.getIdentNumString();
+			else if (rowIndex==1) return id.getEmail();
+			else if (rowIndex==2) return id.getMnemonic();
+			else if (rowIndex==3) return id.getPhone();
+			else if (rowIndex==4) return id.getCountry();
+			else if (rowIndex==5) return id.getRegion();
+			else if (rowIndex==6) return id.getCity();
+			else if (rowIndex==7) return id.getPostcode();
+			else if (rowIndex==8) return id.getCompany();
+			else if (rowIndex==9) return id.getUnit();
+			else if (rowIndex==10) return id.getSubunit();
+			else if (rowIndex==11) return id.getFunction();
+			else if (rowIndex==12) return id.getSurname();
+			else if (rowIndex==13) return id.getMiddlename();
+			else if (rowIndex==14) return id.getName();
+			else if (rowIndex==15) return id.getNote();
+			else if (rowIndex>=16 && rowIndex<16+datapath.size()) {
+				DataSourceStep s = datapath.get(rowIndex-16);
 				return s.getDataSource()+" at "+s.getDataInsertDatetimeString();
 			}
 			return null;
 		}
 
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			if (columnIndex==1 && rowIndex<14) 
+			if (columnIndex==1 && rowIndex<16) 
 				return true;
 			return false;
 		}
@@ -2004,21 +1996,30 @@ public class SecurityMainFrame extends JFrame {
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			if (columnIndex==0) return;
 			String s = (String)aValue;
-			if      (rowIndex== 0) id.setEmail(s);
-			else if (rowIndex== 1) id.setMnemonic(s);
-			else if (rowIndex== 2) id.setPhone(s);
-			else if (rowIndex== 3) id.setCountry(s);
-			else if (rowIndex== 4) id.setRegion(s);
-			else if (rowIndex== 5) id.setCity(s);
-			else if (rowIndex== 6) id.setPostcode(s);
-			else if (rowIndex== 7) id.setCompany(s);
-			else if (rowIndex== 8) id.setUnit(s);
-			else if (rowIndex== 9) id.setSubunit(s);
-			else if (rowIndex==10) id.setFunction(s);
-			else if (rowIndex==11) id.setSurname(s);
-			else if (rowIndex==12) id.setMiddlename(s);
-			else if (rowIndex==13) id.setName(s);
-			else if (rowIndex==14) id.setNote(s);
+			
+			if (rowIndex== 0) {
+				try {
+					id.setIdentNum(Integer.parseInt(s));
+				} catch (Exception ex) {
+					Dialogs.showMessage("Sorry, wrong number format in field identnum.");
+				}
+			}
+			else if (rowIndex== 1) id.setEmail(s);
+			else if (rowIndex== 2) id.setMnemonic(s);
+			else if (rowIndex== 3) id.setPhone(s);
+			else if (rowIndex== 4) id.setCountry(s);
+			else if (rowIndex== 5) id.setRegion(s);
+			else if (rowIndex== 6) id.setCity(s);
+			else if (rowIndex== 7) id.setPostcode(s);
+			else if (rowIndex== 8) id.setCompany(s);
+			else if (rowIndex== 9) id.setUnit(s);
+			else if (rowIndex==10) id.setSubunit(s);
+			else if (rowIndex==11) id.setFunction(s);
+			else if (rowIndex==12) id.setSurname(s);
+			else if (rowIndex==13) id.setMiddlename(s);
+			else if (rowIndex==14) id.setName(s);
+			else if (rowIndex==15) id.setNote(s);
+			id.createSHA1();
 		}
 	}
 
