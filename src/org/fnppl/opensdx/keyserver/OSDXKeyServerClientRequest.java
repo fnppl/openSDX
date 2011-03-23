@@ -57,6 +57,7 @@ public class OSDXKeyServerClientRequest {
 	
 	public void togglePOSTMode() {
 		this.method = "POST";
+		toggleFormDataMode();
 	}
 	
 	public OSDXKeyServerClientRequest() {
@@ -97,8 +98,8 @@ public class OSDXKeyServerClientRequest {
 			if (contentElement != null) {
 				Element eContent = contentElement;
 				//signoff if signoffkey present
-				if (signoffkey!=null) {
-					eContent = XMLHelper.cloneElement(contentElement);
+				if (signoffkey != null) {
+					eContent = XMLHelper.cloneElement(contentElement); //HT 23.03.2011 - why cloned?!
 					//signoff
 					byte[] sha1proof = SecurityHelper.getSHA1LocalProof(eContent);
 					eContent.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
@@ -110,6 +111,7 @@ public class OSDXKeyServerClientRequest {
 				StringBuffer toSend = new StringBuffer();
 				toSend.append(XMLDOCPARAMNAME+"=");
 				toSend.append(URLEncoder.encode(xml.toString(), "UTF-8"));
+				
 				Iterator<String> its = parameters.keySet().iterator();
 				while(its.hasNext()) {
 					toSend.append("&");
@@ -140,11 +142,15 @@ public class OSDXKeyServerClientRequest {
 			out.flush();
 		}
 		else if(contentType.equalsIgnoreCase("text/xml")) {
+			if(true) {
+				throw new RuntimeException("Hmm, thou shalt not use me...");
+			}
+			
 			if (contentElement != null) {
 				Element eContent = contentElement;
 				//signoff if signoffkey present
 				if (signoffkey!=null) {
-					eContent = XMLHelper.cloneElement(contentElement);
+					eContent = XMLHelper.cloneElement(contentElement);//HT 23.03.2011 - why cloned?!
 					//signoff
 					byte[] sha1proof = SecurityHelper.getSHA1LocalProof(eContent);
 					eContent.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
