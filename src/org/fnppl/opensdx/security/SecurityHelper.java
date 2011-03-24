@@ -52,6 +52,7 @@ import java.text.SimpleDateFormat;
 import java.io.*;
 import java.util.*;
 
+import org.bouncycastle.crypto.RuntimeCryptoException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.fnppl.opensdx.xml.Element;
 
@@ -582,21 +583,20 @@ public class SecurityHelper {
 		e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", signoffkey).toElement());
 	}
 	
-	public static boolean checkElementsSHA1localproofAndSignature(Element e, Vector<PublicKey> trustedKeys) {
-		try {
-			PublicKey signingKey = null;
-			byte[] modulus = SecurityHelper.HexDecoder.decode(e.getChild("signature").getChild("signoff").getChild("pubkey").getChildText("modulus"));
-			for (PublicKey k: trustedKeys) {
-				if (Arrays.equals(k.getModulusBytes(), modulus)) {
-					signingKey = k;
-					break;
-				}
+	public static boolean checkElementsSHA1localproofAndSignature(Element e, Vector<OSDXKeyObject> trustedKeys) throws Exception {
+		OSDXKeyObject signingKey = null;
+		byte[] modulus = SecurityHelper.HexDecoder.decode(e.getChild("signature").getChild("signoff").getChild("pubkey").getChildText("modulus"));
+		for (OSDXKeyObject k: trustedKeys) {
+			if (Arrays.equals(k.getPubKey().getModulusBytes(), modulus)) {
+				signingKey = k;
+				break;
 			}
-			//TODO if (signingKey == null) try to find approved signing key on server
+		}
+		if (signingKey !=null) {
 			return SecurityHelper.checkElementsSHA1localproofAndSignature(e, signingKey);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return false;
+		} else {
+			//TODO if (signingKey == null) try to find approved signing key on server
+			throw new RuntimeException("signing key NOT in trusted keys: keyid: "+e.getChild("signature").getChild("signoff").getChildText("keyid"));
 		}
 	}
 	
@@ -647,27 +647,23 @@ public class SecurityHelper {
 		return verified;
 	}
 	
-	public static boolean checkElementsSHA1localproofAndSignature(Element e, PublicKey signingKey) {
-		try {
-			//get sha1localproof
-			byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
-			//get signature
-			Signature signature = Signature.fromElement(e.getChild("signature"));
-			
-			//build toProof <- all content but sha1localproof and Signature
-			Vector<Element> toProof = new Vector<Element>();
-			Vector<Element> children = e.getChildren();
-			for (Element c : children) {
-				if (!c.getName().equals("sha1localproof") && !c.getName().equals("signature")) {
-					toProof.add(c);
-				}
+	public static boolean checkElementsSHA1localproofAndSignature(Element e, OSDXKeyObject signingKey) throws Exception {
+		//get sha1localproof
+		byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
+		//get signature
+		Signature signature = Signature.fromElement(e.getChild("signature"));
+		
+		//build toProof <- all content but sha1localproof and Signature
+		Vector<Element> toProof = new Vector<Element>();
+		Vector<Element> children = e.getChildren();
+		for (Element c : children) {
+			if (!c.getName().equals("sha1localproof") && !c.getName().equals("signature")) {
+				toProof.add(c);
 			}
-			
-			return checkSHA1localproofAndSignature(toProof, givenSha1localproof, signature, signingKey);
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
-		return false;
+		
+		return checkSHA1localproofAndSignature(toProof, givenSha1localproof, signature, signingKey.getPubKey());
+		
 	}
 	
 }

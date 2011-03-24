@@ -6,6 +6,7 @@ import java.util.Vector;
 
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.security.SecurityHelper.HexDecoder;
+import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLHelper;
 
@@ -85,15 +86,45 @@ public class KeyLog {
 		eTo.addContent("sha1fingerprint", to.getKeyModulusSHA1());
 		ea.addContent(eTo);
 		Element eStatus = new Element(status);
-		eStatus.addContent(id.toElement());
+		Element eid = new Element("identity");
+		eStatus.addContent(eid);
+		Vector<Element> eids = id.toElement().getChildren();
+		for (Element elid : eids) {
+			if (elid.getText()!=null && elid.getText().length()>0) {
+				eid.addContent(elid.getName(), elid.getText());
+			}
+		}
+		
+		ea.addContent(eStatus);
+		
 		Element edp = new Element("datapath");
 		//TODO datapath
 		ea.addContent(edp);
-				
+		e.addContent(ea);
+		
+		Document doc = Document.buildDocument(e);
+		doc.output(System.out);
+		
 		KeyLog kl = KeyLog.fromElement(e,false);
 		kl.signoff(from);
 		
 		return kl;
+	}
+	
+	public Vector<String[]> getStatusElements() {
+		Vector<String[]> v = new Vector<String[]>();
+		try {
+			Vector<Element> e = ekeylog.getChild("action").getChild(getStatus()).getChild("identity").getChildren();
+			if (e!=null && e.size()>0) {
+				for (Element a : e) {
+					if (!a.getName().equals("sha1"))
+						v.add(new String[] {a.getName(),a.getText()});
+				}
+			}
+		} catch (Exception ex) {
+			
+		}
+		return v;
 	}
 
 	public boolean verifySHA1localproofAndSignoff() throws Exception {

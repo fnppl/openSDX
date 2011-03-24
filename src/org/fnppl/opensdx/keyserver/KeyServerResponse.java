@@ -142,7 +142,7 @@ public class KeyServerResponse {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("Identity");
 		if (id != null) {
-			Element e = new Element("masterpubkey_resonse");
+			Element e = new Element("masterpubkeys_response");
 			e.addContent("identity",id);
 			Vector<OSDXKeyObject> keys = id_keys.get(id);
 			if (keys != null && keys.size() > 0) {
@@ -237,7 +237,7 @@ public class KeyServerResponse {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
-			Element e = new Element("subkey_response");
+			Element e = new Element("subkeys_response");
 			e.addContent("parentkeyid", id);
 			Vector<OSDXKeyObject> subkeys = keyid_subkeys.get(id);
 			if (subkeys!=null && subkeys.size()>0) {
@@ -247,6 +247,27 @@ public class KeyServerResponse {
 				
 			}
 			resp.setSignoffKey(signoffkey);
+			resp.setContentElement(e);
+			return resp;
+		}
+		resp.setRetCode(404, "FAILED");
+		resp.createErrorMessageContent("Missing parameter: KeyID");
+		return null;
+	}
+	
+	public static KeyServerResponse createPubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, OSDXKeyObject> keyid_key, OSDXKeyObject signoffkey) {
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		String id = request.getParamValue("KeyID");
+		if (id != null) {
+			int pos = id.indexOf('@');
+			if (pos>0) id = id.substring(0,pos);
+			id = SecurityHelper.HexDecoder.encode(SecurityHelper.HexDecoder.decode(id), ':', -1);
+			Element e = new Element("pubkey_response");
+			OSDXKeyObject key = keyid_key.get(id);
+			if (key!=null) {
+				e.addContent(key.getSimplePubKeyElement());
+				resp.setSignoffKey(signoffkey);
+			}
 			resp.setContentElement(e);
 			return resp;
 		}

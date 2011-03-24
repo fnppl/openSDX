@@ -169,9 +169,11 @@ public class KeyApprovingStore {
 	public Vector<OSDXKeyObject> getSubKeys(String keyid) {
 		Vector<OSDXKeyObject> ret = new Vector<OSDXKeyObject>();
 		for (OSDXKeyObject k : keys) {
-			if (k.isSub() && k.getParentKeyID().equals(keyid)) {
-				ret.add(k);
-			}
+			try {
+				if (k.isSub() && k.getParentKeyID().equals(keyid)) {
+					ret.add(k);
+				}
+			} catch (Exception ex) {}
 		}
 		return ret;
 	}
@@ -185,6 +187,18 @@ public class KeyApprovingStore {
 			}
 		}
 		return null;
+	}
+	
+	public void removeKey(OSDXKeyObject key) {
+		keys.remove(key);
+		unsavedChanges = true;
+	}
+	
+	public void removeKeyLog(KeyLog keylog) {
+		if (keylogs != null) {
+			keylogs.remove(keylog);
+			unsavedChanges = true;
+		}
 	}
 	
 	public Vector<OSDXKeyObject> getRevokeKeys(String keyid) {

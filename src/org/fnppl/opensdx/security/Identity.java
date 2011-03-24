@@ -82,7 +82,7 @@ public class Identity {
 		
 	}
 	
-	public static Identity newEmptyIdentity() throws Exception {
+	public static Identity newEmptyIdentity() {
 		Identity idd = new Identity();
 		idd.email = "";
 		idd.mnemonic = "";

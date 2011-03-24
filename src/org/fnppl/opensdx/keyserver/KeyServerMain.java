@@ -130,6 +130,7 @@ public class KeyServerMain {
 			keystore.toFile(keystore.getFile());
 		}
 		keystore.setSigningKey(keyServerSigningKey);
+		updateCache(keyServerSigningKey, null);
 		
 		Document d = Document.buildDocument(keyServerSigningKey.getSimplePubKeyElement());
 		System.out.println("KeyServerSigningKey:");
@@ -481,7 +482,7 @@ public class KeyServerMain {
 			
 			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
 			
-			boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey.getPubKey());
+			boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey);
 			
 			if (!verified) {
 				resp.setRetCode(404, "FAILED");
@@ -531,6 +532,30 @@ public class KeyServerMain {
 		} else {
 			resp.setRetCode(404, "FAILED");
 			resp.createErrorMessageContent("missing subkey");
+		}
+		return resp;
+	}
+	
+	
+	private KeyServerResponse handlePutKeyLogsRequest(KeyServerRequest request) throws Exception {
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		
+		Element e = request.xml.getRootElement();
+		if (e.getName().equals("keylogs")) {
+			
+			Vector<Element> elogs = e.getChildren("keylog");
+			if (elogs!=null && elogs.size()>0) {
+				for (Element el : elogs) {
+					KeyLog log = KeyLog.fromElement(el);
+					keystore.addKeyLog(log);
+					updateCache(null,log);	
+				}
+				//save
+				saveKeyStore();
+			}
+		} else {
+			resp.setRetCode(404, "FAILED");
+			resp.createErrorMessageContent("missing keylogs element");
 		}
 		return resp;
 	}
@@ -610,6 +635,9 @@ public class KeyServerMain {
 			else if (cmd.equals("/subkey")) {
 				return handlePutSubKeyRequest(request);
 			}
+			else if (cmd.equals("/keylogs")) {
+				return handlePutKeyLogsRequest(request);
+			}
 		} 
 		else if (request.method.equals("GET")) {
 			if (cmd.equals("/masterpubkeys")) {
@@ -627,9 +655,9 @@ public class KeyServerMain {
 			else if (cmd.equals("/subkeys")) {
 				return KeyServerResponse.createSubKeyResponse(serverid, request, keyid_subkeys, keyServerSigningKey);
 			}
-//			else if (cmd.equals("/pubkeys")) {
-//				return handlePubKeyRequest(request);
-//			}
+			else if (cmd.equals("/pubkey")) {
+				return KeyServerResponse.createPubKeyResponse(serverid, request, keyid_key, keyServerSigningKey);
+			}
 		}
 		else {
 			throw new Exception("NOT IMPLEMENTED::METHOD: "+request.method); // correct would be to fire a HTTP_ERR

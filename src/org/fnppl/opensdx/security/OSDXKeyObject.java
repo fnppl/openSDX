@@ -76,11 +76,14 @@ public class OSDXKeyObject {
 	public static final int LEVEL_MASTER = 0;
 	public static final int LEVEL_REVOKE = 1;
 	public static final int LEVEL_SUB = 2;
+	public static final int LEVEL_UNKNOWN = 3;
+	
 	public static final Vector<String> level_name = new Vector<String>();
 	static {
 		level_name.addElement("MASTER");
 		level_name.addElement("REVOKE");
 		level_name.addElement("SUB");
+		level_name.addElement("UNKNOWN");
 	};
 	
 	private OSDXKeyObject parentosdxkeyobject = null;
@@ -142,6 +145,33 @@ public class OSDXKeyObject {
 		
 		return ret;
 	}
+	
+	public static OSDXKeyObject fromPubKeyElement(Element e) throws Exception {
+		OSDXKeyObject ret = new OSDXKeyObject();
+		ret.level = LEVEL_UNKNOWN;
+		ret.usage = USAGE_WHATEVER;
+		String keyid = e.getChildText("keyid");
+		if (keyid.indexOf('@')>0) {
+			ret.authoritativekeyserver = keyid.substring(keyid.indexOf('@')+1);	
+		}
+		ret.datapath = new Vector<DataSourceStep>();
+		ret.validFrom = SecurityHelper.parseDate(e.getChildText("valid_from"));
+		ret.validUntil = SecurityHelper.parseDate(e.getChildText("valid_until"));
+		ret.unsavedChanges = true;
+		
+		String Salgo = e.getChildText("algo");
+		ret.algo = algo_name.indexOf(Salgo);
+		
+		byte[] modulus = SecurityHelper.HexDecoder.decode(e.getChildText("modulus"));
+		byte[] pubkey_exponent = SecurityHelper.HexDecoder.decode(e.getChildText("exponent"));
+		byte[] exponent = null;
+		
+		AsymmetricKeyPair askp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
+		ret.akp = askp;
+		ret.modulussha1 = SecurityHelper.getSHA1(askp.getModulus());
+		
+		return ret;
+	}//fromElement
 	
 	
 	public static OSDXKeyObject fromElement(Element kp) throws Exception {
@@ -588,6 +618,12 @@ public class OSDXKeyObject {
 	public void addIdentity(Identity id) {
 		unsavedChanges = true;
 		identities.add(id);
+	}
+	
+	public void addDataSourceStep(DataSourceStep ds) {
+		unsavedChanges = true;
+		if (datapath == null) datapath = new Vector<DataSourceStep>();
+		datapath.add(ds);
 	}
 	
 	public void removeIdentity(Identity id) {

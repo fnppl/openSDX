@@ -111,12 +111,12 @@ public class OSDXKeyServerClient {
 	}
 	
 	// 1. Ich, als fremder user, möchte beim keyserver (z.B. keys.fnppl.org) den/die (MASTER) pubkey(s) zu der identity thiess@finetunes.net suchen können
-	public Vector<String> requestMasterPubKeys(final String idemail, Vector<PublicKey> trustedKeys) throws Exception {
+	public Vector<String> requestMasterPubKeys(final String idemail, Vector<OSDXKeyObject> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestMasterPubKeys(host, idemail);
 		OSDXKeyServerClientResponse resp = send(req);
 		
 		Element e = resp.doc.getRootElement();
-		if (!e.getName().equals("masterpubkeys_responset")) {
+		if (!e.getName().equals("masterpubkeys_response")) {
 			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 		}
 		Vector<String> ret = new Vector<String>();
@@ -155,7 +155,7 @@ public class OSDXKeyServerClient {
 	
 	
 	//2. Ich, als fremder user, möchte beim keyserver die weiteren identities (identity-details) zu einem pubkey bekommen können
-	public Vector<Identity> requestIdentities(String keyid, Vector<PublicKey> trustedKeys) throws Exception {
+	public Vector<Identity> requestIdentities(String keyid, Vector<OSDXKeyObject> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestIdentities(host, keyid);
 		OSDXKeyServerClientResponse resp = send(req);
 		
@@ -169,16 +169,19 @@ public class OSDXKeyServerClient {
 	 	for (Element id : eid) {
 	 		ret.add(Identity.fromElement(id));
 	 	}
-	 	//verify signature
-		boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
-		if (!verify) {
-			throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
-		}
-	    return ret;
-	}
+	 	if (e.getChild("identity")!=null) {
+		 	//verify signature
+			boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
+			if (!verify) {
+				throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+			}
+		    return ret;
+	 	}
+	 	return null;
+	} 
 	
 	//3. Ich, als fremder user, möchte beim keyserver den aktuellen (beim keyserver bekannten) status zu einem pubkey bekommen können (valid/revoked/etc.)
-	public KeyStatus requestKeyStatus(String keyid, Vector<PublicKey> trustedKeys) throws Exception {
+	public KeyStatus requestKeyStatus(String keyid, Vector<OSDXKeyObject> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestKeyStatus(host, keyid);
 		OSDXKeyServerClientResponse resp = send(req);
 		if (resp==null || resp.status == null) return null;
@@ -187,17 +190,21 @@ public class OSDXKeyServerClient {
 		if (!e.getName().equals("keystatus_response")) {
 			throw new RuntimeException("ERROR: Wrong format in keyserver's response");
 		}
-		KeyStatus ks = KeyStatus.fromElement(e);
-		//verify signature
-		boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
-		if (!verify) {
-			throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+		Element eks = e.getChild("keystatus");
+		if (eks != null) {
+			KeyStatus ks = KeyStatus.fromElement(e);
+			//verify signature
+			boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
+			if (!verify) {
+				throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+			}
+			return ks;
 		}
-		return ks;
+		return null;
 	}
 	
 	//4. Ich, als fremder user, möchte beim keyserver die keylogs eines (beliebigen) pubkeys bekommen können
-	public Vector<KeyLog> requestKeyLogs(String keyid, Vector<PublicKey> trustedKeys) throws Exception {
+	public Vector<KeyLog> requestKeyLogs(String keyid, Vector<OSDXKeyObject> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestKeyLogs(host, keyid);
 		OSDXKeyServerClientResponse resp = send(req);
 		if (resp==null || resp.status == null) return null;
@@ -220,7 +227,7 @@ public class OSDXKeyServerClient {
 	}
 	
 	//5. Ich, als fremder user, möchte beim keyserver die weiteren pubkeys zu einem parent-pubkey (MASTER) bekommen können
-	public Vector<String> requestSubKeys(String masterkeyid, Vector<PublicKey> trustedKeys) throws Exception {
+	public Vector<String> requestSubKeys(String masterkeyid, Vector<OSDXKeyObject> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestSubkeys(host, masterkeyid);
 		OSDXKeyServerClientResponse resp = send(req);
 
@@ -241,7 +248,7 @@ public class OSDXKeyServerClient {
 		return ret;
 	}
 	
-	public OSDXKeyObject requestPublicKey(String keyid, Vector<PublicKey> trustedKeys) throws Exception {
+	public OSDXKeyObject requestPublicKey(String keyid, Vector<OSDXKeyObject> trustedKeys) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPublicKey(host, keyid);
 		OSDXKeyServerClientResponse resp = send(req);
 
@@ -252,11 +259,19 @@ public class OSDXKeyServerClient {
 		Vector<String> ret = new Vector<String>();
 		Element key = e.getChild("pubkey");
 		if (key!=null) {
-			//verify signature
-			boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
-			if (!verify) {
-				throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+			if (trustedKeys==null) {
+				//dont verify signature
+				System.out.println("CAUTION: DID NOT TRY SIGNATURE VERIFICATION!");
+			} else {
+				//verify signature
+				boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
+				if (!verify) {
+					throw new RuntimeException("ERROR at requestKeyStatus: signature could NOT be verfied.");
+				}
 			}
+			OSDXKeyObject pubkey = OSDXKeyObject.fromPubKeyElement(key);
+			pubkey.addDataSourceStep(new DataSourceStep(host, System.currentTimeMillis()));
+			return pubkey;
 		}	
 		return null;
 	}
