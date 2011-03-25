@@ -86,7 +86,7 @@ public class KeyServerMain {
 	int port = -1;
 	Inet4Address address = null;
 
-	private String keyserverName = "keys.fnppl.org";
+	private String keyserverName = "localhost"; //keys.fnppl.org
 	private KeyApprovingStore keystore;
 	private MessageHandler messageHandler = new DefaultMessageHandler() {
 		
@@ -120,6 +120,7 @@ public class KeyServerMain {
 		} else {
 			//generate new keypair if keystore not contains serverIDemail key
 			keyServerSigningKey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+			keyServerSigningKey.setAuthoritativeKeyServer(keyserverName);
 			Identity id = Identity.newEmptyIdentity();
 			id.setEmail(serverIDemail);
 			id.setIdentNum(1);
@@ -195,6 +196,7 @@ public class KeyServerMain {
 			}
 			String parentKeyID = k.getParentKeyID();
 			if (parentKeyID!=null && parentKeyID.length()>0) {
+				parentKeyID = OSDXKeyObject.getFormattedKeyIDModulusOnly(parentKeyID);
 				if (!keyid_subkeys.containsKey(parentKeyID)) {
 					keyid_subkeys.put(parentKeyID, new Vector<OSDXKeyObject>());
 				}
@@ -203,7 +205,8 @@ public class KeyServerMain {
 			}
 		}
 		if (l!=null) {
-			String keyid = l.getKeyIDTo();
+			//String keyid = l.getKeyIDTo();
+			String keyid = OSDXKeyObject.getFormattedKeyIDModulusOnly(l.getKeyIDTo());
 			if (!keyid_log.containsKey(keyid)) {
 				keyid_log.put(keyid, new Vector<KeyLog>());
 			}
@@ -541,7 +544,8 @@ public class KeyServerMain {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		
 		Element e = request.xml.getRootElement();
-		if (e.getName().equals("keylogs")) {
+		if (e!=null && e.getName().equals("keylogs")) {
+			Document.buildDocument(e).output(System.out);
 			
 			Vector<Element> elogs = e.getChildren("keylog");
 			if (elogs!=null && elogs.size()>0) {

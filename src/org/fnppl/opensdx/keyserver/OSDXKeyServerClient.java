@@ -192,7 +192,7 @@ public class OSDXKeyServerClient {
 		}
 		Element eks = e.getChild("keystatus");
 		if (eks != null) {
-			KeyStatus ks = KeyStatus.fromElement(e);
+			KeyStatus ks = KeyStatus.fromElement(eks);
 			//verify signature
 			boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
 			if (!verify) {

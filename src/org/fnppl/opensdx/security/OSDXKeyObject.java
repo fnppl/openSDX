@@ -699,6 +699,15 @@ public class OSDXKeyObject {
 		return lockedPrivateKey!=null || akp.hasPrivateKey();
 	}
 	
+	public static String getFormattedKeyIDModulusOnly(String id) {
+		int iat = id.indexOf('@');
+		if (iat>0) {
+			return SecurityHelper.HexDecoder.encode(SecurityHelper.HexDecoder.decode(id.substring(0,iat)), ':', -1);
+		} else {
+			return SecurityHelper.HexDecoder.encode(SecurityHelper.HexDecoder.decode(id), ':', -1);
+		}
+	}
+	
 	
 	public static void main(String[] args) throws Exception {
 		String l = "2011-02-24 21:21:36 GMT+00:00";

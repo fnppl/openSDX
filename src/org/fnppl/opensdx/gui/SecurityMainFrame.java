@@ -112,15 +112,25 @@ public class SecurityMainFrame extends JFrame {
 	private void readConfig() {
 		try {
 			Element root = Document.fromFile(configFile).getRootElement();
+			knownpublickeys = new Vector<OSDXKeyObject>();
+			
 			if (root.getChild("defaultkeyservers")!=null) {
 				keyservers = new Vector<KeyServerIdentity>();
 				Vector<Element> v = root.getChild("defaultkeyservers").getChildren("keyserver");
 				for (Element e : v) {
 					keyservers.add(KeyServerIdentity.fromElement(e));
+					Element eKnownKeys = e.getChild("knownkeys");
+					if (eKnownKeys!=null) {
+						Vector<Element> epks = eKnownKeys.getChildren("pubkey");
+						if (epks!=null) {
+							for (Element epk : epks) {
+								knownpublickeys.add(OSDXKeyObject.fromPubKeyElement(epk));
+							}
+						}
+					}
 				}
 			}
 			if (root.getChild("knownapprovedkeys")!=null) {
-				knownpublickeys = new Vector<OSDXKeyObject>();
 				Vector<Element> v = root.getChild("knownapprovedkeys").getChildren("pubkey");
 				for (Element e : v) {
 					knownpublickeys.add(OSDXKeyObject.fromPubKeyElement(e));
@@ -1072,7 +1082,9 @@ public class SecurityMainFrame extends JFrame {
 		} else {
 			addLabelTextFieldPart("status:", ks.getValidityStatusName(), a, c, y,false); y++;
 		}
-		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y,false); y++;
+		addLabelTextFieldPart("level:", key.getLevelName(), a, c, y,false); y++;
+		String ids = key.getIDEmails();
+		if (ids!=null) addLabelTextFieldPart("identities:", ids, a, c, y); y++;
 		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
 		addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y); y++;
 		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
@@ -1630,9 +1642,9 @@ public class SecurityMainFrame extends JFrame {
 		requestId.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Vector<Identity> ids = requestIdentitiyDetails(to.getKeyID());
-				if (ids!=null) {
+				if (ids!=null && ids.size()>0) {
 					Identity id = null;
-					if (ids.size()==0) {
+					if (ids.size()==1) {
 						id = ids.get(0);
 					} else {
 						Vector<String> idd = new Vector<String>();
@@ -2076,21 +2088,24 @@ public class SecurityMainFrame extends JFrame {
 		}
 		if (keyserver!=null) {
 			try {
-				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the REVOKE Key:\n"+key.getKeyID()+"\nfor MASTER Key: "+parent+"\nto KeyServer: "+keyserver.getHost()+"?\nThis will also change your authoritative keyserver for this key.");
+				String oldAuthoritativeKS = key.getAuthoritativekeyserver();
+				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the REVOKE Key:\n"+key.getKeyID()+"\nfor MASTER Key: "+parent+"\nto KeyServer: "+keyserver.getHost()+"?"+(oldAuthoritativeKS.equals("LOCAL")?"\nThis will also change your authoritative keyserver for this key.":""));
 				if (confirm==Dialogs.YES) {
 					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
 					OSDXKeyObject masterkey = currentKeyStore.getKey(parent);
 					if (!masterkey.isPrivateKeyUnlocked()) masterkey.unlockPrivateKey(messageHandler);
 					if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
-					
+					if (oldAuthoritativeKS.equals("LOCAL")) {
+						key.setAuthoritativeKeyServer(keyserver.getHost());
+					}
 					boolean ok = client.putRevokeKey(key, masterkey);
 					if (ok) {
-						key.setAuthoritativeKeyServer(keyserver.getHost());
 						props.put(key.getKeyID(), "VISIBLE");
 						updateUI();
 						Dialogs.showMessage("Upload of REVOKE Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
 						return ok;
 					} else {
+						key.setAuthoritativeKeyServer(oldAuthoritativeKS);
 						String msg = client.getMessage();
 						Dialogs.showMessage("Upload of REVOKE Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
 						return false;
@@ -2125,19 +2140,24 @@ public class SecurityMainFrame extends JFrame {
 		}
 		if (keyserver!=null) {
 			try {
-				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the SUB Key:\n"+key.getKeyID()+"\nfor MASTER Key: "+parent+"\nto KeyServer: "+keyserver.getHost()+"?\nThis will also change your authoritative keyserver for this key.");
+				String oldAuthoritativeKS = key.getAuthoritativekeyserver();
+				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the SUB Key:\n"+key.getKeyID()+"\nfor MASTER Key: "+parent+"\nto KeyServer: "+keyserver.getHost()+"?"+(oldAuthoritativeKS.equals("LOCAL")?"\nThis will also change your authoritative keyserver for this key.":""));
 				if (confirm==Dialogs.YES) {
 					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
 					OSDXKeyObject masterkey = currentKeyStore.getKey(parent);
 					if (!masterkey.isPrivateKeyUnlocked()) masterkey.unlockPrivateKey(messageHandler);
+					if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
+					if (oldAuthoritativeKS.equals("LOCAL")) {
+						key.setAuthoritativeKeyServer(keyserver.getHost());
+					}
 					boolean ok = client.putSubKey(key, masterkey);
 					if (ok) {
-						key.setAuthoritativeKeyServer(keyserver.getHost());
 						props.put(key.getKeyID(), "VISIBLE");
 						updateUI();
 						Dialogs.showMessage("Upload of SUB Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
 						return ok;
 					} else {
+						key.setAuthoritativeKeyServer(oldAuthoritativeKS);
 						String msg = client.getMessage();
 						Dialogs.showMessage("Upload of SUB Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
 						return false;

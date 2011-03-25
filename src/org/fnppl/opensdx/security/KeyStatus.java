@@ -87,7 +87,7 @@ public class KeyStatus {
 	public static KeyStatus fromElement(Element e) throws Exception {
 		KeyStatus k = new KeyStatus();
 		k.validityStatus = VALIDITY_NAME.indexOf(e.getChildText("validity_status"));
-		k.approvalPoints = e.getChildInt("approval_pojnts");
+		k.approvalPoints = e.getChildInt("approval_points");
 		k.validFrom = SecurityHelper.parseDate(e.getChildText("valid_from"));
 		k.validUntil = SecurityHelper.parseDate(e.getChildText("valid_until"));
 		return k;

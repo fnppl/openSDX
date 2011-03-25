@@ -166,6 +166,7 @@ public class KeyServerResponse {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
+			id = OSDXKeyObject.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("identities_response");
 			e.addContent("keyid",id);
 			OSDXKeyObject key = keyid_key.get(id);
@@ -188,15 +189,17 @@ public class KeyServerResponse {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
+			id = OSDXKeyObject.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("keystatus_response");
 			e.addContent("keyid",id);
 			try {
 				KeyStatus ks = keystore.getKeyStatus(id);
 				if (ks!=null) {
-					Vector<Element> status = ks.toElement().getChildren();
-					for (Element es : status) {
-						e.addContent(es);
-					}
+					e.addContent(ks.toElement());
+//					Vector<Element> status = ks.toElement().getChildren();
+//					for (Element es : status) {
+//						e.addContent(XMLHelper.cloneElement(es));
+//					}
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -214,6 +217,7 @@ public class KeyServerResponse {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
+			id = OSDXKeyObject.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("keylogs_response");
 			e.addContent("keyid",id);
 			Vector<KeyLog> keylogs = keyid_log.get(id);
@@ -237,12 +241,14 @@ public class KeyServerResponse {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
+			id = OSDXKeyObject.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("subkeys_response");
 			e.addContent("parentkeyid", id);
 			Vector<OSDXKeyObject> subkeys = keyid_subkeys.get(id);
 			if (subkeys!=null && subkeys.size()>0) {
 				for (OSDXKeyObject key : subkeys) {
-					e.addContent("keyid",key.getKeyID());
+					if (key.isSub())
+						e.addContent("keyid",key.getKeyID());
 				}
 				
 			}
@@ -259,9 +265,7 @@ public class KeyServerResponse {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
-			int pos = id.indexOf('@');
-			if (pos>0) id = id.substring(0,pos);
-			id = SecurityHelper.HexDecoder.encode(SecurityHelper.HexDecoder.decode(id), ':', -1);
+			id = OSDXKeyObject.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("pubkey_response");
 			OSDXKeyObject key = keyid_key.get(id);
 			if (key!=null) {

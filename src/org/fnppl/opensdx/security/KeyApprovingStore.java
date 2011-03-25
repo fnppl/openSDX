@@ -348,6 +348,9 @@ public class KeyApprovingStore {
 	public KeyStatus getKeyStatus(String keyid) throws Exception {
 		Vector<KeyLog> kls = getKeyLogs(keyid);
 		if (kls==null || kls.size()==0) return null;
+		for (KeyLog kl : kls) {
+			System.out.println("found keylog... "+kl.getDateString());
+		}
 		KeyLog kl = kls.lastElement();
 		String status = kl.getStatus();
 		int validity = -1;
