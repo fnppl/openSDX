@@ -460,10 +460,7 @@ public class OSDXKeyObject {
 		//datapath
 		Element edp = new Element("datapath");
 		for (int i=0;i<datapath.size();i++) {
-			Element edss = new Element("step"+(i+1));
-			edss.addContent("datasource",datapath.get(i).getDataSource());
-			edss.addContent("datainsertdatetime", datapath.get(i).getDataInsertDatetimeString());
-			edp.addContent(edss);
+			edp.addContent(datapath.get(i).toElement(i));
 		}
 		ekp.addContent(edp);
 		ekp.addContent("valid_from",getValidFromString());
@@ -498,7 +495,7 @@ public class OSDXKeyObject {
 			Element esk = new Element("privkey");
 			esk.addContent(eexp);
 			ekp.addContent(esk);
-		} else {
+		} else if (akp.hasPrivateKey()) {
 			System.out.println("CAUTION: private key NOT saved.");
 		}// -- end privkey
 		

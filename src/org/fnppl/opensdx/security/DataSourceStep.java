@@ -70,6 +70,12 @@ public class DataSourceStep {
 		return s;
 	}
 	
+	public Element toElement(int ind) {
+		Element edss = new Element("step"+(ind+1));
+		edss.addContent("datasource", datasource);
+		edss.addContent("datainsertdatetime", getDataInsertDatetimeString());
+		return edss;
+	}
 	
 	public String getDataSource() {
 		return datasource;

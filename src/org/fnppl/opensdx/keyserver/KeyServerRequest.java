@@ -66,6 +66,11 @@ public class KeyServerRequest {
 	public String cmd = null;
 	public String method = null;
 	public String ipv4 = null;
+	public long datetime = -1L;
+	
+	private KeyServerRequest() {
+		datetime = System.currentTimeMillis();
+	}
 	
 	public static KeyServerRequest fromInputStream(BufferedInputStream in, String ipv4) throws Exception {
 		KeyServerRequest ret = new KeyServerRequest();

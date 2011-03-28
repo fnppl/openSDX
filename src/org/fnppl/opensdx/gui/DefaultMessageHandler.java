@@ -14,6 +14,12 @@ public class DefaultMessageHandler implements MessageHandler {
 		if (a==Dialogs.YES) return true;
 		return false;
 	}
+	
+	public boolean requestIgnoreKeyLogVerificationFailure() {
+		int a = Dialogs.showYES_NO_Dialog("Verification failed", "KeyStore:  localproof and signoff of keylog failed.\nIgnore?");
+		if (a==Dialogs.YES) return true;
+		return false;
+	}
 
 	public OSDXKeyObject requestMasterSigningKey(KeyApprovingStore keystore) throws Exception {
 		OSDXKeyObject signkey = null;

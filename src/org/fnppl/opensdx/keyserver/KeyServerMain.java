@@ -72,6 +72,7 @@ import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
+import org.fnppl.opensdx.security.DataSourceStep;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.KeyLog;
@@ -125,6 +126,9 @@ public class KeyServerMain {
 	private MessageHandler messageHandler = new DefaultMessageHandler() {
 		public boolean requestOverwriteFile(File file) {//dont ask, just overwrite
 			return true;
+		}
+		public boolean requestIgnoreKeyLogVerificationFailure() {//dont ignore faild keylog verification
+			return false;
 		}
 	};
 	
@@ -372,13 +376,14 @@ public class KeyServerMain {
 			Identity idd = Identity.fromElement(e.getChild("identity"));
 			key.addIdentity(idd);
 			key.setAuthoritativeKeyServer(host);
+			key.addDataSourceStep(new DataSourceStep(request.ipv4, request.datetime));
 
 			
-			//generate keylog for approve pending
+			//generate keylog for approve_pending
 			Element ekl = new Element("keylog");
 			Element eac = new Element("action");
 			eac.addContent("date", SecurityHelper.getFormattedDate(System.currentTimeMillis()));
-			eac.addContent("ipv4", "na");
+			eac.addContent("ipv4", request.ipv4);
 			eac.addContent("ipv6", "na");
 			Element ef = new Element("from");
 			ef.addContent("id",serverIDemail);
@@ -609,39 +614,15 @@ public class KeyServerMain {
 				return resp;
 			}
 			
-			//put key in keystore
+			//put subkey in keystore
 			AsymmetricKeyPair akp = new AsymmetricKeyPair(pubkey.getModulusBytes(), pubkey.getPublicExponentBytes(), null);
 			//generate key
 			OSDXKeyObject key = OSDXKeyObject.buildNewMasterKeyfromKeyPair(akp);
 			key.setLevel(OSDXKeyObject.LEVEL_SUB);
 			key.setUsage(OSDXKeyObject.USAGE_SIGN);
 			key.setParentKey(masterkey);
-			
-			
-			//generate keylog for approval
-//			Element ekl = new Element("keylog");
-//			Element eac = new Element("action");
-//			eac.addContent("date", OSDXKeyObject.datemeGMT.format(System.currentTimeMillis()));
-//			eac.addContent("ipv4", "na");
-//			eac.addContent("ipv6", "na");
-//			Element ef = new Element("from");
-//			ef.addContent("id",serverIDemail);
-//			ef.addContent("keyid",keyServerSigningKey.getKeyID());
-//			Element et = new Element("to");
-//			et.addContent("id",masterkey.getIdentities().get(0).getEmail());
-//			et.addContent("keyid",pubkey.getKeyID());
-//			Element eap = new Element("approval");
-//			Element eo = new Element("of");
-//			eo.addContent("parentkeyid",masterkey.getKeyID());
-//			eap.addContent(eo);
-//			eac.addContent(ef);
-//			eac.addContent(et);
-//			eac.addContent(eap);
-//			ekl.addContent(eac);
-//			
-//			KeyLog kl = KeyLog.fromElement(ekl,false);
-//			kl.signoff(keyServerSigningKey);
-		
+			key.setAuthoritativeKeyServer(masterkey.getAuthoritativekeyserver());
+	
 			//save
 			keystore.addKey(key);
 			//keystore.addKeyLog(kl);
@@ -692,9 +673,10 @@ public class KeyServerMain {
 			public void run() {
 				// should add entry to current_working_threads...
 				try {
+					InetAddress addr = s.getInetAddress();
 					InputStream _in = s.getInputStream();
 					BufferedInputStream in = new BufferedInputStream(_in);
-					KeyServerRequest request = KeyServerRequest.fromInputStream(in, s.getInetAddress().getHostAddress());
+					KeyServerRequest request = KeyServerRequest.fromInputStream(in, addr.getHostAddress());
 					KeyServerResponse response = prepareResponse(request, in); //this is ok since the request is small and can be kept in ram
 					
 					System.out.println("KeyServerSocket  | ::response ready");

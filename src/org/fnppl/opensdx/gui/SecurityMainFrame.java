@@ -1187,8 +1187,10 @@ public class SecurityMainFrame extends JFrame {
 		addLabelTextFieldPart("status :", keylog.getStatus(), a, c, y);
 		Vector<String[]> el = keylog.getStatusElements();
 		for (String[] s : el) {
-			y++;
-			addLabelTextFieldPart("  "+s[0]+":", s[1], a, c, y);
+			if (s[1].length()>0) {
+				y++;
+				addLabelTextFieldPart("  "+s[0]+":", s[1], a, c, y);
+			}
 		}
 		final int w = 600;
 		final int h = y*30 + 80;
@@ -1776,8 +1778,14 @@ public class SecurityMainFrame extends JFrame {
 			if (!from.isPrivateKeyUnlocked()) from.unlockPrivateKey(messageHandler);
 	    	try {
 	    		String status = (String)selectStatus.getSelectedItem();
+	    		System.out.println("selected status: "+status);
 				KeyLog kl = KeyLog.buildNewKeyLog(status, from, to, ip4, ip6, idd);
+				
+				System.out.println("verify: "+ kl.verifySHA1localproofAndSignoff());;
+				
 				Element e = kl.toElement();
+				System.out.println("verify: "+ KeyLog.fromElement(e).verifySHA1localproofAndSignoff());
+				
 				Document doc = Document.buildDocument(e);
 			//	doc.output(System.out);
 				
@@ -1830,6 +1838,7 @@ public class SecurityMainFrame extends JFrame {
 			}
 			if (logs!=null && logs.size()>0) {
 				for (KeyLog kl : logs) {
+					
 					currentKeyStore.addKeyLog(kl);
 				}
 				updateUI();

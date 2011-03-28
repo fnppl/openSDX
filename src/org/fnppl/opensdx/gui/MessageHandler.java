@@ -13,6 +13,7 @@ public interface MessageHandler {
 	public static int NO = -1;
 	
 	public boolean requestIgnoreVerificationFailure();
+	public boolean requestIgnoreKeyLogVerificationFailure();
 	public OSDXKeyObject requestMasterSigningKey(KeyApprovingStore keystore) throws Exception;
 	public boolean requestOverwriteFile(File file);
 	public String requestPassword(String keyid, String mantra);

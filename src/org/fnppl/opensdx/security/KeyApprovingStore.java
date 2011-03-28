@@ -139,9 +139,23 @@ public class KeyApprovingStore {
 			kas.keylogs = new Vector<KeyLog>();
 			for(int i=0; i<vkl.size(); i++) {
 				Element ee = vkl.elementAt(i);
-				KeyLog kl = KeyLog.fromElement(ee);
-				kas.keylogs.add(kl);
-				if (!kl.isVerified()) kas.unsavedChanges = true;
+				try {
+					KeyLog kl = KeyLog.fromElement(ee,true);
+					kas.keylogs.add(kl);
+					if (!kl.isVerified()) kas.unsavedChanges = true;
+				} catch (Exception ex) {
+					if (ex.getMessage().startsWith("KeyStore:  localproof and signoff of keylog failed.")) {
+						boolean ignore = mh.requestIgnoreKeyLogVerificationFailure();
+						if (ignore) {
+							KeyLog kl = KeyLog.fromElement(ee,false);
+							kas.keylogs.add(kl);
+							kas.unsavedChanges = true;		
+						}
+					} else {
+						ex.printStackTrace();
+					}
+				}
+				
 			}
 		}
 		

@@ -216,7 +216,9 @@ public class OSDXKeyServerClient {
 		Vector<Element> ekls = e.getChildren("keylog");
 		Vector<KeyLog> vkl = new Vector<KeyLog>();
 		for (Element ekl : ekls) {
-			vkl.add(KeyLog.fromElement(ekl));
+			KeyLog kl = KeyLog.fromElement(ekl);
+			
+			vkl.add(kl);
 		}
 		//verify signature
 		boolean verify = SecurityHelper.checkElementsSHA1localproofAndSignature(e, trustedKeys);
