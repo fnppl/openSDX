@@ -186,18 +186,18 @@ public class KeyServerRequest {
 		if(re.cmd.indexOf("?")>0) {
 			me = re.cmd.substring(re.cmd.indexOf("?")+1);
 			re.cmd = re.cmd.substring(0, re.cmd.indexOf("?"));
-		}
 		
-		StringTokenizer st = new StringTokenizer(me, "=");
-		while(st.hasMoreTokens()) {
-			String pn = URLDecoder.decode(st.nextToken(), "UTF-8");
-			String pv = URLDecoder.decode(st.nextToken(), "UTF-8");
-		
-			if(pn.equalsIgnoreCase(XMLDOCPARAMNAME)) {
-				re.xml = Document.fromStream(new ByteArrayInputStream(pv.getBytes("UTF-8")));
-			}
-			else {
-				re.parameters.put(pn, pv);
+			StringTokenizer st = new StringTokenizer(me, "=");
+			while(st.hasMoreTokens()) {
+				String pn = URLDecoder.decode(st.nextToken(), "UTF-8");
+				String pv = URLDecoder.decode(st.nextToken(), "UTF-8");
+			
+				if(pn.equalsIgnoreCase(XMLDOCPARAMNAME)) {
+					re.xml = Document.fromStream(new ByteArrayInputStream(pv.getBytes("UTF-8")));
+				}
+				else {
+					re.parameters.put(pn, pv);
+				}
 			}
 		}
 	}

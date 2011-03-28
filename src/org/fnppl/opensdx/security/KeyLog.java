@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.Vector;
 
+import javax.print.Doc;
+
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.security.SecurityHelper.HexDecoder;
 import org.fnppl.opensdx.xml.Document;
@@ -111,6 +113,41 @@ public class KeyLog {
 		return kl;
 	}
 	
+	public KeyLog deriveNewKeyLog(String status, OSDXKeyObject signoff) throws Exception {
+		Document.buildDocument(ekeylog).output(System.out);
+		Element e = new Element("keylog");
+		Element ea = new Element("action");
+		ea.addContent("date", SecurityHelper.getFormattedDate(System.currentTimeMillis()));
+		ea.addContent("ipv4",this.getIPv4());
+		ea.addContent("ipv6",this.getIPv6());
+		Element eFrom = new Element("from");
+		eFrom.addContent("keyid",this.getKeyIDFrom());
+		eFrom.addContent("sha1fingerprint", this.getKeyIDFromSha1());
+		ea.addContent(eFrom);
+		Element eTo = new Element("to");
+		eTo.addContent("keyid",this.getKeyIDTo());
+		eTo.addContent("sha1fingerprint", this.getKeyIDToSha1());
+		ea.addContent(eTo);
+		Element eStatus = new Element(status);
+		Element eid = ekeylog.getChild("action").getChild(getStatus()).getChild("identity");
+		eStatus.addContent(XMLHelper.cloneElement(eid));
+		
+		ea.addContent(eStatus);
+		
+		Element edp = new Element("datapath");
+		//TODO datapath
+		ea.addContent(edp);
+		e.addContent(ea);
+		
+		Document doc = Document.buildDocument(e);
+		doc.output(System.out);
+		
+		KeyLog kl = KeyLog.fromElement(e,false);
+		kl.signoff(signoff);
+		
+		return kl;
+	}
+	
 	public Vector<String[]> getStatusElements() {
 		Vector<String[]> v = new Vector<String[]>();
 		try {
@@ -211,9 +248,15 @@ public class KeyLog {
 	public String getKeyIDFrom() {
 		return ekeylog.getChild("action").getChild("from").getChildText("keyid");
 	}
+	public String getKeyIDFromSha1() {
+		return ekeylog.getChild("action").getChild("from").getChildText("sha1fingerprint");
+	}
 	
 	public String getKeyIDTo() {
 		return ekeylog.getChild("action").getChild("to").getChildText("keyid");
+	}
+	public String getKeyIDToSha1() {
+		return ekeylog.getChild("action").getChild("to").getChildText("sha1fingerprint");
 	}
 	
 	public String getIPv4() {

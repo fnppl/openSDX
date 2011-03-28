@@ -66,6 +66,7 @@ public class KeyServerResponse {
 	
 	private String serverid = null;
 	protected Element contentElement;
+	protected String html = null;
 	protected OSDXKeyObject signoffkey = null;
 	
 	public KeyServerResponse(String serverid) {
@@ -114,6 +115,18 @@ public class KeyServerResponse {
 			out.flush();
 			out.write(content);
 		} 
+		else if (html!=null ){
+			out.write((
+					"HTTP/1.1 "+retcode+" "+retcodeString+"\r\n" +
+					"Server: "+serverid+"\r\n" +
+					"Connection: close\r\n").getBytes("ASCII"));
+			out.write(("Content-Type: text/html\r\n").getBytes("ASCII"));
+			out.write(("Content-Length: "+html.length()+"\r\n").getBytes("ASCII"));
+			out.write("\r\n".getBytes("ASCII"));
+			out.flush();
+			out.write(html.getBytes("ASCII"));
+			out.write("\r\n".getBytes("ASCII"));
+		}
 		else {
 			out.write((
 					"HTTP/1.1 "+retcode+" "+retcodeString+"\r\n" +
@@ -136,6 +149,10 @@ public class KeyServerResponse {
 	
 	public void setContentElement(Element e) {
 		contentElement = e;
+	}
+	
+	public void setHTML(String html) {
+		this.html = html;
 	}
 	
 	public static KeyServerResponse createMasterPubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<OSDXKeyObject>> id_keys, OSDXKeyObject signoffkey) {

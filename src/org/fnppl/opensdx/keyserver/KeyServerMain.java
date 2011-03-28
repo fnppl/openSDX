@@ -45,17 +45,44 @@ package org.fnppl.opensdx.keyserver;
  * 
  */
 
-import java.io.*;
-import java.math.BigInteger;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.Vector;
 
-import javax.swing.DefaultBoundedRangeModel;
+import javax.mail.Address;
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
 
+import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.MessageHandler;
-import org.fnppl.opensdx.security.*;
-import org.fnppl.opensdx.xml.*;
+import org.fnppl.opensdx.security.AsymmetricKeyPair;
+import org.fnppl.opensdx.security.Identity;
+import org.fnppl.opensdx.security.KeyApprovingStore;
+import org.fnppl.opensdx.security.KeyLog;
+import org.fnppl.opensdx.security.KeyStatus;
+import org.fnppl.opensdx.security.OSDXKeyObject;
+import org.fnppl.opensdx.security.PublicKey;
+import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.security.Signature;
+import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.xml.Element;
+
 
 /*
  * HT 2011-02-20
@@ -81,15 +108,21 @@ import org.fnppl.opensdx.xml.*;
 //http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 
 public class KeyServerMain {
+	
 	private static String serverid = "OSDX KeyServer v0.1";
 	
-	int port = -1;
-	Inet4Address address = null;
+	private File configFile = new File("src/org/fnppl/opensdx/keyserver/resources/config.xml"); 
+	
+	private String host = "localhost"; //keys.fnppl.org
+	private int port = -1;
+	private InetAddress address = null;
+	private Properties mailProps = null;
+	private MailAuthenticator mailAuth = null;
 
-	private String keyserverName = "localhost"; //keys.fnppl.org
+	
 	private KeyApprovingStore keystore;
+	
 	private MessageHandler messageHandler = new DefaultMessageHandler() {
-		
 		public boolean requestOverwriteFile(File file) {//dont ask, just overwrite
 			return true;
 		}
@@ -99,43 +132,104 @@ public class KeyServerMain {
 	private HashMap<String, OSDXKeyObject> keyid_key;
 	private HashMap<String, Vector<KeyLog>> keyid_log;
 	private HashMap<String, Vector<OSDXKeyObject>> keyid_subkeys;
+	private HashMap<String, KeyLog> openTokens;
 	
 	private OSDXKeyObject keyServerSigningKey = null;
-	private String serverIDemail = "root_signing_key@fnppl.org";
-	private String serverSigningKeyPassword = "bla";
+	private String serverIDemail = null;
 	
-	public KeyServerMain() throws Exception {
+	public KeyServerMain(String pwSigning, String pwMail) throws Exception {
 		//init
 		id_keys = new HashMap<String, Vector<OSDXKeyObject>>();
 		keyid_key = new HashMap<String, OSDXKeyObject>();
 		keyid_log = new HashMap<String, Vector<KeyLog>>();
 		keyid_subkeys = new HashMap<String, Vector<OSDXKeyObject>>();
+		openTokens = new HashMap<String, KeyLog>();
 		
-		openDefaultKeyStore();
+		readConfig();
 		
-		//serverSigningKey
-		if (id_keys.get(serverIDemail) != null) {
-			keyServerSigningKey = id_keys.get(serverIDemail).firstElement();
-			keyServerSigningKey.unlockPrivateKey(serverSigningKeyPassword);
-		} else {
-			//generate new keypair if keystore not contains serverIDemail key
+		if (keyServerSigningKey==null) {
+			pwSigning = "debug";
+			serverIDemail = "debug_signing@keyserver.fnppl.org";
+			
+			//generate new keypair
 			keyServerSigningKey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
-			keyServerSigningKey.setAuthoritativeKeyServer(keyserverName);
+			keyServerSigningKey.setAuthoritativeKeyServer(host);
 			Identity id = Identity.newEmptyIdentity();
 			id.setEmail(serverIDemail);
 			id.setIdentNum(1);
-			id.createSHA1();
-			
+			id.createSHA1();	
 			keyServerSigningKey.addIdentity(id);
-			keystore.addKey(keyServerSigningKey);
-			keystore.toFile(keystore.getFile());
+			
+			Document d = Document.buildDocument(keyServerSigningKey.toElement(messageHandler));
+			System.out.println("\nKeyServerSigningKey:");
+			d.output(System.out);
 		}
+		
+		keyServerSigningKey.unlockPrivateKey(pwSigning);
+		
+		if (mailProps!=null) {
+			if (pwMail !=null) {
+				mailProps.setProperty("mail.password", pwMail);	
+			}
+			mailAuth = new MailAuthenticator(mailProps.getProperty("mail.user"), mailProps.getProperty("mail.password"));
+		}
+		
+		openDefaultKeyStore();
+		
 		keystore.setSigningKey(keyServerSigningKey);
 		updateCache(keyServerSigningKey, null);
 		
 		Document d = Document.buildDocument(keyServerSigningKey.getSimplePubKeyElement());
-		System.out.println("KeyServerSigningKey:");
+		System.out.println("\nKeyServer Public SigningKey:");
 		d.output(System.out);
+	}
+	
+	public void readConfig() {
+		try {
+			Element root = Document.fromFile(configFile).getRootElement();
+			//keyserver base
+			Element ks = root.getChild("keyserver");
+			host = ks.getChildText("host");
+			port = ks.getChildInt("port");
+			String ip4 = ks.getChildText("ipv4");
+			try {
+				byte[] addr = new byte[4];
+				String[] sa = ip4.split("[.]");
+				for (int i=0;i<4;i++) {
+					addr[i] = Byte.parseByte(sa[i]);
+				}
+				address = InetAddress.getByAddress(addr);
+			} catch (Exception ex) {
+				System.out.println("CAUTION: error while parsing ip adress");
+				ex.printStackTrace();
+			}
+			//mail properties
+			Element eMail = ks.getChild("mail");
+			mailProps = new Properties();
+			mailProps.setProperty("mail.user", eMail.getChildText("user"));
+			String pw = eMail.getChildText("password");
+			if (pw!=null && pw.length()>0) {
+				mailProps.setProperty("mail.password", pw);	
+			}
+			mailProps.setProperty("mail.transport.protocol", "smtp");
+			mailProps.setProperty("mail.smtp.host", eMail.getChildText("smtp_host"));
+			mailProps.setProperty("mail.smtp.auth", "true");
+			mailProps.setProperty("senderAddress", eMail.getChildText("sender"));
+			
+			//keyServerSigningKey
+			try {
+				keyServerSigningKey = OSDXKeyObject.fromElement(root.getChild("rootsigningkey").getChild("keypair"));
+			} catch (Exception e) {
+				System.out.println("ERROR: no signing key in config."); 
+			}
+			//TODO check localproofs and signatures 
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		
+		
+		
 	}
 	
 	public static File getDefaultDir() {
@@ -274,10 +368,10 @@ public class KeyServerMain {
 			
 			//generate key
 			OSDXKeyObject key = OSDXKeyObject.buildNewMasterKeyfromKeyPair(akp);
-			key.setAuthoritativeKeyServer(serverIDemail);
+			key.setAuthoritativeKeyServer(host);
 			Identity idd = Identity.fromElement(e.getChild("identity"));
 			key.addIdentity(idd);
-			key.setAuthoritativeKeyServer(keyserverName);
+			key.setAuthoritativeKeyServer(host);
 
 			
 			//generate keylog for approve pending
@@ -290,44 +384,66 @@ public class KeyServerMain {
 			ef.addContent("id",serverIDemail);
 			ef.addContent("keyid",keyServerSigningKey.getKeyID());
 			Element et = new Element("to");
-			et.addContent("id",idd.getEmail());
+			String mailid = idd.getIdentNumString()+":"+idd.getEmail();
+			et.addContent("id",mailid);
 			et.addContent("keyid",pubkey.getKeyID());
-			Element eap = new Element("approval_pending");
-			Element eo = new Element("of");
-			eo.addContent(idd.toElement());
-			eap.addContent(eo);
+			Element eap = new Element(KeyLog.APPROVAL_PENDING);
+			eap.addContent(idd.toElement());
 			eac.addContent(ef);
 			eac.addContent(et);
 			eac.addContent(eap);
 			ekl.addContent(eac);
 			System.out.println("action element ready");
 			
-			//byte[] sha1proof = SecurityHelper.getSHA1LocalProof(ekl);
-			//e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
-			//e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "keylogs", keyServerSigningKey).toElement());
-			
 			KeyLog kl = KeyLog.fromElement(ekl,false);
 			kl.signoff(keyServerSigningKey);
+			
+			//send email with token
+			byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
+			String token = SecurityHelper.HexDecoder.encode(tokenbytes, '\0',-1);
+			String msg = "Please verify your mail-address by clicking on the following link:\nhttp://"+host+":"+port+"/approve_mail?id="+token;
+			openTokens.put(token, kl);
+			sendMail(idd.getEmail(), "email address verification", msg);
 			
 			//save
 			keystore.addKey(key);
 			keystore.addKeyLog(kl);
-			updateCache(key, null);
+			updateCache(key, kl);
 			saveKeyStore();
 			
 			//send response
 			KeyServerResponse resp = new KeyServerResponse(serverid);
 			
-			//HT 2011-15-03 why needed?
-//			resp.addHeaderValue("Response", "subkeys");
-//			resp.addHeaderValue("KeyID", keyid);
-//			resp.addHeaderValue("Identity", id);
-//			resp.addHeaderValue("Message", "please authenticate via email");
 			return resp;
 		} else {
 			KeyServerResponse resp = new KeyServerResponse(serverid);
 			resp.setRetCode(404, "FAILED");
 			resp.createErrorMessageContent("missing masterpubkey");
+			return resp;
+		}
+	}
+	
+	private KeyServerResponse handleVerifyRequest(KeyServerRequest request) throws Exception {
+		System.out.println("KeyServerResponse | ::handle verify request");
+		String id = request.getParamValue("id");
+		System.out.println("Token ID: "+id);
+		KeyLog kl = openTokens.get(id);
+		if (kl!=null) {
+			KeyLog klApprove = kl.deriveNewKeyLog(KeyLog.APPROVAL, keyServerSigningKey);
+			keystore.addKeyLog(klApprove);
+			updateCache(null, klApprove);
+			saveKeyStore();
+			openTokens.remove(id);
+			String html = "<HTML><BODY>Thank you. Approval of mail address successful.</BODY></HTML>";
+			
+			//send response
+			KeyServerResponse resp = new KeyServerResponse(serverid);
+			resp.setHTML(html);
+			return resp;
+		} else {
+			KeyServerResponse resp = new KeyServerResponse(serverid);
+			resp.setRetCode(404, "FAILED");
+			resp.createErrorMessageContent("id "+id+" not recognized");
 			return resp;
 		}
 	}
@@ -610,7 +726,7 @@ public class KeyServerMain {
 		System.out.println("Starting Server on port " + port);
 		ServerSocket so = new ServerSocket(port);
 		if (address != null) {
-			throw new RuntimeException("Not yet implemented...");
+		//	throw new RuntimeException("Not yet implemented...");
 		}
 		while (true) {
 			try {
@@ -662,6 +778,9 @@ public class KeyServerMain {
 			else if (cmd.equals("/pubkey")) {
 				return KeyServerResponse.createPubKeyResponse(serverid, request, keyid_key, keyServerSigningKey);
 			}
+			else if (cmd.equals("/approve_mail")) {
+				return handleVerifyRequest(request);
+			}
 		}
 		else {
 			throw new Exception("NOT IMPLEMENTED::METHOD: "+request.method); // correct would be to fire a HTTP_ERR
@@ -670,11 +789,85 @@ public class KeyServerMain {
 		System.err.println("KeyServerResponse| ::request command not recognized:: "+cmd);
 		return null;
 	}
+	
+	public void sendMail(String recipient, String subject,String message)  throws Exception {
+		if (mailAuth == null) throw new RuntimeException("ERROR: mail authenticator not found.");
+		if (mailProps == null) throw new RuntimeException("ERROR: mail properties not found.");
+		
+		//generate compressed message
+		SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
+		MimeBodyPart mime = new MimeBodyPart();
+		mime.setText(message);
+		MimeBodyPart mp = gen.generate(mime, SMIMECompressedGenerator.ZLIB);
+
+		Session session = Session.getDefaultInstance(mailProps, mailAuth);	
+		Message msg = new MimeMessage(session);
+
+		Address fromUser = new InternetAddress(mailProps.getProperty("senderAddress"));
+		Address toUser = new InternetAddress(recipient);
+		msg.setFrom(fromUser);
+		msg.setRecipient(Message.RecipientType.TO, toUser);
+		msg.setSubject(subject);
+		msg.setContent(mp.getContent(), mp.getContentType());
+		msg.setSentDate(new Date());
+		msg.saveChanges();
+
+		msg.writeTo(new FileOutputStream("compressed.message"));
+
+		System.out.println("\nsending mail:");
+		System.out.println("-------------");
+		System.out.println("from    :" +mailProps.getProperty("senderAddress"));
+		System.out.println("to      :" +recipient);
+		System.out.println("subject :" +subject);
+		System.out.println("Message :\n"+ message);
+		System.out.println("\n-------------\n");
+		
+		//Transport.send(msg);
+	}
 
 	public static void main(String[] args) throws Exception {
-		KeyServerMain ss = new KeyServerMain();
-		ss.port = 8889;
+		if (args==null || args.length!=4) {
+			System.out.println("usage: KeysServer -s \"password signingkey\" -m \"password mail\"");
+			return;
+		}
+		String pwS = null;
+		String pwM = null;
+		if (args[0].equals("-s")) {
+			pwS = args[1];
+			if (args[2].equals("-m")) {
+				pwM = args[3];
+			}
+		} else {
+			if (args[0].equals("-m")) {
+				pwM = args[1];
+			}
+			if (args[2].equals("-s")) {
+				pwS = args[3];
+			}
+		}
+		if (pwS==null || pwM == null) {
+			System.out.println("usage: KeysServer -s \"password signingkey\" -m \"password mail\"");
+			return;
+		}
+		
+		KeyServerMain ks = new KeyServerMain(pwS, pwM);
+		ks.startService();
+	}
+	
+	static class MailAuthenticator extends Authenticator {
 
-		ss.startService();
+		private final String user;
+		private final String password;
+
+		public MailAuthenticator(String user, String password) {
+			this.user = user;
+			this.password = password;
+		}
+
+		protected PasswordAuthentication getPasswordAuthentication() {
+			return new PasswordAuthentication(this.user, this.password);
+		}
 	}
 }
+
+
