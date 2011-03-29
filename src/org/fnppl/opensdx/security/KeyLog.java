@@ -244,6 +244,7 @@ public class KeyLog {
 	public byte[] calcSha1LocalProof() throws Exception {
 		//localproof without datapath!
 		
+		System.out.println("\ncalc sha1 local proof");
 		byte[] ret = new byte[20];  //160bit = 20 byte
 		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
 		updateSha1(status, sha1);
@@ -259,7 +260,7 @@ public class KeyLog {
 			updateSha1(f[1], sha1);
 		}
 		sha1.doFinal(ret, 0);
-		
+		System.out.println("--- end ---\n");
 		//System.out.println("calc sha1: "+SecurityHelper.HexDecoder.encode(ret, ':', -1));
 		return ret;
 	}
@@ -268,7 +269,7 @@ public class KeyLog {
 		byte[] k = field.getBytes("UTF-8");
 		if (k.length>0) {
 			sha1.update(k, 0, k.length);
-			//System.out.println("update: "+field);//+"::"+SecurityHelper.HexDecoder.encode(k, ':', -1));
+			System.out.println("update: "+field);//+"::"+SecurityHelper.HexDecoder.encode(k, ':', -1));
 		}
 	}
 	
@@ -299,7 +300,7 @@ public class KeyLog {
 		Element efrom = ea.getChild("from");
 		kl.fromKeyid = efrom.getChildText("keyid");
 		kl.fromKeyidSha1 = efrom.getChildText("sha1fingerprint");
-		Element eto = ea.getChild("from");
+		Element eto = ea.getChild("to");
 		kl.toKeyid = eto.getChildText("keyid");
 		kl.toKeyidSha1 = eto.getChildText("sha1fingerprint");
 		Element est = ea.getChild(kl.status);
@@ -323,24 +324,6 @@ public class KeyLog {
 			}
 		}
 		return kl;
-//		KeyLog k = new KeyLog();
-//		k.ekeylog = e;
-//		k.verified = false;
-//		if (tryVerification) {
-//			try {
-//				k.verified = k.verifySHA1localproofAndSignoff();
-//			} catch (Exception ex) {
-//				ex.printStackTrace();
-//			}
-//			if(!k.verified) {
-//				int a = Dialogs.showYES_NO_Dialog("Verification failed", "KeyStore:  localproof and signoff of keylog failed.\nIgnore?");
-//				//int a = Dialogs.YES;
-//				//System.out.println("CAUTION: KeyStore:  localproof and signoff of keylog failed, ignoring...");
-//				if (a!=Dialogs.YES) 
-//					throw new Exception("KeyStore:  localproof and signoff of keylog failed.");
-//			}
-//		}
-//		return k;
 	}
 	
 	

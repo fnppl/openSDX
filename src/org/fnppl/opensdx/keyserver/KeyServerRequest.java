@@ -79,17 +79,21 @@ public class KeyServerRequest {
 		String zeile = null;
 		zeile = readLineASCII(in, 4096); //cmdline
 		
+		
 		StringTokenizer st = new StringTokenizer(zeile, " ");
 		ret.method = st.nextToken();
 		ret.cmd = st.nextToken();
 		String proto = st.nextToken();
+		
+		System.out.println((new Date())+" :: "+ret.ipv4+" :: KeyServerRequest | Method: "+ret.method+"\tCmd: "+ret.cmd);
 		
 		if(st.hasMoreTokens()) {
 			throw new Exception("INVALID HTTP _ MORE TOKEN AS _ "+st.nextToken());
 		}
 		
 		readHeader(in, ret);
-		System.out.println("::header end::");
+		
+		//System.out.println("::header end::");
 		
 		if (ret.method.equals("POST") && ret.headers.get("Content-Type").equals("text/xml")) {
 			readXMLPostContent(in, ret);
@@ -106,7 +110,7 @@ public class KeyServerRequest {
 //			readGetParams(in, ret, ret.cmd);
 //		}
 
-		System.out.println("KeyServerRequest | end of request");
+		//System.out.println("KeyServerRequest | end of request");
 		
 		//-------------------------return ret;
 		
@@ -122,7 +126,7 @@ public class KeyServerRequest {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		int read = 0;
 		int toread = Integer.parseInt(re.headers.get("Content-Length"));
-		System.out.println("KeyServerRequest::Content-length: "+toread);
+		//System.out.println("KeyServerRequest::Content-length: "+toread);
 		byte[] buff = new byte[4096];
 		//while((read=in.read(buff))!=-1) {
 		while((read = in.read(buff,0, Math.min(buff.length, toread))) != -1) {
@@ -139,24 +143,16 @@ public class KeyServerRequest {
 		//s = URLDecoder.decode(s, "UTF-8"); //urlencoded-form-data
 		
 		System.out.println("KeyServerRequest::GOT THIS AS DOC: ::START::"+s+"::END::");
-		
-//		String last = s.substring(s.lastIndexOf(">"));
-//		System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last.getBytes("UTF-8"), ':',-1));
-//		s = s.substring(0, s.lastIndexOf(">")+3);
-//		String last2 = s.substring(s.lastIndexOf(">"));
-//		System.out.println("last bytes: "+SecurityHelper.HexDecoder.encode(last2.getBytes("UTF-8"), ':',-1));
-		
-//		System.out.println("GOT THIS AS DOC: ::"+s+"::");
 		re.xml = Document.fromStream(new ByteArrayInputStream(s.getBytes("UTF-8")));
 	}
 	
 	private static void readPostParams(InputStream in, KeyServerRequest re) throws Exception {
-		System.out.println("KeyServerRequest::reading POST params");
+		//System.out.println("KeyServerRequest::reading POST params");
 		
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		int read = 0;
 		int toread = Integer.parseInt(re.headers.get("Content-Length"));
-		System.out.println("KeyServerRequest::Content-length: "+toread);
+		//System.out.println("KeyServerRequest::Content-length: "+toread);
 		byte[] buff = new byte[4096];
 		//while((read=in.read(buff))!=-1) {
 		while((read = in.read(buff,0, Math.min(buff.length, toread))) != -1) {
@@ -179,9 +175,11 @@ public class KeyServerRequest {
 				//System.out.println("***"+pn+"::::"+pv+"::::");
 				if(pn.equalsIgnoreCase(XMLDOCPARAMNAME)) {
 					re.xml = Document.fromStream(new ByteArrayInputStream(pv.getBytes("UTF-8")));
+					re.xml.output(System.out);
 				}
 				else {
 					re.parameters.put(pn, pv);
+					System.out.println("parameter: "+pn+" = "+pv);
 				}
 			}
 		}
@@ -224,7 +222,7 @@ public class KeyServerRequest {
 //			re.headers.put(URLDecoder.decode(n, "UTF-8"), URLDecoder.decode(v, "UTF_8"));
 			re.headers.put(n, v);
 			
-			System.out.println("KeyServerRequest::readHeader::"+zeile);
+			System.out.println("header: "+zeile);
 		}
 	}
 	

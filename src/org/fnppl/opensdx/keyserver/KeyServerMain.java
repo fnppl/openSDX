@@ -130,6 +130,9 @@ public class KeyServerMain {
 		public boolean requestIgnoreKeyLogVerificationFailure() {//dont ignore faild keylog verification
 			return false;
 		}
+		public OSDXKeyObject requestMasterSigningKey(KeyApprovingStore keystore) throws Exception {
+			return keyServerSigningKey;
+		}
 	};
 	
 	private HashMap<String, Vector<OSDXKeyObject>> id_keys;
@@ -138,8 +141,7 @@ public class KeyServerMain {
 	private HashMap<String, Vector<OSDXKeyObject>> keyid_subkeys;
 	private HashMap<String, KeyLog> openTokens;
 	
-	private OSDXKeyObject keyServerSigningKey = null;
-	private String serverIDemail = null;
+	protected OSDXKeyObject keyServerSigningKey = null;
 	
 	public KeyServerMain(String pwSigning, String pwMail) throws Exception {
 		//init
@@ -153,13 +155,12 @@ public class KeyServerMain {
 		
 		if (keyServerSigningKey==null) {
 			pwSigning = "debug";
-			serverIDemail = "debug_signing@keyserver.fnppl.org";
 			
 			//generate new keypair
 			keyServerSigningKey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
 			keyServerSigningKey.setAuthoritativeKeyServer(host);
 			Identity id = Identity.newEmptyIdentity();
-			id.setEmail(serverIDemail);
+			id.setEmail("debug_signing@keyserver.fnppl.org");
 			id.setIdentNum(1);
 			id.createSHA1();	
 			keyServerSigningKey.addIdentity(id);
@@ -270,6 +271,7 @@ public class KeyServerMain {
 		} else {
 			try {
 				keystore = KeyApprovingStore.createNewKeyApprovingStore(f, messageHandler);
+				saveKeyStore();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -359,12 +361,10 @@ public class KeyServerMain {
 	
 	
 	private KeyServerResponse handlePutMasterKeyRequest(KeyServerRequest request) throws Exception {
-		System.out.println("KeyServerResponse | ::handle put masterkey request");
-		String keyid = request.getHeaderValue("KeyID");
-		String id = request.getHeaderValue("Identity");
-//		System.out.print("GOT THIS CONTENT::");
-//		request.xml.output(System.out);
-//		System.out.println("::END OF CONTENT");
+		//System.out.println("KeyServerResponse | ::handle put masterkey request");
+		//String keyid = request.getHeaderValue("KeyID");
+		//String id = request.getHeaderValue("Identity");
+		//System.out.print("GOT THIS CONTENT::");request.xml.output(System.out);System.out.println("::END OF CONTENT");
 		Element e = request.xml.getRootElement();
 		if (e.getName().equals("masterpubkey")) {
 			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
@@ -378,29 +378,8 @@ public class KeyServerMain {
 			key.setAuthoritativeKeyServer(host);
 			key.addDataSourceStep(new DataSourceStep(request.ipv4, request.datetime));
 
-			
 			//generate keylog for approve_pending
-			Element ekl = new Element("keylog");
-			Element eac = new Element("action");
-			eac.addContent("date", SecurityHelper.getFormattedDate(System.currentTimeMillis()));
-			eac.addContent("ipv4", request.ipv4);
-			eac.addContent("ipv6", "na");
-			Element ef = new Element("from");
-			ef.addContent("id",serverIDemail);
-			ef.addContent("keyid",keyServerSigningKey.getKeyID());
-			Element et = new Element("to");
-			String mailid = idd.getIdentNumString()+":"+idd.getEmail();
-			et.addContent("id",mailid);
-			et.addContent("keyid",pubkey.getKeyID());
-			Element eap = new Element(KeyLog.APPROVAL_PENDING);
-			eap.addContent(idd.toElement());
-			eac.addContent(ef);
-			eac.addContent(et);
-			eac.addContent(eap);
-			ekl.addContent(eac);
-			System.out.println("action element ready");
-			
-			KeyLog kl = KeyLog.fromElement(ekl,false);
+			KeyLog kl = KeyLog.buildNewKeyLog(KeyLog.APPROVAL_PENDING, keyServerSigningKey, key, request.ipv4, request.ipv4, idd);
 			kl.signoff(keyServerSigningKey);
 			
 			//send email with token
@@ -410,7 +389,7 @@ public class KeyServerMain {
 			openTokens.put(token, kl);
 			sendMail(idd.getEmail(), "email address verification", msg);
 			
-			//save
+			//save to keystore
 			keystore.addKey(key);
 			keystore.addKeyLog(kl);
 			updateCache(key, kl);
@@ -429,20 +408,23 @@ public class KeyServerMain {
 	}
 	
 	private KeyServerResponse handleVerifyRequest(KeyServerRequest request) throws Exception {
-		System.out.println("KeyServerResponse | ::handle verify request");
+		//System.out.println("KeyServerResponse | ::handle verify request");
 		String id = request.getParamValue("id");
 		System.out.println("Token ID: "+id);
 		KeyLog kl = openTokens.get(id);
 		if (kl!=null) {
+			//derive approval keylog from approval pending keylog
 			KeyLog klApprove = kl.deriveNewKeyLog(KeyLog.APPROVAL, keyServerSigningKey);
 			keystore.addKeyLog(klApprove);
+			openTokens.remove(id);
+			
+			//save to keystore
 			updateCache(null, klApprove);
 			saveKeyStore();
-			openTokens.remove(id);
-			String html = "<HTML><BODY>Thank you. Approval of mail address successful.</BODY></HTML>";
 			
 			//send response
 			KeyServerResponse resp = new KeyServerResponse(serverid);
+			String html = "<HTML><BODY>Thank you. Approval of mail address successful.</BODY></HTML>";
 			resp.setHTML(html);
 			return resp;
 		} else {
@@ -456,11 +438,8 @@ public class KeyServerMain {
 	private KeyServerResponse handlePutRevokeKeyRequest(KeyServerRequest request) throws Exception {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		
-		System.out.println("KeyServerResponse | ::handle put revokekey request");
-		
-		System.out.print("GOT THIS CONTENT::");
-		request.xml.output(System.out);
-		System.out.println("::END OF CONTENT");
+		//System.out.println("KeyServerResponse | ::handle put revokekey request");
+		//System.out.print("GOT THIS CONTENT::");request.xml.output(System.out);System.out.println("::END OF CONTENT");
 		
 		Element e = request.xml.getRootElement();
 		if (e.getName().equals("revokekey")) {
@@ -475,15 +454,15 @@ public class KeyServerMain {
 			}
 			//check masterkey approved
 			KeyStatus ks = keystore.getKeyStatus(masterkey.getKeyID());
-			System.out.println("status: "+ks.getValidityStatusName());
-			
 			//if (ks==null || !ks.isValid()) {
 			if (ks==null || !(ks.isValid() || ks.isUnapproved())) { //TODO for testing with approval_pending
+				
 				resp.setRetCode(404, "FAILED");
 				resp.createErrorMessageContent("associatied masterkey is not approved.");
 				return resp;
 			}
 			
+			System.out.println("masterkey status: "+ks.getValidityStatusName());
 			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
 			
 			//boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey.getPubKey());
@@ -538,30 +517,6 @@ public class KeyServerMain {
 			key.setUsage(OSDXKeyObject.USAGE_SIGN);
 			key.setParentKey(masterkey);
 			
-			
-			//generate keylog for approval
-//			Element ekl = new Element("keylog");
-//			Element eac = new Element("action");
-//			eac.addContent("date", OSDXKeyObject.datemeGMT.format(System.currentTimeMillis()));
-//			eac.addContent("ipv4", "na");
-//			eac.addContent("ipv6", "na");
-//			Element ef = new Element("from");
-//			ef.addContent("id",serverIDemail);
-//			ef.addContent("keyid",keyServerSigningKey.getKeyID());
-//			Element et = new Element("to");
-//			et.addContent("id",masterkey.getIdentities().get(0).getEmail());
-//			et.addContent("keyid",pubkey.getKeyID());
-//			Element eap = new Element("approval");
-//			Element eo = new Element("of");
-//			eo.addContent("parentkeyid",masterkey.getKeyID());
-//			eap.addContent(eo);
-//			eac.addContent(ef);
-//			eac.addContent(et);
-//			eac.addContent(eap);
-//			ekl.addContent(eac);
-//			
-//			KeyLog kl = KeyLog.fromElement(ekl,false);
-//			kl.signoff(keyServerSigningKey);
 		
 			//save
 			keystore.addKey(key);
@@ -578,8 +533,7 @@ public class KeyServerMain {
 	
 	private KeyServerResponse handlePutSubKeyRequest(KeyServerRequest request) throws Exception {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
-		
-		System.out.println("KeyServerResponse | ::handle put subkey request");
+		//System.out.println("KeyServerResponse | ::handle put subkey request");
 		
 		Element e = request.xml.getRootElement();
 		if (e.getName().equals("subkey")) {
@@ -661,12 +615,6 @@ public class KeyServerMain {
 		return resp;
 	}
 
-	// public void readKeys(File f, char[] pass_mantra) throws Exception {
-	// // KeyRingCollection krc = KeyRingCollection.fromFile(f, pass_mantra);
-	// // //get the relevant sign-key from that collection
-	// // this.sign_keys = krc.getSomeRandomKeyPair();
-	// }
-
 	public void handleSocket(final Socket s) throws Exception {
 		// check on *too* many requests from one ip
 		Thread t = new Thread() {
@@ -681,9 +629,7 @@ public class KeyServerMain {
 					
 					System.out.println("KeyServerSocket  | ::response ready");
 					if (response != null) {
-						System.out.print("SENDING THIS::");
-						response.toOutput(System.out);
-						System.out.println("::/SENDING_THIS");
+						System.out.println("SENDING THIS::");response.toOutput(System.out);System.out.println("::/SENDING_THIS");
 						
 						OutputStream out = s.getOutputStream();
 						BufferedOutputStream bout = new BufferedOutputStream(out);
@@ -725,7 +671,6 @@ public class KeyServerMain {
 		// yeah, switch cmd/method - stuff whatever...
 		
 		String cmd = request.cmd;
-		System.out.println((new Date())+" :: "+request.ipv4+" :: KeyServerRequest | Method: "+request.method+"\tCmd: "+request.cmd);
 		
 		if (request.method.equals("POST")) {
 			if (cmd.equals("/masterkey")) {

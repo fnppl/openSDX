@@ -176,7 +176,7 @@ public class OSDXKeyObject {
 	
 	public static OSDXKeyObject fromElement(Element kp) throws Exception {
 		OSDXKeyObject ret = new OSDXKeyObject();
-		System.out.println("adding keyobject");
+		//System.out.println("adding keyobject");
 		
 		//first check sha1fingerprint
 		String Sshafp = kp.getChildText("sha1fingerprint");
@@ -200,8 +200,8 @@ public class OSDXKeyObject {
 					Element id = idc.elementAt(j);
 					
 					Identity idd = Identity.fromElement(id);
-					System.out.println("adding id: "+idd.email);
-					System.out.println("sha1: "+id.getChildText("sha1"));
+					//System.out.println("adding id: "+idd.email);
+					//System.out.println("sha1: "+id.getChildText("sha1"));
 					boolean ok = idd.validate(SecurityHelper.HexDecoder.decode(id.getChildText("sha1")));
 					if(ok) {
 						ret.identities.addElement(idd);
@@ -216,7 +216,7 @@ public class OSDXKeyObject {
 		
 		String authoritativekeyserver = kp.getChildText("authoritativekeyserver");
 		ret.authoritativekeyserver = authoritativekeyserver;
-		System.out.println("authoritativekeyserver: "+authoritativekeyserver);
+		//System.out.println("authoritativekeyserver: "+authoritativekeyserver);
 		
 		
 		//datapath
@@ -233,7 +233,7 @@ public class OSDXKeyObject {
 			}
 		}
 		if (!dsOK) {
-			System.out.println("CAUTION datasource and datainsertdatetime NOT found.");
+			//System.out.println("CAUTION datasource and datainsertdatetime NOT found.");
 		}
 		String sValidFrom = kp.getChildText("valid_from");
 		String sValidUntil = kp.getChildText("valid_until");
@@ -271,41 +271,14 @@ public class OSDXKeyObject {
 		
 		if (privkey!=null) {
 			//asymetric keypair
-			Element Eexponent = privkey.getChild("exponent");
-			if(Eexponent.getChild("locked") != null) {
+			Element eExponent = privkey.getChild("exponent");
+			if(eExponent.getChild("locked") != null) {
 				//only ask for password when key is used for the first time -> see unlockPrivateKey
-				ret.lockedPrivateKey = Eexponent.getChild("locked");
-				
-//				Element lk = Eexponent.getChild("locked");
-//				String mantraname = lk.getChildText("mantraname");
-//				String Sinitv = lk.getChildText("initvector");
-//				String Sbytes = lk.getChildText("bytes");
-//				
-//				//check algo and padding
-//				String Slock_algo = lk.getChildText("algo");
-//				String Spadding = lk.getChildText("padding");
-//				if (!Slock_algo.equals("AES@256")||!Spadding.equals("CBC/PKCS#5")) {
-//					throw new RuntimeException("UNLOCKING METHOD NOT IMPLEMENTED, please use AES@265 encryption with CBC/PKCS#5 padding");
-//				}
-//				
-//				byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
-//				
-//				try {
-//					String pp = null;
-//					System.out.print("!!!! ENSURE NOONE IS WATCHING YOUR SCREEN !!!! \n\nKeyID "+Sshafp+"@"+authoritativekeyserver+"\nPlease enter Passphrase for Mantra: \""+mantraname+"\": ");
-//					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-//					pp = br.readLine();
-//				
-//					SymmetricKey sk = SymmetricKey.getKeyFromPass(pp.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
-//					
-//					exponent = sk.decrypt(bytes);
-//				} catch(Exception ex) {
-//					ex.printStackTrace();
-//				}				
+				ret.lockedPrivateKey = eExponent.getChild("locked");		
 			} else {
 				//never should go here!!!
 				System.err.println("You should never see me - there seems to be a private key unlocked in your keystore: "+Sshafp+"@"+authoritativekeyserver);
-				exponent = SecurityHelper.HexDecoder.decode(Eexponent.getText());
+				exponent = SecurityHelper.HexDecoder.decode(eExponent.getText());
 			}
 		}
 		//exponent == null if no private key present or private key is locked

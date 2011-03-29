@@ -87,14 +87,15 @@ public class KeyApprovingStore {
 		kas.f = f;
 		kas.unsavedChanges = false;
 		kas.messageHandler = mh;
+		kas.keys = new Vector<OSDXKeyObject>();
+		kas.keylogs = new Vector<KeyLog>();
 		
 		Element keys = e.getChild("keys");
 		
 		//add all keypairs as OSDXKeyObject
 		Vector<Element> ves = keys.getChildren("keypair");
 		if (ves.size()>0) {
-			System.out.println("keypairs found: "+ves.size());
-			kas.keys = new Vector<OSDXKeyObject>();
+			System.out.println("keystore contains "+ves.size()+" keypairs.");
 			for(int i=0; i<ves.size(); i++) {
 				Element ee = ves.elementAt(i);
 				OSDXKeyObject osdxk = OSDXKeyObject.fromElement(ee);
@@ -135,8 +136,7 @@ public class KeyApprovingStore {
 		//add keylog (includes verify localproof and signoff)
 		Vector<Element> vkl = e.getChildren("keylog");
 		if (vkl.size()>0) {
-			System.out.println("keylogs found: "+vkl.size());
-			kas.keylogs = new Vector<KeyLog>();
+			System.out.println("keystore contains "+vkl.size()+" keylogs.");
 			for(int i=0; i<vkl.size(); i++) {
 				Element ee = vkl.elementAt(i);
 				try {
@@ -272,7 +272,7 @@ public class KeyApprovingStore {
 		return skeys;
 	}
 	
-	public void toFile(File file) throws Exception {
+	public boolean toFile(File file) throws Exception {
 		this.f = file;
 		Element root = new Element("keystore");
 
@@ -297,8 +297,10 @@ public class KeyApprovingStore {
 		if (!keystoreSigningKey.isPrivateKeyUnlocked()) {
 			keystoreSigningKey.unlockPrivateKey(messageHandler);
 		}
-		
-		Signature s = Signature.createSignature(md5,sha1,sha256, "sign of localproof-sha1 of keys", keystoreSigningKey);
+		if (!keystoreSigningKey.isPrivateKeyUnlocked()) {
+			return false;
+		}
+		Signature s = Signature.createSignature(md5,sha1,sha256, "signature of sha1localproof of keys", keystoreSigningKey);
 		ek.addContent(s.toElement());
 		
 		
@@ -324,7 +326,9 @@ public class KeyApprovingStore {
 		if (!file.exists() || messageHandler.requestOverwriteFile(file)) {
 			d.writeToFile(file);
 			unsavedChanges = false;
+			return true;
 		}
+		return false;
 	}
 	
 	

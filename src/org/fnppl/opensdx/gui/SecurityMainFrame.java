@@ -1114,8 +1114,8 @@ public class SecurityMainFrame extends JFrame {
 		
 		final int w = 800;
 		final int h = y*30 + 80;
-
-		JButton head = createHeaderButton("known public key:      "+key.getKeyID(), key.getKeyID(), content, p, w, h);
+		String title = "known public key:      "+key.getKeyID();
+		JButton head = createHeaderButton(title, title, content, p, w, h);
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
