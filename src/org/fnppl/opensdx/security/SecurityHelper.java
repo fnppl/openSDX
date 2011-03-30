@@ -371,14 +371,6 @@ public class SecurityHelper {
 		return ret;
 	}
 	
-	public static byte[] getBytesFromKeyID(String keyid) {
-		if (keyid==null || keyid.length()==0) return null;
-		if (keyid.indexOf('@')>0) {
-			return SecurityHelper.HexDecoder.decode(keyid.substring(0,keyid.indexOf('@')));
-		} else {
-			return SecurityHelper.HexDecoder.decode(keyid);
-		}
-	}
 	
 	public static byte[][] getMD5SHA1SHA256(InputStream fin) throws Exception {
 		byte[] ret = new byte[16 + 20 + 32]; //160 bit = 20 byte + md5 128bit = 16 + sha256 256bit = 32 byte 

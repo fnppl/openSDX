@@ -1192,6 +1192,12 @@ public class SecurityMainFrame extends JFrame {
 				addLabelTextFieldPart("  "+s[0]+":", s[1], a, c, y);
 			}
 		}
+		Vector<DataSourceStep> dp = keylog.getDataPath();
+		for (int i=0;i<dp.size();i++) {
+			y++;
+			DataSourceStep s = dp.get(i);
+			addLabelTextFieldPart("datapath "+(i+1)+":", s.getDataSource()+" at "+s.getDataInsertDatetimeString(), a, c, y);
+		}
 		final int w = 600;
 		final int h = y*30 + 80;
 
@@ -1778,17 +1784,8 @@ public class SecurityMainFrame extends JFrame {
 			if (!from.isPrivateKeyUnlocked()) from.unlockPrivateKey(messageHandler);
 	    	try {
 	    		String status = (String)selectStatus.getSelectedItem();
-	    		System.out.println("selected status: "+status);
-				KeyLog kl = KeyLog.buildNewKeyLog(status, from, to, ip4, ip6, idd);
-				
-				System.out.println("verify: "+ kl.verifySHA1localproofAndSignoff());;
-				
-				Element e = kl.toElement();
-				System.out.println("verify: "+ KeyLog.fromElement(e).verifySHA1localproofAndSignoff());
-				
-				Document doc = Document.buildDocument(e);
-			//	doc.output(System.out);
-				
+	    		//System.out.println("selected status: "+status);
+				KeyLog kl = KeyLog.buildNewKeyLog(status, from, to.getKeyID(), to.getKeyModulusSHA1(), ip4, ip6, idd);
 				currentKeyStore.addKeyLog(kl);
 				updateUI();
 			} catch (Exception e) {
@@ -1837,8 +1834,9 @@ public class SecurityMainFrame extends JFrame {
 				}
 			}
 			if (logs!=null && logs.size()>0) {
+				long datetime = System.currentTimeMillis();
 				for (KeyLog kl : logs) {
-					
+					kl.addDataPath(new DataSourceStep(keyserver.getHost(), datetime));
 					currentKeyStore.addKeyLog(kl);
 				}
 				updateUI();
@@ -2199,7 +2197,15 @@ public class SecurityMainFrame extends JFrame {
 						}
 						props.put(key.getKeyID(), "VISIBLE");
 						updateUI();
+						
+						//upload keylog
+						KeyLog kl = KeyLog.buildNewKeyLog(KeyLog.APPROVAL, key, key.getKeyID(), key.getKeyModulusSHA1(), "LOCAL", "LOCAL", id);
+						currentKeyStore.addKeyLog(kl);
+						boolean klOK = client.putKeyLog(kl, key);
 						Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+id.getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
+						if (!klOK) {
+							Dialogs.showMessage("Upload of self-approval keylog FAILED.");
+						}
 						return ok;
 					} else {
 						String msg = client.getMessage();

@@ -379,7 +379,7 @@ public class KeyServerMain {
 			key.addDataSourceStep(new DataSourceStep(request.ipv4, request.datetime));
 
 			//generate keylog for approve_pending
-			KeyLog kl = KeyLog.buildNewKeyLog(KeyLog.APPROVAL_PENDING, keyServerSigningKey, key, request.ipv4, request.ipv4, idd);
+			KeyLog kl = KeyLog.buildNewKeyLog(KeyLog.APPROVAL_PENDING, keyServerSigningKey, key.getKeyID(), key.getKeyModulusSHA1(), request.ipv4, request.ipv4, idd);
 			kl.signoff(keyServerSigningKey);
 			
 			//send email with token
@@ -413,8 +413,12 @@ public class KeyServerMain {
 		System.out.println("Token ID: "+id);
 		KeyLog kl = openTokens.get(id);
 		if (kl!=null) {
-			//derive approval keylog from approval pending keylog
-			KeyLog klApprove = kl.deriveNewKeyLog(KeyLog.APPROVAL, keyServerSigningKey);
+			//derive approval of email keylog from approval pending keylog 
+			Identity idd = Identity.newEmptyIdentity();
+			idd.setIdentNum(kl.getIdentity().getIdentNum());
+			idd.setEmail(kl.getIdentity().getEmail());
+			
+			KeyLog klApprove = KeyLog.buildNewKeyLog(KeyLog.APPROVAL, keyServerSigningKey, kl.getKeyIDTo(), kl.getKeyIDToSha1(), request.ipv4, request.ipv4, idd);
 			keystore.addKeyLog(klApprove);
 			openTokens.remove(id);
 			
@@ -602,6 +606,8 @@ public class KeyServerMain {
 			if (elogs!=null && elogs.size()>0) {
 				for (Element el : elogs) {
 					KeyLog log = KeyLog.fromElement(el);
+					DataSourceStep step = new DataSourceStep(request.ipv4, System.currentTimeMillis());
+					log.addDataPath(step);
 					keystore.addKeyLog(log);
 					updateCache(null,log);	
 				}

@@ -670,6 +670,9 @@ public class OSDXKeyObject {
 	}
 	
 	public static String getFormattedKeyIDModulusOnly(String id) {
+		if (id.charAt(4)==':') {//starts with idnum e.g. 0001:
+			id = id.substring(4);
+		}
 		int iat = id.indexOf('@');
 		if (iat>0) {
 			return SecurityHelper.HexDecoder.encode(SecurityHelper.HexDecoder.decode(id.substring(0,iat)), ':', -1);

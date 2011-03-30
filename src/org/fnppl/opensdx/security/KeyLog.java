@@ -86,7 +86,7 @@ public class KeyLog {
 		
 	}
 	
-	public static KeyLog buildNewKeyLog(String status, OSDXKeyObject from, OSDXKeyObject to, String ip4, String ip6, Identity id) throws Exception {
+	public static KeyLog buildNewKeyLog(String status, OSDXKeyObject from, String toKeyID, String toKeyIDSha1, String ip4, String ip6, Identity id) throws Exception {
 		KeyLog kl = new KeyLog();
 		kl.status = status;
 		kl.datetime = System.currentTimeMillis();
@@ -94,8 +94,8 @@ public class KeyLog {
 		kl.ipv6 = ip6;
 		kl.fromKeyid = from.getKeyID();
 		kl.fromKeyidSha1 = from.getKeyModulusSHA1();
-		kl.toKeyid = to.getKeyID();
-		kl.toKeyidSha1 = to.getKeyModulusSHA1();
+		kl.toKeyid = id.getIdentNumString()+":"+toKeyID;
+		kl.toKeyidSha1 = toKeyIDSha1;
 		kl.id = id;
 		kl.datapath = new Vector<DataSourceStep>();
 		kl.signoff(from);
@@ -403,5 +403,17 @@ public class KeyLog {
 	
 	public void addDataPath(DataSourceStep step) {
 		datapath.add(step);
+	}
+	
+	public Vector<DataSourceStep> getDataPath() {
+		return datapath;
+	}
+	
+	public Identity getIdentity() {
+		return id;
+	}
+	
+	public void setIdentity(Identity id) {
+		this.id = id;
 	}
 }

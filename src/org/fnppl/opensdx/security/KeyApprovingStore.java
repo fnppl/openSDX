@@ -193,7 +193,7 @@ public class KeyApprovingStore {
 	}
 	
 	public OSDXKeyObject getKey(String keyid) {
-		byte[] idbytes = SecurityHelper.getBytesFromKeyID(keyid);
+		byte[] idbytes = SecurityHelper.HexDecoder.decode(OSDXKeyObject.getFormattedKeyIDModulusOnly(keyid));
 		if (idbytes==null) return null;
 		for (OSDXKeyObject k : keys) {
 			if (Arrays.equals(k.getKeyModulusSHA1bytes(), idbytes)) {
@@ -351,11 +351,12 @@ public class KeyApprovingStore {
 	
 	public Vector<KeyLog> getKeyLogs(String keyid) {
 		if (keylogs==null) return null;
-		byte[] kidBytes = SecurityHelper.getBytesFromKeyID(keyid);
+		String akeyid = OSDXKeyObject.getFormattedKeyIDModulusOnly(keyid);
 		
 		Vector<KeyLog> ret = new Vector<KeyLog>();
 		for (KeyLog kl : keylogs) {
-			if (Arrays.equals(kidBytes, SecurityHelper.getBytesFromKeyID(kl.getKeyIDTo()))) {
+			String keyidto = OSDXKeyObject.getFormattedKeyIDModulusOnly(kl.getKeyIDTo());
+			if (keyidto.equals(akeyid)) {
 				ret.add(kl);
 			}
 		}
