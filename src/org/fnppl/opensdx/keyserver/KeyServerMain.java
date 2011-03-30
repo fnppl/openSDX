@@ -535,6 +535,10 @@ public class KeyServerMain {
 		return resp;
 	}
 	
+	private KeyServerResponse handlePutRevokeMasterkeyRequest(KeyServerRequest request) throws Exception {
+		throw new Exception("not implemented");
+	}
+	
 	private KeyServerResponse handlePutSubKeyRequest(KeyServerRequest request) throws Exception {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		//System.out.println("KeyServerResponse | ::handle put subkey request");
@@ -690,6 +694,9 @@ public class KeyServerMain {
 			}
 			else if (cmd.equals("/keylogs")) {
 				return handlePutKeyLogsRequest(request);
+			}
+			else if (cmd.equals("/revokemasterkey")) {
+				return handlePutRevokeMasterkeyRequest(request);
 			}
 		} 
 		else if (request.method.equals("GET")) {
