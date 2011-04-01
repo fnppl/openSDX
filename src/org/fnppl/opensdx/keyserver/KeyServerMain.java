@@ -377,10 +377,13 @@ public class KeyServerMain {
 			key.addIdentity(idd);
 			key.setAuthoritativeKeyServer(host);
 			key.addDataSourceStep(new DataSourceStep(request.ipv4, request.datetime));
-
-			//generate keylog for approve_pending
-			KeyLog kl = KeyLog.buildNewKeyLog(KeyLog.APPROVAL_PENDING, keyServerSigningKey, key.getKeyID(), key.getKeyModulusSHA1(), request.ipv4, request.ipv4, idd);
-			kl.signoff(keyServerSigningKey);
+			
+			//generate keylog for approve_pending of email
+			Identity apid = Identity.newEmptyIdentity();
+			apid.setIdentNum(idd.getIdentNum());
+			apid.setEmail(idd.getEmail());
+			KeyLog kl = KeyLog.buildNewKeyLog(KeyLog.APPROVAL_PENDING, keyServerSigningKey, key.getKeyID(), request.ipv4, request.ipv4, apid);
+			kl.signoffKeyServer(keyServerSigningKey);
 			
 			//send email with token
 			byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
@@ -418,7 +421,7 @@ public class KeyServerMain {
 			idd.setIdentNum(kl.getIdentity().getIdentNum());
 			idd.setEmail(kl.getIdentity().getEmail());
 			
-			KeyLog klApprove = KeyLog.buildNewKeyLog(KeyLog.APPROVAL, keyServerSigningKey, kl.getKeyIDTo(), kl.getKeyIDToSha1(), request.ipv4, request.ipv4, idd);
+			KeyLog klApprove = KeyLog.buildNewKeyLog(KeyLog.APPROVAL, keyServerSigningKey, kl.getKeyIDTo(), request.ipv4, request.ipv4, idd);
 			keystore.addKeyLog(klApprove);
 			openTokens.remove(id);
 			
@@ -534,11 +537,60 @@ public class KeyServerMain {
 		}
 		return resp;
 	}
-	
+
 	private KeyServerResponse handlePutRevokeMasterkeyRequest(KeyServerRequest request) throws Exception {
-		throw new Exception("not implemented");
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		
+		Element er = request.xml.getRootElement();
+		if (er!=null && er.getName().equals("revokemasterkey")) {
+			//Document.buildDocument(e).output(System.out);	
+			String fromKeyID = er.getChildText("from_keyid");
+			String toKeyID = er.getChildText("to_keyid");
+			String message = er.getChildText("message");
+
+			//check signature
+			Vector<Element> toProof = new Vector<Element>();
+			toProof.add(er.getChild("from_keyid"));
+			toProof.add(er.getChild("to_keyid"));
+			if (message!=null && message.length()>0)
+				toProof.add(er.getChild("message"));
+			byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(er.getChildText("sha1localproof"));
+			Signature sig = Signature.fromElement(er.getChild("signature"));
+
+			
+			OSDXKeyObject revokekey = keyid_key.get(OSDXKeyObject.getFormattedKeyIDModulusOnly(fromKeyID)); 
+			if (revokekey!=null) {
+				//check toKeyID is parent of revokekey
+				if (   !    OSDXKeyObject.getFormattedKeyIDModulusOnly(revokekey.getParentKeyID())
+					.equals(OSDXKeyObject.getFormattedKeyIDModulusOnly(toKeyID))) {
+					resp.setRetCode(404, "FAILED");
+					resp.createErrorMessageContent("revokekey is not registered as child of masterkey");
+				}
+				PublicKey signingKey = revokekey.getPubKey(); 
+				boolean v = SecurityHelper.checkSHA1localproofAndSignature(toProof, givenSha1localproof, sig, signingKey);
+
+				if (v) {
+					KeyLog log = KeyLog.buildNewRevocationKeyLog(fromKeyID, toKeyID, message, givenSha1localproof, sig, request.ipv4, request.ipv4, keyServerSigningKey);
+					log.verifySHA1localproofAndSignoff();
+					//save
+					updateCache(null,log);
+					keystore.addKeyLog(log);
+					saveKeyStore();
+				} else {
+					resp.setRetCode(404, "FAILED");
+					resp.createErrorMessageContent("verification of revokekey signature failed.");
+				}
+			} else {
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("revokekey not registered on keyserver");
+			}
+		} else {
+			resp.setRetCode(404, "FAILED");
+			resp.createErrorMessageContent("missing revokemasterkey element");
+		}
+		return resp;
 	}
-	
+
 	private KeyServerResponse handlePutSubKeyRequest(KeyServerRequest request) throws Exception {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		//System.out.println("KeyServerResponse | ::handle put subkey request");
@@ -603,24 +655,40 @@ public class KeyServerMain {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		
 		Element e = request.xml.getRootElement();
-		if (e!=null && e.getName().equals("keylogs")) {
-			Document.buildDocument(e).output(System.out);
+		if (e!=null && e.getName().equals("keylogactions")) {
+			//Document.buildDocument(e).output(System.out);
 			
-			Vector<Element> elogs = e.getChildren("keylog");
+			Vector<Element> elogs = e.getChildren("keylogaction");
 			if (elogs!=null && elogs.size()>0) {
 				for (Element el : elogs) {
 					KeyLog log = KeyLog.fromElement(el);
-					DataSourceStep step = new DataSourceStep(request.ipv4, System.currentTimeMillis());
-					log.addDataPath(step);
-					keystore.addKeyLog(log);
-					updateCache(null,log);	
+					boolean v = log.verifyActionSHA1localproofAndSignoff();
+					if (v) {
+						//check toKey not revoked
+						KeyStatus ks = keystore.getKeyStatus(log.getKeyIDTo());
+						if (ks!=null && ks.getValidityStatus()==KeyStatus.STATUS_REVOKED) {
+							resp.setRetCode(404, "FAILED");
+							resp.createErrorMessageContent("key is already revoked.");	
+						}
+						
+						long datetime = System.currentTimeMillis();
+						log.setDatetime(datetime);
+						log.setIPv4(request.ipv4);
+						log.setIPv6(request.ipv4);
+						keystore.addKeyLog(log);
+						log.signoffKeyServer(keyServerSigningKey);
+						updateCache(null,log);
+					} else {
+						resp.setRetCode(404, "FAILED");
+						resp.createErrorMessageContent("verification of eylogaction signature failed.");
+					}
 				}
 				//save
 				saveKeyStore();
 			}
 		} else {
 			resp.setRetCode(404, "FAILED");
-			resp.createErrorMessageContent("missing keylogs element");
+			resp.createErrorMessageContent("missing keylogactions element");
 		}
 		return resp;
 	}

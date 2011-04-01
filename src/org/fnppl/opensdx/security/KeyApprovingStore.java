@@ -312,12 +312,11 @@ public class KeyApprovingStore {
 					v = kl.verifySHA1localproofAndSignoff();
 				} catch (Exception e) {
 					//e.printStackTrace();
-					System.out.println("new signature for keylog needed...");
+					System.out.println("KeyLog signature NOT verified!");
 				}
-				if (!v) {
-					kl.signoff(keystoreSigningKey);
+				if (v) {
+					root.addContent(kl.toFullElement());
 				}
-				root.addContent(kl.toElement());
 			}
 		}
 		
@@ -371,7 +370,7 @@ public class KeyApprovingStore {
 			System.out.println("found keylog... "+kl.getDateString());
 		}
 		KeyLog kl = kls.lastElement();
-		String status = kl.getStatus();
+		String status = kl.getAction();
 		int validity = -1;
 		if (status.equals(KeyLog.APPROVAL)) validity =  KeyStatus.STATUS_VALID;
 		else if (status.equals(KeyLog.DISAPPROVAL)) validity =  KeyStatus.STATUS_UNAPPROVED;

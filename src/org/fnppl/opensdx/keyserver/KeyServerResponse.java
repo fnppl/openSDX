@@ -240,7 +240,7 @@ public class KeyServerResponse {
 			Vector<KeyLog> keylogs = keyid_log.get(id);
 			if (keylogs!=null && keylogs.size()>0) {
 				for (KeyLog log : keylogs) {
-					e.addContent(log.toElement());
+					e.addContent(log.toFullElement());
 				}
 				
 			}

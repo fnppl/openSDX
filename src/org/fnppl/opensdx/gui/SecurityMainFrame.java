@@ -790,6 +790,20 @@ public class SecurityMainFrame extends JFrame {
 			}
 		});
 		b.add(bu);
+		
+		bu = new JButton("revoke masterkey on keyserver");
+		if (key.getAuthoritativekeyserver().toLowerCase().equals("local")) {
+			bu.setEnabled(false);
+			bu.setToolTipText("Can only revoke if authoritative keyserver of is not LOCAL");
+		}
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				revokeMasterKeyWithRevokeKey(key);
+			}
+		});
+		b.add(bu);
+		
+		
 		content.add(b,BorderLayout.SOUTH);
 
 		p.add(head, BorderLayout.NORTH);
@@ -1184,7 +1198,7 @@ public class SecurityMainFrame extends JFrame {
 		addLabelTextFieldPart("date :", keylog.getDateString(), a, c, y);y++;
 		addLabelTextFieldPart("IPv4 :", keylog.getIPv4(), a, c, y);y++;
 		addLabelTextFieldPart("IPv6 :", keylog.getIPv6(), a, c, y);y++;
-		addLabelTextFieldPart("status :", keylog.getStatus(), a, c, y);
+		addLabelTextFieldPart("action :", keylog.getAction(), a, c, y);
 		Vector<String[]> el = keylog.getStatusElements();
 		for (String[] s : el) {
 			if (s[1].length()>0) {
@@ -1205,15 +1219,15 @@ public class SecurityMainFrame extends JFrame {
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
-		JButton bu = new JButton("upload to keyserver");
-		bu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				uploadKeyLogToKeyServer(keylog);
-			}
-		});
-		b.add(bu);
+//		JButton bu = new JButton("upload to keyserver");
+//		bu.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				uploadKeyLogToKeyServer(keylog);
+//			}
+//		});
+//		b.add(bu);
 		
-		bu = new JButton("remove");
+		JButton bu = new JButton("remove");
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				currentKeyStore.removeKeyLog(keylog);
@@ -1503,8 +1517,8 @@ public class SecurityMainFrame extends JFrame {
 	}
 	protected void showGenerateKeyLogDialog(final OSDXKeyObject to) {
 	
-		String ip4 = "127.0.0.1";
-		String ip6 = "127.0.0.1";
+		//String ip4 = "127.0.0.1";
+		//String ip6 = "127.0.0.1";
 		Identity id = Identity.newEmptyIdentity();
 
 		JPanel p = new JPanel();
@@ -1545,7 +1559,7 @@ public class SecurityMainFrame extends JFrame {
 		p.add(l, c);
 		
 		y++;
-		l = new JLabel("set status:");
+		l = new JLabel("set action:");
 		c.weightx = 0;
 		c.weighty = 0.1;
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -1557,7 +1571,7 @@ public class SecurityMainFrame extends JFrame {
 		Vector<String> vStatus = new Vector<String>();
 		vStatus.add(KeyLog.APPROVAL);
 		vStatus.add(KeyLog.DISAPPROVAL);
-		vStatus.add(KeyLog.REVOCATION);
+		//vStatus.add(KeyLog.REVOCATION);
 		
 		JComboBox selectStatus = new JComboBox(vStatus);
 		selectStatus.setEditable(false);
@@ -1600,43 +1614,43 @@ public class SecurityMainFrame extends JFrame {
 		c.gridwidth = 1;
 		p.add(selectMasterKey, c);
 		
-		y++;
-		l = new JLabel("IPv4:");
-		c.weightx = 0;
-		c.weighty = 0.1;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 0;
-		c.gridy = y;
-		c.gridwidth = 2;
-		p.add(l, c);
-		
-		l = new JLabel(ip6);
-		c.weightx = 0;
-		c.weighty = 0.1;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 2;
-		c.gridy = y;
-		c.gridwidth = 1;
-		p.add(l, c);
-		
-		y++;
-		l = new JLabel("IPv6");
-		c.weightx = 0;
-		c.weighty = 0.1;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 0;
-		c.gridy = y;
-		c.gridwidth = 2;
-		p.add(l, c);
-		
-		l = new JLabel(ip6);
-		c.weightx = 0;
-		c.weighty = 0.1;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 2;
-		c.gridy = y;
-		c.gridwidth = 1;
-		p.add(l, c);
+//		y++;
+//		l = new JLabel("IPv4:");
+//		c.weightx = 0;
+//		c.weighty = 0.1;
+//		c.fill = GridBagConstraints.HORIZONTAL;
+//		c.gridx = 0;
+//		c.gridy = y;
+//		c.gridwidth = 2;
+//		p.add(l, c);
+//		
+//		l = new JLabel(ip4);
+//		c.weightx = 0;
+//		c.weighty = 0.1;
+//		c.fill = GridBagConstraints.HORIZONTAL;
+//		c.gridx = 2;
+//		c.gridy = y;
+//		c.gridwidth = 1;
+//		p.add(l, c);
+//		
+//		y++;
+//		l = new JLabel("IPv6");
+//		c.weightx = 0;
+//		c.weighty = 0.1;
+//		c.fill = GridBagConstraints.HORIZONTAL;
+//		c.gridx = 0;
+//		c.gridy = y;
+//		c.gridwidth = 2;
+//		p.add(l, c);
+//		
+//		l = new JLabel(ip6);
+//		c.weightx = 0;
+//		c.weighty = 0.1;
+//		c.fill = GridBagConstraints.HORIZONTAL;
+//		c.gridx = 2;
+//		c.gridy = y;
+//		c.gridwidth = 1;
+//		p.add(l, c);
 		
 		y++;
 		JButton requestId = new JButton("request identity details from keyserver");
@@ -1785,9 +1799,9 @@ public class SecurityMainFrame extends JFrame {
 	    	try {
 	    		String status = (String)selectStatus.getSelectedItem();
 	    		//System.out.println("selected status: "+status);
-				KeyLog kl = KeyLog.buildNewKeyLog(status, from, to.getKeyID(), to.getKeyModulusSHA1(), ip4, ip6, idd);
-				currentKeyStore.addKeyLog(kl);
-				updateUI();
+				KeyLog kl = KeyLog.buildKeyLogAction(status, from, to.getKeyID(), idd);
+				uploadKeyLogToKeyServer(kl);
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -2199,8 +2213,8 @@ public class SecurityMainFrame extends JFrame {
 						updateUI();
 						
 						//upload keylog
-						KeyLog kl = KeyLog.buildNewKeyLog(KeyLog.APPROVAL, key, key.getKeyID(), key.getKeyModulusSHA1(), "LOCAL", "LOCAL", id);
-						currentKeyStore.addKeyLog(kl);
+						KeyLog kl = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, key, key.getKeyID(), id);
+						//currentKeyStore.addKeyLog(kl);
 						boolean klOK = client.putKeyLog(kl, key);
 						Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+id.getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
 						if (!klOK) {
@@ -2224,16 +2238,16 @@ public class SecurityMainFrame extends JFrame {
 	
 	private boolean uploadKeyLogToKeyServer(KeyLog log, KeyServerIdentity keyserver, OSDXKeyObject signingKey) {
 		try {
-			int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the KeyLog of key:\n"+log.getKeyIDTo()+"\nto KeyServer: "+keyserver.getHost()+"?");
+			int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to generate a KeyLog of key:\n"+log.getKeyIDTo()+"\non KeyServer: "+keyserver.getHost()+"?");
 			if (confirm==Dialogs.YES) {
 				OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
 				boolean ok =client.putKeyLog(log, signingKey);
 				if (ok) {
-					Dialogs.showMessage("Upload of KeyLog successful!");
+					Dialogs.showMessage("Generation of KeyLog successful!");
 					return ok;
 				} else {
 					String msg = client.getMessage();
-					Dialogs.showMessage("Upload of KeyLog FAILED!"+(msg!=null?"\n\n"+msg:""));
+					Dialogs.showMessage("Generation of KeyLog FAILED!"+(msg!=null?"\n\n"+msg:""));
 					return false;
 				}
 			}
@@ -2347,6 +2361,50 @@ public class SecurityMainFrame extends JFrame {
 				ex.printStackTrace();
 			}
 		}
+	}
+	
+	public boolean revokeMasterKeyWithRevokeKey(OSDXKeyObject revokekey) {
+		String message = Dialogs.showInputDialog("Confirm REVOCATION", "Please confirm REVOCATION of Masterkey.\nYou can enter a revocatoin message:");
+		if (message!=null) {
+			return revokeMasterKeyWithRevokeKey(revokekey,message);
+		}
+		return false;
+	}
+	
+	public boolean revokeMasterKeyWithRevokeKey(OSDXKeyObject revokekey, String message) {
+		if (keyservers==null || keyservers.size()==0) {
+			Dialogs.showMessage("No keyserver available.");
+			return false;
+		}
+		String parent = revokekey.getParentKeyID();
+		OSDXKeyObject masterkey = currentKeyStore.getKey(parent);
+		
+		String host = masterkey.getAuthoritativekeyserver().toLowerCase();
+		KeyServerIdentity keyserver = null;
+		for (KeyServerIdentity kid : keyservers) {
+			if (kid.getHost().toLowerCase().equals(host)) {
+				keyserver = kid;
+				break;
+			}
+		}
+		if (keyserver!=null) {
+			try {
+				if (!revokekey.isPrivateKeyUnlocked()) revokekey.unlockPrivateKey(messageHandler);	
+				OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
+				boolean ok = client.putRevokeMasterKeyRequest(revokekey, masterkey, message);
+				if (ok) {
+					Dialogs.showMessage("REVOCATION of Key:\n"+masterkey.getKeyID()+"\non KeyServer: "+keyserver.getHost()+"\nsuccessful!");
+					return ok;
+				} else {
+					String msg = client.getMessage();
+					Dialogs.showMessage("REVOCATION of Key:\n"+masterkey.getKeyID()+"\non KeyServer: "+keyserver.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
+					return false;
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}	
+		}
+		return false;
 	}
 
 	public void generateMasterKeySet() {

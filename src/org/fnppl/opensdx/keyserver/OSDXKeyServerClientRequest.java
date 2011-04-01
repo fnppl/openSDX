@@ -292,7 +292,7 @@ public class OSDXKeyServerClientRequest {
 	
 		Element e = new Element("masterpubkey");
 		e.addContent(masterkey.getSimplePubKeyElement());
-		e.addContent(id.toElement());
+		e.addContent(id.toElementOfNotNull());
 		req.setContentElement(e);
 		req.setSignoffKey(masterkey); //self-signoff with masterkey
 		return req;
@@ -316,6 +316,26 @@ public class OSDXKeyServerClientRequest {
 		return req;
 	}
 	
+	public static OSDXKeyServerClientRequest getRequestRevokeMasterKey(String host, OSDXKeyObject revokekey, OSDXKeyObject relatedMasterKey, String message) throws Exception {
+		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
+		req.setURI(host, "/revokemasterkey");
+		
+		Element e = new Element("revokemasterkey");
+		e.addContent("from_keyid", revokekey.getKeyID());
+		e.addContent("to_keyid", relatedMasterKey.getKeyID());
+		if (message!=null && message.length()>0)
+			e.addContent("message",message);
+		//self signoff with revokekey
+		//byte[] sha1proof = SecurityHelper.getSHA1LocalProof(e);
+		//e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
+		//e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", revokekey).toElement());
+		
+		req.setContentElement(e);
+		req.setSignoffKey(revokekey); //signoff with revokekey
+		
+		return req;
+	}
+	
 	public static OSDXKeyServerClientRequest getRequestPutSubKey(String host, OSDXKeyObject subkey, OSDXKeyObject relatedMasterKey) throws Exception {
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
 		req.setURI(host, "/subkey");
@@ -334,9 +354,9 @@ public class OSDXKeyServerClientRequest {
 		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
 		req.setURI(host, "/keylogs");
 		
-		Element e = new Element("keylogs");
+		Element e = new Element("keylogactions");
 		for (KeyLog k : keylogs) {
-			e.addContent(k.toElement());
+			e.addContent(k.toKeyLogActionElement());
 		}
 		req.setSignoffKey(signingKey); //Signoff
 		req.setContentElement(e);

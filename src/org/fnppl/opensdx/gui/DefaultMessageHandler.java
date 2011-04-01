@@ -60,7 +60,6 @@ public class DefaultMessageHandler implements MessageHandler {
 		return Dialogs.showNewMantraPasswordDialog(message);
 	}
 
-	@Override
 	public void fireWrongPasswordMessage() {
 		Dialogs.showMessage("Sorry, wrong password!");
 	}

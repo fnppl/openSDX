@@ -284,11 +284,7 @@ public class OSDXKeyServerClient {
 		try {
 			OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutMasterKey(host, masterkey, id);
 			OSDXKeyServerClientResponse resp = send(req);
-			if (resp==null || resp.status == null) return false;
-			if (resp.status.endsWith("OK"))	return true;
-			if (resp.hasErrorMessage()) {
-				message = resp.getErrorMessage();
-			}
+			return checkResponse(resp);
 		} catch (Exception ex) {
 			message = ex.getMessage();
 		}
@@ -299,6 +295,36 @@ public class OSDXKeyServerClient {
 	public boolean putRevokeKey(OSDXKeyObject revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
 		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutRevokeKey(host, revokekey, relatedMasterKey);
 		OSDXKeyServerClientResponse resp = send(req);
+		return checkResponse(resp);
+	}
+	
+	public boolean putRevokeMasterKeyRequest(OSDXKeyObject revokekey, OSDXKeyObject relatedMasterKey, String message) throws Exception {
+		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestRevokeMasterKey(host, revokekey, relatedMasterKey, message);
+		OSDXKeyServerClientResponse resp = send(req);
+		return checkResponse(resp);
+	}
+	
+	public boolean putSubKey(OSDXKeyObject subkey, OSDXKeyObject relatedMasterKey) throws Exception {
+		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutSubKey(host, subkey, relatedMasterKey);
+		OSDXKeyServerClientResponse resp = send(req);
+		return checkResponse(resp);
+	}
+
+	//   5. Ich, als user, möchte meine keylogs auf dem server ablegen können (ein löschen von keylogs ist NICHT möglich - für einen aktuellen status ist die "kette ist chronologisch abzuarbeiten")
+	
+	public boolean putKeyLog(KeyLog keylog, OSDXKeyObject signingKey) throws Exception {
+		Vector<KeyLog> keylogs = new Vector<KeyLog>();
+		keylogs.add(keylog);
+		return putKeyLogs(keylogs, signingKey);	
+	}
+	
+	public boolean putKeyLogs(Vector<KeyLog> keylogs, OSDXKeyObject signingKey) throws Exception {
+		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutKeyLogs(host, keylogs, signingKey);
+		OSDXKeyServerClientResponse resp = send(req);
+		return checkResponse(resp);
+	}
+
+	private boolean checkResponse(OSDXKeyServerClientResponse resp) {
 		if (resp==null || resp.status == null) {
 			message = "Keyserver does not respond.";
 			return false;
@@ -310,36 +336,6 @@ public class OSDXKeyServerClient {
 		return false;
 	}
 	
-	public boolean putSubKey(OSDXKeyObject subkey, OSDXKeyObject relatedMasterKey) throws Exception {
-		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutSubKey(host, subkey, relatedMasterKey);
-		OSDXKeyServerClientResponse resp = send(req);
-		if (resp==null || resp.status == null) return false;
-		if (resp.status.endsWith("OK"))	return true;
-		if (resp.hasErrorMessage()) {
-			message = resp.getErrorMessage();
-		}
-		return false;
-	}
-
-	//   5. Ich, als user, möchte meine keylogs auf dem server ablegen können (ein löschen von keylogs ist NICHT möglich - für einen aktuellen status ist die "kette ist chronologisch abzuarbeiten")
-	
-	public boolean putKeyLog(KeyLog keylog, OSDXKeyObject signingKey) throws Exception {
-		Vector<KeyLog> keylogs = new Vector<KeyLog>();
-		keylogs.add(keylog);
-		return putKeyLogs(keylogs, signingKey);
-		
-	}
-	public boolean putKeyLogs(Vector<KeyLog> keylogs, OSDXKeyObject signingKey) throws Exception {
-		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPutKeyLogs(host, keylogs, signingKey);
-		OSDXKeyServerClientResponse resp = send(req);
-		if (resp==null || resp.status == null) return false;
-		if (resp.status.endsWith("OK"))	return true;
-		if (resp.hasErrorMessage()) {
-			message = resp.getErrorMessage();
-		}
-		return false;
-	}
-
 	//   4. Ich, als user, möchte eigentlich, daß alle meine Aktionen auf meinem MASTER-key - bzw. allen meiner keys durch einen entsprechenden signature-proof des entsprechenden private-keys validierbar sind
 	//   6. Ich, als user, möchte alle kommunikation vom/zum keyserver mit einem vom keyserver definierten root-MASTER-key approveden key signiert wissen
 	//   7. Ich, als user, möchte diese keyserver-root-keys vordefiniert in meiner openSDX-suite finden, aber auch simpelst selbst nachrüsten können

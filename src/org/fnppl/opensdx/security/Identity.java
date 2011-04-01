@@ -167,6 +167,52 @@ public class Identity {
 		return Arrays.equals(sha1,sha1FromElement);
 	}
 	
+	public Element toElementOfNotNull() {
+		Element id = new Element("identity");
+
+		id.addContent("identnum", getIdentNumString());
+		id.addContent("email", email);
+		if (mnemonic!=null && mnemonic.length()>0) id.addContent("mnemonic", mnemonic);
+		
+		if (country!=null && country.length()>0) id.addContent("country", country);
+		if (region!=null && region.length()>0) id.addContent("region", region);
+		if (city!=null && city.length()>0) id.addContent("city", city);
+		if (postcode!=null && postcode.length()>0) id.addContent("postcode", postcode);
+		
+		if (company!=null && company.length()>0) id.addContent("company", company);
+		if (unit!=null && unit.length()>0) id.addContent("unit", unit);
+		if (subunit!=null && subunit.length()>0) id.addContent("subunit", subunit);
+		if (function!=null && function.length()>0) id.addContent("function", function);
+		
+		if (surname!=null && surname.length()>0) id.addContent("surname", surname);
+		if (middlename!=null && middlename.length()>0) id.addContent("middlename", middlename);
+		if (name!=null && name.length()>0) id.addContent("name", name);
+		
+		if (phone!=null && phone.length()>0) id.addContent("phone", phone);
+		if (note!=null && note.length()>0) id.addContent("note", note);
+		try {
+			byte[] sha1b = calcSHA1();
+			id.addContent("sha1", SecurityHelper.HexDecoder.encode(sha1b, ':', -1));
+			sha1FromElement = sha1b;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		
+		//datapath
+		if (datapath!=null && datapath.size()>0) {
+			Element edp = new Element("datapath");
+			for (int i=0;i<datapath.size();i++) {
+				Element edss = new Element("step"+(i+1));
+				edss.addContent("datasource",datapath.get(i).getDataSource());
+				edss.addContent("datainsertdatetime", datapath.get(i).getDataInsertDatetimeString());
+				edp.addContent(edss);
+			}
+			id.addContent(edp);
+		}
+		//unsavedChanges = false;
+		return id;
+	}
+	
 	public Element toElement() {
 		Element id = new Element("identity");
 
@@ -200,16 +246,19 @@ public class Identity {
 		
 		//datapath
 		Element edp = new Element("datapath");
-		for (int i=0;i<datapath.size();i++) {
-			Element edss = new Element("step"+(i+1));
-			edss.addContent("datasource",datapath.get(i).getDataSource());
-			edss.addContent("datainsertdatetime", datapath.get(i).getDataInsertDatetimeString());
-			edp.addContent(edss);
+		if (datapath !=null) {
+			for (int i=0;i<datapath.size();i++) {
+				Element edss = new Element("step"+(i+1));
+				edss.addContent("datasource",datapath.get(i).getDataSource());
+				edss.addContent("datainsertdatetime", datapath.get(i).getDataInsertDatetimeString());
+				edp.addContent(edss);
+			}
 		}
 		id.addContent(edp);
 		unsavedChanges = false;
 		return id;
 	}
+	
 	
 	public boolean validate(byte[] sha1b) throws Exception {
 		byte[] _sha1b = calcSHA1();
