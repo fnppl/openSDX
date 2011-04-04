@@ -451,8 +451,8 @@ public class SecurityMainFrame extends JFrame {
 		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
 		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
 		final JTextField tValid = addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y,true); y++;
-		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
-
+		final JTextField tAuth = addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y, true);
+		
 		tValid.addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode()==10) {//enter pressed
@@ -484,6 +484,33 @@ public class SecurityMainFrame extends JFrame {
 			}
 		};
 		tValid.getDocument().addDocumentListener(chListen);
+		
+		tAuth.addKeyListener(new KeyListener() {
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode()==10) {//enter pressed
+					String v = tAuth.getText();
+					key.setAuthoritativeKeyServer(v);
+					tAuth.setBackground(Color.WHITE);
+				}
+			}
+			public void keyReleased(KeyEvent e) {}
+			public void keyTyped(KeyEvent e) {}
+		});
+		DocumentListener chAuthListen = new DocumentListener() {
+			public void removeUpdate(DocumentEvent e) {action();}
+			public void insertUpdate(DocumentEvent e) {action();}
+			public void changedUpdate(DocumentEvent e) {action();}
+			private void action() {
+				if (key.getAuthoritativekeyserver().equals(tAuth.getText())) {
+					tAuth.setBackground(Color.WHITE);
+				} else {
+					tAuth.setBackground(Color.YELLOW);
+				}
+			}
+		};
+		tAuth.getDocument().addDocumentListener(chAuthListen);
+		
+		
 		final Vector<Identity> ids = key.getIdentities();
 		if (ids.size()>0) {
 			ActionListener editRemoveListener = new ActionListener() {
@@ -759,7 +786,6 @@ public class SecurityMainFrame extends JFrame {
 			}
 		};
 		tValid.getDocument().addDocumentListener(chListen);
-		
 		
 		Vector<DataSourceStep> dp = key.getDatapath();
 		for (int i=0;i<dp.size();i++) {

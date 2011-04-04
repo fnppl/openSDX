@@ -58,12 +58,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.Map.Entry;
 
 import javax.mail.Address;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -112,14 +114,19 @@ public class KeyServerMain {
 	
 	private static String serverid = "OSDX KeyServer v0.1";
 	
-	private File configFile = new File("src/org/fnppl/opensdx/keyserver/resources/config.xml"); 
+	private File configFile = new File("keyserver_config.xml"); 
+	private File alterConfigFile = new File("src/org/fnppl/opensdx/keyserver/resources/config.xml"); 
 	
 	private String host = "localhost"; //keys.fnppl.org
 	private int port = -1;
+	private int maxRequestsPerMinute = 100;
+	private int maxThreadCount = 30;
 	private InetAddress address = null;
 	private Properties mailProps = null;
 	private MailAuthenticator mailAuth = null;
-
+	private HashMap<String, int[]> ipRequests = new HashMap<String, int[]>();
+	private HashMap<String, Thread> currentWorkingThreads = new HashMap<String, Thread>();
+	
 	
 	private KeyApprovingStore keystore;
 	
@@ -191,6 +198,13 @@ public class KeyServerMain {
 	
 	public void readConfig() {
 		try {
+			if (!configFile.exists()) {
+				configFile = alterConfigFile;
+			}
+			if (!configFile.exists()) {
+				System.out.println("Sorry, keyserver_config.xml not found.");
+				exit();
+			}
 			Element root = Document.fromFile(configFile).getRootElement();
 			//keyserver base
 			Element ks = root.getChild("keyserver");
@@ -201,7 +215,9 @@ public class KeyServerMain {
 				byte[] addr = new byte[4];
 				String[] sa = ip4.split("[.]");
 				for (int i=0;i<4;i++) {
-					addr[i] = Byte.parseByte(sa[i]);
+					int b = Integer.parseInt(sa[i]);
+					if (b>127) b = -256+b;
+					addr[i] = (byte)b;
 				}
 				address = InetAddress.getByAddress(addr);
 			} catch (Exception ex) {
@@ -368,6 +384,15 @@ public class KeyServerMain {
 		Element e = request.xml.getRootElement();
 		if (e.getName().equals("masterpubkey")) {
 			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
+			
+			//check key already on server
+			String newkeyid = OSDXKeyObject.getFormattedKeyIDModulusOnly(pubkey.getKeyID());
+			if (keyid_key.containsKey(newkeyid)) {
+				KeyServerResponse resp = new KeyServerResponse(serverid);
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("A key with this id is already registered.");
+				return resp;
+			}
 			AsymmetricKeyPair akp = new AsymmetricKeyPair(pubkey.getModulusBytes(), pubkey.getPublicExponentBytes(), null);
 			
 			//generate key
@@ -471,6 +496,14 @@ public class KeyServerMain {
 			
 			System.out.println("masterkey status: "+ks.getValidityStatusName());
 			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
+			//check key already on server
+			String newkeyid = OSDXKeyObject.getFormattedKeyIDModulusOnly(pubkey.getKeyID());
+			if (keyid_key.containsKey(newkeyid)) {
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("A key with this id is already registered.");
+				return resp;
+			}
+			
 			
 			//boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey.getPubKey());
 			
@@ -619,6 +652,13 @@ public class KeyServerMain {
 			}
 			
 			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
+			//check key already on server
+			String newkeyid = OSDXKeyObject.getFormattedKeyIDModulusOnly(pubkey.getKeyID());
+			if (keyid_key.containsKey(newkeyid)) {
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("A key with this id is already registered.");
+				return resp;
+			}
 			
 			boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey);
 			
@@ -692,20 +732,58 @@ public class KeyServerMain {
 		}
 		return resp;
 	}
+	
+	private KeyServerResponse handleGetKeyServerSettingsRequest(KeyServerRequest request) throws Exception {
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		Element e = new Element("keyserver");
+		e.addContent("host",host);
+		e.addContent("port",""+port);
+		Element k = new Element("knownkeys");
+		Element pk = keyServerSigningKey.getSimplePubKeyElement();
+		k.addContent(pk);
+		k.addContent("sha1localproof",SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(pk), ':', -1));
+		e.addContent(k);
+		e.addContent("sha1localproof",SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(e), ':', -1));
+		resp.setContentElement(e);
+		return resp;
+	}
 
 	public void handleSocket(final Socket s) throws Exception {
-		// check on *too* many requests from one ip
 		Thread t = new Thread() {
 			public void run() {
-				// should add entry to current_working_threads...
+				String threadID = null;
 				try {
 					InetAddress addr = s.getInetAddress();
+					String remoteIP = addr.getHostAddress();
+					int remotePort = s.getPort();
+					// check on *too* many requests from one ip
+					int[] rc = ipRequests.get(remoteIP);
+					if (rc==null) {
+						ipRequests.put(remoteIP, new int[]{1});
+					} else {
+						rc[0]++;
+						//System.out.println("anz req: "+rc[0]);
+						if (rc[0]>maxRequestsPerMinute) {
+							if (rc[0]<=100) {
+								System.out.println("WARNING: too many requests ("+rc[0]+") from ip: "+remoteIP);
+							}
+							return;
+						}
+					}
+					threadID = remoteIP+remotePort;
+					currentWorkingThreads.put(threadID,this);
+					
 					InputStream _in = s.getInputStream();
 					BufferedInputStream in = new BufferedInputStream(_in);
 					KeyServerRequest request = KeyServerRequest.fromInputStream(in, addr.getHostAddress());
 					KeyServerResponse response = prepareResponse(request, in); //this is ok since the request is small and can be kept in ram
 					
 					System.out.println("KeyServerSocket  | ::response ready");
+					if (response == null) {
+						//send error
+						response = new KeyServerResponse(serverid);
+						response.setRetCode(400, "BAD REQUEST");
+					}
 					if (response != null) {
 						System.out.println("SENDING THIS::");response.toOutput(System.out);System.out.println("::/SENDING_THIS");
 						
@@ -716,26 +794,39 @@ public class KeyServerMain {
 						bout.close();
 					} 
 					else {
-						// TODO send error
 						Exception ex = new Exception("RESPONSE COULD NOT BE CREATED");
 						throw ex;
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
+				currentWorkingThreads.remove(threadID);
 			}
 		};
 		t.start();
 	}
 
 	public void startService() throws Exception {
-		System.out.println("Starting Server on port " + port);
+		System.out.println("Starting Server at "+address.getHostAddress()+" on port " + port +"  at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
 		ServerSocket so = new ServerSocket(port);
-		if (address != null) {
-		//	throw new RuntimeException("Not yet implemented...");
-		}
+		Thread requestMonitor = new Thread() {
+			public void run() {
+				while (true) {
+					updateIPRequestCounter();
+					try {
+						Thread.sleep(60000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		requestMonitor.start();
 		while (true) {
 			try {
+				while (currentWorkingThreads.size()>maxThreadCount) {
+					Thread.sleep(100);
+				}
 				final Socket me = so.accept();
 				handleSocket(me);
 			} catch (Exception ex) {
@@ -743,8 +834,28 @@ public class KeyServerMain {
 				Thread.sleep(250);// cooldown...
 			}
 		}
+		//System.out.println("Service closed at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
 	}
 	
+	private void updateIPRequestCounter() {
+		try {
+			Vector<String> remove = new Vector<String>();
+			for (Entry<String, int[]> e : ipRequests.entrySet()) {
+				int[] v = e.getValue();
+				v[0] -= maxRequestsPerMinute;
+				//System.out.println(e.getKey()+ "  v[0] = "+v[0]);
+				if (v[0] < 0) {
+					remove.add(e.getKey());
+				}
+			}
+			for (String r : remove) {
+				ipRequests.remove(r);
+			}
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 	public KeyServerResponse prepareResponse(KeyServerRequest request, BufferedInputStream in) throws Exception {
 		// yeah, switch cmd/method - stuff whatever...
 		
@@ -789,6 +900,9 @@ public class KeyServerMain {
 			else if (cmd.equals("/approve_mail")) {
 				return handleVerifyRequest(request);
 			}
+			else if (cmd.equals("/keyserversettings")) {
+				return handleGetKeyServerSettingsRequest(request);
+			}
 		}
 		else {
 			throw new Exception("NOT IMPLEMENTED::METHOD: "+request.method); // correct would be to fire a HTTP_ERR
@@ -803,10 +917,11 @@ public class KeyServerMain {
 		if (mailProps == null) throw new RuntimeException("ERROR: mail properties not found.");
 		
 		//generate compressed message
-		SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
-		MimeBodyPart mime = new MimeBodyPart();
-		mime.setText(message);
-		MimeBodyPart mp = gen.generate(mime, SMIMECompressedGenerator.ZLIB);
+		MimeBodyPart body = new MimeBodyPart();
+		body.setText(message);
+		
+		//SMIMECompressedGenerator  gen = new SMIMECompressedGenerator();
+		//MimeBodyPart mp = gen.generate(body, SMIMECompressedGenerator.ZLIB);
 
 		Session session = Session.getDefaultInstance(mailProps, mailAuth);	
 		Message msg = new MimeMessage(session);
@@ -816,11 +931,9 @@ public class KeyServerMain {
 		msg.setFrom(fromUser);
 		msg.setRecipient(Message.RecipientType.TO, toUser);
 		msg.setSubject(subject);
-		msg.setContent(mp.getContent(), mp.getContentType());
+		msg.setContent(body.getContent(), body.getContentType());
 		msg.setSentDate(new Date());
 		msg.saveChanges();
-
-		msg.writeTo(new FileOutputStream("compressed.message"));
 
 		System.out.println("\nsending mail:");
 		System.out.println("-------------");
@@ -830,7 +943,11 @@ public class KeyServerMain {
 		System.out.println("Message :\n"+ message);
 		System.out.println("\n-------------\n");
 		
-		//Transport.send(msg);
+		Transport.send(msg);
+	}
+	
+	public void exit() {
+		System.exit(0);
 	}
 
 	public static void main(String[] args) throws Exception {
