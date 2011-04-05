@@ -17,7 +17,6 @@ public abstract class BaseObjectWithConstraints extends BaseObject {
 	
 	private void checkConstraints(Element output) {
 		Element rootOfClass = new Element(getClass().getName().substring(getClass().getName().lastIndexOf(".")+1).toLowerCase());
-		output.addContent(rootOfClass);
 		for (int i=0;i<names.size();i++) {
 			if (i>constraints.size()-1) {
 				System.out.println("ERROR in constraints settings at: "+getClass().getName()+" name: "+names.get(i));
@@ -83,6 +82,9 @@ public abstract class BaseObjectWithConstraints extends BaseObject {
 				}
 			}
 		}
+		//
+		if (rootOfClass.getChildren().size()>0)
+			output.addContent(rootOfClass);
 	}
 	
 	/**
@@ -90,7 +92,7 @@ public abstract class BaseObjectWithConstraints extends BaseObject {
 	 * 
 	 * @see org.fnppl.opensdx.common.BaseObject#set(java.lang.String, java.lang.Object)
 	 */
-	public boolean set(String name, Object v) {
+	protected boolean set(String name, Object v) {
     	if(v==null) {
     		throw new RuntimeException("BaseObject::set("+name+") may not be null");
     	}

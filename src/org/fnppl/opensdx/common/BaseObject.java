@@ -128,7 +128,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    public boolean getBoolean(String name) {
+    protected boolean getBoolean(String name) {
     	Object v = getObject(name);
         if(v instanceof Boolean) {
         	return ((Boolean)v).booleanValue();
@@ -139,7 +139,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    public long getLong(String name) {
+    protected long getLong(String name) {
         Object v = getObject(name);
         if(v instanceof Long) {
         	return ((Long)v).longValue();
@@ -150,7 +150,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    public double getDouble(String name) {
+    protected double getDouble(String name) {
         Object v = getObject(name);
         if(v instanceof Double) {
         	return ((Double)v).doubleValue();
@@ -161,7 +161,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    public int getInt(String name) {
+    protected int getInt(String name) {
         Object v = getObject(name);
         if(v instanceof Integer) {
         	return ((Integer)v).intValue();
@@ -172,7 +172,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    public Object getObject(String name) {
+    protected Object getObject(String name) {
     	if (!names.contains(name)) return null;
     	Object v = values.get(names.indexOf(name));        
         return v;
@@ -181,7 +181,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    public String get(String name) {
+    protected String get(String name) {
         Object v = values.get(names.indexOf(name));
         return v.toString();
     }
@@ -191,7 +191,7 @@ public abstract class BaseObject {
      * @param value
      * @return
      */
-    public boolean compareStringValue(String name, String value) {
+    protected boolean compareStringValue(String name, String value) {
         Object v = values.get(names.indexOf(name));
         if (v==null && value==null) {
         	return true;
@@ -206,14 +206,14 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    public boolean isSet(String name)  {
+    protected boolean isSet(String name)  {
         return names.contains(name);
     }
     
     /**
      * @return
      */
-    public boolean valuesAreNull()  {
+    protected boolean valuesAreNull()  {
     	for (int i=0; i < values.size(); i++) {
     		if (values.get(i) != null) {
     			return false;
@@ -227,7 +227,7 @@ public abstract class BaseObject {
      * @param v
      * @return
      */
-    public boolean set(String name, long v) {
+    protected boolean set(String name, long v) {
     	if(changes==null) {
     		changes = new Hashtable<String, Object>();
     	}
@@ -253,7 +253,7 @@ public abstract class BaseObject {
      * @param v
      * @return
      */
-    public boolean set(String name, Object v) {
+    protected boolean set(String name, Object v) {
     	if(v==null) {
     		throw new RuntimeException("SOBject::set("+name+") may not be null");
     	}

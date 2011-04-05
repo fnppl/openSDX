@@ -255,12 +255,14 @@ public class ClassGenerator {
 		    	//feed.addBundle(new org.fnppl.opensdx.commonAuto.Bundle());
 		    	//feed.setItem("Test");
 		    	//feed.setFeedinfo(new org.fnppl.opensdx.commonAuto.Feedinfo());
-		    	//org.fnppl.opensdx.xml.Element errorMsg = new org.fnppl.opensdx.xml.Element("error_messages");
+
 		    	//feed.checkConstraints(errorMsg);
+		    	
 		    	org.fnppl.opensdx.xml.Element errorMsg = ((org.fnppl.opensdx.commonAuto.Feed)test).checkConstraints();
 		    	org.fnppl.opensdx.xml.Document.buildDocument(errorMsg).output(System.out);
 		    	
-		    	//org.fnppl.opensdx.commonAuto.Feed feed = (org.fnppl.opensdx.commonAuto.Feed)test;
+		    	org.fnppl.opensdx.commonAuto.Feed feed = (org.fnppl.opensdx.commonAuto.Feed)test;
+		    	
 		    	//org.fnppl.opensdx.commonAuto.Feedinfo info = feed.getFeedinfo();
 		    	//Document.buildDocument(info.toElement()).output(System.out);
 		    	
