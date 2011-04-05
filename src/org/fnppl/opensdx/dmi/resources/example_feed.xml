@@ -335,9 +335,9 @@
 		
 		<license_basis>
 			<territorial>
+				<territory type="allow">GB</territory><!-- type explicitly given -->
+				<territory type="disallow">US</territory><!-- for use for eg. WW -AT -->
 				<territory></territory><!-- type omitted: allow -->
-				<territory type="allow"></territory><!-- type explicitly given -->
-				<territory type="disallow"></territory><!-- for use for eg. WW -AT -->
 				<!-- U more territories -->
 			</territorial>
 			<timeframe>
@@ -536,7 +536,8 @@
 		
 	</bundle>
 	<!--  could have X more bundles -->
-
+	<bundle>
+	</bundle>
 
 	<!-- it is also possible to only send "an item" - aka track although this is quite inconvenient... -->	
 	<item>

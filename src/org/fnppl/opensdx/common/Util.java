@@ -61,6 +61,9 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+
+import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.xml.Element;
 /**
  * 
  * @author Bertram Bödeker <bboedeker@gmx.de>
@@ -143,4 +146,219 @@ public class Util {
         } catch (IOException ioe) { System.err.println(ioe.toString());}
     }
 
+    public static void createBaseClassesFromXML(File xml, File header, File saveToPath) {
+    	try {
+    		if (!saveToPath.exists()) {
+    			saveToPath.mkdirs();
+    		}
+    		String head = null;
+    		if (header.exists()) head = loadText(header.getAbsolutePath());
+    		Vector<String> classesReady = new Vector<String>();
+			Element e =  Document.fromFile(xml).getRootElement();
+			buildClass(e, head, saveToPath, classesReady);
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+    }
+    
+    private static void buildClass(Element e, String head, File saveToPath, Vector<String> classesReady) {
+    	String name = e.getName();
+    	if (e.getAttribute("lang")!=null) {
+    		System.out.println("att: "+e.getAttribute(name));
+    	}
+    	name = firstLetterUp(name);
+    	name = cutNumericEnding(name);
+    	
+    	if (classesReady.contains(name)) return;
+    	
+    	StringBuffer b = new StringBuffer();
+    	StringBuffer m = new StringBuffer();
+    	
+    	if (head!=null) {
+    		b.append(head);
+    		b.append("\n");
+    	}
+    	b.append("import java.util.Vector;\n");
+    	b.append("import org.fnppl.opensdx.common.BaseObject;\n");
+    	b.append("\n");
+    	b.append("public class "+name+" extends BaseObject {\n");
+    	b.append("\n");
+    	//constructor
+    	b.append("	public "+name+"() {\n");
+		Vector<String> vars = new Vector<String>();
+    	Vector<Element> vc = e.getChildren();
+    	
+    	for (Element c : vc)  {
+    		String n = c.getName();
+    		boolean numeric = false;
+    		//check for numeric ending
+			String cutN = cutNumericEnding(n);
+        	if (!cutN.equals(n)) {
+        		n = cutN;
+        		numeric = true;
+        	}
+    		
+    		
+    		String vName = n;
+    		//check variable name
+    		if (n.equals("break")) vName = "sBreak";
+    		if (n.equals("for")) vName = "sFor";
+    		if (n.equals("if")) vName = "sIf";
+    		if (n.equals("else")) vName = "sElse";
+    		
+    		boolean hasAttributes = false;
+    		String args1 = "";
+    		String args2 = "";
+    		if (c.getAttributes().size()>0) {
+    			hasAttributes = true;
+    			for (String[] s : c.getAttributes()) {
+    				//System.out.println("   "+s[0]+"::"+s[1]);
+    				args1 += "String "+s[0]+", ";
+    				args2 += "\""+s[0]+"\", "+s[0]+", ";
+    			}
+    		}
+    		//one or more times
+			int count = e.getChildren(n).size();
+			if (numeric) {
+				//some more effort needed
+				Vector<Element> child = e.getChildren();
+				count = 0;
+				for (Element ec : child) {
+					String cn = cutNumericEnding(ec.getName());
+					if (n.equals(cn)) {
+						count++;
+					}
+				}
+			}
+			boolean add = false;
+			String type = firstLetterUp(n);
+			
+			//System.out.println(c.getName()+" has children: "+c.getChildren().size());
+			if (c.getChildren().size()>0) {
+    			buildClass(c,head,saveToPath, classesReady);
+    		} else {
+    			type = "String";
+    		}
+			int anzTab = (30-n.length())/5;
+			if ((30-n.length())%5>0) anzTab++;
+    		if (count == 1 && !hasAttributes) {
+	    		b.append("		names.add(\""+n+"\"); "); for (int i=0;i<anzTab;i++) b.append("\t");
+				b.append("	values.add(null);\n");
+    		} else {
+    			if (!vars.contains(n)) {
+    				if (hasAttributes) {
+    					b.append("		names.add(\""+n+"\"); "); for (int i=0;i<anzTab;i++) b.append("\t");
+	    				b.append("	values.add(new Vector<String[]>());\n");
+	    				vars.add(n);
+    					add = true;
+    				} else {
+	    				b.append("		names.add(\""+n+"\"); "); for (int i=0;i<anzTab;i++) b.append("\t");
+	    				b.append("	values.add(new Vector<"+type+">());\n");
+	    				vars.add(n);
+	    				add = true;
+    				}
+    			}
+    		}
+//    		if (name.equals("Contributors")) {
+//				System.out.println(name+"::count = "+count);
+//				System.out.println(name+"::hasAtt= "+hasAttributes);
+//				System.out.println(name+"::add = "+add);
+//			}
+			if (count == 1) {
+    			//set and get methods
+    			m.append("	public void set"+firstLetterUp(n)+"(String "+vName+") {\n");
+    			m.append("		set(\""+n+"\", "+vName+");\n");
+    			m.append("	}\n");
+    			m.append("\n");
+    			m.append("	public String get"+firstLetterUp(n)+"() {\n");
+    			m.append("		return get(\""+n+"\");\n");
+    			m.append("	}\n");
+    			m.append("\n");
+			} else {
+				if (add) {
+					if (hasAttributes) {
+						//get, add and remove methods
+						m.append("	public Vector<String[]> get"+firstLetterUp(n)+"() {\n");
+		    			m.append("		return (Vector<String[]>)values.elementAt(names.indexOf(\""+n+"\"));\n");
+		    			m.append("	}\n");
+		    			m.append("\n");
+						m.append("	public void add"+firstLetterUp(n)+"("+args1+"String "+vName+") {\n");
+	    				m.append("		((Vector<String[]>)values.elementAt(names.indexOf(\""+n+"\"))).add(new String[]{"+args2+vName+"});\n");
+		    			m.append("	}\n");
+		    			m.append("\n");
+		    			m.append("	public void remove"+firstLetterUp(n)+"(int index) {\n");
+		    			m.append("		((Vector<String[]>)values.elementAt(names.indexOf(\""+n+"\"))).remove(index);\n");
+		    			m.append("	}\n");
+		    			m.append("\n");
+					} else {
+	    				//get, add and remove methods
+						m.append("	public Vector<"+type+"> get"+firstLetterUp(n)+"() {\n");
+		    			m.append("		return (Vector<"+type+">)values.elementAt(names.indexOf(\""+n+"\"));\n");
+		    			m.append("	}\n");
+						m.append("	public void add"+firstLetterUp(n)+"("+type+" "+vName+") {\n");
+	    				m.append("		((Vector<"+type+">)values.elementAt(names.indexOf(\""+n+"\"))).add("+vName+");\n");
+		    			m.append("	}\n");
+		    			m.append("\n");
+		    			m.append("	public void remove"+firstLetterUp(n)+"("+type+" "+vName+") {\n");
+		    			m.append("		((Vector<"+type+">)values.elementAt(names.indexOf(\""+n+"\"))).remove("+vName+");\n");
+		    			m.append("	}\n");
+		    			m.append("\n");
+					}
+				}
+			}
+    		
+    	}
+    	b.append("	}\n"); // end of constructor
+    	b.append("\n");
+    	b.append("// methods\n");
+    	b.append(m);
+    	b.append("}\n");
+    	//System.out.println("Class: \t"+name);
+    	saveTextToFile(b.toString(), saveToPath.getAbsolutePath()+"/"+name+".java");
+    	classesReady.add(name);
+    }
+    
+    public static String firstLetterUp(String name) {
+    	return name.substring(0,1).toUpperCase()+name.substring(1).toLowerCase();
+    }
+    
+    public static String cutNumericEnding(String n) {
+    	if (!n.endsWith("ipv4") && !n.endsWith("ipv6") && !n.endsWith("sha1")) {
+    		while (getPositiveNumber(n.substring(n.length()-1))>=0) {
+        		n = n.substring(0,n.length()-1);
+        	}
+        	if (n.endsWith("_")) n = n.substring(0,n.length()-1);	
+    	}
+    	return n;
+    }
+    
+    public static int getPositiveNumber(String s) {
+    	try {
+    		int i = Integer.parseInt(s);
+    		return i;
+    	} catch (Exception ex) {
+    		return -1;
+    	}
+    }
+    
+    public static void main(String[] args) {
+    	File xml = new File("src/org/fnppl/opensdx/dmi/resources/example_feed.xml");
+    	File saveToPath = new File("src/org/fnppl/opensdx/commonAuto");
+    	
+    	File header = new File("header.txt");
+    	
+    	createBaseClassesFromXML(xml, header, saveToPath);	//if (1==1) return;
+    	
+    
+    	try {
+	    	BaseObject test = BaseObject.fromElement(Document.fromFile(xml).getRootElement());
+	    	System.out.println(test.getClass().getName());
+	    	//Feed feed = (Feed)test;
+	    	Document.buildDocument(test.toElement()).output(System.out);
+	    	
+    	} catch (Exception ex) {
+    		ex.printStackTrace();
+    	}
+    }
 }

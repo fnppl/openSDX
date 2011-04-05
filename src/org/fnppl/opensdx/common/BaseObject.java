@@ -45,19 +45,82 @@ package org.fnppl.opensdx.common;
  */
 
 import org.fnppl.dbaccess.*;
-import org.jdom.*;
+import org.fnppl.opensdx.xml.Element;
+
+import java.lang.reflect.Array;
 import java.util.*;
 
 public abstract class BaseObject {
+	
 	protected Vector<String> names = new Vector<String>();
 	protected Vector<Object> values = new Vector<Object>();
 	protected Hashtable<String, Object> changes = null;
 	
 	public BaseObject() {
     }
-    
-    public BaseObject fromElement(Element myObjectElement) {
-        return null;
+	
+	
+    public static BaseObject fromElement(Element e) {
+    	String name = e.getName();
+    	name = Util.firstLetterUp(name);
+    	name = Util.cutNumericEnding(name);
+    	
+    	try {
+			Class cl = Class.forName("org.fnppl.opensdx.commonAuto."+name);
+			
+			BaseObject ob = (BaseObject)cl.newInstance();
+			
+	    	Vector<Element> vc = e.getChildren();
+	    	for (Element c : vc)  {
+	    		String n = c.getName();
+	    		boolean numeric = false;
+	    		String cutN = Util.cutNumericEnding(n);
+	        	if (!cutN.equals(n)) {
+	        		n = cutN;
+	        		numeric = true;
+	        	}
+				boolean cIsClass = false;
+				try {
+					Class.forName("org.fnppl.opensdx.commonAuto."+Util.firstLetterUp(n));
+					cIsClass = true;
+				} catch (Exception ex) {}
+				
+				Object value = null;
+				if (cIsClass) {
+					value = BaseObject.fromElement(c);
+				} else {
+					if (c.getAttributes().size()>0) {
+						Vector<String[]> atts = c.getAttributes();
+		    			String[] val = new String[atts.size()*2+1];
+						for (int i=0;i<atts.size();i++) {
+		    				String[] s = atts.get(i);
+		    				val[i*2] = s[0];
+		    				val[i*2+1] = s[1];
+		    			}
+						val[val.length-1] = c.getText().trim();
+						value = val;
+		    		} else {
+		    			value = c.getText();
+		    		}
+				}
+				try {
+					Object valObj = ob.getObject(n);
+					if (valObj==null || !(valObj instanceof Vector)) {
+						ob.set(n, value);
+					} else {
+						Vector v = (Vector)ob.getObject(n);
+		    			v.add(value);	
+					}
+				} catch (Exception ex) {
+					System.out.println("ERROR at "+name+"::"+n);
+					ex.printStackTrace();
+				}
+			}
+	    	return ob;
+    	} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+    	return null;
     }
     
     
@@ -110,6 +173,7 @@ public abstract class BaseObject {
      * @return
      */
     public Object getObject(String name) {
+    	if (!names.contains(name)) return null;
     	Object v = values.get(names.indexOf(name));        
         return v;
     }
@@ -222,14 +286,43 @@ public abstract class BaseObject {
      */
     public Element toElement() {
         Class c = getClass();
-        Element ret = new Element(c.getName().substring(c.getName().lastIndexOf(".")+1));
+        String name = c.getName().substring(c.getName().lastIndexOf(".")+1);
+        name = name.toLowerCase();
+        Element ret = new Element(name);
         
         for(int i=0; i<names.size(); i++) {
-        	String key = names.elementAt(i);
-            Element e = new Element(key);
-            ret.addContent(e);
-            Object o = values.elementAt(i);
-            e.setText(o.toString()); //uargsn HT 20110210
+        	Object o = values.elementAt(i);
+        	if (o!=null) {
+        		//System.out.println("  "+o.getClass());
+	            if (o instanceof BaseObject) {
+	            	ret.addContent(((BaseObject) o).toElement());
+	            } else if (o instanceof Vector) {
+	            	for (Object ob : (Vector)o) {
+	            		//System.out.println("  "+o.getClass()+"::"+ob.getClass());
+		            	if (ob instanceof BaseObject) {
+		            		ret.addContent(((BaseObject)ob).toElement());
+		            	} else if (ob instanceof String[]) {
+		            		String key = names.elementAt(i);
+			               	String[] value = (String[])ob;
+			               	Element e = new Element(key);
+			               	for (int j=0;j<value.length-1;j+=2) {
+			               		e.setAttribute(value[j*2], value[j*2+1]);
+			               	}
+			               	e.setText(value[value.length-1]);
+			               	ret.addContent(e);
+			               	//ret.addContent(key, Arrays.toString(value));
+		            	} else {
+		            		String key = names.elementAt(i);
+			               	String value = ob.toString();
+			               	ret.addContent(key, value);
+		            	}
+	            	}
+	            } else {
+	            	String key = names.elementAt(i);
+	               	String value = o.toString();
+	               	ret.addContent(key, value);
+		        }
+	        }
         }
         
         return ret;

@@ -46,19 +46,10 @@ package org.fnppl.opensdx.xml;
  * 
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+
 import java.util.*;
 
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
+import org.jdom.Attribute;
 
 public class Element {
 	protected org.jdom.Element base = null;
@@ -74,6 +65,31 @@ public class Element {
 		base.setAttribute(name, value);
 		return this;
 	}
+	
+	public void setText(String value) {
+		base.setText(value);
+	}
+	
+	public String getAttribute(String attName) {
+		Attribute att = base.getAttribute(attName);
+		if (att!=null) {
+		
+		}
+		return base.getAttributeValue(attName);
+	}
+	
+	public Vector<String[]> getAttributes() {
+		Vector<String[]> atts = new Vector<String[]>();
+		List<Attribute> l = (List<Attribute>)base.getAttributes();
+		if (l!=null) {
+			for (Attribute a : l) {
+				atts.add(new String[]{a.getName(), a.getValue()});
+			}
+		}
+		return atts;
+	}
+	
+	
 	public String getName() {
 		return base.getName();
 	}
@@ -103,6 +119,8 @@ public class Element {
 //		}
 		base.addContent((new org.jdom.Element(name)).setText(value));
 	}
+	
+	
 	public void addContent(Element e) {
 		base.addContent(e.base);
 	}
