@@ -10,7 +10,7 @@ public abstract class BaseObjectWithConstraints extends BaseObject {
 	protected Vector<String> constraints = new Vector<String>();
 	
 	public Element checkConstraints() {
-		Element output = new Element("test");
+		Element output = new Element("constraints_check");
 		checkConstraints(output);
 		return output;
 	}

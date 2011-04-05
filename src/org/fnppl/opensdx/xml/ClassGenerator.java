@@ -243,7 +243,8 @@ public class ClassGenerator {
 	    	
 	    	File header = new File("header.txt");
 	    	
-	    	createBaseClassesFromXML(xml, header, saveToPath);	//if (1==1) return;
+	    	createBaseClassesFromXML(xml, header, saveToPath);
+	    	//if (1==1) return;
 	    	
 	    	try {
 		    	BaseObject test = BaseObject.fromElement(org.fnppl.opensdx.xml.Document.fromFile(xml).getRootElement());
@@ -251,20 +252,13 @@ public class ClassGenerator {
 		    	
 		    	//Document.buildDocument(test.toElement()).output(System.out);
 		    	
-		    	//org.fnppl.opensdx.commonAuto.Feed feed = new org.fnppl.opensdx.commonAuto.Feed();
-		    	//feed.addBundle(new org.fnppl.opensdx.commonAuto.Bundle());
-		    	//feed.setItem("Test");
-		    	//feed.setFeedinfo(new org.fnppl.opensdx.commonAuto.Feedinfo());
-
-		    	//feed.checkConstraints(errorMsg);
+		    	//org.fnppl.opensdx.commonAuto.Feed feed = (org.fnppl.opensdx.commonAuto.Feed)test;
+		    	//feed.checkConstraints();
 		    	
-		    	org.fnppl.opensdx.xml.Element errorMsg = ((org.fnppl.opensdx.commonAuto.Feed)test).checkConstraints();
-		    	org.fnppl.opensdx.xml.Document.buildDocument(errorMsg).output(System.out);
 		    	
-		    	org.fnppl.opensdx.commonAuto.Feed feed = (org.fnppl.opensdx.commonAuto.Feed)test;
+		    	//org.fnppl.opensdx.commonAuto.Feed feed = (org.fnppl.opensdx.commonAuto.Feed)test;
 		    	
 		    	//org.fnppl.opensdx.commonAuto.Feedinfo info = feed.getFeedinfo();
-		    	//Document.buildDocument(info.toElement()).output(System.out);
 		    	
 	    	} catch (Exception ex) {
 	    		ex.printStackTrace();
