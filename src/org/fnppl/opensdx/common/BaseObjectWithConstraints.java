@@ -1,5 +1,6 @@
 package org.fnppl.opensdx.common;
 
+import java.lang.reflect.Method;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -9,6 +10,9 @@ public abstract class BaseObjectWithConstraints extends BaseObject {
 
 	protected Vector<String> constraints = new Vector<String>();
 	
+	public String getConstraint(int index) {
+		return constraints.get(index);
+	}
 	public Element checkConstraints() {
 		Element output = new Element("constraints_check");
 		checkConstraints(output);

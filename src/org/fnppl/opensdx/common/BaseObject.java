@@ -48,6 +48,7 @@ import org.fnppl.dbaccess.*;
 import org.fnppl.opensdx.xml.Element;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public abstract class BaseObject {
@@ -123,6 +124,10 @@ public abstract class BaseObject {
     	return null;
     }
     
+    public String getClassName() {
+    	return getClass().getName().substring(getClass().getName().lastIndexOf('.')+1).toLowerCase();
+	}
+    
     
     /**
      * @param name
@@ -172,10 +177,14 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    protected Object getObject(String name) {
+    public Object getObject(String name) {
     	if (!names.contains(name)) return null;
     	Object v = values.get(names.indexOf(name));        
         return v;
+    }
+    
+    public int getIndexOfValue(Object value) { 
+        return values.indexOf(value);
     }
     /**
      * @param name
@@ -280,6 +289,10 @@ public abstract class BaseObject {
         return false;
     }
     
+    public Vector<String> getNames() {
+    	return names;
+    }
+    
     
     /**
      * @return
@@ -327,6 +340,48 @@ public abstract class BaseObject {
         
         return ret;
     }
+    
+    public void createNewObjectFor(String name) {
+		if (isSet(name)) {
+			String lookForName = "get"+Util.firstLetterUp(name);
+			Method[] ml = getClass().getMethods();
+			for (Method m : ml) {
+				//System.out.println(m.getName() + " -> "+m.getReturnType());
+				if (m.getName().equals(lookForName)) {
+					try {
+						Object o = m.getReturnType().newInstance();
+						if (o!=null) {
+							set(name, o);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+			}
+		}
+	}
+	
+	public void addNewObjectFor(String name) {
+		if (isSet(name)) {
+			String lookForName = "add"+Util.firstLetterUp(name);
+			Method[] ml = getClass().getMethods();
+			for (Method m : ml) {
+				//System.out.println(m.getName() + " -> "+m.getParameterTypes().toString());
+				if (m.getName().equals(lookForName)) {
+					try {
+						Object o = m.getParameterTypes()[0].newInstance();
+						if (o!=null) {
+							((Vector)getObject(name)).add(o);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return;
+				}
+			}
+		}
+	}
 }
 
 
