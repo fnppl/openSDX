@@ -53,6 +53,6 @@ package org.fnppl.opensdx.common;
  *    
  */
 
-public class ContractPartnerSubUnit extends BaseObject {
+public class ContractPartnerSubUnit extends BaseObjectWithConstraints {
 	private ContractPartner parent;
 }

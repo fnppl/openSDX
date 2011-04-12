@@ -96,10 +96,10 @@ public abstract class BaseObjectWithConstraints extends BaseObject {
 	 * 
 	 * @see org.fnppl.opensdx.common.BaseObject#set(java.lang.String, java.lang.Object)
 	 */
-	protected boolean set(String name, Object v) {
-    	if(v==null) {
-    		throw new RuntimeException("BaseObject::set("+name+") may not be null");
-    	}
+	public boolean set(String name, Object v) {
+    	//if(v==null) {
+    	//	throw new RuntimeException("BaseObject::set("+name+") may not be null");
+    	//}
     	if (!names.contains(name)) {
     		//TODO	throw new RuntimeException("BaseObject::set("+name+") wrong attribute name");
     		System.out.println("IGNORING set("+name+") in "+this.getClass().getName()+" ::  wrong attribute name");
@@ -110,12 +110,24 @@ public abstract class BaseObjectWithConstraints extends BaseObject {
     		changes = new Hashtable<String, Object>();
     	}
         
-        Object l = getObject(name);
-        if(!v.equals(l)) {  
-        	values.set(names.indexOf(name), v);
-        	changes.put(name, v);
-            return true;
-        }
+    	if (v==null) {
+    		values.set(names.indexOf(name), v);
+        	changes.put(name, "NULL");
+        	return true;
+    	} else {
+    		Object l = getObject(name);
+    		if (l==null) {
+	        	values.set(names.indexOf(name), v);
+	        	changes.put(name, v);
+	        	return true;
+    		} else {
+    			if (!v.equals(l)) {
+    				values.set(names.indexOf(name), v);
+    	        	changes.put(name, v);
+    	        	return true;
+    			}
+    		}
+    	}
         
         return false;
     }

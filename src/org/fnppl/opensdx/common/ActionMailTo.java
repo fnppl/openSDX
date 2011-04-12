@@ -1,11 +1,6 @@
 package org.fnppl.opensdx.common;
 
-import java.util.Vector;
-
-import org.fnppl.opensdx.commonAuto.Bundle;
-import org.fnppl.opensdx.commonAuto.Feedinfo;
-
- /*
+/*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
@@ -51,6 +46,48 @@ import org.fnppl.opensdx.commonAuto.Feedinfo;
  */
 
 
-public class BatchAkaFeed extends BaseObjectWithConstraints {
+
+import java.util.Vector;
+import org.fnppl.opensdx.common.BaseObjectWithConstraints;
+
+public class ActionMailTo extends Action {
+
+	public ActionMailTo(int actionType) {
+		setActionType(actionType);
+		names.add("receiver"); values.add(null); constraints.add("MUST");
+		names.add("subject"); values.add(null); constraints.add("SHOULD");
+		names.add("text"); values.add(null); constraints.add("SHOULD");
+	}
+	
+
+	public boolean doAction() {
+		// TODO send mail
+		return false;
+	}
+	
+// methods
+	public void setReceiver(String receiver) {
+		set("receiver", receiver);
+	}
+
+	public String getReceiver() {
+		return get("receiver");
+	}
+
+	public void setSubject(String subject) {
+		set("subject", subject);
+	}
+
+	public String getSubject() {
+		return get("subject");
+	}
+
+	public void setText(String text) {
+		set("text", text);
+	}
+
+	public String getText() {
+		return get("text");
+	}
 
 }

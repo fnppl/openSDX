@@ -133,7 +133,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    protected boolean getBoolean(String name) {
+    public boolean getBoolean(String name) {
     	Object v = getObject(name);
         if(v instanceof Boolean) {
         	return ((Boolean)v).booleanValue();
@@ -144,7 +144,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    protected long getLong(String name) {
+    public long getLong(String name) {
         Object v = getObject(name);
         if(v instanceof Long) {
         	return ((Long)v).longValue();
@@ -155,7 +155,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    protected double getDouble(String name) {
+    public double getDouble(String name) {
         Object v = getObject(name);
         if(v instanceof Double) {
         	return ((Double)v).doubleValue();
@@ -166,7 +166,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    protected int getInt(String name) {
+    public int getInt(String name) {
         Object v = getObject(name);
         if(v instanceof Integer) {
         	return ((Integer)v).intValue();
@@ -190,7 +190,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    protected String get(String name) {
+    public String get(String name) {
         Object v = values.get(names.indexOf(name));
         return v.toString();
     }
@@ -200,7 +200,7 @@ public abstract class BaseObject {
      * @param value
      * @return
      */
-    protected boolean compareStringValue(String name, String value) {
+    public boolean compareStringValue(String name, String value) {
         Object v = values.get(names.indexOf(name));
         if (v==null && value==null) {
         	return true;
@@ -215,7 +215,7 @@ public abstract class BaseObject {
      * @param name
      * @return
      */
-    protected boolean isSet(String name)  {
+    public boolean isSet(String name)  {
         return names.contains(name);
     }
     
@@ -236,7 +236,7 @@ public abstract class BaseObject {
      * @param v
      * @return
      */
-    protected boolean set(String name, long v) {
+    public boolean set(String name, long v) {
     	if(changes==null) {
     		changes = new Hashtable<String, Object>();
     	}
@@ -262,10 +262,10 @@ public abstract class BaseObject {
      * @param v
      * @return
      */
-    protected boolean set(String name, Object v) {
-    	if(v==null) {
-    		throw new RuntimeException("SOBject::set("+name+") may not be null");
-    	}
+    public boolean set(String name, Object v) {
+    	//if(v==null) {
+    	//	throw new RuntimeException("SOBject::set("+name+") may not be null");
+    	//}
     	
     	if(changes == null) {
     		changes = new Hashtable<String, Object>();
@@ -279,13 +279,30 @@ public abstract class BaseObject {
             return true;
         }
         
-        Object l = getObject(name);
-        if(!v.equals(l)) {  
-        	values.set(names.indexOf(name), v);
-        	changes.put(name, v);
-            return true;
-        }
         
+//        if(!v.equals(l)) {  
+//        	values.set(names.indexOf(name), v);
+//        	changes.put(name, v);
+//            return true;
+//        }
+    	if (v==null) {
+    		values.set(names.indexOf(name), v);
+        	changes.put(name, v);
+        	return true;
+    	} else {
+    		Object l = getObject(name);
+    		if (l==null) {
+	        	values.set(names.indexOf(name), v);
+	        	changes.put(name, "NULL");
+	        	return true;
+    		} else {
+    			if (!v.equals(l)) {
+    				values.set(names.indexOf(name), v);
+    	        	changes.put(name, v);
+    	        	return true;
+    			}
+    		}
+    	}
         return false;
     }
     

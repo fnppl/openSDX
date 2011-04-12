@@ -1,11 +1,6 @@
 package org.fnppl.opensdx.common;
 
-import java.util.Vector;
-
-import org.fnppl.opensdx.commonAuto.Bundle;
-import org.fnppl.opensdx.commonAuto.Feedinfo;
-
- /*
+/*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
@@ -51,6 +46,45 @@ import org.fnppl.opensdx.commonAuto.Feedinfo;
  */
 
 
-public class BatchAkaFeed extends BaseObjectWithConstraints {
+public abstract class Action extends BaseObjectWithConstraints {
 
+
+	public static int TYPE_ONINITIALRECEIVE = 1;
+	public static int TYPE_ONPROCESSSTART   = 2;
+	public static int TYPE_ONPROCESSEND     = 3;
+	public static int TYPE_ONFULLSUCCESS    = 4;
+	public static int TYPE_ONERROR          = 5;
+	
+	public static int actionType = 0;
+	public static String[] actionTypeName = new String[] {
+		"[TYPE NOT SET]", "oninitialreceive", "onprocessstart", "onprocessend", "onfullsuccess", "onerror"
+	};
+	
+	public abstract boolean doAction();
+
+	public boolean setActionType(int type) {
+		if (type>=0 && type<actionTypeName.length) {
+			actionType = type;
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean setActionType(String typename) {
+		for (int i=0;i<actionTypeName.length;i++) {
+			if (actionTypeName.equals(typename)) {
+				actionType = i;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public int  getActionType() {
+		return actionType;
+	}
+	
+	public String getActionTypeName() {
+		return actionTypeName[actionType];
+	}
 }

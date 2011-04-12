@@ -1,11 +1,6 @@
 package org.fnppl.opensdx.common;
 
-import java.util.Vector;
-
-import org.fnppl.opensdx.commonAuto.Bundle;
-import org.fnppl.opensdx.commonAuto.Feedinfo;
-
- /*
+/*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
@@ -51,6 +46,57 @@ import org.fnppl.opensdx.commonAuto.Feedinfo;
  */
 
 
-public class BatchAkaFeed extends BaseObjectWithConstraints {
+
+import java.util.Vector;
+import org.fnppl.opensdx.common.BaseObjectWithConstraints;
+
+public class ActionHttp extends Action {
+
+	public ActionHttp(int actionType) {
+		setActionType(actionType);
+		names.add("url"); values.add(null); constraints.add("[no comment]");
+		names.add("type"); values.add(null); constraints.add("?");
+		names.add("header"); values.add(new Vector<String[]>()); constraints.add("?");
+		names.add("params"); values.add(new Vector<String[]>()); constraints.add("[no comment]");
+	}
+	
+
+	public boolean doAction() {
+		// TODO 
+		return false;
+	}
+
+// methods
+	public void setUrl(String url) {
+		set("url", url);
+	}
+
+	public String getUrl() {
+		return get("url");
+	}
+
+	public void setType(String type) {
+		set("type", type);
+	}
+
+	public String getType() {
+		return get("type");
+	}
+
+	public void addHeader(String name, String value) {
+		((Vector<String[]>)getObject("header")).add(new String[]{name,value});
+	}
+
+	public Vector<String[]> getHeader() {
+		return (Vector<String[]>)getObject("header");
+	}
+
+	public void addParam(String name, String value) {
+		((Vector<String[]>)getObject("params")).add(new String[]{name,value});
+	}
+
+	public Vector<String[]> getParams() {
+		return (Vector<String[]>)getObject("params");
+	}
 
 }

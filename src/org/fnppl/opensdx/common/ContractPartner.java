@@ -1,11 +1,5 @@
 package org.fnppl.opensdx.common;
-/*
- * Copyright (C) 2010-2011 
- * 							fine people e.V. <opensdx@fnppl.org> 
- * 							Henning Thieß <ht@fnppl.org>
- * 
- * 							http://fnppl.org
-*/
+
 
 /*
  * Software license
@@ -48,9 +42,40 @@ package org.fnppl.opensdx.common;
 /*
  * can be any type of label, publishing house, aggregator, whatever
  * basically, i would recommend even for a "label-contract-partner" to create subunits for that "single-releaser"...
- * 
  */
 
-public class ContractPartner extends BaseObject {
+
+public class ContractPartner extends BaseObjectWithConstraints {
+
+	public ContractPartner() {
+		names.add("contractpartnerid"); values.add(null); constraints.add("MUST");
+		names.add("ourcontractpartnerid"); values.add(null); constraints.add("MUST");
+		names.add("email"); values.add(null); constraints.add("SHOULD");
+	}
+
+// methods
+	public void setContractpartnerid(String contractpartnerid) {
+		set("contractpartnerid", contractpartnerid);
+	}
+
+	public String getContractpartnerid() {
+		return get("contractpartnerid");
+	}
+
+	public void setOurcontractpartnerid(String ourcontractpartnerid) {
+		set("ourcontractpartnerid", ourcontractpartnerid);
+	}
+
+	public String getOurcontractpartnerid() {
+		return get("ourcontractpartnerid");
+	}
+
+	public void setEmail(String email) {
+		set("email", email);
+	}
+
+	public String getEmail() {
+		return get("email");
+	}
 
 }

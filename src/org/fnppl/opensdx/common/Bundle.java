@@ -1,4 +1,6 @@
 package org.fnppl.opensdx.common;
+
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -50,6 +52,99 @@ package org.fnppl.opensdx.common;
  * 
  */
 
-public class Bundle extends BaseObject {
+public class Bundle extends BaseObjectWithConstraints {
 
+	public Bundle() {
+		names.add("ids"); values.add(null); constraints.add("MUST");
+		names.add("displayname"); values.add(null); constraints.add("MUST");
+		names.add("name"); values.add(null); constraints.add("MUST");
+		names.add("version"); values.add(null); constraints.add("MUST");
+		names.add("display_artist"); values.add(null); constraints.add("SHOULD");
+		names.add("contributors"); values.add(null); constraints.add("MUST");
+		names.add("information"); values.add(null); constraints.add("[no comment]");
+		names.add("license_basis"); values.add(null); constraints.add("?");
+		names.add("license_specifics"); values.add(null); constraints.add("MUST");
+		names.add("items"); values.add(null); constraints.add("[no comment]");
+	}
+
+//// methods
+//	public void setIds(Ids ids) {
+//		set("ids", ids);
+//	}
+//
+//	public Ids getIds() {
+//		return (Ids)getObject("ids");
+//	}
+//
+//	public void setDisplayname(String displayname) {
+//		set("displayname", displayname);
+//	}
+//
+//	public String getDisplayname() {
+//		return get("displayname");
+//	}
+//
+//	public void setName(String name) {
+//		set("name", name);
+//	}
+//
+//	public String getName() {
+//		return get("name");
+//	}
+//
+//	public void setVersion(String version) {
+//		set("version", version);
+//	}
+//
+//	public String getVersion() {
+//		return get("version");
+//	}
+//
+//	public void setDisplay_artist(String display_artist) {
+//		set("display_artist", display_artist);
+//	}
+//
+//	public String getDisplay_artist() {
+//		return get("display_artist");
+//	}
+//
+//	public void setContributors(Contributors contributors) {
+//		set("contributors", contributors);
+//	}
+//
+//	public Contributors getContributors() {
+//		return (Contributors)getObject("contributors");
+//	}
+//
+//	public void setInformation(Information information) {
+//		set("information", information);
+//	}
+//
+//	public Information getInformation() {
+//		return (Information)getObject("information");
+//	}
+//
+//	public void setLicense_basis(License_basis license_basis) {
+//		set("license_basis", license_basis);
+//	}
+//
+//	public License_basis getLicense_basis() {
+//		return (License_basis)getObject("license_basis");
+//	}
+//
+//	public void setLicense_specifics(License_specifics license_specifics) {
+//		set("license_specifics", license_specifics);
+//	}
+//
+//	public License_specifics getLicense_specifics() {
+//		return (License_specifics)getObject("license_specifics");
+//	}
+//
+//	public void setItems(Items items) {
+//		set("items", items);
+//	}
+//
+//	public Items getItems() {
+//		return (Items)getObject("items");
+//	}
 }

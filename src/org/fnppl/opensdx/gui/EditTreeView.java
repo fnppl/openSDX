@@ -44,21 +44,26 @@ package org.fnppl.opensdx.gui;
  * 
  */
 
+import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -77,16 +82,56 @@ import javax.swing.tree.TreePath;
 
 import org.fnppl.opensdx.common.BaseObject;
 import org.fnppl.opensdx.common.BaseObjectWithConstraints;
+import org.fnppl.opensdx.xml.Document;
 
 public class EditTreeView extends JTree {
 
 	protected JTree tree;
 	protected BaseObject base;
+	public static ImageIcon iconRemove = null;
 	
 	public EditTreeView(BaseObject base) {
 		tree = this;
 		this.base = base;
+		initIcons();
 		
+		MyTreeNode root = new MyTreeNode(base.getClassName(), base, null);
+		setModel(new DefaultTreeModel(root));
+		MyTreeNodeCellRenderer renderer = new MyTreeNodeCellRenderer(this); 
+		setCellRenderer(renderer);
+		setCellEditor(new MyTreeCellEditor(tree, renderer));
+		setEditable(true);
+		expandAllRows();
+	}
+	
+	private void initIcons() {
+		int w = 20;
+		int h = 14;
+		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = img.createGraphics();
+		AlphaComposite clear = AlphaComposite.getInstance(AlphaComposite.CLEAR, 1.0F);
+		AlphaComposite full = AlphaComposite.getInstance(AlphaComposite.DST_OVER, 1.0F);
+		g.setComposite(clear);
+		g.fillRect(0,0,w,h);
+		g.setComposite(full);
+		g.setColor(Color.BLACK);
+
+		int s = 4;
+		g.setColor(Color.red.darker());
+		int[] xPoints = new int[] {0,s,w/2,w-s,w,  w/2+s/2,  w,w-s,w/2,s,0,   w/2-s/2};
+		int[] yPoints = new int[] {0,0,h/2-s/2,0,0,    h/2,    h,h,h/2+s/2,h,h,   h/2};
+		g.fillPolygon(xPoints, yPoints, xPoints.length);
+		img.flush();
+		iconRemove = new ImageIcon(img);
+	}
+	
+	public BaseObject getBaseObject() {
+		return base;
+	}
+	
+	public void setBaseObject(BaseObject base) {
+		tree = this;
+		this.base = base;
 		MyTreeNode root = new MyTreeNode(base.getClassName(), base, null);
 		setModel(new DefaultTreeModel(root));
 		MyTreeNodeCellRenderer renderer = new MyTreeNodeCellRenderer(this); 
@@ -98,8 +143,48 @@ public class EditTreeView extends JTree {
 	
 	public void createNewObjectFor(MyTreeNode n, TreePath treePath) {
 		BaseObject b = getBaseObjectInTree(n);
+		int ind = getRow(treePath);
 		b.createNewObjectFor(n.name);
 		updateTree();
+		//System.out.println(""+Arrays.toString(treePath.getPath()));
+		tree.expandRow(ind);
+		//System.out.println("create object: "+b.getClassName()+"::"+n.name);
+	}
+	
+	public void setNewValue(MyTreeNode n, TreePath treePath) {
+		BaseObject b = getBaseObjectInTree(n);
+		if (n.value instanceof String[]) {
+			String[] s = (String[])n.value;
+			s[s.length-1] = n.text.getText();
+			b.set(n.name, n.value);
+		} else {
+			n.value = n.text.getText();
+			b.set(n.name, n.value);
+		}
+		n.text.setBackground(Color.WHITE);
+	}
+	
+	public void removeObjectFor(MyTreeNode n, TreePath treePath) {
+		BaseObject b = getBaseObjectInTree(n);
+		if (n.value!=null) {
+			//System.out.println("removing "+n.name);
+			if (n.isLeaf) {
+				if (n.parent.value instanceof Vector) {
+					((Vector)n.parent.value).remove(n.value);
+				} else {
+					b.set(n.name, null);
+				}
+			} else {
+				if (n.parent.value instanceof Vector) {
+					((Vector)n.parent.value).remove(n.value);
+				} else {
+					BaseObject b2 = getBaseObjectInTree(n.parent);
+					b2.set(n.name, null);
+				}
+			}
+			updateTree();
+		}
+		
 		//System.out.println("create object: "+b.getClassName()+"::"+n.name);
 	}
 	
@@ -107,11 +192,13 @@ public class EditTreeView extends JTree {
 		try {
 			if (n.value instanceof Vector) {
 				BaseObject b = getBaseObjectInTree(n);
-				System.out.println("baseobject: "+b.getClassName()+"::add "+n.name);
+				//System.out.println("baseobject: "+b.getClassName()+"::add "+n.name);
 				String className = n.name;
 				if (className.startsWith("List of ")) className = className.substring(8);
+				int ind = getRow(treePath);
 				b.addNewObjectFor(className);
 				updateTree();
+				tree.expandRow(ind);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -140,6 +227,15 @@ public class EditTreeView extends JTree {
 		for (Integer i : exp) {
 			tree.expandRow(i.intValue());
 		}
+	}
+	
+	public int getRow(TreePath treepath) {
+	    int a = tree.getRowCount();
+        for(int i=0; i<a; i++){
+            TreePath path = tree.getPathForRow(i);
+            if (path.equals(treepath)) return i;
+        }
+        return -1;
 	}
 	
 	public BaseObject getBaseObjectInTree(MyTreeNode node) {
@@ -181,15 +277,46 @@ public class EditTreeView extends JTree {
 		File xml = new File("src/org/fnppl/opensdx/dmi/resources/example_feed.xml");
 		
 		try {
-			JFrame f = new JFrame("test tree view");
+			final JFrame f = new JFrame("test tree view");
 			f.setSize(1000, 600);
 			f.setLayout(new BorderLayout());
 			BaseObject test = BaseObject.fromElement(org.fnppl.opensdx.xml.Document.fromFile(xml).getRootElement());
 			//org.fnppl.opensdx.commonAuto.Feed test = new org.fnppl.opensdx.commonAuto.Feed();
 			//test.createNewObjectFor("feedinfo");
 			
-			EditTreeView t = new EditTreeView(test);
-			f.add(new JScrollPane(t), BorderLayout.CENTER);
+			final EditTreeView t = new EditTreeView(test);
+			final JScrollPane scroll = new JScrollPane(t); 
+			f.add(scroll, BorderLayout.CENTER);
+			JPanel p = new JPanel();
+			f.add(p, BorderLayout.SOUTH);
+			JButton b = new JButton("new");
+			b.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						t.setBaseObject(new org.fnppl.opensdx.commonAuto.Feed());
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			});
+			p.add(b);
+			b = new JButton("save as xml");
+			b.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						File f = Dialogs.chooseSaveFile("Save as xml file", null, "test.xml");
+						if (f!=null) {
+							BaseObject b = t.getBaseObject();
+							Document doc = Document.buildDocument(b.toElement());
+							doc.writeToFile(f);
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			});
+			p.add(b);
+			
 			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			f.setVisible(true);
 		} catch (Exception e) {
@@ -333,7 +460,7 @@ public class EditTreeView extends JTree {
 	private class MyTreeNodeCellRenderer extends DefaultTreeCellRenderer {
 
 		protected EditTreeView treeview;
-		
+
 		public MyTreeNodeCellRenderer(EditTreeView tree) {
 			super();
 			treeview = tree;
@@ -347,6 +474,7 @@ public class EditTreeView extends JTree {
 	    	int sizeX1 = 200;
 	    	int sizeX2 = 300;
 	    	int sizeX3 = 120;
+	    	int sizeX4 = 20;
 	    	
 	    	final MyTreeNode n = (MyTreeNode)value;
 	    	String c = n.constraint;
@@ -375,54 +503,18 @@ public class EditTreeView extends JTree {
     		
     		//List with add button
     		if (n.name.startsWith("List of ")) { 
-    			int sizeX = 80;
-    			lab.setPreferredSize(new Dimension(sizeX1,sizeY));
-    			JButton bu = new JButton("add");
-    			bu.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						treeview.addNewObjectFor(n, treeview.getPathForRow(row));;
-					}
-				});
-    			bu.setPreferredSize(new Dimension(sizeX,sizeY));
-    			p.add(bu);
-    			
-    			if (c!=null) {
-	    			JLabel cst = new JLabel("("+c+")");
-	    			p.setPreferredSize(new Dimension(sizeX3,sizeY));
-	    			p.add(cst);
-	    			p.setPreferredSize(new Dimension(sizeX1+sizeX+sizeX3+40,sizeYp));
-	    		} else {
-	    			p.setPreferredSize(new Dimension(sizeX1+sizeX+20,sizeYp));
-	    		}
-    			
+    			createListOf(lab, p, row, n, c, sizeX1, sizeX3, sizeY, sizeYp);
     			return p;
     		}
     		
+    		//Leaf
 	    	if (leaf) {
 	    		Object val = n.value;
 	    		lab.setPreferredSize(new Dimension(sizeX1,sizeY));
 	    		
 	    		//name + create button
 	    		if (val==null) {
-	    			lab.setPreferredSize(new Dimension(sizeX1,sizeY));
-	    			JButton bu = new JButton("create");
-	    			bu.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							treeview.createNewObjectFor(n, treeview.getPathForRow(row));;
-						}
-					});
-	    			bu.setPreferredSize(new Dimension(sizeX2,sizeY));
-	    			p.add(bu);
-	    			
-	    			if (c!=null) {
-		    			JLabel cst = new JLabel("("+c+")");
-		    			p.setPreferredSize(new Dimension(sizeX3,sizeY));
-		    			p.add(cst);
-		    			p.setPreferredSize(new Dimension(sizeX1+sizeX2+sizeX3+50,sizeYp));
-		    		} else {
-		    			p.setPreferredSize(new Dimension(sizeX1+sizeX3+50,sizeYp));
-		    		}
-	    			
+	    			createWithCreateButton(lab, p, row, n, c, sizeX1, sizeX2, sizeX3, sizeY, sizeYp);
 	    			return p;
 	    		}
 	    		
@@ -468,13 +560,7 @@ public class EditTreeView extends JTree {
 	    			text.addKeyListener(new KeyAdapter() {
 		                public void keyPressed(KeyEvent e) {
 		                    if(e.getKeyCode() == KeyEvent.VK_ENTER){
-		                    	if (n.value instanceof String[]) {
-		    						String[] s = (String[])n.value;
-		    						s[s.length-1] = n.text.getText();
-		                    	} else {
-		                    		n.value = n.text.getText();
-		                    	}
-		                    	n.text.setBackground(Color.WHITE);
+		                    	treeview.setNewValue(n,treeview.getPathForRow(row));
 		                    }
 		                }
 		            });
@@ -483,30 +569,96 @@ public class EditTreeView extends JTree {
 	    		}
 	    		p.add(text);
 	    		
-	    		
+	    		//remove button
+	    		JButton bu = new JButton(EditTreeView.iconRemove);
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						treeview.removeObjectFor(n, treeview.getPathForRow(row));;
+					}
+				});
+				bu.setPreferredSize(new Dimension(sizeX4,sizeY));
+				p.add(bu);
+				
 	    		if (c!=null) {
 	    			JLabel cst = new JLabel("("+c+")");
-	    			//cst.setPreferredSize(new Dimension(sizeX3,sizeY));
 	    			p.add(cst);
-	    			p.setPreferredSize(new Dimension(sizeX1+sizeX2+sizeX3+40,sizeYp));
+	    			p.setPreferredSize(new Dimension(sizeX1+sizeX2+sizeX3+sizeX4+50,sizeYp));
 	    		} else {
-	    			p.setPreferredSize(new Dimension(sizeX1+sizeX2+30,sizeYp));
+	    			p.setPreferredSize(new Dimension(sizeX1+sizeX2+sizeX4+40,sizeYp));
 	    		}
 	    		return p;
 	        } else {
 	        	lab.setPreferredSize(new Dimension(sizeX1,sizeY));
-	        	if (c!=null) {
-	    			JLabel cst = new JLabel("("+c+")");
-	    			cst.setPreferredSize(new Dimension(sizeX3,sizeY));
-	    			p.add(cst);
-	    			p.setPreferredSize(new Dimension(sizeX1+sizeX3+30,sizeYp));
-	    		} else {
-	    			p.setPreferredSize(new Dimension(sizeX1,sizeYp));
+	        	int sizeXe = 0;
+	        	if (n.parent!=null) {
+	        		sizeXe = sizeX4+10;
+			    	//remove button
+					JButton bu = new JButton(EditTreeView.iconRemove);
+					bu.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							treeview.removeObjectFor(n, treeview.getPathForRow(row));
+						}
+					});
+					bu.setPreferredSize(new Dimension(sizeX4,sizeY));
+					p.add(bu);
+	        	}
+				if (c!=null) {
+					JLabel cst = new JLabel("("+c+")");
+					cst.setPreferredSize(new Dimension(sizeX3+sizeXe+20,sizeY));
+					p.add(cst);
+					p.setPreferredSize(new Dimension(sizeX1+sizeX3+sizeXe+30,sizeYp));
+				} else {
+					p.setPreferredSize(new Dimension(sizeX1+sizeXe+20,sizeYp));
 	    		}
 	        	return p;
 	        }
-	    }  
+	    }
+		
+		private void createListOf(JLabel lab, JPanel p, final int row, final MyTreeNode n, String c, int sizeX1, int sizeX3, int sizeY, int sizeYp) {
+			int sizeX = 80;
+			lab.setPreferredSize(new Dimension(sizeX1,sizeY));
+			JButton bu = new JButton("add");
+			bu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					treeview.addNewObjectFor(n, treeview.getPathForRow(row));;
+				}
+			});
+			bu.setPreferredSize(new Dimension(sizeX,sizeY));
+			p.add(bu);
+			
+			if (c!=null) {
+    			JLabel cst = new JLabel("("+c+")");
+    			p.setPreferredSize(new Dimension(sizeX3,sizeY));
+    			p.add(cst);
+    			p.setPreferredSize(new Dimension(sizeX1+sizeX+sizeX3+40,sizeYp));
+    		} else {
+    			p.setPreferredSize(new Dimension(sizeX1+sizeX+20,sizeYp));
+    		}
+		}
+		
+		private void createWithCreateButton(JLabel lab, JPanel p, final int row, final MyTreeNode n, String c, int sizeX1, int sizeX2, int sizeX3, int sizeY, int sizeYp) {
+			lab.setPreferredSize(new Dimension(sizeX1,sizeY));
+			JButton bu = new JButton("create");
+			bu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					treeview.createNewObjectFor(n, treeview.getPathForRow(row));;
+				}
+			});
+			bu.setPreferredSize(new Dimension(sizeX2,sizeY));
+			p.add(bu);
+			
+			if (c!=null) {
+    			JLabel cst = new JLabel("("+c+")");
+    			p.setPreferredSize(new Dimension(sizeX3,sizeY));
+    			p.add(cst);
+    			p.setPreferredSize(new Dimension(sizeX1+sizeX2+sizeX3+50,sizeYp));
+    		} else {
+    			p.setPreferredSize(new Dimension(sizeX1+sizeX3+50,sizeYp));
+    		}
+		}
 	}
+	
+	
 	
 	private class MyTreeCellEditor extends DefaultTreeCellEditor {
 		protected JTree tree;
@@ -520,30 +672,31 @@ public class EditTreeView extends JTree {
 		
 		public boolean isCellEditable(EventObject anEvent) {
 			//System.out.println(anEvent.getClass().getName());
-			if (anEvent instanceof MouseEvent) {
-				MouseEvent e = (MouseEvent)anEvent;
-				int selRow = tree.getRowForLocation(e.getX(), e.getY());
-				
-				if(selRow != -1) {
-					TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
-					if (selPath!=null) {
-						Object[] path = selPath.getPath();
-
-						MyTreeNode last = (MyTreeNode)path[path.length-1];
-						if (last.text!=null) {
-							return true;
-						}
-						if (last.value==null) {
-							return true;
-						}
-						if (last.name.startsWith("List of ")) {
-							return true;
-						}
-//						System.out.println( "NOT EDITABLE");
-					}
-				}
-			}
-			return false;
+//			if (anEvent instanceof MouseEvent) {
+//				MouseEvent e = (MouseEvent)anEvent;
+//				int selRow = tree.getRowForLocation(e.getX(), e.getY());
+//				
+//				if(selRow != -1) {
+//					TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
+//					if (selPath!=null) {
+//						Object[] path = selPath.getPath();
+//
+//						MyTreeNode last = (MyTreeNode)path[path.length-1];
+//						if (last.text!=null) {
+//							return true;
+//						}
+//						if (last.value==null) {
+//							return true;
+//						}
+//						if (last.name.startsWith("List of ")) {
+//							return true;
+//						}
+////						System.out.println( "NOT EDITABLE");
+//					}
+//				}
+//			}
+//			return false;
+			return true;
 		}
 		
 		 public Component getTreeCellEditorComponent(JTree tree, Object value, boolean isSelected, boolean expanded, boolean leaf, int row) {
