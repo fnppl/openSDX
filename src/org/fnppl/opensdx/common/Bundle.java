@@ -1,5 +1,7 @@
 package org.fnppl.opensdx.common;
 
+import java.util.Vector;
+
 
 /*
  * Copyright (C) 2010-2011 
@@ -60,91 +62,130 @@ public class Bundle extends BaseObjectWithConstraints {
 		names.add("name"); values.add(null); constraints.add("MUST");
 		names.add("version"); values.add(null); constraints.add("MUST");
 		names.add("display_artist"); values.add(null); constraints.add("SHOULD");
-		names.add("contributors"); values.add(null); constraints.add("MUST");
+		names.add("contributors"); values.add(new Vector<Contributor>()); constraints.add("MUST");
 		names.add("information"); values.add(null); constraints.add("[no comment]");
-		names.add("license_basis"); values.add(null); constraints.add("?");
-		names.add("license_specifics"); values.add(null); constraints.add("MUST");
-		names.add("items"); values.add(null); constraints.add("[no comment]");
+		names.add("territorial"); values.add(new Vector<Territory>()); constraints.add("MUST");
+		names.add("timeframe_from"); values.add(null); constraints.add("MUST");
+		names.add("timeframe_until"); values.add(null); constraints.add("MUST");
+		names.add("pricecode"); values.add(null); constraints.add("COULD");
+		names.add("wholesale"); values.add(null); constraints.add("COULD");
+		names.add("items"); values.add(new Vector<Item>()); constraints.add("[no comment]");
 	}
 
 //// methods
-//	public void setIds(Ids ids) {
-//		set("ids", ids);
-//	}
-//
-//	public Ids getIds() {
-//		return (Ids)getObject("ids");
-//	}
-//
-//	public void setDisplayname(String displayname) {
-//		set("displayname", displayname);
-//	}
-//
-//	public String getDisplayname() {
-//		return get("displayname");
-//	}
-//
-//	public void setName(String name) {
-//		set("name", name);
-//	}
-//
-//	public String getName() {
-//		return get("name");
-//	}
-//
-//	public void setVersion(String version) {
-//		set("version", version);
-//	}
-//
-//	public String getVersion() {
-//		return get("version");
-//	}
-//
-//	public void setDisplay_artist(String display_artist) {
-//		set("display_artist", display_artist);
-//	}
-//
-//	public String getDisplay_artist() {
-//		return get("display_artist");
-//	}
-//
-//	public void setContributors(Contributors contributors) {
-//		set("contributors", contributors);
-//	}
-//
-//	public Contributors getContributors() {
-//		return (Contributors)getObject("contributors");
-//	}
-//
-//	public void setInformation(Information information) {
-//		set("information", information);
-//	}
-//
-//	public Information getInformation() {
-//		return (Information)getObject("information");
-//	}
-//
-//	public void setLicense_basis(License_basis license_basis) {
-//		set("license_basis", license_basis);
-//	}
-//
-//	public License_basis getLicense_basis() {
-//		return (License_basis)getObject("license_basis");
-//	}
-//
-//	public void setLicense_specifics(License_specifics license_specifics) {
-//		set("license_specifics", license_specifics);
-//	}
-//
-//	public License_specifics getLicense_specifics() {
-//		return (License_specifics)getObject("license_specifics");
-//	}
-//
-//	public void setItems(Items items) {
-//		set("items", items);
-//	}
-//
-//	public Items getItems() {
-//		return (Items)getObject("items");
-//	}
+	public void setIDs(BundleIDs ids) {
+		set("ids", ids);
+	}
+
+	public BundleIDs getIDs() {
+		return (BundleIDs)getObject("ids");
+	}
+
+	public void setDisplayname(String displayname) {
+		set("displayname", displayname);
+	}
+
+	public String getDisplayname() {
+		return get("displayname");
+	}
+
+	public void setName(String name) {
+		set("name", name);
+	}
+
+	public String getName() {
+		return get("name");
+	}
+
+	public void setVersion(String version) {
+		set("version", version);
+	}
+
+	public String getVersion() {
+		return get("version");
+	}
+
+	public void setDisplay_artist(String display_artist) {
+		set("display_artist", display_artist);
+	}
+
+	public String getDisplay_artist() {
+		return get("display_artist");
+	}
+	
+	public void addContributor(Contributor c) {
+		((Vector<Contributor>)values.elementAt(names.indexOf("contributors"))).add(c);
+	}
+
+	public void removeContributor(int index) {
+		((Vector<Contributor>)values.elementAt(names.indexOf("contributors"))).remove(index);
+	}
+
+	public Vector<Contributor> getContributor() {
+		return (Vector<Contributor>)values.elementAt(names.indexOf("contributors"));
+	}
+
+	public void addTerritory(Territory t) {
+		((Vector<Territory>)values.elementAt(names.indexOf("territorial"))).add(t);
+	}
+
+	public void removeTerritory(int index) {
+		((Vector<Territory>)values.elementAt(names.indexOf("territorial"))).remove(index);
+	}
+
+	public Vector<Territory> getTerritory() {
+		return (Vector<Territory>)values.elementAt(names.indexOf("territorial"));
+	}
+
+	public void setInformation(BundleInformation information) {
+		set("information", information);
+	}
+
+	public BundleInformation getInformation() {
+		return (BundleInformation)getObject("information");
+	}
+	
+	public void setTimeframeFrom(long from) {
+		set("timeframe_from", from);
+	}
+
+	public long getTimeframeFrom() {
+		return getLong("timeframe_from");
+	}
+
+	public void setTimeFrameUntil(long to) {
+		set("timeframe_until", to);
+	}
+
+	public long getTimeFrameUntil() {
+		return getLong("timeframe_until");
+	}
+	public void setPricecode(String pricecode) {
+		set("pricecode", pricecode);
+	}
+
+	public String getPricecode() {
+		return get("pricecode");
+	}
+
+	public void setWholesale(String wholesale) {
+		set("wholesale", wholesale);
+	}
+
+	public String getWholesale() {
+		return get("wholesale");
+	}
+
+	public void addItem(Item i) {
+		((Vector<Item>)values.elementAt(names.indexOf("items"))).add(i);
+	}
+
+	public void removeItem(int index) {
+		((Vector<Item>)values.elementAt(names.indexOf("items"))).remove(index);
+	}
+
+	public Vector<Item> getItem() {
+		return (Vector<Item>)values.elementAt(names.indexOf("items"));
+	}
+	
 }
