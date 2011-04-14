@@ -1,5 +1,7 @@
 package org.fnppl.opensdx.common;
 
+import org.fnppl.opensdx.xml.Element;
+
 
 /*
  * Software license
@@ -78,4 +80,21 @@ public class ContractPartner extends BaseObjectWithConstraints {
 		return get("email");
 	}
 
+	public Element toElement() {
+		return toElement("contractpartner");
+	}
+	
+	public Element toElement(String name) {
+		Element e = new Element(name);
+		add(e,"contractpartnerid");
+		add(e,"ourcontractpartnerid");
+		add(e,"email");
+		return e;
+	}
+	
+	private void add(Element e, String name) {
+		String s = get(name);
+		if (s!=null)
+			e.addContent(name, s);
+	}
 }

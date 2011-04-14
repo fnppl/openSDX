@@ -49,6 +49,7 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 import org.fnppl.opensdx.common.BaseObjectWithConstraints;
+import org.fnppl.opensdx.xml.Element;
 
 public class ActionHttp extends Action {
 
@@ -98,5 +99,36 @@ public class ActionHttp extends Action {
 	public Vector<String[]> getParams() {
 		return (Vector<String[]>)getObject("params");
 	}
+	
 
+	public Element toElement() {
+		return toElement("http");
+	}
+	
+	public Element toElement(String name) {
+		Element e = new Element(name);
+		add(e,"url");
+		add(e,"type");
+		
+		Element e2 = new Element("addheader"); e.addContent(e2);
+		for (String[] s : (Vector<String[]>)getObject("header")) {
+			Element et = new Element("header");
+			et.addContent("name",s[0]);
+			et.addContent("value",s[1]);
+			e2.addContent(et);
+		}
+		Element e3 = new Element("addparams"); e.addContent(e3);
+		for (String[] s : (Vector<String[]>)getObject("params")) {
+			Element et = new Element("param");
+			et.addContent("name",s[0]);
+			et.addContent("value",s[1]);	
+			e3.addContent(et);
+		}
+		return e;
+	}
+	private void add(Element e, String name) {
+		String s = get(name);
+		if (s!=null)
+			e.addContent(name, s);
+	}
 }

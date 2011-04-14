@@ -49,6 +49,7 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 import org.fnppl.opensdx.common.BaseObjectWithConstraints;
+import org.fnppl.opensdx.xml.Element;
 
 public class ActionMailTo extends Action {
 
@@ -88,6 +89,23 @@ public class ActionMailTo extends Action {
 
 	public String getText() {
 		return get("text");
+	}
+	
+	public Element toElement() {
+		return toElement("mailto");
+	}
+	
+	public Element toElement(String name) {
+		Element e = new Element(name);
+		add(e,"receiver");
+		add(e,"subject");
+		add(e,"text");
+		return e;
+	}
+	private void add(Element e, String name) {
+		String s = get(name);
+		if (s!=null)
+			e.addContent(name, s);
 	}
 
 }

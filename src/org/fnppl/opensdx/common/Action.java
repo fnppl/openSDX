@@ -55,7 +55,7 @@ public abstract class Action extends BaseObjectWithConstraints {
 	public static int TYPE_ONFULLSUCCESS    = 4;
 	public static int TYPE_ONERROR          = 5;
 	
-	public static int actionType = 0;
+	public int actionType = 0;
 	public static String[] actionTypeName = new String[] {
 		"[TYPE NOT SET]", "oninitialreceive", "onprocessstart", "onprocessend", "onfullsuccess", "onerror"
 	};

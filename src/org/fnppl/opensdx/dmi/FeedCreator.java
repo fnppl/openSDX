@@ -67,18 +67,17 @@ import org.fnppl.opensdx.xml.*;
 import java.io.*;import java.text.SimpleDateFormat;
 import java.util.*;
 
+import javax.print.Doc;
+
 public class FeedCreator {
-	Document feed = null;
+
 	final static String RFC1123_CUT = "yyyy-MM-dd HH:mm:ss zzz";
 	final static Locale ml = new Locale("en", "DE");
-	private final static SimpleDateFormat datemeGMT = new SimpleDateFormat(RFC1123_CUT, ml);
+	public final static SimpleDateFormat datemeGMT = new SimpleDateFormat(RFC1123_CUT, ml);
 	static {
 		datemeGMT.setTimeZone(java.util.TimeZone.getTimeZone("GMT+00:00"));
 	}
 	
-	public FeedCreator() {
-		
-	}
 	
 	public static Receiver makeReceiver(String typ, String servername, String ipv4, String ipv6, String authtype, String authsha1, String cryptoEmail, String cryptoKeyID, String cryptoPubkey) {
 		Receiver receiver = new Receiver();
@@ -386,9 +385,10 @@ public class FeedCreator {
 		return i;
 	}
 	
-	public void makeExampleFeed() {
+	public static Feed makeExampleFeed() {
 		Feed f = new Feed();
 		
+	  // -- Feedinfo --
 		boolean onlytest =true;
 		String feedid = "example feedid";
 		long creationdatetime = System.currentTimeMillis();
@@ -396,27 +396,31 @@ public class FeedCreator {
 		String creatorEmail = "creator@example.org";
 		String creatorUserID = "creator";
 		
-		Receiver receiver = makeReceiver("ftp","testserver.fnppl.org","127.0.0.1","","password","login","","","");
+		Receiver receiver = makeReceiver("ftp","testserver.fnppl.org","127.0.0.1",null,"password","login","a","b","c");
 		ContractPartner sender = makeContractPartner("sender@example.org","contractpartnerid","ourcontractpartnerid");
-		ContractPartner licensor =makeContractPartner("licensor@example.org","contractpartnerid","ourcontractpartnerid");
+		ContractPartner licensor = makeContractPartner("licensor@example.org","contractpartnerid","ourcontractpartnerid");
 		
 		//actions
 		Vector<Action> actions = new Vector<Action>();
-		
 		actions.add(makeActionHttp(Action.TYPE_ONINITIALRECEIVE, "check.fnppl.org", "GET", new String[][]{{"header1","value1"}}, new String[][]{{"param1","value1"},{"param2","value2"}}));
 		actions.add(makeActionMailTo(Action.TYPE_ONERROR,"receiver", "subject", "error"));
 		actions.add(makeActionMailTo(Action.TYPE_ONFULLSUCCESS,"receiver", "subject", "successful"));
 		
 		f.setFeedinfo(makeFeedinfo(onlytest, feedid, creationdatetime, effectivedatetime, creatorEmail, creatorUserID, receiver, sender, licensor, actions));
-
-		//Bundle
+	  // -- end of Feedinfo --
+		
+	  // -- Bundle --
+		
+		//BundleIDs
 		BundleIDs ids = makeBundleIDs("grid", "upc", "isrc", "contentauthid", "labelordernum", "amzn", "isbn", "finetunesid", "ourid", "yourid");
 		String displayname = "Yeah Yeah it's fine";
 		String name = "fine so fine";
 		String version ="v0.9999";
 		String display_artist = "finest artist";
+		
 		//Contributors
 		Vector<Contributor> contributors = new Vector<Contributor>();
+		//TODO makeContributer
 		
 		//Information
 		Vector<String[]> promotexts = new Vector<String[]>();
@@ -428,6 +432,7 @@ public class FeedCreator {
 		
 		//Territorial
 		Vector<Territory> territorial = new Vector<Territory>();
+		//TODO makeTerritory()
 		
 		long timeframeFrom = System.currentTimeMillis();
 		long timeFrameUntil = timeframeFrom + 12*30*24*60*60*1000;
@@ -436,14 +441,20 @@ public class FeedCreator {
 		
 		//License Rules
 		Vector<LicenseRule> licenseRules = new Vector<LicenseRule>();
-		//TODO
+		//TODO makeLicenseRule
 		
 		//Items
 		Vector<Item> items = new Vector<Item>();
-		//TODO
-		f.addBundle(makeBundle(ids, displayname, name, version, display_artist, contributors, information, territorial, timeframeFrom, timeFrameUntil, pricecode, wholesale, licenseRules, items));
+		//TODO makeItem
+		
+		Bundle bundle = makeBundle(
+				ids, displayname, name, version, display_artist, contributors, information,
+				territorial, timeframeFrom, timeFrameUntil, pricecode, wholesale, licenseRules, items);
+		f.addBundle(bundle);
+	  // -- end of Bundle --
 		
 		
+		return f;
 		
 //		<feed>
 //			<feedinfo>
@@ -794,17 +805,23 @@ public class FeedCreator {
 //			</item>
 //			<!--  could have Z more items -->
 //		</feed>
-
-
 	}
 	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		FeedCreator afc = new FeedCreator();
-		afc.makeExampleFeed();
+		
+		Feed example = makeExampleFeed();
+		
+		Element root = example.toElement();
+		
+		try {
+			Document.buildDocument(root).writeToFile(new File("osdx_example_feed.xml"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 //		afc.toScreen();
 //		afc.toFile(new File(args[0]));
 	}

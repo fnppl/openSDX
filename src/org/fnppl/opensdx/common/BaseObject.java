@@ -146,6 +146,7 @@ public abstract class BaseObject {
      */
     public long getLong(String name) {
         Object v = getObject(name);
+        if (v==null) return -1L;
         if(v instanceof Long) {
         	return ((Long)v).longValue();
         }        
@@ -192,7 +193,9 @@ public abstract class BaseObject {
      */
     public String get(String name) {
         Object v = values.get(names.indexOf(name));
-        return v.toString();
+        if (v!=null)
+        	return v.toString();
+        return null;
     }
     
     /**
@@ -314,12 +317,15 @@ public abstract class BaseObject {
     /**
      * @return
      */
+    
     public Element toElement() {
-        Class c = getClass();
+    	Class c = getClass();
         String name = c.getName().substring(c.getName().lastIndexOf(".")+1);
         name = name.toLowerCase();
+        return toElement(name);
+    }
+    public Element toElement(String name) {
         Element ret = new Element(name);
-        
         for(int i=0; i<names.size(); i++) {
         	Object o = values.elementAt(i);
         	if (o!=null) {

@@ -49,6 +49,8 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 
+import org.fnppl.opensdx.xml.Element;
+
 public class Feedinfo extends BaseObjectWithConstraints {
 
 	public Feedinfo() {
@@ -137,14 +139,65 @@ public class Feedinfo extends BaseObjectWithConstraints {
 	}
 
 	public Vector<Action> getActions() {
-		return (Vector<Action>)values.elementAt(names.indexOf("action"));
+		return (Vector<Action>)values.elementAt(names.indexOf("actions"));
 	}
 	public void addAction(Action action) {
-		((Vector<Action>)values.elementAt(names.indexOf("action"))).add(action);
+		((Vector<Action>)values.elementAt(names.indexOf("actions"))).add(action);
 	}
 
 	public void removeAction(Action action) {
-		((Vector<Action>)values.elementAt(names.indexOf("action"))).remove(action);
+		((Vector<Action>)values.elementAt(names.indexOf("actions"))).remove(action);
+	}
+	
+	public Element toElement() {
+		return toElement("feedindo");
+	}
+	
+	public Element toElement(String name) {
+		Element e = new Element(name);
+		add(e,"onlytest");
+		add(e,"feedid");
+		add(e,"creationdatetime");
+		add(e,"effectivedatetime");
+		Element e2 = new Element("creator"); e.addContent(e2);
+		add(e2,"creator_email","email");
+		add(e2,"creator_userid", "userid");
+		addElement(e, "receiver","receiver");
+		addElement(e, "sender","sender");
+		addElement(e, "licensor","licensor");
+		
+		Vector<Action> actions = (Vector<Action>)getObject("actions");
+		if (actions!=null && actions.size()>0) {
+			Element e3 = new Element("actions"); e.addContent(e3);
+			for (int i=1;i<=5;i++) {
+				String type = Action.actionTypeName[i];
+				Element et = new Element(type);
+				for (Action a : actions) {
+					if (a.getActionType()==i) {
+						et.addContent(a.toElement());
+					}
+				}
+				e3.addContent(et);
+			}
+		}
+		return e;
+	}
+	
+	private void addElement(Element e, String name, String newName) {
+		Object b = getObject(name);
+		if (b!=null) {
+			e.addContent(((BaseObject)b).toElement(newName));
+		}
+	}
+	private void add(Element e, String name) {
+		String s = get(name);
+		if (s!=null)
+			e.addContent(name, s);
+	}
+	private void add(Element e, String name, String newName) {
+		String s = get(name);
+		if (s!=null)
+			e.addContent(newName, s);
 	}
 
 }

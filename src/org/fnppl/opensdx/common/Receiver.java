@@ -49,6 +49,7 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 import org.fnppl.opensdx.common.BaseObjectWithConstraints;
+import org.fnppl.opensdx.xml.Element;
 
 public class Receiver extends BaseObjectWithConstraints {
 
@@ -136,4 +137,43 @@ public class Receiver extends BaseObjectWithConstraints {
 	public String getCryptoUsedPubKey() {
 		return (String)getObject("crypto_usedpubkey");
 	}
+	
+	public Element toElement() {
+		return toElement("receiver");
+	}
+	
+	public Element toElement(String name) {
+		Element e = new Element(name);
+		add(e,"type");
+		add(e,"servername");
+		add(e,"serveripv4");
+		add(e,"serveripv6");
+		add(e,"authtype");
+		add(e,"authsha1");
+		
+		Element e2 = new Element("crypto"); e.addContent(e2);
+		add(e2,"crypto_relatedemail","relatedemail");
+		add(e2,"crypto_usedkeyid", "usedkeyid");
+		add(e2,"crypto_usedpubkey", "usedpubkey");
+		
+		return e;
+	}
+	
+	private void addElement(Element e, String name, String newName) {
+		Object b = getObject(name);
+		if (b!=null) {
+			e.addContent(((BaseObject)b).toElement(newName));
+		}
+	}
+	private void add(Element e, String name) {
+		String s = get(name);
+		if (s!=null)
+			e.addContent(name, s);
+	}
+	private void add(Element e, String name, String newName) {
+		String s = get(name);
+		if (s!=null)
+			e.addContent(newName, s);
+	}
+
 }

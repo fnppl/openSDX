@@ -1,4 +1,8 @@
 package org.fnppl.opensdx.common;
+
+import java.util.Vector;
+
+import org.fnppl.opensdx.commonAuto.Ids;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -51,6 +55,117 @@ package org.fnppl.opensdx.common;
  * 
  */
 
-public class Contributor extends BaseObject {
+public class Contributor extends BaseObjectWithConstraints {
+	
+	public Contributor() {
+		names.add("name"); values.add(null); constraints.add("MUST");
+		names.add("type"); values.add(null); constraints.add("MUST");
+		names.add("ids"); values.add(null); constraints.add("MUST");
+		
+		names.add("facebook"); values.add(null); constraints.add("COULD");
+		names.add("myspace"); values.add(null); constraints.add("COULD");
+		names.add("homepage"); values.add(null); constraints.add("COULD");
+		names.add("twitter"); values.add(null); constraints.add("COULD");
+		names.add("phone");  values.add(new Vector<String[]>()); constraints.add("COULD");
+	}
 
+// methods
+	public void setName(String name) {
+		set("name", name);
+	}
+
+	public String getName() {
+		return get("name");
+	}
+
+	public void setType(String type) {
+		set("type", type);
+	}
+
+	public String getType() {
+		return get("type");
+	}
+
+	public void setBundleIDs(BundleIDs ids) {
+		set("ids", ids);
+	}
+
+	public BundleIDs getIds() {
+		return (BundleIDs)getObject("ids");
+	}
+
+	public void setFacebook(String facebook) {
+		set("Facebook",new String[]{facebook,"true"});
+	}
+
+	public void setFacebook(String facebook, boolean publishable) {
+		set("facebook",new String[]{facebook,""+publishable});
+	}
+	public String getFacebook() {
+		String[] s = (String[])getObject("facebook");
+		if (s!=null && s.length>1) {
+			return s[1];
+		}
+		return null;
+	}
+
+	public void setMyspace(String myspace) {
+		set("Myspace",new String[]{myspace,"true"});
+	}
+
+	public void setMyspace(String myspace, boolean publishable) {
+		set("myspace",new String[]{myspace,""+publishable});
+	}
+	public String getMyspace() {
+		String[] s = (String[])getObject("myspace");
+		if (s!=null && s.length>1) {
+			return s[1];
+		}
+		return null;
+	}
+
+	public void setHomepage(String homepage) {
+		set("Homepage",new String[]{homepage,"true"});
+	}
+
+	public void setHomepage(String homepage, boolean publishable) {
+		set("homepage",new String[]{homepage,""+publishable});
+	}
+	public String getHomepage() {
+		String[] s = (String[])getObject("homepage");
+		if (s!=null && s.length>1) {
+			return s[1];
+		}
+		return null;
+	}
+
+	public void setTwitter(String twitter) {
+		set("Twitter",new String[]{twitter,"true"});
+	}
+
+	public void setTwitter(String twitter, boolean publishable) {
+		set("twitter",new String[]{twitter,""+publishable});
+	}
+	public String getTwitter() {
+		String[] s = (String[])getObject("twitter");
+		if (s!=null && s.length>1) {
+			return s[1];
+		}
+		return null;
+	}
+
+	public void setPhone(String phone) {
+		set("Phone",new String[]{phone,"true"});
+	}
+
+	public void setPhone(String phone, boolean publishable) {
+		set("phone",new String[]{phone,""+publishable});
+	}
+	public String getPhone() {
+		String[] s = (String[])getObject("phone");
+		if (s!=null && s.length>1) {
+			return s[1];
+		}
+		return null;
+	}
 }

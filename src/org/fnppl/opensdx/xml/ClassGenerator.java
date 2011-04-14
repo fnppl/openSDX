@@ -237,7 +237,48 @@ public class ClassGenerator {
 			return atts;
 		}
 	    
+	    public static void generateGetterSetterWithAttrib() {
+	    	String t1 = "<T1>"; //"Promotext";
+	    	String t2 = "<T2>"; //"promotext";
+	    	
+	    	
+	    	String s = 
+	    	"public void set"+t1+"(String "+t2+") {\n"
+	    	+"	set(\""+t1+"\",new String[]{"+t2+",\"true\"});\n"
+	    	+"}\n"
+	    	+"\n"
+	    	+"public void set"+t1+"(String "+t2+", boolean publishable) {\n"
+	    	+"	set(\""+t2+"\",new String[]{"+t2+",\"\"+publishable});\n"
+	    	+"}\n"
+	    	+"public String get"+t1+"() {\n"
+	    	+"	String[] s = (String[])getObject(\""+t2+"\");\n"
+	    	+"	if (s!=null && s.length>1) {\n"
+	    	+"	return s[1];\n"
+	    	+"	}\n"
+	    	+"	return null;\n"
+	    	+"}\n";
+	    	
+	    	Vector<String> names = new Vector<String>();
+	    	names.add("facebook");
+			names.add("myspace"); 
+			names.add("homepage"); 
+			names.add("twitter");
+			names.add("phone");
+			
+			for (String n : names) {
+				t1 = Util.firstLetterUp(n);
+				t2 = n;
+				String m = s.replace("<T1>", t1);
+				m = m.replace("<T2>", t2);
+				System.out.println(m);
+			}
+	    	
+	    }
+	    
 	    public static void main(String[] args) {
+	    	generateGetterSetterWithAttrib();
+	    	if (1==1) return;
+	    	
 	    	File xml = new File("src/org/fnppl/opensdx/dmi/resources/example_feed.xml");
 	    	File saveToPath = new File("src/org/fnppl/opensdx/commonAuto");
 	    	
