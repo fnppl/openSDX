@@ -102,7 +102,7 @@ public class MediaFile extends BaseObjectWithConstraints {
 //	<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
 //</http><!-- http means that, this file is not delivered, but it can be pulled by the receiving parties ; integrity is assured by checksums -->
 	public void setLocationHTTP(String url, String user, String pass, long expiresdatetime) {
-		set("location", new String[] {"http",url,user,pass,FeedCreator.datemeGMT.format(expiresdatetime)});	
+		set("location", new String[] {"http",url,user,pass, datemeGMT.format(expiresdatetime)});	
 	}
 
 //	<ftp>
@@ -114,7 +114,7 @@ public class MediaFile extends BaseObjectWithConstraints {
 //		<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
 // </ftp>
 	public void setLocationFTP(String server, int port, String user, String pass, long expiresdatetime) {
-		set("location", new String[] {"ftp",server,""+port, user,pass,FeedCreator.datemeGMT.format(expiresdatetime)});	
+		set("location", new String[] {"ftp",server,""+port, user,pass, datemeGMT.format(expiresdatetime)});	
 	}
 
 	public String[] getLocation() {

@@ -83,20 +83,20 @@ public class Feedinfo extends BaseObjectWithConstraints {
 		return get("feedid");
 	}
 
-	public void setCreationdatetime(String creationdatetime) {
+	public void setCreationdatetime(long creationdatetime) {
 		set("creationdatetime", creationdatetime);
 	}
 
-	public String getCreationdatetime() {
-		return get("creationdatetime");
+	public long getCreationdatetime() {
+		return getLong("creationdatetime");
 	}
 
-	public void setEffectivedatetime(String effectivedatetime) {
+	public void setEffectivedatetime(long effectivedatetime) {
 		set("effectivedatetime", effectivedatetime);
 	}
 
-	public String getEffectivedatetime() {
-		return get("effectivedatetime");
+	public long getEffectivedatetime() {
+		return getLong("effectivedatetime");
 	}
 
 	public void setCreatorUserID(String userid) {
@@ -157,8 +157,8 @@ public class Feedinfo extends BaseObjectWithConstraints {
 		Element e = new Element(name);
 		add(e,"onlytest");
 		add(e,"feedid");
-		add(e,"creationdatetime");
-		add(e,"effectivedatetime");
+		addDate(e,"creationdatetime");
+		addDate(e,"effectivedatetime");
 		Element e2 = new Element("creator"); e.addContent(e2);
 		add(e2,"creator_email","email");
 		add(e2,"creator_userid", "userid");
@@ -183,21 +183,5 @@ public class Feedinfo extends BaseObjectWithConstraints {
 		return e;
 	}
 	
-	private void addElement(Element e, String name, String newName) {
-		Object b = getObject(name);
-		if (b!=null) {
-			e.addContent(((BaseObject)b).toElement(newName));
-		}
-	}
-	private void add(Element e, String name) {
-		String s = get(name);
-		if (s!=null)
-			e.addContent(name, s);
-	}
-	private void add(Element e, String name, String newName) {
-		String s = get(name);
-		if (s!=null)
-			e.addContent(newName, s);
-	}
 
 }

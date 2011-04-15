@@ -159,21 +159,5 @@ public class Receiver extends BaseObjectWithConstraints {
 		return e;
 	}
 	
-	private void addElement(Element e, String name, String newName) {
-		Object b = getObject(name);
-		if (b!=null) {
-			e.addContent(((BaseObject)b).toElement(newName));
-		}
-	}
-	private void add(Element e, String name) {
-		String s = get(name);
-		if (s!=null)
-			e.addContent(name, s);
-	}
-	private void add(Element e, String name, String newName) {
-		String s = get(name);
-		if (s!=null)
-			e.addContent(newName, s);
-	}
 
 }

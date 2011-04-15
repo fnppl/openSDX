@@ -49,6 +49,7 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 import org.fnppl.opensdx.common.BaseObjectWithConstraints;
+import org.fnppl.opensdx.xml.Element;
 
 public class BundleIDs extends BaseObjectWithConstraints {
 
@@ -146,4 +147,8 @@ public class BundleIDs extends BaseObjectWithConstraints {
 		return get("yourid");
 	}
 
+
+	public Element toElement() {
+		return toElement("ids");
+	}
 }

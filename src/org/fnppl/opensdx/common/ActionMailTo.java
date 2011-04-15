@@ -102,10 +102,6 @@ public class ActionMailTo extends Action {
 		add(e,"text");
 		return e;
 	}
-	private void add(Element e, String name) {
-		String s = get(name);
-		if (s!=null)
-			e.addContent(name, s);
-	}
+
 
 }

@@ -49,6 +49,7 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 import org.fnppl.opensdx.common.BaseObjectWithConstraints;
+import org.fnppl.opensdx.xml.Element;
 
 public class BundleInformation extends BaseObjectWithConstraints {
 
@@ -131,6 +132,31 @@ public class BundleInformation extends BaseObjectWithConstraints {
 
 	public Vector<BundleRelatedInformation> getRelatedInformation() {
 		return (Vector<BundleRelatedInformation>)values.elementAt(names.indexOf("related"));
+	}
+	
+	public Element toElement() {
+		return toElement("information");
+	}
+	
+	public Element toElement(String name) {
+		Element e = new Element(name);
+		Vector<String[]> t = (Vector<String[]>)getObject("promotext");
+		for (String[] s  : t) {
+			addWithAttrib(e, "promotext", s);
+		}
+		t = (Vector<String[]>)getObject("teasertext");
+		for (String[] s  : t) {
+			addWithAttrib(e, "teasertext", s);
+		}
+		addDate(e,"physical_release_datetime");
+		addDate(e,"digital_release_datetime");
+		Element e2 = new Element("related"); e.addContent(e2);
+		Vector<BundleRelatedInformation> rel = (Vector<BundleRelatedInformation>)getObject("related");
+		for (BundleRelatedInformation r  : rel) {
+			Element erel = r.toElement();
+			if (erel!=null) e2.addContent(erel);
+		}
+		return e;
 	}
 
 }

@@ -3,6 +3,7 @@ package org.fnppl.opensdx.common;
 import java.util.Vector;
 
 import org.fnppl.opensdx.dmi.MediaFile;
+import org.fnppl.opensdx.xml.Element;
 
 
 /*
@@ -64,12 +65,12 @@ public class Item extends BaseObjectWithConstraints {
 			names.add("displayname"); values.add(null); constraints.add("MUST");
 			names.add("name"); values.add(null); constraints.add("MUST");
 			names.add("version"); values.add(null); constraints.add("MUST");
-			names.add("contributors"); values.add(null); constraints.add("MUST");
+			names.add("contributors"); values.add(new Vector<Contributor>()); constraints.add("MUST");
 			names.add("information"); values.add(null); constraints.add("[no comment]");
 			
 			names.add("territorial"); values.add(new Vector<Territory>()); constraints.add("MUST");
-			names.add("timeframe_from"); values.add(null); constraints.add("MUST");
-			names.add("timeframe_until"); values.add(null); constraints.add("MUST");
+			names.add("from"); values.add(null); constraints.add("MUST");
+			names.add("until"); values.add(null); constraints.add("MUST");
 			names.add("pricecode"); values.add(null); constraints.add("COULD");
 			names.add("wholesale"); values.add(null); constraints.add("COULD");
 			
@@ -158,19 +159,19 @@ public class Item extends BaseObjectWithConstraints {
 		}
 		
 		public void setTimeframeFrom(long from) {
-			set("timeframe_from", from);
+			set("from", from);
 		}
 
 		public long getTimeframeFrom() {
-			return getLong("timeframe_from");
+			return getLong("from");
 		}
 
 		public void setTimeFrameUntil(long to) {
-			set("timeframe_until", to);
+			set("until", to);
 		}
 
 		public long getTimeFrameUntil() {
-			return getLong("timeframe_until");
+			return getLong("until");
 		}
 		public void setPricecode(String pricecode) {
 			set("pricecode", pricecode);
@@ -220,20 +221,20 @@ public class Item extends BaseObjectWithConstraints {
 			return get("main_language");
 		}
 
-		public void setBundle_only(String bundle_only) {
-			set("bundle_only", bundle_only);
+		public void setBundle_only(boolean bundle_only) {
+			set("bundle_only", ""+bundle_only);
 		}
 
-		public String getBundle_only() {
-			return get("bundle_only");
+		public boolean getBundle_only() {
+			return Boolean.parseBoolean(get("bundle_only"));
 		}
 
-		public void setStreaming_allowed(String streaming_allowed) {
-			set("streaming_allowed", streaming_allowed);
+		public void setStreaming_allowed(boolean streaming_allowed) {
+			set("streaming_allowed", ""+streaming_allowed);
 		}
 
-		public String getStreaming_allowed() {
-			return get("streaming_allowed");
+		public boolean getStreaming_allowed() {
+			return Boolean.parseBoolean(get("streaming_allowed"));
 		}
 		//-- end of tags
 
@@ -250,5 +251,66 @@ public class Item extends BaseObjectWithConstraints {
 		}
 		
 
+		public Element toElement() {
+			return toElement("item");
+		}
+		
+		public Element toElement(String name) {
+			Element e = new Element(name);
+			
+			add(e,"type");
+			addElement(e, "ids", "ids");
+			
+			add(e,"displayname");
+			add(e,"name");
+			add(e,"version");
+			Vector<Contributor> cont = (Vector<Contributor>)getObject("contributors");
+			Element ec = new Element("contributors"); e.addContent(ec);
+			for (Contributor c : cont) {
+				ec.addContent(c.toElement());
+			}
+			addElement(e,"information","information");
+			
+			Element e2 = new Element("license_basis"); e.addContent(e2);
+			Vector<Territory> terr = (Vector<Territory>)getObject("territorial"); 
+			Element et = new Element("territorial"); e2.addContent(et);
+			for (Territory t : terr) {
+				et.addContent(t.toElement());
+			}
+			
+			Element etf = new Element("timeframe"); e2.addContent(etf);
+			addDate(etf,"from");
+			addDate(etf,"until");
+
+			Element ep = new Element("pricing"); e2.addContent(ep);
+			add(ep,"pricecode");
+			add(ep,"wholesale");
+			
+			Element e3 = new Element("license_specifics"); e.addContent(e3);
+			Vector<LicenseRule> rules = (Vector<LicenseRule>)getObject("license_rules");
+			if (rules!=null) {
+				for (LicenseRule r : rules) {
+					e3.addContent(r.toElement());
+				}
+			}
+			
+			Element e4 = new Element("tags"); e.addContent(e4);
+			Element e4s = new Element("genres");
+			Vector<String> genres = (Vector<String>)getObject("genres"); e4.addContent(e4s);
+			for (String g : genres) {
+				e4s.addContent("genre",g);
+			}
+			add(e4,"origin_country");
+			add(e4,"main_language");
+			add(e4,"bundle_only");
+			add(e4,"streaming_allowed");
+		
+			Element e5 = new Element("files"); e.addContent(e5);
+			Vector<MediaFile> files = (Vector<MediaFile>)getObject("files");
+			for (MediaFile f : files) {
+				e5.addContent(f.toElement());
+			}
+			return e;
+		}
 
 }

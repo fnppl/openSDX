@@ -1,5 +1,9 @@
 package org.fnppl.opensdx.common;
 
+import java.util.Vector;
+
+import org.fnppl.opensdx.xml.Element;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -54,5 +58,54 @@ package org.fnppl.opensdx.common;
  */
 
 public class Territory extends BaseObject {
+
+	
+	public Territory() {
+		names.add("territory"); values.add(null);
+		names.add("allow"); values.add(null);
+	}
+	
+	public static Territory allow(String territory) {
+		Territory t = new Territory();
+		t.setAllowTerritory(territory);
+		return t;
+	}
+	public static Territory disallow(String territory) {
+		Territory t = new Territory();
+		t.setDisallowTerritory(territory);
+		return t;
+	}
+
+// methods
+	public void setAllowTerritory(String territory) {
+		set("territory", territory);
+		set("allow", "true");
+	}
+	
+	public void setDisallowTerritory(String territory) {
+		set("territory", territory);
+		set("allow", "false");
+	}
+
+	public String getTerritory() {
+		return get("territory");
+	}
+	
+	public boolean getAllow() {
+		return Boolean.parseBoolean(get("allow"));
+	}
+	
+	public Element toElement() {
+		return toElement("territory");
+	}
+	
+	public Element toElement(String name) {
+		Element e = new Element(name);
+		if (!getAllow()) {
+			e.setAttribute("type", "disallow");
+		}
+		e.setText(getTerritory());
+		return e;
+	}
 
 }

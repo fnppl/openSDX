@@ -92,9 +92,4 @@ public class ContractPartner extends BaseObjectWithConstraints {
 		return e;
 	}
 	
-	private void add(Element e, String name) {
-		String s = get(name);
-		if (s!=null)
-			e.addContent(name, s);
-	}
 }

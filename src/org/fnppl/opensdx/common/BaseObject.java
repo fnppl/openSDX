@@ -49,9 +49,17 @@ import org.fnppl.opensdx.xml.Element;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public abstract class BaseObject {
+	
+	final static String RFC1123_CUT = "yyyy-MM-dd HH:mm:ss zzz";
+	final static Locale ml = new Locale("en", "DE");
+	public final static SimpleDateFormat datemeGMT = new SimpleDateFormat(RFC1123_CUT, ml);
+	static {
+		datemeGMT.setTimeZone(java.util.TimeZone.getTimeZone("GMT+00:00"));
+	}
 	
 	protected Vector<String> names = new Vector<String>();
 	protected Vector<Object> values = new Vector<Object>();
@@ -404,6 +412,41 @@ public abstract class BaseObject {
 				}
 			}
 		}
+	}
+	protected void addElement(Element e, String name, String newName) {
+		Object b = getObject(name);
+		if (b!=null) {
+			e.addContent(((BaseObject)b).toElement(newName));
+		}
+	}
+	protected void add(Element e, String name) {
+		String s = get(name);
+		if (s!=null)
+			e.addContent(name, s);
+	}
+	
+	protected void addWithAttrib(Element e, String name) {
+		String[] value = (String[])getObject(name);
+		addWithAttrib(e, name, value);
+	}
+	protected void addWithAttrib(Element e, String name, String[] value) {
+		if (value!=null) {
+	       	Element se = new Element(name);
+	       	for (int j=0;j<value.length-1;j+=2) {
+	       		se.setAttribute(value[j*2], value[j*2+1]);
+	       	}
+	       	se.setText(value[value.length-1]);
+	       	e.addContent(se);
+		}
+	}
+	protected void addDate(Element e, String name) {
+		long s = getLong(name);
+		e.addContent(name, datemeGMT.format(s));
+	}
+	protected void add(Element e, String name, String newName) {
+		String s = get(name);
+		if (s!=null)
+			e.addContent(newName, s);
 	}
 }
 

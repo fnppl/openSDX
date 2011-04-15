@@ -2,6 +2,8 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 
+import org.fnppl.opensdx.xml.Element;
+
 
 /*
  * Copyright (C) 2010-2011 
@@ -65,10 +67,11 @@ public class Bundle extends BaseObjectWithConstraints {
 		names.add("contributors"); values.add(new Vector<Contributor>()); constraints.add("MUST");
 		names.add("information"); values.add(null); constraints.add("[no comment]");
 		names.add("territorial"); values.add(new Vector<Territory>()); constraints.add("MUST");
-		names.add("timeframe_from"); values.add(null); constraints.add("MUST");
-		names.add("timeframe_until"); values.add(null); constraints.add("MUST");
+		names.add("from"); values.add(null); constraints.add("MUST");
+		names.add("until"); values.add(null); constraints.add("MUST");
 		names.add("pricecode"); values.add(null); constraints.add("COULD");
 		names.add("wholesale"); values.add(null); constraints.add("COULD");
+		names.add("license_rules"); values.add(new Vector<LicenseRule>()); constraints.add("COULD");
 		names.add("items"); values.add(new Vector<Item>()); constraints.add("[no comment]");
 	}
 
@@ -146,19 +149,19 @@ public class Bundle extends BaseObjectWithConstraints {
 	}
 	
 	public void setTimeframeFrom(long from) {
-		set("timeframe_from", from);
+		set("from", from);
 	}
 
 	public long getTimeframeFrom() {
-		return getLong("timeframe_from");
+		return getLong("from");
 	}
 
 	public void setTimeFrameUntil(long to) {
-		set("timeframe_until", to);
+		set("until", to);
 	}
 
 	public long getTimeFrameUntil() {
-		return getLong("timeframe_until");
+		return getLong("until");
 	}
 	public void setPricecode(String pricecode) {
 		set("pricecode", pricecode);
@@ -186,6 +189,52 @@ public class Bundle extends BaseObjectWithConstraints {
 
 	public Vector<Item> getItem() {
 		return (Vector<Item>)values.elementAt(names.indexOf("items"));
+	}
+	
+	public Element toElement() {
+		return toElement("bundle");
+	}
+	
+	public Element toElement(String name) {
+		Element e = new Element(name);
+		addElement(e, "ids", "ids");
+		
+		add(e,"displayname");
+		add(e,"name");
+		add(e,"version");
+		add(e,"display_artist");
+		Vector<Contributor> cont = (Vector<Contributor>)getObject("contributors");
+		Element ec = new Element("contributors"); e.addContent(ec);
+		for (Contributor c : cont) {
+			ec.addContent(c.toElement());
+		}
+		addElement(e,"information","information");
+		
+		Element e2 = new Element("license_basis"); e.addContent(e2);
+		Vector<Territory> terr = (Vector<Territory>)getObject("territorial"); 
+		Element et = new Element("territorial"); e2.addContent(et);
+		for (Territory t : terr) {
+			et.addContent(t.toElement());
+		}
+		Element etf = new Element("timeframe"); e2.addContent(etf);
+		addDate(etf,"from");
+		addDate(etf,"until");
+
+		Element ep = new Element("pricing"); e2.addContent(ep);
+		add(ep,"pricecode");
+		add(ep,"wholesale");
+		
+		Element e3 = new Element("license_specifics"); e.addContent(e3);
+		Vector<LicenseRule> rules = (Vector<LicenseRule>)getObject("license_rules");
+		for (LicenseRule r : rules) {
+			e3.addContent(r.toElement());
+		}
+		Element e4 = new Element("items"); e.addContent(e4);
+		Vector<Item> items = (Vector<Item>)getObject("items");
+		for (Item i : items) {
+			e4.addContent(i.toElement());
+		}
+		return e;
 	}
 	
 }

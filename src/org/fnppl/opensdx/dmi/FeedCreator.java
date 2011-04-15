@@ -63,6 +63,7 @@ import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.common.LicenseRule;
 import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.common.Territory;
+import org.fnppl.opensdx.commonAuto.Information;
 import org.fnppl.opensdx.xml.*;
 import java.io.*;import java.text.SimpleDateFormat;
 import java.util.*;
@@ -71,13 +72,49 @@ import javax.print.Doc;
 
 public class FeedCreator {
 
-	final static String RFC1123_CUT = "yyyy-MM-dd HH:mm:ss zzz";
-	final static Locale ml = new Locale("en", "DE");
-	public final static SimpleDateFormat datemeGMT = new SimpleDateFormat(RFC1123_CUT, ml);
-	static {
-		datemeGMT.setTimeZone(java.util.TimeZone.getTimeZone("GMT+00:00"));
-	}
 	
+	public static Item makeItem(String type, BundleIDs ids, String displayname, String name, String version, Vector<Contributor> contributors,
+			BundleInformation information, Vector<Territory> territorial, long from, long until, String pricecode, String wholesale,
+			Vector<String> genres, String origin_country, String main_language, boolean bundle_only, boolean streaming_allowed, Vector<MediaFile> files) {
+		Item i = new Item();
+		i.setType(type);
+		i.setIds(ids);
+		i.setDisplayname(displayname);
+		i.setName(name);
+		i.setVersion(version);
+		if (contributors!=null) {
+			for (Contributor c : contributors) {
+				i.addContributor(c);
+			}
+		}
+		i.setInformation(information);
+		if (territorial != null) {
+			for (Territory t : territorial) {
+				i.addTerritory(t);
+			}
+		}
+		i.setTimeframeFrom(from);
+		i.setTimeFrameUntil(until);
+		
+		i.setPricecode(pricecode);
+		i.setWholesale(wholesale);
+		if (genres!=null) {
+			for (String s : genres) {
+				i.addGenres(s);
+			}
+		}
+		i.setOrigin_country(origin_country);
+		i.setMain_language(main_language);
+		i.setBundle_only(bundle_only);
+		i.setStreaming_allowed(streaming_allowed);
+		
+		if (files!=null) {
+			for (MediaFile f : files) {
+				i.addMediaFile(f);
+			}
+		}
+		return i;
+	}
 	
 	public static Receiver makeReceiver(String typ, String servername, String ipv4, String ipv6, String authtype, String authsha1, String cryptoEmail, String cryptoKeyID, String cryptoPubkey) {
 		Receiver receiver = new Receiver();
@@ -135,8 +172,8 @@ public class FeedCreator {
 		Feedinfo f = new Feedinfo(); 
 		f.setOnlytest(onlytest);
 		f.setFeedid(feedid);
-		f.setCreationdatetime(datemeGMT.format(creationdatetime));
-		f.setEffectivedatetime(datemeGMT.format(effectivedatetime));
+		f.setCreationdatetime(creationdatetime);
+		f.setEffectivedatetime(effectivedatetime);
 		f.setCreatorEmail(creatorEmail);
 		f.setCreatorUserID(creatorUserID);
 		f.setReceiver(receiver);
@@ -385,6 +422,18 @@ public class FeedCreator {
 		return i;
 	}
 	
+	public static Contributor makeContributor(String name, String type, String glv, String finetunesid, String ourid, String yourid, String contentauthid) {
+		Contributor c = new Contributor();
+		c.setName(name);
+		c.setType(type);
+		c.setGLV(glv);
+		c.setFinetunesid(finetunesid);
+		c.setOurid(ourid);
+		c.setYourid(yourid);
+		c.setContentauthid(contentauthid);
+		return c;
+	}
+	
 	public static Feed makeExampleFeed() {
 		Feed f = new Feed();
 		
@@ -420,22 +469,39 @@ public class FeedCreator {
 		
 		//Contributors
 		Vector<Contributor> contributors = new Vector<Contributor>();
-		//TODO makeContributer
+		Contributor c = makeContributor("SupaLabel", "label", "glv", "finetunesid", "our id", "your id", "contentauth");
+		boolean publishable = true;
+		c.setFacebook("facebook", publishable);
+		c.setMyspace("myspace", publishable);
+		c.setHomepage("www.homepage.org", publishable);
+		c.setTwitter("twitter", publishable);
+		c.setPhone("0124981240912", false);
+		contributors.add(c);
 		
 		//Information
 		Vector<String[]> promotexts = new Vector<String[]>();
+		promotexts.add(new String[]{"EN","This is the english promotext."});
+		promotexts.add(new String[]{"DE","Dies ist der deutsche promotext."});
 		Vector<String[]> teasertexts = new Vector<String[]>();
+		teasertexts.add(new String[]{"EN","This is the english teasertext."});
+		teasertexts.add(new String[]{"DE","Dies ist der deutsche teasertext."});
+		
 		long digital_release_datetime = System.currentTimeMillis();
 		long physical_release_datetime = System.currentTimeMillis();
 		Vector<BundleRelatedInformation> related = new Vector<BundleRelatedInformation>();
+		related.add(BundleRelatedInformation.createPhysicalDistributer("ExampleDistrubutor"));
+		related.add(BundleRelatedInformation.createYouTube("url.to.youtube.file", "channel"));
+		related.add(BundleRelatedInformation.createBundleIDs(makeBundleIDs(null, "upc", null, null, null, "amzn", "isbn", null, null, null)));
 		BundleInformation information = makeBundleInformation(promotexts, teasertexts, digital_release_datetime, physical_release_datetime, related);
 		
 		//Territorial
 		Vector<Territory> territorial = new Vector<Territory>();
-		//TODO makeTerritory()
+		territorial.add(Territory.allow("DE"));
+		territorial.add(Territory.allow("GB"));
+		territorial.add(Territory.disallow("US"));
 		
 		long timeframeFrom = System.currentTimeMillis();
-		long timeFrameUntil = timeframeFrom + 12*30*24*60*60*1000;
+		long timeFrameUntil = timeframeFrom + 365*24*60*60*1000L;
 		String pricecode = "MEDIUM";
 		String wholesale = null;
 		
@@ -445,7 +511,30 @@ public class FeedCreator {
 		
 		//Items
 		Vector<Item> items = new Vector<Item>();
-		//TODO makeItem
+		String itype = "audio";
+		BundleIDs iids = null;
+		String idisplayname = displayname;
+		String iname = name;
+		String iversion = "studio";
+		Vector<Contributor> icontributors = contributors; 
+		BundleInformation iinformation = information;
+		Vector<Territory> iterritorial = territorial;
+		long ifrom = System.currentTimeMillis();
+		long iuntil = ifrom + 30*24*60*60*1000L;
+		String ipricecode = null;
+		String iwholesale = null;
+		Vector<String> igenres = new Vector<String>();
+		igenres.add("POP");
+		String iorigin_country ="GB";
+		String imain_language ="EN";
+		boolean ibundle_only = true;
+		boolean istreaming_allowed = false;
+		Vector<MediaFile> ifiles = null;
+		//TODO makeMediaFile
+		
+		Item item = makeItem(itype, iids, idisplayname, iname, iversion, icontributors, iinformation, iterritorial, ifrom, iuntil, ipricecode, iwholesale, igenres, iorigin_country, imain_language, ibundle_only, istreaming_allowed, ifiles);
+		items.add(item);
+		
 		
 		Bundle bundle = makeBundle(
 				ids, displayname, name, version, display_artist, contributors, information,

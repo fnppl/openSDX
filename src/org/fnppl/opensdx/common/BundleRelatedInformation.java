@@ -49,6 +49,7 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 import org.fnppl.opensdx.common.BaseObjectWithConstraints;
+import org.fnppl.opensdx.xml.Element;
 
 public class BundleRelatedInformation extends BaseObjectWithConstraints {
 
@@ -88,6 +89,45 @@ public class BundleRelatedInformation extends BaseObjectWithConstraints {
 
 	public String getType() {
 		return get("type");
+	}
+	
+	public Element toElement() {
+		String type = get("type");
+		Object value = getObject("values");
+		if (value!=null) {
+			if (type.equals("physical_distributer")) {
+				Element e = new Element(type);
+				if (value instanceof String) {
+					e.setText((String)value);
+				} 
+				else if (value instanceof String[]) {
+					String[] s = (String[])value;
+					for (int j=0;j<s.length-1;j+=2) {
+			       		e.setAttribute(s[j*2], s[j*2+1]);
+			       	}
+			       	e.setText(s[s.length-1]);
+				}
+				return e;
+			}
+			else if (type.equals("youtube")) {
+				Element e = new Element(type);
+				String[] s = (String[])value;
+				e.addContent("url", s[0]);
+				e.addContent("channel", s[1]);
+				return e;
+			}
+			else if (type.equals("bundle_ids")) {
+				Element e = new Element("bundle");
+				e.addContent(((BundleIDs)value).toElement("ids"));
+				return e;
+			}
+		}
+		return null;
+	}
+	
+	public Element toElement(String name) {
+		//Ignore name
+		return toElement();
 	}
 	
 }
