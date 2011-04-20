@@ -67,7 +67,7 @@ public class KeyServerResponse {
 	private String serverid = null;
 	protected Element contentElement;
 	protected String html = null;
-	protected OSDXKeyObject signoffkey = null;
+	protected OSDXKey signoffkey = null;
 	
 	public KeyServerResponse(String serverid) {
 		this.serverid = serverid;
@@ -78,7 +78,7 @@ public class KeyServerResponse {
 		this.retcodeString = msg;
 	}
 	
-	public void setSignoffKey(OSDXKeyObject signoffkey) {
+	public void setSignoffKey(OSDXKey signoffkey) {
 		this.signoffkey = signoffkey;
 	}
 	
@@ -155,23 +155,28 @@ public class KeyServerResponse {
 		this.html = html;
 	}
 	
-	public static KeyServerResponse createMasterPubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<OSDXKeyObject>> id_keys, OSDXKeyObject signoffkey) {
+	public static KeyServerResponse createMasterPubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<OSDXKey>> id_keys, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("Identity");
 		if (id != null) {
 			Element e = new Element("masterpubkeys_response");
 			e.addContent("identity",id);
-			Vector<OSDXKeyObject> keys = id_keys.get(id);
+			Vector<OSDXKey> keys = id_keys.get(id);
 			if (keys != null && keys.size() > 0) {
 				Element er = new Element("related_keys");
 				e.addContent(er);
 				//add key ids
-				for (OSDXKeyObject k : keys) {
+				for (OSDXKey k : keys) {
 					er.addContent("keyid",k.getKeyID());
 				}
-				resp.setSignoffKey(signoffkey); //only signoff if real content
 			}
-			resp.setContentElement(e);
+			try {
+				OSDXMessage msg = OSDXMessage.buildMessage(e, signoffkey);
+				resp.setContentElement(msg.toElement());
+			} catch (Exception ex) {
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("Internal Error"); //should/could never happen
+			}
 			return resp;
 		}
 		resp.setRetCode(404, "FAILED");
@@ -179,22 +184,27 @@ public class KeyServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createIdentityResponse(String serverid, KeyServerRequest request, HashMap<String, OSDXKeyObject> keyid_key, OSDXKeyObject signoffkey) {
+	public static KeyServerResponse createIdentityResponse(String serverid, KeyServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
-			id = OSDXKeyObject.getFormattedKeyIDModulusOnly(id);
+			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("identities_response");
 			e.addContent("keyid",id);
-			OSDXKeyObject key = keyid_key.get(id);
-			if (key != null) {
-				Vector<Identity> ids = key.getIdentities();
+			OSDXKey key = keyid_key.get(id);
+			if (key != null && key instanceof MasterKey) {
+				Vector<Identity> ids = ((MasterKey)key).getIdentities();
 				for (Identity aid : ids) {
 					e.addContent(aid.toElement());
 				}
-				resp.setSignoffKey(signoffkey); //only signoff if real content
 			}
-			resp.setContentElement(e);
+			try {
+				OSDXMessage msg = OSDXMessage.buildMessage(e, signoffkey);
+				resp.setContentElement(msg.toElement());
+			} catch (Exception ex) {
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("Internal Error"); //should/could never happen
+			}
 			return resp;
 		}
 		resp.setRetCode(404, "FAILED");
@@ -202,11 +212,11 @@ public class KeyServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createKeyStatusyResponse(String serverid, KeyServerRequest request, KeyApprovingStore keystore, OSDXKeyObject signoffkey) {
+	public static KeyServerResponse createKeyStatusyResponse(String serverid, KeyServerRequest request, KeyApprovingStore keystore, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
-			id = OSDXKeyObject.getFormattedKeyIDModulusOnly(id);
+			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("keystatus_response");
 			e.addContent("keyid",id);
 			try {
@@ -221,8 +231,13 @@ public class KeyServerResponse {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
-			resp.setContentElement(e);
-			resp.setSignoffKey(signoffkey);
+			try {
+				OSDXMessage msg = OSDXMessage.buildMessage(e, signoffkey);
+				resp.setContentElement(msg.toElement());
+			} catch (Exception ex) {
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("Internal Error"); //should/could never happen
+			}
 			return resp;
 		}
 		resp.setRetCode(404, "FAILED");
@@ -230,11 +245,11 @@ public class KeyServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createKeyLogResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<KeyLog>> keyid_log, OSDXKeyObject signoffkey) {
+	public static KeyServerResponse createKeyLogResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<KeyLog>> keyid_log, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
-			id = OSDXKeyObject.getFormattedKeyIDModulusOnly(id);
+			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("keylogs_response");
 			e.addContent("keyid",id);
 			Vector<KeyLog> keylogs = keyid_log.get(id);
@@ -244,8 +259,13 @@ public class KeyServerResponse {
 				}
 				
 			}
-			resp.setContentElement(e);
-			resp.setSignoffKey(signoffkey);
+			try {
+				OSDXMessage msg = OSDXMessage.buildMessage(e, signoffkey);
+				resp.setContentElement(msg.toElement());
+			} catch (Exception ex) {
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("Internal Error"); //should/could never happen
+			}
 			return resp;
 		}
 		resp.setRetCode(404, "FAILED");
@@ -254,23 +274,28 @@ public class KeyServerResponse {
 	}
 	
 	
-	public static KeyServerResponse createSubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<OSDXKeyObject>> keyid_subkeys, OSDXKeyObject signoffkey) {
+	public static KeyServerResponse createSubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<OSDXKey>> keyid_subkeys, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
-			id = OSDXKeyObject.getFormattedKeyIDModulusOnly(id);
+			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("subkeys_response");
 			e.addContent("parentkeyid", id);
-			Vector<OSDXKeyObject> subkeys = keyid_subkeys.get(id);
+			Vector<OSDXKey> subkeys = keyid_subkeys.get(id);
 			if (subkeys!=null && subkeys.size()>0) {
-				for (OSDXKeyObject key : subkeys) {
+				for (OSDXKey key : subkeys) {
 					if (key.isSub())
 						e.addContent("keyid",key.getKeyID());
 				}
 				
 			}
-			resp.setSignoffKey(signoffkey);
-			resp.setContentElement(e);
+			try {
+				OSDXMessage msg = OSDXMessage.buildMessage(e, signoffkey);
+				resp.setContentElement(msg.toElement());
+			} catch (Exception ex) {
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("Internal Error"); //should/could never happen
+			}
 			return resp;
 		}
 		resp.setRetCode(404, "FAILED");
@@ -278,18 +303,23 @@ public class KeyServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createPubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, OSDXKeyObject> keyid_key, OSDXKeyObject signoffkey) {
+	public static KeyServerResponse createPubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
-			id = OSDXKeyObject.getFormattedKeyIDModulusOnly(id);
+			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("pubkey_response");
-			OSDXKeyObject key = keyid_key.get(id);
+			OSDXKey key = keyid_key.get(id);
 			if (key!=null) {
 				e.addContent(key.getSimplePubKeyElement());
-				resp.setSignoffKey(signoffkey);
 			}
-			resp.setContentElement(e);
+			try {
+				OSDXMessage msg = OSDXMessage.buildMessage(e, signoffkey);
+				resp.setContentElement(msg.toElement());
+			} catch (Exception ex) {
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("Internal Error"); //should/could never happen
+			}
 			return resp;
 		}
 		resp.setRetCode(404, "FAILED");

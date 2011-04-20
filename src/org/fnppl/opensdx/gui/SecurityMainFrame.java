@@ -59,7 +59,6 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
-import org.fnppl.opensdx.keyserver.OSDXKeyServerClient;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
@@ -73,12 +72,13 @@ public class SecurityMainFrame extends JFrame {
 
 	private File configFile = new File("src/org/fnppl/opensdx/security/resources/config.xml"); 
 	private Vector<KeyServerIdentity> keyservers = null;
-	private Vector<OSDXKeyObject> knownpublickeys = null;
-	private HashMap<OSDXKeyObject, KeyStatus> key_status = new HashMap<OSDXKeyObject, KeyStatus>();
+	private Vector<OSDXKey> knownpublickeys = null;
+	private HashMap<OSDXKey, KeyStatus> key_status = new HashMap<OSDXKey, KeyStatus>();
+	private Vector<OSDXKey> storedPublicKeys = new Vector<OSDXKey>();
+	
 	
 	private File lastDir = getDefaultDir(); //new File(System.getProperty("user.home"));
 	//	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
-
 
 
 
@@ -112,7 +112,7 @@ public class SecurityMainFrame extends JFrame {
 	private void readConfig() {
 		try {
 			Element root = Document.fromFile(configFile).getRootElement();
-			knownpublickeys = new Vector<OSDXKeyObject>();
+			knownpublickeys = new Vector<OSDXKey>();
 			
 			if (root.getChild("defaultkeyservers")!=null) {
 				keyservers = new Vector<KeyServerIdentity>();
@@ -124,7 +124,7 @@ public class SecurityMainFrame extends JFrame {
 						Vector<Element> epks = eKnownKeys.getChildren("pubkey");
 						if (epks!=null) {
 							for (Element epk : epks) {
-								knownpublickeys.add(OSDXKeyObject.fromPubKeyElement(epk));
+								knownpublickeys.add(OSDXKey.fromPubKeyElement(epk));
 							}
 						}
 					}
@@ -133,7 +133,7 @@ public class SecurityMainFrame extends JFrame {
 			if (root.getChild("knownapprovedkeys")!=null) {
 				Vector<Element> v = root.getChild("knownapprovedkeys").getChildren("pubkey");
 				for (Element e : v) {
-					knownpublickeys.add(OSDXKeyObject.fromPubKeyElement(e));
+					knownpublickeys.add(OSDXKey.fromPubKeyElement(e));
 				}
 			}
 			//TODO check localproofs and signatures 
@@ -218,7 +218,11 @@ public class SecurityMainFrame extends JFrame {
 		try {
 			if(f.exists()) {
 				KeyApprovingStore kas = KeyApprovingStore.fromFile(f, messageHandler);
-				this.currentKeyStore = kas;
+				this.currentKeyStore = kas;	
+//				MasterKey m = kas.getAllMasterKeys().get(0);
+//				Document.buildDocument(m.toElement(null)).outputCompact(System.out);
+//				Document.buildDocument(m.getRevokeKeys().get(0).toElement(null)).outputCompact(System.out);
+//				Document.buildDocument(m.getSubKeys().get(0).toElement(null)).outputCompact(System.out);
 				updateUI();
 				return true;
 			}
@@ -359,18 +363,18 @@ public class SecurityMainFrame extends JFrame {
 
 		p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
 
-		Vector<OSDXKeyObject> storedPublicKeys = new Vector<OSDXKeyObject>(); 
+		storedPublicKeys = new Vector<OSDXKey>();
 		
 		if (currentKeyStore!=null) {
 			//keys
-			Vector<OSDXKeyObject> all = currentKeyStore.getAllKeys();
+			Vector<OSDXKey> all = currentKeyStore.getAllKeys();
 			int y = 0;
 			for (int i=0;i<all.size();i++) {
-				OSDXKeyObject key = all.get(i);
-				if (key.isMaster() && key.hasPrivateKey()) {
-					Vector<OSDXKeyObject> revokekeys = currentKeyStore.getRevokeKeys(key.getKeyID());
-					Vector<OSDXKeyObject> subkeys = currentKeyStore.getSubKeys(key.getKeyID());
-					Component comp = buildComponent(key, revokekeys, subkeys);
+				OSDXKey key = all.get(i);
+				if (key instanceof MasterKey && key.isMaster() && key.hasPrivateKey()) {
+					Vector<RevokeKey> revokekeys = currentKeyStore.getRevokeKeys(key.getKeyID());
+					Vector<SubKey> subkeys = currentKeyStore.getSubKeys(key.getKeyID());
+					Component comp = buildComponent((MasterKey)key, revokekeys, subkeys);
 					p.add(comp);
 					y++;
 				} else {
@@ -378,7 +382,6 @@ public class SecurityMainFrame extends JFrame {
 						storedPublicKeys.add(key);
 					}
 				}
-				
 			}
 			
 			//known public keys from keystore
@@ -416,22 +419,22 @@ public class SecurityMainFrame extends JFrame {
 		validate();
 	}
 
-	private Component buildComponent(OSDXKeyObject masterkey, Vector<OSDXKeyObject> revokekeys, Vector<OSDXKeyObject> subkeys) {
+	private Component buildComponent(MasterKey masterkey, Vector<RevokeKey> revokekeys, Vector<SubKey> subkeys) {
 		final JPanel p = new JPanel();
 		String identities = masterkey.getIDEmails();
 		p.setBorder(new TitledBorder("KeyGroup:"+(identities!=null?"   "+identities:"")));
 		p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
 		p.add(buildComponentMasterKey(masterkey));
-		for (OSDXKeyObject key : revokekeys) {
+		for (RevokeKey key : revokekeys) {
 			p.add(buildComponentRevokeKey(key));
 		}
-		for (OSDXKeyObject key : subkeys) {
+		for (SubKey key : subkeys) {
 			p.add(buildComponentSubKey(key));
 		}
 		return p;
 	}
 
-	private Component buildComponentMasterKey(final OSDXKeyObject key) {
+	private Component buildComponentMasterKey(final MasterKey key) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -489,7 +492,7 @@ public class SecurityMainFrame extends JFrame {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode()==10) {//enter pressed
 					String v = tAuth.getText();
-					key.setAuthoritativeKeyServer(v);
+					key.setAuthoritativeKeyServer(v, key.getAuthoritativekeyserverPort());
 					tAuth.setBackground(Color.WHITE);
 				}
 			}
@@ -734,7 +737,7 @@ public class SecurityMainFrame extends JFrame {
 		}
 	}
 
-	private Component buildComponentRevokeKey(final OSDXKeyObject key) {
+	private Component buildComponentRevokeKey(final RevokeKey key) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -888,7 +891,7 @@ public class SecurityMainFrame extends JFrame {
 		return head;
 	}
 
-	private Component buildComponentSubKey(final OSDXKeyObject key) {
+	private Component buildComponentSubKey(final SubKey key) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -905,7 +908,7 @@ public class SecurityMainFrame extends JFrame {
 		c.insets = new Insets(5, 5, 0, 0);
 
 		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
-		final JComboBox cUsage = addLabelComboBoxPart("usage:", OSDXKeyObject.usage_name, key.getUsage(), a, c, y,false); y++;
+		final JComboBox cUsage = addLabelComboBoxPart("usage:", OSDXKey.usage_name, key.getUsage(), a, c, y,false); y++;
 		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
 		final JTextField tValid = addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y,true); y++;
 		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
@@ -1072,12 +1075,12 @@ public class SecurityMainFrame extends JFrame {
 		return p;
 	}
 
-	private Component buildComponentKnownKeys(Vector<OSDXKeyObject> keys) {
+	private Component buildComponentKnownKeys(Vector<OSDXKey> keys) {
 		
 		final JPanel p = new JPanel();
 		p.setBorder(new TitledBorder("Known public keys"));
 		p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
-		for (OSDXKeyObject key : keys) {
+		for (OSDXKey key : keys) {
 			p.add(buildComponentKnownPubKey(key));
 		}
 		
@@ -1098,7 +1101,7 @@ public class SecurityMainFrame extends JFrame {
 	}
 	
 	
-	private Component buildComponentKnownPubKey(final OSDXKeyObject key) {
+	private Component buildComponentKnownPubKey(final OSDXKey key) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -1123,8 +1126,10 @@ public class SecurityMainFrame extends JFrame {
 			addLabelTextFieldPart("status:", ks.getValidityStatusName(), a, c, y,false); y++;
 		}
 		addLabelTextFieldPart("level:", key.getLevelName(), a, c, y,false); y++;
-		String ids = key.getIDEmails();
-		if (ids!=null) addLabelTextFieldPart("identities:", ids, a, c, y); y++;
+		if (key instanceof MasterKey) {
+			String ids = ((MasterKey)key).getIDEmails();
+			if (ids!=null) addLabelTextFieldPart("identities:", ids, a, c, y); y++;
+		}
 		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
 		addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y); y++;
 		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
@@ -1432,7 +1437,7 @@ public class SecurityMainFrame extends JFrame {
 						origFile = Dialogs.chooseOpenFile("Please select original file for signature verification", lastDir, "");
 					}
 					if (origFile != null) {
-						boolean v = s.tryVerificationFile(origFile);
+						boolean v = s.tryVerificationFile(origFile).succeeded;
 						if (v) {
 							Dialogs.showMessage("Signature verified!");
 						} else {
@@ -1449,13 +1454,13 @@ public class SecurityMainFrame extends JFrame {
 
 	private void signFile() {
 		if (currentKeyStore!=null) {
-			Vector<OSDXKeyObject> keys = currentKeyStore.getAllSigningSubKeys(); 
+			Vector<SubKey> keys = currentKeyStore.getAllSigningSubKeys(); 
 			if (keys.size()==0) {
 				Dialogs.showMessage("Sorry, no subkeys for signing in keystore");
 				return;
 			}
 			Vector<String> keyids = new Vector<String>();
-			for (OSDXKeyObject k: keys) {
+			for (OSDXKey k: keys) {
 				String id = k.getKeyID();
 				keyids.add(id);
 			}
@@ -1463,14 +1468,14 @@ public class SecurityMainFrame extends JFrame {
 			if (f!=null) {
 				int a = Dialogs.showSelectDialog("Select key", "Please select key for signing", keyids);
 				if (a>=0) {
-					OSDXKeyObject key = keys.get(a);
+					OSDXKey key = keys.get(a);
 					signFile(key,f);
 				}
 			}
 		}
 	}
 
-	private void signFile(OSDXKeyObject key, File file) {
+	private void signFile(OSDXKey key, File file) {
 		try {
 			if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
 
@@ -1484,14 +1489,13 @@ public class SecurityMainFrame extends JFrame {
 		}
 	}
 
-	private void generateRevokeKey(final OSDXKeyObject parentKey) {
+	private void generateRevokeKey(final MasterKey parentKey) {
 		final JDialog d = Dialogs.getWaitDialog("Generating new REVOKE Key,\nplease wait...");
 		Thread t = new Thread() {
 			public void run() {
 				try {
 					AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
-					OSDXKeyObject k = OSDXKeyObject.buildNewMasterKeyfromKeyPair(kp);
-					k.setLevel(OSDXKeyObject.LEVEL_REVOKE);
+					RevokeKey k = parentKey.buildNewRevokeKeyfromKeyPair(kp);
 					k.setParentKey(parentKey);
 					currentKeyStore.addKey(k);
 					releaseUILock();
@@ -1513,15 +1517,13 @@ public class SecurityMainFrame extends JFrame {
 		}
 	}
 
-	private void generateSubKey(final OSDXKeyObject parentKey) {
+	private void generateSubKey(final MasterKey parentKey) {
 		final JDialog d = Dialogs.getWaitDialog("Generating new SUB Key,\nplease wait...");
 		Thread t = new Thread() {
 			public void run() {
 				try {
 					AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
-					OSDXKeyObject k = OSDXKeyObject.buildNewMasterKeyfromKeyPair(kp);
-					k.setLevel(OSDXKeyObject.LEVEL_SUB);
-					k.setParentKey(parentKey);
+					SubKey k = parentKey.buildNewSubKeyfromKeyPair(kp); //MasterKey.buildNewMasterKeyfromKeyPair(kp);
 					currentKeyStore.addKey(k);
 					releaseUILock();
 					updateUI();
@@ -1541,7 +1543,7 @@ public class SecurityMainFrame extends JFrame {
 			updateUI();
 		}
 	}
-	protected void showGenerateKeyLogDialog(final OSDXKeyObject to) {
+	protected void showGenerateKeyLogDialog(final OSDXKey to) {
 	
 		//String ip4 = "127.0.0.1";
 		//String ip6 = "127.0.0.1";
@@ -1610,12 +1612,12 @@ public class SecurityMainFrame extends JFrame {
 		c.gridwidth = 1;
 		p.add(selectStatus, c);
 		
-		Vector<OSDXKeyObject> masterkeys = currentKeyStore.getAllSigningMasterKeys();
+		Vector<MasterKey> masterkeys = currentKeyStore.getAllSigningMasterKeys();
 		if (masterkeys == null || masterkeys.size()==0) {
 			Dialogs.showMessage("Sorry, no signing masterkey in keystore.");
 		}
 		Vector<String> mkeys = new Vector<String>();
-		for (OSDXKeyObject k : masterkeys) {
+		for (MasterKey k : masterkeys) {
 			mkeys.add(k.getKeyID()+", "+k.getIDEmails());
 		}
 		
@@ -1820,7 +1822,7 @@ public class SecurityMainFrame extends JFrame {
 	    	if (checks.get(14).isSelected()) idd.setName(texts.get(14).getText());
 	    	if (checks.get(15).isSelected()) idd.setNote(texts.get(15).getText());
 	    	
-	    	OSDXKeyObject from = masterkeys.get(selectMasterKey.getSelectedIndex());
+	    	OSDXKey from = masterkeys.get(selectMasterKey.getSelectedIndex());
 			if (!from.isPrivateKeyUnlocked()) from.unlockPrivateKey(messageHandler);
 	    	try {
 	    		String status = (String)selectStatus.getSelectedItem();
@@ -1834,38 +1836,36 @@ public class SecurityMainFrame extends JFrame {
 	    }
 	}
 	
-	protected void requestKeyLogs(OSDXKeyObject key) {
+	protected void requestKeyLogs(OSDXKey key) {
 		Vector<String> keyservernames = new Vector<String>();
 		for (KeyServerIdentity id : keyservers) {
 			keyservernames.add(id.getHost()+":"+id.getPort());
 		}
 		int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer.", keyservernames);
 		if (ans>=0) {
-			Vector<OSDXKeyObject> trustedKeys = new Vector<OSDXKeyObject>();
-			trustedKeys.addAll(knownpublickeys);
 			KeyServerIdentity keyserver = keyservers.get(ans);
-			OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
+			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
 			
 			Vector<KeyLog> logs = null;
 			try {
-				logs = client.requestKeyLogs(key.getKeyID(), trustedKeys);
+				logs = client.requestKeyLogs(key.getKeyID());
 			} catch (Exception ex) {
-				if (ex.getMessage().startsWith("signing key NOT in trusted keys")) {
+				if (ex.getMessage()!=null && ex.getMessage().startsWith("signing key NOT in trusted keys")) {
 					int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
 					if (antw != Dialogs.YES) return;
 					try {
 						//request servers signing key
 						String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
 						System.out.println("keyserver id: "+serverKeyID);
-						OSDXKeyObject serversSigningKey = client.requestPublicKey(serverKeyID, null);
-						trustedKeys.add(serversSigningKey);
-						logs = client.requestKeyLogs(key.getKeyID(), trustedKeys);
+						OSDXKey serversSigningKey = client.requestPublicKey(serverKeyID);
+						KeyVerificator.addTrustedKey(serversSigningKey);
+						logs = client.requestKeyLogs(key.getKeyID());
 					} catch (Exception ex2) {
 						Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
 						return;
 					}
 				} else {
-					if (ex.getLocalizedMessage().startsWith("Connection refused")) {
+					if (ex.getMessage()!=null && ex.getLocalizedMessage().startsWith("Connection refused")) {
 						Dialogs.showMessage("Sorry, could not connect to server.");
 						return;
 					} else {
@@ -1886,44 +1886,42 @@ public class SecurityMainFrame extends JFrame {
 		}
 	}
 	
-	protected void updateStatus(OSDXKeyObject key) {
+	protected void updateStatus(OSDXKey key) {
 		Vector<String> keyservernames = new Vector<String>();
 		for (KeyServerIdentity id : keyservers) {
 			keyservernames.add(id.getHost()+":"+id.getPort());
 		}
 		int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer.", keyservernames);
 		if (ans>=0) {
-			Vector<OSDXKeyObject> trustedKeys = new Vector<OSDXKeyObject>();
-			trustedKeys.addAll(knownpublickeys);
 			KeyServerIdentity keyserver = keyservers.get(ans);
-			OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
+			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
 			String keyid = key.getKeyID();
 			KeyStatus status = null;
 			try {
-				status = client.requestKeyStatus(keyid, trustedKeys);
+				status = client.requestKeyStatus(keyid);
 			} catch (Exception ex) {
-				if (ex.getMessage().startsWith("signing key NOT in trusted keys")) {
-					int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
-					if (antw != Dialogs.YES) return;
-					try {
-						//request servers signing key
-						String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
-						System.out.println("keyserver id: "+serverKeyID);
-						OSDXKeyObject serversSigningKey = client.requestPublicKey(serverKeyID, null);
-						trustedKeys.add(serversSigningKey);
-						status = client.requestKeyStatus(keyid, trustedKeys);
-					} catch (Exception ex2) {
-						Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
-						return;
-					}
-				} else {
+//				if (ex.getMessage().startsWith("signing key NOT in trusted keys")) {
+//					int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
+//					if (antw != Dialogs.YES) return;
+//					try {
+//						//request servers signing key
+//						String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
+//						System.out.println("keyserver id: "+serverKeyID);
+//						OSDXKey serversSigningKey = client.requestPublicKey(serverKeyID, null);
+//						trustedKeys.add(serversSigningKey);
+//						status = client.requestKeyStatus(keyid, trustedKeys);
+//					} catch (Exception ex2) {
+//						Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
+//						return;
+//					}
+//				} else {
 					if (ex.getLocalizedMessage().startsWith("Connection refused")) {
 						Dialogs.showMessage("Sorry, could not connect to server.");
 						return;
 					} else {
 						ex.printStackTrace();
 					}
-				}
+				//}
 			}
 			if (status != null) {
 				key_status.put(key, status);
@@ -1948,51 +1946,63 @@ public class SecurityMainFrame extends JFrame {
 			}
 			int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer.", keyservernames);
 			if (ans>=0) {
-				Vector<OSDXKeyObject> trustedKeys = new Vector<OSDXKeyObject>();
-				trustedKeys.addAll(knownpublickeys);
 				KeyServerIdentity keyserver = keyservers.get(ans);
-				OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
+				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
 				try {
 					Vector<String> masterkeys = null;
 					try {
-						masterkeys = client.requestMasterPubKeys(email, trustedKeys);
+						masterkeys = client.requestMasterPubKeys(email);
 					} catch (Exception ex) {
-						if (ex.getMessage().startsWith("signing key NOT in trusted keys")) {
-							int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
-							if (antw != Dialogs.YES) return;
-							try {
-								//request servers signing key
-								String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
-								System.out.println("keyserver id: "+serverKeyID);
-								OSDXKeyObject serversSigningKey = client.requestPublicKey(serverKeyID, null);
-								trustedKeys.add(serversSigningKey);
-								masterkeys = client.requestMasterPubKeys(email, trustedKeys);
-							} catch (Exception ex2) {
-								Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
-								return;
-							}
-						} else {
+//						if (ex.getMessage().startsWith("signing key NOT in trusted keys")) {
+//							int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
+//							if (antw != Dialogs.YES) return;
+//							try {
+//								//request servers signing key
+//								String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
+//								System.out.println("keyserver id: "+serverKeyID);
+//								OSDXKey serversSigningKey = client.requestPublicKey(serverKeyID, null);
+//								trustedKeys.add(serversSigningKey);
+//								masterkeys = client.requestMasterPubKeys(email);
+//							} catch (Exception ex2) {
+//								Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
+//								return;
+//							}
+//						} else {
 							if (ex.getLocalizedMessage().startsWith("Connection refused")) {
 								Dialogs.showMessage("Sorry, could not connect to server.");
 								return;
 							} else {
 								ex.printStackTrace();
 							}
-						}
+						//}
 					}
 					
 					String kt = "";
 					if (masterkeys!=null && masterkeys.size()>0) {
 						for (String masterkey : masterkeys) {
-							OSDXKeyObject mkey = client.requestPublicKey(masterkey, trustedKeys);
-							mkey.setLevel(OSDXKeyObject.LEVEL_MASTER);
+							OSDXKey mkey = client.requestPublicKey(masterkey);
+							//remove old key
+							String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(mkey.getKeyID());
+							for (OSDXKey k : storedPublicKeys) {
+								if (newkeyid.equals(OSDXKey.getFormattedKeyIDModulusOnly(k.getKeyID()))) {
+									currentKeyStore.removeKey(k);
+									break;
+								}
+							}
 							currentKeyStore.addKey(mkey);
 							kt += "\n  MASTER: "+mkey.getKeyID();
-							Vector<String> subkeys = client.requestSubKeys(masterkey, trustedKeys);
+							Vector<String> subkeys = client.requestSubKeys(masterkey);
 							if (subkeys!=null && subkeys.size()>0) {
 								for (String subkey : subkeys) {
-									OSDXKeyObject skey = client.requestPublicKey(subkey, trustedKeys);
-									skey.setLevel(OSDXKeyObject.LEVEL_SUB);
+									OSDXKey skey = client.requestPublicKey(subkey);
+									//remove old key
+									newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(skey.getKeyID());
+									for (OSDXKey k : storedPublicKeys) {
+										if (newkeyid.equals(OSDXKey.getFormattedKeyIDModulusOnly(k.getKeyID()))) {
+											currentKeyStore.removeKey(k);
+											break;
+										}
+									}
 									currentKeyStore.addKey(skey);
 									kt += "\n    -> "+subkey;	
 								}
@@ -2022,36 +2032,34 @@ public class SecurityMainFrame extends JFrame {
 		}
 		int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer for uploading KeyLog.", keyservernames);
 		if (ans>=0) {
-			Vector<OSDXKeyObject> trustedKeys = new Vector<OSDXKeyObject>();
-			trustedKeys.addAll(knownpublickeys);
 			KeyServerIdentity keyserver = keyservers.get(ans);
-			OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
+			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
 			Vector<Identity> ids = null;
 			try {
-				ids = client.requestIdentities(keyid, trustedKeys);
+				ids = client.requestIdentities(keyid);
 			} catch (Exception ex) {
-				if (ex.getMessage()!=null && ex.getMessage().startsWith("signing key NOT in trusted keys")) {
-					int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
-					if (antw != Dialogs.YES) return null;
-					try {
-						//request servers signing key
-						String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
-						System.out.println("keyserver id: "+serverKeyID);
-						OSDXKeyObject serversSigningKey = client.requestPublicKey(serverKeyID, null);
-						trustedKeys.add(serversSigningKey);
-						ids = client.requestIdentities(keyid, trustedKeys);
-					} catch (Exception ex2) {
-						Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
-						return null;
-					}
-				} else {
+//				if (ex.getMessage()!=null && ex.getMessage().startsWith("signing key NOT in trusted keys")) {
+//					int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
+//					if (antw != Dialogs.YES) return null;
+//					try {
+//						//request servers signing key
+//						String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
+//						System.out.println("keyserver id: "+serverKeyID);
+//						OSDXKey serversSigningKey = client.requestPublicKey(serverKeyID, null);
+//						trustedKeys.add(serversSigningKey);
+//						ids = client.requestIdentities(keyid, trustedKeys);
+//					} catch (Exception ex2) {
+//						Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
+//						return null;
+//					}
+//				} else {
 					if (ex.getMessage()!=null && ex.getMessage().startsWith("Connection refused")) {
 						Dialogs.showMessage("Sorry, could not connect to server.");
 						return null;
 					} else {
 						ex.printStackTrace();
 					}
-				}
+				//}
 			}
 			if (ids!=null) {
 				return ids;
@@ -2062,26 +2070,26 @@ public class SecurityMainFrame extends JFrame {
 	
 	private boolean uploadKeyLogToKeyServer(KeyLog log) {
 		if (currentKeyStore!=null) {
-			Vector<OSDXKeyObject> keys = currentKeyStore.getAllSigningMasterKeys();
+			Vector<MasterKey> keys = currentKeyStore.getAllSigningMasterKeys();
 			if (keys.size()==0) {
 				Dialogs.showMessage("Sorry, no masterkeys for signing in keystore");
 				return false;
 			}
 			Vector<String> keyids = new Vector<String>();
-			for (OSDXKeyObject k: keys) {
+			for (OSDXKey k: keys) {
 				String id = k.getKeyID();
 				keyids.add(id);
 			}
 			int a = Dialogs.showSelectDialog("Select key", "Please select key for signing", keyids);
 			if (a>=0) {
-				OSDXKeyObject key = keys.get(a);
+				OSDXKey key = keys.get(a);
 				if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
 				return uploadKeyLogToKeyServer(log, key);
 			}
 		} 
 		return false;
 	}
-	private boolean uploadKeyLogToKeyServer(KeyLog log, OSDXKeyObject signingKey) {
+	private boolean uploadKeyLogToKeyServer(KeyLog log, OSDXKey signingKey) {
 		if (keyservers == null) {
 			Dialogs.showMessage("Sorry, no keyservers found.");
 			return false;
@@ -2097,176 +2105,102 @@ public class SecurityMainFrame extends JFrame {
 		return false;
 	}
 
-	private boolean uploadMasterKeyToKeyServer(OSDXKeyObject key) {
-		if (keyservers == null) {
-			Dialogs.showMessage("Sorry, no keyservers found.");
-			return false;
-		}
-		Vector<String> keyservernames = new Vector<String>();
-		for (KeyServerIdentity id : keyservers) {
-			keyservernames.add(id.getHost()+":"+id.getPort());
-		}
-		int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer for uploading MASTER Key.", keyservernames);
-		if (ans>=0) {
-			return uploadMasterKeyToKeyServer(key, keyservers.get(ans));
-		}
-		return false;
-	}
-
-	private boolean uploadRevokeKeyToKeyServer(OSDXKeyObject key) {
-		String parent = key.getParentKeyID();
-		int iAt = parent.indexOf('@');
-		if (iAt<0 || parent.toLowerCase().endsWith("@local")) {
-			Dialogs.showMessage("Can only upload if authoritative keyserver of MASTER Key is not LOCAL");
-			return false;
-		}
-		if (keyservers==null || keyservers.size()==0) {
-			Dialogs.showMessage("No keyserver available.");
-			return false;
-		}
-
-		String host = parent.substring(iAt+1).toLowerCase();
-		KeyServerIdentity keyserver = null;
-		for (KeyServerIdentity kid : keyservers) {
-			if (kid.getHost().toLowerCase().equals(host)) {
-				keyserver = kid;
-				break;
+	public boolean uploadMasterKeyToKeyServer(MasterKey key) {
+		if (key.getAuthoritativekeyserver().toLowerCase().equals("local")) {
+			//select keyserver
+			if (keyservers == null) {
+				Dialogs.showMessage("Sorry, no keyservers found.");
+				return false;
 			}
-		}
-		if (keyserver!=null) {
-			try {
-				String oldAuthoritativeKS = key.getAuthoritativekeyserver();
-				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the REVOKE Key:\n"+key.getKeyID()+"\nfor MASTER Key: "+parent+"\nto KeyServer: "+keyserver.getHost()+"?"+(oldAuthoritativeKS.equals("LOCAL")?"\nThis will also change your authoritative keyserver for this key.":""));
-				if (confirm==Dialogs.YES) {
-					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
-					OSDXKeyObject masterkey = currentKeyStore.getKey(parent);
-					if (!masterkey.isPrivateKeyUnlocked()) masterkey.unlockPrivateKey(messageHandler);
-					if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
-					if (oldAuthoritativeKS.equals("LOCAL")) {
-						key.setAuthoritativeKeyServer(keyserver.getHost());
-					}
-					boolean ok = client.putRevokeKey(key, masterkey);
-					if (ok) {
-						props.put(key.getKeyID(), "VISIBLE");
-						updateUI();
-						Dialogs.showMessage("Upload of REVOKE Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
-						return ok;
-					} else {
-						key.setAuthoritativeKeyServer(oldAuthoritativeKS);
-						String msg = client.getMessage();
-						Dialogs.showMessage("Upload of REVOKE Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
-						return false;
-					}
-				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}	
-		}
-		return false;
-	}
-
-	private boolean uploadSubKeyToKeyServer(OSDXKeyObject key) {
-		String parent = key.getParentKeyID();
-		int iAt = parent.indexOf('@');
-		if (iAt<0 || parent.toLowerCase().endsWith("@local")) {
-			Dialogs.showMessage("Can only upload if authoritative keyserver of MASTER Key is not LOCAL");
-			return false;
-		}
-		if (keyservers==null || keyservers.size()==0) {
-			Dialogs.showMessage("No keyserver available.");
-			return false;
-		}
-
-		String host = parent.substring(iAt+1).toLowerCase();
-		KeyServerIdentity keyserver = null;
-		for (KeyServerIdentity kid : keyservers) {
-			if (kid.getHost().toLowerCase().equals(host)) {
-				keyserver = kid;
-				break;
+			Vector<String> keyservernames = new Vector<String>();
+			for (KeyServerIdentity id : keyservers) {
+				keyservernames.add(id.getHost()+":"+id.getPort());
 			}
-		}
-		if (keyserver!=null) {
-			try {
-				String oldAuthoritativeKS = key.getAuthoritativekeyserver();
-				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the SUB Key:\n"+key.getKeyID()+"\nfor MASTER Key: "+parent+"\nto KeyServer: "+keyserver.getHost()+"?"+(oldAuthoritativeKS.equals("LOCAL")?"\nThis will also change your authoritative keyserver for this key.":""));
-				if (confirm==Dialogs.YES) {
-					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
-					OSDXKeyObject masterkey = currentKeyStore.getKey(parent);
-					if (!masterkey.isPrivateKeyUnlocked()) masterkey.unlockPrivateKey(messageHandler);
-					if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
-					if (oldAuthoritativeKS.equals("LOCAL")) {
-						key.setAuthoritativeKeyServer(keyserver.getHost());
-					}
-					boolean ok = client.putSubKey(key, masterkey);
-					if (ok) {
-						props.put(key.getKeyID(), "VISIBLE");
-						updateUI();
-						Dialogs.showMessage("Upload of SUB Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
-						return ok;
-					} else {
-						key.setAuthoritativeKeyServer(oldAuthoritativeKS);
-						String msg = client.getMessage();
-						Dialogs.showMessage("Upload of SUB Key:\n"+key.getKeyID()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
-						return false;
-					}
-				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}	
-		}
-		return false;
-	}
-
-	private boolean uploadMasterKeyToKeyServer(OSDXKeyObject key, KeyServerIdentity keyserver) {
-		Identity id = key.getIdentity0001();
-		if (id!=null) {
-			try {
-				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+id.getEmail()+"\nto KeyServer: "+keyserver.getHost()+"?\nThis will also change your authoritative keyserver for this key.");
+			int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer for uploading MASTER Key.", keyservernames);
+			if (ans>=0) {
+				KeyServerIdentity keyserver = keyservers.get(ans);
+				key.setAuthoritativeKeyServer(keyserver.getHost(), keyserver.getPort());
+				return uploadMasterKeyToKeyServer(key);
+			}
+		} else {
+			Result r = Result.error("unknown error");
+			Result rKeylog = Result.error("unknown error");
+			if (key.getIdentity0001()==null) r = Result.error("No Identity 0001 found.");
+			else {
+				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+key.getIdentity0001().getEmail()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"?\n");
 				if (confirm==Dialogs.YES) {
 					if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
-					if (!key.isPrivateKeyUnlocked()) return false;
-					OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
-					boolean ok =client.putMasterKey(key, id);
-					if (ok) {
-						Vector<OSDXKeyObject> childkeys = currentKeyStore.getRevokeKeys(key.getKeyID());
-						childkeys.addAll(currentKeyStore.getSubKeys(key.getKeyID()));
-	
-						key.setAuthoritativeKeyServer(keyserver.getHost());
-						for (OSDXKeyObject k : childkeys) {
-							k.setParentKey(key);
-						}
+					r = key.uploadToKeyServer();
+					
+					if (r.succeeded) {
 						props.put(key.getKeyID(), "VISIBLE");
 						updateUI();
 						
-						//upload keylog
-						KeyLog kl = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, key, key.getKeyID(), id);
-						//currentKeyStore.addKeyLog(kl);
-						boolean klOK = client.putKeyLog(kl, key);
-						Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+id.getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nsuccessful!");
-						if (!klOK) {
-							Dialogs.showMessage("Upload of self-approval keylog FAILED.");
+						//self approval keylog
+						try {
+							KeyLog kl = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, key, key.getKeyID(), key.getIdentity0001());
+							rKeylog = kl.uploadToKeyServer(key.getAuthoritativekeyserver(), key.getAuthoritativekeyserverPort(),key);
+						} catch (Exception ex) {
+							rKeylog = Result.error(ex);
 						}
-						return ok;
-					} else {
-						String msg = client.getMessage();
-						Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+id.getEmail()+"\nto KeyServer: "+keyserver.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
-						return false;
 					}
 				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
 			}
-		} else {
-			Dialogs.showMessage("Upload failed. No identity with identnum 0001 found.");
+			if (r.succeeded) {
+				Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+key.getIdentity0001().getEmail()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"\nsuccessful!");
+				if (!rKeylog.succeeded) {
+					Dialogs.showMessage("Upload of self-approval keylog FAILED.");
+				}
+				return true;
+			} else {
+				String msg = r.errorMessage;
+				Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
+				return false;
+			}
+		}
+		return false;
+	}
+
+	private boolean uploadRevokeKeyToKeyServer(RevokeKey key) {
+		return uploadSubOrRevokeKeyToKeyServer(key);
+	}
+	
+	private boolean uploadSubKeyToKeyServer(SubKey key) {
+		return uploadSubOrRevokeKeyToKeyServer(key);
+	}
+	
+	private boolean uploadSubOrRevokeKeyToKeyServer(SubKey key) {
+		if (key.getParentKey()==null) {
+			Dialogs.showMessage("Parent Key for subkey not found.");
+			return false;
+		}
+		String keyLevel = "SUB";
+		if (key instanceof RevokeKey) keyLevel = "REVOKE";
+		int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the "+keyLevel+" Key:\n"+key.getKeyID()+"\nfor MASTER Key: "+key.getParentKeyID()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"?");
+		if (confirm==Dialogs.YES) {
+			if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
+			if (!key.getParentKey().isPrivateKeyUnlocked()) key.getParentKey().unlockPrivateKey(messageHandler);
+			
+			Result r = key.uploadToKeyServer();
+			if (r.succeeded) {
+				props.put(key.getKeyID(), "VISIBLE");
+				updateUI();
+				Dialogs.showMessage("Upload of "+keyLevel+" Key:\n"+key.getKeyID()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"\nsuccessful!");
+				return true;
+			} else {
+				String msg = r.errorMessage;
+				Dialogs.showMessage("Upload of "+keyLevel+" Key:\n"+key.getKeyID()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
+				return false;
+			}
 		}
 		return false;
 	}
 	
-	private boolean uploadKeyLogToKeyServer(KeyLog log, KeyServerIdentity keyserver, OSDXKeyObject signingKey) {
+	private boolean uploadKeyLogToKeyServer(KeyLog log, KeyServerIdentity keyserver, OSDXKey signingKey) {
 		try {
 			int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to generate a KeyLog of key:\n"+log.getKeyIDTo()+"\non KeyServer: "+keyserver.getHost()+"?");
 			if (confirm==Dialogs.YES) {
-				OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
+				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
 				boolean ok =client.putKeyLog(log, signingKey);
 				if (ok) {
 					Dialogs.showMessage("Generation of KeyLog successful!");
@@ -2376,7 +2310,7 @@ public class SecurityMainFrame extends JFrame {
 		if (currentKeyStore!=null) {
 			try {
 				AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
-				OSDXKeyObject k = OSDXKeyObject.buildNewMasterKeyfromKeyPair(kp);
+				MasterKey k = MasterKey.buildNewMasterKeyfromKeyPair(kp);
 				k.createLockedPrivateKey(messageHandler);
 				currentKeyStore.addKey(k);
 				updateUI();
@@ -2389,7 +2323,7 @@ public class SecurityMainFrame extends JFrame {
 		}
 	}
 	
-	public boolean revokeMasterKeyWithRevokeKey(OSDXKeyObject revokekey) {
+	public boolean revokeMasterKeyWithRevokeKey(RevokeKey revokekey) {
 		String message = Dialogs.showInputDialog("Confirm REVOCATION", "Please confirm REVOCATION of Masterkey.\nYou can enter a revocatoin message:");
 		if (message!=null) {
 			return revokeMasterKeyWithRevokeKey(revokekey,message);
@@ -2397,14 +2331,17 @@ public class SecurityMainFrame extends JFrame {
 		return false;
 	}
 	
-	public boolean revokeMasterKeyWithRevokeKey(OSDXKeyObject revokekey, String message) {
+	public boolean revokeMasterKeyWithRevokeKey(RevokeKey revokekey, String message) {
 		if (keyservers==null || keyservers.size()==0) {
 			Dialogs.showMessage("No keyserver available.");
 			return false;
 		}
 		String parent = revokekey.getParentKeyID();
-		OSDXKeyObject masterkey = currentKeyStore.getKey(parent);
-		
+		OSDXKey mkey = currentKeyStore.getKey(parent);
+		MasterKey masterkey = null;
+		if (mkey instanceof MasterKey) {
+			masterkey = (MasterKey)mkey;
+		}
 		String host = masterkey.getAuthoritativekeyserver().toLowerCase();
 		KeyServerIdentity keyserver = null;
 		for (KeyServerIdentity kid : keyservers) {
@@ -2416,7 +2353,7 @@ public class SecurityMainFrame extends JFrame {
 		if (keyserver!=null) {
 			try {
 				if (!revokekey.isPrivateKeyUnlocked()) revokekey.unlockPrivateKey(messageHandler);	
-				OSDXKeyServerClient client =  new OSDXKeyServerClient(keyserver.getHost(), keyserver.getPort());
+				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
 				boolean ok = client.putRevokeMasterKeyRequest(revokekey, masterkey, message);
 				if (ok) {
 					Dialogs.showMessage("REVOCATION of Key:\n"+masterkey.getKeyID()+"\non KeyServer: "+keyserver.getHost()+"\nsuccessful!");
@@ -2455,18 +2392,14 @@ public class SecurityMainFrame extends JFrame {
 						AsymmetricKeyPair subkp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
 
 
-						OSDXKeyObject masterkey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(masterkp);
+						MasterKey masterkey = MasterKey.buildNewMasterKeyfromKeyPair(masterkp);
 						masterkey.createLockedPrivateKey(messageHandler);
 						masterkey.addIdentity(idd);
 						
-						OSDXKeyObject revokekey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(revokekp);
-						revokekey.setLevel(OSDXKeyObject.LEVEL_REVOKE);
-						revokekey.setParentKey(masterkey);
+						RevokeKey revokekey = masterkey.buildNewRevokeKeyfromKeyPair(revokekp);
 						revokekey.createLockedPrivateKey(messageHandler);
 
-						OSDXKeyObject subkey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(subkp);
-						subkey.setLevel(OSDXKeyObject.LEVEL_SUB);
-						subkey.setParentKey(masterkey);
+						SubKey subkey = masterkey.buildNewSubKeyfromKeyPair(subkp);
 						subkey.createLockedPrivateKey(messageHandler);
 
 						currentKeyStore.addKey(masterkey);
@@ -2618,13 +2551,13 @@ public class SecurityMainFrame extends JFrame {
 	//		private String[] header = new String[] {"name","value"};
 	//		private Vector<String> rows = new Vector<String>();
 	//		
-	//		private OSDXKeyObject key;
+	//		private OSDXKey key;
 	//		private Vector<Identity> ids;
 	//		private Vector<DataSourceStep> datapath;
 	//		private int startIds = 0;
 	//		private int startDataPath = 0;
 	//		
-	//		public KeyTableModel(OSDXKeyObject key) {
+	//		public KeyTableModel(OSDXKey key) {
 	//			this.key = key;
 	//			ids = key.getIdentities();
 	//			datapath = key.getDatapath();
@@ -2709,9 +2642,9 @@ public class SecurityMainFrame extends JFrame {
 	//	class KeysAndIdentitiesTableModel extends DefaultTableModel {
 	//		
 	//		private String[] header = new String[] {"key id","level","usage","identities", "parent key id"};
-	//		private Vector<OSDXKeyObject> keys;
+	//		private Vector<OSDXKey> keys;
 	//		
-	//		public KeysAndIdentitiesTableModel(Vector<OSDXKeyObject> keys) {
+	//		public KeysAndIdentitiesTableModel(Vector<OSDXKey> keys) {
 	//			this.keys = keys;
 	//		}
 	//		
@@ -2733,7 +2666,7 @@ public class SecurityMainFrame extends JFrame {
 	//		}
 	//	
 	//		public Object getValueAt(int rowIndex, int columnIndex) {
-	//			OSDXKeyObject k = keys.get(rowIndex);
+	//			OSDXKey k = keys.get(rowIndex);
 	//			if (columnIndex==0)
 	//				return k.getKeyID();
 	//			else if (columnIndex==1)

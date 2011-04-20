@@ -66,13 +66,15 @@ public class KeyLog {
 	private static String[] checkForAction = new String[] {APPROVAL, APPROVAL_PENDING, DISAPPROVAL, REVOCATION};
 	
 	
+	private String fromKeyid = null;
+	private OSDXKey fromKey = null;
+	private String toKeyid = null;
+	private String action; // approval/disapproval/revocation/approval pending
 	
 	private long datetime = -1L;
 	private String ipv4 = null;
 	private String ipv6 = null;
-	private String fromKeyid = null;
-	private String toKeyid = null;
-	private String action; // approval/disapproval/revocation/approval pending
+
 	private Identity id = null;
 	private String message = null;
 	private byte[] actionSha1localproof = null;
@@ -89,13 +91,14 @@ public class KeyLog {
 		
 	}
 	
-	public static KeyLog buildKeyLogAction(String action, OSDXKeyObject from, String toKeyID, Identity id) throws Exception {
+	public static KeyLog buildKeyLogAction(String action, OSDXKey from, String toKeyID, Identity id) throws Exception {
 		KeyLog kl = new KeyLog();
 		kl.action = action;
 		kl.datetime = System.currentTimeMillis();
 		kl.ipv4 = "LOCAL";
 		kl.ipv6 = "LOCAL";
 		kl.fromKeyid = from.getKeyID();
+		kl.fromKey = from;
 		kl.toKeyid = toKeyID;
 		kl.id = id;
 		kl.datapath = new Vector<DataSourceStep>();
@@ -105,7 +108,7 @@ public class KeyLog {
 		return kl;
 	}
 	
-	public static KeyLog buildNewKeyLog(String action, OSDXKeyObject from, String toKeyID, String ip4, String ip6, Identity id) throws Exception {
+	public static KeyLog buildNewKeyLog(String action, OSDXKey from, String toKeyID, String ip4, String ip6, Identity id) throws Exception {
 		KeyLog kl = new KeyLog();
 		kl.action = action;
 		kl.datetime = System.currentTimeMillis();
@@ -122,7 +125,19 @@ public class KeyLog {
 		return kl;
 	}
 	
-	public static KeyLog buildNewRevocationKeyLog(String fromKeyID, String toKeyID, String message, byte[] actionproof, Signature actionSignature, String ip4, String ip6, OSDXKeyObject serverSignoffKey) throws Exception {
+	public Result uploadToKeyServer(String host, int port, OSDXKey signingKey) {
+		try {
+			KeyClient client =  new KeyClient(host, port);
+			boolean ok = client.putKeyLog(this, signingKey);
+			if (ok) return Result.succeeded();
+			else Result.error(client.getMessage());
+		} catch (Exception ex) {
+			return Result.error(ex);
+		}
+		return Result.error("unknown error");
+	}
+	
+	public static KeyLog buildNewRevocationKeyLog(String fromKeyID, String toKeyID, String message, byte[] actionproof, Signature actionSignature, String ip4, String ip6, OSDXKey serverSignoffKey) throws Exception {
 		KeyLog kl = new KeyLog();
 		kl.action = KeyLog.REVOCATION;
 		kl.datetime = System.currentTimeMillis();
@@ -170,34 +185,38 @@ public class KeyLog {
 		return v;
 	}
 
-	public boolean verifySHA1localproofAndSignoff() throws Exception {
-		boolean v = verifyActionSHA1localproofAndSignoff();
-		if (v && keyserverSignature!=null) {
+	public Result verifySHA1localproofAndSignoff() throws Exception {
+		Result v = verifyActionSHA1localproofAndSignoff();
+		if (v.succeeded && keyserverSignature!=null) {
 			v = verifyKeyServerSHA1localproofAndSignoff();
 		}
 		return v;
 	}
-	public boolean verifyActionSHA1localproofAndSignoff() throws Exception {
-		if (actionSignature==null || actionSha1localproof == null) return false;
+	public Result verifyActionSHA1localproofAndSignoff() throws Exception {
+		if (actionSignature==null) return  Result.error("missing action signature");
+		if (actionSha1localproof == null) return  Result.error("missing action localproof");
+		
 		
 		//check localproof
 		byte[] bsha1 = calcActionSha1LocalProof();
 		if (!Arrays.equals(bsha1, actionSha1localproof)) {
 			System.out.println("sha1localproof target: "+SecurityHelper.HexDecoder.encode(actionSha1localproof, '\0', -1));
 			System.out.println("sha1localproof real  : "+SecurityHelper.HexDecoder.encode(bsha1, '\0', -1));
-			return false;
+			return Result.error("verification of sha1localproof failed");
 		}	
 		//check signoff
+		//return actionSignature.tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(bsha1));
 		return actionSignature.tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(bsha1));
 	}
-	public boolean verifyKeyServerSHA1localproofAndSignoff() throws Exception {
-		if (keyserverSignature==null || keyserverSha1localproof == null) return false;
+	public Result verifyKeyServerSHA1localproofAndSignoff() throws Exception {
+		if (keyserverSignature==null) return  Result.error("missing signature");
+		if (keyserverSha1localproof == null) return  Result.error("missing keyserver localproof");
 		//check localproof
 		byte[] bsha1 = calcKeyServerSha1LocalProof();
 		if (!Arrays.equals(bsha1, keyserverSha1localproof)) {
 			System.out.println("sha1localproof target: "+SecurityHelper.HexDecoder.encode(keyserverSha1localproof, '\0', -1));
 			System.out.println("sha1localproof real  : "+SecurityHelper.HexDecoder.encode(bsha1, '\0', -1));
-			return false;
+			return Result.error("verification of sha1localproof failed");
 		}
 		//check signoff
 		return keyserverSignature.tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(bsha1));
@@ -260,13 +279,13 @@ public class KeyLog {
 		}
 	}
 	
-	public void signoffAction(OSDXKeyObject key) throws Exception {
+	public void signoffAction(OSDXKey key) throws Exception {
 		actionSha1localproof = calcActionSha1LocalProof();
 		actionSignature = Signature.createSignatureFromLocalProof(actionSha1localproof, "signature of sha1localproof", key);
 		verified = true;
 	}
 	
-	public void signoffKeyServer(OSDXKeyObject key) throws Exception {
+	public void signoffKeyServer(OSDXKey key) throws Exception {
 		keyserverSha1localproof = calcKeyServerSha1LocalProof();
 		keyserverSignature = Signature.createSignatureFromLocalProof(keyserverSha1localproof, "signature of sha1localproof", key);
 		verified = true;
@@ -337,7 +356,8 @@ public class KeyLog {
 		kl.actionSha1localproof = SecurityHelper.HexDecoder.decode(ea.getChildText("sha1localproof"));
 		kl.actionSignature = Signature.fromElement(ea.getChild("signature"));
 		if (tryVerification) {
-			kl.verified = kl.verifyActionSHA1localproofAndSignoff();
+			Result v = kl.verifyActionSHA1localproofAndSignoff();
+			kl.verified = v.succeeded;
 			if(!kl.verified) {
 				throw new Exception("KeyLog:  localproof and signoff of action failed.");
 			}
@@ -345,7 +365,8 @@ public class KeyLog {
 		
 	
 		if (tryVerification && kl.keyserverSignature!=null) {
-			kl.verified = kl.verifyKeyServerSHA1localproofAndSignoff();
+			Result v = kl.verifyKeyServerSHA1localproofAndSignoff();
+			kl.verified = v.succeeded;
 			if(!kl.verified) {
 				throw new Exception("KeyLog:  localproof and signoff from keyserver failed.");
 			}

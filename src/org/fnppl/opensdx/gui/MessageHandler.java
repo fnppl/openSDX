@@ -3,7 +3,7 @@ package org.fnppl.opensdx.gui;
 import java.io.File;
 
 import org.fnppl.opensdx.security.KeyApprovingStore;
-import org.fnppl.opensdx.security.OSDXKeyObject;
+import org.fnppl.opensdx.security.MasterKey;
 
 public interface MessageHandler {
 
@@ -14,7 +14,7 @@ public interface MessageHandler {
 	
 	public boolean requestIgnoreVerificationFailure();
 	public boolean requestIgnoreKeyLogVerificationFailure();
-	public OSDXKeyObject requestMasterSigningKey(KeyApprovingStore keystore) throws Exception;
+	public MasterKey requestMasterSigningKey(KeyApprovingStore keystore) throws Exception;
 	public boolean requestOverwriteFile(File file);
 	public String requestPassword(String keyid, String mantra);
 	public String[] requestNewPasswordAndMantra(String message);

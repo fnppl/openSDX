@@ -96,7 +96,7 @@ public class AsymmetricKeyPair {
 	}
 
 	public AsymmetricKeyPair(byte[] modulus, byte[] pub_exponent, byte[] priv_exponent) {
-		type = OSDXKeyObject.ALGO_RSA;
+		type = OSDXKey.ALGO_RSA;
 		//public key
 		org.bouncycastle.crypto.params.RSAKeyParameters rpub = new RSAKeyParameters(false, new BigInteger(modulus), new BigInteger(pub_exponent));	
 		this.pubkey = new PublicKey(rpub.getModulus(), rpub.getExponent());
@@ -112,7 +112,7 @@ public class AsymmetricKeyPair {
 	}
 	
 	public AsymmetricKeyPair(AsymmetricCipherKeyPair keyPair) {
-		type = OSDXKeyObject.ALGO_RSA;
+		type = OSDXKey.ALGO_RSA;
 		
 		CipherParameters pub = keyPair.getPublic();
 		CipherParameters priv = keyPair.getPrivate();
@@ -177,7 +177,7 @@ public class AsymmetricKeyPair {
 	}
 	
 	public boolean isRSA() {
-		if (type == OSDXKeyObject.ALGO_RSA) {
+		if (type == OSDXKey.ALGO_RSA) {
 			return true;
 		}
 		return false;

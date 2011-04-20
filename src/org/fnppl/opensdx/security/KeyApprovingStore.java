@@ -56,10 +56,10 @@ public class KeyApprovingStore {
 	
 	private MessageHandler messageHandler = null;
 	private File f = null;
-	private Vector<OSDXKeyObject> keys = null;
+	private Vector<OSDXKey> keys = null;
 	private Vector<KeyLog> keylogs = null;
 	private boolean unsavedChanges = false;
-	private OSDXKeyObject keystoreSigningKey = null;
+	private OSDXKey keystoreSigningKey = null;
 	
 	private KeyApprovingStore() {
 	}
@@ -67,7 +67,7 @@ public class KeyApprovingStore {
 	public static KeyApprovingStore createNewKeyApprovingStore(File f, MessageHandler mh) throws Exception {
 		KeyApprovingStore kas = new KeyApprovingStore();
 		kas.f = f;
-		kas.keys = new Vector<OSDXKeyObject>();
+		kas.keys = new Vector<OSDXKey>();
 		kas.keylogs = new Vector<KeyLog>();
 		kas.unsavedChanges = true;
 		kas.messageHandler = mh;
@@ -87,18 +87,18 @@ public class KeyApprovingStore {
 		kas.f = f;
 		kas.unsavedChanges = false;
 		kas.messageHandler = mh;
-		kas.keys = new Vector<OSDXKeyObject>();
+		kas.keys = new Vector<OSDXKey>();
 		kas.keylogs = new Vector<KeyLog>();
 		
 		Element keys = e.getChild("keys");
 		
-		//add all keypairs as OSDXKeyObject
+		//add all keypairs as OSDXKey
 		Vector<Element> ves = keys.getChildren("keypair");
 		if (ves.size()>0) {
 			System.out.println("keystore contains "+ves.size()+" keypairs.");
 			for(int i=0; i<ves.size(); i++) {
 				Element ee = ves.elementAt(i);
-				OSDXKeyObject osdxk = OSDXKeyObject.fromElement(ee);
+				OSDXKey osdxk = OSDXKey.fromElement(ee);
 				kas.keys.add(osdxk);
 			}
 			
@@ -117,7 +117,8 @@ public class KeyApprovingStore {
 			boolean ok = false;
 			try {
 				s = Signature.fromElement(keys.getChild("signature"));
-				ok = s.tryVerificationMD5SHA1SHA256(sha1localproof);
+				Result v = s.tryVerificationMD5SHA1SHA256(sha1localproof); 
+				ok = v.succeeded;
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -132,6 +133,27 @@ public class KeyApprovingStore {
 		} else {
 			//TODO no keypairs in store
 		}
+		//connet subkeys to masterkeys
+		Vector<MasterKey> masterkeys = kas.getAllMasterKeys();
+		for (OSDXKey k : kas.keys) {
+			if (k instanceof SubKey) {
+				SubKey sk = (SubKey)k;
+				byte[] parentkeyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(sk.getParentKeyID()));
+				for (MasterKey mk : masterkeys) {
+					//System.out.println("comparing: "+SecurityHelper.HexDecoder.encode(parentkeyid, '\0', -1)+" - "+SecurityHelper.HexDecoder.encode(mk.getKeyModulusSHA1bytes(), '\0', -1));
+					if (Arrays.equals(mk.getKeyModulusSHA1bytes(), parentkeyid)) {
+						sk.setParentKey(mk);
+						if (sk.isRevoke()) {
+							mk.addRevokeKey((RevokeKey)sk);
+						} else {
+							mk.addSubKey(sk);
+						}
+						break;
+					}
+				}
+			}
+		}
+		
 		
 		//add keylog (includes verify localproof and signoff)
 		Vector<Element> vkl = e.getChildren("keylog");
@@ -144,7 +166,7 @@ public class KeyApprovingStore {
 					kas.keylogs.add(kl);
 					if (!kl.isVerified()) kas.unsavedChanges = true;
 				} catch (Exception ex) {
-					if (ex.getMessage().startsWith("KeyStore:  localproof and signoff of keylog failed.")) {
+					if (ex.getMessage()!=null && ex.getMessage().startsWith("KeyStore:  localproof and signoff of keylog failed.")) {
 						boolean ignore = mh.requestIgnoreKeyLogVerificationFailure();
 						if (ignore) {
 							KeyLog kl = KeyLog.fromElement(ee,false);
@@ -166,7 +188,7 @@ public class KeyApprovingStore {
 	public boolean hasUnsavedChanges() {
 		if (unsavedChanges) return true;
 		else {
-			for (OSDXKeyObject k : keys) {
+			for (OSDXKey k : keys) {
 				if (k.hasUnsavedChanges()) {
 					System.out.println("unsaved changes in key: "+k.getKeyID());
 					return true;
@@ -176,26 +198,26 @@ public class KeyApprovingStore {
 		return false;
 	}
 	
-	public Vector<OSDXKeyObject> getAllKeys() {
+	public Vector<OSDXKey> getAllKeys() {
 		return keys;
 	}
 	
-	public Vector<OSDXKeyObject> getSubKeys(String keyid) {
-		Vector<OSDXKeyObject> ret = new Vector<OSDXKeyObject>();
-		for (OSDXKeyObject k : keys) {
+	public Vector<SubKey> getSubKeys(String keyid) {
+		Vector<SubKey> ret = new Vector<SubKey>();
+		for (OSDXKey k : keys) {
 			try {
-				if (k.isSub() && k.getParentKeyID().equals(keyid)) {
-					ret.add(k);
+				if (k instanceof SubKey && k.isSub() && ((SubKey)k).getParentKeyID().equals(keyid)) {
+					ret.add((SubKey)k);
 				}
 			} catch (Exception ex) {}
 		}
 		return ret;
 	}
 	
-	public OSDXKeyObject getKey(String keyid) {
-		byte[] idbytes = SecurityHelper.HexDecoder.decode(OSDXKeyObject.getFormattedKeyIDModulusOnly(keyid));
+	public OSDXKey getKey(String keyid) {
+		byte[] idbytes = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(keyid));
 		if (idbytes==null) return null;
-		for (OSDXKeyObject k : keys) {
+		for (OSDXKey k : keys) {
 			if (Arrays.equals(k.getKeyModulusSHA1bytes(), idbytes)) {
 				return k;
 			}
@@ -203,8 +225,9 @@ public class KeyApprovingStore {
 		return null;
 	}
 	
-	public void removeKey(OSDXKeyObject key) {
-		keys.remove(key);
+	public void removeKey(OSDXKey key) {
+		boolean ok = keys.remove(key);
+		//System.out.println("removing key: "+ok);
 		unsavedChanges = true;
 	}
 	
@@ -215,57 +238,66 @@ public class KeyApprovingStore {
 		}
 	}
 	
-	public Vector<OSDXKeyObject> getRevokeKeys(String keyid) {
-		Vector<OSDXKeyObject> ret = new Vector<OSDXKeyObject>();
-		for (OSDXKeyObject k : keys) {
-			if (k.isRevoke() && k.getParentKeyID().equals(keyid)) {
-				ret.add(k);
+	public Vector<RevokeKey> getRevokeKeys(String keyid) {
+		Vector<RevokeKey> ret = new Vector<RevokeKey>();
+		for (OSDXKey k : keys) {
+			if (k instanceof RevokeKey && k.isRevoke() && ((RevokeKey)k).getParentKeyID().equals(keyid)) {
+				ret.add((RevokeKey)k);
 			}
 		}
 		return ret;
 	}
 	
-	public Vector<OSDXKeyObject> getAllSigningSubKeys() {
-		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
-		for (OSDXKeyObject k : keys) {
-			if (k.isSub() && k.allowsSigning()) {
-				skeys.add(k);
+	public Vector<SubKey> getAllSigningSubKeys() {
+		Vector<SubKey> skeys = new Vector<SubKey>();
+		for (OSDXKey k : keys) {
+			if (k instanceof SubKey && k.isSub() && k.allowsSigning()) {
+				skeys.add((SubKey)k);
 			}
 		}
 		return skeys;
 	}
 	
-	public Vector<OSDXKeyObject> getAllSigningMasterKeys() {
-		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
-		for (OSDXKeyObject k : keys) {
-			if (k.isMaster() && k.allowsSigning()) {
-				skeys.add(k);
+	public Vector<MasterKey> getAllSigningMasterKeys() {
+		Vector<MasterKey> skeys = new Vector<MasterKey>();
+		for (OSDXKey k : keys) {
+			if (k instanceof MasterKey && k.isMaster() && k.allowsSigning()) {
+				skeys.add((MasterKey)k);
 			}
 		}
 		return skeys;
 	}
 	
+	public Vector<MasterKey> getAllMasterKeys() {
+		Vector<MasterKey> skeys = new Vector<MasterKey>();
+		for (OSDXKey k : keys) {
+			if (k instanceof MasterKey && k.isMaster()) {
+				skeys.add((MasterKey)k);
+			}
+		}
+		return skeys;
+	}
 	
-	public Vector<OSDXKeyObject> getAllDecyrptionSubKeys() {
-		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
-		for (OSDXKeyObject k : keys) {
-			if (k.isSub()) {
+	public Vector<SubKey> getAllDecyrptionSubKeys() {
+		Vector<SubKey> skeys = new Vector<SubKey>();
+		for (OSDXKey k : keys) {
+			if (k instanceof SubKey && k.isSub()) {
 				int u = k.getUsage();
-				if ((u==OSDXKeyObject.USAGE_CRYPT || u==OSDXKeyObject.USAGE_WHATEVER) && k.hasPrivateKey()) {
-					skeys.add(k);
+				if ((u==OSDXKey.USAGE_CRYPT || u==OSDXKey.USAGE_WHATEVER) && k.hasPrivateKey()) {
+					skeys.add((SubKey)k);
 				}
 			}
 		}
 		return skeys;
 	}
 	
-	public Vector<OSDXKeyObject> getAllEncyrptionSubKeys() {
-		Vector<OSDXKeyObject> skeys = new Vector<OSDXKeyObject>();
-		for (OSDXKeyObject k : keys) {
-			if (k.isSub()) {
+	public Vector<SubKey> getAllEncyrptionSubKeys() {
+		Vector<SubKey> skeys = new Vector<SubKey>();
+		for (OSDXKey k : keys) {
+			if (k instanceof SubKey && k.isSub()) {
 				int u = k.getUsage();
-				if (u==OSDXKeyObject.USAGE_CRYPT || u==OSDXKeyObject.USAGE_WHATEVER) {
-					skeys.add(k);
+				if (u==OSDXKey.USAGE_CRYPT || u==OSDXKey.USAGE_WHATEVER) {
+					skeys.add((SubKey)k);
 				}
 			}
 		}
@@ -277,7 +309,7 @@ public class KeyApprovingStore {
 		Element root = new Element("keystore");
 
 		Element ek = new Element("keys");
-		for (OSDXKeyObject k : keys) {
+		for (OSDXKey k : keys) {
 			ek.addContent(k.toElement(messageHandler));
 		}
 		
@@ -308,8 +340,9 @@ public class KeyApprovingStore {
 		if (keylogs!=null && keylogs.size()>0) {
 			for (KeyLog kl : keylogs) {
 				boolean v = false;
-				try { 
-					v = kl.verifySHA1localproofAndSignoff();
+				try {
+					Result vr = kl.verifySHA1localproofAndSignoff(); 
+					v = vr.succeeded;
 				} catch (Exception e) {
 					//e.printStackTrace();
 					System.out.println("KeyLog signature NOT verified!");
@@ -333,7 +366,7 @@ public class KeyApprovingStore {
 	
 	
 	
-	public void addKey(OSDXKeyObject key) {
+	public void addKey(OSDXKey key) {
 		unsavedChanges = true;
 		keys.add(key);
 	}
@@ -350,11 +383,11 @@ public class KeyApprovingStore {
 	
 	public Vector<KeyLog> getKeyLogs(String keyid) {
 		if (keylogs==null) return null;
-		String akeyid = OSDXKeyObject.getFormattedKeyIDModulusOnly(keyid);
+		String akeyid = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
 		
 		Vector<KeyLog> ret = new Vector<KeyLog>();
 		for (KeyLog kl : keylogs) {
-			String keyidto = OSDXKeyObject.getFormattedKeyIDModulusOnly(kl.getKeyIDTo());
+			String keyidto = OSDXKey.getFormattedKeyIDModulusOnly(kl.getKeyIDTo());
 			if (keyidto.equals(akeyid)) {
 				ret.add(kl);
 			}
@@ -403,7 +436,7 @@ public class KeyApprovingStore {
 		return f;
 	}
 	
-	public void setSigningKey(OSDXKeyObject key) {
+	public void setSigningKey(OSDXKey key) {
 		keystoreSigningKey = key;
 	}
 }

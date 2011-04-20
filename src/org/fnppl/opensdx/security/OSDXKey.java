@@ -53,11 +53,10 @@ import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.xml.Element;
 
 
-public class OSDXKeyObject {
+public class OSDXKey {
 		
-//	public static final int ALGO_UNDEFINED = -1;
 	public static final int ALGO_RSA = 0;
-//	public static final int ALGO_DSA = 1; //dont want this...
+	
 	private static final Vector<String> algo_name = new Vector<String>();
 	static {
 		algo_name.addElement("RSA");		
@@ -72,7 +71,9 @@ public class OSDXKeyObject {
 		usage_name.addElement("ONLYCRYPT");
 		usage_name.addElement("BOTH");
 	};
+	
 	public static final long ONE_YEAR = 31557600000L; //1 year = 31557600000 = 1000*60*60*24*365.25
+	
 	public static final int LEVEL_MASTER = 0;
 	public static final int LEVEL_REVOKE = 1;
 	public static final int LEVEL_SUB = 2;
@@ -86,39 +87,30 @@ public class OSDXKeyObject {
 		level_name.addElement("UNKNOWN");
 	};
 	
-	private OSDXKeyObject parentosdxkeyobject = null;
-	private String parentkeyid = null;//could be the parentkey is not loaded - then *only* the id is present
 	
-	private String authoritativekeyserver = null;
-	//private String modulussha1 = null;
-	private byte[] modulussha1 = null;
-	private Vector<Identity> identities = new Vector<Identity>();
-	private Vector<DataSourceStep> datapath = new Vector<DataSourceStep>();
-	private String gpgkeyserverid = null;
-	
+
 	private int	level = LEVEL_MASTER;
-	private int	usage = USAGE_WHATEVER;
-	private int	algo = ALGO_RSA;
-	private long validFrom = System.currentTimeMillis();
-	private long validUntil = validFrom + 25L*ONE_YEAR; //25 years
+	protected int	usage = USAGE_WHATEVER;
+	protected int	algo = ALGO_RSA;
+	protected long validFrom = System.currentTimeMillis();
+	protected long validUntil = validFrom + 25L*ONE_YEAR; //25 years
 	
-	private char[] storepass = null;
+	protected String authoritativekeyserver = null;
+	protected int authoritativekeyserverPort = 8889;
+	protected byte[] modulussha1 = null;
+
+	protected String gpgkeyserverid = null;
+	protected Vector<DataSourceStep> datapath = new Vector<DataSourceStep>();
 	
-	private AsymmetricKeyPair akp = null;
-	private Element lockedPrivateKey = null;
-	private boolean unsavedChanges = false;
+	protected char[] storepass = null;
 	
-//	private AsymmetricCipherKeyPair keypair = null;
-//	private RSAKeyParameters rpub = null;
-//	private RSAPrivateCrtKeyParameters rpriv = null;
+	protected AsymmetricKeyPair akp = null;
+	protected Element lockedPrivateKey = null;
+	protected boolean unsavedChanges = false;
 	
-	
-	private OSDXKeyObject() {
+	protected OSDXKey() {
 		
 	}
-//	public OSDXKeyObject(AsymmetricKeyPair akp) {
-//		this.akp = akp;
-//	}
 	
 	public PublicKey getPubKey() {
 		PublicKey ll = new PublicKey(
@@ -128,32 +120,53 @@ public class OSDXKeyObject {
 		return ll;
 	}
 	
-	public static OSDXKeyObject buildNewMasterKeyfromKeyPair(AsymmetricKeyPair kp) throws Exception {
-
-		OSDXKeyObject ret = new OSDXKeyObject();
-		ret.akp = kp;
-		ret.level = LEVEL_MASTER;
-		ret.usage = USAGE_SIGN;
-		ret.authoritativekeyserver = "LOCAL";
-		ret.modulussha1 = SecurityHelper.getSHA1(kp.getModulus());
-		ret.datapath = new Vector<DataSourceStep>();
-		long now = System.currentTimeMillis();
-		ret.validFrom = now;
-		ret.validUntil = now + 25L*ONE_YEAR;
-		ret.datapath.add(new DataSourceStep("LOCAL", now));
-		ret.unsavedChanges = true;
-		
-		return ret;
+	public boolean verify(byte[] signature, byte[] md5, byte[] sha1, byte[] sha256,	long timestamp) throws Exception {
+		return getPubKey().verify(signature, md5, sha1, sha256, timestamp);
 	}
 	
-	public static OSDXKeyObject fromPubKeyElement(Element e) throws Exception {
-		OSDXKeyObject ret = new OSDXKeyObject();
-		ret.level = LEVEL_UNKNOWN;
-		ret.usage = USAGE_WHATEVER;
-		String keyid = e.getChildText("keyid");
-		if (keyid.indexOf('@')>0) {
-			ret.authoritativekeyserver = keyid.substring(keyid.indexOf('@')+1);	
+	public byte[] getPublicModulusBytes() {
+		return akp.getModulus();
+	}
+	
+	public static OSDXKey fromPubKeyElement(Element e) throws Exception {
+		OSDXKey ret = null;
+		String levelName = e.getChildText("level");
+		int level = level_name.indexOf(levelName);
+		if (level == LEVEL_MASTER) {
+			ret = new MasterKey();
 		}
+		else if (level == LEVEL_SUB) {
+			ret  = new SubKey();
+		}
+		else if (level == LEVEL_REVOKE) {
+			ret  = new RevokeKey();
+		}
+		else {
+			ret = new OSDXKey();
+		}
+		ret.level = level;
+		
+		ret.usage = USAGE_WHATEVER;
+		String usageName = e.getChildText("usage");
+		if (usageName!=null && !usageName.equals("")) {
+			int usage = usage_name.indexOf(usageName);
+			if (usage>=0) ret.usage = usage;
+		}
+		
+	
+		String keyid = e.getChildText("keyid");
+		String authServer = e.getChildText("authoritativekeyserver");
+		if (authServer!=null && !authServer.equals("")) {
+			ret.authoritativekeyserver = authServer;
+		} else {
+			if (keyid.indexOf('@')>0) {
+				ret.authoritativekeyserver = keyid.substring(keyid.indexOf('@')+1);	
+			}
+		}
+		int port = e.getChildInt("authoritativekeyserver_port");
+		if (port > 0) ret.authoritativekeyserverPort = port;
+		
+		
 		ret.datapath = new Vector<DataSourceStep>();
 		ret.validFrom = SecurityHelper.parseDate(e.getChildText("valid_from"));
 		ret.validUntil = SecurityHelper.parseDate(e.getChildText("valid_until"));
@@ -174,8 +187,26 @@ public class OSDXKeyObject {
 	}//fromElement
 	
 	
-	public static OSDXKeyObject fromElement(Element kp) throws Exception {
-		OSDXKeyObject ret = new OSDXKeyObject();
+	public static OSDXKey fromElement(Element kp) throws Exception {
+		
+		OSDXKey ret = null;
+		String levelName = kp.getChildText("level");
+		int level = level_name.indexOf(levelName);
+		if (level == LEVEL_MASTER) {
+			ret = new MasterKey();
+		}
+		else if (level == LEVEL_SUB) {
+			ret  = new SubKey();
+		}
+		else if (level == LEVEL_REVOKE) {
+			ret  = new RevokeKey();
+		}
+		else {
+			ret = new OSDXKey();
+		}
+		ret.level = level;
+		
+		
 		//System.out.println("adding keyobject");
 		
 		//first check sha1fingerprint
@@ -191,31 +222,35 @@ public class OSDXKeyObject {
 		ret.modulussha1 = modsha1;
 		
 		//fingerprint ok -> go on with identities
-		Element ids = kp.getChild("identities");
-		if (ids!=null) {
-			Vector<Element> idc = ids.getChildren("identity");
-			if (idc!=null) {
-				System.out.println("identities found: "+idc.size());
-				for(int j=0;j<idc.size();j++) {
-					Element id = idc.elementAt(j);
-					
-					Identity idd = Identity.fromElement(id);
-					//System.out.println("adding id: "+idd.email);
-					//System.out.println("sha1: "+id.getChildText("sha1"));
-					boolean ok = idd.validate(SecurityHelper.HexDecoder.decode(id.getChildText("sha1")));
-					if(ok) {
-						ret.identities.addElement(idd);
-					} else {
-						System.out.println(" -> ERROR adding "+idd.email+": SHA1 NOT VALID");
+		if (level == LEVEL_MASTER) {
+			Element ids = kp.getChild("identities");
+			if (ids!=null) {
+				Vector<Element> idc = ids.getChildren("identity");
+				if (idc!=null) {
+					//System.out.println("identities found: "+idc.size());
+					for(int j=0;j<idc.size();j++) {
+						Element id = idc.elementAt(j);
+						
+						Identity idd = Identity.fromElement(id);
+						//System.out.println("adding id: "+idd.email);
+						//System.out.println("sha1: "+id.getChildText("sha1"));
+						boolean ok = idd.validate(SecurityHelper.HexDecoder.decode(id.getChildText("sha1")));
+						if(ok) {
+							((MasterKey)ret).identities.addElement(idd);
+						} else {
+							System.out.println(" -> ERROR adding "+idd.email+": SHA1 NOT VALID");
+						}
 					}
 				}
-			}
-		} //identities
-		
+			} //identities
+		}
 		//go on with other fields
 		
 		String authoritativekeyserver = kp.getChildText("authoritativekeyserver");
 		ret.authoritativekeyserver = authoritativekeyserver;
+		int port = kp.getChildInt("authoritativekeyserver_port");
+		if (port > 0) ret.authoritativekeyserverPort = port;
+		
 		//System.out.println("authoritativekeyserver: "+authoritativekeyserver);
 		
 		
@@ -243,17 +278,16 @@ public class OSDXKeyObject {
 		String usage = kp.getChildText("usage");
 		ret.usage = usage_name.indexOf(usage);
 		
-		String level = kp.getChildText("level");
-		ret.level = level_name.indexOf(level);
-		
-		String parentkeyid = kp.getChildText("parentkeyid");
-		int iAt = parentkeyid.indexOf('@');
-		if (iAt>0) {
-			byte[] parentid = SecurityHelper.HexDecoder.decode(parentkeyid.substring(0,iAt));
-			ret.parentkeyid = SecurityHelper.HexDecoder.encode(parentid,':',-1)+parentkeyid.substring(iAt);
-		} else {
-			byte[] parentid = SecurityHelper.HexDecoder.decode(parentkeyid);
-			ret.parentkeyid = SecurityHelper.HexDecoder.encode(parentid,':',-1);
+		if (level == LEVEL_SUB || level == LEVEL_REVOKE) {
+			String parentkeyid = kp.getChildText("parentkeyid");
+			int iAt = parentkeyid.indexOf('@');
+			if (iAt>0) {
+				byte[] parentid = SecurityHelper.HexDecoder.decode(parentkeyid.substring(0,iAt));
+				((SubKey)ret).parentkeyid = SecurityHelper.HexDecoder.encode(parentid,':',-1)+parentkeyid.substring(iAt);
+			} else {
+				byte[] parentid = SecurityHelper.HexDecoder.decode(parentkeyid);
+				((SubKey)ret).parentkeyid = SecurityHelper.HexDecoder.encode(parentid,':',-1);
+			}
 		}
 		
 		String Salgo = kp.getChildText("algo");
@@ -291,7 +325,7 @@ public class OSDXKeyObject {
 		
 		return ret;
 	}//fromElement
-	
+		
 	public boolean allowsSigning() {
 		//double check: signing not possible without private key
 		if (akp.hasPrivateKey() || lockedPrivateKey != null) {
@@ -316,6 +350,10 @@ public class OSDXKeyObject {
 		if (akp!=null) {
 			Element ret = new Element("pubkey");
 			ret.addContent("keyid",getKeyID());
+			ret.addContent("level",getLevelName());
+			ret.addContent("usage",getUsageName());
+			ret.addContent("authoritativekeyserver",authoritativekeyserver);
+			ret.addContent("authoritativekeyserver_port",""+authoritativekeyserverPort);
 			ret.addContent("valid_from",getValidFromString());
 			ret.addContent("valid_until",getValidUntilString());
 			ret.addContent("algo", algo_name.elementAt(algo));
@@ -324,12 +362,6 @@ public class OSDXKeyObject {
 			ret.addContent("exponent", akp.getPublicExponentAsHex());
 			return ret;
 		}
-		
-//		<bits>3072</bits><!-- well, yes, count yourself, but nice to *see* it -->
-//		<modulus></modulus><!-- as hex-string with or without leading 0x ; only for RSA?! -->
-//		<exponent></exponent><!-- as hex-string with or without leading 0x -->
-//		</pubkey><!-- given, but should be verified from server/yourself... -->
-//
 		return null;
 	}
 	
@@ -341,17 +373,6 @@ public class OSDXKeyObject {
 				sha256, 
 				datetime
 			);
-	}
-	
-	public String getIDEmails() {
-		if (identities!=null && identities.size()>0) {
-			String ids = identities.get(0).getEmail();
-			for (int i=1;i<identities.size();i++) {
-				ids += ", "+identities.get(i).getEmail();
-			}
-			return ids;
-		}
-		return null;
 	}
 	
 	public boolean isPrivateKeyUnlocked() {
@@ -417,18 +438,31 @@ public class OSDXKeyObject {
 	}
 	
 	public Element toElement(MessageHandler mh) throws Exception {
+		return toElement(mh, true);
+	}
+	
+	public Element toElementWithoutPrivateKey() throws Exception {
+		return toElement(null, false);
+	}
+	
+	private Element toElement(MessageHandler mh, boolean withPrivateKey) throws Exception {
 		Element ekp = new Element("keypair");
-		//identities
-		if (identities!=null && identities.size()>0) {
-			Element eids = new Element("identities");
-			for (Identity id : identities) {
-				eids.addContent(id.toElement());
+		if (this instanceof MasterKey) {
+			MasterKey mk = (MasterKey)this;
+			//identities
+			if (mk.identities!=null && mk.identities.size()>0) {
+				Element eids = new Element("identities");
+				for (Identity id : mk.identities) {
+					eids.addContent(id.toElement());
+				}
+				ekp.addContent(eids);
 			}
-			ekp.addContent(eids);
 		}
 		
 		ekp.addContent("sha1fingerprint", getKeyModulusSHA1());
 		ekp.addContent("authoritativekeyserver", authoritativekeyserver);
+		ekp.addContent("authoritativekeyserver_port", ""+authoritativekeyserverPort);
+		
 		
 		//datapath
 		Element edp = new Element("datapath");
@@ -440,7 +474,11 @@ public class OSDXKeyObject {
 		ekp.addContent("valid_until",getValidUntilString());
 		ekp.addContent("usage",usage_name.get(usage));
 		ekp.addContent("level",level_name.get(level));
-		ekp.addContent("parentkeyid", getParentKeyID());
+		if (this instanceof SubKey) {
+			ekp.addContent("parentkeyid", ((SubKey)this).getParentKeyID());
+		} else {
+			ekp.addContent("parentkeyid", "");
+		}
 		ekp.addContent("algo",algo_name.get(algo));
 		ekp.addContent("bits", ""+akp.getBitCount());
 		ekp.addContent("modulus", SecurityHelper.HexDecoder.encode(akp.getModulus(), ':', -1));
@@ -450,70 +488,29 @@ public class OSDXKeyObject {
 		epk.addContent("exponent", SecurityHelper.HexDecoder.encode(akp.getPublicExponent(), ':', -1));
 		ekp.addContent(epk);
 		
-		//privkey
-		if (lockedPrivateKey == null) {
-			createLockedPrivateKey(mh);
-		}
-		
-		if (lockedPrivateKey != null) {
-			Element el = new Element("locked");
-			el.addContent("mantraname",lockedPrivateKey.getChildText("mantraname"));
-			el.addContent("algo",lockedPrivateKey.getChildText("algo"));
-			el.addContent("initvector", lockedPrivateKey.getChildText("initvector"));
-			el.addContent("padding",lockedPrivateKey.getChildText("padding"));
-			el.addContent("bytes",lockedPrivateKey.getChildText("bytes"));
-			
-			Element eexp = new Element("exponent");
-			eexp.addContent(el);
-			Element esk = new Element("privkey");
-			esk.addContent(eexp);
-			ekp.addContent(esk);
-		} else if (akp.hasPrivateKey()) {
-			System.out.println("CAUTION: private key NOT saved.");
-		}// -- end privkey
-		
-		ekp.addContent("gpgkeyserverid", gpgkeyserverid);
-		
-		unsavedChanges = false;
-		return ekp;
-	}
-	
-	public Element toElementWithoutPrivateKey() throws Exception {
-		Element ekp = new Element("keypair");
-		//identities
-		if (identities!=null && identities.size()>0) {
-			Element eids = new Element("identities");
-			for (Identity id : identities) {
-				eids.addContent(id.toElement());
+		if (withPrivateKey) {
+			//privkey
+			if (lockedPrivateKey == null) {
+				createLockedPrivateKey(mh);
 			}
-			ekp.addContent(eids);
+			
+			if (lockedPrivateKey != null) {
+				Element el = new Element("locked");
+				el.addContent("mantraname",lockedPrivateKey.getChildText("mantraname"));
+				el.addContent("algo",lockedPrivateKey.getChildText("algo"));
+				el.addContent("initvector", lockedPrivateKey.getChildText("initvector"));
+				el.addContent("padding",lockedPrivateKey.getChildText("padding"));
+				el.addContent("bytes",lockedPrivateKey.getChildText("bytes"));
+				
+				Element eexp = new Element("exponent");
+				eexp.addContent(el);
+				Element esk = new Element("privkey");
+				esk.addContent(eexp);
+				ekp.addContent(esk);
+			} else if (akp.hasPrivateKey()) {
+				System.out.println("CAUTION: private key NOT saved.");
+			}// -- end privkey
 		}
-		
-		ekp.addContent("sha1fingerprint", getKeyModulusSHA1());
-		ekp.addContent("authoritativekeyserver", authoritativekeyserver);
-		
-		//datapath
-		Element edp = new Element("datapath");
-		for (int i=0;i<datapath.size();i++) {
-			Element edss = new Element("step"+(i+1));
-			edss.addContent("datasource",datapath.get(i).getDataSource());
-			edss.addContent("datainsertdatetime", datapath.get(i).getDataInsertDatetimeString());
-			edp.addContent(edss);
-		}
-		ekp.addContent(edp);
-		
-		ekp.addContent("usage",usage_name.get(usage));
-		ekp.addContent("level",level_name.get(level));
-		ekp.addContent("parentkeyid", getParentKeyID());
-		ekp.addContent("algo",algo_name.get(algo));
-		ekp.addContent("bits", ""+akp.getBitCount());
-		ekp.addContent("modulus", SecurityHelper.HexDecoder.encode(akp.getModulus(), ':', -1));
-		
-		//pubkey
-		Element epk = new Element("pubkey");
-		epk.addContent("exponent", SecurityHelper.HexDecoder.encode(akp.getPublicExponent(), ':', -1));
-		ekp.addContent(epk);
-		
 		ekp.addContent("gpgkeyserverid", gpgkeyserverid);
 		
 		unsavedChanges = false;
@@ -546,7 +543,10 @@ public class OSDXKeyObject {
 	}
 	
 	public String getLevelName() {
-		return level_name.get(level);
+		if (level>=0) {
+			return level_name.get(level);
+		}
+		return "NOT SET";
 	}
 	
 	public void setLevel(int level) {
@@ -567,16 +567,6 @@ public class OSDXKeyObject {
 		usage = u;
 	}
 	
-	public Vector<Identity> getIdentities() {
-		return identities;
-	}
-	
-	public Identity getIdentity0001() {
-		for (Identity id : identities) {
-			if (id.getIdentNum()==1) return id;
-		}
-		return null;
-	}
 	public Vector<DataSourceStep> getDatapath() {
 		return datapath;
 	}
@@ -584,10 +574,8 @@ public class OSDXKeyObject {
 	public String getAuthoritativekeyserver() {
 		return authoritativekeyserver;
 	}
-	
-	public void addIdentity(Identity id) {
-		unsavedChanges = true;
-		identities.add(id);
+	public int getAuthoritativekeyserverPort() {
+		return authoritativekeyserverPort;
 	}
 	
 	public void addDataSourceStep(DataSourceStep ds) {
@@ -596,58 +584,13 @@ public class OSDXKeyObject {
 		datapath.add(ds);
 	}
 	
-	public void removeIdentity(Identity id) {
-		unsavedChanges = true;
-		identities.remove(id);
-	}
+//	private void setAuthoritativeKeyServer(String aks) {
+//		authoritativekeyserver = aks;
+//		unsavedChanges = true;
+//	}
 	
-	public void moveIdentityAtPositionUp(int oldPosition) {
-		if (oldPosition>0 && oldPosition<identities.size()) {
-			Identity id = identities.remove(oldPosition);
-			identities.add(oldPosition-1, id);
-			unsavedChanges = true;
-		}
-	}
-	public void moveIdentityAtPositionDown(int oldPosition) {
-		if (oldPosition>=0 && oldPosition<identities.size()-1) {
-			Identity id = identities.remove(oldPosition);
-			identities.add(oldPosition+1, id);
-			unsavedChanges = true;
-		}
-	}
-	
-	public String getParentKeyID() {
-		if (parentosdxkeyobject!=null) return parentosdxkeyobject.getKeyID();
-		else return parentkeyid;
-	}
-	
-	public void setParentKey(OSDXKeyObject parent) {
-		unsavedChanges = true;
-		parentosdxkeyobject = parent;
-		parentkeyid = parent.getKeyID();
-	}
-	
-	public void setParentKeyID(String id) {
-		unsavedChanges = true;
-		parentkeyid = id;
-		parentosdxkeyobject = null;
-	}
-	
-	
-	public void setAuthoritativeKeyServer(String aks) {
-		authoritativekeyserver = aks;
-		unsavedChanges = true;
-	}
 	public boolean hasUnsavedChanges() {
 		if (unsavedChanges) return true;
-		else {
-			for (Identity id : identities) {
-				if (id.hasUnsavedChanges()) {
-					System.out.println("unsaved changes in id: "+id.getEmail());
-					return true;
-				}
-			}
-		}
 		return false;
 	}
 	
@@ -680,6 +623,7 @@ public class OSDXKeyObject {
 			return SecurityHelper.HexDecoder.encode(SecurityHelper.HexDecoder.decode(id), ':', -1);
 		}
 	}
+
 	
 	
 	public static void main(String[] args) throws Exception {

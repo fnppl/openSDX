@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.keyserver;
+package org.fnppl.opensdx.security;
 
 
 import java.util.*;
@@ -12,7 +12,7 @@ import org.fnppl.opensdx.xml.*;
 
 //http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 
-public class OSDXKeyServerClientRequest {
+public class KeyClientRequest {
 	public final static String XMLDOCPARAMNAME = "xmldocument";//check out KeyServerRequest
 
 	private final static String version = "HTTP/1.1";
@@ -22,15 +22,13 @@ public class OSDXKeyServerClientRequest {
 	
 	private String uri;
 	private String host;
-//	private String request;
-//	private StringBuffer header;
 	private Element contentElement;
 	private Hashtable<String, String> parameters = new Hashtable<String, String>();
 	private Hashtable<String, String> headers = new Hashtable<String, String>();
-	protected OSDXKeyObject signoffkey = null;
+	protected OSDXKey signoffkey = null;
 	
 	
-	public void setSignoffKey(OSDXKeyObject signoffkey) {
+	public void setSignoffKey(OSDXKey signoffkey) {
 		this.signoffkey = signoffkey;
 	}
 	
@@ -60,7 +58,7 @@ public class OSDXKeyServerClientRequest {
 		toggleFormDataMode();
 	}
 	
-	public OSDXKeyServerClientRequest() {
+	public KeyClientRequest() {
 	}
 	private String getCMDLine() throws Exception {
 		StringBuffer ret = new StringBuffer();
@@ -83,6 +81,29 @@ public class OSDXKeyServerClientRequest {
 		ret.append(version);
 		return ret.toString();
 	}
+	
+	private String getCMDLineNOT_URL_ENCODED_FOR_TESTING() throws Exception {
+		StringBuffer ret = new StringBuffer();
+		ret.append(method);
+		ret.append(" ");
+		ret.append(uri);
+		if(method.equals("GET")) {
+			ret.append("?");
+			Iterator<String> its = parameters.keySet().iterator();
+			while(its.hasNext()) {
+				String pn = its.next();
+				String pv = parameters.get(pn);
+				ret.append(pn+"="+pv);
+				if(its.hasNext()) {
+					ret.append("&");
+				}
+			}
+		}
+		ret.append(" ");
+		ret.append(version);
+		return ret.toString();
+	}
+	
 	private static String getHeader(int contentlength, String contentType) {
 		StringBuffer ret = new StringBuffer();
 		ret.append("Content-Type: "+contentType+"\r\n");
@@ -216,151 +237,61 @@ public class OSDXKeyServerClientRequest {
 		contentElement = e;
 	}
 	
-	
-	
-	/*
-	 * 
-	 * HT 15.03.2011 here go the possible request-creation-codes - could also be placed in a "factory-class"
-	 * 
-	 */
-	
-	public static OSDXKeyServerClientRequest getRequestIdentities(String host, String keyid) {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/identities");
-		req.toggleGETMode();
-		req.addRequestParam("KeyID", keyid);
-		
-		return req;
-	}
-	public static OSDXKeyServerClientRequest getRequestKeyStatus(String host, String keyid) {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/keystatus");
-		req.addRequestParam("KeyID", keyid);
-		req.toggleGETMode();
-		
-		return req;
-	}
-	public static OSDXKeyServerClientRequest getRequestMasterPubKeys(String host, String idemail) {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/masterpubkeys");
-		req.toggleGETMode();
-		req.addRequestParam("Identity", idemail);		
-	
-		return req;
-	}
-	public static OSDXKeyServerClientRequest getRequestSubkeys(String host, String masterkeyid) {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/subkeys");
-		req.toggleGETMode();
-		req.addRequestParam("KeyID", masterkeyid);		
-	
-		return req;
-	}
-	
-	public static OSDXKeyServerClientRequest getRequestPublicKey(String host, String keyid) {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/pubkey");
-		req.toggleGETMode();
-		req.addRequestParam("KeyID", keyid);		
-	
-		return req;
-	}
-//	public static OSDXKeyServerClientRequest getRequestPubKeys(String host, String idemail) {
-//		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-//		req.setURI(host, "/pubkeys");
-//		req.toggleGETMode();
-//		req.addRequestParam("Identity", idemail);		
-//	
-//		return req;
-//	}
-	public static OSDXKeyServerClientRequest getRequestKeyLogs(String host, String keyid) {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/keylogs");
-		req.toggleGETMode();
-		req.addRequestParam("KeyID", keyid);		
-	
-		return req;
-	}
-	
-	
-	public static OSDXKeyServerClientRequest getRequestPutMasterKey(String host, OSDXKeyObject masterkey, Identity id) throws Exception {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/masterkey");
-		
-		req.addRequestParam("KeyID", masterkey.getKeyID());		
-		req.addRequestParam("Identity", id.getEmail());
-	
-		Element e = new Element("masterpubkey");
-		e.addContent(masterkey.getSimplePubKeyElement());
-		e.addContent(id.toElementOfNotNull());
-		req.setContentElement(e);
-		req.setSignoffKey(masterkey); //self-signoff with masterkey
-		return req;
-	}
-	
-	
-	public static OSDXKeyServerClientRequest getRequestPutRevokeKey(String host, OSDXKeyObject revokekey, OSDXKeyObject relatedMasterKey) throws Exception {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/revokekey");
-		
-		Element e = new Element("revokekey");
-		e.addContent("masterkeyid", relatedMasterKey.getKeyModulusSHA1());
-		e.addContent(revokekey.getSimplePubKeyElement());
-		 //self signoff with revokekey
-		byte[] sha1proof = SecurityHelper.getSHA1LocalProof(e);
-		e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
-		e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", revokekey).toElement());
-		req.setContentElement(e);
-		req.setSignoffKey(relatedMasterKey); //signoff with masterkeyy
-		
-		return req;
-	}
-	
-	public static OSDXKeyServerClientRequest getRequestRevokeMasterKey(String host, OSDXKeyObject revokekey, OSDXKeyObject relatedMasterKey, String message) throws Exception {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/revokemasterkey");
-		
-		Element e = new Element("revokemasterkey");
-		e.addContent("from_keyid", revokekey.getKeyID());
-		e.addContent("to_keyid", relatedMasterKey.getKeyID());
-		if (message!=null && message.length()>0)
-			e.addContent("message",message);
-		//self signoff with revokekey
-		//byte[] sha1proof = SecurityHelper.getSHA1LocalProof(e);
-		//e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
-		//e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", revokekey).toElement());
-		
-		req.setContentElement(e);
-		req.setSignoffKey(revokekey); //signoff with revokekey
-		
-		return req;
-	}
-	
-	public static OSDXKeyServerClientRequest getRequestPutSubKey(String host, OSDXKeyObject subkey, OSDXKeyObject relatedMasterKey) throws Exception {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/subkey");
-		
-		Element e = new Element("subkey");
-		e.addContent("masterkeyid", relatedMasterKey.getKeyModulusSHA1());
-		e.addContent(subkey.getSimplePubKeyElement());
-		
-		req.setSignoffKey(relatedMasterKey); //Signoff with masterkey
-		req.setContentElement(e);
-		
-		return req;
-	}
-	
-	public static OSDXKeyServerClientRequest getRequestPutKeyLogs(String host, Vector<KeyLog> keylogs, OSDXKeyObject signingKey) throws Exception {
-		OSDXKeyServerClientRequest req = new OSDXKeyServerClientRequest();
-		req.setURI(host, "/keylogs");
-		
-		Element e = new Element("keylogactions");
-		for (KeyLog k : keylogs) {
-			e.addContent(k.toKeyLogActionElement());
+	public void toOutputNOT_URL_ENCODED_FOR_TESTING(OutputStream out) throws Exception {
+		//write it to the outputstream...
+		if(contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
+			if (contentElement != null) {
+				Element eContent = contentElement;
+				//signoff if signoffkey present
+				if (signoffkey != null) {
+					eContent = XMLHelper.cloneElement(contentElement); //HT 23.03.2011 - why cloned?!
+					//signoff
+					byte[] sha1proof = SecurityHelper.getSHA1LocalProof(eContent);
+					eContent.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
+					eContent.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", signoffkey).toElement());
+				}
+				
+				Document xml = Document.buildDocument(eContent);
+				
+				StringBuffer toSend = new StringBuffer();
+				toSend.append(XMLDOCPARAMNAME+"=");
+				toSend.append(xml.toString());
+				
+				Iterator<String> its = parameters.keySet().iterator();
+				while(its.hasNext()) {
+					toSend.append("&");
+					String pn = its.next();
+					String pv = parameters.get(pn);
+					toSend.append(pn+"="+pv);
+				}
+				
+				byte[] content = toSend.toString().getBytes("ASCII");
+				toSend = null;
+				
+				out.write(getCMDLineNOT_URL_ENCODED_FOR_TESTING().getBytes("ASCII"));
+				out.write("\r\n".getBytes("ASCII"));
+				out.write(getHeader(content.length, contentType).getBytes("ASCII"));
+				out.write("\r\n".getBytes("ASCII"));
+				
+				out.flush();
+				out.write(content);
+				out.write("\r\n".getBytes("ASCII"));
+			}
+			else {
+				//content-element==null
+				out.write(getCMDLineNOT_URL_ENCODED_FOR_TESTING().getBytes("ASCII"));
+				out.write("\r\n".getBytes("ASCII"));
+				out.write(getHeader(0, contentType).getBytes("ASCII"));
+				out.write("\r\n".getBytes("ASCII"));
+			}
+			
+			out.flush();
 		}
-		req.setSignoffKey(signingKey); //Signoff
-		req.setContentElement(e);
-		
-		return req;
+		else if(contentType.equalsIgnoreCase("text/xml")) {
+			if(true) {
+				throw new RuntimeException("Hmm, thou shalt not use me...");
+			}
+		}
 	}
+	
 }

@@ -79,6 +79,7 @@ public class KeyServerRequest {
 		String zeile = null;
 		zeile = readLineASCII(in, 4096); //cmdline
 		
+		System.out.println("zeile cmdline: "+zeile);
 		
 		StringTokenizer st = new StringTokenizer(zeile, " ");
 		ret.method = st.nextToken();

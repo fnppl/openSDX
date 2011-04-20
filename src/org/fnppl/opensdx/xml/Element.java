@@ -107,7 +107,11 @@ public class Element {
 	}
 	public int getChildInt(String name) {
 		//beware double-invoke!!!
-		return Integer.parseInt(base.getChildText(name));
+		try {
+			return Integer.parseInt(base.getChildText(name));
+		} catch (Exception ex) {
+			return Integer.MIN_VALUE;
+		}
 	}
 	public String getText() {
 		//beware double-invoke!!!

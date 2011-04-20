@@ -58,7 +58,6 @@ import org.bouncycastle.openpgp.PGPKeyPair;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 
-import org.fnppl.opensdx.security.KeyRingCollection;
 import org.fnppl.opensdx.security.PublicKey;
 
 public class OpenSDX {

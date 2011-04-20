@@ -75,12 +75,7 @@ public class SecurityHelper {
 
 	public static String getFormattedDate(long date) {
 		String s = datemeGMT.format(new Date(date));
-		//System.out.println("\ns before: "+s);
-		//s = s.replace("GMT+00:00", "GMT 00:00"); //TODO workaround
-		//System.out.println("s after:  "+s+"\n");
-		
 		return s;
-		//return "Hallo+Hallo";
 	}
 	public static long parseDate(String date) throws Exception {
 		//return 50923486509234860L;
@@ -568,95 +563,95 @@ public class SecurityHelper {
         return rb;
 	}
 	
-	public static void signoffElement(Element e, OSDXKeyObject signoffkey) throws Exception {
+	public static void signoffElement(Element e, OSDXKey signoffkey) throws Exception {
 		//signoff
 		byte[] sha1proof = SecurityHelper.getSHA1LocalProof(e);
 		e.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
 		e.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", signoffkey).toElement());
 	}
 	
-	public static boolean checkElementsSHA1localproofAndSignature(Element e, Vector<OSDXKeyObject> trustedKeys) throws Exception {
-		OSDXKeyObject signingKey = null;
-		byte[] modulus = SecurityHelper.HexDecoder.decode(e.getChild("signature").getChild("signoff").getChild("pubkey").getChildText("modulus"));
-		for (OSDXKeyObject k: trustedKeys) {
-			if (Arrays.equals(k.getPubKey().getModulusBytes(), modulus)) {
-				signingKey = k;
-				break;
-			}
-		}
-		if (signingKey !=null) {
-			return SecurityHelper.checkElementsSHA1localproofAndSignature(e, signingKey);
-		} else {
-			//TODO if (signingKey == null) try to find approved signing key on server
-			throw new RuntimeException("signing key NOT in trusted keys: keyid: "+e.getChild("signature").getChild("signoff").getChildText("keyid"));
-		}
-	}
+//	public static boolean checkElementsSHA1localproofAndSignature(Element e, Vector<OSDXKey> trustedKeys) throws Exception {
+//		OSDXKey signingKey = null;
+//		byte[] modulus = SecurityHelper.HexDecoder.decode(e.getChild("signature").getChild("pubkey").getChildText("modulus"));
+//		for (OSDXKey k: trustedKeys) {
+//			if (Arrays.equals(k.getPubKey().getModulusBytes(), modulus)) {
+//				signingKey = k;
+//				break;
+//			}
+//		}
+//		if (signingKey !=null) {
+//			return SecurityHelper.checkElementsSHA1localproofAndSignature(e, signingKey);
+//		} else {
+//			//TODO if (signingKey == null) try to find approved signing key on server
+//			throw new RuntimeException("signing key NOT in trusted keys: keyid: "+e.getChild("signature").getChildText("keyid"));
+//		}
+//	}
 	
-	public static boolean checkSHA1localproofAndSignature(Vector<Element> toProof, byte[] givenSha1localproof, Signature signature, PublicKey signingKey) {
-		
-		boolean verified = true;
-		try {
-			byte[] calcSha1localproof = SecurityHelper.getSHA1LocalProof(toProof);
-			if (!Arrays.equals(givenSha1localproof, calcSha1localproof)) {
-				System.out.println("given sha1: "+SecurityHelper.HexDecoder.encode(givenSha1localproof, ':', -1));
-				System.out.println("calc  sha1: "+SecurityHelper.HexDecoder.encode( calcSha1localproof, ':', -1));
-				verified = false;
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return false;
-		}
-		
-		//if (verified) System.out.println("checking modulus");
-		
-		//check modulus belongs to keyid
-		byte[] givenModulus = signature.getPubKey().getModulusBytes();
-		if (verified && !Arrays.equals(signingKey.getModulusBytes(),givenModulus)) {
-			verified = false;
-			System.out.println("given     modulus: "+SecurityHelper.HexDecoder.encode(givenModulus, ':', -1));
-			System.out.println("masterkey modulus: "+SecurityHelper.HexDecoder.encode(signingKey.getModulusBytes(), ':', -1));
-			System.out.println("modulus verification FAILED!");
-		}
-		
-		//check signaturebytes match sha1localproof
-		if (verified) {
-			try {
-				verified = signature.tryVerificationMD5SHA1SHA256(givenSha1localproof);
-				return verified;
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				return false;
-			}
-//			System.out.println("checking signaturebytes");	
-//			System.out.println("signature data   md5   : "+e.getChild("signature").getChild("data").getChildText("md5"));
-//			System.out.println("signature data   sha1  : "+e.getChild("signature").getChild("data").getChildText("sha1"));
-//			System.out.println("signature data   sha256: "+e.getChild("signature").getChild("data").getChildText("sha256"));
-//			byte[][] data = SecurityHelper.getMD5SHA1SHA256(givenSha1localproof);
-//			System.out.println("calc      data   md5   : "+SecurityHelper.HexDecoder.encode(data[1],':',-1));
-//			System.out.println("calc      data   sha1  : "+SecurityHelper.HexDecoder.encode(data[2],':',-1));
-//			System.out.println("calc      data   sha256: "+SecurityHelper.HexDecoder.encode(data[3],':',-1));
-		}
-		return verified;
-	}
+//	public static boolean checkSHA1localproofAndSignature(Vector<Element> toProof, byte[] givenSha1localproof, Signature signature, PublicKey signingKey) {
+//		
+//		boolean verified = true;
+//		try {
+//			byte[] calcSha1localproof = SecurityHelper.getSHA1LocalProof(toProof);
+//			if (!Arrays.equals(givenSha1localproof, calcSha1localproof)) {
+//				System.out.println("given sha1: "+SecurityHelper.HexDecoder.encode(givenSha1localproof, ':', -1));
+//				System.out.println("calc  sha1: "+SecurityHelper.HexDecoder.encode( calcSha1localproof, ':', -1));
+//				verified = false;
+//			}
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//			return false;
+//		}
+//		
+//		//if (verified) System.out.println("checking modulus");
+//		
+//		//check modulus belongs to keyid
+//		byte[] givenModulus = signature.getKey().getPubKey().getModulusBytes();
+//		if (verified && !Arrays.equals(signingKey.getModulusBytes(),givenModulus)) {
+//			verified = false;
+//			System.out.println("given     modulus: "+SecurityHelper.HexDecoder.encode(givenModulus, ':', -1));
+//			System.out.println("masterkey modulus: "+SecurityHelper.HexDecoder.encode(signingKey.getModulusBytes(), ':', -1));
+//			System.out.println("modulus verification FAILED!");
+//		}
+//		
+//		//check signaturebytes match sha1localproof
+//		if (verified) {
+//			try {
+//				verified = signature.tryVerificationMD5SHA1SHA256(givenSha1localproof);
+//				return verified;
+//			} catch (Exception ex) {
+//				ex.printStackTrace();
+//				return false;
+//			}
+////			System.out.println("checking signaturebytes");	
+////			System.out.println("signature data   md5   : "+e.getChild("signature").getChild("data").getChildText("md5"));
+////			System.out.println("signature data   sha1  : "+e.getChild("signature").getChild("data").getChildText("sha1"));
+////			System.out.println("signature data   sha256: "+e.getChild("signature").getChild("data").getChildText("sha256"));
+////			byte[][] data = SecurityHelper.getMD5SHA1SHA256(givenSha1localproof);
+////			System.out.println("calc      data   md5   : "+SecurityHelper.HexDecoder.encode(data[1],':',-1));
+////			System.out.println("calc      data   sha1  : "+SecurityHelper.HexDecoder.encode(data[2],':',-1));
+////			System.out.println("calc      data   sha256: "+SecurityHelper.HexDecoder.encode(data[3],':',-1));
+//		}
+//		return verified;
+//	}
 	
-	public static boolean checkElementsSHA1localproofAndSignature(Element e, OSDXKeyObject signingKey) throws Exception {
-		//get sha1localproof
-		byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
-		//get signature
-		Signature signature = Signature.fromElement(e.getChild("signature"));
-		
-		//build toProof <- all content but sha1localproof and Signature
-		Vector<Element> toProof = new Vector<Element>();
-		Vector<Element> children = e.getChildren();
-		for (Element c : children) {
-			if (!c.getName().equals("sha1localproof") && !c.getName().equals("signature")) {
-				toProof.add(c);
-			}
-		}
-		
-		return checkSHA1localproofAndSignature(toProof, givenSha1localproof, signature, signingKey.getPubKey());
-		
-	}
+//	public static boolean checkElementsSHA1localproofAndSignature(Element e, OSDXKey signingKey) throws Exception {
+//		//get sha1localproof
+//		byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
+//		//get signature
+//		Signature signature = Signature.fromElement(e.getChild("signature"));
+//		
+//		//build toProof <- all content but sha1localproof and Signature
+//		Vector<Element> toProof = new Vector<Element>();
+//		Vector<Element> children = e.getChildren();
+//		for (Element c : children) {
+//			if (!c.getName().equals("sha1localproof") && !c.getName().equals("signature")) {
+//				toProof.add(c);
+//			}
+//		}
+//		
+//		return checkSHA1localproofAndSignature(toProof, givenSha1localproof, signature, signingKey.getPubKey());
+//		
+//	}
 	
 }
 

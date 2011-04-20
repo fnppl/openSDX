@@ -48,7 +48,6 @@ package org.fnppl.opensdx.keyserver;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -70,7 +69,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 
-import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
@@ -79,12 +77,18 @@ import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.KeyLog;
 import org.fnppl.opensdx.security.KeyStatus;
-import org.fnppl.opensdx.security.OSDXKeyObject;
-import org.fnppl.opensdx.security.PublicKey;
+import org.fnppl.opensdx.security.KeyVerificator;
+import org.fnppl.opensdx.security.MasterKey;
+import org.fnppl.opensdx.security.OSDXKey;
+import org.fnppl.opensdx.security.OSDXMessage;
+import org.fnppl.opensdx.security.Result;
+import org.fnppl.opensdx.security.RevokeKey;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.Signature;
+import org.fnppl.opensdx.security.SubKey;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
+
 
 
 /*
@@ -112,7 +116,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class KeyServerMain {
 	
-	private static String serverid = "OSDX KeyServer v0.1";
+	private static String serverid = "OSDX KeyServer v0.2";
 	
 	private File configFile = new File("keyserver_config.xml"); 
 	private File alterConfigFile = new File("src/org/fnppl/opensdx/keyserver/resources/config.xml"); 
@@ -137,25 +141,25 @@ public class KeyServerMain {
 		public boolean requestIgnoreKeyLogVerificationFailure() {//dont ignore faild keylog verification
 			return false;
 		}
-		public OSDXKeyObject requestMasterSigningKey(KeyApprovingStore keystore) throws Exception {
+		public MasterKey requestMasterSigningKey(KeyApprovingStore keystore) throws Exception {
 			return keyServerSigningKey;
 		}
 	};
 	
-	private HashMap<String, Vector<OSDXKeyObject>> id_keys;
-	private HashMap<String, OSDXKeyObject> keyid_key;
+	private HashMap<String, Vector<OSDXKey>> id_keys;
+	private HashMap<String, OSDXKey> keyid_key;
 	private HashMap<String, Vector<KeyLog>> keyid_log;
-	private HashMap<String, Vector<OSDXKeyObject>> keyid_subkeys;
+	private HashMap<String, Vector<OSDXKey>> keyid_subkeys;
 	private HashMap<String, KeyLog> openTokens;
 	
-	protected OSDXKeyObject keyServerSigningKey = null;
+	protected MasterKey keyServerSigningKey = null;
 	
 	public KeyServerMain(String pwSigning, String pwMail) throws Exception {
 		//init
-		id_keys = new HashMap<String, Vector<OSDXKeyObject>>();
-		keyid_key = new HashMap<String, OSDXKeyObject>();
+		id_keys = new HashMap<String, Vector<OSDXKey>>();
+		keyid_key = new HashMap<String, OSDXKey>();
 		keyid_log = new HashMap<String, Vector<KeyLog>>();
-		keyid_subkeys = new HashMap<String, Vector<OSDXKeyObject>>();
+		keyid_subkeys = new HashMap<String, Vector<OSDXKey>>();
 		openTokens = new HashMap<String, KeyLog>();
 		
 		readConfig();
@@ -164,8 +168,8 @@ public class KeyServerMain {
 			pwSigning = "debug";
 			
 			//generate new keypair
-			keyServerSigningKey = OSDXKeyObject.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
-			keyServerSigningKey.setAuthoritativeKeyServer(host);
+			keyServerSigningKey = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+			keyServerSigningKey.setAuthoritativeKeyServer(host,port);
 			Identity id = Identity.newEmptyIdentity();
 			id.setEmail("debug_signing@keyserver.fnppl.org");
 			id.setIdentNum(1);
@@ -239,7 +243,12 @@ public class KeyServerMain {
 			
 			//keyServerSigningKey
 			try {
-				keyServerSigningKey = OSDXKeyObject.fromElement(root.getChild("rootsigningkey").getChild("keypair"));
+				OSDXKey k = OSDXKey.fromElement(root.getChild("rootsigningkey").getChild("keypair"));
+				if (k instanceof MasterKey) {
+					keyServerSigningKey = (MasterKey)k;
+				} else {
+					System.out.println("ERROR: rootsigningkey NOT MasterKey");
+				}
 			} catch (Exception e) {
 				System.out.println("ERROR: no signing key in config."); 
 			}
@@ -268,9 +277,9 @@ public class KeyServerMain {
 		if (f.exists()) {
 			try {
 				keystore = KeyApprovingStore.fromFile(f, messageHandler);
-				Vector<OSDXKeyObject> keys = keystore.getAllKeys();
+				Vector<OSDXKey> keys = keystore.getAllKeys();
 				if (keys != null) {
-					for (OSDXKeyObject k : keys) {
+					for (OSDXKey k : keys) {
 						updateCache(k, null);
 					}
 				}
@@ -295,34 +304,38 @@ public class KeyServerMain {
 		return false;
 	}
 	
-	private void updateCache(OSDXKeyObject k, KeyLog l) {
+	private void updateCache(OSDXKey k, KeyLog l) {
 		if (k!=null) {
 			keyid_key.put(k.getKeyModulusSHA1(), k);
-			System.out.println("adding keyid_key: "+k.getKeyModulusSHA1()+"::OSDXKeyObject");
-			Vector<Identity> ids = k.getIdentities();
-			if (ids != null) {
-				for (Identity id : ids) {
-					if (!id_keys.containsKey(id.getEmail())) {
-						id_keys.put(id.getEmail(),
-								new Vector<OSDXKeyObject>());
+			System.out.println("adding keyid_key: "+k.getKeyModulusSHA1()+"::OSDXKey");
+			if (k instanceof MasterKey) {
+				Vector<Identity> ids = ((MasterKey)k).getIdentities();
+				if (ids != null) {
+					for (Identity id : ids) {
+						if (!id_keys.containsKey(id.getEmail())) {
+							id_keys.put(id.getEmail(),
+									new Vector<OSDXKey>());
+						}
+						id_keys.get(id.getEmail()).add(k);
+						System.out.println("adding id_keys: "+id.getEmail()+"::"+k.getKeyModulusSHA1());
 					}
-					id_keys.get(id.getEmail()).add(k);
-					System.out.println("adding id_keys: "+id.getEmail()+"::"+k.getKeyModulusSHA1());
 				}
 			}
-			String parentKeyID = k.getParentKeyID();
-			if (parentKeyID!=null && parentKeyID.length()>0) {
-				parentKeyID = OSDXKeyObject.getFormattedKeyIDModulusOnly(parentKeyID);
-				if (!keyid_subkeys.containsKey(parentKeyID)) {
-					keyid_subkeys.put(parentKeyID, new Vector<OSDXKeyObject>());
+			if (k instanceof SubKey) {
+				String parentKeyID = ((SubKey)k).getParentKeyID();
+				if (parentKeyID!=null && parentKeyID.length()>0) {
+					parentKeyID = OSDXKey.getFormattedKeyIDModulusOnly(parentKeyID);
+					if (!keyid_subkeys.containsKey(parentKeyID)) {
+						keyid_subkeys.put(parentKeyID, new Vector<OSDXKey>());
+					}
+					keyid_subkeys.get(parentKeyID).add(k);
+					System.out.println("adding subkey: "+k.getKeyModulusSHA1()+" for parent key: "+parentKeyID);
 				}
-				keyid_subkeys.get(parentKeyID).add(k);
-				System.out.println("adding subkey: "+k.getKeyModulusSHA1()+" for parent key: "+parentKeyID);
 			}
 		}
 		if (l!=null) {
 			//String keyid = l.getKeyIDTo();
-			String keyid = OSDXKeyObject.getFormattedKeyIDModulusOnly(l.getKeyIDTo());
+			String keyid = OSDXKey.getFormattedKeyIDModulusOnly(l.getKeyIDTo());
 			if (!keyid_log.containsKey(keyid)) {
 				keyid_log.put(keyid, new Vector<KeyLog>());
 			}
@@ -338,101 +351,87 @@ public class KeyServerMain {
 		}
 	}
 	
-	
-//	private KeyServerResponse handlePubKeyRequest(KeyServerRequest request) {
-//		System.out.println("KeyServerResponse | ::handle  /pubkeys request");
-//		String id = request.getParamValue("Identity");
-//		
-//		if (id != null) {
-//			KeyServerResponse resp = new KeyServerResponse(serverid);
-//			
-//			Element e = new Element("pubkeys");
-//			Vector<OSDXKeyObject> pubkeys = new Vector<OSDXKeyObject>();
-//			
-//			Vector<OSDXKeyObject> keys = id_keys.get(id);
-//			if (keys != null && keys.size() > 0) {
-//				for (OSDXKeyObject k : keys) {
-//					//pubkeys.add(k); //TODO  send masterkey? 
-//					System.out.println("found master keyid: "+k.getKeyID());
-//					Vector<OSDXKeyObject> subkeys = keyid_subkeys.get(k.getKeyID());
-//					if (subkeys!=null) {
-//						pubkeys.addAll(subkeys);
-//					}
-//				}	
-//			}
-//			for (OSDXKeyObject k : pubkeys) {
-//				try {
-//					Element epk = k.toElementWithoutPrivateKey();
-//					e.addContent(epk);
-//				} catch (Exception ex) {
-//					ex.printStackTrace();
-//				}
-//			}
-//			resp.setContentElement(e);
-//			return resp;
-//		}
-//		System.out.println("KeyServerResponse | ::error in request");
-//		return null;
-//	}
-	
+	private KeyServerResponse errorMessage(String msg) {
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		resp.setRetCode(404, "FAILED");
+		resp.createErrorMessageContent(msg);
+		return resp;
+	}
 	
 	private KeyServerResponse handlePutMasterKeyRequest(KeyServerRequest request) throws Exception {
-		//System.out.println("KeyServerResponse | ::handle put masterkey request");
-		//String keyid = request.getHeaderValue("KeyID");
-		//String id = request.getHeaderValue("Identity");
-		//System.out.print("GOT THIS CONTENT::");request.xml.output(System.out);System.out.println("::END OF CONTENT");
-		Element e = request.xml.getRootElement();
-		if (e.getName().equals("masterpubkey")) {
-			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
-			
-			//check key already on server
-			String newkeyid = OSDXKeyObject.getFormattedKeyIDModulusOnly(pubkey.getKeyID());
-			if (keyid_key.containsKey(newkeyid)) {
-				KeyServerResponse resp = new KeyServerResponse(serverid);
-				resp.setRetCode(404, "FAILED");
-				resp.createErrorMessageContent("A key with this id is already registered.");
-				return resp;
-			}
-			AsymmetricKeyPair akp = new AsymmetricKeyPair(pubkey.getModulusBytes(), pubkey.getPublicExponentBytes(), null);
-			
-			//generate key
-			OSDXKeyObject key = OSDXKeyObject.buildNewMasterKeyfromKeyPair(akp);
-			key.setAuthoritativeKeyServer(host);
-			Identity idd = Identity.fromElement(e.getChild("identity"));
-			key.addIdentity(idd);
-			key.setAuthoritativeKeyServer(host);
-			key.addDataSourceStep(new DataSourceStep(request.ipv4, request.datetime));
-			
-			//generate keylog for approve_pending of email
-			Identity apid = Identity.newEmptyIdentity();
-			apid.setIdentNum(idd.getIdentNum());
-			apid.setEmail(idd.getEmail());
-			KeyLog kl = KeyLog.buildNewKeyLog(KeyLog.APPROVAL_PENDING, keyServerSigningKey, key.getKeyID(), request.ipv4, request.ipv4, apid);
-			kl.signoffKeyServer(keyServerSigningKey);
-			
-			//send email with token
-			byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
-			String token = SecurityHelper.HexDecoder.encode(tokenbytes, '\0',-1);
-			String msg = "Please verify your mail-address by clicking on the following link:\nhttp://"+host+":"+port+"/approve_mail?id="+token;
-			openTokens.put(token, kl);
-			sendMail(idd.getEmail(), "email address verification", msg);
-			
-			//save to keystore
-			keystore.addKey(key);
-			keystore.addKeyLog(kl);
-			updateCache(key, kl);
-			saveKeyStore();
-			
-			//send response
-			KeyServerResponse resp = new KeyServerResponse(serverid);
-			
-			return resp;
-		} else {
-			KeyServerResponse resp = new KeyServerResponse(serverid);
-			resp.setRetCode(404, "FAILED");
-			resp.createErrorMessageContent("missing masterpubkey");
-			return resp;
+		OSDXMessage msg;
+		try {
+			msg = OSDXMessage.fromElement(request.xml.getRootElement());
+		} catch (Exception ex) {
+			return errorMessage("ERROR in opensdx_message");
 		}
+		Result verified = msg.verifySignaturesWithoutKeyVerification();
+		if (!verified.succeeded) {
+			return errorMessage("verification of signature failed"+(verified.errorMessage!=null?": "+verified.errorMessage:""));
+		}
+		Document.buildDocument(msg.toElement()).output(System.out);
+		Element content = msg.getContent();
+		if (!content.getName().equals("masterpubkey")) {
+			return errorMessage("missing masterpubkey");
+		}
+		
+		OSDXKey pubkey = OSDXKey.fromPubKeyElement(content.getChild("pubkey"));
+		
+		//check key already on server
+		String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(pubkey.getKeyID());
+		if (keyid_key.containsKey(newkeyid)) {
+			return errorMessage("A key with this id is already registered.");
+//			OSDXKey old = keyid_key.get(newkeyid);
+//			keystore.removeKey(old);
+//			for (RevokeKey k : ((MasterKey)old).getRevokeKeys()) {
+//				key.addRevokeKey(k);
+//			}
+//			for (SubKey k : ((MasterKey)old).getSubKeys()) {
+//				key.addSubKey(k);
+//			}
+		}
+		
+		
+		MasterKey key = null;
+		if (pubkey instanceof MasterKey) {
+			key = (MasterKey)pubkey;
+		} else {
+			return errorMessage("Key must be on MASTER Key level");
+		}
+		
+		Identity idd = Identity.fromElement(content.getChild("identity"));
+		key.addIdentity(idd);
+		key.addDataSourceStep(new DataSourceStep(request.ipv4, request.datetime));
+		
+		//generate keylog for approve_pending of email
+		Identity apid = Identity.newEmptyIdentity();
+		apid.setIdentNum(idd.getIdentNum());
+		apid.setEmail(idd.getEmail());
+		KeyLog kl = KeyLog.buildNewKeyLog(KeyLog.APPROVAL_PENDING, keyServerSigningKey, key.getKeyID(), request.ipv4, request.ipv4, apid);
+		kl.signoffKeyServer(keyServerSigningKey);
+		
+		//send email with token
+		byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
+		String token = SecurityHelper.HexDecoder.encode(tokenbytes, '\0',-1);
+		String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+host+":"+port+"/approve_mail?id="+token;
+		openTokens.put(token, kl);
+		try {
+			sendMail(idd.getEmail(), "email address verification", verificationMsg);
+		} catch (Exception ex) {
+			System.out.println("ERROR while sendind mail :: "+ex.getMessage());
+			//ex.printStackTrace();
+		}
+		
+		//save to keystore
+		keystore.addKey(key);
+		keystore.addKeyLog(kl);
+		updateCache(key, kl);
+		saveKeyStore();
+		
+		//send response
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		return resp;
+		
 	}
 	
 	private KeyServerResponse handleVerifyRequest(KeyServerRequest request) throws Exception {
@@ -454,282 +453,239 @@ public class KeyServerMain {
 			updateCache(null, klApprove);
 			saveKeyStore();
 			
+			//add key to trusted keys
+			OSDXKey key = keyid_key.get(kl.getKeyIDTo());
+			if (key!=null) {
+				KeyVerificator.addTrustedKey(key);
+			}
+			
 			//send response
 			KeyServerResponse resp = new KeyServerResponse(serverid);
 			String html = "<HTML><BODY>Thank you. Approval of mail address successful.</BODY></HTML>";
 			resp.setHTML(html);
 			return resp;
 		} else {
-			KeyServerResponse resp = new KeyServerResponse(serverid);
-			resp.setRetCode(404, "FAILED");
-			resp.createErrorMessageContent("id "+id+" not recognized");
-			return resp;
+			return errorMessage("id "+id+" not recognized");
 		}
 	}
 	
 	private KeyServerResponse handlePutRevokeKeyRequest(KeyServerRequest request) throws Exception {
-		KeyServerResponse resp = new KeyServerResponse(serverid);
-		
-		//System.out.println("KeyServerResponse | ::handle put revokekey request");
-		//System.out.print("GOT THIS CONTENT::");request.xml.output(System.out);System.out.println("::END OF CONTENT");
-		
-		Element e = request.xml.getRootElement();
-		if (e.getName().equals("revokekey")) {
-			
-			//check masterkey on server
-			String masterkeyid = e.getChildText("masterkeyid");
-			OSDXKeyObject masterkey = keystore.getKey(masterkeyid);
-			if (masterkey==null) {
-				resp.setRetCode(404, "FAILED");
-				resp.createErrorMessageContent("associatied masterkey is not on server.");
-				return resp;
-			}
-			//check masterkey approved
-			KeyStatus ks = keystore.getKeyStatus(masterkey.getKeyID());
-			//if (ks==null || !ks.isValid()) {
-			if (ks==null || !(ks.isValid() || ks.isUnapproved())) { //TODO for testing with approval_pending
-				
-				resp.setRetCode(404, "FAILED");
-				resp.createErrorMessageContent("associatied masterkey is not approved.");
-				return resp;
-			}
-			
-			System.out.println("masterkey status: "+ks.getValidityStatusName());
-			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
-			//check key already on server
-			String newkeyid = OSDXKeyObject.getFormattedKeyIDModulusOnly(pubkey.getKeyID());
-			if (keyid_key.containsKey(newkeyid)) {
-				resp.setRetCode(404, "FAILED");
-				resp.createErrorMessageContent("A key with this id is already registered.");
-				return resp;
-			}
-			
-			
-			//boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey.getPubKey());
-			
-			//verify revoke key signature
-			//check sha1localproof
-			//byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(e.getChildText("sha1localproof"));
-			
-			
-			Vector<Element> sha1localproofs = e.getChildren("sha1localproof");
-			for (Element el : sha1localproofs) {
-				System.out.println("sha1localproof :: "+el.getText());
-			}
-			Vector<Element> signatures = e.getChildren("signature");
-			for (Element el : signatures) {
-				System.out.println("signature :: "+el.getChild("signoff").getChildText("keyid"));
-			}
-			//build toProof
-			Vector<Element> toProof = new Vector<Element>();
-			toProof.add(e.getChild("masterkeyid"));
-			toProof.add(e.getChild("pubkey"));
-			//verify signature with rekovekey
-			System.out.println("VERIFY revokekey signature");
-			boolean verified = SecurityHelper.checkSHA1localproofAndSignature(
-					toProof,
-					SecurityHelper.HexDecoder.decode(sha1localproofs.get(0).getText()),
-					Signature.fromElement(signatures.get(0)),
-					pubkey);
-			//verify signature with masterkey
-			if (verified) {
-				System.out.println("VERIFY masterkey signature");
-				toProof.add(sha1localproofs.get(0));
-				toProof.add(signatures.get(0));
-				verified = SecurityHelper.checkSHA1localproofAndSignature(
-						toProof,
-						SecurityHelper.HexDecoder.decode(sha1localproofs.get(1).getText()),
-						Signature.fromElement(signatures.get(1)),
-						masterkey.getPubKey());
-			}
-			//if any of above checks failed: signature NOT verified!
-			if (!verified) {
-				resp.setRetCode(404, "FAILED");
-				resp.createErrorMessageContent("signature could not be verified.");
-				return resp;
-			}
-			
-			//put key in keystore
-			AsymmetricKeyPair akp = new AsymmetricKeyPair(pubkey.getModulusBytes(), pubkey.getPublicExponentBytes(), null);
-			//generate key
-			OSDXKeyObject key = OSDXKeyObject.buildNewMasterKeyfromKeyPair(akp);
-			key.setLevel(OSDXKeyObject.LEVEL_REVOKE);
-			key.setUsage(OSDXKeyObject.USAGE_SIGN);
-			key.setParentKey(masterkey);
-			
-		
-			//save
-			keystore.addKey(key);
-			//keystore.addKeyLog(kl);
-			updateCache(key, null);
-			saveKeyStore();
-
-		} else {
-			resp.setRetCode(404, "FAILED");
-			resp.createErrorMessageContent("missing revokekey");
+		OSDXMessage msg;
+		try {
+			msg = OSDXMessage.fromElement(request.xml.getRootElement());
+		} catch (Exception ex) {
+			return errorMessage("ERROR in opensdx_message");
 		}
+		Result verified = msg.verifySignaturesWithoutKeyVerification(); //check keys later
+		if (!verified.succeeded) {
+			return errorMessage("verification of signature failed"+(verified.errorMessage!=null?": "+verified.errorMessage:""));
+		}
+		Element content = msg.getContent();
+		if (!content.getName().equals("revokekey")) {
+			return errorMessage("missing revokekey");
+		}
+		
+		//check masterkey on server
+		String masterkeyid = content.getChildText("masterkeyid");
+		OSDXKey masterkey = keystore.getKey(masterkeyid);
+		if (masterkey==null || !(masterkey instanceof MasterKey)) {
+			return errorMessage("associatied masterkey is not on server.");
+		}
+		
+		//check masterkey approved
+		KeyStatus ks = keystore.getKeyStatus(masterkey.getKeyID());
+		//if (ks==null || !ks.isValid()) {
+		if (ks==null || !(ks.isValid() || ks.isUnapproved())) { //TODO for testing with approval_pending
+			return errorMessage("associatied masterkey is not approved.");
+		}
+		
+		System.out.println("masterkey status: "+ks.getValidityStatusName());
+		
+		OSDXKey revokekey = OSDXKey.fromPubKeyElement(content.getChild("pubkey"));
+		if (!(revokekey instanceof RevokeKey)) {
+			return errorMessage("wrong key level: Revoke Key needed.");
+		}
+		
+		//put key in keystore
+		
+		//check key already on server
+		String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(revokekey.getKeyID());
+		if (keyid_key.containsKey(newkeyid)) {
+			OSDXKey old = keyid_key.get(newkeyid);
+			keystore.removeKey(old);
+		}
+		((MasterKey)masterkey).addRevokeKey((RevokeKey)revokekey);
+		((RevokeKey)revokekey).setParentKey((MasterKey)masterkey);
+		
+		//save
+		keystore.addKey(revokekey);
+		//keystore.addKeyLog(kl);
+		updateCache(revokekey, null);
+		saveKeyStore();
+		
+		//add revokekey to trusted keys
+		KeyVerificator.addTrustedKey(revokekey);
+		
+		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
 	}
 
 	private KeyServerResponse handlePutRevokeMasterkeyRequest(KeyServerRequest request) throws Exception {
-		KeyServerResponse resp = new KeyServerResponse(serverid);
-		
-		Element er = request.xml.getRootElement();
-		if (er!=null && er.getName().equals("revokemasterkey")) {
-			//Document.buildDocument(e).output(System.out);	
-			String fromKeyID = er.getChildText("from_keyid");
-			String toKeyID = er.getChildText("to_keyid");
-			String message = er.getChildText("message");
-
-			//check signature
-			Vector<Element> toProof = new Vector<Element>();
-			toProof.add(er.getChild("from_keyid"));
-			toProof.add(er.getChild("to_keyid"));
-			if (message!=null && message.length()>0)
-				toProof.add(er.getChild("message"));
-			byte[] givenSha1localproof = SecurityHelper.HexDecoder.decode(er.getChildText("sha1localproof"));
-			Signature sig = Signature.fromElement(er.getChild("signature"));
-
-			
-			OSDXKeyObject revokekey = keyid_key.get(OSDXKeyObject.getFormattedKeyIDModulusOnly(fromKeyID)); 
-			if (revokekey!=null) {
-				//check toKeyID is parent of revokekey
-				if (   !    OSDXKeyObject.getFormattedKeyIDModulusOnly(revokekey.getParentKeyID())
-					.equals(OSDXKeyObject.getFormattedKeyIDModulusOnly(toKeyID))) {
-					resp.setRetCode(404, "FAILED");
-					resp.createErrorMessageContent("revokekey is not registered as child of masterkey");
-				}
-				PublicKey signingKey = revokekey.getPubKey(); 
-				boolean v = SecurityHelper.checkSHA1localproofAndSignature(toProof, givenSha1localproof, sig, signingKey);
-
-				if (v) {
-					KeyLog log = KeyLog.buildNewRevocationKeyLog(fromKeyID, toKeyID, message, givenSha1localproof, sig, request.ipv4, request.ipv4, keyServerSigningKey);
-					log.verifySHA1localproofAndSignoff();
-					//save
-					updateCache(null,log);
-					keystore.addKeyLog(log);
-					saveKeyStore();
-				} else {
-					resp.setRetCode(404, "FAILED");
-					resp.createErrorMessageContent("verification of revokekey signature failed.");
-				}
-			} else {
-				resp.setRetCode(404, "FAILED");
-				resp.createErrorMessageContent("revokekey not registered on keyserver");
-			}
-		} else {
-			resp.setRetCode(404, "FAILED");
-			resp.createErrorMessageContent("missing revokemasterkey element");
+		OSDXMessage msg;
+		try {
+			msg = OSDXMessage.fromElement(request.xml.getRootElement());
+		} catch (Exception ex) {
+			return errorMessage("ERROR in opensdx_message");
 		}
+		Result verified = msg.verifySignatures();
+		if (!verified.succeeded) {
+			return errorMessage("verification of signature failed"+(verified.errorMessage!=null?": "+verified.errorMessage:""));
+		}
+		Element content = msg.getContent();
+		if (!content.getName().equals("revokemasterkey")) {
+			return errorMessage("missing revokemasterkey element");
+		}
+		
+		String fromKeyID = content.getChildText("from_keyid");
+		String toKeyID = content.getChildText("to_keyid");
+		String message = content.getChildText("message");
+
+		
+		OSDXKey revokekey = keyid_key.get(OSDXKey.getFormattedKeyIDModulusOnly(fromKeyID)); 
+		if (revokekey==null || !(revokekey instanceof RevokeKey)) {
+			return errorMessage("revokekey not registered on keyserver");
+		}
+		
+		//check toKeyID is parent of revokekey
+		if (   !    OSDXKey.getFormattedKeyIDModulusOnly(((RevokeKey)revokekey).getParentKeyID())
+			.equals(OSDXKey.getFormattedKeyIDModulusOnly(toKeyID))) {
+			return errorMessage("revokekey is not registered as child of masterkey");
+		}
+		
+		Signature sig = msg.getSignatures().get(0);
+		byte[] givenSha1localproof = msg.getSha1LocalProof();
+		
+		KeyLog log = KeyLog.buildNewRevocationKeyLog(fromKeyID, toKeyID, message, givenSha1localproof, sig, request.ipv4, request.ipv4, keyServerSigningKey);
+		log.verifySHA1localproofAndSignoff();
+		
+		//save
+		updateCache(null,log);
+		keystore.addKeyLog(log);
+		saveKeyStore();
+		
+		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
 	}
 
 	private KeyServerResponse handlePutSubKeyRequest(KeyServerRequest request) throws Exception {
-		KeyServerResponse resp = new KeyServerResponse(serverid);
-		//System.out.println("KeyServerResponse | ::handle put subkey request");
-		
-		Element e = request.xml.getRootElement();
-		if (e.getName().equals("subkey")) {
-			
-			//check masterkey on server
-			String masterkeyid = e.getChildText("masterkeyid");
-			OSDXKeyObject masterkey = keystore.getKey(masterkeyid);
-			if (masterkey==null) {
-				resp.setRetCode(404, "FAILED");
-				resp.createErrorMessageContent("associatied masterkey is not on server.");
-				return resp;
-			}
-			
-			//check masterkey approved
-			KeyStatus ks = keystore.getKeyStatus(masterkey.getKeyID());
-			System.out.println("status: "+ks.getValidityStatusName());
-			
-			//if (ks==null || !ks.isValid()) {
-			if (ks==null || !(ks.isValid() || ks.isUnapproved())) { //TODO for testing with approval_pending
-				resp.setRetCode(404, "FAILED");
-				resp.createErrorMessageContent("associatied masterkey is not approved.");
-				return resp;
-			}
-			
-			PublicKey pubkey = PublicKey.fromSimplePubKeyElement(e.getChild("pubkey"));
-			//check key already on server
-			String newkeyid = OSDXKeyObject.getFormattedKeyIDModulusOnly(pubkey.getKeyID());
-			if (keyid_key.containsKey(newkeyid)) {
-				resp.setRetCode(404, "FAILED");
-				resp.createErrorMessageContent("A key with this id is already registered.");
-				return resp;
-			}
-			
-			boolean verified = SecurityHelper.checkElementsSHA1localproofAndSignature(e, masterkey);
-			
-			if (!verified) {
-				resp.setRetCode(404, "FAILED");
-				resp.createErrorMessageContent("signature could not be verified.");
-				return resp;
-			}
-			
-			//put subkey in keystore
-			AsymmetricKeyPair akp = new AsymmetricKeyPair(pubkey.getModulusBytes(), pubkey.getPublicExponentBytes(), null);
-			//generate key
-			OSDXKeyObject key = OSDXKeyObject.buildNewMasterKeyfromKeyPair(akp);
-			key.setLevel(OSDXKeyObject.LEVEL_SUB);
-			key.setUsage(OSDXKeyObject.USAGE_SIGN);
-			key.setParentKey(masterkey);
-			key.setAuthoritativeKeyServer(masterkey.getAuthoritativekeyserver());
-	
-			//save
-			keystore.addKey(key);
-			//keystore.addKeyLog(kl);
-			updateCache(key, null);
-			saveKeyStore();
-
-		} else {
-			resp.setRetCode(404, "FAILED");
-			resp.createErrorMessageContent("missing subkey");
+		OSDXMessage msg;
+		try {
+			msg = OSDXMessage.fromElement(request.xml.getRootElement());
+		} catch (Exception ex) {
+			return errorMessage("ERROR in opensdx_message");
 		}
+		Result verified = msg.verifySignaturesWithoutKeyVerification(); //check keys later
+		if (!verified.succeeded) {
+			return errorMessage("verification of signature failed"+(verified.errorMessage!=null?": "+verified.errorMessage:""));
+		}
+		Element content = msg.getContent();
+		if (!content.getName().equals("subkey")) {
+			return errorMessage("missing subkey element");
+		}
+		
+		//check masterkey on server
+		String masterkeyid = content.getChildText("masterkeyid");
+		OSDXKey masterkey = keystore.getKey(masterkeyid);
+		if (masterkey==null || !(masterkey instanceof MasterKey)) {
+			return errorMessage("associatied masterkey is not on server.");
+		}
+		
+		//check masterkey approved
+		KeyStatus ks = keystore.getKeyStatus(masterkey.getKeyID());
+		//if (ks==null || !ks.isValid()) {
+		if (ks==null || !(ks.isValid() || ks.isUnapproved())) { //TODO for testing with approval_pending
+			return errorMessage("associatied masterkey is not approved.");
+		}
+		
+		System.out.println("masterkey status: "+ks.getValidityStatusName());
+		
+		OSDXKey subkey = OSDXKey.fromPubKeyElement(content.getChild("pubkey"));
+		if (!(subkey instanceof SubKey) && subkey.isSub()) {
+			return errorMessage("wrong key level: SUB Key needed.");
+		}
+		
+		//put key in keystore
+		
+		//check key already on server
+		String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(subkey.getKeyID());
+		if (keyid_key.containsKey(newkeyid)) {
+			OSDXKey old = keyid_key.get(newkeyid);
+			keystore.removeKey(old);
+			//resp.setRetCode(404, "FAILED");
+			//resp.createErrorMessageContent("A key with this id is already registered.");
+			//return resp;
+		}
+		((MasterKey)masterkey).addSubKey((SubKey)subkey);
+		((SubKey)subkey).setParentKey((MasterKey)masterkey);
+		
+		//save
+		keystore.addKey(subkey);
+		//keystore.addKeyLog(kl);
+		updateCache(subkey, null);
+		saveKeyStore();
+		
+		//add to trusted keys
+		KeyVerificator.addTrustedKey(subkey);
+		
+		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
 	}
 	
-	
 	private KeyServerResponse handlePutKeyLogsRequest(KeyServerRequest request) throws Exception {
-		KeyServerResponse resp = new KeyServerResponse(serverid);
-		
-		Element e = request.xml.getRootElement();
-		if (e!=null && e.getName().equals("keylogactions")) {
-			//Document.buildDocument(e).output(System.out);
-			
-			Vector<Element> elogs = e.getChildren("keylogaction");
-			if (elogs!=null && elogs.size()>0) {
-				for (Element el : elogs) {
-					KeyLog log = KeyLog.fromElement(el);
-					boolean v = log.verifyActionSHA1localproofAndSignoff();
-					if (v) {
-						//check toKey not revoked
-						KeyStatus ks = keystore.getKeyStatus(log.getKeyIDTo());
-						if (ks!=null && ks.getValidityStatus()==KeyStatus.STATUS_REVOKED) {
-							resp.setRetCode(404, "FAILED");
-							resp.createErrorMessageContent("key is already revoked.");	
-						}
-						
-						long datetime = System.currentTimeMillis();
-						log.setDatetime(datetime);
-						log.setIPv4(request.ipv4);
-						log.setIPv6(request.ipv4);
-						keystore.addKeyLog(log);
-						log.signoffKeyServer(keyServerSigningKey);
-						updateCache(null,log);
-					} else {
-						resp.setRetCode(404, "FAILED");
-						resp.createErrorMessageContent("verification of eylogaction signature failed.");
-					}
-				}
-				//save
-				saveKeyStore();
-			}
-		} else {
-			resp.setRetCode(404, "FAILED");
-			resp.createErrorMessageContent("missing keylogactions element");
+		OSDXMessage msg;
+		try {
+			msg = OSDXMessage.fromElement(request.xml.getRootElement());
+		} catch (Exception ex) {
+			return errorMessage("ERROR in opensdx_message");
 		}
+		Result verified = msg.verifySignaturesWithoutKeyVerification(); //check keys later
+		if (!verified.succeeded) {
+			return errorMessage("verification of signature failed"+(verified.errorMessage!=null?": "+verified.errorMessage:""));
+		}
+		Element content = msg.getContent();
+		if (!content.getName().equals("keylogactions")) {
+			return errorMessage("missing keylogactions element");
+		}
+
+		Vector<Element> elogs = content.getChildren("keylogaction");
+		if (elogs==null || elogs.size()<=0) {
+			return errorMessage("missing keylogaction element");
+		}
+		for (Element el : elogs) {
+			KeyLog log = KeyLog.fromElement(el);
+			Result v = log.verifyActionSHA1localproofAndSignoff();
+			if (!v.succeeded) {
+				return errorMessage("verification of keylogaction signature failed.");
+			}
+			//check toKey not revoked
+			KeyStatus ks = keystore.getKeyStatus(log.getKeyIDTo());
+			if (ks!=null && ks.getValidityStatus()==KeyStatus.STATUS_REVOKED) {
+				return errorMessage("key is already revoked.");	
+			}
+			
+			long datetime = System.currentTimeMillis();
+			log.setDatetime(datetime);
+			log.setIPv4(request.ipv4);
+			log.setIPv6(request.ipv4);
+			keystore.addKeyLog(log);
+			log.signoffKeyServer(keyServerSigningKey);
+			updateCache(null,log);
+
+		}
+		//save
+		saveKeyStore();
+		
+		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
 	}
 	

@@ -83,7 +83,7 @@ public class Document {
 	
 	public static Document fromString(String xml) throws Exception {
 		SAXBuilder sax = new SAXBuilder();
-		System.out.println("|"+xml);
+		//System.out.println("|"+xml);
 		Document ret = new Document(sax.build(new StringReader(xml)));
 		return ret;
 	}
@@ -114,6 +114,17 @@ public class Document {
 	public void output(OutputStream out) {
 		try {
 			Format f = Format.getPrettyFormat();
+			f.setEncoding("UTF-8");
+			XMLOutputter outp = new XMLOutputter(f);
+			outp.output(base, out);      
+			out.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	public void outputCompact(OutputStream out) {
+		try {
+			Format f = Format.getCompactFormat();
 			f.setEncoding("UTF-8");
 			XMLOutputter outp = new XMLOutputter(f);
 			outp.output(base, out);      

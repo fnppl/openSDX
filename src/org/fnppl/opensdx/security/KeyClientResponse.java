@@ -1,21 +1,23 @@
-package org.fnppl.opensdx.keyserver;
+package org.fnppl.opensdx.security;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
+
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
 //http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 
-public class OSDXKeyServerClientResponse {
+public class KeyClientResponse {
 
 	public static boolean debug = true;
 	public Hashtable<String, String> headers = null;
 	public Document doc;
 	public String status;
 	
-	public static OSDXKeyServerClientResponse fromStream(BufferedInputStream in, long timeout) throws Exception {
-		OSDXKeyServerClientResponse re = new OSDXKeyServerClientResponse();
+	public static KeyClientResponse fromStream(BufferedInputStream in, long timeout) throws Exception {
+		KeyClientResponse re = new KeyClientResponse();
 		re.headers = new Hashtable<String, String>();
 		re.doc = null;
 		re.status = readLine(in);
@@ -42,7 +44,7 @@ public class OSDXKeyServerClientResponse {
 		return null;
 	}
 	
-	private static void readXMLContent(BufferedInputStream in, OSDXKeyServerClientResponse re) throws Exception {
+	private static void readXMLContent(BufferedInputStream in, KeyClientResponse re) throws Exception {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		int read = 0;
 		byte[] buff = new byte[1024];
@@ -61,7 +63,7 @@ public class OSDXKeyServerClientResponse {
 		//re.doc = Document.fromStream(new ByteArrayInputStream(bout.toByteArray()));
 	}
 	
-	private static void readHeader(BufferedInputStream in, OSDXKeyServerClientResponse re) throws Exception {
+	private static void readHeader(BufferedInputStream in, KeyClientResponse re) throws Exception {
 		String zeile = null;
 
 		while ((zeile=readLine(in))!=null) {
@@ -113,4 +115,18 @@ public class OSDXKeyServerClientResponse {
 		return s;
 	}
 
+	public void toOutput(OutputStream out) {
+		try {	
+			out.write(("status: "+status+"\n").getBytes());
+			for (Entry<String,String> e : headers.entrySet()) {
+				out.write(("header: "+e.getKey()+"="+e.getValue()+"\n").getBytes());
+			}
+			if (doc!=null) {
+				doc.output(out);
+				out.write(("\n").getBytes());
+			}
+		} catch (Exception ex) {
+			
+		}
+	}
 }

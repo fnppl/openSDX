@@ -5,7 +5,8 @@ import java.util.Vector;
 
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
-import org.fnppl.opensdx.security.OSDXKeyObject;
+import org.fnppl.opensdx.security.MasterKey;
+import org.fnppl.opensdx.security.OSDXKey;
 
 public class DefaultMessageHandler implements MessageHandler {
 
@@ -21,9 +22,9 @@ public class DefaultMessageHandler implements MessageHandler {
 		return false;
 	}
 
-	public OSDXKeyObject requestMasterSigningKey(KeyApprovingStore keystore) throws Exception {
-		OSDXKeyObject signkey = null;
-		Vector<OSDXKeyObject> signoffkeys = keystore.getAllSigningMasterKeys();
+	public MasterKey requestMasterSigningKey(KeyApprovingStore keystore) throws Exception {
+		MasterKey signkey = null;
+		Vector<MasterKey> signoffkeys = keystore.getAllSigningMasterKeys();
 		if (signoffkeys.size()==0) {
 			Dialogs.showMessage("Sorry, no masterkeys for signing available.");
 		}
