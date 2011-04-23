@@ -11,8 +11,9 @@ import org.fnppl.opensdx.xml.*;
 
 public class KeyClientResponse {
 
-	public static boolean debug = true;
+	public static boolean debug = false;
 	public Hashtable<String, String> headers = null;
+	public Vector<String> headerName = new Vector<String>();
 	public Document doc;
 	public String status;
 	
@@ -29,7 +30,7 @@ public class KeyClientResponse {
 		}
 		if (debug) if (re.doc!=null) re.doc.output(System.out);
 		
-		System.out.println("OSDXKeyServerClient | end requestMasterPubKeys");
+		if (debug) System.out.println("OSDXKeyServerClient | end requestMasterPubKeys");
 		
 		return re;
 	}
@@ -74,6 +75,7 @@ public class KeyClientResponse {
 			//header
 			String[] p = parseHeader(zeile);
 			re.headers.put(p[0], p[1]);
+			re.headerName.add(p[0]);
 			//System.out.println("h: "+zeile);
 		}
 
@@ -117,14 +119,15 @@ public class KeyClientResponse {
 
 	public void toOutput(OutputStream out) {
 		try {	
-			out.write(("status: "+status+"\n").getBytes());
-			for (Entry<String,String> e : headers.entrySet()) {
-				out.write(("header: "+e.getKey()+"="+e.getValue()+"\n").getBytes());
+			out.write((status+"\n").getBytes());
+			
+			for (String key : headerName) {
+				out.write((key+": "+headers.get(key)+"\n").getBytes());
 			}
 			if (doc!=null) {
 				doc.output(out);
-				out.write(("\n").getBytes());
 			}
+			out.write(("\n").getBytes());
 		} catch (Exception ex) {
 			
 		}

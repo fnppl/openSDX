@@ -9,6 +9,8 @@ import org.fnppl.opensdx.security.KeyClient;
 import org.fnppl.opensdx.security.KeyClientMessageFactory;
 import org.fnppl.opensdx.security.KeyClientRequest;
 import org.fnppl.opensdx.security.KeyLog;
+import org.fnppl.opensdx.security.KeyServerIdentity;
+import org.fnppl.opensdx.security.KeyVerificator;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.Result;
@@ -56,9 +58,14 @@ public class KeyServerClientTest {
 		
 		boolean ok;
 		
+		KeyServerIdentity keyserverID = client.requestKeyServerIdentity();
+		KeyVerificator.addTrustedKey(keyserverID.getKnownKeys().get(0));
+		
 		ok = client.putMasterKey(masterkey, masterkey.getIdentity0001()); out.write("\n\n\n\n\n".getBytes());
 		ok = client.putRevokeKey(revokekey, masterkey);out.write("\n\n\n\n\n".getBytes());
 		ok = client.putSubKey(subkey, masterkey);out.write("\n\n\n\n\n".getBytes());
+		
+		client.requestKeyLogs(masterkey.getKeyID());out.write("\n\n\n\n\n".getBytes());
 		
 		//self approval keylog
 		KeyLog keylogSelfApproval = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, masterkey, masterkey.getKeyID(), masterkey.getIdentity0001());
@@ -68,9 +75,10 @@ public class KeyServerClientTest {
 		client.requestIdentities(masterkey.getKeyID());out.write("\n\n\n\n\n".getBytes());
 		client.requestPublicKey(masterkey.getKeyID());out.write("\n\n\n\n\n".getBytes());
 		client.requestSubKeys(masterkey.getKeyID());out.write("\n\n\n\n\n".getBytes());
+		client.requestKeyStatus(masterkey.getKeyID());
+				
+		client.putRevokeMasterKeyRequest(revokekey, masterkey, "test revocation");out.write("\n\n\n\n\n".getBytes());
 		
-		//client.putRevokeMasterKeyRequest(revokekey, masterkey, "test revocation");out.write("\n\n\n\n\n".getBytes());
-		//client.requestKeyLogs(masterkey.getKeyID());out.write("\n\n\n\n\n".getBytes());
 		
 		} catch (Exception ex) {
 			ex.printStackTrace();

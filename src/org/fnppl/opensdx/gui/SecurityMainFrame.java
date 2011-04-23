@@ -1036,7 +1036,7 @@ public class SecurityMainFrame extends JFrame {
 		tHost.getDocument().addDocumentListener(chListen);
 		tPort.getDocument().addDocumentListener(chListen);
 
-		Vector<PublicKey> keys = keyserver.getKnownKeys();
+		Vector<OSDXKey> keys = keyserver.getKnownKeys();
 
 		for (int i=0;i<keys.size();i++) {
 			y++;

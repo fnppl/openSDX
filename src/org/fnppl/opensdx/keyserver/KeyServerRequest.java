@@ -78,43 +78,43 @@ public class KeyServerRequest {
 		
 		String zeile = null;
 		zeile = readLineASCII(in, 4096); //cmdline
+		if (zeile!=null) {
+			//System.out.println("zeile cmdline: "+zeile);
+			
+			StringTokenizer st = new StringTokenizer(zeile, " ");
+			ret.method = st.nextToken();
+			ret.cmd = st.nextToken();
+			String proto = st.nextToken();
 		
-		System.out.println("zeile cmdline: "+zeile);
+			System.out.println((new Date())+" :: "+ret.ipv4+" :: KeyServerRequest | Method: "+ret.method+"\tCmd: "+ret.cmd);
 		
-		StringTokenizer st = new StringTokenizer(zeile, " ");
-		ret.method = st.nextToken();
-		ret.cmd = st.nextToken();
-		String proto = st.nextToken();
+			if(st.hasMoreTokens()) {
+				throw new Exception("INVALID HTTP _ MORE TOKEN AS _ "+st.nextToken());
+			}
 		
-		System.out.println((new Date())+" :: "+ret.ipv4+" :: KeyServerRequest | Method: "+ret.method+"\tCmd: "+ret.cmd);
+			readHeader(in, ret);
 		
-		if(st.hasMoreTokens()) {
-			throw new Exception("INVALID HTTP _ MORE TOKEN AS _ "+st.nextToken());
+			//System.out.println("::header end::");
+			
+			if (ret.method.equals("POST") && ret.headers.get("Content-Type").equals("text/xml")) {
+				readXMLPostContent(in, ret);
+			}
+			else if(ret.method.equals("POST") && ret.headers.get("Content-Type").equals("application/x-www-form-urlencoded")) {
+	//			Content-Type: application/x-www-form-urlencoded
+				readPostParams(in, ret);
+			}
+			else if(ret.method.equals("GET")) {
+				readGetParams(ret);
+			}
+			
+	//		if(ret.cmd.indexOf("?")>=0) {
+	//			readGetParams(in, ret, ret.cmd);
+	//		}
+	
+			//System.out.println("KeyServerRequest | end of request");
+			
+			//-------------------------return ret;
 		}
-		
-		readHeader(in, ret);
-		
-		//System.out.println("::header end::");
-		
-		if (ret.method.equals("POST") && ret.headers.get("Content-Type").equals("text/xml")) {
-			readXMLPostContent(in, ret);
-		}
-		else if(ret.method.equals("POST") && ret.headers.get("Content-Type").equals("application/x-www-form-urlencoded")) {
-//			Content-Type: application/x-www-form-urlencoded
-			readPostParams(in, ret);
-		}
-		else if(ret.method.equals("GET")) {
-			readGetParams(ret);
-		}
-		
-//		if(ret.cmd.indexOf("?")>=0) {
-//			readGetParams(in, ret, ret.cmd);
-//		}
-
-		//System.out.println("KeyServerRequest | end of request");
-		
-		//-------------------------return ret;
-		
 		return ret;
 	}
 	

@@ -74,7 +74,7 @@ public class KeyClient {
 	public boolean connect() throws Exception {
 		socket = new Socket(host, port);
 		if (socket.isConnected()) {
-			System.out.println("Connection established.");
+			//System.out.println("Connection established.");
 			return true;
 		} else {
 			System.out.println("ERROR: Connection to server could NOT be established!");
@@ -94,16 +94,16 @@ public class KeyClient {
 		if (!connect()) {
 			throw new RuntimeException("ERROR: Can not connect to keyserver.");
 		}
-		System.out.println("OSDXKeyServerClient | start "+req.getURI());
+		//System.out.println("OSDXKeyServerClient | start "+req.getURI());
 		
-		System.out.println("--- sending ---");
-		req.toOutput(System.out);
-		System.out.println("\n--- end of sending ---");
+		//System.out.println("--- sending ---");
+		//req.toOutput(System.out);
+		//System.out.println("\n--- end of sending ---");
 		
 		req.send(socket);
 		
 		//processing response
-	    System.out.println("OSDXKeyServerClient | waiting for response");
+	    //System.out.println("OSDXKeyServerClient | waiting for response");
 	    BufferedInputStream bin = new BufferedInputStream(socket.getInputStream());
 	    
 	    KeyClientResponse re = KeyClientResponse.fromStream(bin, timeout);
@@ -120,7 +120,18 @@ public class KeyClient {
 	public Vector<String> requestMasterPubKeys(final String idemail) throws Exception {
 		KeyClientRequest req = KeyClientMessageFactory.buildRequestMasterPubKeys(host, idemail);
 		KeyClientResponse resp = send(req);
-		
+		if (log!=null) {
+			log.write("--- REQUEST MASTERPUBKEY ----------\n".getBytes());
+			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
+			log.write("--- END of REQUEST MASTERPUBKEY ---\n".getBytes());
+			if (resp == null) {
+				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
+			} else {
+				log.write("\n--- RESPONSE MASTERPUBKEY ----------\n".getBytes());
+				resp.toOutput(log);
+				log.write("--- END of RESPONSE MASTERPUBKEY ---\n".getBytes());
+			}
+		}
 		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
 		Result result = msg.verifySignatures();
 		
@@ -163,6 +174,47 @@ public class KeyClient {
 //		return ret;
 //	}
 	
+	public KeyServerIdentity requestKeyServerIdentity() throws Exception {
+		KeyClientRequest req = KeyClientMessageFactory.buildRequestKeyServerIdentity(host);
+		KeyClientResponse resp = send(req);
+		if (log!=null) {
+			log.write("--- REQUEST KEYSERVER IDENTITY ----------\n".getBytes());
+			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
+			log.write("--- END of REQUEST KEYSERVER IDENTITY ---\n".getBytes());
+			if (resp == null) {
+				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
+			} else {
+				log.write("\n--- RESPONSE KEYSERVER IDENTITY ----------\n".getBytes());
+				resp.toOutput(log);
+				log.write("--- END of RESPONSE KEYSERVER IDENTITY ---\n".getBytes());
+			}
+		}
+		if (resp==null || resp.status == null) {
+			message = ERROR_NO_RESPONSE;
+			return null;
+		}
+		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
+		Result result = msg.verifySignaturesWithoutKeyVerification();
+		
+		if (result.succeeded) {
+			Element content = msg.getContent();
+			if (!content.getName().equals(KeyClientMessageFactory.KEYSERVER_SETTINGS_RESPONSE)) {
+				message = ERROR_WRONG_RESPONE_FORMAT;
+				return null;
+			}
+			try {
+				KeyServerIdentity id = KeyServerIdentity.fromElement(content);
+				return id;
+			} catch (Exception ex) {
+				message = "error in keyserver response";
+				return null;
+			}
+		} else {
+			message = result.errorMessage;
+			return null;
+		}
+	}
+	
 	
 	//2. Ich, als fremder user, möchte beim keyserver die weiteren identities (identity-details) zu einem pubkey bekommen können
 	public Vector<Identity> requestIdentities(String keyid) throws Exception {
@@ -198,7 +250,7 @@ public class KeyClient {
 		 	for (Element id : eid) {
 		 		ret.add(Identity.fromElement(id));
 		 	}
-		 	return null;
+		 	return ret;
 		} else {
 			message = result.errorMessage;
 			return null;
@@ -210,15 +262,15 @@ public class KeyClient {
 		KeyClientRequest req = KeyClientMessageFactory.buildRequestKeyStatus(host, keyid);
 		KeyClientResponse resp = send(req);
 		if (log!=null) {
-			log.write("--- REQUEST KeyStatus ----------\n".getBytes());
+			log.write("--- REQUEST KEYSTATUS ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST KeyStatus ---\n".getBytes());
+			log.write("--- END of REQUEST KEYSTATUS ---\n".getBytes());
 			if (resp == null) {
 				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
 			} else {
-				log.write("\n--- RESPONSE KeyStatus ----------\n".getBytes());
+				log.write("\n--- RESPONSE KEYSTATUS ----------\n".getBytes());
 				resp.toOutput(log);
-				log.write("--- END of RESPONSE KeyStatus ---\n".getBytes());
+				log.write("--- END of RESPONSE KEYSTATUS ---\n".getBytes());
 			}
 		}
 		if (resp==null || resp.status == null) {
@@ -391,6 +443,7 @@ public class KeyClient {
 			}
 			return checkResponse(resp);
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			message = ex.getMessage();
 		}
 		return false;

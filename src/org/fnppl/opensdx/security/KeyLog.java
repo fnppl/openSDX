@@ -185,17 +185,17 @@ public class KeyLog {
 		return v;
 	}
 
-	public Result verifySHA1localproofAndSignoff() throws Exception {
+	public Result verify() throws Exception {
 		Result v = verifyActionSHA1localproofAndSignoff();
 		if (v.succeeded && keyserverSignature!=null) {
 			v = verifyKeyServerSHA1localproofAndSignoff();
 		}
 		return v;
 	}
+	
 	public Result verifyActionSHA1localproofAndSignoff() throws Exception {
 		if (actionSignature==null) return  Result.error("missing action signature");
 		if (actionSha1localproof == null) return  Result.error("missing action localproof");
-		
 		
 		//check localproof
 		byte[] bsha1 = calcActionSha1LocalProof();
@@ -205,7 +205,6 @@ public class KeyLog {
 			return Result.error("verification of sha1localproof failed");
 		}	
 		//check signoff
-		//return actionSignature.tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(bsha1));
 		return actionSignature.tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(bsha1));
 	}
 	public Result verifyKeyServerSHA1localproofAndSignoff() throws Exception {
@@ -486,5 +485,7 @@ public class KeyLog {
 		this.message = message;
 	}
 	
-	
+	public OSDXKey getActionSignatureKey() {
+		return actionSignature.getKey();
+	}
 }

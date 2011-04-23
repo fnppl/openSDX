@@ -566,7 +566,7 @@ public class KeyServerMain {
 		byte[] givenSha1localproof = msg.getSha1LocalProof();
 		
 		KeyLog log = KeyLog.buildNewRevocationKeyLog(fromKeyID, toKeyID, message, givenSha1localproof, sig, request.ipv4, request.ipv4, keyServerSigningKey);
-		log.verifySHA1localproofAndSignoff();
+		log.verify();
 		
 		//save
 		updateCache(null,log);
@@ -691,16 +691,20 @@ public class KeyServerMain {
 	
 	private KeyServerResponse handleGetKeyServerSettingsRequest(KeyServerRequest request) throws Exception {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
-		Element e = new Element("keyserver");
-		e.addContent("host",host);
-		e.addContent("port",""+port);
-		Element k = new Element("knownkeys");
-		Element pk = keyServerSigningKey.getSimplePubKeyElement();
-		k.addContent(pk);
-		k.addContent("sha1localproof",SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(pk), ':', -1));
-		e.addContent(k);
-		e.addContent("sha1localproof",SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(e), ':', -1));
-		resp.setContentElement(e);
+		try {
+			Element e = new Element("keyserver");
+			e.addContent("host",host);
+			e.addContent("port",""+port);
+			Element k = new Element("knownkeys");
+			Element pk = keyServerSigningKey.getSimplePubKeyElement();
+			k.addContent(pk);
+			e.addContent(k);
+			OSDXMessage msg = OSDXMessage.buildMessage(e, keyServerSigningKey);
+			resp.setContentElement(msg.toElement());
+		} catch (Exception ex) {
+			resp.setRetCode(404, "FAILED");
+			resp.createErrorMessageContent("Internal Error"); //should/could never happen
+		}
 		return resp;
 	}
 
@@ -813,6 +817,7 @@ public class KeyServerMain {
 		}
 	}
 	public KeyServerResponse prepareResponse(KeyServerRequest request, BufferedInputStream in) throws Exception {
+		if (request.method==null) return null;
 		// yeah, switch cmd/method - stuff whatever...
 		
 		String cmd = request.cmd;

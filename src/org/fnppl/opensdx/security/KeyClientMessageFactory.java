@@ -50,12 +50,21 @@ import org.fnppl.opensdx.xml.Element;
 
 public class KeyClientMessageFactory {
 	
+	public static String KEYSERVER_SETTINGS_RESPONSE = "keyserver";
 	public static String MASTERPUBKEYS_RESPONSE = "masterpubkeys_response";
 	public static String IDENTITIES_RESPONSE = "identities_response";
 	public static String KEYSTATUS_RESPONSE = "keystatus_response";
 	public static String SUBKEYS_RESPONSE = "subkeys_response";
 	public static String KEYLOGS_RESPONSE = "keylogs_response";
 	public static String PUBLICKEY_RESPONSE = "pubkey_response";
+	
+	
+	public static KeyClientRequest buildRequestKeyServerIdentity(String host) {
+		KeyClientRequest req = new KeyClientRequest();
+		req.setURI(host, "/keyserversettings");
+		req.toggleGETMode();
+		return req;
+	}
 	
 	public static KeyClientRequest buildRequestIdentities(String host, String keyid) {
 		KeyClientRequest req = new KeyClientRequest();
@@ -130,7 +139,7 @@ public class KeyClientMessageFactory {
 		content.addContent(masterkey.getSimplePubKeyElement());
 		content.addContent(id.toElementOfNotNull());
 		OSDXMessage msg = OSDXMessage.buildMessage(content, masterkey); //self-signoff with masterkey
-		req.setContentElement(msg.toElement()); 
+		req.setContentElement(msg.toElement());
 		return req;
 	}
 	

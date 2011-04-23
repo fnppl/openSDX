@@ -341,7 +341,7 @@ public class KeyApprovingStore {
 			for (KeyLog kl : keylogs) {
 				boolean v = false;
 				try {
-					Result vr = kl.verifySHA1localproofAndSignoff(); 
+					Result vr = kl.verify(); 
 					v = vr.succeeded;
 				} catch (Exception e) {
 					//e.printStackTrace();

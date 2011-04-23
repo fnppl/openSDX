@@ -43,8 +43,8 @@ package org.fnppl.opensdx.security;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
-import java.util.Vector;
 
+import java.util.Vector;
 import org.fnppl.opensdx.xml.Element;
 
 public class KeyServerIdentity {
@@ -52,7 +52,7 @@ public class KeyServerIdentity {
 	private String host = null;
 	private int port = 80;
 	
-	private Vector<PublicKey> knownkeys = new Vector<PublicKey>();
+	private Vector<OSDXKey> knownkeys = new Vector<OSDXKey>();
 	
 	private KeyServerIdentity() {
 		
@@ -72,7 +72,7 @@ public class KeyServerIdentity {
 		if (e.getChild("knownkeys")!=null) {
 			Vector<Element> keys = e.getChild("knownkeys").getChildren("pubkey");
 			for (Element key: keys) {
-				k.knownkeys.add(PublicKey.fromSimplePubKeyElement(key));
+				k.knownkeys.add(OSDXKey.fromPubKeyElement(key));
 			}
 		}
 		return k;
@@ -84,7 +84,7 @@ public class KeyServerIdentity {
 		e.addContent("port", ""+port);
 		Element kk = new Element("knownkeys");
 		e.addContent(kk);
-		for (PublicKey k : knownkeys) {
+		for (OSDXKey k : knownkeys) {
 			kk.addContent(k.getSimplePubKeyElement());
 		}
 		return e;
@@ -110,15 +110,15 @@ public class KeyServerIdentity {
 		this.port = port;
 	}
 
-	public Vector<PublicKey> getKnownKeys() {
+	public Vector<OSDXKey> getKnownKeys() {
 		return knownkeys;
 	}
 
-	public void addKnownKey(PublicKey knownkey) {
+	public void addKnownKey(OSDXKey knownkey) {
 		knownkeys.add(knownkey);
 	}
 	
-	public void removeKnownKey(PublicKey knownkey) {
+	public void removeKnownKey(OSDXKey knownkey) {
 		knownkeys.remove(knownkey);
 	}
 	

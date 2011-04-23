@@ -407,19 +407,25 @@ public class OSDXKey {
 		if (akp.hasPrivateKey()) {
 			String[] ans = mh.requestNewPasswordAndMantra("Saving Key: "+getKeyID()+"\nLevel: "+getLevelName()+"\n");
 			if (ans != null) {
-				byte[] iv = SecurityHelper.getRandomBytes(16);
-				SymmetricKey sk = SymmetricKey.getKeyFromPass(ans[1].toCharArray(), iv);
-				byte[] encprivkey = akp.getEncrytedPrivateKey(sk);
-				Element el = new Element("locked");
-				el.addContent("mantraname",ans[0]);
-				el.addContent("algo","AES@256");
-				el.addContent("initvector", SecurityHelper.HexDecoder.encode(iv, ':',-1));
-				el.addContent("padding", "CBC/PKCS#5");
-				el.addContent("bytes", SecurityHelper.HexDecoder.encode(encprivkey, ':',-1));				
-				lockedPrivateKey = el;
+				createLockedPrivateKey(ans[0],ans[1]);
 			} else {
 				System.out.println("CAUTION: private key NOT saved.");
 			}
+		}
+	}
+	
+	public void createLockedPrivateKey(String mantra, String password) throws Exception {
+		if (akp.hasPrivateKey()) {
+			byte[] iv = SecurityHelper.getRandomBytes(16);
+			SymmetricKey sk = SymmetricKey.getKeyFromPass(password.toCharArray(), iv);
+			byte[] encprivkey = akp.getEncrytedPrivateKey(sk);
+			Element el = new Element("locked");
+			el.addContent("mantraname",mantra);
+			el.addContent("algo","AES@256");
+			el.addContent("initvector", SecurityHelper.HexDecoder.encode(iv, ':',-1));
+			el.addContent("padding", "CBC/PKCS#5");
+			el.addContent("bytes", SecurityHelper.HexDecoder.encode(encprivkey, ':',-1));				
+			lockedPrivateKey = el;
 		}
 	}
 	
