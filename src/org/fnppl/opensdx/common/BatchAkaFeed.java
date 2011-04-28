@@ -2,8 +2,8 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 
-import org.fnppl.opensdx.commonAuto.Bundle;
-import org.fnppl.opensdx.commonAuto.Feedinfo;
+//import org.fnppl.opensdx.commonAuto.Bundle;
+//import org.fnppl.opensdx.commonAuto.Feedinfo;
 
  /*
  * Copyright (C) 2010-2011 

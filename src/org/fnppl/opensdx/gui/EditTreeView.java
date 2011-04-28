@@ -293,7 +293,8 @@ public class EditTreeView extends JTree {
 			b.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
-						t.setBaseObject(new org.fnppl.opensdx.commonAuto.Feed());
+						throw new RuntimeException("HT 2011-04-28 - fix me...");
+//						t.setBaseObject(new org.fnppl.opensdx.commonAuto.Feed());
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}

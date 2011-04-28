@@ -63,7 +63,7 @@ import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.common.LicenseRule;
 import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.common.Territory;
-import org.fnppl.opensdx.commonAuto.Information;
+//import org.fnppl.opensdx.commonAuto.Information;
 import org.fnppl.opensdx.xml.*;
 import java.io.*;import java.text.SimpleDateFormat;
 import java.util.*;

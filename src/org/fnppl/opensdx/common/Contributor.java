@@ -2,7 +2,7 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 
-import org.fnppl.opensdx.commonAuto.Ids;
+//import org.fnppl.opensdx.commonAuto.Ids;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
