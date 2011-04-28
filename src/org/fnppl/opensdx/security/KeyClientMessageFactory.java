@@ -183,6 +183,21 @@ public class KeyClientMessageFactory {
 		return req;
 	}
 	
+	public static KeyClientRequest buildPutRequestRevokeSubKey(String host, OSDXKey subkey, OSDXKey relatedMasterKey, String message) throws Exception {
+		KeyClientRequest req = new KeyClientRequest();
+		req.setURI(host, "/revokesubkey");
+		
+		Element content = new Element("revokesubkey");
+		content.addContent("from_keyid", relatedMasterKey.getKeyID());
+		content.addContent("to_keyid", subkey.getKeyID());
+		if (message!=null && message.length()>0)
+			content.addContent("message",message);
+		
+		OSDXMessage msg = OSDXMessage.buildMessage(content, relatedMasterKey);  //signoff with masterkey
+		req.setContentElement(msg.toElement());		
+		return req;
+	}
+	
 	public static KeyClientRequest buildPutRequestSubKey(String host, OSDXKey subkey, OSDXKey relatedMasterKey) throws Exception {
 		KeyClientRequest req = new KeyClientRequest();
 		req.setURI(host, "/subkey");

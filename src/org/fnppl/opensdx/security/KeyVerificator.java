@@ -68,6 +68,10 @@ public class KeyVerificator {
 		trustGraph.addKeyRating(key, rating);
 	}
 	
+	public static void removeDirectRating(OSDXKey key) {
+		trustGraph.removeDirectRating(key);
+	}
+	
 	public static Result verifyKey(OSDXKey key) {
 		//sha1 of key modulus = keyid
 		byte[] keyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(key.getKeyID()));
@@ -87,6 +91,9 @@ public class KeyVerificator {
 		return false;
 	}
 	
+	public static TrustGraph getTrustGraph() {
+		return trustGraph;
+	}
 	public static Vector<KeyLog> requestKeyLogs(OSDXKey key) {
 		try {
 			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(),key.getAuthoritativekeyserverPort());
@@ -304,7 +311,7 @@ public class KeyVerificator {
 	}
 	
 	public static boolean isDirectlyRated(String keyid) {
-		return trustGraph.isDirectlyTrusted(keyid);
+		return trustGraph.isDirectlyRated(keyid);
 	}
 	
 	public static int getTrustRating(String keyid) {
@@ -331,7 +338,7 @@ public class KeyVerificator {
 
 	public static TrustGraphNode findTrusted(OSDXKey start, int maxDepth) {
 		TrustGraphNode nodeStart = trustGraph.addNode(start);
-		return trustGraph.breath_first_search_to_trusted(nodeStart, maxDepth);
+		return trustGraph.breadth_first_search_to_trusted(nodeStart, maxDepth);
 	}
 	
 	public static Vector<TrustGraphNode> findPredecessors(TrustGraphNode start) {

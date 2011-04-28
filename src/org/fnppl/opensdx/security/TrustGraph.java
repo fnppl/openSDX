@@ -56,6 +56,11 @@ public class TrustGraph {
 	public void addKeyRating(OSDXKey key, int trustRating) {
 		addNode(key);
 		directRating.put(key.getKeyID(), new TrustRatingOfKey(key.getKeyID(), trustRating));
+		updateAllTrustRatings();
+	}
+	public void removeDirectRating(OSDXKey key) {
+		directRating.remove(key.getKeyID());
+		updateAllTrustRatings();
 	}
 	
 	public boolean isDirectlyTrusted(String keyid) {
@@ -91,9 +96,15 @@ public class TrustGraph {
 		}
 		while (queue.size()>0) {
 			TrustGraphNode v = queue.remove(0);
+			int rating = v.getTrustRating();
+			if (rating<TrustRatingOfKey.RATING_MARGINAL) rating = TrustRatingOfKey.RATING_UNKNOWN;
 			for (TrustGraphNode w : getKnownChilderen(v)) {
-				if (w.getTrustRating()==-999) {
-					w.setTrustRating(v.getTrustRating(), false);
+				if (w.getTrustRating()==TrustRatingOfKey.RATING_UNKNOWN && rating>=TrustRatingOfKey.RATING_MARGINAL) {
+					w.setTrustRating(rating, false);
+					queue.add(w);
+				}
+				else if (w.getTrustRating()==-999) {
+					w.setTrustRating(rating, false);
 					//System.out.println("indirect trust: "+v.getTrustRating()+" of "+w.getID());
 					queue.add(w);
 				}
@@ -143,8 +154,14 @@ public class TrustGraph {
 		}
 		return null;
 	}
-	public void addEdge(TrustGraphNode from, TrustGraphNode to, int type) {
-		edges.add(new TrustGraphEdge(from,to,type));
+	public void addEdge(TrustGraphNode from, TrustGraphNode to, int type, long datetime) {
+		//check if already present
+		for (TrustGraphEdge e : edges) {
+			if (e.from==from && e.to==to && e.type == type) {
+				return;
+			}
+		}
+		edges.add(new TrustGraphEdge(from,to,type, datetime));
 	}
 	
 	
@@ -154,7 +171,7 @@ public class TrustGraph {
 	 * @param maxDepth maximum distance from start node
 	 * @returns a trusted node or null if no trusted node could be found within the given maxDetph
 	 */
-	public TrustGraphNode breath_first_search_to_trusted(TrustGraphNode start, int maxDepth) {
+	public TrustGraphNode breadth_first_search_to_trusted(TrustGraphNode start, int maxDepth) {
 		return breadth_first_search_to_trusted(start, maxDepth, true);
 	}
 	
@@ -192,7 +209,7 @@ public class TrustGraph {
 	}
 	
 	public void expandNode(TrustGraphNode v) {
-		for (TrustGraphNode w : v.getChildren()) {
+		for (TrustGraphNode w : v.reloadChildren()) {
 			if (!w.isVisited()) {
 				w.setVisited(true);
 				w.addParent(v);

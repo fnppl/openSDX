@@ -577,6 +577,53 @@ public class KeyServerMain {
 		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
 	}
+	
+	private KeyServerResponse handlePutRevokeSubkeyRequest(KeyServerRequest request) throws Exception {
+		OSDXMessage msg;
+		try {
+			msg = OSDXMessage.fromElement(request.xml.getRootElement());
+		} catch (Exception ex) {
+			return errorMessage("ERROR in opensdx_message");
+		}
+		Result verified = msg.verifySignaturesWithoutKeyVerification();
+		if (!verified.succeeded) {
+			return errorMessage("verification of signature failed"+(verified.errorMessage!=null?": "+verified.errorMessage:""));
+		}
+		Element content = msg.getContent();
+		if (!content.getName().equals("revokesubkey")) {
+			return errorMessage("missing revokesubkey element");
+		}
+		
+		String fromKeyID = content.getChildText("from_keyid");
+		String toKeyID = content.getChildText("to_keyid");
+		String message = content.getChildText("message");
+
+		
+		OSDXKey subkey = keyid_key.get(OSDXKey.getFormattedKeyIDModulusOnly(toKeyID)); 
+		if (subkey==null || !(subkey instanceof SubKey)) {
+			return errorMessage("subkey not registered on keyserver");
+		}
+		
+		//check fromKeyID is parent of subkey
+		if (   !    OSDXKey.getFormattedKeyIDModulusOnly(((SubKey)subkey).getParentKeyID())
+			.equals(OSDXKey.getFormattedKeyIDModulusOnly(fromKeyID))) {
+			return errorMessage("subkey is not registered as child of masterkey");
+		}
+		
+		Signature sig = msg.getSignatures().get(0);
+		byte[] givenSha1localproof = msg.getSha1LocalProof();
+		
+		KeyLog log = KeyLog.buildNewRevocationKeyLog(fromKeyID, toKeyID, message, givenSha1localproof, sig, request.ipv4, request.ipv4, keyServerSigningKey);
+		log.verify();
+		
+		//save
+		updateCache(null,log);
+		keystore.addKeyLog(log);
+		saveKeyStore();
+		
+		KeyServerResponse resp = new KeyServerResponse(serverid); 
+		return resp;
+	}
 
 	private KeyServerResponse handlePutSubKeyRequest(KeyServerRequest request) throws Exception {
 		OSDXMessage msg;
@@ -838,6 +885,9 @@ public class KeyServerMain {
 			}
 			else if (cmd.equals("/revokemasterkey")) {
 				return handlePutRevokeMasterkeyRequest(request);
+			}
+			else if (cmd.equals("/revokesubkey")) {
+				return handlePutRevokeSubkeyRequest(request);
 			}
 		} 
 		else if (request.method.equals("GET")) {

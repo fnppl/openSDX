@@ -63,6 +63,11 @@ public class TrustGraphNode {
 		this.g = graph;
 	}
 	
+	public Vector<TrustGraphNode> reloadChildren() {
+		children = null;
+		return getChildren();
+	}
+	
 	public Vector<TrustGraphNode> getChildren() {
 		if (children == null) {
 			children = new Vector<TrustGraphNode>();
@@ -81,8 +86,9 @@ public class TrustGraphNode {
 						if (action.equals(KeyLog.REVOCATION)) {
 							if (!KeyVerificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
 								hasRevokeLog = true;
+								System.out.println("found revocation for subkey: "+key.getKeyID());
 								TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
-								g.addEdge(n, this, TrustGraphEdge.TYPE_REVOKE);
+								g.addEdge(n, this, TrustGraphEdge.TYPE_REVOKE, keylog.getDate());
 							}
 						}
 					} catch (Exception ex) {
@@ -96,7 +102,7 @@ public class TrustGraphNode {
 						((SubKey)key).setParentKey(parent);
 						TrustGraphNode n = g.addNode(parent);
 						children.add(n);
-						g.addEdge(this, n, TrustGraphEdge.TYPE_SUBKEY);
+						g.addEdge(this, n, TrustGraphEdge.TYPE_SUBKEY, -1L);
 					}
 				}
 			} else {
@@ -111,14 +117,14 @@ public class TrustGraphNode {
 								if (!KeyVerificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
 									hasRevokeLog = true;
 									TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
-									g.addEdge(n, this, TrustGraphEdge.TYPE_REVOKE);
+									g.addEdge(n, this, TrustGraphEdge.TYPE_REVOKE, keylog.getDate());
 								}
 							}
 							else if (action.equals(KeyLog.DISAPPROVAL)) { 
 								if (!KeyVerificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
 									hasRevokeLog = true;
 									TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
-									g.addEdge(n, this, TrustGraphEdge.TYPE_DISAPPROVE);
+									g.addEdge(n, this, TrustGraphEdge.TYPE_DISAPPROVE, keylog.getDate());
 								}
 							}
 						} catch (Exception ex) {
@@ -135,7 +141,8 @@ public class TrustGraphNode {
 									if (action.equals(KeyLog.APPROVAL)) { 
 										TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
 										children.add(n);
-										g.addEdge(n, this, TrustGraphEdge.TYPE_APPROVE);
+										
+										g.addEdge(n, this, TrustGraphEdge.TYPE_APPROVE, keylog.getDate());
 									}
 								}
 							} catch (Exception ex) {

@@ -540,6 +540,24 @@ public class KeyClient {
 		return checkResponse(resp);
 	}
 
+	public boolean putRevokeSubKeyRequest(SubKey subkey, MasterKey relatedMasterKey, String message) throws Exception {
+		KeyClientRequest req = KeyClientMessageFactory.buildPutRequestRevokeSubKey(host, subkey, relatedMasterKey, message);
+		KeyClientResponse resp = send(req);
+		if (log!=null) {
+			log.write("--- REQUEST Revoke-SubKey ----------\n".getBytes());
+			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
+			log.write("--- END of REQUEST Revoke-SubKey ---\n".getBytes());
+			if (resp == null) {
+				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
+			} else {
+				log.write("\n--- RESPONSE Revoke-SubKey ----------\n".getBytes());
+				resp.toOutput(log);
+				log.write("--- END of RESPONSE Revoke-SubKey ---\n".getBytes());
+			}
+		}
+		return checkResponse(resp);
+	}
+	
 	//   5. Ich, als user, möchte meine keylogs auf dem server ablegen können (ein löschen von keylogs ist NICHT möglich - für einen aktuellen status ist die "kette ist chronologisch abzuarbeiten")
 	
 	public boolean putKeyLog(KeyLog keylog, OSDXKey signingKey) throws Exception {

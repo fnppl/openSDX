@@ -312,6 +312,7 @@ public class KeyLog {
 				kl.keyserverSha1localproof = SecurityHelper.HexDecoder.decode(sSha1);
 				kl.keyserverSignature = Signature.fromElement(e.getChild("signature"));
 			}
+			//System.out.println(sDate+" -> datetime::"+kl.datetime);
 		} else {
 			//keylogaction only
 			ea = e;

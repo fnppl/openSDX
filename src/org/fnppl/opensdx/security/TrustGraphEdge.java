@@ -56,11 +56,13 @@ public class TrustGraphEdge {
 	public TrustGraphNode from;
 	public TrustGraphNode to;
 	public int type;
+	public long datetime;
 	
-	public TrustGraphEdge(TrustGraphNode from, TrustGraphNode to, int type) {
+	public TrustGraphEdge(TrustGraphNode from, TrustGraphNode to, int type, long datetime) {
 		super();
 		this.from = from;
 		this.to = to;
 		this.type = type;
+		this.datetime = datetime;
 	}
 }
