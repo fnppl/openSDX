@@ -184,6 +184,31 @@ public class KeyServerResponse {
 		return null;
 	}
 	
+	public static KeyServerResponse createMasterPubKeyToSubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		String id = request.getParamValue("SubKeyID");
+		if (id != null) {
+			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
+			Element e = new Element("masterpubkey_response");
+			OSDXKey key = keyid_key.get(id);
+			if (key!=null && key instanceof SubKey) {
+				e.addContent("subkeyid", key.getKeyID());
+				e.addContent(((SubKey)key).getParentKey().getSimplePubKeyElement());
+			}
+			try {
+				OSDXMessage msg = OSDXMessage.buildMessage(e, signoffkey);
+				resp.setContentElement(msg.toElement());
+			} catch (Exception ex) {
+				resp.setRetCode(404, "FAILED");
+				resp.createErrorMessageContent("Internal Error"); //should/could never happen
+			}
+			return resp;
+		}
+		resp.setRetCode(404, "FAILED");
+		resp.createErrorMessageContent("Missing parameter: SubKeyID");
+		return null;
+	}
+	
 	public static KeyServerResponse createIdentityResponse(String serverid, KeyServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");

@@ -16,6 +16,7 @@ import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.Result;
 import org.fnppl.opensdx.security.RevokeKey;
 import org.fnppl.opensdx.security.SubKey;
+import org.fnppl.opensdx.security.TrustRatingOfKey;
 import org.fnppl.opensdx.xml.Document;
 
 public class KeyServerClientTest {
@@ -59,7 +60,7 @@ public class KeyServerClientTest {
 		boolean ok;
 		
 		KeyServerIdentity keyserverID = client.requestKeyServerIdentity();
-		KeyVerificator.addTrustedKey(keyserverID.getKnownKeys().get(0));
+		KeyVerificator.addRatedKey(keyserverID.getKnownKeys().get(0), TrustRatingOfKey.RATING_MARGINAL);
 		
 		ok = client.putMasterKey(masterkey, masterkey.getIdentity0001()); out.write("\n\n\n\n\n".getBytes());
 		ok = client.putRevokeKey(revokekey, masterkey);out.write("\n\n\n\n\n".getBytes());

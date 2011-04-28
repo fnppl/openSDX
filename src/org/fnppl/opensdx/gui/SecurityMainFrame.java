@@ -1858,7 +1858,7 @@ public class SecurityMainFrame extends JFrame {
 						String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
 						System.out.println("keyserver id: "+serverKeyID);
 						OSDXKey serversSigningKey = client.requestPublicKey(serverKeyID);
-						KeyVerificator.addTrustedKey(serversSigningKey);
+						KeyVerificator.addRatedKey(serversSigningKey, TrustRatingOfKey.RATING_MARGINAL);
 						logs = client.requestKeyLogs(key.getKeyID());
 					} catch (Exception ex2) {
 						Dialogs.showMessage("Sorry, request of keyserver signing key faild.");

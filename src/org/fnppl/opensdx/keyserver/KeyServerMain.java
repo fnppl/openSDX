@@ -86,6 +86,7 @@ import org.fnppl.opensdx.security.RevokeKey;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.Signature;
 import org.fnppl.opensdx.security.SubKey;
+import org.fnppl.opensdx.security.TrustRatingOfKey;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
@@ -456,7 +457,7 @@ public class KeyServerMain {
 			//add key to trusted keys
 			OSDXKey key = keyid_key.get(kl.getKeyIDTo());
 			if (key!=null) {
-				KeyVerificator.addTrustedKey(key);
+				KeyVerificator.addRatedKey(key, TrustRatingOfKey.RATING_MARGINAL);
 			}
 			
 			//send response
@@ -524,7 +525,7 @@ public class KeyServerMain {
 		saveKeyStore();
 		
 		//add revokekey to trusted keys
-		KeyVerificator.addTrustedKey(revokekey);
+		KeyVerificator.addRatedKey(revokekey, TrustRatingOfKey.RATING_MARGINAL);
 		
 		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
@@ -635,7 +636,7 @@ public class KeyServerMain {
 		saveKeyStore();
 		
 		//add to trusted keys
-		KeyVerificator.addTrustedKey(subkey);
+		KeyVerificator.addRatedKey(subkey, TrustRatingOfKey.RATING_MARGINAL);
 		
 		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
@@ -842,6 +843,9 @@ public class KeyServerMain {
 		else if (request.method.equals("GET")) {
 			if (cmd.equals("/masterpubkeys")) {
 				return KeyServerResponse.createMasterPubKeyResponse(serverid,request, id_keys, keyServerSigningKey);
+			}
+			else if (cmd.equals("/masterpubkey")) {
+				return KeyServerResponse.createMasterPubKeyToSubKeyResponse(serverid,request, keyid_key, keyServerSigningKey);
 			}
 			else if (cmd.equals("/identities")) {
 				return KeyServerResponse.createIdentityResponse(serverid, request, keyid_key, keyServerSigningKey);

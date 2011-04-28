@@ -52,6 +52,7 @@ public class KeyClientMessageFactory {
 	
 	public static String KEYSERVER_SETTINGS_RESPONSE = "keyserver";
 	public static String MASTERPUBKEYS_RESPONSE = "masterpubkeys_response";
+	public static String MASTERPUBKEY_RESPONSE = "masterpubkey_response";
 	public static String IDENTITIES_RESPONSE = "identities_response";
 	public static String KEYSTATUS_RESPONSE = "keystatus_response";
 	public static String SUBKEYS_RESPONSE = "subkeys_response";
@@ -88,6 +89,14 @@ public class KeyClientMessageFactory {
 		req.setURI(host, "/masterpubkeys");
 		req.toggleGETMode();
 		req.addRequestParam("Identity", idemail);		
+		return req;
+	}
+	
+	public static KeyClientRequest buildRequestMasterPubKey(String host, String subkeyid) {
+		KeyClientRequest req = new KeyClientRequest();
+		req.setURI(host, "/masterpubkey");
+		req.toggleGETMode();
+		req.addRequestParam("SubKeyID", subkeyid);		
 		return req;
 	}
 	

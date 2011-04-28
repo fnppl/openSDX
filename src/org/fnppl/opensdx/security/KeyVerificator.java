@@ -47,6 +47,7 @@ package org.fnppl.opensdx.security;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.fnppl.opensdx.xml.Document;
@@ -60,12 +61,11 @@ import org.fnppl.opensdx.xml.Document;
  */
 public class KeyVerificator {
 	
-	private static Vector<OSDXKey> trustedKeys = new Vector<OSDXKey>();
-	private static Vector<OSDXKey> notTrustedKeys = new Vector<OSDXKey>();
+	private static TrustGraph trustGraph = new TrustGraph(); 
 	private static Vector<OSDXKey> checkInProgress = new Vector<OSDXKey>();
 	
-	public static void addTrustedKey(OSDXKey key) {
-		trustedKeys.add(key);
+	public static void addRatedKey(OSDXKey key, int rating) {
+		trustGraph.addKeyRating(key, rating);
 	}
 	
 	public static Result verifyKey(OSDXKey key) {
@@ -82,11 +82,8 @@ public class KeyVerificator {
 	}
 	
 	public static boolean isTrustedKey(String keyid) {
-		for (OSDXKey t : trustedKeys) {
-			if (t.getKeyID().equals(keyid)) {
-				return true;
-			}
-		}
+		int rating = trustGraph.getTrustRating(keyid);
+		if (rating>=TrustRatingOfKey.RATING_MARGINAL) return true;
 		return false;
 	}
 	
@@ -97,59 +94,63 @@ public class KeyVerificator {
 			if (client.getMessage()!=null) {
 				System.out.println("request Keylogs: Message: "+client.getMessage());
 			}
-			return result;
+			// verify
+			Vector<KeyLog> verified = new Vector<KeyLog>();
+			if (result!=null) {
+				for (KeyLog keylog : result) {
+					try {
+						Result verifyKeylog = keylog.verify(); //internal check
+						if (verifyKeylog.succeeded)  {
+							verified.add(keylog);
+						} else {
+							System.out.println("  found keylog from "+keylog.getKeyIDFrom()+" <- FORGET cause NOT verified: "+verifyKeylog.errorMessage);
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+				return verified;
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 		return null;
 	}
 	
-	
-	private static void testGraphTraverse() {
-		//init nodes
-		Node a = Node.node("a");
-		Node b = Node.node("b");
-		Node c = Node.node("c");
-		Node d = Node.node("d");
-		Node e = Node.node("e");
-		Node f = Node.node("f");
-		Node g = Node.node("g");
-		Node h = Node.node("h");
-		Node i = Node.node("i");
-		Node j = Node.node("j");
-		
-		//init connectoins
-		a.addChild(b);
-		a.addChild(c);
-		a.addChild(d);
-		b.addChild(e);
-		b.addChild(c);
-		c.addChild(f);
-		c.addChild(g);
-		d.addChild(g);
-		d.addChild(h);
-		e.addChild(i);
-		f.addChild(g);
-		g.addChild(j);
-		h.addChild(j);
-		i.addChild(j);
-		j.setTrusted(true);
-		
-		
-		//find a way to a trusted node -> breadth-first-search
-		Node trusted = findTrusted(a,3);
-		if (trusted!=null) {
-			//show all (new) trusted nodes: parents of trusted
-			Vector<Node> newTrustedNodes = findPredecessors(trusted);
-			
+	public static MasterKey requestParentKey(SubKey sub) {
+		try {
+			KeyClient client = new KeyClient(sub.getAuthoritativekeyserver(),sub.getAuthoritativekeyserverPort());
+			MasterKey parent = client.requestMasterPubKey(sub.getKeyID());
+			if (client.getMessage()!=null) {
+				System.out.println("request parentkey: Message: "+client.getMessage());
+			}
+			return parent;
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
+		return null;
 	}
+	
+	public static Vector<Identity> requestIdentity(MasterKey key) {
+		try {
+			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(),key.getAuthoritativekeyserverPort());
+			Vector<Identity> ids = client.requestIdentities(key.getKeyID());
+			if (client.getMessage()!=null) {
+				System.out.println("request parentkey: Message: "+client.getMessage());
+			}
+			return ids;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+
 	
 	private static void testGraphTraverseWithKeys() {
 		try {
 			boolean buildKeys = false;
-			boolean uploadKeys = false;
-			boolean uploadKeyLogs = false;
+			boolean uploadKeys = true;
+			boolean uploadKeyLogs = true;
 
 			String host = "localhost";
 			int port = 8889;
@@ -163,7 +164,7 @@ public class KeyVerificator {
 			if (ksid!=null) {
 				for (OSDXKey keyserversKey : ksid.getKnownKeys()) {
 					System.out.println("ADDING Keyserver Key to TRUSTED: "+keyserversKey.getKeyID());
-					trustedKeys.add(keyserversKey);
+					addRatedKey(keyserversKey, TrustRatingOfKey.RATING_MARGINAL);
 				}
 			}
 			
@@ -254,7 +255,7 @@ public class KeyVerificator {
 				createTestApprovalKeyLog(j,h, client);
 				createTestApprovalKeyLog(j,i, client);
 			}
-			KeyVerificator.addTrustedKey(j);
+			KeyVerificator.addRatedKey(j, TrustRatingOfKey.RATING_COMPLETE);
 
 			Result result = findChainOfTrustTo(a);
 
@@ -268,34 +269,46 @@ public class KeyVerificator {
 		if (isNotTrustedKey(key.getKeyID())) return Result.error("key is already registered as not trusted");
 		checkInProgress.add(key);
 		//find a way to a trusted node -> breadth-first-search
-		Node start = Node.node(key.getKeyID());
-		start.setKey(key);
-		System.out.println("\nTRYING TO FIND A CHAIN-OF-TRUST FOR KEY "+start.getKey().getKeyID());
-		Node trusted = findTrusted(start,3);
+
+		System.out.println("\nTRYING TO FIND A CHAIN-OF-TRUST FOR KEY "+key.getKeyID());
+		TrustGraphNode trusted = findTrusted(key,3);
+		checkInProgress.remove(key);
 		if (trusted!=null) {
 			System.out.println("FOUND A TRUST-CHAIN TO TRUSTED KEY: "+trusted.getKey().getKeyID());  
 			//all all (new) trusted nodes to trustedKeys: parents of trusted
-			Vector<Node> newTrustedNodes = findPredecessors(trusted);
-			for (Node v : newTrustedNodes) {
+			Vector<TrustGraphNode> newTrustedNodes = findPredecessors(trusted);
+			for (TrustGraphNode v : newTrustedNodes) {
 				System.out.println("  new trusted key: "+v.getKey().getKeyID());
-				trustedKeys.add(v.getKey());
+				//addRatedKey(v.getKey(), TrustRatingOfKey.RATING_MARGINAL);
 			}
-			checkInProgress.remove(key);
 			return Result.succeeded();
 		} else {
-			notTrustedKeys.add(key);
-			checkInProgress.remove(key);
+			//addRatedKey(key, TrustRatingOfKey.RATING_NOT_TRUSTED);
 			return Result.error("could not find a chain-of-trust for given key");
 		}
 	}
 	
+	public static void traverseGraphFrom(OSDXKey key, int maxDepth) {
+		if (isCheckInProgress(key.getKeyID())) return;
+		if (isNotTrustedKey(key.getKeyID())) return;
+		checkInProgress.add(key);
+		TrustGraphNode nodeStart = trustGraph.addNode(key);
+		trustGraph.breadth_first_search(nodeStart, maxDepth);
+		checkInProgress.remove(key);
+	}
+	
 	public static boolean isNotTrustedKey(String keyid) {
-		for (OSDXKey t : notTrustedKeys) {
-			if (t.getKeyID().equals(keyid)) {
-				return true;
-			}
-		}
+		int rating = trustGraph.getTrustRating(keyid);
+		if (rating==TrustRatingOfKey.RATING_NOT_TRUSTED) return true;
 		return false;
+	}
+	
+	public static boolean isDirectlyRated(String keyid) {
+		return trustGraph.isDirectlyTrusted(keyid);
+	}
+	
+	public static int getTrustRating(String keyid) {
+		return trustGraph.getTrustRating(keyid);
 	}
 	
 	public static boolean isCheckInProgress(String keyid) {
@@ -315,46 +328,21 @@ public class KeyVerificator {
 			ex.printStackTrace();
 		}
 	}
-	
-	/**
-	 * implements a breadth-first-search for a trusted Node
-	 * @param start Node to start searching from
-	 * @returns a trusted node or null if no trusted node could be found within the given maxDetph
-	 */
-	private static Node findTrusted(Node start, int maxDepth) {
-		Node.clearNodes();
-		if (start.isTrusted()) return start;
-		Vector<Node> queue = new Vector<Node>();
-		start.setVisited(true);
-		start.setDepth(0);
-		queue.add(start);
-		while (queue.size()>0) {
-			Node v = queue.remove(0);
-			if (v.getDepth()<=maxDepth) {
-				int depth = v.getDepth()+1;
-				for (Node w : v.getChildren()) {
-					if (!w.isVisited()) {
-						w.setVisited(true);
-						w.addParent(v);
-						w.setDepth(depth);
-						if (w.isTrusted()) return w;
-						queue.add(w);
-					}
-				}
-			}
-		}
-		return null;
-	}
 
-	private static Vector<Node> findPredecessors(Node start) {
- 		Vector<Node> predecessors = new Vector<Node>();
- 		Vector<Node> queue = new Vector<Node>();
+	public static TrustGraphNode findTrusted(OSDXKey start, int maxDepth) {
+		TrustGraphNode nodeStart = trustGraph.addNode(start);
+		return trustGraph.breath_first_search_to_trusted(nodeStart, maxDepth);
+	}
+	
+	public static Vector<TrustGraphNode> findPredecessors(TrustGraphNode start) {
+ 		Vector<TrustGraphNode> predecessors = new Vector<TrustGraphNode>();
+ 		Vector<TrustGraphNode> queue = new Vector<TrustGraphNode>();
 		queue.add(start);
 		while (queue.size()>0) {
-			Node v = queue.remove(0);
+			TrustGraphNode v = queue.remove(0);
 			predecessors.add(v);
 			//System.out.println("predececcor: "+v.getID());
-			for (Node w : v.getParents()) {
+			for (TrustGraphNode w : v.getParents()) {
 				if (!predecessors.contains(w)) {
 					queue.add(w);
 				}
@@ -367,166 +355,23 @@ public class KeyVerificator {
 	
 	public static void main(String[] args) {
 		testGraphTraverseWithKeys();
+//		try {
+//			String host = "localhost";
+//			int port = 8889;
+//			KeyClient client = new KeyClient(host, port);
+//			client.connect();
+//			KeyServerIdentity ksid = client.requestKeyServerIdentity();
+//			if (ksid!=null) {
+//				for (OSDXKey keyserversKey : ksid.getKnownKeys()) {
+//					System.out.println("ADDING Keyserver Key to TRUSTED: "+keyserversKey.getKeyID());
+//					addRatedKey(keyserversKey, TrustRatingOfKey.RATING_MARGINAL);
+//				}
+//			}
+//			client.requestMasterPubKey("D8:A0:AE:B3:88:95:B2:17:CD:BD:CF:E8:7C:81:AA:A0:02:66:B8:9E@localhost");
+//			
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
 	}
 }
 
-class Node {
-	public static Vector<Node> nodes = new Vector<Node>();
-	private String id = null;
-	private OSDXKey key =  null;
-	private Vector<Node> children = null;
-	private Vector<Node> parents = new Vector<Node>();
-	private int trusted = -1;
-	private boolean visited = false;
-	private int depth = 0;
-	
-	private Node() {
-		
-	}
-	public static void clearNodes() {
-		nodes = new Vector<Node>();
-	}
-	public static Node node(String id) {
-		for (Node n : nodes) {
-			if (n.id.equals(id)) {
-				return n;
-			}
-		}
-		Node node = new Node();
-		node.id = id;
-		nodes.add(node);
-		return node;
-	}
-	public void addChild(Node n) {
-		if (children==null) children = new Vector<Node>();
-		children.add(n);
-	}
-	
-	public Vector<Node> getChildren() {
-		if (children == null) {
-			children = new Vector<Node>();
-			//check keylogs for keys that trust this key
-			OSDXKey key = getKey();
-			System.out.println("requesting keylogs for: "+key.getKeyID()+ "  depth = "+depth);
-			Vector<KeyLog> keylogs = KeyVerificator.requestKeyLogs(key);
-			if (keylogs!=null) {
-				for (KeyLog keylog : keylogs) {
-					try {
-						Result verifyKeylog = keylog.verify();
-						if (verifyKeylog.succeeded)  {
-							System.out.println("  found keylog from "+keylog.getKeyIDFrom()+" <- verified");
-							Node n = Node.node(keylog.getKeyIDFrom());
-							n.setKey(keylog.getActionSignatureKey());
-							children.add(n);
-						} else {
-							System.out.println("  found keylog from "+keylog.getKeyIDFrom()+" <- FORGET cause NOT verified: "+verifyKeylog.errorMessage);
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-			}
-		}
-		return children;
-	}
-	
-	public void addParent(Node n) {
-		parents.add(n);
-	}
-	public Vector<Node> getParents() {
-		return parents;
-	}
-	
-	public OSDXKey getKey() {
-		return key;
-	}
-	public void setKey(OSDXKey key) {
-		this.key = key;
-	}
-	public void setTrusted(boolean trusted) {
-		this.trusted = (trusted?1:0);
-	}
-	
-	public boolean isTrusted() {
-		if  (trusted<0) {
-			if (KeyVerificator.isTrustedKey(id)) {
-				trusted = 1;
-			} else {
-				trusted = 0;
-			}
-		}
-		return (trusted==1?true:false);
-	}
-	
-	public void setVisited(boolean visited) {
-		this.visited = visited;
-	}
-	public boolean isVisited() {
-		return visited;
-	}
-	public void setDepth(int depth) {
-		this.depth = depth;
-	}
-	public int getDepth() {
-		return depth;
-	}
-	
-	public String getID() {
-		return id;
-	}
-}
-
-//class Node {
-//	private String id = null;
-//	private OSDXKey key =  null;
-//	private Vector<Node> children = new Vector<Node>();
-//	private Vector<Node> parents = new Vector<Node>();
-//	private boolean trusted = false;
-//	private boolean visited = false;
-//	private int depth = 0;
-//	
-//	public Node(String id) {
-//		this.id = id;
-//	}
-//	public void addChild(Node n) {
-//		children.add(n);
-//	}
-//	public Vector<Node> getChildren() {
-//		return children;
-//	}
-//	public void addParent(Node n) {
-//		parents.add(n);
-//	}
-//	public Vector<Node> getParents() {
-//		return parents;
-//	}
-//	
-//	public OSDXKey getKey() {
-//		return key;
-//	}
-//	public void setKey(OSDXKey key) {
-//		this.key = key;
-//	}
-//	public void setTrusted(boolean trusted) {
-//		this.trusted = trusted;
-//	}
-//	public boolean isTrusted() {
-//		return trusted;
-//	}
-//	public void setVisited(boolean visited) {
-//		this.visited = visited;
-//	}
-//	public boolean isVisited() {
-//		return visited;
-//	}
-//	public void setDepth(int depth) {
-//		this.depth = depth;
-//	}
-//	public int getDepth() {
-//		return depth;
-//	}
-//	
-//	public String getID() {
-//		return id;
-//	}
-//}

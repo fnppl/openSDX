@@ -157,6 +157,42 @@ public class KeyClient {
 	}
 	
 	
+	public MasterKey requestMasterPubKey(final String keyid) throws Exception {
+		KeyClientRequest req = KeyClientMessageFactory.buildRequestMasterPubKey(host, keyid);
+		KeyClientResponse resp = send(req);
+		if (log!=null) {
+			log.write("--- REQUEST SUBKEYS MASTERPUBKEY ----------\n".getBytes());
+			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
+			log.write("--- END of REQUEST SUBKEYS MASTERPUBKEY ---\n".getBytes());
+			if (resp == null) {
+				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
+			} else {
+				log.write("\n--- RESPONSE SUBKEYS MASTERPUBKEY ----------\n".getBytes());
+				resp.toOutput(log);
+				log.write("--- END of RESPONSE SUBKEYS MASTERPUBKEY ---\n".getBytes());
+			}
+		}
+		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
+		Result result = msg.verifySignatures();
+		
+		if (result.succeeded) {
+			Element content = msg.getContent();
+			if (!content.getName().equals(KeyClientMessageFactory.MASTERPUBKEY_RESPONSE)) {
+				message = ERROR_WRONG_RESPONE_FORMAT;
+				return null;
+			}
+			Element key = content.getChild("pubkey");
+			OSDXKey pubkey = OSDXKey.fromPubKeyElement(key);
+			pubkey.addDataSourceStep(new DataSourceStep(host, System.currentTimeMillis()));
+			if (pubkey instanceof MasterKey) return (MasterKey)pubkey;
+			message = "resulted key is not a MASTER key";
+			return null;
+		} else {
+			message = result.errorMessage;
+			return null;
+		}
+	}
+	
 //	public Vector<OSDXKey> requestPubKeys(final String idemail) throws Exception {
 //		OSDXKeyServerClientRequest req = OSDXKeyServerClientRequest.getRequestPubKeys(host, idemail);
 //		OSDXKeyServerClientResponse resp = send(req);
