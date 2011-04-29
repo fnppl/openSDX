@@ -57,6 +57,11 @@ public class Element {
 	public Element(String name) {
 		base = new org.jdom.Element(name);
 	}
+	
+	public Element(String name, String value) {
+		base = new org.jdom.Element(name).setText(value);
+		
+	}
 	protected Element(org.jdom.Element e) {
 		base = e;
 	}	

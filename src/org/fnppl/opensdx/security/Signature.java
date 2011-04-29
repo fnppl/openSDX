@@ -135,8 +135,8 @@ public class Signature {
 		return e;
 	}
 	
-	public static Signature createSignatureFromLocalProof(byte[] sha1localproof, String dataname,  OSDXKey key) throws Exception {
-		byte[][] md5sha1sha256 = SecurityHelper.getMD5SHA1SHA256(sha1localproof);
+	public static Signature createSignatureFromLocalProof(byte[] localproof, String dataname,  OSDXKey key) throws Exception {
+		byte[][] md5sha1sha256 = SecurityHelper.getMD5SHA1SHA256(localproof);
 		return Signature.createSignature(md5sha1sha256[1], md5sha1sha256[2], md5sha1sha256[3], dataname, key);
 	}
 			

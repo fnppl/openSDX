@@ -122,7 +122,7 @@ public class TrustGraphNode {
 							}
 							else if (action.equals(KeyLog.DISAPPROVAL)) { 
 								if (!KeyVerificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
-									hasRevokeLog = true;
+									hasDisapproveLog = true;
 									TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
 									g.addEdge(n, this, TrustGraphEdge.TYPE_DISAPPROVE, keylog.getDate());
 								}
@@ -141,6 +141,8 @@ public class TrustGraphNode {
 									if (action.equals(KeyLog.APPROVAL)) { 
 										TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
 										children.add(n);
+										//check ob nachher disapproval -> dann edge raus
+										//check ob nachher revoke -> 
 										
 										g.addEdge(n, this, TrustGraphEdge.TYPE_APPROVE, keylog.getDate());
 									}

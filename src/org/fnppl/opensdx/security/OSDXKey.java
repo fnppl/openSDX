@@ -96,7 +96,7 @@ public class OSDXKey {
 	protected long validUntil = validFrom + 25L*ONE_YEAR; //25 years
 	
 	protected String authoritativekeyserver = null;
-	protected int authoritativekeyserverPort = 8889;
+	//protected int authoritativekeyserverPort = 8889;
 	protected byte[] modulussha1 = null;
 
 	protected String gpgkeyserverid = null;
@@ -163,8 +163,8 @@ public class OSDXKey {
 				ret.authoritativekeyserver = keyid.substring(keyid.indexOf('@')+1);	
 			}
 		}
-		int port = e.getChildInt("authoritativekeyserver_port");
-		if (port > 0) ret.authoritativekeyserverPort = port;
+		//int port = e.getChildInt("authoritativekeyserver_port");
+		//if (port > 0) ret.authoritativekeyserverPort = port;
 		
 		
 		ret.datapath = new Vector<DataSourceStep>();
@@ -234,11 +234,12 @@ public class OSDXKey {
 						Identity idd = Identity.fromElement(id);
 						//System.out.println("adding id: "+idd.email);
 						//System.out.println("sha1: "+id.getChildText("sha1"));
-						boolean ok = idd.validate(SecurityHelper.HexDecoder.decode(id.getChildText("sha1")));
+						boolean ok = idd.validate(SecurityHelper.HexDecoder.decode(id.getChildText("sha256")));
 						if(ok) {
 							((MasterKey)ret).identities.addElement(idd);
 						} else {
-							System.out.println(" -> ERROR adding "+idd.email+": SHA1 NOT VALID");
+							System.out.println(" -> ERROR adding "+idd.email+": SHA256 NOT VALID");
+							return null;
 						}
 					}
 				}
@@ -248,8 +249,8 @@ public class OSDXKey {
 		
 		String authoritativekeyserver = kp.getChildText("authoritativekeyserver");
 		ret.authoritativekeyserver = authoritativekeyserver;
-		int port = kp.getChildInt("authoritativekeyserver_port");
-		if (port > 0) ret.authoritativekeyserverPort = port;
+		//int port = kp.getChildInt("authoritativekeyserver_port");
+		//if (port > 0) ret.authoritativekeyserverPort = port;
 		
 		//System.out.println("authoritativekeyserver: "+authoritativekeyserver);
 		
@@ -352,8 +353,8 @@ public class OSDXKey {
 			ret.addContent("keyid",getKeyID());
 			ret.addContent("level",getLevelName());
 			ret.addContent("usage",getUsageName());
-			ret.addContent("authoritativekeyserver",authoritativekeyserver);
-			ret.addContent("authoritativekeyserver_port",""+authoritativekeyserverPort);
+			//ret.addContent("authoritativekeyserver",authoritativekeyserver);
+			//ret.addContent("authoritativekeyserver_port",""+authoritativekeyserverPort);
 			ret.addContent("valid_from",getValidFromString());
 			ret.addContent("valid_until",getValidUntilString());
 			ret.addContent("algo", algo_name.elementAt(algo));
@@ -467,7 +468,7 @@ public class OSDXKey {
 		
 		ekp.addContent("sha1fingerprint", getKeyModulusSHA1());
 		ekp.addContent("authoritativekeyserver", authoritativekeyserver);
-		ekp.addContent("authoritativekeyserver_port", ""+authoritativekeyserverPort);
+		//ekp.addContent("authoritativekeyserver_port", ""+authoritativekeyserverPort);
 		
 		
 		//datapath
@@ -580,9 +581,9 @@ public class OSDXKey {
 	public String getAuthoritativekeyserver() {
 		return authoritativekeyserver;
 	}
-	public int getAuthoritativekeyserverPort() {
-		return authoritativekeyserverPort;
-	}
+//	public int getAuthoritativekeyserverPort() {
+//		return authoritativekeyserverPort;
+//	}
 	
 	public void addDataSourceStep(DataSourceStep ds) {
 		unsavedChanges = true;

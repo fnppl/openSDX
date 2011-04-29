@@ -492,7 +492,7 @@ public class SecurityMainFrame extends JFrame {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode()==10) {//enter pressed
 					String v = tAuth.getText();
-					key.setAuthoritativeKeyServer(v, key.getAuthoritativekeyserverPort());
+					key.setAuthoritativeKeyServer(v);
 					tAuth.setBackground(Color.WHITE);
 				}
 			}
@@ -2119,7 +2119,7 @@ public class SecurityMainFrame extends JFrame {
 			int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer for uploading MASTER Key.", keyservernames);
 			if (ans>=0) {
 				KeyServerIdentity keyserver = keyservers.get(ans);
-				key.setAuthoritativeKeyServer(keyserver.getHost(), keyserver.getPort());
+				key.setAuthoritativeKeyServer(keyserver.getHost());
 				return uploadMasterKeyToKeyServer(key);
 			}
 		} else {
@@ -2139,7 +2139,7 @@ public class SecurityMainFrame extends JFrame {
 						//self approval keylog
 						try {
 							KeyLog kl = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, key, key.getKeyID(), key.getIdentity0001());
-							rKeylog = kl.uploadToKeyServer(key.getAuthoritativekeyserver(), key.getAuthoritativekeyserverPort(),key);
+							rKeylog = kl.uploadToKeyServer(key.getAuthoritativekeyserver(), KeyClient.OSDX_DEFAULT_PORT,key);
 						} catch (Exception ex) {
 							rKeylog = Result.error(ex);
 						}
@@ -2811,7 +2811,7 @@ public class SecurityMainFrame extends JFrame {
 			else if (rowIndex==13) id.setMiddlename(s);
 			else if (rowIndex==14) id.setName(s);
 			else if (rowIndex==15) id.setNote(s);
-			id.createSHA1();
+			id.createSHA256();
 		}
 	}
 

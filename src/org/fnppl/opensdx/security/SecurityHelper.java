@@ -52,7 +52,8 @@ import java.text.SimpleDateFormat;
 import java.io.*;
 import java.util.*;
 
-import org.bouncycastle.crypto.RuntimeCryptoException;
+import org.bouncycastle.crypto.digests.SHA1Digest;
+import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.fnppl.opensdx.xml.Element;
 
@@ -469,7 +470,7 @@ public class SecurityHelper {
 	}
 	public static byte[] getSHA1LocalProof(Vector<Element> ve) throws Exception {
 		byte[] ret = new byte[20];//160 bit = 20 byte
-		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+		SHA1Digest sha1 = new SHA1Digest();
 		//System.out.println("--- sha1localproof ---");
 		for (Element e : ve) {
 			rekursiveUpdateSHA1(sha1, e);
@@ -480,23 +481,91 @@ public class SecurityHelper {
 		return ret;
 	}
 	
-	private static void rekursiveUpdateSHA1(org.bouncycastle.crypto.digests.SHA1Digest sha1, Element e) {
+	private static void rekursiveUpdateSHA1(SHA1Digest sha1, Element e) {
 		Vector<Element> ve = e.getChildren();
 		if (ve.size()>0) {
 			for (Element el : ve) {
 				rekursiveUpdateSHA1(sha1, el);
 			}
 		} else {
-			String t = e.getText();
-			if (t!=null && t.length()>0) {
-				try {
-					byte[] b = t.getBytes("UTF-8");
-					//System.out.println(""+e.getName()+" : "+e.getText()+", "+HexDecoder.encode(b, ':', -1));
-					sha1.update(b, 0, b.length);
-				} catch (Exception ex) {
-					ex.printStackTrace();
+			String name = e.getName();
+			Vector<String[]> attributes = e.getAttributes();
+			String text = e.getText();
+			if (name!=null && name.length()>0) {
+				updateSha1(sha1, name);
+			}
+			if (attributes!=null) {
+				for (String[] att : attributes) {
+					for (int i=0;i<att.length;i++) {
+						updateSha1(sha1,att[i]);
+					}
 				}
 			}
+			if (text!=null && text.length()>0) {
+				updateSha1(sha1,text);
+			}
+		}
+	}
+	
+	public static byte[] getSHA256LocalProof(Element e) throws Exception {
+		Vector<Element> ve = new Vector<Element>();
+		ve.add(e);
+		return getSHA256LocalProof(ve);
+	}
+	public static byte[] getSHA256LocalProof(Vector<Element> ve) throws Exception {
+		byte[] ret = new byte[32];//256 bit = 32 byte
+		SHA256Digest sha256 = new SHA256Digest();
+		//System.out.println("--- sha1localproof ---");
+		for (Element e : ve) {
+			rekursiveUpdateSHA256(sha256, e);
+		}
+		sha256.doFinal(ret, 0);
+		//System.out.println("--- RESULT ----");
+		//System.out.println(SecurityHelper.HexDecoder.encode(ret, ':',-1));
+		return ret;
+	}
+	
+	private static void rekursiveUpdateSHA256(SHA256Digest sha256, Element e) {
+		Vector<Element> ve = e.getChildren();
+		if (ve.size()>0) {
+			for (Element el : ve) {
+				rekursiveUpdateSHA256(sha256, el);
+			}
+		} else {
+			String name = e.getName();
+			Vector<String[]> attributes = e.getAttributes();
+			String text = e.getText();
+			if (name!=null && name.length()>0) {
+				updateSha256(sha256, name);
+			}
+			if (attributes!=null) {
+				for (String[] att : attributes) {
+					for (int i=0;i<att.length;i++) {
+						updateSha256(sha256,att[i]);
+					}
+				}
+			}
+			if (text!=null && text.length()>0) {
+				updateSha256(sha256,text);
+			}
+		}
+	}
+	
+	private static void updateSha1(SHA1Digest sha1, String s) {
+		try {
+			byte[] b = s.getBytes("UTF-8");
+			sha1.update(b, 0, b.length);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private static void updateSha256(SHA256Digest sha256, String s) {
+		try {
+			byte[] b = s.getBytes("UTF-8");
+			sha256.update(b, 0, b.length);
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 	

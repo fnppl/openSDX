@@ -56,10 +56,10 @@ public class RevokeKey extends SubKey {
 		if (!hasPrivateKey()) return Result.error("no private key available");
 		if (!isPrivateKeyUnlocked()) return Result.error("private key is locked");
 		if (authoritativekeyserver.equals("LOCAL")) return Result.error("authoritative keyserver can not be LOCAL");
-		if (authoritativekeyserverPort<=0) return Result.error("authoritative keyserver port not set");
+		//if (authoritativekeyserverPort<=0) return Result.error("authoritative keyserver port not set");
 		if (parentKey==null) return Result.error("missing parent key");
 		try {
-			KeyClient client =  new KeyClient(authoritativekeyserver, authoritativekeyserverPort);
+			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_DEFAULT_PORT);
 			boolean ok = client.putRevokeKey(this, parentKey);
 			return Result.succeeded();
 		} catch (Exception ex) {

@@ -48,7 +48,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Vector;
+import java.util.WeakHashMap;
 
 import org.fnppl.opensdx.xml.Document;
 
@@ -61,8 +63,43 @@ import org.fnppl.opensdx.xml.Document;
  */
 public class KeyVerificator {
 	
+	private static WeakHashMap<Long,KeyVerificator> instances = null;
+	
+	private static KeyVerificator defInstance = null;
+	
+	
+	private long instanceDatetime = 0;
 	private static TrustGraph trustGraph = new TrustGraph(); 
 	private static Vector<OSDXKey> checkInProgress = new Vector<OSDXKey>();
+	
+	private void KeyVerificator() {
+		instanceDatetime = System.currentTimeMillis();
+		
+	}
+	
+	public static KeyVerificator getDefaultInstance() {
+		if (defInstance==null) {
+			defInstance = new KeyVerificator();
+		}
+		else if(System.currentTimeMillis() - defInstance.instanceDatetime >= 1000*60*60*2) {
+			//create new defInstance;
+			defInstance = new KeyVerificator();
+		}
+		return defInstance;
+	}
+	
+	public static KeyVerificator getInstance(long stamp) {
+		long mstamp = stamp / (60*30*1000);//30-minuten-normalisiert...
+		KeyVerificator k = instances.get(mstamp);
+		if(k==null) {
+			//create
+			
+			instances.put(mstamp, k);
+		}
+		return k;
+	}
+	
+	
 	
 	public static void addRatedKey(OSDXKey key, int rating) {
 		trustGraph.addKeyRating(key, rating);
@@ -71,6 +108,7 @@ public class KeyVerificator {
 	public static void removeDirectRating(OSDXKey key) {
 		trustGraph.removeDirectRating(key);
 	}
+	
 	
 	public static Result verifyKey(OSDXKey key) {
 		//sha1 of key modulus = keyid
@@ -96,7 +134,7 @@ public class KeyVerificator {
 	}
 	public static Vector<KeyLog> requestKeyLogs(OSDXKey key) {
 		try {
-			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(),key.getAuthoritativekeyserverPort());
+			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(),KeyClient.OSDX_DEFAULT_PORT);
 			Vector<KeyLog> result = client.requestKeyLogs(key.getKeyID());
 			if (client.getMessage()!=null) {
 				System.out.println("request Keylogs: Message: "+client.getMessage());
@@ -126,7 +164,7 @@ public class KeyVerificator {
 	
 	public static MasterKey requestParentKey(SubKey sub) {
 		try {
-			KeyClient client = new KeyClient(sub.getAuthoritativekeyserver(),sub.getAuthoritativekeyserverPort());
+			KeyClient client = new KeyClient(sub.getAuthoritativekeyserver(),KeyClient.OSDX_DEFAULT_PORT);
 			MasterKey parent = client.requestMasterPubKey(sub.getKeyID());
 			if (client.getMessage()!=null) {
 				System.out.println("request parentkey: Message: "+client.getMessage());
@@ -140,7 +178,7 @@ public class KeyVerificator {
 	
 	public static Vector<Identity> requestIdentity(MasterKey key) {
 		try {
-			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(),key.getAuthoritativekeyserverPort());
+			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(),KeyClient.OSDX_DEFAULT_PORT);
 			Vector<Identity> ids = client.requestIdentities(key.getKeyID());
 			if (client.getMessage()!=null) {
 				System.out.println("request parentkey: Message: "+client.getMessage());
@@ -183,7 +221,7 @@ public class KeyVerificator {
 				StringBuffer s  = new StringBuffer();
 				for (int i=0;i<keyCount;i++) {
 					MasterKey m = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
-					m.setAuthoritativeKeyServer(host, port);
+					m.setAuthoritativeKeyServer(host);
 					Identity id = Identity.newEmptyIdentity();
 					id.setIdentNum(1);
 					id.setEmail("debug_key_"+i+"@it-is-awesome.de");

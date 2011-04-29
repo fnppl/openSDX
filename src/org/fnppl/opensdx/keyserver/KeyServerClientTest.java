@@ -41,15 +41,14 @@ public class KeyServerClientTest {
 		
 		//String host = "it-is-awesome.de";
 		String host = "localhost";
-		int port = 8889;
 		
-		KeyClient client = new KeyClient(host, port);
+		KeyClient client = new KeyClient(host, KeyClient.OSDX_DEFAULT_PORT);
 		OutputStream out = System.out;
 		out = new FileOutputStream(new File("test_keyserver_client.txt"));
 		
 		client.log = out;
 		
-		masterkey.setAuthoritativeKeyServer(host, port);
+		masterkey.setAuthoritativeKeyServer(host);
 		
 		String idemail = masterkey.getIdentity0001().getEmail();
 		

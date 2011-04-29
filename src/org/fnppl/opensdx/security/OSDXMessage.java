@@ -53,7 +53,7 @@ import org.fnppl.opensdx.xml.XMLHelper;
 public class OSDXMessage {
 
 	private Element content = null;
-	private byte[] sha1localproof = null;
+	private byte[] sha256localproof = null;
 	private Vector<Signature> signatures = null;
 	
 	private OSDXMessage() {
@@ -64,7 +64,7 @@ public class OSDXMessage {
 		if (content==null) throw new RuntimeException("ERROR: OSDXMessage::empty content");
 		OSDXMessage m = new OSDXMessage();
 		m.content = content;
-		m.sha1localproof = SecurityHelper.getSHA1LocalProof(content);
+		m.sha256localproof = SecurityHelper.getSHA256LocalProof(content);
 		m.signatures = null;
 		return m;
 	}
@@ -87,13 +87,13 @@ public class OSDXMessage {
 		}
 		Element content = XMLHelper.cloneElement(osdxMessage.getChild("content").getChildren().get(0));
 		OSDXMessage m = buildMessage(content);
-		Element esha1 = osdxMessage.getChild("sha1localproof");
-		byte[] givenSha1localproof = null;
-		if (esha1!=null) {
-			givenSha1localproof = SecurityHelper.HexDecoder.decode(esha1.getText());
+		Element esha256 = osdxMessage.getChild("sha256localproof");
+		byte[] givenLocalproof = null;
+		if (esha256!=null) {
+			givenLocalproof = SecurityHelper.HexDecoder.decode(esha256.getText());
 		}
-		if (givenSha1localproof==null || !Arrays.equals(m.sha1localproof, givenSha1localproof)) {
-			throw new RuntimeException("ERROR: OSDXMessage::wrong or missing sha1localproof");
+		if (givenLocalproof==null || !Arrays.equals(m.sha256localproof, givenLocalproof)) {
+			throw new RuntimeException("ERROR: OSDXMessage::wrong or missing sha256localproof");
 		}
 		Element eSignatures = osdxMessage.getChild("signatures");
 		m.signatures = new Vector<Signature>();
@@ -111,7 +111,7 @@ public class OSDXMessage {
 	
 	public void signContent(OSDXKey signingkey) throws Exception {
 		signatures = new Vector<Signature>();
-		Signature signature = Signature.createSignatureFromLocalProof(sha1localproof, "signature of sha1localproof", signingkey);
+		Signature signature = Signature.createSignatureFromLocalProof(sha256localproof, "signature of sha256localproof", signingkey);
 		signatures.add(signature);
 	}
 	
@@ -139,7 +139,7 @@ public class OSDXMessage {
 			Result verified = null;
 			//verify internal signature
 			if (i==0) {
-				verified = signature.tryVerificationMD5SHA1SHA256(sha1localproof);
+				verified = signature.tryVerificationMD5SHA1SHA256(sha256localproof);
 			} else {
 				verified = signature.tryVerificationMD5SHA1SHA256(signatures.get(i-1).getSignatureBytes());
 			}
@@ -164,7 +164,7 @@ public class OSDXMessage {
 			}
 		}
 		e.addContent(c);
-		e.addContent("sha1localproof",SecurityHelper.HexDecoder.encode(sha1localproof, ':',-1));
+		e.addContent("sha256localproof",SecurityHelper.HexDecoder.encode(sha256localproof, ':',-1));
 		e.addContent(s);
 		return e;
 	}
@@ -173,8 +173,8 @@ public class OSDXMessage {
 		return signatures;
 	}
 	
-	public byte[] getSha1LocalProof() {
-		return sha1localproof;
+	public byte[] getSha256LocalProof() {
+		return sha256localproof;
 	}
 	
 	

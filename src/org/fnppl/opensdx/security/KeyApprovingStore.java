@@ -104,12 +104,12 @@ public class KeyApprovingStore {
 			
 			//check sha1localproof
 //			kas.keysSHA1localproof =  SecurityHelper.HexDecoder.decode(keys.getChildText("sha1localproof"));
-			byte[] sha1localproof = SecurityHelper.HexDecoder.decode(keys.getChildText("sha1localproof"));
-			byte[] bsha1 = SecurityHelper.getSHA1LocalProof(ves);
+			byte[] sha256localproof = SecurityHelper.HexDecoder.decode(keys.getChildText("sha256localproof"));
+			byte[] bsha256 = SecurityHelper.getSHA256LocalProof(ves);
 			
-			if (!Arrays.equals(bsha1, sha1localproof)) {
-				System.out.println("sha1localproof given_in_xml:\t"+SecurityHelper.HexDecoder.encode(sha1localproof, ':', -1));
-				System.out.println("sha1localproof calculated:  \t"+SecurityHelper.HexDecoder.encode(bsha1, ':', -1));
+			if (!Arrays.equals(bsha256, sha256localproof)) {
+				System.out.println("sha256localproof given_in_xml:\t"+SecurityHelper.HexDecoder.encode(sha256localproof, ':', -1));
+				System.out.println("sha256localproof calculated:  \t"+SecurityHelper.HexDecoder.encode(bsha256, ':', -1));
 				throw new Exception("KeyStore: localproof of keypairs failed.");
 			}
 			
@@ -117,7 +117,7 @@ public class KeyApprovingStore {
 			boolean ok = false;
 			try {
 				s = Signature.fromElement(keys.getChild("signature"));
-				Result v = s.tryVerificationMD5SHA1SHA256(sha1localproof); 
+				Result v = s.tryVerificationMD5SHA1SHA256(sha256localproof); 
 				ok = v.succeeded;
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -313,15 +313,9 @@ public class KeyApprovingStore {
 			ek.addContent(k.toElement(messageHandler));
 		}
 		
-		byte[] sha1localproof = SecurityHelper.getSHA1LocalProof(ek.getChildren("keypair"));
-		ek.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1localproof, ':',-1));
+		byte[] sha256localproof = SecurityHelper.getSHA256LocalProof(ek.getChildren("keypair"));
+		ek.addContent("sha256localproof", SecurityHelper.HexDecoder.encode(sha256localproof, ':',-1));
 		root.addContent(ek);
-		
-		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(sha1localproof);
-		byte[] md5sha1sha256 = kk[0];
-		byte[] md5 = kk[1];
-		byte[] sha1 = kk[2];
-		byte[] sha256 = kk[3];
 		
 		if (keystoreSigningKey == null) {
 			keystoreSigningKey = messageHandler.requestMasterSigningKey(this);
@@ -332,10 +326,9 @@ public class KeyApprovingStore {
 		if (!keystoreSigningKey.isPrivateKeyUnlocked()) {
 			return false;
 		}
-		Signature s = Signature.createSignature(md5,sha1,sha256, "signature of sha1localproof of keys", keystoreSigningKey);
+		Signature s = Signature.createSignatureFromLocalProof(sha256localproof, "signature of sha256localproof of keys", keystoreSigningKey);
 		ek.addContent(s.toElement());
-		
-		
+	
 		//keylog
 		if (keylogs!=null && keylogs.size()>0) {
 			for (KeyLog kl : keylogs) {

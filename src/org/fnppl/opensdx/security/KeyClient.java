@@ -55,6 +55,8 @@ import org.fnppl.opensdx.tsas.*;
 import org.fnppl.opensdx.xml.*;
 
 public class KeyClient {
+	
+	public static int OSDX_DEFAULT_PORT = 8889;
 	private Socket socket = null;
 	private long timeout = 2000;
 	private String host = null;

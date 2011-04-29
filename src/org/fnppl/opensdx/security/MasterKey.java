@@ -77,17 +77,28 @@ public class MasterKey extends OSDXKey {
 		return ret;
 	}
 	
-	public void setAuthoritativeKeyServer(String host, int port) {
+//	public void setAuthoritativeKeyServer(String host, int port) {
+//		authoritativekeyserver = host;
+//		authoritativekeyserverPort = port;
+//		unsavedChanges = true;
+//		for (SubKey k : subkeys) {
+//			k.authoritativekeyserver = authoritativekeyserver;
+//			k.authoritativekeyserverPort = port;
+//		}
+//		for (RevokeKey k : revokekeys) {
+//			k.authoritativekeyserver = authoritativekeyserver;
+//			k.authoritativekeyserverPort = port;
+//		}
+//	}
+	
+	public void setAuthoritativeKeyServer(String host) {
 		authoritativekeyserver = host;
-		authoritativekeyserverPort = port;
 		unsavedChanges = true;
 		for (SubKey k : subkeys) {
 			k.authoritativekeyserver = authoritativekeyserver;
-			k.authoritativekeyserverPort = port;
 		}
 		for (RevokeKey k : revokekeys) {
 			k.authoritativekeyserver = authoritativekeyserver;
-			k.authoritativekeyserverPort = port;
 		}
 	}
 	
@@ -150,11 +161,11 @@ public class MasterKey extends OSDXKey {
 		if (!hasPrivateKey()) return Result.error("no private key available");
 		if (!isPrivateKeyUnlocked()) return Result.error("private key is locked");
 		if (authoritativekeyserver.equals("LOCAL")) return Result.error("authoritative keyserver can not be LOCAL");
-		if (authoritativekeyserverPort<=0) return Result.error("authoritative keyserver port not set");
+		//if (authoritativekeyserverPort<=0) return Result.error("authoritative keyserver port not set");
 		Identity id = getIdentity0001();
 		if (id==null) return Result.error("No Identity 0001 found.");
 		try {
-			KeyClient client =  new KeyClient(authoritativekeyserver, authoritativekeyserverPort);
+			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_DEFAULT_PORT);
 			boolean ok = client.putMasterKey(this, id);
 			return Result.succeeded();
 		} catch (Exception ex) {

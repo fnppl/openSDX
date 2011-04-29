@@ -170,11 +170,11 @@ public class KeyServerMain {
 			
 			//generate new keypair
 			keyServerSigningKey = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
-			keyServerSigningKey.setAuthoritativeKeyServer(host,port);
+			keyServerSigningKey.setAuthoritativeKeyServer(host);
 			Identity id = Identity.newEmptyIdentity();
 			id.setEmail("debug_signing@keyserver.fnppl.org");
 			id.setIdentNum(1);
-			id.createSHA1();	
+			id.createSHA256();	
 			keyServerSigningKey.addIdentity(id);
 			
 			Document d = Document.buildDocument(keyServerSigningKey.toElement(messageHandler));
@@ -564,9 +564,9 @@ public class KeyServerMain {
 		}
 		
 		Signature sig = msg.getSignatures().get(0);
-		byte[] givenSha1localproof = msg.getSha1LocalProof();
+		byte[] givenSha256localproof = msg.getSha256LocalProof();
 		
-		KeyLog log = KeyLog.buildNewRevocationKeyLog(fromKeyID, toKeyID, message, givenSha1localproof, sig, request.ipv4, request.ipv4, keyServerSigningKey);
+		KeyLog log = KeyLog.buildNewRevocationKeyLog(fromKeyID, toKeyID, message, givenSha256localproof, sig, request.ipv4, request.ipv4, keyServerSigningKey);
 		log.verify();
 		
 		//save
@@ -611,9 +611,9 @@ public class KeyServerMain {
 		}
 		
 		Signature sig = msg.getSignatures().get(0);
-		byte[] givenSha1localproof = msg.getSha1LocalProof();
+		byte[] givenSha256localproof = msg.getSha256LocalProof();
 		
-		KeyLog log = KeyLog.buildNewRevocationKeyLog(fromKeyID, toKeyID, message, givenSha1localproof, sig, request.ipv4, request.ipv4, keyServerSigningKey);
+		KeyLog log = KeyLog.buildNewRevocationKeyLog(fromKeyID, toKeyID, message, givenSha256localproof, sig, request.ipv4, request.ipv4, keyServerSigningKey);
 		log.verify();
 		
 		//save
@@ -711,7 +711,7 @@ public class KeyServerMain {
 		}
 		for (Element el : elogs) {
 			KeyLog log = KeyLog.fromElement(el);
-			Result v = log.verifyActionSHA1localproofAndSignoff();
+			Result v = log.verifyActionSHA256localproofAndSignoff();
 			if (!v.succeeded) {
 				return errorMessage("verification of keylogaction signature failed.");
 			}
