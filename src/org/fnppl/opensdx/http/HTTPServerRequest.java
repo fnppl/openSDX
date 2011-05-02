@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.keyserver;
+package org.fnppl.opensdx.http;
 
 
 /*
@@ -50,13 +50,12 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.Document;
-import org.fnppl.opensdx.xml.Element;
+
 
 //http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 
-public class KeyServerRequest {
+public class HTTPServerRequest {
 	public final static String XMLDOCPARAMNAME = "xmldocument";
 	
 	public Hashtable<String, String> headers = new Hashtable<String, String>();
@@ -68,12 +67,12 @@ public class KeyServerRequest {
 	public String ipv4 = null;
 	public long datetime = -1L;
 	
-	private KeyServerRequest() {
+	private HTTPServerRequest() {
 		datetime = System.currentTimeMillis();
 	}
 	
-	public static KeyServerRequest fromInputStream(BufferedInputStream in, String ipv4) throws Exception {
-		KeyServerRequest ret = new KeyServerRequest();
+	public static HTTPServerRequest fromInputStream(BufferedInputStream in, String ipv4) throws Exception {
+		HTTPServerRequest ret = new HTTPServerRequest();
 		ret.ipv4 = ipv4;
 		
 		String zeile = null;
@@ -107,18 +106,11 @@ public class KeyServerRequest {
 				readGetParams(ret);
 			}
 			
-	//		if(ret.cmd.indexOf("?")>=0) {
-	//			readGetParams(in, ret, ret.cmd);
-	//		}
-	
-			//System.out.println("KeyServerRequest | end of request");
-			
-			//-------------------------return ret;
 		}
 		return ret;
 	}
 	
-	private static void readXMLPostContent(InputStream in, KeyServerRequest re) throws Exception {
+	private static void readXMLPostContent(InputStream in, HTTPServerRequest re) throws Exception {
 		System.out.println("KeyServerRequest::reading xml POST content");
 //		while(in.available() == 0) { //wait for data
 //			Thread.sleep(100); 
@@ -147,7 +139,7 @@ public class KeyServerRequest {
 		re.xml = Document.fromStream(new ByteArrayInputStream(s.getBytes("UTF-8")));
 	}
 	
-	private static void readPostParams(InputStream in, KeyServerRequest re) throws Exception {
+	private static void readPostParams(InputStream in, HTTPServerRequest re) throws Exception {
 		//System.out.println("KeyServerRequest::reading POST params");
 		
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -185,7 +177,7 @@ public class KeyServerRequest {
 			}
 		}
 	}
-	private static void readGetParams(KeyServerRequest re) throws Exception {
+	private static void readGetParams(HTTPServerRequest re) throws Exception {
 		String me = null;
 		if(re.cmd.indexOf("?")>0) {
 			me = re.cmd.substring(re.cmd.indexOf("?")+1);
@@ -206,7 +198,7 @@ public class KeyServerRequest {
 		}
 	}
 	
-	private static void readHeader(BufferedInputStream in, KeyServerRequest re) throws Exception {
+	private static void readHeader(BufferedInputStream in, HTTPServerRequest re) throws Exception {
 		String zeile = null;
 
 		while ((zeile=readLineASCII(in, 4096)) != null) {

@@ -62,7 +62,7 @@ public class SubKey extends OSDXKey {
 		//if (authoritativekeyserverPort<=0) return Result.error("authoritative keyserver port not set");
 		if (parentKey==null) return Result.error("missing parent key");
 		try {
-			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_DEFAULT_PORT);
+			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT);
 			boolean ok = client.putSubKey(this, parentKey);
 			return Result.succeeded();
 		} catch (Exception ex) {

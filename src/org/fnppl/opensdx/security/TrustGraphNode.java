@@ -107,56 +107,69 @@ public class TrustGraphNode {
 				}
 			} else {
 				if (keylogs!=null) {
-					boolean hasRevokeLog = false;
-					boolean hasDisapproveLog = false;
+					//run throug all keylogs
+					// if approval: add to pre-children
+					// if disapproval: remove from pre-Child-Keylogs, if no prior approval -> ignore
+					// if revocation: remove from pre-Child-Keylogs
+					// at the end -> add all pre-ChildKeylogs to children
+					Vector<KeyLog> preChildKeylogs = new Vector<KeyLog>();
+					SecurityHelper.sortByDate(keylogs);
 					for (KeyLog keylog : keylogs) {
 						try {
-							//System.out.println("  found verified keylog from "+keylog.getKeyIDFrom());
-							String action = keylog.getAction();
-							if (action.equals(KeyLog.REVOCATION)) {
-								if (!KeyVerificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
-									hasRevokeLog = true;
+							System.out.println("  found verified keylog from "+keylog.getKeyIDFrom()+" from date: "+keylog.getDateString());
+							if (!KeyVerificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
+								String action = keylog.getAction();
+								if (action.equals(KeyLog.APPROVAL)) {
+									//only the newest approval should be a child
+									OSDXKey fromKey = keylog.getActionSignatureKey();
+									String fromKeyID = fromKey.getKeyID();
+									KeyLog found = null;
+									for (KeyLog child : preChildKeylogs) {
+										if (child.getKeyIDFrom().equals(fromKeyID)) {
+											found = child;
+											break;
+										}
+									}
+									if (found!=null) {
+										preChildKeylogs.remove(found);
+									}
+									preChildKeylogs.add(keylog);
+								}
+								else if (action.equals(KeyLog.REVOCATION)) {
 									TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
 									g.addEdge(n, this, TrustGraphEdge.TYPE_REVOKE, keylog.getDate());
 								}
-							}
-							else if (action.equals(KeyLog.DISAPPROVAL)) { 
-								if (!KeyVerificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
-									hasDisapproveLog = true;
-									TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
-									g.addEdge(n, this, TrustGraphEdge.TYPE_DISAPPROVE, keylog.getDate());
+								else if (action.equals(KeyLog.DISAPPROVAL)) {
+									//check if key is in preChildKeyLogs
+									OSDXKey fromKey = keylog.getActionSignatureKey();
+									String fromKeyID = fromKey.getKeyID();
+									KeyLog found = null;
+									for (KeyLog child : preChildKeylogs) {
+										if (child.getKeyIDFrom().equals(fromKeyID)) {
+											found = child;
+											break;
+										}
+									}
+									if (found!=null) {
+										preChildKeylogs.remove(found);
+										TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
+										g.addEdge(n, this, TrustGraphEdge.TYPE_DISAPPROVE, keylog.getDate());
+									}
 								}
 							}
 						} catch (Exception ex) {
 							ex.printStackTrace();
 						}
 					}
-					if (!hasRevokeLog || !hasDisapproveLog) {
-						//add all approvals as new nodes
-						for (KeyLog keylog : keylogs) {
-							try {
-								if (!KeyVerificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
-									//System.out.println("  found verified keylog from "+keylog.getKeyIDFrom());
-									String action = keylog.getAction();
-									if (action.equals(KeyLog.APPROVAL)) { 
-										TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
-										children.add(n);
-										//check ob nachher disapproval -> dann edge raus
-										//check ob nachher revoke -> 
-										
-										g.addEdge(n, this, TrustGraphEdge.TYPE_APPROVE, keylog.getDate());
-									}
-								}
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							}
+					for (KeyLog child : preChildKeylogs) {
+						try {
+							TrustGraphNode n = g.addNode(child.getActionSignatureKey());
+							g.addEdge(n, this, TrustGraphEdge.TYPE_APPROVE, child.getDate());
+						} catch (Exception ex) {
+							ex.printStackTrace();
 						}
-					} else {
-						//do i trust disapprove or revoke signing key?
-						//yes, i do, when not explicitly in not-trusted-keys
-						//-> consequently my search for a chain of trust ends for this path
-						
 					}
+					
 				}
 			}
 			

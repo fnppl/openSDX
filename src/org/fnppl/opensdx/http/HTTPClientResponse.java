@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.security;
+package org.fnppl.opensdx.http;
 
 import java.io.*;
 import java.util.*;
@@ -9,7 +9,7 @@ import org.fnppl.opensdx.xml.*;
 
 //http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 
-public class KeyClientResponse {
+public class HTTPClientResponse {
 
 	public static boolean debug = false;
 	public Hashtable<String, String> headers = null;
@@ -17,8 +17,8 @@ public class KeyClientResponse {
 	public Document doc;
 	public String status;
 	
-	public static KeyClientResponse fromStream(BufferedInputStream in, long timeout) throws Exception {
-		KeyClientResponse re = new KeyClientResponse();
+	public static HTTPClientResponse fromStream(BufferedInputStream in, long timeout) throws Exception {
+		HTTPClientResponse re = new HTTPClientResponse();
 		re.headers = new Hashtable<String, String>();
 		re.doc = null;
 		re.status = readLine(in);
@@ -30,7 +30,6 @@ public class KeyClientResponse {
 		}
 		if (debug) if (re.doc!=null) re.doc.output(System.out);
 		
-		if (debug) System.out.println("OSDXKeyServerClient | end requestMasterPubKeys");
 		
 		return re;
 	}
@@ -45,7 +44,7 @@ public class KeyClientResponse {
 		return null;
 	}
 	
-	private static void readXMLContent(BufferedInputStream in, KeyClientResponse re) throws Exception {
+	private static void readXMLContent(BufferedInputStream in, HTTPClientResponse re) throws Exception {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		int read = 0;
 		byte[] buff = new byte[1024];
@@ -64,7 +63,7 @@ public class KeyClientResponse {
 		//re.doc = Document.fromStream(new ByteArrayInputStream(bout.toByteArray()));
 	}
 	
-	private static void readHeader(BufferedInputStream in, KeyClientResponse re) throws Exception {
+	private static void readHeader(BufferedInputStream in, HTTPClientResponse re) throws Exception {
 		String zeile = null;
 
 		while ((zeile=readLine(in))!=null) {

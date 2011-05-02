@@ -50,78 +50,26 @@ import java.math.BigInteger;
 import java.net.*;
 import java.util.*;
 
+import org.fnppl.opensdx.http.HTTPClient;
+import org.fnppl.opensdx.http.HTTPClientRequest;
+import org.fnppl.opensdx.http.HTTPClientResponse;
 import org.fnppl.opensdx.security.*;
-import org.fnppl.opensdx.tsas.*;
+import org.fnppl.opensdx.tsaserver.*;
 import org.fnppl.opensdx.xml.*;
 
-public class KeyClient {
+public class KeyClient extends HTTPClient {
 	
-	public static int OSDX_DEFAULT_PORT = 8889;
-	private Socket socket = null;
-	private long timeout = 2000;
-	private String host = null;
-	private int port = -1;
-	private String message = null;
-	public OutputStream log = null;
-	
+	public static int OSDX_KEYSERVER_DEFAULT_PORT = 8889;
 	public final static String ERROR_WRONG_RESPONE_FORMAT = "ERROR: Wrong format in keyserver's response.";
-	public final static String ERROR_NO_RESPONSE = "ERROR: keyserver does not respond.";
-	
 	
 	public KeyClient(String host, int port) {
-		this.host = host;
-		this.port = port;
+		super(host, port);
 	}
-	
-	public boolean connect() throws Exception {
-		socket = new Socket(host, port);
-		if (socket.isConnected()) {
-			//System.out.println("Connection established.");
-			return true;
-		} else {
-			System.out.println("ERROR: Connection to server could NOT be established!");
-			return false;
-		}
-	}
-
-	public void close() throws Exception {
-		if (socket != null)
-			socket.close();
-	}
-	
-	public String getMessage() {
-		return message;
-	}
-	public KeyClientResponse send(KeyClientRequest req) throws Exception {
-		if (!connect()) {
-			throw new RuntimeException("ERROR: Can not connect to keyserver.");
-		}
-		//System.out.println("OSDXKeyServerClient | start "+req.getURI());
-		
-		//System.out.println("--- sending ---");
-		//req.toOutput(System.out);
-		//System.out.println("\n--- end of sending ---");
-		
-		req.send(socket);
-		
-		//processing response
-	    //System.out.println("OSDXKeyServerClient | waiting for response");
-	    BufferedInputStream bin = new BufferedInputStream(socket.getInputStream());
-	    
-	    KeyClientResponse re = KeyClientResponse.fromStream(bin, timeout);
-	    close();
-	    
-	    if(re == null) {
-	    	throw new RuntimeException("ERROR: Keyserver does not respond.");
-	    }
-	    return re;
-	}
-	
 	
 	// 1. Ich, als fremder user, möchte beim keyserver (z.B. keys.fnppl.org) den/die (MASTER) pubkey(s) zu der identity thiess@finetunes.net suchen können
 	public Vector<String> requestMasterPubKeys(final String idemail) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildRequestMasterPubKeys(host, idemail);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildRequestMasterPubKeys(host, idemail);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST MASTERPUBKEY ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -160,8 +108,8 @@ public class KeyClient {
 	
 	
 	public MasterKey requestMasterPubKey(final String keyid) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildRequestMasterPubKey(host, keyid);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildRequestMasterPubKey(host, keyid);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST SUBKEYS MASTERPUBKEY ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -213,8 +161,8 @@ public class KeyClient {
 //	}
 	
 	public KeyServerIdentity requestKeyServerIdentity() throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildRequestKeyServerIdentity(host);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildRequestKeyServerIdentity(host);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST KEYSERVER IDENTITY ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -256,8 +204,8 @@ public class KeyClient {
 	
 	//2. Ich, als fremder user, möchte beim keyserver die weiteren identities (identity-details) zu einem pubkey bekommen können
 	public Vector<Identity> requestIdentities(String keyid) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildRequestIdentities(host, keyid);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildRequestIdentities(host, keyid);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST IDENTITIES ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -297,8 +245,8 @@ public class KeyClient {
 	
 	//3. Ich, als fremder user, möchte beim keyserver den aktuellen (beim keyserver bekannten) status zu einem pubkey bekommen können (valid/revoked/etc.)
 	public KeyStatus requestKeyStatus(String keyid) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildRequestKeyStatus(host, keyid);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildRequestKeyStatus(host, keyid);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST KEYSTATUS ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -338,8 +286,8 @@ public class KeyClient {
 	
 	//4. Ich, als fremder user, möchte beim keyserver die keylogs eines (beliebigen) pubkeys bekommen können
 	public Vector<KeyLog> requestKeyLogs(String keyid) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildRequestKeyLogs(host, keyid);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildRequestKeyLogs(host, keyid);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST KeyLogs ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -380,8 +328,8 @@ public class KeyClient {
 	
 	//5. Ich, als fremder user, möchte beim keyserver die weiteren pubkeys zu einem parent-pubkey (MASTER) bekommen können
 	public Vector<String> requestSubKeys(String masterkeyid) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildRequestSubkeys(host, masterkeyid);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildRequestSubkeys(host, masterkeyid);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST SubKeys ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -420,8 +368,8 @@ public class KeyClient {
 	}
 	
 	public OSDXKey requestPublicKey(String keyid) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildRequestPublicKey(host, keyid);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildRequestPublicKey(host, keyid);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST PublicKey ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -465,8 +413,8 @@ public class KeyClient {
 	//   includes  2. Ich, als user, möchte, daß der keyserver meinen MASTER-pubkey per email-verifikation (der haupt-identity) akzeptiert (sonst ist der status pending oder so -> erst, wenn die email mit irgendeinem token-link drin aktiviert wurde, wird der pubkey akzeptiert)
 	public boolean putMasterKey(MasterKey masterkey, Identity id) throws Exception {
 		try {
-			KeyClientRequest req = KeyClientMessageFactory.buildPutRequestMasterKey(host, masterkey, id);
-			KeyClientResponse resp = send(req);
+			HTTPClientRequest req = KeyClientMessageFactory.buildPutRequestMasterKey(host, masterkey, id);
+			HTTPClientResponse resp = send(req);
 			if (log!=null) {
 				log.write("--- REQUEST PUT MasterKey ----------\n".getBytes());
 				req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -489,8 +437,8 @@ public class KeyClient {
 	
 	//3. Ich, als user, möchte auf dem keyserver meinen REVOKE-key für meinen master-key abspeichern können (der sollte sogar nicht sichtbar für irgendwen sonst sein!!!)
 	public boolean putRevokeKey(RevokeKey revokekey, MasterKey relatedMasterKey) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildPutRequestRevokeKey(host, revokekey, relatedMasterKey);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildPutRequestRevokeKey(host, revokekey, relatedMasterKey);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST PUT RevokeKey ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -507,8 +455,8 @@ public class KeyClient {
 	}
 	
 	public boolean putRevokeMasterKeyRequest(RevokeKey revokekey, MasterKey relatedMasterKey, String message) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildPutRequestRevokeMasterKey(host, revokekey, relatedMasterKey, message);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildPutRequestRevokeMasterKey(host, revokekey, relatedMasterKey, message);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST Revoke-MasterKey ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -525,8 +473,8 @@ public class KeyClient {
 	}
 	
 	public boolean putSubKey(SubKey subkey, MasterKey relatedMasterKey) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildPutRequestSubKey(host, subkey, relatedMasterKey);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildPutRequestSubKey(host, subkey, relatedMasterKey);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST PUT SubKey ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -543,8 +491,8 @@ public class KeyClient {
 	}
 
 	public boolean putRevokeSubKeyRequest(SubKey subkey, MasterKey relatedMasterKey, String message) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.buildPutRequestRevokeSubKey(host, subkey, relatedMasterKey, message);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.buildPutRequestRevokeSubKey(host, subkey, relatedMasterKey, message);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST Revoke-SubKey ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -569,8 +517,8 @@ public class KeyClient {
 	}
 	
 	public boolean putKeyLogs(Vector<KeyLog> keylogs, OSDXKey signingKey) throws Exception {
-		KeyClientRequest req = KeyClientMessageFactory.getPutRequestKeyLogs(host, keylogs, signingKey);
-		KeyClientResponse resp = send(req);
+		HTTPClientRequest req = KeyClientMessageFactory.getPutRequestKeyLogs(host, keylogs, signingKey);
+		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST PUT KeyLogs ----------\n".getBytes());
 			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
@@ -586,17 +534,6 @@ public class KeyClient {
 		return checkResponse(resp);
 	}
 
-	private boolean checkResponse(KeyClientResponse resp) {
-		if (resp==null || resp.status == null) {
-			message = ERROR_NO_RESPONSE;
-			return false;
-		}
-		if (resp.status.endsWith("OK"))	return true;
-		if (resp.hasErrorMessage()) {
-			message = resp.getErrorMessage();
-		}
-		return false;
-	}
 	
 	//   4. Ich, als user, möchte eigentlich, daß alle meine Aktionen auf meinem MASTER-key - bzw. allen meiner keys durch einen entsprechenden signature-proof des entsprechenden private-keys validierbar sind
 	//   6. Ich, als user, möchte alle kommunikation vom/zum keyserver mit einem vom keyserver definierten root-MASTER-key approveden key signiert wissen
@@ -650,5 +587,6 @@ public class KeyClient {
 
 		
 	}
+	
 	
 }

@@ -71,6 +71,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.MessageHandler;
+import org.fnppl.opensdx.http.HTTPServerRequest;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.DataSourceStep;
 import org.fnppl.opensdx.security.Identity;
@@ -359,7 +360,7 @@ public class KeyServerMain {
 		return resp;
 	}
 	
-	private KeyServerResponse handlePutMasterKeyRequest(KeyServerRequest request) throws Exception {
+	private KeyServerResponse handlePutMasterKeyRequest(HTTPServerRequest request) throws Exception {
 		OSDXMessage msg;
 		try {
 			msg = OSDXMessage.fromElement(request.xml.getRootElement());
@@ -435,7 +436,7 @@ public class KeyServerMain {
 		
 	}
 	
-	private KeyServerResponse handleVerifyRequest(KeyServerRequest request) throws Exception {
+	private KeyServerResponse handleVerifyRequest(HTTPServerRequest request) throws Exception {
 		//System.out.println("KeyServerResponse | ::handle verify request");
 		String id = request.getParamValue("id");
 		System.out.println("Token ID: "+id);
@@ -470,7 +471,7 @@ public class KeyServerMain {
 		}
 	}
 	
-	private KeyServerResponse handlePutRevokeKeyRequest(KeyServerRequest request) throws Exception {
+	private KeyServerResponse handlePutRevokeKeyRequest(HTTPServerRequest request) throws Exception {
 		OSDXMessage msg;
 		try {
 			msg = OSDXMessage.fromElement(request.xml.getRootElement());
@@ -531,7 +532,7 @@ public class KeyServerMain {
 		return resp;
 	}
 
-	private KeyServerResponse handlePutRevokeMasterkeyRequest(KeyServerRequest request) throws Exception {
+	private KeyServerResponse handlePutRevokeMasterkeyRequest(HTTPServerRequest request) throws Exception {
 		OSDXMessage msg;
 		try {
 			msg = OSDXMessage.fromElement(request.xml.getRootElement());
@@ -578,7 +579,7 @@ public class KeyServerMain {
 		return resp;
 	}
 	
-	private KeyServerResponse handlePutRevokeSubkeyRequest(KeyServerRequest request) throws Exception {
+	private KeyServerResponse handlePutRevokeSubkeyRequest(HTTPServerRequest request) throws Exception {
 		OSDXMessage msg;
 		try {
 			msg = OSDXMessage.fromElement(request.xml.getRootElement());
@@ -625,7 +626,7 @@ public class KeyServerMain {
 		return resp;
 	}
 
-	private KeyServerResponse handlePutSubKeyRequest(KeyServerRequest request) throws Exception {
+	private KeyServerResponse handlePutSubKeyRequest(HTTPServerRequest request) throws Exception {
 		OSDXMessage msg;
 		try {
 			msg = OSDXMessage.fromElement(request.xml.getRootElement());
@@ -689,7 +690,7 @@ public class KeyServerMain {
 		return resp;
 	}
 	
-	private KeyServerResponse handlePutKeyLogsRequest(KeyServerRequest request) throws Exception {
+	private KeyServerResponse handlePutKeyLogsRequest(HTTPServerRequest request) throws Exception {
 		OSDXMessage msg;
 		try {
 			msg = OSDXMessage.fromElement(request.xml.getRootElement());
@@ -737,7 +738,7 @@ public class KeyServerMain {
 		return resp;
 	}
 	
-	private KeyServerResponse handleGetKeyServerSettingsRequest(KeyServerRequest request) throws Exception {
+	private KeyServerResponse handleGetKeyServerSettingsRequest(HTTPServerRequest request) throws Exception {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		try {
 			Element e = new Element("keyserver");
@@ -783,7 +784,7 @@ public class KeyServerMain {
 					
 					InputStream _in = s.getInputStream();
 					BufferedInputStream in = new BufferedInputStream(_in);
-					KeyServerRequest request = KeyServerRequest.fromInputStream(in, addr.getHostAddress());
+					HTTPServerRequest request = HTTPServerRequest.fromInputStream(in, addr.getHostAddress());
 					KeyServerResponse response = prepareResponse(request, in); //this is ok since the request is small and can be kept in ram
 					
 					System.out.println("KeyServerSocket  | ::response ready");
@@ -864,7 +865,7 @@ public class KeyServerMain {
 			ex.printStackTrace();
 		}
 	}
-	public KeyServerResponse prepareResponse(KeyServerRequest request, BufferedInputStream in) throws Exception {
+	public KeyServerResponse prepareResponse(HTTPServerRequest request, BufferedInputStream in) throws Exception {
 		if (request.method==null) return null;
 		// yeah, switch cmd/method - stuff whatever...
 		

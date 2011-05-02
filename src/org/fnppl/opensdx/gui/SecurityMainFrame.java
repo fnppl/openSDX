@@ -2139,7 +2139,7 @@ public class SecurityMainFrame extends JFrame {
 						//self approval keylog
 						try {
 							KeyLog kl = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, key, key.getKeyID(), key.getIdentity0001());
-							rKeylog = kl.uploadToKeyServer(key.getAuthoritativekeyserver(), KeyClient.OSDX_DEFAULT_PORT,key);
+							rKeylog = kl.uploadToKeyServer(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT,key);
 						} catch (Exception ex) {
 							rKeylog = Result.error(ex);
 						}

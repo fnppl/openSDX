@@ -5,9 +5,9 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Vector;
 
+import org.fnppl.opensdx.http.HTTPClientRequest;
 import org.fnppl.opensdx.security.KeyClient;
 import org.fnppl.opensdx.security.KeyClientMessageFactory;
-import org.fnppl.opensdx.security.KeyClientRequest;
 import org.fnppl.opensdx.security.KeyLog;
 import org.fnppl.opensdx.security.KeyServerIdentity;
 import org.fnppl.opensdx.security.KeyVerificator;
@@ -42,7 +42,7 @@ public class KeyServerClientTest {
 		//String host = "it-is-awesome.de";
 		String host = "localhost";
 		
-		KeyClient client = new KeyClient(host, KeyClient.OSDX_DEFAULT_PORT);
+		KeyClient client = new KeyClient(host, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT);
 		OutputStream out = System.out;
 		out = new FileOutputStream(new File("test_keyserver_client.txt"));
 		
@@ -52,7 +52,7 @@ public class KeyServerClientTest {
 		
 		String idemail = masterkey.getIdentity0001().getEmail();
 		
-		KeyClientRequest req;
+		HTTPClientRequest req;
 		
 		client.connect();
 		

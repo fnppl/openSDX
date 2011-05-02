@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.security;
+package org.fnppl.opensdx.http;
 
 
 import java.util.*;
@@ -6,13 +6,14 @@ import java.io.*;
 import java.net.*;
 
 import org.fnppl.opensdx.security.*;
+import org.fnppl.opensdx.security.SecurityHelper.HexDecoder;
 import org.fnppl.opensdx.xml.*;
 
 //import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 
 //http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 
-public class KeyClientRequest {
+public class HTTPClientRequest {
 	public final static String XMLDOCPARAMNAME = "xmldocument";//check out KeyServerRequest
 
 	private final static String version = "HTTP/1.1";
@@ -58,7 +59,7 @@ public class KeyClientRequest {
 		toggleFormDataMode();
 	}
 	
-	public KeyClientRequest() {
+	public HTTPClientRequest() {
 	}
 	private String getCMDLine() throws Exception {
 		StringBuffer ret = new StringBuffer();

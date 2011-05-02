@@ -88,6 +88,19 @@ public class SecurityHelper {
 			Security.addProvider(new BouncyCastleProvider());
 		}
 	}
+	
+	public static void sortByDate(Vector<KeyLog> keylogs) {
+		Collections.sort(keylogs, new Comparator<KeyLog>() {
+			public int compare(KeyLog k1, KeyLog k2) {
+				try {
+					return (int)(k1.getDate()-k2.getDate());		
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				return 0;
+			}
+		});
+	}
 
 	
 	public final static class HexDecoder {	    

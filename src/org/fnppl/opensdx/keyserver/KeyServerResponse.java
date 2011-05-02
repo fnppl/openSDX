@@ -50,6 +50,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import org.fnppl.opensdx.http.HTTPServerRequest;
+import org.fnppl.opensdx.http.HTTPServerResponse;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
@@ -57,105 +59,13 @@ import org.fnppl.opensdx.xml.XMLHelper;
 
 //http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 
-public class KeyServerResponse {
-//	public int retcode = 404;//fail
-//	public String retcodeString = "FAYUL!";
-	public int retcode = 200;//fail
-	public String retcodeString = "OK";
-	public String contentType = "text/xml";
-	
-	private String serverid = null;
-	protected Element contentElement;
-	protected String html = null;
-	protected OSDXKey signoffkey = null;
+public class KeyServerResponse extends HTTPServerResponse {
 	
 	public KeyServerResponse(String serverid) {
-		this.serverid = serverid;
-		contentElement = null;
-	}
-	public void setRetCode(int code, String msg) {
-		this.retcode = code;
-		this.retcodeString = msg;
+		super(serverid);
 	}
 	
-	public void setSignoffKey(OSDXKey signoffkey) {
-		this.signoffkey = signoffkey;
-	}
-	
-	public void toOutput(OutputStream out) throws Exception {
-		//write it to the outputstream...
-		if (contentElement != null) {
-			Element eContent = contentElement;
-			
-			//signoff if signoffkey present
-			if (signoffkey!=null) {
-				eContent = XMLHelper.cloneElement(contentElement);
-				//signoff
-				byte[] sha1proof = SecurityHelper.getSHA1LocalProof(eContent);
-				eContent.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
-				eContent.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", signoffkey).toElement());
-			}
-			
-			ByteArrayOutputStream contentout = new ByteArrayOutputStream();
-			
-			Document xml = Document.buildDocument(eContent);
-			xml.output(contentout);
-			contentout.flush();
-			contentout.close();
-			
-			byte[] content = contentout.toByteArray();
-			out.write((
-					"HTTP/1.1 "+retcode+" "+retcodeString+"\r\n" +
-					"Server: "+serverid+"\r\n" +
-					"Connection: close\r\n").getBytes("ASCII"));
-			
-			out.write(("Content-Type: "+contentType+"\r\n").getBytes("ASCII"));
-			out.write(("Content-Length: "+content.length+"\r\n").getBytes("ASCII"));
-			out.write("\r\n".getBytes("ASCII"));
-			out.flush();
-			out.write(content);
-		} 
-		else if (html!=null ){
-			out.write((
-					"HTTP/1.1 "+retcode+" "+retcodeString+"\r\n" +
-					"Server: "+serverid+"\r\n" +
-					"Connection: close\r\n").getBytes("ASCII"));
-			out.write(("Content-Type: text/html\r\n").getBytes("ASCII"));
-			out.write(("Content-Length: "+html.length()+"\r\n").getBytes("ASCII"));
-			out.write("\r\n".getBytes("ASCII"));
-			out.flush();
-			out.write(html.getBytes("ASCII"));
-			out.write("\r\n".getBytes("ASCII"));
-		}
-		else {
-			out.write((
-					"HTTP/1.1 "+retcode+" "+retcodeString+"\r\n" +
-					"Server: "+serverid+"\r\n" +
-					"Connection: close\r\n").getBytes("ASCII"));
-			out.write("\r\n".getBytes("ASCII"));
-		}
-		out.flush();
-	}
-	
-	public void createErrorMessageContent(String msg) {
-		Element em = new Element("errormessage");
-		em.addContent("message",msg);
-		setContentElement(em);
-	}
-	
-//	public void addHeaderValue(String name, String value) {
-//		header.append(name+": "+value+"\n");
-//	}
-	
-	public void setContentElement(Element e) {
-		contentElement = e;
-	}
-	
-	public void setHTML(String html) {
-		this.html = html;
-	}
-	
-	public static KeyServerResponse createMasterPubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<OSDXKey>> id_keys, OSDXKey signoffkey) {
+	public static KeyServerResponse createMasterPubKeyResponse(String serverid, HTTPServerRequest request, HashMap<String, Vector<OSDXKey>> id_keys, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("Identity");
 		if (id != null) {
@@ -184,7 +94,7 @@ public class KeyServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createMasterPubKeyToSubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
+	public static KeyServerResponse createMasterPubKeyToSubKeyResponse(String serverid, HTTPServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("SubKeyID");
 		if (id != null) {
@@ -209,7 +119,7 @@ public class KeyServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createIdentityResponse(String serverid, KeyServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
+	public static KeyServerResponse createIdentityResponse(String serverid, HTTPServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
@@ -237,7 +147,7 @@ public class KeyServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createKeyStatusyResponse(String serverid, KeyServerRequest request, KeyApprovingStore keystore, OSDXKey signoffkey) {
+	public static KeyServerResponse createKeyStatusyResponse(String serverid, HTTPServerRequest request, KeyApprovingStore keystore, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
@@ -270,7 +180,7 @@ public class KeyServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createKeyLogResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<KeyLog>> keyid_log, OSDXKey signoffkey) {
+	public static KeyServerResponse createKeyLogResponse(String serverid, HTTPServerRequest request, HashMap<String, Vector<KeyLog>> keyid_log, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
@@ -299,7 +209,7 @@ public class KeyServerResponse {
 	}
 	
 	
-	public static KeyServerResponse createSubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, Vector<OSDXKey>> keyid_subkeys, OSDXKey signoffkey) {
+	public static KeyServerResponse createSubKeyResponse(String serverid, HTTPServerRequest request, HashMap<String, Vector<OSDXKey>> keyid_subkeys, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
@@ -328,7 +238,7 @@ public class KeyServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createPubKeyResponse(String serverid, KeyServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
+	public static KeyServerResponse createPubKeyResponse(String serverid, HTTPServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
