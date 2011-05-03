@@ -71,7 +71,9 @@ import javax.mail.internet.MimeMessage;
 
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.MessageHandler;
+import org.fnppl.opensdx.http.HTTPServer;
 import org.fnppl.opensdx.http.HTTPServerRequest;
+import org.fnppl.opensdx.http.HTTPServerResponse;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.DataSourceStep;
 import org.fnppl.opensdx.security.Identity;
@@ -116,24 +118,15 @@ import org.fnppl.opensdx.xml.Element;
 
 //http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 
-public class KeyServerMain {
+public class KeyServerMain extends HTTPServer {
 	
-	private static String serverid = "OSDX KeyServer v0.2";
+	private String serverid = "OSDX KeyServer v0.2";
 	
 	private File configFile = new File("keyserver_config.xml"); 
 	private File alterConfigFile = new File("src/org/fnppl/opensdx/keyserver/resources/config.xml"); 
 	
-	private String host = "localhost"; //keys.fnppl.org
-	private int port = -1;
-	private int maxRequestsPerMinute = 100;
-	private int maxThreadCount = 30;
-	private InetAddress address = null;
 	private Properties mailProps = null;
 	private MailAuthenticator mailAuth = null;
-	private HashMap<String, int[]> ipRequests = new HashMap<String, int[]>();
-	private HashMap<String, Thread> currentWorkingThreads = new HashMap<String, Thread>();
-	
-	
 	private KeyApprovingStore keystore;
 	
 	private MessageHandler messageHandler = new DefaultMessageHandler() {
@@ -157,33 +150,18 @@ public class KeyServerMain {
 	protected MasterKey keyServerSigningKey = null;
 	
 	public KeyServerMain(String pwSigning, String pwMail) throws Exception {
-		//init
+		super();
+		init(pwSigning);
+		if (signingKey instanceof MasterKey) {
+			keyServerSigningKey = (MasterKey)signingKey;
+		} else {
+			throw new RuntimeException("ERROR: root signing key must be on MASTER level!");
+		}
 		id_keys = new HashMap<String, Vector<OSDXKey>>();
 		keyid_key = new HashMap<String, OSDXKey>();
 		keyid_log = new HashMap<String, Vector<KeyLog>>();
 		keyid_subkeys = new HashMap<String, Vector<OSDXKey>>();
 		openTokens = new HashMap<String, KeyLog>();
-		
-		readConfig();
-		
-		if (keyServerSigningKey==null) {
-			pwSigning = "debug";
-			
-			//generate new keypair
-			keyServerSigningKey = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
-			keyServerSigningKey.setAuthoritativeKeyServer(host);
-			Identity id = Identity.newEmptyIdentity();
-			id.setEmail("debug_signing@keyserver.fnppl.org");
-			id.setIdentNum(1);
-			id.createSHA256();	
-			keyServerSigningKey.addIdentity(id);
-			
-			Document d = Document.buildDocument(keyServerSigningKey.toElement(messageHandler));
-			System.out.println("\nKeyServerSigningKey:");
-			d.output(System.out);
-		}
-		
-		keyServerSigningKey.unlockPrivateKey(pwSigning);
 		
 		if (mailProps!=null) {
 			if (pwMail !=null) {
@@ -191,15 +169,36 @@ public class KeyServerMain {
 			}
 			mailAuth = new MailAuthenticator(mailProps.getProperty("mail.user"), mailProps.getProperty("mail.password"));
 		}
-		
 		openDefaultKeyStore();
-		
 		keystore.setSigningKey(keyServerSigningKey);
 		updateCache(keyServerSigningKey, null);
-		
-		Document d = Document.buildDocument(keyServerSigningKey.getSimplePubKeyElement());
-		System.out.println("\nKeyServer Public SigningKey:");
-		d.output(System.out);
+	}
+	
+	public OSDXKey createNewSigningKey(String pwSigning) {
+		try {
+			System.out.println("Creating new SigningKey:");
+			//generate new keypair
+			MasterKey keyServerSigningKey = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+			keyServerSigningKey.setAuthoritativeKeyServer(host);
+			Identity id = Identity.newEmptyIdentity();
+			id.setEmail("debug_signing@keyserver.fnppl.org");
+			id.setIdentNum(1);
+			id.createSHA256();
+			keyServerSigningKey.addIdentity(id);
+			keyServerSigningKey.createLockedPrivateKey("", pwSigning);
+			
+			Document d = Document.buildDocument(keyServerSigningKey.toElement(messageHandler));
+			System.out.println("\nKeyServerSigningKey:");
+			d.output(System.out);
+			return keyServerSigningKey;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+	
+	public String getServerID() {
+		return serverid;
 	}
 	
 	public void readConfig() {
@@ -246,11 +245,7 @@ public class KeyServerMain {
 			//keyServerSigningKey
 			try {
 				OSDXKey k = OSDXKey.fromElement(root.getChild("rootsigningkey").getChild("keypair"));
-				if (k instanceof MasterKey) {
-					keyServerSigningKey = (MasterKey)k;
-				} else {
-					System.out.println("ERROR: rootsigningkey NOT MasterKey");
-				}
+				signingKey = k;
 			} catch (Exception e) {
 				System.out.println("ERROR: no signing key in config."); 
 			}
@@ -259,8 +254,6 @@ public class KeyServerMain {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		
-		
 		
 	}
 	
@@ -626,7 +619,7 @@ public class KeyServerMain {
 		return resp;
 	}
 
-	private KeyServerResponse handlePutSubKeyRequest(HTTPServerRequest request) throws Exception {
+	public HTTPServerResponse handlePutSubKeyRequest(HTTPServerRequest request) throws Exception {
 		OSDXMessage msg;
 		try {
 			msg = OSDXMessage.fromElement(request.xml.getRootElement());
@@ -757,115 +750,7 @@ public class KeyServerMain {
 		return resp;
 	}
 
-	public void handleSocket(final Socket s) throws Exception {
-		Thread t = new Thread() {
-			public void run() {
-				String threadID = null;
-				try {
-					InetAddress addr = s.getInetAddress();
-					String remoteIP = addr.getHostAddress();
-					int remotePort = s.getPort();
-					// check on *too* many requests from one ip
-					int[] rc = ipRequests.get(remoteIP);
-					if (rc==null) {
-						ipRequests.put(remoteIP, new int[]{1});
-					} else {
-						rc[0]++;
-						//System.out.println("anz req: "+rc[0]);
-						if (rc[0]>maxRequestsPerMinute) {
-							if (rc[0]<=100) {
-								System.out.println("WARNING: too many requests ("+rc[0]+") from ip: "+remoteIP);
-							}
-							return;
-						}
-					}
-					threadID = remoteIP+remotePort;
-					currentWorkingThreads.put(threadID,this);
-					
-					InputStream _in = s.getInputStream();
-					BufferedInputStream in = new BufferedInputStream(_in);
-					HTTPServerRequest request = HTTPServerRequest.fromInputStream(in, addr.getHostAddress());
-					KeyServerResponse response = prepareResponse(request, in); //this is ok since the request is small and can be kept in ram
-					
-					System.out.println("KeyServerSocket  | ::response ready");
-					if (response == null) {
-						//send error
-						response = new KeyServerResponse(serverid);
-						response.setRetCode(400, "BAD REQUEST");
-					}
-					if (response != null) {
-						System.out.println("SENDING THIS::");response.toOutput(System.out);System.out.println("::/SENDING_THIS");
-						
-						OutputStream out = s.getOutputStream();
-						BufferedOutputStream bout = new BufferedOutputStream(out);
-						response.toOutput(bout);
-						bout.flush();
-						bout.close();
-					} 
-					else {
-						Exception ex = new Exception("RESPONSE COULD NOT BE CREATED");
-						throw ex;
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				currentWorkingThreads.remove(threadID);
-			}
-		};
-		t.start();
-	}
-
-	public void startService() throws Exception {
-		System.out.println("Starting Server at "+address.getHostAddress()+" on port " + port +"  at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
-		ServerSocket so = new ServerSocket(port);
-		Thread requestMonitor = new Thread() {
-			public void run() {
-				while (true) {
-					updateIPRequestCounter();
-					try {
-						Thread.sleep(60000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		};
-		requestMonitor.start();
-		while (true) {
-			try {
-				while (currentWorkingThreads.size()>maxThreadCount) {
-					Thread.sleep(100);
-				}
-				final Socket me = so.accept();
-				handleSocket(me);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				Thread.sleep(250);// cooldown...
-			}
-		}
-		//System.out.println("Service closed at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
-	}
-	
-	private void updateIPRequestCounter() {
-		try {
-			Vector<String> remove = new Vector<String>();
-			for (Entry<String, int[]> e : ipRequests.entrySet()) {
-				int[] v = e.getValue();
-				v[0] -= maxRequestsPerMinute;
-				//System.out.println(e.getKey()+ "  v[0] = "+v[0]);
-				if (v[0] < 0) {
-					remove.add(e.getKey());
-				}
-			}
-			for (String r : remove) {
-				ipRequests.remove(r);
-			}
-			
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
-	public KeyServerResponse prepareResponse(HTTPServerRequest request, BufferedInputStream in) throws Exception {
+	public HTTPServerResponse prepareResponse(HTTPServerRequest request) throws Exception {
 		if (request.method==null) return null;
 		// yeah, switch cmd/method - stuff whatever...
 		
@@ -962,10 +847,6 @@ public class KeyServerMain {
 		Transport.send(msg);
 	}
 	
-	public void exit() {
-		System.exit(0);
-	}
-
 	public static void main(String[] args) throws Exception {
 		if (args==null || args.length!=4) {
 			System.out.println("usage: KeysServer -s \"password signingkey\" -m \"password mail\"");

@@ -53,6 +53,7 @@ import java.util.Map.Entry;
 
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.MessageHandler;
+import org.fnppl.opensdx.http.HTTPServer;
 import org.fnppl.opensdx.http.HTTPServerRequest;
 import org.fnppl.opensdx.http.HTTPServerResponse;
 import org.fnppl.opensdx.keyserver.KeyServerResponse;
@@ -60,23 +61,12 @@ import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
-public class TSAServerMain {
+public class TSAServerMain extends HTTPServer {
 	
-private static String serverid = "OSDX TSAServer v0.1";
-	
+	private String serverid = "OSDX TSAServer v0.1";
 	private File configFile = new File("tsaserver_config.xml"); 
 	private File alterConfigFile = new File("src/org/fnppl/opensdx/tsaserver/resources/tsaserver_config.xml"); 
-	
-	private String host = "localhost"; //keys.fnppl.org
-	private int port = -1;
-	private int maxRequestsPerMinute = 100;
-	private int maxThreadCount = 30;
-	private InetAddress address = null;
 
-	private HashMap<String, int[]> ipRequests = new HashMap<String, int[]>();
-	private HashMap<String, Thread> currentWorkingThreads = new HashMap<String, Thread>();	
-	
-	protected MasterKey signingKey = null;
 	
 	private MessageHandler messageHandler = new DefaultMessageHandler() {
 		public boolean requestOverwriteFile(File file) {//dont ask, just overwrite
@@ -85,45 +75,43 @@ private static String serverid = "OSDX TSAServer v0.1";
 		public boolean requestIgnoreKeyLogVerificationFailure() {//dont ignore faild keylog verification
 			return false;
 		}
-		public MasterKey requestMasterSigningKey(KeyApprovingStore keystore) throws Exception {
-			return signingKey;
-		}
 		public String[] requestNewPasswordAndMantra(String message) {
 			return new String[] {"debug","debug"};
 		}
 	};
 	
 	public TSAServerMain(String pwSigning) {
+		super();
+		init(pwSigning);
+	}
+	
+	public OSDXKey createNewSigningKey(String pwSigning) {
 		try {
-			readConfig();
-			if (signingKey==null) {
+			pwSigning = "debug";
 			
-				pwSigning = "debug";
-				
-				//generate new keypair
-				signingKey = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
-				signingKey.setAuthoritativeKeyServer(host);
-				Identity id = Identity.newEmptyIdentity();
-				id.setEmail("debug_tsa_signing@tsaserver.fnppl.org");
-				id.setIdentNum(1);
-				id.createSHA256();	
-				signingKey.addIdentity(id);
-				
-				
-				Document d = Document.buildDocument(signingKey.toElement(messageHandler));
-				System.out.println("\nTSA Server SigningKey:");
-				d.output(System.out);
-				
-			}
+			//generate new keypair
+			MasterKey newSigningKey = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+			newSigningKey.setAuthoritativeKeyServer(host);
+			Identity id = Identity.newEmptyIdentity();
+			id.setEmail("debug_tsa_signing@it-is-awesome.de");
+			id.setIdentNum(1);
+			id.createSHA256();	
+			newSigningKey.addIdentity(id);
+			newSigningKey.createLockedPrivateKey("", pwSigning);
 			
-			signingKey.unlockPrivateKey(pwSigning);
-			
-			Document d = Document.buildDocument(signingKey.getSimplePubKeyElement());
-			System.out.println("\nTSA Server Public SigningKey:");
+			Document d = Document.buildDocument(newSigningKey.toElement(messageHandler));
+			System.out.println("\nTSAServerSigningKey:");
 			d.output(System.out);
+			
+			return newSigningKey;
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		return null;
+	}
+
+	public String getServerID() {
+		return serverid;
 	}
 	
 	public void readConfig() {
@@ -158,11 +146,7 @@ private static String serverid = "OSDX TSAServer v0.1";
 			//SigningKey
 			try {
 				OSDXKey k = OSDXKey.fromElement(root.getChild("rootsigningkey").getChild("keypair"));
-				if (k instanceof MasterKey) {
-					signingKey = (MasterKey)k;
-				} else {
-					System.out.println("ERROR: rootsigningkey NOT MasterKey");
-				}
+				signingKey = k;
 			} catch (Exception e) {
 				System.out.println("ERROR: no signing key in config."); 
 			}
@@ -173,9 +157,6 @@ private static String serverid = "OSDX TSAServer v0.1";
 		}
 	}
 
-	public void exit() {
-		System.exit(0);
-	}
 
 	public HTTPServerResponse prepareResponse(HTTPServerRequest request) throws Exception {
 		if (request.method==null) return null;
@@ -243,120 +224,6 @@ private static String serverid = "OSDX TSAServer v0.1";
 	}
 	
 	
-	public void handleSocket(final Socket s) throws Exception {
-		Thread t = new Thread() {
-			public void run() {
-				String threadID = null;
-				try {
-					InetAddress addr = s.getInetAddress();
-					String remoteIP = addr.getHostAddress();
-					int remotePort = s.getPort();
-					// check on *too* many requests from one ip
-					int[] rc = ipRequests.get(remoteIP);
-					if (rc==null) {
-						ipRequests.put(remoteIP, new int[]{1});
-					} else {
-						rc[0]++;
-						//System.out.println("anz req: "+rc[0]);
-						if (rc[0]>maxRequestsPerMinute) {
-							if (rc[0]<=100) {
-								System.out.println("WARNING: too many requests ("+rc[0]+") from ip: "+remoteIP);
-							}
-							return;
-						}
-					}
-					threadID = remoteIP+remotePort;
-					currentWorkingThreads.put(threadID,this);
-					
-					try {
-						InputStream _in = s.getInputStream();
-						BufferedInputStream in = new BufferedInputStream(_in);
-						HTTPServerRequest request = HTTPServerRequest.fromInputStream(in, addr.getHostAddress());
-						HTTPServerResponse response = prepareResponse(request);
-						
-						System.out.println("KeyServerSocket  | ::response ready");
-						if (response == null) {
-							//send error
-							response = new HTTPServerResponse(serverid);
-							response.setRetCode(400, "BAD REQUEST");
-						}
-						if (response != null) {
-							System.out.println("SENDING THIS::");response.toOutput(System.out);System.out.println("::/SENDING_THIS");
-							
-							OutputStream out = s.getOutputStream();
-							BufferedOutputStream bout = new BufferedOutputStream(out);
-							response.toOutput(bout);
-							bout.flush();
-							bout.close();
-						} 
-						else {
-							Exception ex = new Exception("RESPONSE COULD NOT BE CREATED");
-							throw ex;
-						}
-					} catch(Exception ex2) {
-						ex2.printStackTrace();
-					}
-					currentWorkingThreads.remove(threadID);
-				} catch(Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-		};
-		t.start();
-	}
-	
-	
-	public void startService() throws Exception {
-		System.out.println("Starting Server at "+address.getHostAddress()+" on port " + port +"  at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
-		ServerSocket so = new ServerSocket(port);
-		Thread requestMonitor = new Thread() {
-			public void run() {
-				while (true) {
-					updateIPRequestCounter();
-					try {
-						Thread.sleep(60000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		};
-		requestMonitor.start();
-		while (true) {
-			try {
-				while (currentWorkingThreads.size()>maxThreadCount) {
-					Thread.sleep(100);
-				}
-				final Socket me = so.accept();
-				handleSocket(me);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				Thread.sleep(250);// cooldown...
-			}
-		}
-		//System.out.println("Service closed at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
-	}
-	
-	private void updateIPRequestCounter() {
-		try {
-			Vector<String> remove = new Vector<String>();
-			for (Entry<String, int[]> e : ipRequests.entrySet()) {
-				int[] v = e.getValue();
-				v[0] -= maxRequestsPerMinute;
-				//System.out.println(e.getKey()+ "  v[0] = "+v[0]);
-				if (v[0] < 0) {
-					remove.add(e.getKey());
-				}
-			}
-			for (String r : remove) {
-				ipRequests.remove(r);
-			}
-			
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
-	
 	public static void main(String[] args) throws Exception {
 		if (args==null || args.length!=2 || !args[0].equals("-s")) {
 			System.out.println("usage: TsaServer -s \"password signingkey\"");
@@ -367,5 +234,6 @@ private static String serverid = "OSDX TSAServer v0.1";
 		
 		ss.startService();
 	}
+
 }
 
