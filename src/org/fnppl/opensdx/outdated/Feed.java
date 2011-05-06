@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.outdated;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,45 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
-	
+
+
+import java.util.Vector;
+
+
+public class Feed extends BaseObjectWithConstraints {
+
+	public Feed() {
+		names.add("feedinfo"); values.add(null); constraints.add("[no comment]");
+		names.add("bundle"); values.add(new Vector<Bundle>()); constraints.add("?");
+		names.add("item"); values.add(null); constraints.add("?");
+	}
+
+// methods
+	public void setFeedinfo(Feedinfo feedinfo) {
+		set("feedinfo", feedinfo);
+	}
+
+	public Feedinfo getFeedinfo() {
+		return (Feedinfo)getObject("feedinfo");
+	}
+
+	public Vector<Bundle> getBundle() {
+		return (Vector<Bundle>)values.elementAt(names.indexOf("bundle"));
+	}
+	public void addBundle(Bundle bundle) {
+		((Vector<Bundle>)values.elementAt(names.indexOf("bundle"))).add(bundle);
+	}
+
+	public void removeBundle(Bundle bundle) {
+		((Vector<Bundle>)values.elementAt(names.indexOf("bundle"))).remove(bundle);
+	}
+
+	public void setItem(String item) {
+		set("item", item);
+	}
+
+	public String getItem() {
+		return get("item");
+	}
+
 }
-
-

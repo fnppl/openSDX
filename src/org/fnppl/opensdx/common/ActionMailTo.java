@@ -47,60 +47,36 @@ package org.fnppl.opensdx.common;
 
 
 
-import java.util.Vector;
-import org.fnppl.opensdx.common.BaseObjectWithConstraints;
-import org.fnppl.opensdx.xml.Element;
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
+public class ActionMailTo extends BusinessObject implements Action {
 
-public class ActionMailTo extends Action {
-
-	public ActionMailTo(int actionType) {
-		setActionType(actionType);
-		names.add("receiver"); values.add(null); constraints.add("MUST");
-		names.add("subject"); values.add(null); constraints.add("SHOULD");
-		names.add("text"); values.add(null); constraints.add("SHOULD");
+	private BusinessStringItem receiver;
+	private BusinessStringItem subject;
+	private BusinessStringItem text;
+	
+	private ActionMailTo() {
+		
 	}
 	
-
-	public boolean doAction() {
-		// TODO send mail
-		return false;
+	public static ActionMailTo make(String receiver, String subject, String text) {
+		ActionMailTo a = new ActionMailTo();
+		a.receiver = new BusinessStringItem("receiver", receiver);
+		a.subject = new BusinessStringItem("subject", subject);
+		a.text = new BusinessStringItem("text", text);
+		return a;
 	}
 	
-// methods
-	public void setReceiver(String receiver) {
-		set("receiver", receiver);
+	public void execute() {
+		//TODO implement
 	}
 
-	public String getReceiver() {
-		return get("receiver");
-	}
-
-	public void setSubject(String subject) {
-		set("subject", subject);
-	}
-
-	public String getSubject() {
-		return get("subject");
-	}
-
-	public void setText(String text) {
-		set("text", text);
-	}
-
-	public String getText() {
-		return get("text");
-	}
 	
-	public Element toElement() {
-		return toElement("mailto");
-	}
-	
-	public Element toElement(String name) {
-		Element e = new Element(name);
-		add(e,"receiver");
-		add(e,"subject");
-		add(e,"text");
-		return e;
+	public String getKeyname() {
+		return "http";
 	}
 
 

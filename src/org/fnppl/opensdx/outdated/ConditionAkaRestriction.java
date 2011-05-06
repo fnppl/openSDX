@@ -1,5 +1,4 @@
-package org.fnppl.opensdx.dmi;
-
+package org.fnppl.opensdx.outdated;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -45,10 +44,13 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
-	
+
+/*
+ * in any term of assignment, classification etc. these assignments etc. 
+ * should be also possible to be made under some restrictions or "only for..."
+ * 
+ */
+
+public class ConditionAkaRestriction extends BaseObject {
+
 }
-
-

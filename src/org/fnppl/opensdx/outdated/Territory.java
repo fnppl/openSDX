@@ -1,4 +1,8 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.outdated;
+
+import java.util.Vector;
+
+import org.fnppl.opensdx.xml.Element;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +49,63 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
+
+/*
+ * ISO2-country http://www.iso.org/iso/english_country_names_and_code_elements 
+ * 
+ * regions are made with *TerritoryConjunction*
+ * 
+ */
+
+public class Territory extends BaseObject {
+
 	
+	public Territory() {
+		names.add("territory"); values.add(null);
+		names.add("allow"); values.add(null);
+	}
+	
+	public static Territory allow(String territory) {
+		Territory t = new Territory();
+		t.setAllowTerritory(territory);
+		return t;
+	}
+	public static Territory disallow(String territory) {
+		Territory t = new Territory();
+		t.setDisallowTerritory(territory);
+		return t;
+	}
+
+// methods
+	public void setAllowTerritory(String territory) {
+		set("territory", territory);
+		set("allow", "true");
+	}
+	
+	public void setDisallowTerritory(String territory) {
+		set("territory", territory);
+		set("allow", "false");
+	}
+
+	public String getTerritory() {
+		return get("territory");
+	}
+	
+	public boolean getAllow() {
+		return Boolean.parseBoolean(get("allow"));
+	}
+	
+	public Element toElement() {
+		return toElement("territory");
+	}
+	
+	public Element toElement(String name) {
+		Element e = new Element(name);
+		if (!getAllow()) {
+			e.setAttribute("type", "disallow");
+		}
+		e.setText(getTerritory());
+		return e;
+	}
+
 }
-
-

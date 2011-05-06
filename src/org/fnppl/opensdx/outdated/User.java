@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.outdated;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,12 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
-	
+
+/*
+ * Object to encapsulate *signers*, *senders*, *receivers* using/connected to the process 
+ * 
+ */
+
+public class User extends BaseObject {
+
 }
-
-

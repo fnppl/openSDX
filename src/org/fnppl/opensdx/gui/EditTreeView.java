@@ -80,8 +80,8 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import org.fnppl.opensdx.common.BaseObject;
-import org.fnppl.opensdx.common.BaseObjectWithConstraints;
+import org.fnppl.opensdx.outdated.BaseObject;
+import org.fnppl.opensdx.outdated.BaseObjectWithConstraints;
 import org.fnppl.opensdx.xml.Document;
 
 public class EditTreeView extends JTree {

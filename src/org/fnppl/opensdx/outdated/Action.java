@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.outdated;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,46 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
+
+public abstract class Action extends BaseObjectWithConstraints {
+
+
+	public static int TYPE_ONINITIALRECEIVE = 1;
+	public static int TYPE_ONPROCESSSTART   = 2;
+	public static int TYPE_ONPROCESSEND     = 3;
+	public static int TYPE_ONFULLSUCCESS    = 4;
+	public static int TYPE_ONERROR          = 5;
 	
+	public int actionType = 0;
+	public static String[] actionTypeName = new String[] {
+		"[TYPE NOT SET]", "oninitialreceive", "onprocessstart", "onprocessend", "onfullsuccess", "onerror"
+	};
+	
+	public abstract boolean doAction();
+
+	public boolean setActionType(int type) {
+		if (type>=0 && type<actionTypeName.length) {
+			actionType = type;
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean setActionType(String typename) {
+		for (int i=0;i<actionTypeName.length;i++) {
+			if (actionTypeName.equals(typename)) {
+				actionType = i;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public int  getActionType() {
+		return actionType;
+	}
+	
+	public String getActionTypeName() {
+		return actionTypeName[actionType];
+	}
 }
-
-

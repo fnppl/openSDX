@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.common;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,42 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
+import java.lang.reflect.Field;
+import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLElementable;
+
+
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
+public abstract class BusinessObject implements XMLElementable {
 	
+	public abstract String getKeyname();
+	
+	/***
+	 * cool stuff happens here:: this method uses javas reflexion for accessing all XMLElementable fields
+	 * coolest stuff:: even private fields can be read out by this!!!
+	 */
+	public Element toElement() {
+		Element resultElement = new Element(getKeyname());
+		
+		Field[] fields = this.getClass().getDeclaredFields();
+		for (Field f : fields) {
+			try {
+				f.setAccessible(true);
+				Object thisFieldsObject = f.get(this);
+				if (thisFieldsObject instanceof XMLElementable) {
+					Element e = ((XMLElementable)thisFieldsObject).toElement();
+					if (e!=null) {
+						resultElement.addContent(e);
+					}
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		return resultElement;
+	}
 }
-
-

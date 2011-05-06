@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.outdated;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,13 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
-	
+/*
+ * start-date enddate incl. timezone
+ * either start or enddate can be *unset*
+ * when start+enddate are *unset* => special_case::eternity 
+ * 
+ */
+
+public class TimeFrame extends BaseObject {
+
 }
-
-

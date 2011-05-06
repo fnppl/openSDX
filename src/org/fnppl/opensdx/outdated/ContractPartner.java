@@ -1,12 +1,7 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.outdated;
 
-/*
- * Copyright (C) 2010-2011 
- * 							fine people e.V. <opensdx@fnppl.org> 
- * 							Henning Thieß <ht@fnppl.org>
- * 
- * 							http://fnppl.org
-*/
+import org.fnppl.opensdx.xml.Element;
+
 
 /*
  * Software license
@@ -45,10 +40,56 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
+
+/*
+ * can be any type of label, publishing house, aggregator, whatever
+ * basically, i would recommend even for a "label-contract-partner" to create subunits for that "single-releaser"...
+ */
+
+
+public class ContractPartner extends BaseObjectWithConstraints {
+
+	public ContractPartner() {
+		names.add("contractpartnerid"); values.add(null); constraints.add("MUST");
+		names.add("ourcontractpartnerid"); values.add(null); constraints.add("MUST");
+		names.add("email"); values.add(null); constraints.add("SHOULD");
+	}
+
+// methods
+	public void setContractpartnerid(String contractpartnerid) {
+		set("contractpartnerid", contractpartnerid);
+	}
+
+	public String getContractpartnerid() {
+		return get("contractpartnerid");
+	}
+
+	public void setOurcontractpartnerid(String ourcontractpartnerid) {
+		set("ourcontractpartnerid", ourcontractpartnerid);
+	}
+
+	public String getOurcontractpartnerid() {
+		return get("ourcontractpartnerid");
+	}
+
+	public void setEmail(String email) {
+		set("email", email);
+	}
+
+	public String getEmail() {
+		return get("email");
+	}
+
+	public Element toElement() {
+		return toElement("contractpartner");
+	}
+	
+	public Element toElement(String name) {
+		Element e = new Element(name);
+		add(e,"contractpartnerid");
+		add(e,"ourcontractpartnerid");
+		add(e,"email");
+		return e;
+	}
 	
 }
-
-

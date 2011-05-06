@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 
-import org.fnppl.opensdx.common.BaseObject;
 import org.fnppl.opensdx.common.Util;
+import org.fnppl.opensdx.outdated.BaseObject;
 import org.jdom.Attribute;
 import org.jdom.Comment;
 import org.jdom.Element;

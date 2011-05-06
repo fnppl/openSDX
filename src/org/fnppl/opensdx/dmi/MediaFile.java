@@ -48,7 +48,8 @@ package org.fnppl.opensdx.dmi;
 
 
 import java.util.Vector;
-import org.fnppl.opensdx.common.BaseObjectWithConstraints;
+
+import org.fnppl.opensdx.outdated.BaseObjectWithConstraints;
 
 public class MediaFile extends BaseObjectWithConstraints {
 

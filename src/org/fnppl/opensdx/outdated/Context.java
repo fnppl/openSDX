@@ -1,5 +1,4 @@
-package org.fnppl.opensdx.dmi;
-
+package org.fnppl.opensdx.outdated;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -45,10 +44,16 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
-	
+
+/*
+ * a context is a quite high-level definition of
+ * limiting a "scope".
+ * 
+ * e.g. the context of one "contributor" would than mean all *stuff* related to that contributor
+ * e.g. the context of one contractpartner would than mean all possible price-codes for that contract-partner (i.e. *retailer*)
+ *  
+ */
+
+public class Context extends BaseObject {
+
 }
-
-

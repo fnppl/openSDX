@@ -46,45 +46,15 @@ package org.fnppl.opensdx.common;
  */
 
 
-public abstract class Action extends BaseObjectWithConstraints {
+import org.fnppl.opensdx.xml.XMLElementable;
 
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
+public interface Action extends XMLElementable {
 
-	public static int TYPE_ONINITIALRECEIVE = 1;
-	public static int TYPE_ONPROCESSSTART   = 2;
-	public static int TYPE_ONPROCESSEND     = 3;
-	public static int TYPE_ONFULLSUCCESS    = 4;
-	public static int TYPE_ONERROR          = 5;
+	public void execute();
 	
-	public int actionType = 0;
-	public static String[] actionTypeName = new String[] {
-		"[TYPE NOT SET]", "oninitialreceive", "onprocessstart", "onprocessend", "onfullsuccess", "onerror"
-	};
-	
-	public abstract boolean doAction();
-
-	public boolean setActionType(int type) {
-		if (type>=0 && type<actionTypeName.length) {
-			actionType = type;
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean setActionType(String typename) {
-		for (int i=0;i<actionTypeName.length;i++) {
-			if (actionTypeName.equals(typename)) {
-				actionType = i;
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	public int  getActionType() {
-		return actionType;
-	}
-	
-	public String getActionTypeName() {
-		return actionTypeName[actionType];
-	}
 }

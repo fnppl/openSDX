@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.common;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,66 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
+import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLElementable;
+
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
+public class BusinessItem implements XMLElementable {
+	private String name;
+	private Object value;
+	private Class type;
+	private boolean hasChanged;
+	
+	public BusinessItem(String name, Object value) {
+		if (value == null) throw new RuntimeException("emtpy values are not allowed");
+		this.name = name;
+		this.value = value;
+		type = value.getClass();
+		hasChanged = false;
+	}
+	
+	public BusinessItem(String name, Class type) {
+		this.name = name;
+		value = null;
+		this.type = type;
+		hasChanged = false;
+	}
+	
+	
+	public void set(Object value) {
+		if ((this.value==null && value!=null) || value ==null || this.value.equals(value)) {
+			if (value!=null && !type.isInstance(value)) {
+				throw new RuntimeException("wrong type of value");
+			}
+			this.value = value;
+			hasChanged = true;
+		}
+	}
+	
+	public Object get() {
+		return value;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public Element toElement() {
+		if (value ==null) return null;
+		Element e = new Element(name, value.toString());
+		return e;
+	}
+	
+	public void setChanged(boolean changed) { 
+		this.hasChanged = changed;
+	}
+	
+	public boolean hasChanged() {
+		return hasChanged;
+	}
 	
 }
-
-

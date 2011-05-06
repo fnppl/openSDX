@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.outdated;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,44 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+
+public class Logger {
+
+	public static OutputStream out = System.out;
+	public static boolean log = false;
 	
+	public static void log(String msg) {
+		try {
+			out.write(msg.getBytes("UTF-8"));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	public static void logln(String msg) {
+		log(msg+"\r\n");
+	}
+	
+	public static void setOutputFile(File f) {
+		try {
+			FileOutputStream fout = new FileOutputStream(f);
+			out = fout;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void closeOutput() {
+		try {
+			out.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 }
-
-

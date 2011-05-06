@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.common;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,26 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
+public class BusinessStringItem extends BusinessItem {
+
+	public BusinessStringItem(String name, String value) {
+		super(name, value);
+	}
+
+	public void setString(String s) {
+		super.set(s);
+	}
 	
+	public String getString() {
+		Object o = super.get();
+		if (o instanceof String) {
+			return (String)o;	
+		}
+		return null;
+	}
 }
-
-

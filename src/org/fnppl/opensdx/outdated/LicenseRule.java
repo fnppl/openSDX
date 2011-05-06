@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.outdated;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,21 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
+
+
+import java.util.Vector;
+
+import org.fnppl.opensdx.outdated.BaseObjectWithConstraints;
+
+public class LicenseRule extends BaseObjectWithConstraints {
+
 	
+	
+	public LicenseRule() {
+		names.add("if"); values.add(null); constraints.add("MUST");
+		names.add("then"); values.add(null); constraints.add("MUST");
+		names.add("else"); values.add(null); constraints.add("COULD");
+	}
+
+
 }
-
-

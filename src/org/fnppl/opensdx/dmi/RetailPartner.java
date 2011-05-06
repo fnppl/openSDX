@@ -48,6 +48,7 @@ package org.fnppl.opensdx.dmi;
 
 
 import org.fnppl.opensdx.common.*;
+import org.fnppl.opensdx.outdated.ContractPartner;
 
 public class RetailPartner extends ContractPartner {
 	//RetailPartner could have *subchannels*

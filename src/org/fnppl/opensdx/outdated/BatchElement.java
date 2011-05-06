@@ -1,5 +1,4 @@
-package org.fnppl.opensdx.dmi;
-
+package org.fnppl.opensdx.outdated;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -45,10 +44,7 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
-	
+
+public class BatchElement extends BaseObject {
+
 }
-
-

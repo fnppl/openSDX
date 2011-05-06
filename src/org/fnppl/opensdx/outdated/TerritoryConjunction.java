@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.outdated;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,16 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
-	
+
+/*
+ * m49 region-code(s) http://unstats.un.org/unsd/methods/m49/m49regin.htm
+ * 
+ * HT 20110210 - i think, we should read the m49 and then create *our* list of alpha2-regioncodes for each region
+ * 
+ * anyhow, totally abstract mechanism - such things as GSA are easily to create
+ * 
+ */
+
+public class TerritoryConjunction extends BaseObject {
+
 }
-
-

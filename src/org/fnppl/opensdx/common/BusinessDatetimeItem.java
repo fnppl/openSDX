@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.common;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,49 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import org.fnppl.opensdx.xml.Element;
+
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
+public class BusinessDatetimeItem extends BusinessItem {
+
+	final static String RFC1123_CUT = "yyyy-MM-dd HH:mm:ss zzz";
+	final static Locale ml = new Locale("en", "DE");
+	public final static SimpleDateFormat datemeGMT = new SimpleDateFormat(RFC1123_CUT, ml);
+	static {
+		datemeGMT.setTimeZone(java.util.TimeZone.getTimeZone("GMT+00:00"));
+	}
+
+	public BusinessDatetimeItem(String name, long datetime) {
+		super(name,datetime);
+	}
+	
+	public void setDatetime(long datetime) {
+		super.set(datetime);
+	}
+	
+	public long getDatetime() {
+		Object o = super.get();
+		if (o instanceof Long) {
+			return ((Long)o).longValue();	
+		} else {
+			throw new RuntimeException("wrong type");
+		}
+	}
+	
+	public String getDatetimeStringGMT() {
+		return datemeGMT.format(getDatetime());
+	}
+	
+	public Element toElement() {
+		if (get() ==null) return null;
+		Element e = new Element(getName(), getDatetimeStringGMT());
+		return e;
+	}
 	
 }
-
-

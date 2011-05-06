@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.common;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,38 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
+import java.util.Vector;
+import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLElementable;
+
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
+public abstract class BusinessCollection<E> implements XMLElementable {
 	
+	public abstract String getKeyname();
+	private Vector<E> list = new Vector<E>(); 
+	
+	public Element toElement() {
+		Element resultElement = new Element(getKeyname());
+		for (E b : list) {
+			if (b instanceof XMLElementable) {
+				Element e = ((XMLElementable)b).toElement();
+				if (e!=null) {
+					resultElement.addContent(e);
+				}
+			}
+		}
+		return resultElement;
+	}
+	
+	public void add(E object) {
+		list.add(object);
+	}
+	
+	public E get(int i) {
+		return list.get(i);
+	}
 }
-
-

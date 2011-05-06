@@ -48,22 +48,22 @@ package org.fnppl.opensdx.dmi;
 
 
 
-import org.fnppl.opensdx.common.Action;
-import org.fnppl.opensdx.common.ActionHttp;
-import org.fnppl.opensdx.common.ActionMailTo;
-import org.fnppl.opensdx.common.Bundle;
-import org.fnppl.opensdx.common.BundleIDs;
-import org.fnppl.opensdx.common.BundleInformation;
-import org.fnppl.opensdx.common.BundleRelatedInformation;
-import org.fnppl.opensdx.common.ContractPartner;
-import org.fnppl.opensdx.common.Contributor;
-import org.fnppl.opensdx.common.Feedinfo;
-import org.fnppl.opensdx.common.Feed;
-import org.fnppl.opensdx.common.Item;
-import org.fnppl.opensdx.common.LicenseRule;
-import org.fnppl.opensdx.common.Receiver;
-import org.fnppl.opensdx.common.Territory;
 //import org.fnppl.opensdx.commonAuto.Information;
+import org.fnppl.opensdx.outdated.Action;
+import org.fnppl.opensdx.outdated.ActionHttp;
+import org.fnppl.opensdx.outdated.ActionMailTo;
+import org.fnppl.opensdx.outdated.Bundle;
+import org.fnppl.opensdx.outdated.BundleIDs;
+import org.fnppl.opensdx.outdated.BundleInformation;
+import org.fnppl.opensdx.outdated.BundleRelatedInformation;
+import org.fnppl.opensdx.outdated.ContractPartner;
+import org.fnppl.opensdx.outdated.Contributor;
+import org.fnppl.opensdx.outdated.Feed;
+import org.fnppl.opensdx.outdated.Feedinfo;
+import org.fnppl.opensdx.outdated.Item;
+import org.fnppl.opensdx.outdated.LicenseRule;
+import org.fnppl.opensdx.outdated.Receiver;
+import org.fnppl.opensdx.outdated.Territory;
 import org.fnppl.opensdx.xml.*;
 import java.io.*;import java.text.SimpleDateFormat;
 import java.util.*;

@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.dmi;
+package org.fnppl.opensdx.common;
 
 /*
  * Copyright (C) 2010-2011 
@@ -45,10 +45,27 @@ package org.fnppl.opensdx.dmi;
  * 
  */
 
-import org.fnppl.opensdx.common.*;
-import org.fnppl.opensdx.outdated.ContractPartnerSubUnit;
-public class Releaser extends ContractPartnerSubUnit {
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
+public class BusinessBooleanItem extends BusinessItem {
+
+	public BusinessBooleanItem(String name, boolean value) {
+		super(name,value);
+	}
 	
+	public void setBoolean(boolean b) {
+		super.set(b);
+	}
+	
+	public boolean getBoolean() {
+		Object o = super.get();
+		if (o instanceof Boolean) {
+			return ((Boolean)o).booleanValue();	
+		} else {
+			throw new RuntimeException("wrong type");
+		}
+	}
 }
-
-

@@ -45,49 +45,74 @@ package org.fnppl.opensdx.common;
  * 
  */
 
+
+import java.util.Vector;
+import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLElementable;
+
 /**
  * 
  * @author Bertram Boedeker <bboedeker@gmx.de>
  * 
  */
-public class ContractPartner extends BusinessObject {
-
-	public static int ROLE_SENDER = 0;
-	public static int ROLE_LICENSOR = 1;
-	
-	private int role = -1;
+@SuppressWarnings("unchecked")
+public class TriggeredActions implements XMLElementable {
 
 	
-	private BusinessStringItem contractpartnerid;		 //MUST
-	private BusinessStringItem ourcontractpartnerid; 	//MUST
-	private BusinessStringItem email; 					//SHOULD
+	public static int TRIGGER_ONINITIALRECEIVE = 1;
+	public static int TRIGGER_ONPROCESSSTART   = 2;
+	public static int TRIGGER_ONPROCESSEND     = 3;
+	public static int TRIGGER_ONFULLSUCCESS    = 4;
+	public static int TRIGGER_ONERROR          = 5;
 	
-	private ContractPartner() {
-		
+	Vector<TriggeredAction> actions;
+	
+	
+	public TriggeredActions() {
+		actions = new Vector<TriggeredAction>();
 	}
-	public static ContractPartner make(int role, String contractpartnerid, String ourcontractpartnerid) {
-		ContractPartner p = new ContractPartner();
-		p.role = role;
-		p.contractpartnerid = new BusinessStringItem("contractpartnerid", contractpartnerid);
-		p.ourcontractpartnerid = new BusinessStringItem("ourcontractpartnerid", ourcontractpartnerid);
-		p.email = null;
-		return p;
+	public int actionType = 0;
+	public static String[] actionTriggerName = new String[] {
+		"[TRIGGER NOT SET]", "oninitialreceive", "onprocessstart", "onprocessend", "onfullsuccess", "onerror"
+	};
+	
+
+	public void addAction(int trigger, Action action) {
+		if (trigger<0 || trigger>5) throw new RuntimeException("wrong trigger");
+		actions.add(new TriggeredAction(trigger,action));
+	}
+	
+	public int getTrigger(int actionNo) {
+		return actions.get(actionNo).trigger;
+	}
+	
+	public Action getAction(int actionNo) {
+		return actions.get(actionNo).action;
 	}
 
-	public ContractPartner email(String email) {
-		this.email = new BusinessStringItem("email", email);
-		return this;
+	public Element toElement() {
+		if (actions==null || actions.size()==0) return null;
+		Element e3 = new Element("actions");
+		for (int i=1;i<=5;i++) {
+			String type = actionTriggerName[i];
+			Element et = new Element(type);
+			for (TriggeredAction a : actions) {
+				if (a.trigger==i) {
+					et.addContent(a.action.toElement());
+				}
+			}
+			e3.addContent(et);
+		}
+		return e3;
 	}
-	
-	public int getRole() {
-		return role;
+
+	private class TriggeredAction {
+		public int trigger;
+		public Action action;
+		public TriggeredAction(int t, Action a) {
+			trigger = t;
+			action = a;
+		}
 	}
-	
-	public String getKeyname() {
-		if (role == ROLE_SENDER) return "sender";
-		if (role == ROLE_LICENSOR) return "licensor";
-		return "contract_partner";
-	}
-	
 	
 }

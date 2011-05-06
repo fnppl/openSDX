@@ -46,85 +46,75 @@ package org.fnppl.opensdx.common;
  */
 
 
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
+public class ActionHttp extends BusinessObject implements Action {
 
-import java.util.Vector;
-import org.fnppl.opensdx.common.BaseObjectWithConstraints;
-import org.fnppl.opensdx.xml.Element;
-
-public class ActionHttp extends Action {
-
-	public ActionHttp(int actionType) {
-		setActionType(actionType);
-		names.add("url"); values.add(null); constraints.add("[no comment]");
-		names.add("type"); values.add(null); constraints.add("?");
-		names.add("header"); values.add(new Vector<String[]>()); constraints.add("?");
-		names.add("params"); values.add(new Vector<String[]>()); constraints.add("[no comment]");
-	}
+	private BusinessStringItem url;
+	private BusinessStringItem type;
+	private BusinessCollection<BusinessCollection> header;
+	private BusinessCollection<BusinessCollection> params;
 	
-
-	public boolean doAction() {
-		// TODO 
-		return false;
-	}
-
-// methods
-	public void setUrl(String url) {
-		set("url", url);
-	}
-
-	public String getUrl() {
-		return get("url");
-	}
-
-	public void setType(String type) {
-		set("type", type);
-	}
-
-	public String getType() {
-		return get("type");
-	}
-
-	public void addHeader(String name, String value) {
-		((Vector<String[]>)getObject("header")).add(new String[]{name,value});
-	}
-
-	public Vector<String[]> getHeader() {
-		return (Vector<String[]>)getObject("header");
-	}
-
-	public void addParam(String name, String value) {
-		((Vector<String[]>)getObject("params")).add(new String[]{name,value});
-	}
-
-	public Vector<String[]> getParams() {
-		return (Vector<String[]>)getObject("params");
-	}
-	
-
-	public Element toElement() {
-		return toElement("http");
-	}
-	
-	public Element toElement(String name) {
-		Element e = new Element(name);
-		add(e,"url");
-		add(e,"type");
+	private ActionHttp() {
 		
-		Element e2 = new Element("addheader"); e.addContent(e2);
-		for (String[] s : (Vector<String[]>)getObject("header")) {
-			Element et = new Element("header");
-			et.addContent("name",s[0]);
-			et.addContent("value",s[1]);
-			e2.addContent(et);
-		}
-		Element e3 = new Element("addparams"); e.addContent(e3);
-		for (String[] s : (Vector<String[]>)getObject("params")) {
-			Element et = new Element("param");
-			et.addContent("name",s[0]);
-			et.addContent("value",s[1]);	
-			e3.addContent(et);
-		}
-		return e;
 	}
+	
+	public static ActionHttp make(String url, String type) {
+		ActionHttp a = new ActionHttp();
+		a.url = new BusinessStringItem("url", url);
+		a.type = new BusinessStringItem("type", type);
+		a.header = new BusinessCollection<BusinessCollection>() {
+			public String getKeyname() {
+				return "addheader";
+			}
+		};
+		a.params = new BusinessCollection<BusinessCollection>() {
+			public String getKeyname() {
+				return "addparams";
+			}
+		};
+		return a;
+	}
+
+	public ActionHttp addHeader(String name, String value) {
+		BusinessCollection<BusinessStringItem> h = new BusinessCollection<BusinessStringItem>() {
+			public String getKeyname() {
+				return "header";
+			}
+		};
+		h.add(new BusinessStringItem("name",name));
+		h.add(new BusinessStringItem("value",value));
+		header.add(h);
+		return this;
+	}
+	
+	public ActionHttp addParam(String name, String value) {
+		BusinessCollection<BusinessStringItem> p = new BusinessCollection<BusinessStringItem>() {
+			public String getKeyname() {
+				return "param";
+			}
+		};
+		p.add(new BusinessStringItem("name",name));
+		p.add(new BusinessStringItem("value",value));
+		params.add(p);
+		return this;
+	}
+	
+	public void execute() {
+		//TODO implement
+	}
+
+	
+	public String getKeyname() {
+		return "http";
+	}
+	
+	
+
+	
+
 	
 }
