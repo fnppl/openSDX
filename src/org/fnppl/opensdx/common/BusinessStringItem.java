@@ -1,5 +1,9 @@
 package org.fnppl.opensdx.common;
 
+import java.util.Vector;
+
+import org.fnppl.opensdx.xml.Element;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -55,7 +59,18 @@ public class BusinessStringItem extends BusinessItem {
 	public BusinessStringItem(String name, String value) {
 		super(name, value);
 	}
-
+	
+	public static BusinessStringItem fromBusinessObject(BusinessObject bo, String name) {
+		Element item = bo.handleElement(name);
+		if (item==null) {
+			return null;
+		} else {
+			BusinessStringItem s = new BusinessStringItem(name, item.getText()); 
+			s.addAttributes(item);
+			return s;
+		}
+	}
+	
 	public void setString(String s) {
 		super.set(s);
 	}

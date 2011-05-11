@@ -47,6 +47,8 @@ package org.fnppl.opensdx.common;
 
 
 import java.util.Vector;
+
+import org.fnppl.opensdx.xml.ChildElementIterator;
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLElementable;
 
@@ -58,6 +60,7 @@ import org.fnppl.opensdx.xml.XMLElementable;
 @SuppressWarnings("unchecked")
 public class TriggeredActions implements XMLElementable {
 
+	public static String KEY_NAME = "actions";
 	
 	public static int TRIGGER_ONINITIALRECEIVE = 1;
 	public static int TRIGGER_ONPROCESSSTART   = 2;
@@ -76,6 +79,34 @@ public class TriggeredActions implements XMLElementable {
 		"[TRIGGER NOT SET]", "oninitialreceive", "onprocessstart", "onprocessend", "onfullsuccess", "onerror"
 	};
 	
+	public static TriggeredActions fromBusinessObject(BusinessObject bo)  {
+		if (bo==null) return null;
+		Element e = null;
+		if (bo.getKeyname().equals(KEY_NAME)) {
+			e = bo.toElement();
+		} else {
+			e = bo.handleElement(KEY_NAME);
+		}
+		if (e==null) return null;
+		final TriggeredActions ta = new TriggeredActions();
+		for (int i=1;i<=5;i++) {
+			final int triggerNo = i;
+			new ChildElementIterator(e, actionTriggerName[triggerNo], null) {
+				public void processChild(Element child) {
+					//System.out.println("child "+child.getName());
+					if (child.getName().equals(ActionHttp.KEY_NAME)) {
+						ActionHttp action = ActionHttp.fromElement(child);
+						ta.addAction(triggerNo, action);
+					}
+					if (child.getName().equals(ActionMailTo.KEY_NAME)) {
+						ActionMailTo action = ActionMailTo.fromElement(child);
+						ta.addAction(triggerNo, action);
+					}
+				}
+			};
+		}
+		return ta;
+	}
 
 	public void addAction(int trigger, Action action) {
 		if (trigger<0 || trigger>5) throw new RuntimeException("wrong trigger");
@@ -92,7 +123,7 @@ public class TriggeredActions implements XMLElementable {
 
 	public Element toElement() {
 		if (actions==null || actions.size()==0) return null;
-		Element e3 = new Element("actions");
+		Element e3 = new Element(KEY_NAME);
 		for (int i=1;i<=5;i++) {
 			String type = actionTriggerName[i];
 			Element et = new Element(type);
@@ -105,6 +136,7 @@ public class TriggeredActions implements XMLElementable {
 		}
 		return e3;
 	}
+
 
 	private class TriggeredAction {
 		public int trigger;

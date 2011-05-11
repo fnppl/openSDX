@@ -1,5 +1,7 @@
 package org.fnppl.opensdx.common;
 
+import org.fnppl.opensdx.xml.Element;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -54,6 +56,8 @@ package org.fnppl.opensdx.common;
  */
 public class ActionMailTo extends BusinessObject implements Action {
 
+	public static String KEY_NAME = "mail_to";
+	
 	private BusinessStringItem receiver;
 	private BusinessStringItem subject;
 	private BusinessStringItem text;
@@ -70,13 +74,24 @@ public class ActionMailTo extends BusinessObject implements Action {
 		return a;
 	}
 	
+	public static ActionMailTo fromElement(Element e) {
+		if (e==null) return null;
+		ActionMailTo a = new ActionMailTo();
+		a.readElements(e);
+		a.receiver = BusinessStringItem.fromBusinessObject(a, "receiver");
+		a.subject = BusinessStringItem.fromBusinessObject(a, "subject");
+		a.text = BusinessStringItem.fromBusinessObject(a, "text");
+		a.removeAllUnhandledElements();
+		return a;
+	}
+	
 	public void execute() {
 		//TODO implement
 	}
 
 	
 	public String getKeyname() {
-		return "http";
+		return KEY_NAME;
 	}
 
 

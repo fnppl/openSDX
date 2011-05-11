@@ -45,8 +45,11 @@ package org.fnppl.opensdx.common;
  * 
  */
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.Vector;
+
 import org.fnppl.opensdx.xml.Element;
 
 /**
@@ -65,6 +68,21 @@ public class BusinessDatetimeItem extends BusinessItem {
 
 	public BusinessDatetimeItem(String name, long datetime) {
 		super(name,datetime);
+	}
+	
+	public static BusinessDatetimeItem fromBusinessObject(BusinessObject bo, String name) {
+		Element item = bo.handleElement(name);
+		if (item==null) {
+			return null;
+		}
+		try {
+			long l = datemeGMT.parse(item.getText()).getTime();
+			BusinessDatetimeItem result = new BusinessDatetimeItem(name, l);
+			result.addAttributes(item);
+			return result;
+		} catch (ParseException e1) {
+			throw new RuntimeException("wrong datetime fromat: "+item.getText());
+		}
 	}
 	
 	public void setDatetime(long datetime) {
@@ -86,7 +104,7 @@ public class BusinessDatetimeItem extends BusinessItem {
 	
 	public Element toElement() {
 		if (get() ==null) return null;
-		Element e = new Element(getName(), getDatetimeStringGMT());
+		Element e = new Element(getKeyname(), getDatetimeStringGMT());
 		return e;
 	}
 	

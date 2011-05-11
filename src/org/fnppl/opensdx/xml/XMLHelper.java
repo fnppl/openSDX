@@ -86,6 +86,12 @@ public class XMLHelper {
 			String t = from.getText();
 			//System.out.println("adding value: "+n+" : "+t);
 			to.addContent(n,t);
+			Vector<String[]> atts = from.getAttributes();
+			if (atts!=null) {
+				for (String[] a : atts) {
+					to.setAttribute(a[0], a[1]);
+				}
+			}
 		}
 	}
 }

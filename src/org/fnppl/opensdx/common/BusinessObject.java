@@ -46,8 +46,11 @@ package org.fnppl.opensdx.common;
  */
 
 import java.lang.reflect.Field;
+import java.util.Vector;
+
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLElementable;
+import org.fnppl.opensdx.xml.XMLHelper;
 
 
 /**
@@ -57,13 +60,19 @@ import org.fnppl.opensdx.xml.XMLElementable;
  */
 public abstract class BusinessObject implements XMLElementable {
 	
+	private Vector<Element> unhandled_elements  = new Vector<Element>(); 
+	
 	public abstract String getKeyname();
 	
+	
+	public Element toElement() {
+		return toElement(true);
+	}
 	/***
 	 * cool stuff happens here:: this method uses javas reflexion for accessing all XMLElementable fields
 	 * coolest stuff:: even private fields can be read out by this!!!
 	 */
-	public Element toElement() {
+	public Element toElement(boolean appendUnhandledElements) {
 		Element resultElement = new Element(getKeyname());
 		
 		Field[] fields = this.getClass().getDeclaredFields();
@@ -81,6 +90,75 @@ public abstract class BusinessObject implements XMLElementable {
 				ex.printStackTrace();
 			}
 		}
+		if (appendUnhandledElements) {
+			for (Element ue : unhandled_elements) {
+				System.out.println("appending unhandled_element:: "+getKeyname()+"::"+ue.getName());
+				resultElement.addContent(XMLHelper.cloneElement(ue));
+			}
+		} else {
+			for (Element ue : unhandled_elements) {
+				System.out.println("unhandled_element:: "+getKeyname()+"::"+ue.getName());
+			}
+		}
 		return resultElement;
 	}
+	
+	
+	
+	//for unknown BusinessObject
+	public static BusinessObject fromElement(Element e) {
+		if (e==null) return null;
+		final String keyname = e.getName();
+		BusinessObject b = new BusinessObject() {
+			public String getKeyname() {				
+				return keyname;
+			}
+		};
+		b.unhandled_elements = e.getChildren();
+		return b;
+	}
+	
+	public void initFromBusinessObject(BusinessObject bo) {
+		this.unhandled_elements = bo.unhandled_elements;
+	}
+		
+	//to get unknown field or extensions
+	public void readElements(Element e) {
+		if (e==null) return;
+		unhandled_elements = e.getChildren();
+	}
+	
+	public Element handleElement(String name) {
+		for (Element e :unhandled_elements) {
+			if (e.getName().equals(name)) {
+				unhandled_elements.remove(e);
+				return e;
+			}
+		}
+		return null;
+	}
+	
+	public Vector<Element> handleElements(String name) {
+		Vector<Element> elements = new Vector<Element>();
+		for (Element e :unhandled_elements) {
+			if (e.getName().equals(name)) {
+				elements.add(e);
+			}
+		}
+		unhandled_elements.removeAll(elements);
+		return elements;
+	}
+	
+	public void removeUnhandledElement(Element e) {
+		unhandled_elements.remove(e);
+	}
+	
+	public void removeAllUnhandledElements() {
+		unhandled_elements.removeAllElements();
+	}
+	
+	public void addUnhandledElement(Element e) {
+		unhandled_elements.add(e);
+	}
+	
 }

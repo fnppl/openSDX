@@ -1,5 +1,10 @@
 package org.fnppl.opensdx.common;
 
+import java.text.ParseException;
+import java.util.Vector;
+
+import org.fnppl.opensdx.xml.Element;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -68,4 +73,21 @@ public class BusinessBooleanItem extends BusinessItem {
 			throw new RuntimeException("wrong type");
 		}
 	}
+	
+	public static BusinessBooleanItem fromBusinessObject(BusinessObject bo, String name) {
+		Element item = bo.handleElement(name);
+		if (item==null) {
+			return null;
+		} else {
+			try {
+				boolean b = Boolean.parseBoolean(item.getText());
+				BusinessBooleanItem result = new BusinessBooleanItem(name, b);
+				result.addAttributes(item);
+				return result;
+			} catch (Exception ex) {
+				throw new RuntimeException("wrong boolean fromat: "+item.getText());
+			}
+		}
+	}
+	
 }

@@ -568,6 +568,7 @@ public class SecurityHelper {
 		try {
 			byte[] b = s.getBytes("UTF-8");
 			sha1.update(b, 0, b.length);
+			//System.out.println("update sha1: "+s);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

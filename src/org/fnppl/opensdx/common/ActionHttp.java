@@ -1,5 +1,10 @@
 package org.fnppl.opensdx.common;
 
+import java.util.Vector;
+
+import org.fnppl.opensdx.xml.ChildElementIterator;
+import org.fnppl.opensdx.xml.Element;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -53,6 +58,15 @@ package org.fnppl.opensdx.common;
  */
 public class ActionHttp extends BusinessObject implements Action {
 
+	public static String KEY_NAME = "http";
+	
+	private static String KEY_NAME_HEADER_COLLECTION = "addheader";
+	private static String KEY_NAME_HEADER = "header";
+	private static String KEY_NAME_PARAM_COLLECTION = "addparams";
+	private static String KEY_NAME_PARAM = "param";
+	
+	
+	
 	private BusinessStringItem url;
 	private BusinessStringItem type;
 	private BusinessCollection<BusinessCollection> header;
@@ -68,21 +82,54 @@ public class ActionHttp extends BusinessObject implements Action {
 		a.type = new BusinessStringItem("type", type);
 		a.header = new BusinessCollection<BusinessCollection>() {
 			public String getKeyname() {
-				return "addheader";
+				return KEY_NAME_HEADER_COLLECTION;
 			}
 		};
 		a.params = new BusinessCollection<BusinessCollection>() {
 			public String getKeyname() {
-				return "addparams";
+				return KEY_NAME_PARAM_COLLECTION;
 			}
 		};
 		return a;
 	}
 
+	public static ActionHttp fromElement(Element e) {
+		if (e==null) return null;
+		
+		final ActionHttp a = new ActionHttp();
+		a.readElements(e);
+		a.url = BusinessStringItem.fromBusinessObject(a, "url");
+		a.type = BusinessStringItem.fromBusinessObject(a, "type");
+		
+		a.header = new BusinessCollection<BusinessCollection>() {
+			public String getKeyname() {
+				return KEY_NAME_HEADER_COLLECTION;
+			}
+		};
+		new ChildElementIterator(e, KEY_NAME_HEADER_COLLECTION, KEY_NAME_HEADER) {
+			public void processChild(Element child) {
+				a.addHeader(child.getChildText("name"), child.getChildText("value"));
+			}
+		};
+		a.params = new BusinessCollection<BusinessCollection>() {
+			public String getKeyname() {
+				return KEY_NAME_PARAM_COLLECTION;
+			}
+		};
+		new ChildElementIterator(e, KEY_NAME_PARAM_COLLECTION, KEY_NAME_PARAM) {
+			public void processChild(Element child) {
+				a.addParam(child.getChildText("name"), child.getChildText("value"));
+			}
+		};
+		a.removeAllUnhandledElements();
+		return a;
+	}
+	
+	
 	public ActionHttp addHeader(String name, String value) {
 		BusinessCollection<BusinessStringItem> h = new BusinessCollection<BusinessStringItem>() {
 			public String getKeyname() {
-				return "header";
+				return KEY_NAME_HEADER;
 			}
 		};
 		h.add(new BusinessStringItem("name",name));
@@ -109,11 +156,10 @@ public class ActionHttp extends BusinessObject implements Action {
 
 	
 	public String getKeyname() {
-		return "http";
+		return KEY_NAME;
 	}
 	
 	
-
 	
 
 	

@@ -45,6 +45,12 @@ package org.fnppl.opensdx.common;
  * 
  */
 
+import java.util.HashMap;
+import java.util.Vector;
+import java.util.Map.Entry;
+
+import javax.smartcardio.ATR;
+
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLElementable;
 
@@ -56,6 +62,7 @@ import org.fnppl.opensdx.xml.XMLElementable;
 public class BusinessItem implements XMLElementable {
 	private String name;
 	private Object value;
+	private HashMap<String,String> attribs;
 	private Class type;
 	private boolean hasChanged;
 	
@@ -65,6 +72,7 @@ public class BusinessItem implements XMLElementable {
 		this.value = value;
 		type = value.getClass();
 		hasChanged = false;
+		attribs = null;
 	}
 	
 	public BusinessItem(String name, Class type) {
@@ -72,6 +80,7 @@ public class BusinessItem implements XMLElementable {
 		value = null;
 		this.type = type;
 		hasChanged = false;
+		attribs = null;
 	}
 	
 	
@@ -85,17 +94,41 @@ public class BusinessItem implements XMLElementable {
 		}
 	}
 	
+	public String getAttribute(String key) {
+		if (attribs==null) return null;
+		return attribs.get(key);
+	}
+	
+	public void addAttributes(Element item) {
+		Vector<String[]> attribs = item.getAttributes();
+		if (attribs!=null) {
+			for (String[] a : attribs) {
+				this.setAttribute(a[0], a[1]);
+			}
+		}
+	}
+	
+	public void setAttribute(String key, String value) {
+		if (attribs==null) attribs = new HashMap<String, String>();
+		attribs.put(key, value);
+	}
+	
 	public Object get() {
 		return value;
 	}
 	
-	public String getName() {
+	public String getKeyname() {
 		return name;
 	}
 	
 	public Element toElement() {
 		if (value ==null) return null;
 		Element e = new Element(name, value.toString());
+		if (attribs!=null) {
+			for (Entry<String,String> a : attribs.entrySet()) {
+				e.setAttribute(a.getKey(), a.getValue());
+			}
+		}
 		return e;
 	}
 	

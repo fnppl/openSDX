@@ -1,5 +1,7 @@
 package org.fnppl.opensdx.common;
 
+import org.fnppl.opensdx.xml.Element;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -52,25 +54,52 @@ package org.fnppl.opensdx.common;
  */
 public class ContractPartner extends BusinessObject {
 
-	public static int ROLE_SENDER = 0;
-	public static int ROLE_LICENSOR = 1;
+	public static int ROLE_CONTRACT_PARTNER = -1;  public static String KEY_NAME_CONTRACT_PARTNER = "contract_partner";
+	public static int ROLE_SENDER = 0;             public static String KEY_NAME_SENDER = "sender";
+	public static int ROLE_LICENSOR = 1;           public static String KEY_NAME_LICENSOR = "licensor";
 	
 	private int role = -1;
 
 	
-	private BusinessStringItem contractpartnerid;		 //MUST
+	private BusinessStringItem contractpartnerid;		//MUST
 	private BusinessStringItem ourcontractpartnerid; 	//MUST
 	private BusinessStringItem email; 					//SHOULD
 	
 	private ContractPartner() {
 		
 	}
+	
+	/***
+	 * the make method constructs a ContractPartner object with the following MUST have attributes 
+	 * @param role :: see e.g. ROLE_SENDER, ROLE_LICENSOR
+	 * @param contractpartnerid :: your side of "ID" ; worst case: the company's correct trade-register-name/number 
+	 * @param ourcontractpartnerid :: our side of "ID"
+	 * @return newly instantiated ContractPartner in given role
+	 * 
+	 * other fields in ContractPartner:
+	 * 	email :: for SENDER  :: MUST esp. for signature-check ; could of course be a generic account e.g. deliveryteam@dsphouse.nät
+	 *  email :: for LICENSOR:: SHOULD good, but not necessarily needed
+	 */
 	public static ContractPartner make(int role, String contractpartnerid, String ourcontractpartnerid) {
 		ContractPartner p = new ContractPartner();
 		p.role = role;
 		p.contractpartnerid = new BusinessStringItem("contractpartnerid", contractpartnerid);
 		p.ourcontractpartnerid = new BusinessStringItem("ourcontractpartnerid", ourcontractpartnerid);
 		p.email = null;
+		return p;
+	}
+	
+	public static ContractPartner fromBusinessObject(BusinessObject bo, int role) {
+		if (bo==null) return null;
+		Element item = bo.handleElement(getKeyname(role));
+		if (item==null) return null;
+		BusinessObject sub_bo = BusinessObject.fromElement(item);
+		ContractPartner p = new ContractPartner();
+		p.initFromBusinessObject(sub_bo);
+		p.role = role;
+		p.contractpartnerid = BusinessStringItem.fromBusinessObject(p,"contractpartnerid");
+		p.ourcontractpartnerid = BusinessStringItem.fromBusinessObject(p,"ourcontractpartnerid");
+		p.email = BusinessStringItem.fromBusinessObject(p,"email");
 		return p;
 	}
 
@@ -83,11 +112,30 @@ public class ContractPartner extends BusinessObject {
 		return role;
 	}
 	
-	public String getKeyname() {
-		if (role == ROLE_SENDER) return "sender";
-		if (role == ROLE_LICENSOR) return "licensor";
-		return "contract_partner";
+	public static String getKeyname(int role) {
+		if (role == ROLE_SENDER) return KEY_NAME_SENDER;
+		if (role == ROLE_LICENSOR) return KEY_NAME_LICENSOR;
+		return KEY_NAME_CONTRACT_PARTNER;
 	}
 	
+	public String getKeyname() {
+		if (role == ROLE_SENDER) return KEY_NAME_SENDER;
+		if (role == ROLE_LICENSOR) return KEY_NAME_LICENSOR;
+		return KEY_NAME_CONTRACT_PARTNER;
+	}
 	
+	public String getContractPartnerID() {
+		if (contractpartnerid==null) return null;
+		return contractpartnerid.getString();
+	}
+	
+	public String getOurContractPartnerID() {
+		if (ourcontractpartnerid==null) return null;
+		return ourcontractpartnerid.getString();
+	}
+	
+	public String getEmail() {
+		if (email==null) return null;
+		return email.getString();
+	}
 }

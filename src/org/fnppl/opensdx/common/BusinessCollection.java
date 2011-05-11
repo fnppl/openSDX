@@ -46,6 +46,8 @@ package org.fnppl.opensdx.common;
  */
 
 import java.util.Vector;
+
+import org.fnppl.opensdx.xml.ChildElementIterator;
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLElementable;
 
@@ -71,12 +73,16 @@ public abstract class BusinessCollection<E> implements XMLElementable {
 		}
 		return resultElement;
 	}
-	
+
 	public void add(E object) {
 		list.add(object);
 	}
 	
 	public E get(int i) {
 		return list.get(i);
+	}
+	
+	public int size() {
+		return list.size();
 	}
 }
