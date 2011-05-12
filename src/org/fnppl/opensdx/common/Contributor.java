@@ -82,9 +82,10 @@ public class Contributor extends BusinessObject {
 	public static Contributor fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(KEY_NAME)) {
-			bo = BusinessObject.fromElement(bo.handleElement(KEY_NAME));
+			bo = bo.handleBusinessObject(KEY_NAME);
 		}
 		if (bo==null) return null;
+		
 		Contributor contributor = new Contributor();
 		contributor.initFromBusinessObject(bo);
 		

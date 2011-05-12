@@ -61,14 +61,8 @@ public class BusinessStringItem extends BusinessItem {
 	}
 	
 	public static BusinessStringItem fromBusinessObject(BusinessObject bo, String name) {
-		Element item = bo.handleElement(name);
-		if (item==null) {
-			return null;
-		} else {
-			BusinessStringItem s = new BusinessStringItem(name, item.getText()); 
-			s.addAttributes(item);
-			return s;
-		}
+		BusinessStringItem item = bo.handleBusinessStringItem(name);
+		return item;
 	}
 	
 	public void setString(String s) {
@@ -81,5 +75,17 @@ public class BusinessStringItem extends BusinessItem {
 			return (String)o;	
 		}
 		return null;
+	}
+	
+	public static BusinessStringItem fromElement(Element e) {
+		if (e==null) return null;
+		BusinessStringItem item = new BusinessStringItem(e.getName(), e.getText());
+		Vector<String[]> attribs = e.getAttributes();
+		if (attribs!=null) {
+			for (String[] a : attribs) {
+				item.setAttribute(a[0],a[1]);
+			}
+		}
+		return item;
 	}
 }

@@ -48,6 +48,7 @@ package org.fnppl.opensdx.common;
 import java.lang.reflect.Field;
 import java.util.Vector;
 
+import org.fnppl.opensdx.automatisation.BusinessStringItemGenerator;
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLElementable;
 import org.fnppl.opensdx.xml.XMLHelper;
@@ -60,52 +61,64 @@ import org.fnppl.opensdx.xml.XMLHelper;
  */
 public abstract class BusinessObject implements XMLElementable {
 	
-	private Vector<Element> unhandled_elements  = new Vector<Element>(); 
-	
+	private Vector<XMLElementable> otherObjects = new Vector<XMLElementable>();
+	private boolean appendOtherObjects = false; 
+ 	
 	public abstract String getKeyname();
 	
 	
-	public Element toElement() {
-		return toElement(true);
-	}
 	/***
 	 * cool stuff happens here:: this method uses javas reflexion for accessing all XMLElementable fields
 	 * coolest stuff:: even private fields can be read out by this!!!
 	 */
-	public Element toElement(boolean appendUnhandledElements) {
+	public Element toElement() {
 		Element resultElement = new Element(getKeyname());
 		
 		Field[] fields = this.getClass().getDeclaredFields();
+		
 		for (Field f : fields) {
-			try {
-				f.setAccessible(true);
-				Object thisFieldsObject = f.get(this);
-				if (thisFieldsObject instanceof XMLElementable) {
-					Element e = ((XMLElementable)thisFieldsObject).toElement();
-					if (e!=null) {
-						resultElement.addContent(e);
+			if (!f.getName().equals("this$0")) { //argg, watch out when directly using BusinessObjects
+				try {	
+					//System.out.println(f.getName());
+					f.setAccessible(true);
+					Object thisFieldsObject = f.get(this);
+					if (thisFieldsObject instanceof XMLElementable) {
+						Element e = ((XMLElementable)thisFieldsObject).toElement();
+						if (e!=null) {
+							resultElement.addContent(e);
+						}
 					}
+					else if (thisFieldsObject instanceof Vector<?>) {
+						Vector<?> vector = (Vector<?>)thisFieldsObject;
+						for (Object vectorsObject : vector) {
+							if (vectorsObject instanceof XMLElementable) {
+								Element e = ((XMLElementable)vectorsObject).toElement();
+								if (e!=null) {
+									resultElement.addContent(e);
+								}
+							}
+						}
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
 			}
 		}
-		if (appendUnhandledElements) {
-			for (Element ue : unhandled_elements) {
-				System.out.println("appending unhandled_element:: "+getKeyname()+"::"+ue.getName());
-				resultElement.addContent(XMLHelper.cloneElement(ue));
+		if (appendOtherObjects) {
+			for (XMLElementable ue : otherObjects) {
+				System.out.println("appending other object:: "+getKeyname()+"::"+ue.getKeyname());
+				resultElement.addContent(ue.toElement());
 			}
 		} else {
-			for (Element ue : unhandled_elements) {
-				System.out.println("unhandled_element:: "+getKeyname()+"::"+ue.getName());
+			for (XMLElementable ue : otherObjects) {
+				System.out.println("unhandled object:: "+getKeyname()+"::"+ue.getKeyname());
 			}
 		}
 		return resultElement;
 	}
 	
 	
-	
-	//for unknown BusinessObject
+	//for anonymous BusinessObject -> can be transformed by child classes
 	public static BusinessObject fromElement(Element e) {
 		if (e==null) return null;
 		final String keyname = e.getName();
@@ -114,51 +127,136 @@ public abstract class BusinessObject implements XMLElementable {
 				return keyname;
 			}
 		};
-		b.unhandled_elements = e.getChildren();
+		b.readElements(e);
 		return b;
+	}
+
+	//to get all elements to BusinessObject logic
+	public void readElements(Element e) {
+		if (e==null) return;
+		Vector<Element> children = e.getChildren();
+		for (Element eChild : children) {
+			if (eChild.getChildren().size()>0) {
+				//baseobject
+				otherObjects.add(BusinessObject.fromElement(eChild));
+			} else {
+				//string item
+				otherObjects.add(BusinessStringItem.fromElement(eChild));
+			}
+		}
 	}
 	
 	public void initFromBusinessObject(BusinessObject bo) {
-		this.unhandled_elements = bo.unhandled_elements;
-	}
-		
-	//to get unknown field or extensions
-	public void readElements(Element e) {
-		if (e==null) return;
-		unhandled_elements = e.getChildren();
+		this.otherObjects = bo.otherObjects;
 	}
 	
-	public Element handleElement(String name) {
-		for (Element e :unhandled_elements) {
-			if (e.getName().equals(name)) {
-				unhandled_elements.remove(e);
-				return e;
+	public XMLElementable handleObject(String name) {
+		for (XMLElementable b : otherObjects) {
+			if (b.getKeyname().equals(name)) {
+				otherObjects.remove(b);
+				return b;
 			}
 		}
 		return null;
 	}
 	
-	public Vector<Element> handleElements(String name) {
-		Vector<Element> elements = new Vector<Element>();
-		for (Element e :unhandled_elements) {
-			if (e.getName().equals(name)) {
-				elements.add(e);
+	public Vector<XMLElementable> handleObjects(String name) {
+		Vector<XMLElementable> result = new Vector<XMLElementable>();
+		for (XMLElementable b : otherObjects) {
+			if (b.getKeyname().equals(name)) {
+				result.add(b);
+				
 			}
 		}
-		unhandled_elements.removeAll(elements);
-		return elements;
+		otherObjects.removeAll(result);
+		return result;
 	}
 	
-	public void removeUnhandledElement(Element e) {
-		unhandled_elements.remove(e);
+	public BusinessObject handleBusinessObject(String name) {
+		for (XMLElementable b : otherObjects) {
+			if (b.getKeyname().equals(name)) {
+				if (b instanceof BusinessObject) {
+					otherObjects.remove(b);
+					return (BusinessObject)b;
+				}
+				return null;
+			}
+		}
+		return null;
 	}
 	
-	public void removeAllUnhandledElements() {
-		unhandled_elements.removeAllElements();
+	public BusinessStringItem handleBusinessStringItem(String name) {
+		for (XMLElementable b : otherObjects) {
+			if (b.getKeyname().equals(name)) {
+				if (b instanceof BusinessStringItem) {
+					otherObjects.remove(b);
+					return (BusinessStringItem)b;
+				}
+				return null;
+			}
+		}
+		return null;
 	}
 	
-	public void addUnhandledElement(Element e) {
-		unhandled_elements.add(e);
+	public Vector<XMLElementable> getOtherObjects() {
+		return otherObjects;
 	}
+	
+	public XMLElementable getOtherObject(String name) {
+		for (XMLElementable b : otherObjects) {
+			if (b.getKeyname().equals(name)) {
+				return b;
+			}
+		}
+		return null;
+	}
+	
+	public BusinessObject getBusinessObject(String name) {
+		XMLElementable b = getOtherObject(name);
+		if (b==null) return null;
+		if (b instanceof BusinessObject) {
+			return (BusinessObject)b;
+		}
+		return null;
+	}
+	
+	public BusinessStringItem getBusinessStringItem(String name) {
+		XMLElementable b = getOtherObject(name);
+		if (b==null) return null;
+		if (b instanceof BusinessStringItem) {
+			return (BusinessStringItem)b;
+		}
+		return null;
+	}
+	
+	public void removeOtherObjects() {
+		otherObjects.removeAllElements();
+	}
+	
+	
+	public void setObject(XMLElementable object) {
+		String keyname = object.getKeyname();
+		for (int p=0;p<otherObjects.size();p++) {
+			if (otherObjects.get(p).getKeyname().equals(keyname)) {
+				otherObjects.remove(p);
+				otherObjects.add(p,object);
+				return;
+			}
+		}
+		addObject(object);
+	}
+	
+	public void addObject(XMLElementable object) {
+		otherObjects.add(object);
+	}
+
+	public boolean isAppendOtherObjects() {
+		return appendOtherObjects;
+	}
+
+	public void setAppendOtherObjectToOutput(boolean appendOtherObjects) {
+		this.appendOtherObjects = appendOtherObjects;
+	}
+	
 	
 }

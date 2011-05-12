@@ -71,17 +71,18 @@ public class BusinessDatetimeItem extends BusinessItem {
 	}
 	
 	public static BusinessDatetimeItem fromBusinessObject(BusinessObject bo, String name) {
-		Element item = bo.handleElement(name);
+		BusinessStringItem item = bo.handleBusinessStringItem(name);
 		if (item==null) {
 			return null;
-		}
-		try {
-			long l = datemeGMT.parse(item.getText()).getTime();
-			BusinessDatetimeItem result = new BusinessDatetimeItem(name, l);
-			result.addAttributes(item);
-			return result;
-		} catch (ParseException e1) {
-			throw new RuntimeException("wrong datetime fromat: "+item.getText());
+		} else {
+			try {
+				long l = datemeGMT.parse(item.getString()).getTime();
+				BusinessDatetimeItem result = new BusinessDatetimeItem(name, l);
+				result.addAttributes(item.getAttributes());
+				return result;
+			} catch (Exception ex) {
+				throw new RuntimeException("wrong datetime fromat: "+item.getString());
+			}
 		}
 	}
 	

@@ -124,7 +124,7 @@ public class Receiver extends BusinessObject {
 	public static Receiver fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(KEY_NAME)) {
-			bo = BusinessObject.fromElement(bo.handleElement(KEY_NAME));
+			bo = bo.handleBusinessObject(KEY_NAME);
 		}
 		if (bo==null) return null;
 		Receiver r = new Receiver();
@@ -137,7 +137,7 @@ public class Receiver extends BusinessObject {
 		r.authsha1 = BusinessStringItem.fromBusinessObject(bo, "authsha1");
 		
 		r.serveripv6 = BusinessStringItem.fromBusinessObject(bo, "serveripv6");
-		r.crypto = BusinessObject.fromElement(bo.handleElement("crypto"));
+		r.crypto = bo.handleBusinessObject("crypto");
 		
 		return r;
 	}

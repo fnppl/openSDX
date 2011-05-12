@@ -56,12 +56,12 @@ public class Bundle extends BusinessObject {
 	private BusinessStringItem version;						//MUST
 	private BusinessStringItem display_artist;				//SHOULD
 	private BusinessCollection<Contributor> contributors;	//MUST
-	private BusinessStringItem information;					//MUST //TODO
+	private BundleInformation information;					//MUST
 	private BusinessStringItem license_basis;				//MUST //TODO
 	private BusinessStringItem license_specifics;			//MUST //TODO
 
 
-	public static Bundle make(IDs ids, String displayname, String name, String version, String display_artist, String information, String license_basis, String license_specifics) {
+	public static Bundle make(IDs ids, String displayname, String name, String version, String display_artist, BundleInformation information, String license_basis, String license_specifics) {
 		Bundle bundle = new Bundle();
 		bundle.ids = ids;
 		bundle.displayname = new BusinessStringItem("displayname", displayname);
@@ -73,7 +73,7 @@ public class Bundle extends BusinessObject {
 				return "contributors";
 			}
 		};
-		bundle.information = null;
+		bundle.information = information;
 		bundle.license_basis = null;
 		bundle.license_specifics = null;
 		return bundle;
@@ -83,7 +83,7 @@ public class Bundle extends BusinessObject {
 	public static Bundle fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(KEY_NAME)) {
-			bo = BusinessObject.fromElement(bo.handleElement(KEY_NAME));
+			bo = bo.handleBusinessObject(KEY_NAME);
 		}
 		if (bo==null) return null;
 		final Bundle bundle = new Bundle();
@@ -100,13 +100,13 @@ public class Bundle extends BusinessObject {
 			}
 		};
 		new ChildElementIterator(bo, "contributors","contributor") {
-			public void processChild(Element child) {
-				bundle.addContributor(Contributor.fromBusinessObject(BusinessObject.fromElement(child)));
+			public void processBusinessObject(BusinessObject bo) {
+				bundle.addContributor(Contributor.fromBusinessObject(bo));
 			}
 		};
 		
 		
-		bundle.information = BusinessStringItem.fromBusinessObject(bo, "information");
+		bundle.information = BundleInformation.fromBusinessObject(bo);
 		bundle.license_basis = BusinessStringItem.fromBusinessObject(bo, "license_basis");
 		bundle.license_specifics = BusinessStringItem.fromBusinessObject(bo, "license_specifics");
 		
@@ -143,8 +143,8 @@ public class Bundle extends BusinessObject {
 		return this;
 	}
 
-	public Bundle information(String information) {
-		this.information = new BusinessStringItem("information", information);
+	public Bundle information(BundleInformation information) {
+		this.information = information;
 		return this;
 	}
 
@@ -189,9 +189,9 @@ public class Bundle extends BusinessObject {
 		return contributors.get(index);
 	}
 
-	public String getInformation() {
+	public BundleInformation getInformation() {
 		if (information==null) return null;
-		return information.getString();
+		return information;
 	}
 
 	public String getLicense_basis() {

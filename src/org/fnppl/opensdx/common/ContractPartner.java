@@ -91,11 +91,13 @@ public class ContractPartner extends BusinessObject {
 	
 	public static ContractPartner fromBusinessObject(BusinessObject bo, int role) {
 		if (bo==null) return null;
-		Element item = bo.handleElement(getKeyname(role));
-		if (item==null) return null;
-		BusinessObject sub_bo = BusinessObject.fromElement(item);
+		if (!bo.getKeyname().equals(getKeyname(role))) {
+			bo = bo.handleBusinessObject(getKeyname(role));
+		}
+		if (bo==null) return null;
+		
 		ContractPartner p = new ContractPartner();
-		p.initFromBusinessObject(sub_bo);
+		p.initFromBusinessObject(bo);
 		p.role = role;
 		p.contractpartnerid = BusinessStringItem.fromBusinessObject(p,"contractpartnerid");
 		p.ourcontractpartnerid = BusinessStringItem.fromBusinessObject(p,"ourcontractpartnerid");

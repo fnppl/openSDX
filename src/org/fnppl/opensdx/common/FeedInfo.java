@@ -63,7 +63,7 @@ public class FeedInfo extends BusinessObject {
 	private BusinessStringItem feedid;						//MUST
 	private BusinessDatetimeItem creationdatetime;			//MUST
 	private BusinessDatetimeItem effectivedatetime; 		//MUST
-	private BusinessCollection<BusinessStringItem> creator; //COULD
+	private BusinessObject creator; 						//COULD
 	private Receiver receiver;								//TODO COULD or what?
 	private ContractPartner sender;							//MUST
 	private ContractPartner licensor;						//MUST
@@ -105,7 +105,7 @@ public class FeedInfo extends BusinessObject {
 	public static FeedInfo fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(KEY_NAME)) {
-			bo = BusinessObject.fromElement(bo.handleElement(KEY_NAME));
+			bo = bo.handleBusinessObject(KEY_NAME);
 		}
 		if (bo==null) return null;
 		
@@ -118,7 +118,7 @@ public class FeedInfo extends BusinessObject {
 			f.creationdatetime =  BusinessDatetimeItem.fromBusinessObject(f,"creationdatetime");
 			f.effectivedatetime = BusinessDatetimeItem.fromBusinessObject(f,"effectivedatetime");
 			
-			f.creator  = creatorFromBusinessObject(f);
+			f.creator  = f.handleBusinessObject("creator");
 			f.receiver = Receiver.fromBusinessObject(f);
 			f.sender   = ContractPartner.fromBusinessObject(f, ContractPartner.ROLE_SENDER);
 			f.licensor = ContractPartner.fromBusinessObject(f, ContractPartner.ROLE_LICENSOR);
@@ -130,12 +130,6 @@ public class FeedInfo extends BusinessObject {
 		return null;
 	}
 	
-	private static BusinessCollection<BusinessStringItem> creatorFromBusinessObject(BusinessObject bo) {
-		if (bo==null) return null;
-		Element eCreator = bo.handleElement("creator");
-		if (eCreator==null) return null;
-		return makeCreator(eCreator.getChildText("email"), eCreator.getChildText("userid"));
-	}
 	
 	public boolean getOnlyTest() {
 		return onlytest.getBoolean();
@@ -163,12 +157,16 @@ public class FeedInfo extends BusinessObject {
 	
 	public String getCreatorEmail() {
 		if (creator==null) return null;
-		return creator.get(0).getString();
+		BusinessStringItem s = creator.getBusinessStringItem("email");
+		if (s==null) return null;
+		return s.getString();
 	}
 	
 	public String getCreatorUserID() {
 		if (creator==null) return null;
-		return creator.get(1).getString();
+		BusinessStringItem s = creator.getBusinessStringItem("userid");
+		if (s==null) return null;
+		return s.getString();
 	}
 	
 	public Receiver getReceiver() {
@@ -193,11 +191,14 @@ public class FeedInfo extends BusinessObject {
 	
 	public FeedInfo creator(String email, String userid) {
 		if (creator==null) {
-			creator = makeCreator(email, userid);
-		} else {
-			creator.get(0).setString(email);
-			creator.get(1).setString(userid);
-		}
+			creator = new BusinessObject() {
+				public String getKeyname() {
+					return "creator";
+				}
+			};
+		};
+		creator.setObject(new BusinessStringItem("email", email));
+		creator.setObject(new BusinessStringItem("userid", userid));
 		return this;
 	}
 	
@@ -231,79 +232,92 @@ public class FeedInfo extends BusinessObject {
 		long creationdatetime = System.currentTimeMillis();
 		long effectivedatetime = System.currentTimeMillis();
 
-		ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER, "contractpartnerid","ourcontractpartnerid")
-						.email("sender@example.org");
-		ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR, "contractpartnerid","ourcontractpartnerid")
-						.email("licensor@example.org");
+		ContractPartner sender
+			= ContractPartner.make(
+				ContractPartner.ROLE_SENDER,
+				"contractpartnerid",
+				"ourcontractpartnerid"
+			)
+			.email("sender@example.org");
+		
+		ContractPartner licensor
+			= ContractPartner.make(
+				ContractPartner.ROLE_LICENSOR,
+				"contractpartnerid",
+				"ourcontractpartnerid"
+			)
+			.email("licensor@example.org");
 		
 		
 		FeedInfo feedinfo
-		= FeedInfo.make(
-			onlytest,
-			feedid,
-			creationdatetime,
-			effectivedatetime,
-			sender,
-			licensor
-		)
-		.creator("creator@example.org", "creator_userid")
-		.receiver(
-			Receiver.make(
-				Receiver.TRANSFER_TYPE_FTP,
-				"it-is-awesome.de",
-				"127.0.0.1",
-				Receiver.AUTH_TYPE_LOGIN,
-				SecurityHelper.getSHA1("LOGIN".getBytes()))
-		 	)
-		.addAction(
-			TriggeredActions.TRIGGER_ONINITIALRECEIVE,
-			ActionHttp.make(
-				"check.fnppl.org",
-				"GET")
-		        .addHeader("header1", "value1")
-		        .addHeader("header2", "value2")
-		        .addParam("param1", "value3")
+			= FeedInfo.make(
+				onlytest,
+				feedid,
+				creationdatetime,
+				effectivedatetime,
+				sender,
+				licensor
 			)
-		.addAction(
-			TriggeredActions.TRIGGER_ONERROR,
-			ActionMailTo.make(
-				"receiver@alert.com",
-				"subject",
-				"text")
+			.creator("creator@example.org", "creator_userid")
+			.receiver(
+				Receiver.make(
+					Receiver.TRANSFER_TYPE_FTP,
+					"it-is-awesome.de",
+					"127.0.0.1",
+					Receiver.AUTH_TYPE_LOGIN,
+					SecurityHelper.getSHA1("LOGIN".getBytes()))
+			 	)
+			.addAction(
+				TriggeredActions.TRIGGER_ONINITIALRECEIVE,
+				ActionHttp.make(
+					"check.fnppl.org",
+					"GET"
+				)
+			    .addHeader("header1", "value1")
+			    .addHeader("header2", "value2")
+			    .addParam("param1", "value3")
 			)
-		;
+			.addAction(
+				TriggeredActions.TRIGGER_ONERROR,
+				ActionMailTo.make(
+					"receiver@alert.com",
+					"subject",
+					"text"
+				)
+			)
+			;
 
 		
-		//test output
-		Element eFeedinfo = feedinfo.toElement();
+//		//test output
+//		Element eFeedinfo = feedinfo.toElement();
+//		
+//		//test read document
+//		FeedInfo feedinfo2 = FeedInfo.fromBusinessObject(BusinessObject.fromElement(eFeedinfo));
+//		
+//		Element eFeedinfo2 = feedinfo2.toElement();
+//		
+//		BusinessObject bo = BusinessObject.fromElement(eFeedinfo);
+//		Element eFeedinfo3 = bo.toElement();
 		
-		//test read document
-		FeedInfo feedinfo2 = FeedInfo.fromBusinessObject(BusinessObject.fromElement(eFeedinfo));
 		
-		Element eFeedinfo2 = feedinfo2.toElement();
+//		System.out.println("\n\nEXAMPLE FEEDINFO\n--------------------");
+//		Document.buildDocument(eFeedinfo).output(System.out);
+//		
+//		System.out.println("\n\nRE-READ FEEDINFO\n--------------------");
+//		Document.buildDocument(eFeedinfo2).output(System.out);
+//		
+//		System.out.println("\n\nRE-READ FEEDINFO with BusinessObject\n--------------------");
+//		Document.buildDocument(eFeedinfo3).output(System.out);
+//	
 		
-		BusinessObject bo = BusinessObject.fromElement(eFeedinfo);
-		Element eFeedinfo3 = bo.toElement();
-		
-		
-		System.out.println("\n\nEXAMPLE FEEDINFO\n--------------------");
-		Document.buildDocument(eFeedinfo).output(System.out);
-		
-		System.out.println("\n\nRE-READ FEEDINFO\n--------------------");
-		Document.buildDocument(eFeedinfo2).output(System.out);
-		
-		System.out.println("\n\nRE-READ FEEDINFO with BusinessObject\n--------------------");
-		Document.buildDocument(eFeedinfo3).output(System.out);
-	
-		
-		try {
-			System.out.println("feedinfo:                sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eFeedinfo),'\0',-1));
-			System.out.println("feedinfo re-read         sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eFeedinfo2),'\0',-1));
-			System.out.println("feedinfo business object sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eFeedinfo3),'\0',-1));
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		try {
+//			System.out.println("feedinfo:                sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eFeedinfo),'\0',-1));
+//			System.out.println("feedinfo re-read         sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eFeedinfo2),'\0',-1));
+//			System.out.println("feedinfo business object sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eFeedinfo3),'\0',-1));
+//			
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 		
 		
 		Bundle bundle
@@ -311,12 +325,31 @@ public class FeedInfo extends BusinessObject {
 			IDs.make()
 				.amzn("amazon")
 				.finetunesid("fineid")
-				.upc("a2312"),
+				.upc("a2312")
+			,
 			"displayname",
 			"name",
 			"version 1.0",
 			"display artist",
-			"information",
+			BundleInformation.make(
+					System.currentTimeMillis(),
+					System.currentTimeMillis()
+				)
+				.playlength(987)
+				.addPromotext("en", "EN promotext")
+				.addPromotext("de", "DE promotetext")
+				.addTeasertext("de", "DE teasertext")
+				.related(BundleRelatedInformation.make()
+						.physical_distributor("published physical distributor")
+						.physical_distributor("secret physical distributor", false)
+						.youtube_url("my.youtube.url")
+						.youtube_url("my.youtube.channel")
+						.addRelatedBundleIDs(IDs.make()
+								.ourid("our id")
+								.yourid("your id")
+						)
+				)
+			,
 			"license_basis",
 			"license_specifics"
 		)
@@ -331,15 +364,25 @@ public class FeedInfo extends BusinessObject {
 				.homepage("super-label-homepage.nät")
 				.phone("+49 44 9191919", false)
 			)
-		)		
+		)
 		;
 		
+		
 		Element eBundle = bundle.toElement();
+		Element eBundle2 = Bundle.fromBusinessObject(BusinessObject.fromElement(eBundle)).toElement();
 		
 		System.out.println("\n\nEXAMPLE BUNDLE\n--------------------");
 		Document.buildDocument(eBundle).output(System.out);
-	
 		
+		System.out.println("\n\nRE-READ BUNDLE\n--------------------");
+		Document.buildDocument(eBundle2).output(System.out);
+
+		try {
+			System.out.println("bundle                 sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eBundle),'\0',-1));
+			System.out.println("bundle re-read         sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eBundle2),'\0',-1));			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 	}
 

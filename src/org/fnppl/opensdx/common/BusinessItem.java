@@ -99,8 +99,21 @@ public class BusinessItem implements XMLElementable {
 		return attribs.get(key);
 	}
 	
+	public Vector<String[]> getAttributes() {
+		if (attribs==null) return null;
+		Vector<String[]> a = new Vector<String[]>();
+		for (String key : attribs.keySet()) {
+			a.add(new String[] {key,attribs.get(key)});
+		}
+		return a;
+	}
+	
 	public void addAttributes(Element item) {
 		Vector<String[]> attribs = item.getAttributes();
+		addAttributes(attribs);
+	}
+	
+	public void addAttributes(Vector<String[]> attribs) {
 		if (attribs!=null) {
 			for (String[] a : attribs) {
 				this.setAttribute(a[0], a[1]);
@@ -125,9 +138,13 @@ public class BusinessItem implements XMLElementable {
 		if (value ==null) return null;
 		Element e = new Element(name, value.toString());
 		if (attribs!=null) {
-			for (Entry<String,String> a : attribs.entrySet()) {
-				e.setAttribute(a.getKey(), a.getValue());
+			Vector<String[]> a = new Vector<String[]>();
+			for (String key : attribs.keySet()) {
+				e.setAttribute(key, attribs.get(key));
 			}
+//			for (Entry<String,String> a : attribs.entrySet()) {
+//				e.setAttribute(a.getKey(), a.getValue());
+//			}
 		}
 		return e;
 	}

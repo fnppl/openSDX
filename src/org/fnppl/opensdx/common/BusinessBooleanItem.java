@@ -75,17 +75,17 @@ public class BusinessBooleanItem extends BusinessItem {
 	}
 	
 	public static BusinessBooleanItem fromBusinessObject(BusinessObject bo, String name) {
-		Element item = bo.handleElement(name);
+		BusinessStringItem item = bo.handleBusinessStringItem(name);
 		if (item==null) {
 			return null;
 		} else {
 			try {
-				boolean b = Boolean.parseBoolean(item.getText());
+				boolean b = Boolean.parseBoolean(item.getString());
 				BusinessBooleanItem result = new BusinessBooleanItem(name, b);
-				result.addAttributes(item);
+				result.addAttributes(item.getAttributes());
 				return result;
 			} catch (Exception ex) {
-				throw new RuntimeException("wrong boolean fromat: "+item.getText());
+				throw new RuntimeException("wrong boolean fromat: "+item.getString());
 			}
 		}
 	}

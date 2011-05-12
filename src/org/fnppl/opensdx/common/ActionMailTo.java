@@ -56,7 +56,7 @@ import org.fnppl.opensdx.xml.Element;
  */
 public class ActionMailTo extends BusinessObject implements Action {
 
-	public static String KEY_NAME = "mail_to";
+	public static String KEY_NAME = "mailto";
 	
 	private BusinessStringItem receiver;
 	private BusinessStringItem subject;
@@ -74,14 +74,19 @@ public class ActionMailTo extends BusinessObject implements Action {
 		return a;
 	}
 	
-	public static ActionMailTo fromElement(Element e) {
-		if (e==null) return null;
+	public static ActionMailTo fromBusinessObject(BusinessObject bo) {
+		if (bo==null) return null;
+		if (!bo.getKeyname().equals(KEY_NAME)) {
+			bo = bo.handleBusinessObject(KEY_NAME);
+		}
+		if (bo==null) return null;
+		
 		ActionMailTo a = new ActionMailTo();
-		a.readElements(e);
-		a.receiver = BusinessStringItem.fromBusinessObject(a, "receiver");
-		a.subject = BusinessStringItem.fromBusinessObject(a, "subject");
-		a.text = BusinessStringItem.fromBusinessObject(a, "text");
-		a.removeAllUnhandledElements();
+		a.initFromBusinessObject(bo);
+		a.receiver = a.handleBusinessStringItem("receiver");
+		a.subject  = a.handleBusinessStringItem("subject");
+		a.text     = a.handleBusinessStringItem("text");
+		a.removeOtherObjects();
 		return a;
 	}
 	

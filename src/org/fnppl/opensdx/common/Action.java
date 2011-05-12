@@ -55,7 +55,7 @@ import org.fnppl.opensdx.xml.XMLElementable;
  */
 public interface Action extends XMLElementable {
 
-
 	public void execute();
+	
 	
 }

@@ -93,22 +93,30 @@ public class ActionHttp extends BusinessObject implements Action {
 		return a;
 	}
 
-	public static ActionHttp fromElement(Element e) {
-		if (e==null) return null;
+	public static ActionHttp fromBusinessObject(BusinessObject bo) {
+		if (bo==null) return null;
+		if (!bo.getKeyname().equals(KEY_NAME)) {
+			bo = bo.handleBusinessObject(KEY_NAME);
+		}
+		if (bo==null) return null;
 		
 		final ActionHttp a = new ActionHttp();
-		a.readElements(e);
-		a.url = BusinessStringItem.fromBusinessObject(a, "url");
-		a.type = BusinessStringItem.fromBusinessObject(a, "type");
+		a.initFromBusinessObject(bo);
+		
+		a.url = a.handleBusinessStringItem("url");
+		a.type = a.handleBusinessStringItem("type");
 		
 		a.header = new BusinessCollection<BusinessCollection>() {
 			public String getKeyname() {
 				return KEY_NAME_HEADER_COLLECTION;
 			}
 		};
-		new ChildElementIterator(e, KEY_NAME_HEADER_COLLECTION, KEY_NAME_HEADER) {
-			public void processChild(Element child) {
-				a.addHeader(child.getChildText("name"), child.getChildText("value"));
+		new ChildElementIterator(bo, KEY_NAME_HEADER_COLLECTION, KEY_NAME_HEADER) {
+			public void processBusinessObject(BusinessObject bo) {
+				a.addHeader(
+					bo.getBusinessStringItem("name").getString(),
+					bo.getBusinessStringItem("value").getString()
+				);
 			}
 		};
 		a.params = new BusinessCollection<BusinessCollection>() {
@@ -116,12 +124,15 @@ public class ActionHttp extends BusinessObject implements Action {
 				return KEY_NAME_PARAM_COLLECTION;
 			}
 		};
-		new ChildElementIterator(e, KEY_NAME_PARAM_COLLECTION, KEY_NAME_PARAM) {
-			public void processChild(Element child) {
-				a.addParam(child.getChildText("name"), child.getChildText("value"));
+		new ChildElementIterator(bo, KEY_NAME_PARAM_COLLECTION, KEY_NAME_PARAM) {
+			public void processBusinessObject(BusinessObject bo) {
+				a.addParam(
+					bo.getBusinessStringItem("name").getString(),
+					bo.getBusinessStringItem("value").getString()
+				);
 			}
 		};
-		a.removeAllUnhandledElements();
+		a.removeOtherObjects();
 		return a;
 	}
 	

@@ -3,42 +3,54 @@ package org.fnppl.opensdx.xml;
 import java.util.Vector;
 
 import org.fnppl.opensdx.common.BusinessObject;
+import org.fnppl.opensdx.common.BusinessStringItem;
 
 
 public abstract class ChildElementIterator {
-
 	
-	public ChildElementIterator(Element e, String name, String childName) {
-		if (e==null) return;
-		Element element = e.getChild(name);
-		if (element==null) return;
-			
-		Vector<Element> eChildren;
-		if (childName==null) {
-			eChildren = element.getChildren();
-		} else {
-			eChildren = element.getChildren(childName);
-		}
-		for (Element eChild : eChildren) {
-			processChild(eChild);
-		}
-	}
-	
-	public ChildElementIterator(BusinessObject bo, String name, String childName) {
+	public ChildElementIterator(BusinessObject bo, String collectionName, String name) {
 		if (bo==null) return;
-		Element element = bo.handleElement(childName);
-		if (element==null) return;
-			
-		Vector<Element> eChildren;
-		if (childName==null) {
-			eChildren = element.getChildren();
-		} else {
-			eChildren = element.getChildren(childName);
-		}
-		for (Element eChild : eChildren) {
-			processChild(eChild);
+		bo = bo.handleBusinessObject(collectionName);
+		if (bo==null) return;
+		Vector<XMLElementable> eChildren = bo.handleObjects(name);
+		for (XMLElementable eChild : eChildren) {
+			if (eChild instanceof BusinessObject) {
+				processBusinessObject((BusinessObject)eChild);	
+			}
+			else if (eChild instanceof BusinessStringItem) {
+				processBusinessStringItem((BusinessStringItem)eChild);	
+			}
+			else {
+				processOther(eChild);
+			}
 		}
 	}
 	
-	public abstract void processChild(Element child);
+	public ChildElementIterator(BusinessObject bo, String name) {
+		if (bo==null) return;
+		Vector<XMLElementable> eChildren = bo.handleObjects(name);
+		for (XMLElementable eChild : eChildren) {
+			if (eChild instanceof BusinessObject) {
+				processBusinessObject((BusinessObject)eChild);	
+			}
+			else if (eChild instanceof BusinessStringItem) {
+				processBusinessStringItem((BusinessStringItem)eChild);	
+			}
+			else {
+				processOther(eChild);
+			}
+		}
+	}
+	
+	public void processBusinessStringItem(BusinessStringItem item) {
+		//hook in here
+	}
+	public void processBusinessObject(BusinessObject bo) {
+		//hook in here
+	}
+	public void processOther(XMLElementable object) {
+		//hook in here
+	}
+	
+	
 }

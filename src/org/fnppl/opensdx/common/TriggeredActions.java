@@ -81,25 +81,22 @@ public class TriggeredActions implements XMLElementable {
 	
 	public static TriggeredActions fromBusinessObject(BusinessObject bo)  {
 		if (bo==null) return null;
-		Element e = null;
-		if (bo.getKeyname().equals(KEY_NAME)) {
-			e = bo.toElement();
-		} else {
-			e = bo.handleElement(KEY_NAME);
+		if (!bo.getKeyname().equals(KEY_NAME)) {
+			bo = bo.handleBusinessObject(KEY_NAME);
 		}
-		if (e==null) return null;
+		if (bo==null) return null;
+		
 		final TriggeredActions ta = new TriggeredActions();
 		for (int i=1;i<=5;i++) {
 			final int triggerNo = i;
-			new ChildElementIterator(e, actionTriggerName[triggerNo], null) {
-				public void processChild(Element child) {
-					//System.out.println("child "+child.getName());
-					if (child.getName().equals(ActionHttp.KEY_NAME)) {
-						ActionHttp action = ActionHttp.fromElement(child);
+			new ChildElementIterator(bo, actionTriggerName[triggerNo]) {
+				public void processBusinessObject(BusinessObject bo) {
+					if (bo.getKeyname().equals(ActionHttp.KEY_NAME)) {
+						ActionHttp action = ActionHttp.fromBusinessObject(bo);
 						ta.addAction(triggerNo, action);
 					}
-					if (child.getName().equals(ActionMailTo.KEY_NAME)) {
-						ActionMailTo action = ActionMailTo.fromElement(child);
+					else if (bo.getKeyname().equals(ActionMailTo.KEY_NAME)) {
+						ActionMailTo action = ActionMailTo.fromBusinessObject(bo);
 						ta.addAction(triggerNo, action);
 					}
 				}
@@ -137,6 +134,9 @@ public class TriggeredActions implements XMLElementable {
 		return e3;
 	}
 
+	public String getKeyname() {
+		return KEY_NAME;
+	}
 
 	private class TriggeredAction {
 		public int trigger;

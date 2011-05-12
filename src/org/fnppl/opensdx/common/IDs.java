@@ -84,7 +84,7 @@ public class IDs extends BusinessObject {
 	public static IDs fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(KEY_NAME)) {
-			bo = BusinessObject.fromElement(bo.handleElement(KEY_NAME));
+			bo = bo.handleBusinessObject(KEY_NAME);
 		}
 		if (bo==null) return null;
 		IDs ids = new IDs();
