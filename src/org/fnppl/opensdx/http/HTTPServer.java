@@ -78,29 +78,14 @@ public abstract class HTTPServer {
 	
 	public abstract String getServerID();
 	public abstract void readConfig();
-	public abstract OSDXKey createNewSigningKey(String pwSigning, String hostname);
+//	public abstract OSDXKey createNewSigningKey(String pwSigning, String hostname);
 	public abstract HTTPServerResponse prepareResponse(HTTPServerRequest request) throws Exception;
 	
 	public HTTPServer() {
 			
 	}
 	
-	public void init(String pwSigning, String hostname) {
-		serverid = getServerID();
-		try {
-			readConfig();
-			if (signingKey==null) {
-				signingKey = createNewSigningKey(pwSigning, hostname);
-			}
-			signingKey.unlockPrivateKey(pwSigning);
-			
-			Document d = Document.buildDocument(signingKey.getSimplePubKeyElement());
-			System.out.println("\nServer Public SigningKey:");
-			d.output(System.out);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
+	
 	
 
 	public void exit() {

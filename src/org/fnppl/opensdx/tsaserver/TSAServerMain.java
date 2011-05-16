@@ -66,7 +66,7 @@ public class TSAServerMain extends HTTPServer {
 	private String serverid = "OSDX TSAServer v0.1";
 	private File configFile = new File("tsaserver_config.xml"); 
 	private File alterConfigFile = new File("src/org/fnppl/opensdx/tsaserver/resources/tsaserver_config.xml"); 
-
+	private String servername = null;
 	
 	private MessageHandler messageHandler = new DefaultMessageHandler() {
 		public boolean requestOverwriteFile(File file) {//dont ask, just overwrite
@@ -80,18 +80,34 @@ public class TSAServerMain extends HTTPServer {
 		}
 	};
 	
+	public void init(String pwSigning) {
+		serverid = getServerID();
+		try {
+			readConfig();
+			if (signingKey==null) {
+				signingKey = createNewSigningKey(pwSigning, servername);
+			}
+			signingKey.unlockPrivateKey(pwSigning);
+			
+			Document d = Document.buildDocument(signingKey.getSimplePubKeyElement());
+			System.out.println("\nServer Public SigningKey:");
+			d.output(System.out);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 	public TSAServerMain(String pwSigning) {
 		super();
 		init(pwSigning);
 	}
 	
-	public OSDXKey createNewSigningKey(String pwSigning) {
+	public OSDXKey createNewSigningKey(String pwSigning, String servername) {
 		try {
 			pwSigning = "debug";
 			
 			//generate new keypair
 			MasterKey newSigningKey = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
-			newSigningKey.setAuthoritativeKeyServer(host);
+			newSigningKey.setAuthoritativeKeyServer(servername);
 			Identity id = Identity.newEmptyIdentity();
 			id.setEmail("debug_tsa_signing@it-is-awesome.de");
 			id.setIdentNum(1);
@@ -126,7 +142,7 @@ public class TSAServerMain extends HTTPServer {
 			Element root = Document.fromFile(configFile).getRootElement();
 			//keyserver base
 			Element ks = root.getChild("tsaserver");
-			host = ks.getChildText("host");
+//			host = ks.getChildText("host");
 			port = ks.getChildInt("port");
 			String ip4 = ks.getChildText("ipv4");
 			try {
@@ -225,12 +241,13 @@ public class TSAServerMain extends HTTPServer {
 	
 	
 	public static void main(String[] args) throws Exception {
-		if (args==null || args.length!=2 || !args[0].equals("-s")) {
-			System.out.println("usage: TsaServer -s \"password signingkey\"");
+		if (args==null || args.length!=4 || !args[0].equals("-s")|| !args[2].equals("-h")) {
+			System.out.println("usage: TsaServer -s \"password signingkey\" -h servername");
 			return;
 		}
 		TSAServerMain ss = new TSAServerMain(args[1]);
 		ss.port = 8890;
+		ss.servername = args[3];
 		
 		ss.startService();
 	}

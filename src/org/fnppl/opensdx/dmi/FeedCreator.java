@@ -50,19 +50,7 @@ package org.fnppl.opensdx.dmi;
 
 //import org.fnppl.opensdx.commonAuto.Information;
 
-import org.fnppl.opensdx.common.ActionHttp;
-import org.fnppl.opensdx.common.ActionMailTo;
-import org.fnppl.opensdx.common.Bundle;
-import org.fnppl.opensdx.common.BundleInformation;
-import org.fnppl.opensdx.common.BundleRelatedInformation;
-import org.fnppl.opensdx.common.BusinessObject;
-import org.fnppl.opensdx.common.ContractPartner;
-import org.fnppl.opensdx.common.Contributor;
-import org.fnppl.opensdx.common.FeedInfo;
-import org.fnppl.opensdx.common.IDs;
-import org.fnppl.opensdx.common.InfoWWW;
-import org.fnppl.opensdx.common.Receiver;
-import org.fnppl.opensdx.common.TriggeredActions;
+import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.*;
 

@@ -129,6 +129,8 @@ public class KeyServerMain extends HTTPServer {
 	private MailAuthenticator mailAuth = null;
 	private KeyApprovingStore keystore;
 	
+	private String servername = null;
+	
 	private MessageHandler messageHandler = new DefaultMessageHandler() {
 		public boolean requestOverwriteFile(File file) {//dont ask, just overwrite
 			return true;
@@ -149,9 +151,29 @@ public class KeyServerMain extends HTTPServer {
 	
 	protected MasterKey keyServerSigningKey = null;
 	
-	public KeyServerMain(String pwSigning, String pwMail) throws Exception {
+	public void init(String pwSigning) {
+		serverid = getServerID();
+		try {
+			readConfig();
+			if (signingKey==null) {
+				signingKey = createNewSigningKey(pwSigning, servername);
+			}
+			signingKey.unlockPrivateKey(pwSigning);
+			
+			Document d = Document.buildDocument(signingKey.getSimplePubKeyElement());
+			System.out.println("\nServer Public SigningKey:");
+			d.output(System.out);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	public KeyServerMain(String pwSigning, String pwMail, String servername) throws Exception {
 		super();
+		this.servername = servername;
+		
 		init(pwSigning);
+		
 		if (signingKey instanceof MasterKey) {
 			keyServerSigningKey = (MasterKey)signingKey;
 		} else {
@@ -409,7 +431,7 @@ public class KeyServerMain extends HTTPServer {
 		//send email with token
 		byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
 		String token = SecurityHelper.HexDecoder.encode(tokenbytes, '\0',-1);
-		String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+host+":"+port+"/approve_mail?id="+token;
+		String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+":"+port+"/approve_mail?id="+token;
 		openTokens.put(token, kl);
 		try {
 			sendMail(idd.getEmail(), "email address verification", verificationMsg);
@@ -736,7 +758,7 @@ public class KeyServerMain extends HTTPServer {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		try {
 			Element e = new Element("keyserver");
-			e.addContent("host",host);
+			e.addContent("host", servername);
 			e.addContent("port",""+port);
 			Element k = new Element("knownkeys");
 			Element pk = keyServerSigningKey.getSimplePubKeyElement();
@@ -849,12 +871,13 @@ public class KeyServerMain extends HTTPServer {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		if (args==null || args.length!=4) {
-			System.out.println("usage: KeysServer -s \"password signingkey\" -m \"password mail\"");
+		if (args==null || args.length!=6) {
+			System.out.println("usage: KeysServer -s \"password signingkey\" -m \"password mail\" -h servername");
 			return;
 		}
 		String pwS = null;
 		String pwM = null;
+		String servername = null;
 		if (args[0].equals("-s")) {
 			pwS = args[1];
 			if (args[2].equals("-m")) {
@@ -868,12 +891,17 @@ public class KeyServerMain extends HTTPServer {
 				pwS = args[3];
 			}
 		}
-		if (pwS==null || pwM == null) {
-			System.out.println("usage: KeysServer -s \"password signingkey\" -m \"password mail\"");
+		
+		if (args.length>4 && args[4].equals("-h")) {
+			servername = args[5];
+		}
+		
+		if (pwS==null || pwM == null || servername == null) {
+			System.out.println("usage: KeysServer -s \"password signingkey\" -m \"password mail\" -h servername");
 			return;
 		}
 		
-		KeyServerMain ks = new KeyServerMain(pwS, pwM);
+		KeyServerMain ks = new KeyServerMain(pwS, pwM, servername);
 		ks.startService();
 	}
 	
