@@ -104,12 +104,16 @@ public class Element {
 		if (b==null) return null;
 		return new Element(b);
 	}
-	public String getChildText(String name) {
+	public String getChildTextNN(String name) {
 		//beware double-invoke!!!
 		String s = base.getChildText(name);
 		if (s == null) {
 			return ""; //TODO ist das sinn der sache??
 		}
+		return s;
+	}
+	public String getChildText(String name) {
+		String s = base.getChildText(name);		
 		return s;
 	}
 	public int getChildInt(String name) {
