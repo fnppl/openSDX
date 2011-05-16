@@ -107,7 +107,9 @@ public class Element {
 	public String getChildText(String name) {
 		//beware double-invoke!!!
 		String s = base.getChildText(name);
-		if (s==null) return ""; //TODO ist das sinn der sache??
+		if (s == null) {
+			return ""; //TODO ist das sinn der sache??
+		}
 		return s;
 	}
 	public int getChildInt(String name) {

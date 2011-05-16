@@ -63,7 +63,10 @@ public class KeyServerIdentity {
 	public static KeyServerIdentity fromElement(Element e) throws Exception {
 		KeyServerIdentity k = new KeyServerIdentity();
 		k.host = e.getChildText("host");
-		k.prepath = e.getChildText("prepath").trim();
+		k.prepath = e.getChildText("prepath");
+		if(k.prepath == null) {
+			k.prepath = "";
+		}
 		
 		try {
 			k.port = Integer.parseInt(e.getChildText("port"));
