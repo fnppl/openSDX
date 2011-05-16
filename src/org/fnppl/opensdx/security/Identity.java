@@ -114,34 +114,34 @@ public class Identity {
 	public static Identity fromElement(Element id) throws Exception {
 		Identity idd = new Identity();
 		
-		idd.email = id.getChildText("email");
+		idd.email = id.getChildTextNN("email");
 		try {
-			idd.identnum = Integer.parseInt(id.getChildText("identnum"));
+			idd.identnum = Integer.parseInt(id.getChildTextNN("identnum"));
 		} catch (Exception ex) {
 			idd.identnum = 0;
 			System.out.println("CAUTION: Wrong identnum in identity: "+idd.email);
 		}
-		idd.mnemonic = id.getChildText("mnemonic");
+		idd.mnemonic = id.getChildTextNN("mnemonic");
 		
-		idd.country = id.getChildText("country");
-		idd.region = id.getChildText("region");
-		idd.city = id.getChildText("city");
+		idd.country = id.getChildTextNN("country");
+		idd.region = id.getChildTextNN("region");
+		idd.city = id.getChildTextNN("city");
 		
-		idd.postcode = id.getChildText("postcode");
-		idd.company = id.getChildText("company");
-		idd.unit = id.getChildText("unit");
-		idd.subunit = id.getChildText("subunit");
+		idd.postcode = id.getChildTextNN("postcode");
+		idd.company = id.getChildTextNN("company");
+		idd.unit = id.getChildTextNN("unit");
+		idd.subunit = id.getChildTextNN("subunit");
 
-		idd.function = id.getChildText("function");
-		idd.surname = id.getChildText("surname");
-		idd.middlename = id.getChildText("middlename");
-		idd.name = id.getChildText("name");
+		idd.function = id.getChildTextNN("function");
+		idd.surname = id.getChildTextNN("surname");
+		idd.middlename = id.getChildTextNN("middlename");
+		idd.name = id.getChildTextNN("name");
 		
-		idd.phone = id.getChildText("phone");
+		idd.phone = id.getChildTextNN("phone");
 		
-		idd.note = id.getChildText("note");
+		idd.note = id.getChildTextNN("note");
 		
-		idd.sha256FromElement = SecurityHelper.HexDecoder.decode(id.getChildText("sha256"));
+		idd.sha256FromElement = SecurityHelper.HexDecoder.decode(id.getChildTextNN("sha256"));
 		
 		//datapath
 		Element dp = id.getChild("datapath");

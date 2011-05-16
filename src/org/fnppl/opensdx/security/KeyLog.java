@@ -343,7 +343,7 @@ public class KeyLog {
 		kl.toKeyid = ea.getChildText("to_keyid");
 		Element est = ea.getChild(kl.action);
 		if (est!=null) {
-			kl.message = est.getChildText("message");
+			kl.message = est.getChildTextNN("message");
 			if (kl.message.length()==0) kl.message = null;
 			Element eId = est.getChild("identity");
 			if (eId!=null) kl.id = Identity.fromElement(eId);
