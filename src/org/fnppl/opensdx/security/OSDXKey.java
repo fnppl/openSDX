@@ -406,7 +406,7 @@ public class OSDXKey {
 	
 	public void createLockedPrivateKey(MessageHandler mh) throws Exception {
 		if (akp.hasPrivateKey()) {
-			String[] ans = mh.requestNewPasswordAndMantra("Saving Key: "+getKeyID()+"\nLevel: "+getLevelName()+"\n");
+			String[] ans = mh.requestNewPasswordAndMantra("Saving Key: "+getKeyID()+"\n\nLevel: "+getLevelName()+"\n\n");
 			if (ans != null) {
 				createLockedPrivateKey(ans[0],ans[1]);
 			} else {

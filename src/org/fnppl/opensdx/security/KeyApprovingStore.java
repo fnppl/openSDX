@@ -58,6 +58,7 @@ public class KeyApprovingStore {
 	private File f = null;
 	private Vector<OSDXKey> keys = null;
 	private Vector<KeyLog> keylogs = null;
+	private Vector<KeyServerIdentity> keyservers = null;
 	private boolean unsavedChanges = false;
 	private OSDXKey keystoreSigningKey = null;
 	
@@ -72,6 +73,52 @@ public class KeyApprovingStore {
 		kas.unsavedChanges = true;
 		kas.messageHandler = mh;
 		return kas;
+	}
+	
+	public void addKeyserverAndPublicKeysFromConfig(File configFile) {
+		try {
+			if (!configFile.exists() || configFile.isDirectory()) {
+				return;
+			}
+			Element root = Document.fromFile(configFile).getRootElement();
+			if (keys==null) keys = new Vector<OSDXKey>();
+			if (keyservers==null) keyservers = new Vector<KeyServerIdentity>();
+			
+			if (root.getChild("defaultkeyservers")!=null) {
+				keyservers = new Vector<KeyServerIdentity>();
+				Vector<Element> v = root.getChild("defaultkeyservers").getChildren("keyserver");
+				for (Element e : v) {
+					keyservers.add(KeyServerIdentity.fromElement(e));
+					Element eKnownKeys = e.getChild("knownkeys");
+					if (eKnownKeys!=null) {
+						Vector<Element> epks = eKnownKeys.getChildren("pubkey");
+						if (epks!=null) {
+							for (Element epk : epks) {
+								keys.add(OSDXKey.fromPubKeyElement(epk));
+							}
+						}
+					}
+				}
+			}
+			if (root.getChild("knownapprovedkeys")!=null) {
+				Vector<Element> v = root.getChild("knownapprovedkeys").getChildren("pubkey");
+				for (Element e : v) {
+					keys.add(OSDXKey.fromPubKeyElement(e));
+				}
+			}
+			//TODO check localproofs and signatures 
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	public void addKeyServer(KeyServerIdentity keyserver) {
+		if (keyservers== null) {
+			keyservers = new Vector<KeyServerIdentity>();	
+		}
+		keyservers.add(keyserver);
+		unsavedChanges = true;
 	}
 	
 	
@@ -181,7 +228,18 @@ public class KeyApprovingStore {
 			}
 		}
 		
-			
+		//add keyservers
+		kas.keyservers = null;
+		Element eK = e.getChild("keyservers");
+		if (eK!=null) {
+			kas.keyservers = new Vector<KeyServerIdentity>();
+			Vector<Element> ekss = eK.getChildren("keyserver");
+			for (Element eks : ekss) {
+				KeyServerIdentity ks = KeyServerIdentity.fromElement(eks);
+				kas.keyservers.add(ks);
+			}
+		}
+
 		return kas;
 	}
 	
@@ -214,6 +272,18 @@ public class KeyApprovingStore {
 		return ret;
 	}
 	
+	public Vector<KeyServerIdentity> getKeyServer() {
+		return keyservers;
+	}
+	
+	public KeyServerIdentity getKeyServer(String servername) {
+		for (KeyServerIdentity ks : keyservers) {
+			if (ks.getHost().equals(servername))
+				return ks;
+		}
+		return null;
+	}
+	
 	public OSDXKey getKey(String keyid) {
 		byte[] idbytes = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(keyid));
 		if (idbytes==null) return null;
@@ -229,6 +299,13 @@ public class KeyApprovingStore {
 		boolean ok = keys.remove(key);
 		//System.out.println("removing key: "+ok);
 		unsavedChanges = true;
+	}
+	
+	public void removeKeyServer(KeyServerIdentity keyserver) {
+		if (keyservers!=null) {
+			boolean ok = keyservers.remove(keyserver);
+			unsavedChanges = true;
+		}
 	}
 	
 	public void removeKeyLog(KeyLog keylog) {
@@ -344,6 +421,15 @@ public class KeyApprovingStore {
 					root.addContent(kl.toFullElement());
 				}
 			}
+		}
+		
+		//keyserver
+		if (keyservers!=null && keyservers.size()>0) {
+			Element eK = new Element("keyservers");
+			for (KeyServerIdentity ks : keyservers) {
+				eK.addContent(ks.toElement());
+			}
+			root.addContent(eK);
 		}
 		
 		Document d = Document.buildDocument(root);

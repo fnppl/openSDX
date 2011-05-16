@@ -184,6 +184,16 @@ public class MasterKey extends OSDXKey {
 		}
 		return null;
 	}
+	public String getIDEmailAndMnemonic() {
+		if (identities!=null && identities.size()>0) {
+			String ids = identities.get(0).getEmail()+" ("+identities.get(0).getMnemonic()+")";
+			for (int i=1;i<identities.size();i++) {
+				ids += ", "+identities.get(i).getEmail()+" ("+identities.get(i).getMnemonic()+")";
+			}
+			return ids;
+		}
+		return null;
+	}
 	
 	public void addIdentity(Identity id) {
 		unsavedChanges = true;

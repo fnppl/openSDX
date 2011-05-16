@@ -72,7 +72,7 @@ public class SecurityMainFrame extends JFrame {
 
 	private File configFile = new File("src/org/fnppl/opensdx/security/resources/config.xml"); 
 	private Vector<KeyServerIdentity> keyservers = null;
-	private Vector<OSDXKey> knownpublickeys = null;
+	//private Vector<OSDXKey> knownpublickeys = null;
 	private HashMap<OSDXKey, KeyStatus> key_status = new HashMap<OSDXKey, KeyStatus>();
 	private Vector<OSDXKey> storedPublicKeys = new Vector<OSDXKey>();
 	
@@ -80,6 +80,15 @@ public class SecurityMainFrame extends JFrame {
 	private File lastDir = getDefaultDir(); //new File(System.getProperty("user.home"));
 	//	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
 
+	//menu items
+
+	private JMenuItem jmiCloseKeyStore;
+	private JMenuItem jmiWriteKeyStoreToFile;
+	private JMenuItem jmiGenerateMaster;
+	private JMenuItem jmiGenerateSet;
+	private JMenuItem jmiAddKeyServer;
+	
+		
 
 
 	private HashMap<String, String> props = new HashMap<String, String>(); //GUI layout properties
@@ -106,41 +115,6 @@ public class SecurityMainFrame extends JFrame {
 		});
 		setSize(1024, 768);
 
-		readConfig();
-	}
-
-	private void readConfig() {
-		try {
-			Element root = Document.fromFile(configFile).getRootElement();
-			knownpublickeys = new Vector<OSDXKey>();
-			
-			if (root.getChild("defaultkeyservers")!=null) {
-				keyservers = new Vector<KeyServerIdentity>();
-				Vector<Element> v = root.getChild("defaultkeyservers").getChildren("keyserver");
-				for (Element e : v) {
-					keyservers.add(KeyServerIdentity.fromElement(e));
-					Element eKnownKeys = e.getChild("knownkeys");
-					if (eKnownKeys!=null) {
-						Vector<Element> epks = eKnownKeys.getChildren("pubkey");
-						if (epks!=null) {
-							for (Element epk : epks) {
-								knownpublickeys.add(OSDXKey.fromPubKeyElement(epk));
-							}
-						}
-					}
-				}
-			}
-			if (root.getChild("knownapprovedkeys")!=null) {
-				Vector<Element> v = root.getChild("knownapprovedkeys").getChildren("pubkey");
-				for (Element e : v) {
-					knownpublickeys.add(OSDXKey.fromPubKeyElement(e));
-				}
-			}
-			//TODO check localproofs and signatures 
-
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
 	}
 
 	private void initIcons() {
@@ -252,6 +226,9 @@ public class SecurityMainFrame extends JFrame {
 				else if(cmd.equalsIgnoreCase("writekeystore")) {
 					writeCurrentKeyStore(true);
 				}
+				else if(cmd.equalsIgnoreCase("addkeyserver")) {
+					addKeyServer();
+				}
 				else if(cmd.equalsIgnoreCase("generatemasterkeyset")) {
 					generateMasterKeySet();
 				}
@@ -289,35 +266,46 @@ public class SecurityMainFrame extends JFrame {
 		jmi.addActionListener(ja);
 		jm.add(jmi);
 
-		jmi = new JMenuItem("CloseKeyStore");
-		jmi.setActionCommand("closekeystore");
-		jmi.addActionListener(ja);
-		jm.add(jmi);
+		jmiCloseKeyStore = new JMenuItem("CloseKeyStore");
+		jmiCloseKeyStore.setActionCommand("closekeystore");
+		jmiCloseKeyStore.addActionListener(ja);
+		jm.add(jmiCloseKeyStore);
 
-		jmi = new JMenuItem("WriteKeyStore to new file");
-		jmi.setActionCommand("writekeystore");
-		jmi.addActionListener(ja);
-		jm.add(jmi);
+		jmiWriteKeyStoreToFile = new JMenuItem("WriteKeyStore to new file");
+		jmiWriteKeyStoreToFile.setActionCommand("writekeystore");
+		jmiWriteKeyStoreToFile.addActionListener(ja);
+		jm.add(jmiWriteKeyStoreToFile);
 
 		jmi = new JMenuItem("Quit");
 		jmi.setActionCommand("quit");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
 
-
+		
 		jm = new JMenu("Keys");
 		jb.add(jm);
 
-		jmi = new JMenuItem("Generate new MASTER Key Set");
-		jmi.setActionCommand("generatemasterkeyset");
-		jmi.addActionListener(ja);
-		jm.add(jmi);
+		jmiGenerateSet = new JMenuItem("Generate new MASTER Key Set");
+		jmiGenerateSet.setActionCommand("generatemasterkeyset");
+		jmiGenerateSet.addActionListener(ja);
+		jm.add(jmiGenerateSet);
 
-		jmi = new JMenuItem("Generate new MASTER Key");
-		jmi.setActionCommand("generatemasterkey");
-		jmi.addActionListener(ja);
-		jm.add(jmi);
+		jmiGenerateMaster = new JMenuItem("Generate new MASTER Key");
+		jmiGenerateMaster.setActionCommand("generatemasterkey");
+		jmiGenerateMaster.addActionListener(ja);
+		jm.add(jmiGenerateMaster);
 
+		jm = new JMenu("KeyServer");
+		jmiAddKeyServer = new JMenuItem("add keyserver");
+		jmiAddKeyServer.setActionCommand("addkeyserver");
+		jmiAddKeyServer.addActionListener(ja);
+		jm.add(jmiAddKeyServer);
+		
+		jb.add(jm);
+
+		jb.add(jm);
+
+		
 		jm = new JMenu("Signature");
 		jb.add(jm);
 
@@ -346,6 +334,15 @@ public class SecurityMainFrame extends JFrame {
 
 		setJMenuBar(jb);
 	}
+	
+	private void setMenuOptionVisible(boolean keystoreOpend) {
+		jmiCloseKeyStore.setEnabled(keystoreOpend);
+		jmiWriteKeyStoreToFile.setEnabled(keystoreOpend);
+		jmiGenerateMaster.setEnabled(keystoreOpend);
+		jmiGenerateSet.setEnabled(keystoreOpend);
+		jmiAddKeyServer.setEnabled(keystoreOpend);
+		
+	}
 
 	private void buildUi() {
 		initIcons();
@@ -356,7 +353,11 @@ public class SecurityMainFrame extends JFrame {
 
 
 	private void updateUI() {
-
+		if (currentKeyStore==null) {
+			setMenuOptionVisible(false);
+		} else {
+			setMenuOptionVisible(true);
+		}
 		JPanel p = new JPanel();
 		JScrollPane scroll = new JScrollPane(p);
 		setContentPane(scroll);
@@ -399,29 +400,33 @@ public class SecurityMainFrame extends JFrame {
 				}
 			p.add(pk);
 			}
-		}
-		if (keyservers!=null) {
-			JPanel pk = new JPanel();
-			pk.setBorder(new TitledBorder("KeyServers:"));
-			pk.setLayout(new BoxLayout(pk, BoxLayout.PAGE_AXIS));
-			for (KeyServerIdentity ksid : keyservers) {
-				pk.add(buildComponentKeyServer(ksid));
+				
+			//keyserver
+			keyservers = currentKeyStore.getKeyServer();
+			if (keyservers!=null) {
+				JPanel pk = new JPanel();
+				pk.setBorder(new TitledBorder("KeyServers:"));
+				pk.setLayout(new BoxLayout(pk, BoxLayout.PAGE_AXIS));
+				for (KeyServerIdentity ksid : keyservers) {
+					pk.add(buildComponentKeyServer(ksid));
+				}
+				p.add(pk);
 			}
-			p.add(pk);
 		}
-		if (knownpublickeys!=null) {
-			JPanel pk = new JPanel();
-			pk.setBorder(new TitledBorder("Known Public Keys:"));
-			pk.setLayout(new BoxLayout(pk, BoxLayout.PAGE_AXIS));
-			pk.add(buildComponentKnownKeys(knownpublickeys));
-			p.add(pk);
-		}
+		
+//		if (knownpublickeys!=null) {
+//			JPanel pk = new JPanel();
+//			pk.setBorder(new TitledBorder("Known Public Keys:"));
+//			pk.setLayout(new BoxLayout(pk, BoxLayout.PAGE_AXIS));
+//			pk.add(buildComponentKnownKeys(knownpublickeys));
+//			p.add(pk);
+//		}
 		validate();
 	}
 
 	private Component buildComponent(MasterKey masterkey, Vector<RevokeKey> revokekeys, Vector<SubKey> subkeys) {
 		final JPanel p = new JPanel();
-		String identities = masterkey.getIDEmails();
+		String identities = masterkey.getIDEmailAndMnemonic();
 		p.setBorder(new TitledBorder("KeyGroup:"+(identities!=null?"   "+identities:"")));
 		p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
 		p.add(buildComponentMasterKey(masterkey));
@@ -1010,11 +1015,15 @@ public class SecurityMainFrame extends JFrame {
 		c.insets = new Insets(5, 5, 0, 0);
 		String host = keyserver.getHost();
 		int port = keyserver.getPort();
+		String prepath = keyserver.getPrepath();
 
 		final JTextField tHost = addLabelTextFieldPart("host:", host, a, c, y,true); y++;
 		final JTextField tPort = addLabelTextFieldPart("port:", ""+port, a, c, y,true); y++;
+		final JTextField tPrepath = addLabelTextFieldPart("prepath:", ""+prepath, a, c, y,true); y++;
+		
 		final JButton bu = new JButton("save changes");
 		bu.setEnabled(false);
+		
 		DocumentListener chListen = new DocumentListener() {
 			public void removeUpdate(DocumentEvent e) {
 				action();
@@ -1026,7 +1035,7 @@ public class SecurityMainFrame extends JFrame {
 				action();
 			}
 			private void action() {
-				if (tHost.getText().equals(keyserver.getHost()) && tPort.getText().equals(""+keyserver.getPort())) {
+				if (tHost.getText().equals(keyserver.getHost()) && tPort.getText().equals(""+keyserver.getPort())  && tPrepath.getText().equals(""+keyserver.getPrepath())) {
 					bu.setEnabled(false);
 				} else {
 					bu.setEnabled(true);
@@ -1035,6 +1044,7 @@ public class SecurityMainFrame extends JFrame {
 		};
 		tHost.getDocument().addDocumentListener(chListen);
 		tPort.getDocument().addDocumentListener(chListen);
+		tPrepath.getDocument().addDocumentListener(chListen);
 
 		Vector<OSDXKey> keys = keyserver.getKnownKeys();
 
@@ -1059,12 +1069,36 @@ public class SecurityMainFrame extends JFrame {
 				} catch (Exception ex) {
 					tPort.setText(""+keyserver.getPort());
 				}
+				keyserver.setPrepath(tPrepath.getText());
 				props.put(keyserver.getHost()+":"+keyserver.getPort(), "VISIBLE");
 				updateUI();
 			}
 		});
 
 		b.add(bu);
+		
+		JButton bTest = new JButton("test settings");
+		bTest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (!testKeyServerSettings(keyserver)) {
+					Dialogs.showMessage("Sorry, could not connect to keyserver: "+keyserver.getHost()+", port: "+keyserver.getPort()+"\nPlease check keyserver settings.");
+					return;
+				}
+			}
+		});
+		b.add(bTest);
+		
+		
+		JButton bRemove = new JButton("remove");
+		bRemove.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				currentKeyStore.removeKeyServer(keyserver);
+				updateUI();
+			}
+		});
+		b.add(bRemove);
+		
+		
 		content.add(b,BorderLayout.SOUTH);
 
 		p.add(head, BorderLayout.NORTH);
@@ -1488,6 +1522,18 @@ public class SecurityMainFrame extends JFrame {
 			ex.printStackTrace();
 		}
 	}
+	
+	private void addKeyServer() {
+		String s = Dialogs.showInputDialog("Add KeyServer", "Please enter host name");
+		if (s!=null) {
+			addKeyServer(s, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
+		}
+	}
+	
+	private void addKeyServer(String host, int port, String prepath) {
+		currentKeyStore.addKeyServer(KeyServerIdentity.make(host, port, prepath));
+		updateUI();
+	}
 
 	private void generateRevokeKey(final MasterKey parentKey) {
 		final JDialog d = Dialogs.getWaitDialog("Generating new REVOKE Key,\nplease wait...");
@@ -1836,54 +1882,88 @@ public class SecurityMainFrame extends JFrame {
 	    }
 	}
 	
-	protected void requestKeyLogs(OSDXKey key) {
-		Vector<String> keyservernames = new Vector<String>();
-		for (KeyServerIdentity id : keyservers) {
-			keyservernames.add(id.getHost()+":"+id.getPort());
-		}
-		int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer.", keyservernames);
-		if (ans>=0) {
-			KeyServerIdentity keyserver = keyservers.get(ans);
-			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
-			
-			Vector<KeyLog> logs = null;
-			try {
-				logs = client.requestKeyLogs(key.getKeyID());
-			} catch (Exception ex) {
-				if (ex.getMessage()!=null && ex.getMessage().startsWith("signing key NOT in trusted keys")) {
-					int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
-					if (antw != Dialogs.YES) return;
-					try {
-						//request servers signing key
-						String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
-						System.out.println("keyserver id: "+serverKeyID);
-						OSDXKey serversSigningKey = client.requestPublicKey(serverKeyID);
-						KeyVerificator.addRatedKey(serversSigningKey, TrustRatingOfKey.RATING_MARGINAL);
-						logs = client.requestKeyLogs(key.getKeyID());
-					} catch (Exception ex2) {
-						Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
-						return;
-					}
+	private boolean testKeyServerSettings(KeyServerIdentity keyserver) {
+		//test keyserversettings and server signing key
+		boolean connectionOK = true;
+		KeyClient client = new KeyClient(keyserver);
+		try {
+			boolean connected = client.connect();
+			if (connected) {
+				KeyServerIdentity ksid = client.requestKeyServerIdentity();
+				if (ksid == null) {
+					connectionOK = false;
 				} else {
-					if (ex.getMessage()!=null && ex.getLocalizedMessage().startsWith("Connection refused")) {
-						Dialogs.showMessage("Sorry, could not connect to server.");
-						return;
-					} else {
-						ex.printStackTrace();
+					Vector<OSDXKey> knownkeys = ksid.getKnownKeys();
+					for (OSDXKey key : knownkeys) {
+						if (!keyserver.hasKnownKey(key.getKeyID())) {
+							int answer = Dialogs.showYES_NO_Dialog("Add KeyServer Key", "Add KeyServers Key:\n"+key.getKeyID()+"\nto known keys?");
+							if (answer == Dialogs.YES) {
+								keyserver.addKnownKey(key);
+								updateUI();
+							}
+						}
 					}
 				}
-			}
-			if (logs!=null && logs.size()>0) {
-				long datetime = System.currentTimeMillis();
-				for (KeyLog kl : logs) {
-					kl.addDataPath(new DataSourceStep(keyserver.getHost(), datetime));
-					currentKeyStore.addKeyLog(kl);
-				}
-				updateUI();
 			} else {
-				Dialogs.showMessage("Sorry, no keylogs for key:"+ key.getKeyID()+"\navailable on keyserver.");
+				connectionOK = false;
+			}
+		} catch (Exception e) {
+			connectionOK = false;
+			e.printStackTrace();
+		}
+		return connectionOK;
+	}
+	
+	protected void requestKeyLogs(OSDXKey key) {
+		KeyServerIdentity keyserver = currentKeyStore.getKeyServer(key.getAuthoritativekeyserver());
+		if (keyserver == null) {
+			keyserver = KeyServerIdentity.make(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
+		}
+		
+		if (!testKeyServerSettings(keyserver)) {
+			Dialogs.showMessage("Sorry, could not connect to keyserver: "+keyserver.getHost()+", port: "+keyserver.getPort()+"\nPlease check keyserver settings.");
+			return;
+		}
+	
+		KeyClient client = new KeyClient(keyserver);
+		Vector<KeyLog> logs = null;
+		try {
+			logs = client.requestKeyLogs(key.getKeyID());
+		} catch (Exception ex) {
+			if (ex.getMessage()!=null && ex.getMessage().startsWith("signing key NOT in trusted keys")) {
+				int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
+				if (antw != Dialogs.YES) return;
+				try {
+					//request servers signing key
+					String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
+					System.out.println("keyserver id: "+serverKeyID);
+					OSDXKey serversSigningKey = client.requestPublicKey(serverKeyID);
+					KeyVerificator.addRatedKey(serversSigningKey, TrustRatingOfKey.RATING_MARGINAL);
+					logs = client.requestKeyLogs(key.getKeyID());
+				} catch (Exception ex2) {
+					Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
+					return;
+				}
+			} else {
+				if (ex.getMessage()!=null && ex.getLocalizedMessage().startsWith("Connection refused")) {
+					Dialogs.showMessage("Sorry, could not connect to server.");
+					return;
+				} else {
+					ex.printStackTrace();
+				}
 			}
 		}
+		if (logs!=null && logs.size()>0) {
+			long datetime = System.currentTimeMillis();
+			for (KeyLog kl : logs) {
+				kl.addDataPath(new DataSourceStep(keyserver.getHost(), datetime));
+				currentKeyStore.addKeyLog(kl);
+			}
+			updateUI();
+		} else {
+			Dialogs.showMessage("Sorry, no keylogs for key:"+ key.getKeyID()+"\navailable on keyserver.");
+		}
+		
 	}
 	
 	protected void updateStatus(OSDXKey key) {
@@ -2217,7 +2297,7 @@ public class SecurityMainFrame extends JFrame {
 		return false;
 	}
 
-	private boolean showIdentityEditDialog(Identity id, boolean canCancel) {
+	private boolean showIdentityEditDialog(final Identity id, boolean canCancel) {
 		final JDialog d = new JDialog(instance);
 		d.setTitle("Edit Identity");
 		final boolean[] isOK = new boolean[] {!canCancel};		
@@ -2240,6 +2320,14 @@ public class SecurityMainFrame extends JFrame {
 		ok.setPreferredSize(new Dimension(200,30));
 		ok.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (id.getEmail()==null || id.getEmail().equals("")) {
+					Dialogs.showMessage("Please enter email adress");
+					return;
+				}
+				if (id.getMnemonic()==null || id.getMnemonic().equals("")) {
+					Dialogs.showMessage("Please enter mnemonic");
+					return;
+				}
 				isOK[0] = true;
 				d.dispose();
 			}
@@ -2308,18 +2396,27 @@ public class SecurityMainFrame extends JFrame {
 
 	public void generateMasterKeyPair() {
 		if (currentKeyStore!=null) {
-			try {
-				AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
-				MasterKey k = MasterKey.buildNewMasterKeyfromKeyPair(kp);
-				k.createLockedPrivateKey(messageHandler);
-				currentKeyStore.addKey(k);
-				updateUI();
-				releaseUILock();
-			} catch (Exception ex) {
-				releaseUILock();
-				Dialogs.showMessage("ERROR: could not generate new keypair.");
-				ex.printStackTrace();
-			}
+			final JDialog wait = Dialogs.getWaitDialog("Generating new MASTER KEY\n please wait ...");
+			Thread t = new Thread() {
+				public void run() {
+					try {
+						AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
+						MasterKey k = MasterKey.buildNewMasterKeyfromKeyPair(kp);
+						k.createLockedPrivateKey(messageHandler);
+						currentKeyStore.addKey(k);
+						updateUI();
+						releaseUILock();
+						wait.dispose();
+					} catch (Exception ex) {
+						releaseUILock();
+						wait.dispose();
+						Dialogs.showMessage("ERROR: could not generate new keypair.");
+						ex.printStackTrace();
+					}
+				}
+			};
+			t.start();
+			wait.setVisible(true);
 		}
 	}
 	
@@ -2411,6 +2508,7 @@ public class SecurityMainFrame extends JFrame {
 						updateUI();
 					} catch (Exception ex) {
 						releaseUILock();
+						wait.dispose();
 						Dialogs.showMessage("ERROR: could not generate new keypair.");
 						ex.printStackTrace();
 					}
@@ -2465,6 +2563,7 @@ public class SecurityMainFrame extends JFrame {
 		if (f!=null) {
 			try {
 				currentKeyStore = KeyApprovingStore.createNewKeyApprovingStore(f, messageHandler);
+				currentKeyStore.addKeyserverAndPublicKeysFromConfig(configFile);
 				updateUI();
 			} catch (Exception e) {
 				Dialogs.showMessage("ERROR: could not create keystore in file "+f.getAbsolutePath());

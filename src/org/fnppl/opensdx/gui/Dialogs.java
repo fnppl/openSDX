@@ -52,11 +52,14 @@ package org.fnppl.opensdx.gui;
  */
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Vector;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -125,26 +128,60 @@ public class Dialogs {
 		p.setLayout(new BorderLayout());
 		p.add(new JLabel(message),BorderLayout.NORTH);
 
+		
 		JPanel pMantra = new JPanel();
 		pMantra.setBorder(new TitledBorder("mantraname:"));
+		pMantra.setPreferredSize(new Dimension(270,70));
+		
 		JTextField text = new JTextField();
 		text.setPreferredSize(new Dimension(250,25));
 		pMantra.add(text,BorderLayout.CENTER);
 		
 		JPanel pPassword = new JPanel();
 		pPassword.setBorder(new TitledBorder("passphrase:"));
+		pPassword.setPreferredSize(new Dimension(270,70));
+		
 		
 		JPasswordField pf = new JPasswordField();		
 		pf.setEchoChar('*');
 		pf.setPreferredSize(new Dimension(250,25));
+		
 		pPassword.add(pf,BorderLayout.SOUTH);
 		
-		p.add(pMantra, BorderLayout.CENTER);
-		p.add(pPassword, BorderLayout.SOUTH);
-	    int ans = JOptionPane.showConfirmDialog(null,p,"NEW PASSWORD",JOptionPane.OK_CANCEL_OPTION);
+		JPanel pPassword2 = new JPanel();
+		pPassword2.setBorder(new TitledBorder("repeat passphrase:"));
+		pPassword2.setPreferredSize(new Dimension(270,70));
+		JPasswordField pf2 = new JPasswordField();		
+		pf2.setEchoChar('*');
+		pf2.setPreferredSize(new Dimension(250,25));
+		pPassword2.add(pf2,BorderLayout.SOUTH);
+		
+		JPanel pContent = new JPanel();
+		BoxLayout cLayout = new BoxLayout(pContent, BoxLayout.Y_AXIS);
+		pContent.setLayout(cLayout);
+		pContent.add(pMantra);
+		pContent.add(pPassword);
+		pContent.add(pPassword2);
+		
+		p.add(pContent, BorderLayout.CENTER);
+		
 	    //JOptionPane.showMessageDialog(null,p,head,JOptionPane.OK_OPTION);
-	    if (ans == JOptionPane.OK_OPTION && pf.getPassword()!=null) {
-	    	return new String[] {text.getText(),new String(pf.getPassword())};
+	    
+	    boolean repeat = true;
+	    while (repeat)  {
+	    	int ans = JOptionPane.showConfirmDialog(null,p,"NEW PASSWORD",JOptionPane.OK_CANCEL_OPTION);
+	    	if (ans == JOptionPane.OK_OPTION && pf.getPassword()!=null) {
+		    	if (Arrays.equals(pf.getPassword(),pf2.getPassword())) {
+		    		repeat = false;
+		    		return new String[] {text.getText(),new String(pf.getPassword())};
+		    	} else {
+		    		showMessage("repeated password does not match password, please reenter...");
+		    		pf.setText("");
+		    		pf2.setText("");
+		    	}
+		    } else {
+		    	repeat = false;
+		    }
 	    }
 	    return null;
 	}

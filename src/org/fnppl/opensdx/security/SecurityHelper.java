@@ -577,6 +577,7 @@ public class SecurityHelper {
 	private static void updateSha256(SHA256Digest sha256, String s) {
 		try {
 			byte[] b = s.getBytes("UTF-8");
+			//System.out.println("sha256::"+s);
 			sha256.update(b, 0, b.length);
 		} catch (Exception ex) {
 			ex.printStackTrace();

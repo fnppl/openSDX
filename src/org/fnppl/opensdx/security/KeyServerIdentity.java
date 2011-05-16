@@ -59,6 +59,13 @@ public class KeyServerIdentity {
 		
 	}
 	
+	public static KeyServerIdentity make(String host, int port, String prepath) {
+		KeyServerIdentity k = new KeyServerIdentity();
+		k.host = host;
+		k.port = port;
+		k.prepath = prepath;
+		return k;
+	}
 	
 	public static KeyServerIdentity fromElement(Element e) throws Exception {
 		KeyServerIdentity k = new KeyServerIdentity();
@@ -88,6 +95,8 @@ public class KeyServerIdentity {
 		Element e = new Element("keyserver");
 		e.addContent("host", host);
 		e.addContent("port", ""+port);
+		e.addContent("prepath", ""+prepath);
+		
 		Element kk = new Element("knownkeys");
 		e.addContent(kk);
 		for (OSDXKey k : knownkeys) {
@@ -96,7 +105,6 @@ public class KeyServerIdentity {
 		return e;
 	}
 
-
 	public String getHost() {
 		return host;
 	}
@@ -104,6 +112,10 @@ public class KeyServerIdentity {
 
 	public void setHost(String host) {
 		this.host = host;
+	}
+	
+	public void setPrepath(String prepath) {
+		this.prepath = prepath;
 	}
 
 	public String getPrepath() {
@@ -121,6 +133,15 @@ public class KeyServerIdentity {
 
 	public Vector<OSDXKey> getKnownKeys() {
 		return knownkeys;
+	}
+	
+	public boolean hasKnownKey(String keyid) {
+		for (OSDXKey k : knownkeys) {
+			if (k.getKeyID().equals(keyid)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void addKnownKey(OSDXKey knownkey) {

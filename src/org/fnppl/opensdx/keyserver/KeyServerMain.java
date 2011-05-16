@@ -131,6 +131,7 @@ public class KeyServerMain extends HTTPServer {
 	
 	private String servername = null;
 	
+	
 	private MessageHandler messageHandler = new DefaultMessageHandler() {
 		public boolean requestOverwriteFile(File file) {//dont ask, just overwrite
 			return true;
@@ -238,6 +239,7 @@ public class KeyServerMain extends HTTPServer {
 			Element ks = root.getChild("keyserver");
 //			host = ks.getChildText("host");
 			port = ks.getChildInt("port");
+			
 			String ip4 = ks.getChildText("ipv4");
 			try {
 				byte[] addr = new byte[4];

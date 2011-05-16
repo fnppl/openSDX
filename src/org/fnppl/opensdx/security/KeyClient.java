@@ -69,6 +69,11 @@ public class KeyClient extends HTTPClient {
 		this.prepath = prepath;
 	}
 	
+	public KeyClient(KeyServerIdentity keyserver) {
+		super(keyserver.getHost(), keyserver.getPort());
+		this.prepath = keyserver.getPrepath();
+	}
+	
 	// 1. Ich, als fremder user, möchte beim keyserver (z.B. keys.fnppl.org) den/die (MASTER) pubkey(s) zu der identity thiess@finetunes.net suchen können
 	public Vector<String> requestMasterPubKeys(final String idemail) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildRequestMasterPubKeys(host, prepath, idemail);
