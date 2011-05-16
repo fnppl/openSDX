@@ -61,58 +61,58 @@ public class KeyClientMessageFactory {
 	public static String PUBLICKEY_RESPONSE = "pubkey_response";
 	
 	
-	public static HTTPClientRequest buildRequestKeyServerIdentity(String host) {
+	public static HTTPClientRequest buildRequestKeyServerIdentity(String host, String prepath) {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/keyserversettings");
+		req.setURI(host, prepath+"/keyserversettings");
 		req.toggleGETMode();
 		return req;
 	}
 	
-	public static HTTPClientRequest buildRequestIdentities(String host, String keyid) {
+	public static HTTPClientRequest buildRequestIdentities(String host, String prepath, String keyid) {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/identities");
+		req.setURI(host, prepath+"/identities");
 		req.toggleGETMode();
 		req.addRequestParam("KeyID", keyid);
 		return req;
 	}
 	
-	public static HTTPClientRequest buildRequestKeyStatus(String host, String keyid) {
+	public static HTTPClientRequest buildRequestKeyStatus(String host, String prepath, String keyid) {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/keystatus");
+		req.setURI(host, prepath+"/keystatus");
 		req.addRequestParam("KeyID", keyid);
 		req.toggleGETMode();
 		
 		return req;
 	}
 	
-	public static HTTPClientRequest buildRequestMasterPubKeys(String host, String idemail) {
+	public static HTTPClientRequest buildRequestMasterPubKeys(String host, String prepath, String idemail) {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/masterpubkeys");
+		req.setURI(host, prepath+"/masterpubkeys");
 		req.toggleGETMode();
 		req.addRequestParam("Identity", idemail);		
 		return req;
 	}
 	
-	public static HTTPClientRequest buildRequestMasterPubKey(String host, String subkeyid) {
+	public static HTTPClientRequest buildRequestMasterPubKey(String host, String prepath, String subkeyid) {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/masterpubkey");
+		req.setURI(host, prepath+"/masterpubkey");
 		req.toggleGETMode();
 		req.addRequestParam("SubKeyID", subkeyid);		
 		return req;
 	}
 	
-	public static HTTPClientRequest buildRequestSubkeys(String host, String masterkeyid) {
+	public static HTTPClientRequest buildRequestSubkeys(String host, String prepath, String masterkeyid) {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/subkeys");
+		req.setURI(host, prepath+"/subkeys");
 		req.toggleGETMode();
 		req.addRequestParam("KeyID", masterkeyid);		
 	
 		return req;
 	}
 	
-	public static HTTPClientRequest buildRequestPublicKey(String host, String keyid) {
+	public static HTTPClientRequest buildRequestPublicKey(String host, String prepath, String keyid) {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/pubkey");
+		req.setURI(host, prepath+"/pubkey");
 		req.toggleGETMode();
 		req.addRequestParam("KeyID", keyid);		
 	
@@ -129,18 +129,18 @@ public class KeyClientMessageFactory {
 //		return req;
 //	}
 	
-	public static HTTPClientRequest buildRequestKeyLogs(String host, String keyid) {
+	public static HTTPClientRequest buildRequestKeyLogs(String host, String prepath, String keyid) {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/keylogs");
+		req.setURI(host, prepath+"/keylogs");
 		req.toggleGETMode();
 		req.addRequestParam("KeyID", keyid);
 		return req;
 	}
 	
 	
-	public static HTTPClientRequest buildPutRequestMasterKey(String host, OSDXKey masterkey, Identity id) throws Exception {
+	public static HTTPClientRequest buildPutRequestMasterKey(String host, String prepath, OSDXKey masterkey, Identity id) throws Exception {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/masterkey");
+		req.setURI(host, prepath+"/masterkey");
 		
 		req.addRequestParam("KeyID", masterkey.getKeyID());		
 		req.addRequestParam("Identity", id.getEmail());
@@ -153,9 +153,9 @@ public class KeyClientMessageFactory {
 		return req;
 	}
 	
-	public static HTTPClientRequest buildPutRequestRevokeKey(String host, OSDXKey revokekey, OSDXKey relatedMasterKey) throws Exception {
+	public static HTTPClientRequest buildPutRequestRevokeKey(String host, String prepath, OSDXKey revokekey, OSDXKey relatedMasterKey) throws Exception {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/revokekey");
+		req.setURI(host, prepath+"/revokekey");
 		
 		Element content = new Element("revokekey");
 		content.addContent("masterkeyid", relatedMasterKey.getKeyModulusSHA1());
@@ -169,9 +169,9 @@ public class KeyClientMessageFactory {
 		return req;
 	}
 	
-	public static HTTPClientRequest buildPutRequestRevokeMasterKey(String host, OSDXKey revokekey, OSDXKey relatedMasterKey, String message) throws Exception {
+	public static HTTPClientRequest buildPutRequestRevokeMasterKey(String host, String prepath, OSDXKey revokekey, OSDXKey relatedMasterKey, String message) throws Exception {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/revokemasterkey");
+		req.setURI(host, prepath+"/revokemasterkey");
 		
 		Element content = new Element("revokemasterkey");
 		content.addContent("from_keyid", revokekey.getKeyID());
@@ -184,9 +184,9 @@ public class KeyClientMessageFactory {
 		return req;
 	}
 	
-	public static HTTPClientRequest buildPutRequestRevokeSubKey(String host, OSDXKey subkey, OSDXKey relatedMasterKey, String message) throws Exception {
+	public static HTTPClientRequest buildPutRequestRevokeSubKey(String host, String prepath,  OSDXKey subkey, OSDXKey relatedMasterKey, String message) throws Exception {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/revokesubkey");
+		req.setURI(host, prepath+"/revokesubkey");
 		
 		Element content = new Element("revokesubkey");
 		content.addContent("from_keyid", relatedMasterKey.getKeyID());
@@ -199,9 +199,9 @@ public class KeyClientMessageFactory {
 		return req;
 	}
 	
-	public static HTTPClientRequest buildPutRequestSubKey(String host, OSDXKey subkey, OSDXKey relatedMasterKey) throws Exception {
+	public static HTTPClientRequest buildPutRequestSubKey(String host, String prepath, OSDXKey subkey, OSDXKey relatedMasterKey) throws Exception {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/subkey");
+		req.setURI(host, prepath+"/subkey");
 		
 		Element content = new Element("subkey");
 		content.addContent("masterkeyid", relatedMasterKey.getKeyModulusSHA1());
@@ -215,9 +215,9 @@ public class KeyClientMessageFactory {
 		return req;
 	}
 	
-	public static HTTPClientRequest getPutRequestKeyLogs(String host, Vector<KeyLog> keylogs, OSDXKey signingKey) throws Exception {
+	public static HTTPClientRequest getPutRequestKeyLogs(String host, String prepath, Vector<KeyLog> keylogs, OSDXKey signingKey) throws Exception {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, "/keylogs");
+		req.setURI(host, prepath+"/keylogs");
 		
 		Element content = new Element("keylogactions");
 		for (KeyLog k : keylogs) {

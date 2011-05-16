@@ -134,7 +134,7 @@ public class KeyVerificator {
 	}
 	public static Vector<KeyLog> requestKeyLogs(OSDXKey key) {
 		try {
-			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(),KeyClient.OSDX_KEYSERVER_DEFAULT_PORT);
+			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
 			Vector<KeyLog> result = client.requestKeyLogs(key.getKeyID());
 			if (client.getMessage()!=null) {
 				System.out.println("request Keylogs: Message: "+client.getMessage());
@@ -164,7 +164,7 @@ public class KeyVerificator {
 	
 	public static MasterKey requestParentKey(SubKey sub) {
 		try {
-			KeyClient client = new KeyClient(sub.getAuthoritativekeyserver(),KeyClient.OSDX_KEYSERVER_DEFAULT_PORT);
+			KeyClient client = new KeyClient(sub.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
 			MasterKey parent = client.requestMasterPubKey(sub.getKeyID());
 			if (client.getMessage()!=null) {
 				System.out.println("request parentkey: Message: "+client.getMessage());
@@ -178,7 +178,7 @@ public class KeyVerificator {
 	
 	public static Vector<Identity> requestIdentity(MasterKey key) {
 		try {
-			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(),KeyClient.OSDX_KEYSERVER_DEFAULT_PORT);
+			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
 			Vector<Identity> ids = client.requestIdentities(key.getKeyID());
 			if (client.getMessage()!=null) {
 				System.out.println("request parentkey: Message: "+client.getMessage());

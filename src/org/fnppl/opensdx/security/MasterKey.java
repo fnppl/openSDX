@@ -165,7 +165,7 @@ public class MasterKey extends OSDXKey {
 		Identity id = getIdentity0001();
 		if (id==null) return Result.error("No Identity 0001 found.");
 		try {
-			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT);
+			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
 			boolean ok = client.putMasterKey(this, id);
 			return Result.succeeded();
 		} catch (Exception ex) {

@@ -42,7 +42,7 @@ public class KeyServerClientTest {
 		//String host = "it-is-awesome.de";
 		String host = "localhost";
 		
-		KeyClient client = new KeyClient(host, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT);
+		KeyClient client = new KeyClient(host, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
 		OutputStream out = System.out;
 		out = new FileOutputStream(new File("test_keyserver_client.txt"));
 		

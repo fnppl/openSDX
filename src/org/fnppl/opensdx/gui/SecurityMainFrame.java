@@ -1844,7 +1844,7 @@ public class SecurityMainFrame extends JFrame {
 		int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer.", keyservernames);
 		if (ans>=0) {
 			KeyServerIdentity keyserver = keyservers.get(ans);
-			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
+			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
 			
 			Vector<KeyLog> logs = null;
 			try {
@@ -1894,7 +1894,7 @@ public class SecurityMainFrame extends JFrame {
 		int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer.", keyservernames);
 		if (ans>=0) {
 			KeyServerIdentity keyserver = keyservers.get(ans);
-			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
+			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
 			String keyid = key.getKeyID();
 			KeyStatus status = null;
 			try {
@@ -1947,7 +1947,7 @@ public class SecurityMainFrame extends JFrame {
 			int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer.", keyservernames);
 			if (ans>=0) {
 				KeyServerIdentity keyserver = keyservers.get(ans);
-				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
+				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
 				try {
 					Vector<String> masterkeys = null;
 					try {
@@ -2033,7 +2033,7 @@ public class SecurityMainFrame extends JFrame {
 		int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer for uploading KeyLog.", keyservernames);
 		if (ans>=0) {
 			KeyServerIdentity keyserver = keyservers.get(ans);
-			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
+			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
 			Vector<Identity> ids = null;
 			try {
 				ids = client.requestIdentities(keyid);
@@ -2139,7 +2139,7 @@ public class SecurityMainFrame extends JFrame {
 						//self approval keylog
 						try {
 							KeyLog kl = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, key, key.getKeyID(), key.getIdentity0001());
-							rKeylog = kl.uploadToKeyServer(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT,key);
+							rKeylog = kl.uploadToKeyServer(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "", key);
 						} catch (Exception ex) {
 							rKeylog = Result.error(ex);
 						}
@@ -2200,7 +2200,7 @@ public class SecurityMainFrame extends JFrame {
 		try {
 			int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to generate a KeyLog of key:\n"+log.getKeyIDTo()+"\non KeyServer: "+keyserver.getHost()+"?");
 			if (confirm==Dialogs.YES) {
-				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
+				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
 				boolean ok =client.putKeyLog(log, signingKey);
 				if (ok) {
 					Dialogs.showMessage("Generation of KeyLog successful!");
@@ -2353,7 +2353,7 @@ public class SecurityMainFrame extends JFrame {
 		if (keyserver!=null) {
 			try {
 				if (!revokekey.isPrivateKeyUnlocked()) revokekey.unlockPrivateKey(messageHandler);	
-				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort());
+				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
 				boolean ok = client.putRevokeMasterKeyRequest(revokekey, masterkey, message);
 				if (ok) {
 					Dialogs.showMessage("REVOCATION of Key:\n"+masterkey.getKeyID()+"\non KeyServer: "+keyserver.getHost()+"\nsuccessful!");

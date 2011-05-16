@@ -53,6 +53,7 @@
 	<keyserver>
 		<!--  <host>localhost</host> -->
 		<port>8889</port>
+		<prepath></prepath><!-- e.g. /osdxkeyserver as path-prefix -->
 		<ipv4>127.0.0.1</ipv4>
       	<ipv6>127.0.0.1</ipv6>
       	<mail>

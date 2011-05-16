@@ -49,6 +49,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class KeyServerIdentity {
 
+	private String prepath = "";
 	private String host = null;
 	private int port = 80;
 	
@@ -62,6 +63,8 @@ public class KeyServerIdentity {
 	public static KeyServerIdentity fromElement(Element e) throws Exception {
 		KeyServerIdentity k = new KeyServerIdentity();
 		k.host = e.getChildText("host");
+		k.prepath = e.getChildText("prepath").trim();
+		
 		try {
 			k.port = Integer.parseInt(e.getChildText("port"));
 		} catch (Exception ex) {
@@ -100,6 +103,9 @@ public class KeyServerIdentity {
 		this.host = host;
 	}
 
+	public String getPrepath() {
+		return prepath;
+	}
 
 	public int getPort() {
 		return port;
