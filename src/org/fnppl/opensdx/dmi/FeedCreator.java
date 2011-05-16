@@ -50,20 +50,199 @@ package org.fnppl.opensdx.dmi;
 
 //import org.fnppl.opensdx.commonAuto.Information;
 
+import org.fnppl.opensdx.common.ActionHttp;
+import org.fnppl.opensdx.common.ActionMailTo;
+import org.fnppl.opensdx.common.Bundle;
+import org.fnppl.opensdx.common.BundleInformation;
+import org.fnppl.opensdx.common.BundleRelatedInformation;
+import org.fnppl.opensdx.common.BusinessObject;
+import org.fnppl.opensdx.common.ContractPartner;
+import org.fnppl.opensdx.common.Contributor;
+import org.fnppl.opensdx.common.FeedInfo;
+import org.fnppl.opensdx.common.IDs;
+import org.fnppl.opensdx.common.InfoWWW;
+import org.fnppl.opensdx.common.Receiver;
+import org.fnppl.opensdx.common.TriggeredActions;
+import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.*;
+
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 
 public class FeedCreator {
+	ContractPartner sender;
+	ContractPartner licensor;
+	BusinessObject creator;
+	
+	public Feed makeExampleFeed() {
+		return null;
+	}
 	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+
+		// -- test Feedinfo --
+		boolean onlytest =true;
+		String feedid = "example feedid";
+		long creationdatetime = System.currentTimeMillis();
+		long effectivedatetime = System.currentTimeMillis();
+
+		ContractPartner sender
+			= ContractPartner.make(
+				ContractPartner.ROLE_SENDER,
+				"contractpartnerid",
+				"ourcontractpartnerid"
+			)
+			.email("sender@example.org");
+		
+		ContractPartner licensor
+			= ContractPartner.make(
+				ContractPartner.ROLE_LICENSOR,
+				"contractpartnerid",
+				"ourcontractpartnerid"
+			)
+			.email("licensor@example.org");
+		
+		
+		FeedInfo feedinfo
+			= FeedInfo.make(
+				onlytest,
+				feedid,
+				creationdatetime,
+				effectivedatetime,
+				sender,
+				licensor
+			)
+			.creator("creator@example.org", "creator_userid")
+			.receiver(
+				Receiver.make(
+					Receiver.TRANSFER_TYPE_FTP,
+					"it-is-awesome.de",
+					"127.0.0.1",
+					Receiver.AUTH_TYPE_LOGIN,
+					SecurityHelper.getSHA1("LOGIN".getBytes()))
+			 	)
+			.addAction(
+				TriggeredActions.TRIGGER_ONINITIALRECEIVE,
+				ActionHttp.make(
+					"check.fnppl.org",
+					"GET"
+				)
+			    .addHeader("header1", "value1")
+			    .addHeader("header2", "value2")
+			    .addParam("param1", "value3")
+			)
+			.addAction(
+				TriggeredActions.TRIGGER_ONERROR,
+				ActionMailTo.make(
+					"receiver@alert.com",
+					"subject",
+					"text"
+				)
+			)
+			;
+
+		
+//		//test output
+//		Element eFeedinfo = feedinfo.toElement();
+//		
+//		//test read document
+//		FeedInfo feedinfo2 = FeedInfo.fromBusinessObject(BusinessObject.fromElement(eFeedinfo));
+//		
+//		Element eFeedinfo2 = feedinfo2.toElement();
+//		
+//		BusinessObject bo = BusinessObject.fromElement(eFeedinfo);
+//		Element eFeedinfo3 = bo.toElement();
+		
+		
+//		System.out.println("\n\nEXAMPLE FEEDINFO\n--------------------");
+//		Document.buildDocument(eFeedinfo).output(System.out);
+//		
+//		System.out.println("\n\nRE-READ FEEDINFO\n--------------------");
+//		Document.buildDocument(eFeedinfo2).output(System.out);
+//		
+//		System.out.println("\n\nRE-READ FEEDINFO with BusinessObject\n--------------------");
+//		Document.buildDocument(eFeedinfo3).output(System.out);
+//	
+		
+//		try {
+//			System.out.println("feedinfo:                sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eFeedinfo),'\0',-1));
+//			System.out.println("feedinfo re-read         sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eFeedinfo2),'\0',-1));
+//			System.out.println("feedinfo business object sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eFeedinfo3),'\0',-1));
+//			
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+		
+		
+		Bundle bundle
+		= Bundle.make(
+			IDs.make()
+				.amzn("amazon")
+				.finetunesid("fineid")
+				.upc("a2312")
+			,
+			"displayname",
+			"name",
+			"version 1.0",
+			"display artist",
+			BundleInformation.make(
+					System.currentTimeMillis(),
+					System.currentTimeMillis()
+				)
+				.playlength(987)
+				.addPromotext("en", "EN promotext")
+				.addPromotext("de", "DE promotetext")
+				.addTeasertext("de", "DE teasertext")
+				.related(BundleRelatedInformation.make()
+						.physical_distributor("published physical distributor")
+						.physical_distributor("secret physical distributor", false)
+						.youtube_url("my.youtube.url")
+						.youtube_url("my.youtube.channel")
+						.addRelatedBundleIDs(IDs.make()
+								.ourid("our id")
+								.yourid("your id")
+						)
+				)
+			,
+			"license_basis",
+			"license_specifics"
+		)
+		.addContributor(
+			Contributor.make(
+				"super label",
+				"label",
+				IDs.make()
+				   .labelordernum("123124124")
+			)
+			.www(InfoWWW.make()
+				.homepage("super-label-homepage.nät")
+				.phone("+49 44 9191919", false)
+			)
+		)
+		;
+		
+		
+		Element eBundle = bundle.toElement();
+		Element eBundle2 = Bundle.fromBusinessObject(BusinessObject.fromElement(eBundle)).toElement();
+		
+		System.out.println("\n\nEXAMPLE BUNDLE\n--------------------");
+		Document.buildDocument(eBundle).output(System.out);
+		
+		System.out.println("\n\nRE-READ BUNDLE\n--------------------");
+		Document.buildDocument(eBundle2).output(System.out);
+
+		try {
+			System.out.println("bundle                 sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eBundle),'\0',-1));
+			System.out.println("bundle re-read         sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eBundle2),'\0',-1));			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		
 	}
-
 }
