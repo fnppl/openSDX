@@ -51,7 +51,7 @@
 
 <opensdxkeyserver>
 	<keyserver>
-		<host>localhost</host>
+		<!--  <host>localhost</host> -->
 		<port>8889</port>
 		<ipv4>127.0.0.1</ipv4>
       	<ipv6>127.0.0.1</ipv6>
@@ -59,7 +59,7 @@
       		<user>root_signing_key@fnppl.org</user>
       		<sender>master of keyserver &lt;root_signing_key@fnppl.org&gt;</sender>
       		<password></password> <!-- can, but should not be given in config -->
-      		<smpt_host>smtp.fnppl.org</smpt_host>
+      		<smtp_host>smtp.fnppl.org</smtp_host>
       	</mail>
 	</keyserver>
 	<rootsigningkey>

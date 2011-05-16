@@ -174,14 +174,15 @@ public class KeyServerMain extends HTTPServer {
 		updateCache(keyServerSigningKey, null);
 	}
 	
-	public OSDXKey createNewSigningKey(String pwSigning) {
+	public OSDXKey createNewSigningKey(String pwSigning, String hostname) {
 		try {
 			System.out.println("Creating new SigningKey:");
 			//generate new keypair
 			MasterKey keyServerSigningKey = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
-			keyServerSigningKey.setAuthoritativeKeyServer(host);
+			keyServerSigningKey.setAuthoritativeKeyServer(hostname);
+			
 			Identity id = Identity.newEmptyIdentity();
-			id.setEmail("debug_signing@keyserver.fnppl.org");
+			id.setEmail("debug_signing@"+hostname);
 			id.setIdentNum(1);
 			id.createSHA256();
 			keyServerSigningKey.addIdentity(id);
@@ -213,7 +214,7 @@ public class KeyServerMain extends HTTPServer {
 			Element root = Document.fromFile(configFile).getRootElement();
 			//keyserver base
 			Element ks = root.getChild("keyserver");
-			host = ks.getChildText("host");
+//			host = ks.getChildText("host");
 			port = ks.getChildInt("port");
 			String ip4 = ks.getChildText("ipv4");
 			try {
