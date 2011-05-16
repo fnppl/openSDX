@@ -48,7 +48,7 @@ package org.fnppl.opensdx.common;
 import java.lang.reflect.Field;
 import java.util.Vector;
 
-import org.fnppl.opensdx.automatisation.BusinessStringItemGenerator;
+//import org.fnppl.opensdx.automatisation.BusinessStringItemGenerator;
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLElementable;
 import org.fnppl.opensdx.xml.XMLHelper;
