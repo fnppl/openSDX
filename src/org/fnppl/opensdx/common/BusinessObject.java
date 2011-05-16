@@ -46,7 +46,7 @@ package org.fnppl.opensdx.common;
  */
 
 import java.lang.reflect.Field;
-import java.util.Vector;
+import java.util.*;
 
 //import org.fnppl.opensdx.automatisation.BusinessStringItemGenerator;
 import org.fnppl.opensdx.xml.Element;
@@ -71,16 +71,25 @@ public abstract class BusinessObject implements XMLElementable {
 	 * cool stuff happens here:: this method uses javas reflexion for accessing all XMLElementable fields
 	 * coolest stuff:: even private fields can be read out by this!!!
 	 */
+	
+	private static Hashtable<Class, Field[]> getDeclaredFieldsCache = new Hashtable<Class, Field[]>();
 	public Element toElement() {
 		Element resultElement = new Element(getKeyname());
 		
-		Field[] fields = this.getClass().getDeclaredFields();
+		Field[] fields = getDeclaredFieldsCache.get(this.getClass());
+		if(fields == null) {
+			fields = this.getClass().getDeclaredFields();
+			getDeclaredFieldsCache.put(this.getClass(), fields);
+			
+			for(int i=0; i<fields.length; i++) {
+				fields[i].setAccessible(true);
+			}
+		}
 		
 		for (Field f : fields) {
 			if (!f.getName().equals("this$0")) { //argg, watch out when directly using BusinessObjects
 				try {	
 					//System.out.println(f.getName());
-					f.setAccessible(true);
 					Object thisFieldsObject = f.get(this);
 					if (thisFieldsObject instanceof XMLElementable) {
 						Element e = ((XMLElementable)thisFieldsObject).toElement();
@@ -257,6 +266,4 @@ public abstract class BusinessObject implements XMLElementable {
 	public void setAppendOtherObjectToOutput(boolean appendOtherObjects) {
 		this.appendOtherObjects = appendOtherObjects;
 	}
-	
-	
 }
