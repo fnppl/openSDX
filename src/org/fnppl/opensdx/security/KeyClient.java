@@ -63,15 +63,22 @@ public class KeyClient extends HTTPClient {
 	public final static String ERROR_WRONG_RESPONE_FORMAT = "ERROR: Wrong format in keyserver's response.";
 	
 	private String prepath;
+	private KeyVerificator keyverificator = null;
 	
-	public KeyClient(String host, int port, String prepath) {
+	public KeyClient(String host, int port, String prepath, KeyVerificator keyverificator) {
 		super(host, port);
 		this.prepath = prepath;
+		this.keyverificator = keyverificator;
 	}
 	
-	public KeyClient(KeyServerIdentity keyserver) {
+	public KeyClient(KeyServerIdentity keyserver, KeyVerificator keyverificator) {
 		super(keyserver.getHost(), keyserver.getPort());
 		this.prepath = keyserver.getPrepath();
+		this.keyverificator = keyverificator;
+	}
+	
+	public void setKeyVerificator(KeyVerificator keyverificator) {
+		this.keyverificator = keyverificator;
 	}
 	
 	// 1. Ich, als fremder user, möchte beim keyserver (z.B. keys.fnppl.org) den/die (MASTER) pubkey(s) zu der identity thiess@finetunes.net suchen können
@@ -91,7 +98,7 @@ public class KeyClient extends HTTPClient {
 			}
 		}
 		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
-		Result result = msg.verifySignatures();
+		Result result = msg.verifySignatures(keyverificator);
 		
 		if (result.succeeded) {
 			Element content = msg.getContent();
@@ -131,7 +138,7 @@ public class KeyClient extends HTTPClient {
 			}
 		}
 		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
-		Result result = msg.verifySignatures();
+		Result result = msg.verifySignatures(keyverificator);
 		
 		if (result.succeeded) {
 			Element content = msg.getContent();
@@ -231,7 +238,7 @@ public class KeyClient extends HTTPClient {
 			return null;
 		}
 		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
-		Result result = msg.verifySignatures();
+		Result result = msg.verifySignatures(keyverificator);
 		
 		if (result.succeeded) {
 			Element content = msg.getContent();
@@ -272,7 +279,7 @@ public class KeyClient extends HTTPClient {
 			return null;
 		}
 		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
-		Result result = msg.verifySignatures();
+		Result result = msg.verifySignatures(keyverificator);
 		
 		if (result.succeeded) {
 			Element content = msg.getContent();
@@ -313,7 +320,7 @@ public class KeyClient extends HTTPClient {
 			return null;
 		}
 		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
-		Result result = msg.verifySignatures();
+		Result result = msg.verifySignatures(keyverificator);
 		
 		if (result.succeeded) {
 			Element content = msg.getContent();
@@ -355,7 +362,7 @@ public class KeyClient extends HTTPClient {
 			return null;
 		}
 		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
-		Result result = msg.verifySignatures();
+		Result result = msg.verifySignatures(keyverificator);
 		
 		if (result.succeeded) {
 			Element content = msg.getContent();
@@ -395,7 +402,7 @@ public class KeyClient extends HTTPClient {
 			return null;
 		}
 		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
-		Result result = msg.verifySignatures();
+		Result result = msg.verifySignatures(keyverificator);
 		
 		if (result.succeeded) {
 			Element content = msg.getContent();

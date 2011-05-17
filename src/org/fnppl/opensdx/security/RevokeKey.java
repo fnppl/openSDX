@@ -52,16 +52,20 @@ public class RevokeKey extends SubKey {
 		super.setLevel(LEVEL_REVOKE);
 	}
 	
-	public Result uploadToKeyServer() {
+	public Result uploadToKeyServer(KeyVerificator keyverificator) {
 		if (!hasPrivateKey()) return Result.error("no private key available");
 		if (!isPrivateKeyUnlocked()) return Result.error("private key is locked");
 		if (authoritativekeyserver.equals("LOCAL")) return Result.error("authoritative keyserver can not be LOCAL");
 		//if (authoritativekeyserverPort<=0) return Result.error("authoritative keyserver port not set");
 		if (parentKey==null) return Result.error("missing parent key");
 		try {
-			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
+			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "", keyverificator);
 			boolean ok = client.putRevokeKey(this, parentKey);
-			return Result.succeeded();
+			if (ok) {
+				return Result.succeeded();
+			} else {
+				return Result.error(client.getMessage());
+			}
 		} catch (Exception ex) {
 			return Result.error(ex);
 		}

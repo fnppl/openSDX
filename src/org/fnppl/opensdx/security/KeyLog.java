@@ -126,9 +126,9 @@ public class KeyLog {
 		return kl;
 	}
 	
-	public Result uploadToKeyServer(String host, int port, String prepath, OSDXKey signingKey) {
+	public Result uploadToKeyServer(String host, int port, String prepath, OSDXKey signingKey, KeyVerificator keyverificator) {
 		try {
-			KeyClient client =  new KeyClient(host, port, prepath);
+			KeyClient client =  new KeyClient(host, port, prepath, keyverificator);
 			boolean ok = client.putKeyLog(this, signingKey);
 			if (ok) return Result.succeeded();
 			else Result.error(client.getMessage());

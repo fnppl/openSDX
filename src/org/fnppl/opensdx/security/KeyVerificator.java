@@ -63,10 +63,10 @@ import org.fnppl.opensdx.xml.Document;
  */
 public class KeyVerificator {
 	
-	private static WeakHashMap<Long,KeyVerificator> instances = null;
+	//private static WeakHashMap<Long,KeyVerificator> instances = null;
 	
 	private static KeyVerificator defInstance = null;
-	
+	private Vector<KeyServerIdentity> keyservers = null;
 	
 	private long instanceDatetime = 0;
 	private static TrustGraph trustGraph = new TrustGraph(); 
@@ -74,43 +74,55 @@ public class KeyVerificator {
 	
 	private void KeyVerificator() {
 		instanceDatetime = System.currentTimeMillis();
+	}
+	
+	public static KeyVerificator make() {
+		return new KeyVerificator();
+	}
+	
+//	public static KeyVerificator getDefaultInstance() {
+//		if (defInstance == null) {
+//			defInstance = new KeyVerificator();
+//		}
+//		else if(System.currentTimeMillis() - defInstance.instanceDatetime >= 1000*60*60*2) {
+//			//create new defInstance;
+//			defInstance = new KeyVerificator();
+//		}
+//		return defInstance;
+//	}
+	
+//	public static KeyVerificator getInstance(long stamp) {
+//		long mstamp = stamp / (60*30*1000);//30-minuten-normalisiert...
+//		KeyVerificator k = instances.get(mstamp);
+//		if(k == null) {
+//			//create
+//			
+//			instances.put(mstamp, k);
+//		}
+//		return k;
+//	}
+	
+	public void addKeyServer(KeyServerIdentity keyserver) {
+		if (keyservers==null) {
+			keyservers = new Vector<KeyServerIdentity>();
+		}
+		keyservers.add(keyserver);
 		
 	}
 	
-	public static KeyVerificator getDefaultInstance() {
-		if (defInstance == null) {
-			defInstance = new KeyVerificator();
-		}
-		else if(System.currentTimeMillis() - defInstance.instanceDatetime >= 1000*60*60*2) {
-			//create new defInstance;
-			defInstance = new KeyVerificator();
-		}
-		return defInstance;
-	}
-	
-	public static KeyVerificator getInstance(long stamp) {
-		long mstamp = stamp / (60*30*1000);//30-minuten-normalisiert...
-		KeyVerificator k = instances.get(mstamp);
-		if(k == null) {
-			//create
-			
-			instances.put(mstamp, k);
-		}
-		return k;
-	}
-	
-	
-	
-	public static void addRatedKey(OSDXKey key, int rating) {
+	public void addRatedKey(OSDXKey key, int rating) {
 		trustGraph.addKeyRating(key, rating);
 	}
 	
-	public static void removeDirectRating(OSDXKey key) {
+	public void removeDirectRating(OSDXKey key) {
 		trustGraph.removeDirectRating(key);
 	}
 	
+	public void removeAllDirectRatings() {
+		trustGraph.removeAllDirectRatings();
+	}
 	
-	public static Result verifyKey(OSDXKey key) {
+	public Result verifyKey(OSDXKey key) {
 		//sha1 of key modulus = keyid
 		byte[] keyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(key.getKeyID()));
 		if (!Arrays.equals(keyid, SecurityHelper.getSHA1(key.getPublicModulusBytes()))) {
@@ -119,22 +131,127 @@ public class KeyVerificator {
 		//already trusted key
 		if (isTrustedKey(key.getKeyID())) return Result.succeeded();
 		
+		//find a keylog of a trusted key that approves the given key		
+		Result r = checkForKeyLogsThatTrustKey(key);
+		if (!r.succeeded) {
+			return Result.error("Given keyid is NOT directly trusted and NO approval keylog of a trusted key could be found.\nChain-of-trust verification is NOT IMPLEMENTED yet.");	
+		} else {
+			return Result.succeeded();
+		}
+		
 		//find a chain of trust by breath-first-search of keylogs
-		return findChainOfTrustTo(key);
+		//TODO return findChainOfTrustTo(key);
+		
 	}
 	
-	public static boolean isTrustedKey(String keyid) {
+	private Result checkForKeyLogsThatTrustKey(OSDXKey key) {
+		if (isNotTrustedKey(key.getKeyID())) {
+			return Result.error("key is already registered as not trusted");
+		}
+		//check keylogs for keys that trust this key
+		System.out.println("requesting keylogs for: "+key.getKeyID());
+		// request keylogs includes verification of keyserver-key,
+		// when keyserver key is not trusted, no keylogs are found !!! 
+		Vector<KeyLog> keylogs = requestKeyLogs(key); 
+		if (key.isSub()) {
+			//sub keys can only have revocation keylogs
+			boolean hasRevokeLog = false;
+			for (KeyLog keylog : keylogs) {
+				try {
+					String action = keylog.getAction();
+					if (action.equals(KeyLog.REVOCATION)) {
+						if (!isNotTrustedKey(keylog.getKeyIDFrom())) {
+							hasRevokeLog = true;
+							System.out.println("found revocation for subkey: "+key.getKeyID());
+						}
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			if (!hasRevokeLog) {
+				//next step: verify parent-key
+				MasterKey parent = requestParentKey((SubKey)key);
+				if (parent!=null) {
+					if (isTrustedKey(parent.getKeyID())) {
+						return Result.succeeded();
+					} else {
+						return checkForKeyLogsThatTrustKey(parent);
+					}
+				}
+			}
+		} else {
+			if (keylogs!=null) {
+				//run through all keylogs
+				// if approval: add to pre-children
+				// if disapproval: remove from pre-Child-Keylogs, if no prior approval -> ignore
+				// if revocation: remove from pre-Child-Keylogs
+				// at the end -> add test all pre-ChildKeylogs for a trusted key
+				Vector<KeyLog> preChildKeylogs = new Vector<KeyLog>();
+				SecurityHelper.sortByDate(keylogs);
+				for (KeyLog keylog : keylogs) {
+					try {
+						System.out.println("  found verified keylog from "+keylog.getKeyIDFrom()+" from date: "+keylog.getDateString());
+						if (!isNotTrustedKey(keylog.getKeyIDFrom())) {
+							//only the newest approval should be a child
+							OSDXKey fromKey = keylog.getActionSignatureKey();
+							String fromKeyID = fromKey.getKeyID();
+							KeyLog found = null;
+							for (KeyLog child : preChildKeylogs) {
+								if (child.getKeyIDFrom().equals(fromKeyID)) {
+									found = child;
+									break;
+								}
+							}
+							String action = keylog.getAction();
+							if (action.equals(KeyLog.APPROVAL)) {
+								if (found!=null) {
+									preChildKeylogs.remove(found);
+								}
+								preChildKeylogs.add(keylog);
+							}
+							else if (action.equals(KeyLog.REVOCATION)) {
+								if (found!=null) {
+									preChildKeylogs.remove(found);
+								}
+							}
+							else if (action.equals(KeyLog.DISAPPROVAL)) {
+								if (found!=null) {
+									preChildKeylogs.remove(found);
+								}
+							}
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+				for (KeyLog child : preChildKeylogs) {
+					try {
+						if (isTrustedKey(child.getKeyIDFrom())) {
+							return Result.succeeded();
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			}
+		}
+		return Result.error("Sorry, no approval keylog of a trusted key found.");
+	}
+	
+	public boolean isTrustedKey(String keyid) {
 		int rating = trustGraph.getTrustRating(keyid);
 		if (rating>=TrustRatingOfKey.RATING_MARGINAL) return true;
 		return false;
 	}
 	
-	public static TrustGraph getTrustGraph() {
+	public TrustGraph getTrustGraph() {
 		return trustGraph;
 	}
-	public static Vector<KeyLog> requestKeyLogs(OSDXKey key) {
+	
+	public Vector<KeyLog> requestKeyLogs(OSDXKey key) {
 		try {
-			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
+			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "",this);
 			Vector<KeyLog> result = client.requestKeyLogs(key.getKeyID());
 			if (client.getMessage()!=null) {
 				System.out.println("request Keylogs: Message: "+client.getMessage());
@@ -162,9 +279,9 @@ public class KeyVerificator {
 		return null;
 	}
 	
-	public static MasterKey requestParentKey(SubKey sub) {
+	public MasterKey requestParentKey(SubKey sub) {
 		try {
-			KeyClient client = new KeyClient(sub.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
+			KeyClient client = new KeyClient(sub.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "",this);
 			MasterKey parent = client.requestMasterPubKey(sub.getKeyID());
 			if (client.getMessage()!=null) {
 				System.out.println("request parentkey: Message: "+client.getMessage());
@@ -176,9 +293,9 @@ public class KeyVerificator {
 		return null;
 	}
 	
-	public static Vector<Identity> requestIdentity(MasterKey key) {
+	public Vector<Identity> requestIdentity(MasterKey key) {
 		try {
-			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
+			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "",this);
 			Vector<Identity> ids = client.requestIdentities(key.getKeyID());
 			if (client.getMessage()!=null) {
 				System.out.println("request parentkey: Message: "+client.getMessage());
@@ -307,7 +424,7 @@ public class KeyVerificator {
 //		}
 //	}
 	
-	private static Result findChainOfTrustTo(OSDXKey key) {
+	private Result findChainOfTrustTo(OSDXKey key) {
 		if (isCheckInProgress(key.getKeyID())) {
 			return Result.error("key check is already progessing -> no loop");
 		}
@@ -342,26 +459,26 @@ public class KeyVerificator {
 		}
 	}
 	
-	public static void traverseGraphFrom(OSDXKey key, int maxDepth) {
+	public void traverseGraphFrom(OSDXKey key, int maxDepth) {
 		if (isCheckInProgress(key.getKeyID())) return;
 		if (isNotTrustedKey(key.getKeyID())) return;
 		checkInProgress.add(key);
 		TrustGraphNode nodeStart = trustGraph.addNode(key);
-		trustGraph.breadth_first_search(nodeStart, maxDepth);
+		trustGraph.breadth_first_search(nodeStart, maxDepth,this);
 		checkInProgress.remove(key);
 	}
 	
-	public static boolean isNotTrustedKey(String keyid) {
+	public boolean isNotTrustedKey(String keyid) {
 		int rating = trustGraph.getTrustRating(keyid);
 		if (rating==TrustRatingOfKey.RATING_NOT_TRUSTED) return true;
 		return false;
 	}
 	
-	public static boolean isDirectlyRated(String keyid) {
+	public boolean isDirectlyRated(String keyid) {
 		return trustGraph.isDirectlyRated(keyid);
 	}
 	
-	public static int getTrustRating(String keyid) {
+	public int getTrustRating(String keyid) {
 		return trustGraph.getTrustRating(keyid);
 	}
 	
@@ -374,21 +491,21 @@ public class KeyVerificator {
 		return false;
 	}
 	
-	private static void createTestApprovalKeyLog(MasterKey from, MasterKey to, KeyClient client) {
-		try {
-			KeyLog keylog = KeyLog.buildNewKeyLog(KeyLog.APPROVAL, from, to.getKeyID(), "127.0.0.1", "127.0.01", to.getIdentity0001());
-			client.putKeyLog(keylog, from);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
+//	private void createTestApprovalKeyLog(MasterKey from, MasterKey to, KeyClient client) {
+//		try {
+//			KeyLog keylog = KeyLog.buildNewKeyLog(KeyLog.APPROVAL, from, to.getKeyID(), "127.0.0.1", "127.0.01", to.getIdentity0001());
+//			client.putKeyLog(keylog, from);
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
+//	}
 
-	public static TrustGraphNode findTrusted(OSDXKey start, int maxDepth) {
+	public TrustGraphNode findTrusted(OSDXKey start, int maxDepth) {
 		TrustGraphNode nodeStart = trustGraph.addNode(start);
-		return trustGraph.breadth_first_search_to_trusted(nodeStart, maxDepth);
+		return trustGraph.breadth_first_search_to_trusted(nodeStart, maxDepth,this);
 	}
 	
-	public static Vector<TrustGraphNode> findPredecessors(TrustGraphNode start) {
+	public Vector<TrustGraphNode> findPredecessors(TrustGraphNode start) {
  		Vector<TrustGraphNode> predecessors = new Vector<TrustGraphNode>();
  		Vector<TrustGraphNode> queue = new Vector<TrustGraphNode>();
 		queue.add(start);

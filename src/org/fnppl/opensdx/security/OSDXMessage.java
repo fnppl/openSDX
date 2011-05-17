@@ -124,15 +124,15 @@ public class OSDXMessage {
 		Signature signature = Signature.createSignatureFromLocalProof(lastSignatureByters, dataname, signingkey);
 		signatures.add(signature);
 	}
-	public Result verifySignatures() throws Exception {
-		return verifySignatures(true);
+	public Result verifySignatures(KeyVerificator keyverificator) throws Exception {
+		return verifySignatures(true, keyverificator);
 	}
 	
 	public Result verifySignaturesWithoutKeyVerification() throws Exception {
-		return verifySignatures(false);
+		return verifySignatures(false, null);
 	}
 	
-	private Result verifySignatures(boolean verifyKeys) throws Exception {
+	private Result verifySignatures(boolean verifyKeys, KeyVerificator keyverificator) throws Exception {
 	//	if (1==1) throw new RuntimeException("ERROR: OSDXMessage::verifySignatures not implemented");
 		for (int i=0;i<signatures.size();i++) {
 			Signature signature = signatures.get(i);
@@ -145,7 +145,7 @@ public class OSDXMessage {
 			}
 			if (verified.succeeded && verifyKeys) {
 				//verify key from signature
-				verified = KeyVerificator.verifyKey(signature.getKey());
+				verified = keyverificator.verifyKey(signature.getKey());
 			}
 			if (!verified.succeeded) return verified;
 		}
