@@ -1,11 +1,6 @@
 package org.fnppl.opensdx.common;
-/*
- * Copyright (C) 2010-2011 
- * 							fine people e.V. <opensdx@fnppl.org> 
- * 							Henning Thieß <ht@fnppl.org>
- * 
- * 							http://fnppl.org
-*/
+
+import java.util.Vector;
 
 /*
  * Software license
@@ -44,28 +39,62 @@ package org.fnppl.opensdx.common;
  * 
  */
 
-//import org.fnppl.opensdx.common.*;
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
 
-public class Item extends BusinessObject {
-	public static String KEY_NAME = "item";
+public class LicenseRule extends BusinessObject {
+
+	public static String KEY_NAME = "rule";
 	
-	private BusinessStringItem type;						//MUST
-	private IDs ids;										//MUST
-	private BusinessStringItem displayname;					//MUST
-	private BusinessStringItem name;						//MUST
-	private BusinessStringItem version;						//MUST
-	private BusinessStringItem display_artist;				//SHOULD
-	private BusinessCollection<Contributor> contributors;	//MUST
-	private BundleInformation information;					//MUST
-	private LicenseBasis license_basis;
-	private LicenseSpecifics license_specifics;
-	private BusinessObject tags;
-	private BusinessCollection<ItemFile> files;
+	private BusinessObject rule_if;
+	private BusinessObject rule_then;
+	private BusinessObject rule_else;
 	
 	
+	private LicenseRule() {
+		
+	}
+	
+	public static LicenseRule make(String rule_if, String rule_then, String rule_else) {
+		LicenseRule b = new LicenseRule();
+		
+		b.rule_if = new BusinessObject() {
+			public String getKeyname() {
+				return "if";
+			}
+		};
+		b.rule_then = new BusinessObject() {
+			public String getKeyname() {
+				return "then";
+			}
+		};
+		b.rule_else = null;
+		return b;
+	}
+	
+	public LicenseRule set_if(String what, String operator, String value) {
+		rule_if.setObject(new BusinessStringItem("what", what));
+		rule_if.setObject(new BusinessStringItem("operator", operator));
+		rule_if.setObject(new BusinessStringItem("value", value));
+		return this;
+	}
+	
+	public LicenseRule set_then(String rule_then) {
+		//TODO rule_then.setObject(new BusinessStringItem("what", what));
+		return this;
+	}
+	
+	public LicenseRule set_else(String rule_else) {
+		//TODO rule_else.setObject(new BusinessStringItem("what", what));
+		return this;
+	}
 	public String getKeyname() {
 		return KEY_NAME;
 	}
-
-
+	
+	
+	
 }

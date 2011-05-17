@@ -46,22 +46,33 @@ package org.fnppl.opensdx.common;
 
 //import org.fnppl.opensdx.common.*;
 
-public class Item extends BusinessObject {
-	public static String KEY_NAME = "item";
+public class ItemFile extends BusinessObject {
+	public static String KEY_NAME = "file";
 	
-	private BusinessStringItem type;						//MUST
-	private IDs ids;										//MUST
-	private BusinessStringItem displayname;					//MUST
-	private BusinessStringItem name;						//MUST
-	private BusinessStringItem version;						//MUST
-	private BusinessStringItem display_artist;				//SHOULD
-	private BusinessCollection<Contributor> contributors;	//MUST
-	private BundleInformation information;					//MUST
-	private LicenseBasis license_basis;
-	private LicenseSpecifics license_specifics;
-	private BusinessObject tags;
-	private BusinessCollection<ItemFile> files;
 	
+	public static ItemFile make() {
+		ItemFile f = new ItemFile();
+		return f;
+	}
+	
+	public static ItemFile fromBusinessObject(BusinessObject bo) {
+		if (bo==null) return null;
+		if (!bo.getKeyname().equals(KEY_NAME)) {
+			bo = bo.handleBusinessObject(KEY_NAME);
+		}
+		if (bo==null) return null;
+		
+		ItemFile f = new ItemFile();
+		f.initFromBusinessObject(bo);
+		
+		try {
+			//f.bla = Bla.fromBusinessObject(f);		
+			return f;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
 	
 	public String getKeyname() {
 		return KEY_NAME;

@@ -1,11 +1,6 @@
 package org.fnppl.opensdx.common;
-/*
- * Copyright (C) 2010-2011 
- * 							fine people e.V. <opensdx@fnppl.org> 
- * 							Henning Thieß <ht@fnppl.org>
- * 
- * 							http://fnppl.org
-*/
+
+import java.util.Vector;
 
 /*
  * Software license
@@ -44,28 +39,41 @@ package org.fnppl.opensdx.common;
  * 
  */
 
-//import org.fnppl.opensdx.common.*;
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
 
-public class Item extends BusinessObject {
-	public static String KEY_NAME = "item";
+public class LicenseSpecifics extends BusinessObject {
+
+	public static String KEY_NAME = "license_specifics";
 	
-	private BusinessStringItem type;						//MUST
-	private IDs ids;										//MUST
-	private BusinessStringItem displayname;					//MUST
-	private BusinessStringItem name;						//MUST
-	private BusinessStringItem version;						//MUST
-	private BusinessStringItem display_artist;				//SHOULD
-	private BusinessCollection<Contributor> contributors;	//MUST
-	private BundleInformation information;					//MUST
-	private LicenseBasis license_basis;
-	private LicenseSpecifics license_specifics;
-	private BusinessObject tags;
-	private BusinessCollection<ItemFile> files;
+	private BusinessCollection<LicenseRule> rules;  //MUST, if no rules -> empty
 	
+	private LicenseSpecifics() {
+		
+	}
+	
+	public static LicenseSpecifics make() {
+		LicenseSpecifics b = new LicenseSpecifics();
+		b.rules = new BusinessCollection<LicenseRule>() {
+			public String getKeyname() {
+				return "rules";
+			}
+		};
+		return b;
+	}
+	
+	public LicenseSpecifics addRule(LicenseRule rule) {
+		rules.add(rule);
+		return this;
+	}
 	
 	public String getKeyname() {
 		return KEY_NAME;
 	}
-
-
+	
+	
+	
 }

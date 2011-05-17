@@ -1,11 +1,6 @@
 package org.fnppl.opensdx.common;
-/*
- * Copyright (C) 2010-2011 
- * 							fine people e.V. <opensdx@fnppl.org> 
- * 							Henning Thieß <ht@fnppl.org>
- * 
- * 							http://fnppl.org
-*/
+
+import java.util.Vector;
 
 /*
  * Software license
@@ -44,28 +39,70 @@ package org.fnppl.opensdx.common;
  * 
  */
 
-//import org.fnppl.opensdx.common.*;
+/**
+ * 
+ * @author Bertram Boedeker <bboedeker@gmx.de>
+ * 
+ */
 
-public class Item extends BusinessObject {
-	public static String KEY_NAME = "item";
+public class LicenseBasis extends BusinessObject {
+
+	public static String KEY_NAME = "license_basis";
 	
-	private BusinessStringItem type;						//MUST
-	private IDs ids;										//MUST
-	private BusinessStringItem displayname;					//MUST
-	private BusinessStringItem name;						//MUST
-	private BusinessStringItem version;						//MUST
-	private BusinessStringItem display_artist;				//SHOULD
-	private BusinessCollection<Contributor> contributors;	//MUST
-	private BundleInformation information;					//MUST
-	private LicenseBasis license_basis;
-	private LicenseSpecifics license_specifics;
-	private BusinessObject tags;
-	private BusinessCollection<ItemFile> files;
+	private BusinessCollection<Territory> territorial;  //MUST
+	private BusinessCollection<BusinessDatetimeItem> timeframe;	 //MUST
+	private BusinessObject pricing;								 //SHOULD
 	
+	private LicenseBasis() {
+		
+	}
+	
+	public static LicenseBasis make(Vector<String> territorialAllow, Vector<String> territorialDisallow, long from, long to) {
+		LicenseBasis b = new LicenseBasis();
+		b.territorial = new BusinessCollection<Territory>() {
+			public String getKeyname() {
+				return "territorial";
+			}
+		};
+		b.timeframe = new BusinessCollection<BusinessDatetimeItem>() {
+			public String getKeyname() {
+				return "timeframe";
+			}
+		};
+		b.timeframe.add(new BusinessDatetimeItem("from", from));
+		b.timeframe.add(new BusinessDatetimeItem("to", to));
+		b.pricing = null;
+		return b;
+	}
+	
+	public LicenseBasis pricing_pricecode(String pricecode) {
+		if (pricing==null) {
+			pricing = new BusinessObject() {
+				public String getKeyname() {
+					return "pricing";
+				}
+			};
+		}
+		pricing.setObject(new BusinessStringItem("pricecode", pricecode));
+		return this;
+	}
+
+	public LicenseBasis pricing_wholesale(String wholesale) {
+		if (pricing==null) {
+			pricing = new BusinessObject() {
+				public String getKeyname() {
+					return "pricing";
+				}
+			};
+		}
+		pricing.setObject(new BusinessStringItem("wholesale", wholesale));
+		return this;
+	}
 	
 	public String getKeyname() {
 		return KEY_NAME;
 	}
-
-
+	
+	
+	
 }
