@@ -157,17 +157,22 @@ public class MasterKey extends OSDXKey {
 	}
 	
 	
-	public Result uploadToKeyServer() {
+	public Result uploadToKeyServer(KeyVerificator keyverificator) {
 		if (!hasPrivateKey()) return Result.error("no private key available");
 		if (!isPrivateKeyUnlocked()) return Result.error("private key is locked");
 		if (authoritativekeyserver.equals("LOCAL")) return Result.error("authoritative keyserver can not be LOCAL");
 		//if (authoritativekeyserverPort<=0) return Result.error("authoritative keyserver port not set");
-		Identity id = getIdentity0001();
-		if (id==null) return Result.error("No Identity 0001 found.");
+		Identity id = getCurrentIdentity();
+		if (id==null) return Result.error("No Identity found.");
 		try {
-			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
+			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "", keyverificator);
 			boolean ok = client.putMasterKey(this, id);
-			return Result.succeeded();
+			if (ok) {
+				return Result.succeeded();
+			} else {
+				return Result.error(client.getMessage());
+			}
+			
 		} catch (Exception ex) {
 			return Result.error(ex);
 		}
@@ -204,11 +209,14 @@ public class MasterKey extends OSDXKey {
 		return identities;
 	}
 	
-	public Identity getIdentity0001() {
-		for (Identity id : identities) {
-			if (id.getIdentNum()==1) return id;
+	public Identity getCurrentIdentity() {
+//		for (Identity id : identities) {
+//			if (id.getIdentNum()==1) return id;
+//		}
+		if (identities == null || identities.size()==0) {
+			return null;
 		}
-		return null;
+		return identities.lastElement();
 	}
 	
 	public void removeIdentity(Identity id) {

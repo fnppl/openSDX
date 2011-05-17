@@ -69,12 +69,16 @@ public class SecurityMainFrame extends JFrame {
 
 	private KeyApprovingStore currentKeyStore = null;
 	private MessageHandler messageHandler = new DefaultMessageHandler();
-
+	private KeyVerificator keyverificator = null;
+	
 	private File configFile = new File("src/org/fnppl/opensdx/security/resources/config.xml"); 
 	private Vector<KeyServerIdentity> keyservers = null;
 	//private Vector<OSDXKey> knownpublickeys = null;
 	private HashMap<OSDXKey, KeyStatus> key_status = new HashMap<OSDXKey, KeyStatus>();
+	private Vector<OSDXKey> storedPrivateKeys = new Vector<OSDXKey>();
 	private Vector<OSDXKey> storedPublicKeys = new Vector<OSDXKey>();
+	private Vector<OSDXKey> storedTrustedPublicKeys = new Vector<OSDXKey>();
+	
 	
 	
 	private File lastDir = getDefaultDir(); //new File(System.getProperty("user.home"));
@@ -113,8 +117,9 @@ public class SecurityMainFrame extends JFrame {
 				quit();
 			}
 		});
+		keyverificator = KeyVerificator.make();
+		
 		setSize(1024, 768);
-
 	}
 
 	private void initIcons() {
@@ -180,6 +185,7 @@ public class SecurityMainFrame extends JFrame {
 		}
 		return f;
 	}
+	
 	public boolean openDefauktKeyStore() {
 		File f = getDefaultDir();
 
@@ -193,11 +199,12 @@ public class SecurityMainFrame extends JFrame {
 			if(f.exists()) {
 				KeyApprovingStore kas = KeyApprovingStore.fromFile(f, messageHandler);
 				this.currentKeyStore = kas;	
+				keyverificator = KeyVerificator.make();
 //				MasterKey m = kas.getAllMasterKeys().get(0);
 //				Document.buildDocument(m.toElement(null)).outputCompact(System.out);
 //				Document.buildDocument(m.getRevokeKeys().get(0).toElement(null)).outputCompact(System.out);
 //				Document.buildDocument(m.getSubKeys().get(0).toElement(null)).outputCompact(System.out);
-				updateUI();
+				update();
 				return true;
 			}
 		} catch(Exception ex) {
@@ -347,12 +354,27 @@ public class SecurityMainFrame extends JFrame {
 	private void buildUi() {
 		initIcons();
 		makeMenuBar();
-		updateUI();
+		update();
 		Helper.centerMe(this, null);
+	}
+	
+	private void updateKeyVerificatior() {
+		if (currentKeyStore==null) {
+			keyverificator.removeAllDirectRatings();
+		} else {
+			for (OSDXKey k : storedTrustedPublicKeys) {
+				keyverificator.addRatedKey(k, TrustRatingOfKey.RATING_COMPLETE);
+			}
+			for (KeyServerIdentity ks : keyservers) {
+				for (OSDXKey k : ks.getKnownKeys()) {
+					keyverificator.addRatedKey(k, TrustRatingOfKey.RATING_MARGINAL);
+				}
+			}
+		}
 	}
 
 
-	private void updateUI() {
+	private void update() {
 		if (currentKeyStore==null) {
 			setMenuOptionVisible(false);
 		} else {
@@ -364,9 +386,24 @@ public class SecurityMainFrame extends JFrame {
 
 		p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
 
+		storedPrivateKeys = new Vector<OSDXKey>();
 		storedPublicKeys = new Vector<OSDXKey>();
+		storedTrustedPublicKeys = new Vector<OSDXKey>();
 		
 		if (currentKeyStore!=null) {
+			
+			//keylogs
+			Vector<KeyLog> keylogs = currentKeyStore.getKeyLogs();
+			JPanel pKeyLogs = null;
+			if (keylogs!=null && keylogs.size()>0) {
+				pKeyLogs = new JPanel();
+				pKeyLogs.setBorder(new TitledBorder("Key Log in KeyStore:"));
+				pKeyLogs.setLayout(new BoxLayout(pKeyLogs, BoxLayout.PAGE_AXIS));
+				for (KeyLog keylog : keylogs) {
+					pKeyLogs.add(buildComponentKeyLog(keylog));
+				}
+			}
+			
 			//keys
 			Vector<OSDXKey> all = currentKeyStore.getAllKeys();
 			int y = 0;
@@ -375,6 +412,8 @@ public class SecurityMainFrame extends JFrame {
 				if (key instanceof MasterKey && key.isMaster() && key.hasPrivateKey()) {
 					Vector<RevokeKey> revokekeys = currentKeyStore.getRevokeKeys(key.getKeyID());
 					Vector<SubKey> subkeys = currentKeyStore.getSubKeys(key.getKeyID());
+					storedPrivateKeys.add(key);
+					storedPrivateKeys.addAll(subkeys);
 					Component comp = buildComponent((MasterKey)key, revokekeys, subkeys);
 					p.add(comp);
 					y++;
@@ -384,33 +423,54 @@ public class SecurityMainFrame extends JFrame {
 					}
 				}
 			}
+
+			//divide storedkeys in trusted and unrated
+			for (int i=0;i<storedPublicKeys.size();i++) {
+				OSDXKey key = storedPublicKeys.get(i);
+				//if approved keylog -> trusted else stored
+				boolean approved = false;
+				Vector<KeyLog> klogs = currentKeyStore.getKeyLogs(key.getKeyID());
+				for (KeyLog klog : klogs) {
+					System.out.println("keylog: "+klog.getKeyIDFrom()+"  to "+klog.getKeyIDTo());
+					if (isStoredPrivateKey(klog.getKeyIDFrom())) {
+						System.out.println("private from key");
+						if (klog.getAction().equals(KeyLog.APPROVAL)) {
+							approved = true;
+						}
+						else if (klog.getAction().equals(KeyLog.REVOCATION)) {
+							approved = false;
+						}
+					} else {
+						System.out.println("NOT private from key");
+					}
+				}
+				if (approved) {
+					storedTrustedPublicKeys.add(key);
+					storedPublicKeys.remove(i);
+					i--;
+				}
+			}
 			
 			//known public keys from keystore
 			p.add(buildComponentKnownKeys(storedPublicKeys));
 			
+			p.add(buildComponentTrustedKeys(storedTrustedPublicKeys));
 			
 			//keylogs
-			Vector<KeyLog> keylogs = currentKeyStore.getKeyLogs();
-				if (keylogs!=null && keylogs.size()>0) {
-				JPanel pk = new JPanel();
-				pk.setBorder(new TitledBorder("Key Log in KeyStore:"));
-				pk.setLayout(new BoxLayout(pk, BoxLayout.PAGE_AXIS));
-				for (KeyLog keylog : keylogs) {
-					pk.add(buildComponentKeyLog(keylog));
-				}
-			p.add(pk);
+			if (pKeyLogs!=null) {
+				p.add(pKeyLogs);
 			}
-				
+			
 			//keyserver
 			keyservers = currentKeyStore.getKeyServer();
 			if (keyservers!=null) {
-				JPanel pk = new JPanel();
-				pk.setBorder(new TitledBorder("KeyServers:"));
-				pk.setLayout(new BoxLayout(pk, BoxLayout.PAGE_AXIS));
+				JPanel pks = new JPanel();
+				pks.setBorder(new TitledBorder("KeyServers:"));
+				pks.setLayout(new BoxLayout(pks, BoxLayout.PAGE_AXIS));
 				for (KeyServerIdentity ksid : keyservers) {
-					pk.add(buildComponentKeyServer(ksid));
+					pks.add(buildComponentKeyServer(ksid));
 				}
-				p.add(pk);
+				p.add(pks);
 			}
 		}
 		
@@ -421,7 +481,18 @@ public class SecurityMainFrame extends JFrame {
 //			pk.add(buildComponentKnownKeys(knownpublickeys));
 //			p.add(pk);
 //		}
+		updateKeyVerificatior();
 		validate();
+	}
+	
+	private boolean isStoredPrivateKey(String keyid) {
+		if (storedPrivateKeys==null) return false;
+		for (OSDXKey k : storedPrivateKeys) {
+			if (k.getKeyID().equals(keyid)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private Component buildComponent(MasterKey masterkey, Vector<RevokeKey> revokekeys, Vector<SubKey> subkeys) {
@@ -534,23 +605,28 @@ public class SecurityMainFrame extends JFrame {
 						int a = Dialogs.showYES_NO_Dialog("Confirm removal",txt);
 						if (a==Dialogs.YES) {
 							key.removeIdentity(ids.get(no));
-							updateUI();
+							update();
 						}
 					} else if (c.equals("edit")) {
-						showIdentityEditDialog(ids.get(no),false);
-						updateUI();
+						Identity id = ids.get(no).derive();
+						id.setIdentNum(key.getIdentities().size()+1);
+						boolean ok = showIdentityEditDialog(id, true);
+						if (ok) {
+							key.addIdentity(id);
+							update();
+						}
 					} else if (c.equals("up")) {
 						key.moveIdentityAtPositionUp(no);
-						updateUI();
+						update();
 					}  else if (c.equals("down")) {
 						key.moveIdentityAtPositionDown(no);
-						updateUI();
+						update();
 					}
 				}
 			};
-			for (int i=0;i<ids.size();i++) {
+			for (int i=ids.size()-1;i>=0;i--) {
 				y++;
-				addIdentityPart(i, ids.size()-1, ids.get(i), a, c, y, editRemoveListener);
+				addIdentityPart(i, ids.size()-1, ids.get(i), a, c, y, editRemoveListener, (i==ids.size()-1));
 			}
 		}
 
@@ -570,24 +646,26 @@ public class SecurityMainFrame extends JFrame {
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
 		int buWidth = 200;
-		JButton bu = new JButton("add identity");
-		bu.setPreferredSize(new Dimension(buWidth,25));
-		bu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					Identity id = Identity.newEmptyIdentity();
-					id.setIdentNum(key.getIdentities().size()+1);
-					boolean ok = showIdentityEditDialog(id, true);
-					if (ok) {
-						key.addIdentity(id);
-						updateUI();
-					}
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
-			}
-		});
-		b.add(bu);
+		JButton bu;
+		
+//		bu = new JButton("add identity");
+//		bu.setPreferredSize(new Dimension(buWidth,25));
+//		bu.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				try {
+//					Identity id = Identity.newEmptyIdentity();
+//					id.setIdentNum(key.getIdentities().size()+1);
+//					boolean ok = showIdentityEditDialog(id, true);
+//					if (ok) {
+//						key.addIdentity(id);
+//						update();
+//					}
+//				} catch (Exception e1) {
+//					e1.printStackTrace();
+//				}
+//			}
+//		});
+//		b.add(bu);
 
 		bu = new JButton("generate REVOKE Key");
 		bu.setPreferredSize(new Dimension(buWidth,25));
@@ -674,7 +752,7 @@ public class SecurityMainFrame extends JFrame {
 		return t;
 	}
 
-	private void addIdentityPart(int i, int maxI, Identity id, JPanel a, GridBagConstraints c, int y, ActionListener al) {
+	private void addIdentityPart(int i, int maxI, Identity id, JPanel a, GridBagConstraints c, int y, ActionListener al, boolean canEdit) {
 
 		JLabel l = new JLabel("identity "+(i+1)+":");
 		c.weightx = 0;
@@ -692,54 +770,56 @@ public class SecurityMainFrame extends JFrame {
 		c.gridy = y;
 		c.gridwidth = 1;
 		a.add(t,c);
-
-		JButton b = new JButton("edit");
-		b.setActionCommand("edit:"+i);
-		b.addActionListener(al);
-		b.setPreferredSize(new Dimension(80, 20));
-		c.weightx = 0;
-		c.fill = GridBagConstraints.NONE;
-		c.gridx = 2;
-		c.gridy = y;
-		c.gridwidth = 1;
-		a.add(b,c);
-
-		b = new JButton(iconRemove);
-		b.setActionCommand("remove:"+i);
-		b.setToolTipText("remove identitiy");
-		b.addActionListener(al);
-		b.setPreferredSize(new Dimension(30, 20));
-		c.weightx = 0;
-		c.fill = GridBagConstraints.NONE;
-		c.gridx = 3;
-		c.gridy = y;
-		c.gridwidth = 1;
-		a.add(b,c);
-
-		if (i!=0) {
-			b = new JButton(iconUp);
-			b.setActionCommand("up:"+i);
+		JButton b;
+		if (canEdit) {
+			b = new JButton("edit");
+			b.setActionCommand("edit:"+i);
 			b.addActionListener(al);
-			b.setPreferredSize(new Dimension(30, 20));
+			b.setPreferredSize(new Dimension(80, 20));
 			c.weightx = 0;
 			c.fill = GridBagConstraints.NONE;
-			c.gridx = 4;
+			c.gridx = 2;
 			c.gridy = y;
 			c.gridwidth = 1;
 			a.add(b,c);
 		}
-		if (i<maxI) {
-			b = new JButton(iconDown);
-			b.setActionCommand("down:"+i);
-			b.addActionListener(al);
-			b.setPreferredSize(new Dimension(30, 20));
-			c.weightx = 0;
-			c.fill = GridBagConstraints.NONE;
-			c.gridx = 5;
-			c.gridy = y;
-			c.gridwidth = 1;
-			a.add(b,c);
-		}
+
+//		b = new JButton(iconRemove);
+//		b.setActionCommand("remove:"+i);
+//		b.setToolTipText("remove identitiy");
+//		b.addActionListener(al);
+//		b.setPreferredSize(new Dimension(30, 20));
+//		c.weightx = 0;
+//		c.fill = GridBagConstraints.NONE;
+//		c.gridx = 3;
+//		c.gridy = y;
+//		c.gridwidth = 1;
+//		a.add(b,c);
+
+//		if (i!=0) {
+//			b = new JButton(iconUp);
+//			b.setActionCommand("up:"+i);
+//			b.addActionListener(al);
+//			b.setPreferredSize(new Dimension(30, 20));
+//			c.weightx = 0;
+//			c.fill = GridBagConstraints.NONE;
+//			c.gridx = 4;
+//			c.gridy = y;
+//			c.gridwidth = 1;
+//			a.add(b,c);
+//		}
+//		if (i<maxI) {
+//			b = new JButton(iconDown);
+//			b.setActionCommand("down:"+i);
+//			b.addActionListener(al);
+//			b.setPreferredSize(new Dimension(30, 20));
+//			c.weightx = 0;
+//			c.fill = GridBagConstraints.NONE;
+//			c.gridx = 5;
+//			c.gridy = y;
+//			c.gridwidth = 1;
+//			a.add(b,c);
+//		}
 	}
 
 	private Component buildComponentRevokeKey(final RevokeKey key) {
@@ -1071,7 +1151,7 @@ public class SecurityMainFrame extends JFrame {
 				}
 				keyserver.setPrepath(tPrepath.getText());
 				props.put(keyserver.getHost()+":"+keyserver.getPort(), "VISIBLE");
-				updateUI();
+				update();
 			}
 		});
 
@@ -1093,7 +1173,7 @@ public class SecurityMainFrame extends JFrame {
 		bRemove.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				currentKeyStore.removeKeyServer(keyserver);
-				updateUI();
+				update();
 			}
 		});
 		b.add(bRemove);
@@ -1130,6 +1210,31 @@ public class SecurityMainFrame extends JFrame {
 		});
 		buP.add(bu);
 		p.add(buP);
+		
+		return p;
+	}
+	
+private Component buildComponentTrustedKeys(Vector<OSDXKey> keys) {
+		
+		final JPanel p = new JPanel();
+		p.setBorder(new TitledBorder("Known public trusted keys"));
+		p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
+		for (OSDXKey key : keys) {
+			p.add(buildComponentTrustedPubKey(key));
+		}
+		
+//		JPanel buP = new JPanel();
+//		buP.setLayout(new FlowLayout(FlowLayout.LEFT));
+//		
+//		JButton bu = new JButton("request keys from server");
+//		//bu.setPreferredSize(new Dimension(buWidth,25));
+//		bu.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				requestKeysFromServer();
+//			}
+//		});
+//		buP.add(bu);
+//		p.add(buP);
 		
 		return p;
 	}
@@ -1222,11 +1327,134 @@ public class SecurityMainFrame extends JFrame {
 		});
 		b.add(bu);
 		
+		bu = new JButton("set as trusted");
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				generateLOCALKeyLog(key,true);
+			}
+		});
+		b.add(bu);
+		
 		bu = new JButton("remove");
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				currentKeyStore.removeKey(key);
-				updateUI();
+				update();
+			}
+		});
+		b.add(bu);
+		
+		
+		content.add(b,BorderLayout.SOUTH);
+
+		p.add(head, BorderLayout.NORTH);
+		JScrollPane scrollContent = new JScrollPane(content);
+		p.add(scrollContent, BorderLayout.CENTER);
+		content.add(a,BorderLayout.CENTER);
+
+		return p;
+	}
+	
+	private Component buildComponentTrustedPubKey(final OSDXKey key) {
+		final JPanel p = new JPanel();
+		p.setLayout(new BorderLayout());
+
+		final JPanel content = new JPanel();
+		content.setLayout(new BorderLayout());
+
+		
+		JPanel a = new JPanel();
+		int y = 0;
+		GridBagLayout gb = new GridBagLayout();		
+		a.setLayout(gb);
+
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = GridBagConstraints.FIRST_LINE_START;
+		c.insets = new Insets(5, 5, 0, 0);
+
+		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
+		KeyStatus ks = key_status.get(key);
+		if (ks==null) {
+			addLabelTextFieldPart("status:", "unknown", a, c, y,false); y++;	
+		} else {
+			addLabelTextFieldPart("status:", ks.getValidityStatusName(), a, c, y,false); y++;
+		}
+		addLabelTextFieldPart("level:", key.getLevelName(), a, c, y,false); y++;
+		if (key instanceof MasterKey) {
+			String ids = ((MasterKey)key).getIDEmails();
+			if (ids!=null) addLabelTextFieldPart("identities:", ids, a, c, y); y++;
+		}
+		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
+		addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y); y++;
+		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
+		if (currentKeyStore != null) {
+			Vector<KeyLog> logs = currentKeyStore.getKeyLogs(key.getKeyID());
+			if (logs!=null) {
+				for (KeyLog kl : logs) {
+					y++;
+					Component ckl = buildComponentKeyLog(kl);
+					c.weightx = 1;
+					c.weighty = 0.1;
+					c.fill = GridBagConstraints.BOTH;
+					c.gridx = 0;
+					c.gridy = y;
+					c.gridwidth = 6;
+					a.add(ckl, c);
+				}
+			}
+		}
+		
+		Vector<DataSourceStep> dp = key.getDatapath();
+		for (int i=0;i<dp.size();i++) {
+			y++;
+			DataSourceStep s = dp.get(i);
+			addLabelTextFieldPart("datapath "+(i+1)+":", s.getDataSource()+" at "+s.getDataInsertDatetimeString(), a, c, y);
+		}
+		
+		final int w = 800;
+		final int h = y*30 + 80;
+		String title = "known public key:      "+key.getKeyID();
+		JButton head = createHeaderButton(title, title, content, p, w, h);
+
+		JPanel b = new JPanel();
+		b.setLayout(new FlowLayout(FlowLayout.LEFT));
+		JButton bu = new JButton("update status");
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				updateStatus(key);
+			}
+		});
+		b.add(bu);
+
+		bu = new JButton("request keylogs");
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				requestKeyLogs(key);
+			}
+		});
+		b.add(bu);
+		
+		bu = new JButton("generate keylog");
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				showGenerateKeyLogDialog(key);
+			}
+		});
+		b.add(bu);
+		
+		bu = new JButton("remove from trusted");
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				generateLOCALKeyLog(key, false);
+			}
+		});
+		b.add(bu);
+		
+		bu = new JButton("remove");
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				currentKeyStore.removeKey(key);
+				update();
 			}
 		});
 		b.add(bu);
@@ -1265,10 +1493,12 @@ public class SecurityMainFrame extends JFrame {
 		addLabelTextFieldPart("IPv6 :", keylog.getIPv6(), a, c, y);y++;
 		addLabelTextFieldPart("action :", keylog.getAction(), a, c, y);
 		Vector<String[]> el = keylog.getStatusElements();
-		for (String[] s : el) {
-			if (s[1].length()>0) {
-				y++;
-				addLabelTextFieldPart("  "+s[0]+":", s[1], a, c, y);
+		if (el!=null) {
+			for (String[] s : el) {
+				if (s[1]!=null) {
+					y++;
+					addLabelTextFieldPart("  "+s[0]+":", s[1], a, c, y);
+				}
 			}
 		}
 		Vector<DataSourceStep> dp = keylog.getDataPath();
@@ -1296,7 +1526,7 @@ public class SecurityMainFrame extends JFrame {
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				currentKeyStore.removeKeyLog(keylog);
-				updateUI();
+				update();
 			}
 		});
 		b.add(bu);
@@ -1473,7 +1703,15 @@ public class SecurityMainFrame extends JFrame {
 					if (origFile != null) {
 						boolean v = s.tryVerificationFile(origFile).succeeded;
 						if (v) {
-							Dialogs.showMessage("Signature verified!");
+							//Dialogs.showMessage("Signature verified!");
+							//verify signature key
+							Result r = keyverificator.verifyKey(s.getKey());
+							if (r.succeeded) {
+								Dialogs.showMessage("Signature verified!");
+							} else {
+								Dialogs.showMessage("Signature NOT verified!\n"+r.errorMessage);
+							}
+							
 						} else {
 							Dialogs.showMessage("Signature NOT verified!");
 						}
@@ -1488,24 +1726,33 @@ public class SecurityMainFrame extends JFrame {
 
 	private void signFile() {
 		if (currentKeyStore!=null) {
-			Vector<SubKey> keys = currentKeyStore.getAllSigningSubKeys(); 
-			if (keys.size()==0) {
-				Dialogs.showMessage("Sorry, no subkeys for signing in keystore");
+			OSDXKey key = selectPrivateSigningKey();
+			if (key==null) {
 				return;
-			}
-			Vector<String> keyids = new Vector<String>();
-			for (OSDXKey k: keys) {
-				String id = k.getKeyID();
-				keyids.add(id);
 			}
 			File f = Dialogs.chooseOpenFile("Please select file for signing", lastDir, "");
 			if (f!=null) {
-				int a = Dialogs.showSelectDialog("Select key", "Please select key for signing", keyids);
-				if (a>=0) {
-					OSDXKey key = keys.get(a);
-					signFile(key,f);
-				}
+				signFile(key,f);
 			}
+			
+//			Vector<SubKey> keys = currentKeyStore.getAllSigningSubKeys(); 
+//			if (keys.size()==0) {
+//				Dialogs.showMessage("Sorry, no subkeys for signing in keystore");
+//				return;
+//			}
+//			Vector<String> keyids = new Vector<String>();
+//			for (OSDXKey k: keys) {
+//				String id = k.getKeyID();
+//				keyids.add(id);
+//			}
+//			File f = Dialogs.chooseOpenFile("Please select file for signing", lastDir, "");
+//			if (f!=null) {
+//				int a = Dialogs.showSelectDialog("Select key", "Please select key for signing", keyids);
+//				if (a>=0) {
+//					OSDXKey key = keys.get(a);
+//					signFile(key,f);
+//				}
+//			}
 		}
 	}
 
@@ -1532,7 +1779,7 @@ public class SecurityMainFrame extends JFrame {
 	
 	private void addKeyServer(String host, int port, String prepath) {
 		currentKeyStore.addKeyServer(KeyServerIdentity.make(host, port, prepath));
-		updateUI();
+		update();
 	}
 
 	private void generateRevokeKey(final MasterKey parentKey) {
@@ -1545,7 +1792,7 @@ public class SecurityMainFrame extends JFrame {
 					k.setParentKey(parentKey);
 					currentKeyStore.addKey(k);
 					releaseUILock();
-					updateUI();
+					update();
 				} catch (Exception ex) {
 					releaseUILock();
 					Dialogs.showMessage("ERROR: could not generate new keypair.");
@@ -1559,7 +1806,7 @@ public class SecurityMainFrame extends JFrame {
 		if (t.isAlive()) {
 			t.stop();
 			releaseUILock();
-			updateUI();
+			update();
 		}
 	}
 
@@ -1572,7 +1819,7 @@ public class SecurityMainFrame extends JFrame {
 					SubKey k = parentKey.buildNewSubKeyfromKeyPair(kp); //MasterKey.buildNewMasterKeyfromKeyPair(kp);
 					currentKeyStore.addKey(k);
 					releaseUILock();
-					updateUI();
+					update();
 				} catch (Exception ex) {
 					releaseUILock();
 					Dialogs.showMessage("ERROR: could not generate new keypair.");
@@ -1586,11 +1833,89 @@ public class SecurityMainFrame extends JFrame {
 		if (t.isAlive()) {
 			t.stop();
 			releaseUILock();
-			updateUI();
+			update();
 		}
 	}
-	protected void showGenerateKeyLogDialog(final OSDXKey to) {
 	
+	protected void generateLOCALKeyLog(OSDXKey to, boolean trust) {
+		OSDXKey from = selectPrivateSigningKey();
+		if (from==null) {
+			return;
+		}
+		from.unlockPrivateKey(messageHandler);
+		
+		if (!from.isPrivateKeyUnlocked()) {
+			return;
+		}
+		Identity id = null;
+		try {
+			String action = KeyLog.APPROVAL;
+			if (!trust) {
+				action = KeyLog.REVOCATION;
+			}
+			KeyLog log = KeyLog.buildNewKeyLog(action, from, to.getKeyID(), "LOCAL", "LOCAL", id);
+			currentKeyStore.addKeyLog(log);
+			if (!trust) {
+				keyverificator.removeDirectRating(to);
+			}
+			update();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public OSDXKey selectPrivateSigningKey() {
+		if (storedPrivateKeys==null || storedPrivateKeys.size()==0) {
+			Dialogs.showMessage("Sorry, no private key for signing in keystore");
+			return null;
+		}
+		Vector<String> select = new Vector<String>();
+		int[] map = new int[storedPrivateKeys.size()];
+		for (int i=0;i<storedPrivateKeys.size();i++) {
+			OSDXKey k = storedPrivateKeys.get(i);
+			if (k.allowsSigning()) {
+				if (k.isMaster()) {
+					select.add(k.getKeyID()+", "+((MasterKey)k).getIDEmailAndMnemonic());
+				}
+				else if (k.isSub()) {
+					select.add(k.getKeyID()+" subkey of "+((SubKey)k).getParentKey().getIDEmailAndMnemonic());
+				}
+				else {
+					select.add(k.getKeyID());
+				}
+				map[select.size()-1] = i;
+			}
+		}
+		int ans = Dialogs.showSelectDialog("Select private key","Please select a private key for signing", select);
+		if (ans>=0 && ans<select.size()) {
+			return storedPrivateKeys.get(map[ans]);
+		}
+		return null;
+	}
+	
+	protected void showGenerateKeyLogDialog(final OSDXKey to) {
+		if (storedPrivateKeys==null || storedPrivateKeys.size()==0) {
+			Dialogs.showMessage("Sorry, no private key for signing in keystore");
+			return;
+		}
+		Vector<String> select = new Vector<String>();
+		int[] map = new int[storedPrivateKeys.size()];
+		for (int i=0;i<storedPrivateKeys.size();i++) {
+			OSDXKey k = storedPrivateKeys.get(i);
+			if (k.allowsSigning()) {
+				if (k.isMaster()) {
+					select.add(k.getKeyID()+", "+((MasterKey)k).getIDEmailAndMnemonic());
+				}
+				else if (k.isSub()) {
+					select.add(k.getKeyID()+" subkey of "+((SubKey)k).getParentKey().getIDEmailAndMnemonic());
+				}
+				else {
+					select.add(k.getKeyID());
+				}
+				map[select.size()-1] = i;
+			}
+		}
+		
 		//String ip4 = "127.0.0.1";
 		//String ip6 = "127.0.0.1";
 		Identity id = Identity.newEmptyIdentity();
@@ -1658,14 +1983,14 @@ public class SecurityMainFrame extends JFrame {
 		c.gridwidth = 1;
 		p.add(selectStatus, c);
 		
-		Vector<MasterKey> masterkeys = currentKeyStore.getAllSigningMasterKeys();
-		if (masterkeys == null || masterkeys.size()==0) {
-			Dialogs.showMessage("Sorry, no signing masterkey in keystore.");
-		}
-		Vector<String> mkeys = new Vector<String>();
-		for (MasterKey k : masterkeys) {
-			mkeys.add(k.getKeyID()+", "+k.getIDEmails());
-		}
+//		Vector<MasterKey> masterkeys = currentKeyStore.getAllSigningMasterKeys();
+//		if (masterkeys == null || masterkeys.size()==0) {
+//			Dialogs.showMessage("Sorry, no signing masterkey in keystore.");
+//		}
+//		Vector<String> mkeys = new Vector<String>();
+//		for (MasterKey k : masterkeys) {
+//			mkeys.add(k.getKeyID()+", "+k.getIDEmails());
+//		}
 		
 		y++;
 		l = new JLabel("Key ID from:");
@@ -1677,7 +2002,7 @@ public class SecurityMainFrame extends JFrame {
 		c.gridwidth = 2;
 		p.add(l, c);
 		
-		JComboBox selectMasterKey = new JComboBox(mkeys);
+		JComboBox selectMasterKey = new JComboBox(select);
 		selectMasterKey.setEditable(false);
 		selectMasterKey.setSelectedIndex(0);
 		c.weightx = 0;
@@ -1868,7 +2193,7 @@ public class SecurityMainFrame extends JFrame {
 	    	if (checks.get(14).isSelected()) idd.setName(texts.get(14).getText());
 	    	if (checks.get(15).isSelected()) idd.setNote(texts.get(15).getText());
 	    	
-	    	OSDXKey from = masterkeys.get(selectMasterKey.getSelectedIndex());
+	    	OSDXKey from = storedPrivateKeys.get(map[selectMasterKey.getSelectedIndex()]);
 			if (!from.isPrivateKeyUnlocked()) from.unlockPrivateKey(messageHandler);
 	    	try {
 	    		String status = (String)selectStatus.getSelectedItem();
@@ -1885,7 +2210,7 @@ public class SecurityMainFrame extends JFrame {
 	private boolean testKeyServerSettings(KeyServerIdentity keyserver) {
 		//test keyserversettings and server signing key
 		boolean connectionOK = true;
-		KeyClient client = new KeyClient(keyserver);
+		KeyClient client = new KeyClient(keyserver, keyverificator);
 		try {
 			boolean connected = client.connect();
 			if (connected) {
@@ -1899,7 +2224,7 @@ public class SecurityMainFrame extends JFrame {
 							int answer = Dialogs.showYES_NO_Dialog("Add KeyServer Key", "Add KeyServers Key:\n"+key.getKeyID()+"\nto known keys?");
 							if (answer == Dialogs.YES) {
 								keyserver.addKnownKey(key);
-								updateUI();
+								update();
 							}
 						}
 					}
@@ -1925,7 +2250,7 @@ public class SecurityMainFrame extends JFrame {
 			return;
 		}
 	
-		KeyClient client = new KeyClient(keyserver);
+		KeyClient client = new KeyClient(keyserver, keyverificator);
 		Vector<KeyLog> logs = null;
 		try {
 			logs = client.requestKeyLogs(key.getKeyID());
@@ -1938,7 +2263,7 @@ public class SecurityMainFrame extends JFrame {
 					String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
 					System.out.println("keyserver id: "+serverKeyID);
 					OSDXKey serversSigningKey = client.requestPublicKey(serverKeyID);
-					KeyVerificator.addRatedKey(serversSigningKey, TrustRatingOfKey.RATING_MARGINAL);
+					keyverificator.addRatedKey(serversSigningKey, TrustRatingOfKey.RATING_MARGINAL);
 					logs = client.requestKeyLogs(key.getKeyID());
 				} catch (Exception ex2) {
 					Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
@@ -1959,7 +2284,7 @@ public class SecurityMainFrame extends JFrame {
 				kl.addDataPath(new DataSourceStep(keyserver.getHost(), datetime));
 				currentKeyStore.addKeyLog(kl);
 			}
-			updateUI();
+			update();
 		} else {
 			Dialogs.showMessage("Sorry, no keylogs for key:"+ key.getKeyID()+"\navailable on keyserver.");
 		}
@@ -1974,7 +2299,7 @@ public class SecurityMainFrame extends JFrame {
 		int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer.", keyservernames);
 		if (ans>=0) {
 			KeyServerIdentity keyserver = keyservers.get(ans);
-			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
+			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath(), keyverificator);
 			String keyid = key.getKeyID();
 			KeyStatus status = null;
 			try {
@@ -2005,7 +2330,7 @@ public class SecurityMainFrame extends JFrame {
 			}
 			if (status != null) {
 				key_status.put(key, status);
-				updateUI();
+				update();
 			} else {
 				Dialogs.showMessage("Sorry, keystatus not available on keyserver.");
 			}
@@ -2027,7 +2352,7 @@ public class SecurityMainFrame extends JFrame {
 			int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer.", keyservernames);
 			if (ans>=0) {
 				KeyServerIdentity keyserver = keyservers.get(ans);
-				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
+				KeyClient client =  new KeyClient(keyserver, keyverificator);
 				try {
 					Vector<String> masterkeys = null;
 					try {
@@ -2048,7 +2373,7 @@ public class SecurityMainFrame extends JFrame {
 //								return;
 //							}
 //						} else {
-							if (ex.getLocalizedMessage().startsWith("Connection refused")) {
+							if (ex.getLocalizedMessage()!=null && ex.getLocalizedMessage().startsWith("Connection refused")) {
 								Dialogs.showMessage("Sorry, could not connect to server.");
 								return;
 							} else {
@@ -2088,7 +2413,7 @@ public class SecurityMainFrame extends JFrame {
 								}
 							}
 						}
-						updateUI();
+						update();
 						Dialogs.showMessage("Added key(s) for \""+email+"\":"+kt);
 					} else {
 						Dialogs.showMessage("No keys for \""+email+"\" found on keyserver "+keyserver.getHost()+".");
@@ -2113,7 +2438,7 @@ public class SecurityMainFrame extends JFrame {
 		int ans = Dialogs.showSelectDialog("Select KeyServer", "Please select a KeyServer for uploading KeyLog.", keyservernames);
 		if (ans>=0) {
 			KeyServerIdentity keyserver = keyservers.get(ans);
-			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
+			KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath(), keyverificator);
 			Vector<Identity> ids = null;
 			try {
 				ids = client.requestIdentities(keyid);
@@ -2205,21 +2530,21 @@ public class SecurityMainFrame extends JFrame {
 		} else {
 			Result r = Result.error("unknown error");
 			Result rKeylog = Result.error("unknown error");
-			if (key.getIdentity0001()==null) r = Result.error("No Identity 0001 found.");
+			if (key.getCurrentIdentity()==null) r = Result.error("No Identity 0001 found.");
 			else {
-				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+key.getIdentity0001().getEmail()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"?\n");
+				int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+key.getCurrentIdentity().getEmail()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"?\n");
 				if (confirm==Dialogs.YES) {
 					if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
-					r = key.uploadToKeyServer();
+					r = key.uploadToKeyServer(keyverificator);
 					
 					if (r.succeeded) {
 						props.put(key.getKeyID(), "VISIBLE");
-						updateUI();
+						update();
 						
 						//self approval keylog
 						try {
-							KeyLog kl = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, key, key.getKeyID(), key.getIdentity0001());
-							rKeylog = kl.uploadToKeyServer(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "", key);
+							KeyLog kl = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, key, key.getKeyID(), key.getCurrentIdentity());
+							rKeylog = kl.uploadToKeyServer(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "", key, keyverificator);
 						} catch (Exception ex) {
 							rKeylog = Result.error(ex);
 						}
@@ -2227,7 +2552,7 @@ public class SecurityMainFrame extends JFrame {
 				}
 			}
 			if (r.succeeded) {
-				Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+key.getIdentity0001().getEmail()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"\nsuccessful!");
+				Dialogs.showMessage("Upload of MASTER Key:\n"+key.getKeyID()+"\nwith Identity: "+key.getCurrentIdentity().getEmail()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"\nsuccessful!");
 				if (!rKeylog.succeeded) {
 					Dialogs.showMessage("Upload of self-approval keylog FAILED.");
 				}
@@ -2261,10 +2586,10 @@ public class SecurityMainFrame extends JFrame {
 			if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
 			if (!key.getParentKey().isPrivateKeyUnlocked()) key.getParentKey().unlockPrivateKey(messageHandler);
 			
-			Result r = key.uploadToKeyServer();
+			Result r = key.uploadToKeyServer(keyverificator);
 			if (r.succeeded) {
 				props.put(key.getKeyID(), "VISIBLE");
-				updateUI();
+				update();
 				Dialogs.showMessage("Upload of "+keyLevel+" Key:\n"+key.getKeyID()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"\nsuccessful!");
 				return true;
 			} else {
@@ -2280,7 +2605,7 @@ public class SecurityMainFrame extends JFrame {
 		try {
 			int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to generate a KeyLog of key:\n"+log.getKeyIDTo()+"\non KeyServer: "+keyserver.getHost()+"?");
 			if (confirm==Dialogs.YES) {
-				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
+				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath(), keyverificator);
 				boolean ok =client.putKeyLog(log, signingKey);
 				if (ok) {
 					Dialogs.showMessage("Generation of KeyLog successful!");
@@ -2391,7 +2716,7 @@ public class SecurityMainFrame extends JFrame {
 			}
 		}
 		currentKeyStore = null;
-		updateUI();
+		update();
 	}
 
 	public void generateMasterKeyPair() {
@@ -2404,7 +2729,7 @@ public class SecurityMainFrame extends JFrame {
 						MasterKey k = MasterKey.buildNewMasterKeyfromKeyPair(kp);
 						k.createLockedPrivateKey(messageHandler);
 						currentKeyStore.addKey(k);
-						updateUI();
+						update();
 						releaseUILock();
 						wait.dispose();
 					} catch (Exception ex) {
@@ -2450,7 +2775,7 @@ public class SecurityMainFrame extends JFrame {
 		if (keyserver!=null) {
 			try {
 				if (!revokekey.isPrivateKeyUnlocked()) revokekey.unlockPrivateKey(messageHandler);	
-				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath());
+				KeyClient client =  new KeyClient(keyserver.getHost(), keyserver.getPort(), keyserver.getPrepath(), keyverificator);
 				boolean ok = client.putRevokeMasterKeyRequest(revokekey, masterkey, message);
 				if (ok) {
 					Dialogs.showMessage("REVOCATION of Key:\n"+masterkey.getKeyID()+"\non KeyServer: "+keyserver.getHost()+"\nsuccessful!");
@@ -2505,7 +2830,7 @@ public class SecurityMainFrame extends JFrame {
 
 						wait.dispose();
 						releaseUILock();
-						updateUI();
+						update();
 					} catch (Exception ex) {
 						releaseUILock();
 						wait.dispose();
@@ -2564,7 +2889,7 @@ public class SecurityMainFrame extends JFrame {
 			try {
 				currentKeyStore = KeyApprovingStore.createNewKeyApprovingStore(f, messageHandler);
 				currentKeyStore.addKeyserverAndPublicKeysFromConfig(configFile);
-				updateUI();
+				update();
 			} catch (Exception e) {
 				Dialogs.showMessage("ERROR: could not create keystore in file "+f.getAbsolutePath());
 				e.printStackTrace();
@@ -2879,7 +3204,7 @@ public class SecurityMainFrame extends JFrame {
 		}
 
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			if (columnIndex==1 && rowIndex<16) 
+			if (columnIndex==1 && rowIndex<16 && rowIndex>0) 
 				return true;
 			return false;
 		}

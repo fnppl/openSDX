@@ -55,13 +55,22 @@ public class TrustGraph {
 	
 	public void addKeyRating(OSDXKey key, int trustRating) {
 		addNode(key);
-		directRating.put(key.getKeyID(), new TrustRatingOfKey(key.getKeyID(), trustRating));
-		updateAllTrustRatings();
+		TrustRatingOfKey tr = directRating.get(key.getKeyID());
+		if (tr==null || tr.getTrustRating()!=trustRating) {
+			directRating.put(key.getKeyID(), new TrustRatingOfKey(key.getKeyID(), trustRating));
+			updateAllTrustRatings();
+		}
 	}
 	public void removeDirectRating(OSDXKey key) {
 		directRating.remove(key.getKeyID());
 		updateAllTrustRatings();
 	}
+	
+	public void removeAllDirectRatings() {
+		directRating.clear();
+		updateAllTrustRatings();
+	}
+	
 	
 	public boolean isDirectlyTrusted(String keyid) {
 		TrustRatingOfKey tr = directRating.get(keyid);
@@ -171,8 +180,8 @@ public class TrustGraph {
 	 * @param maxDepth maximum distance from start node
 	 * @returns a trusted node or null if no trusted node could be found within the given maxDetph
 	 */
-	public TrustGraphNode breadth_first_search_to_trusted(TrustGraphNode start, int maxDepth) {
-		return breadth_first_search_to_trusted(start, maxDepth, true);
+	public TrustGraphNode breadth_first_search_to_trusted(TrustGraphNode start, int maxDepth, KeyVerificator keyverificator) {
+		return breadth_first_search_to_trusted(start, maxDepth, true, keyverificator);
 	}
 	
 	/**
@@ -180,12 +189,12 @@ public class TrustGraph {
 	 * @param start node to start traversal from
 	 * @param maxDepth maximum distance from start node
 	 */
-	public void breadth_first_search(TrustGraphNode start, int maxDepth) {
-		breadth_first_search_to_trusted(start, maxDepth, false);
+	public void breadth_first_search(TrustGraphNode start, int maxDepth, KeyVerificator keyverificator) {
+		breadth_first_search_to_trusted(start, maxDepth, false, keyverificator);
 	}
 	
-	private TrustGraphNode breadth_first_search_to_trusted(TrustGraphNode start, int maxDepth, boolean stopAtTrusted) {
-		if (start.isTrusted()) return start;
+	private TrustGraphNode breadth_first_search_to_trusted(TrustGraphNode start, int maxDepth, boolean stopAtTrusted, KeyVerificator keyverificator) {
+		if (start.isTrusted(keyverificator)) return start;
 		Vector<TrustGraphNode> queue = new Vector<TrustGraphNode>();
 		start.setVisited(true);
 		start.setDepth(0);
@@ -194,12 +203,12 @@ public class TrustGraph {
 			TrustGraphNode v = queue.remove(0);
 			if (v.getDepth()<=maxDepth) {
 				int depth = v.getDepth()+1;
-				for (TrustGraphNode w : v.getChildren()) {
+				for (TrustGraphNode w : v.getChildren(keyverificator)) {
 					if (!w.isVisited()) {
 						w.setVisited(true);
 						w.addParent(v);
 						w.setDepth(depth);
-						if (stopAtTrusted && w.isTrusted()) return w;
+						if (stopAtTrusted && w.isTrusted(keyverificator)) return w;
 						queue.add(w);
 					}
 				}
@@ -208,8 +217,8 @@ public class TrustGraph {
 		return null;
 	}
 	
-	public void expandNode(TrustGraphNode v) {
-		for (TrustGraphNode w : v.reloadChildren()) {
+	public void expandNode(TrustGraphNode v, KeyVerificator keyverificator) {
+		for (TrustGraphNode w : v.reloadChildren(keyverificator)) {
 			if (!w.isVisited()) {
 				w.setVisited(true);
 				w.addParent(v);

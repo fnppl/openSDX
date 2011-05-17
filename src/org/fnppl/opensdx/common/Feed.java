@@ -53,15 +53,75 @@ public class Feed extends BusinessObject {
 	private BusinessCollection<Bundle> bundles;				//SHOULD
 	private BusinessCollection<Item> single_items;			//SHOULD
 	
-	private BusinessStringItem feedid;						//MUST
-	private BusinessDatetimeItem creationdatetime;			//MUST
-	private BusinessDatetimeItem effectivedatetime; 		//MUST
-	private BusinessObject creator; 						//COULD
-	private Receiver receiver;								//TODO COULD or what?
-	private ContractPartner sender;							//MUST
-	private ContractPartner licensor;						//MUST
-	private TriggeredActions actions;						//SHOULD
+	public static Feed make(FeedInfo feedinfo) {
+		Feed f = new Feed();
+		f.feedinfo = feedinfo;
+		f.bundles = new BusinessCollection<Bundle>() {
+			public String getKeyname() {
+				return "bundles";
+			}
+		};
+		f.single_items = new BusinessCollection<Item>() {
+			public String getKeyname() {
+				return "items";
+			}
+		};
+		return f;
+	}
 	
+	public static Feed fromBusinessObject(BusinessObject bo) {
+		if (bo==null) return null;
+		if (!bo.getKeyname().equals(KEY_NAME)) {
+			bo = bo.handleBusinessObject(KEY_NAME);
+		}
+		if (bo==null) return null;
+		
+		Feed f = new Feed();
+		f.initFromBusinessObject(bo);
+		
+		try {
+			f.feedinfo = FeedInfo.fromBusinessObject(f);
+			f.bundles = new BusinessCollection<Bundle>() {
+				public String getKeyname() {
+					return "bundles";
+				}
+			};
+			f.single_items = new BusinessCollection<Item>() {
+				public String getKeyname() {
+					return "items";
+				}
+			};			
+			return f;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+	
+	public Feed addBundle(Bundle bundle) {
+		bundles.add(bundle);
+		return this;
+	}
+	
+	public Feed addSingleItem(Item item) {
+		single_items.add(item);
+		return this;
+	}
+	
+	
+	
+	public FeedInfo getFeedinfo() {
+		return feedinfo;
+	}
+
+	public Bundle getBundle(int index) {
+		return bundles.get(index);
+	}
+
+	public Item getSingleItems(int index) {
+		return single_items.get(index);
+	}
+
 	public String getKeyname() {
 		return KEY_NAME;
 	}

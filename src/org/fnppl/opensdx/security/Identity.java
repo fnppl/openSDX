@@ -111,6 +111,34 @@ public class Identity {
 		return idd;
 	}
 	
+	public Identity derive() {
+		Identity idd = new Identity();
+		idd.identnum = identnum+1;
+		idd.email = email;
+		idd.mnemonic = mnemonic;
+		
+		idd.country = country;
+		idd.region = region;
+		idd.city = city;
+		idd.postcode = postcode;
+		
+		idd.company = company;
+		idd.unit = unit;
+		idd.subunit = subunit;
+		idd.function = function;
+		
+		idd.surname = surname;
+		idd.middlename = middlename;
+		idd.name = name;
+		
+		idd.phone = phone;
+		
+		idd.note = note;
+		idd.datapath = new Vector<DataSourceStep>();
+		idd.unsavedChanges = true;
+		return idd;
+	}
+	
 	public static Identity fromElement(Element id) throws Exception {
 		Identity idd = new Identity();
 		
@@ -272,28 +300,52 @@ public class Identity {
 		byte[] ret = new byte[32];  //256bit = 32 byte
 		SHA256Digest sha256 = new SHA256Digest();
 		
-		byte[] k = null;
-		k = getIdentNumString().getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-		k = email.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-		k = mnemonic.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-		k = country.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
-		k = region.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-		k = city.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-		k = postcode.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
-		k = company.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
-		k = unit.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-		k = subunit.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-		k = function.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
-		k = surname.getBytes("UTF-8"); if (k.length>0)sha256.update(k, 0, k.length);
-		k = middlename.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-		k = name.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-		k = phone.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);		
-		k = note.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
+//		byte[] k = null;
+//		k = getIdentNumString().getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
+//		k = email.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
+//		k = mnemonic.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
+//		k = country.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
+//		k = region.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
+//		k = city.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
+//		k = postcode.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
+//		k = company.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
+//		k = unit.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
+//		k = subunit.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
+//		k = function.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
+//		k = surname.getBytes("UTF-8"); if (k.length>0)sha256.update(k, 0, k.length);
+//		k = middlename.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
+//		k = name.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
+//		k = phone.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);		
+//		k = note.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
+		updateSHA256(getIdentNumString(), sha256);
+		updateSHA256(email, sha256);
+		updateSHA256(mnemonic, sha256);
+		updateSHA256(country, sha256);
+		updateSHA256(region, sha256);
+		updateSHA256(city, sha256);
+		updateSHA256(postcode, sha256);
+		updateSHA256(company, sha256);
+		updateSHA256(unit, sha256);
+		updateSHA256(subunit, sha256);
+		updateSHA256(function, sha256);
+		updateSHA256(surname, sha256);
+		updateSHA256(middlename, sha256);
+		updateSHA256(name, sha256);
+		updateSHA256(phone, sha256);
+		updateSHA256(note, sha256);
 		
 		sha256.doFinal(ret, 0);
 		//System.out.println("calc sha1: "+SecurityHelper.HexDecoder.encode(ret, ':', -1));
 		return ret;
 	}
+	
+	private void updateSHA256(String s, SHA256Digest sha256) throws Exception {
+		if (s!=null) {
+			byte[] k = s.getBytes("UTF-8");
+			if (k.length>0) sha256.update(k, 0, k.length);
+		}
+	}
+	
 	public void createSHA256() {
 		try {
 			sha256FromElement = calcSHA256();

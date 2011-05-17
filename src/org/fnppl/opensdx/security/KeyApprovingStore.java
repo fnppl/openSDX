@@ -185,17 +185,19 @@ public class KeyApprovingStore {
 		for (OSDXKey k : kas.keys) {
 			if (k instanceof SubKey) {
 				SubKey sk = (SubKey)k;
-				byte[] parentkeyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(sk.getParentKeyID()));
-				for (MasterKey mk : masterkeys) {
-					//System.out.println("comparing: "+SecurityHelper.HexDecoder.encode(parentkeyid, '\0', -1)+" - "+SecurityHelper.HexDecoder.encode(mk.getKeyModulusSHA1bytes(), '\0', -1));
-					if (Arrays.equals(mk.getKeyModulusSHA1bytes(), parentkeyid)) {
-						sk.setParentKey(mk);
-						if (sk.isRevoke()) {
-							mk.addRevokeKey((RevokeKey)sk);
-						} else {
-							mk.addSubKey(sk);
+				if (sk.getParentKeyID()!=null && sk.getParentKeyID().length()>0) {
+					byte[] parentkeyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(sk.getParentKeyID()));
+					for (MasterKey mk : masterkeys) {
+						//System.out.println("comparing: "+SecurityHelper.HexDecoder.encode(parentkeyid, '\0', -1)+" - "+SecurityHelper.HexDecoder.encode(mk.getKeyModulusSHA1bytes(), '\0', -1));
+						if (Arrays.equals(mk.getKeyModulusSHA1bytes(), parentkeyid)) {
+							sk.setParentKey(mk);
+							if (sk.isRevoke()) {
+								mk.addRevokeKey((RevokeKey)sk);
+							} else {
+								mk.addSubKey(sk);
+							}
+							break;
 						}
-						break;
 					}
 				}
 			}

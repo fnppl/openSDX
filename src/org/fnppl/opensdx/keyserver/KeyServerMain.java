@@ -53,6 +53,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
@@ -130,6 +131,7 @@ public class KeyServerMain extends HTTPServer {
 	private KeyApprovingStore keystore;
 	
 	private String servername = null;
+	private KeyVerificator keyverificator = null;
 	
 	
 	private MessageHandler messageHandler = new DefaultMessageHandler() {
@@ -172,6 +174,7 @@ public class KeyServerMain extends HTTPServer {
 	public KeyServerMain(String pwSigning, String pwMail, String servername) throws Exception {
 		super();
 		this.servername = servername;
+		keyverificator = KeyVerificator.make();
 		
 		init(pwSigning);
 		
@@ -331,14 +334,23 @@ public class KeyServerMain extends HTTPServer {
 			if (k instanceof MasterKey) {
 				Vector<Identity> ids = ((MasterKey)k).getIdentities();
 				if (ids != null) {
-					for (Identity id : ids) {
-						if (!id_keys.containsKey(id.getEmail())) {
-							id_keys.put(id.getEmail(),
-									new Vector<OSDXKey>());
-						}
-						id_keys.get(id.getEmail()).add(k);
-						System.out.println("adding id_keys: "+id.getEmail()+"::"+k.getKeyModulusSHA1());
+					//use only currentIdentity for searching for known keys to email
+					Identity id = ((MasterKey)k).getCurrentIdentity();
+					if (!id_keys.containsKey(id.getEmail())) {
+						id_keys.put(id.getEmail(),
+								new Vector<OSDXKey>());
 					}
+					id_keys.get(id.getEmail()).add(k);
+					System.out.println("adding id_keys: "+id.getEmail()+"::"+k.getKeyModulusSHA1());
+						
+//					for (Identity id : ids) {
+//						if (!id_keys.containsKey(id.getEmail())) {
+//							id_keys.put(id.getEmail(),
+//									new Vector<OSDXKey>());
+//						}
+//						id_keys.get(id.getEmail()).add(k);
+//						System.out.println("adding id_keys: "+id.getEmail()+"::"+k.getKeyModulusSHA1());
+//					}
 				}
 			}
 			if (k instanceof SubKey) {
@@ -400,15 +412,40 @@ public class KeyServerMain extends HTTPServer {
 		//check key already on server
 		String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(pubkey.getKeyID());
 		if (keyid_key.containsKey(newkeyid)) {
-			return errorMessage("A key with this id is already registered.");
-//			OSDXKey old = keyid_key.get(newkeyid);
-//			keystore.removeKey(old);
-//			for (RevokeKey k : ((MasterKey)old).getRevokeKeys()) {
-//				key.addRevokeKey(k);
-//			}
-//			for (SubKey k : ((MasterKey)old).getSubKeys()) {
-//				key.addSubKey(k);
-//			}
+			OSDXKey k = keyid_key.get(newkeyid);
+			//really equal -> or only sha1 fingerprint collision
+			if (!Arrays.equals(pubkey.getPublicModulusBytes(), k.getPublicModulusBytes())) {
+				return errorMessage("Sorry, another key with the same fingerprint (key id) is already registered.");
+			}
+			
+			MasterKey key = null;
+			if (k instanceof MasterKey) {
+				key = (MasterKey)k;
+			} else {
+				return errorMessage("Key with this id is already registered, but NOT on MASTER Key level");
+			}
+			//UPDATE IDENTITY
+			System.out.println("key already registered, updating identity (if new)");
+			Vector<Identity> identities = key.getIdentities();
+			Identity idd = Identity.fromElement(content.getChild("identity"));
+			//check id num >= known id nums
+			boolean wrongIDNum = false;
+			int maxIDnum = 0;
+			for (Identity aID : identities) {
+				if (maxIDnum < aID.getIdentNum()) maxIDnum = aID.getIdentNum();  
+				if (aID.getIdentNum()>=idd.getIdentNum()) {
+					wrongIDNum = true;
+				}
+			}
+			if (wrongIDNum) {
+				return errorMessage("IdentNum collision: IdentNum must be > "+maxIDnum+".");
+			}
+			key.addIdentity(idd);
+			updateCache(key, null);
+			saveKeyStore();
+			
+			KeyServerResponse resp = new KeyServerResponse(serverid);
+			return resp;
 		}
 		
 		
@@ -420,6 +457,7 @@ public class KeyServerMain extends HTTPServer {
 		}
 		
 		Identity idd = Identity.fromElement(content.getChild("identity"));
+		
 		key.addIdentity(idd);
 		key.addDataSourceStep(new DataSourceStep(request.ipv4, request.datetime));
 		
@@ -476,7 +514,7 @@ public class KeyServerMain extends HTTPServer {
 			//add key to trusted keys
 			OSDXKey key = keyid_key.get(kl.getKeyIDTo());
 			if (key!=null) {
-				KeyVerificator.addRatedKey(key, TrustRatingOfKey.RATING_MARGINAL);
+				keyverificator.addRatedKey(key, TrustRatingOfKey.RATING_MARGINAL);
 			}
 			
 			//send response
@@ -544,7 +582,7 @@ public class KeyServerMain extends HTTPServer {
 		saveKeyStore();
 		
 		//add revokekey to trusted keys
-		KeyVerificator.addRatedKey(revokekey, TrustRatingOfKey.RATING_MARGINAL);
+		keyverificator.addRatedKey(revokekey, TrustRatingOfKey.RATING_MARGINAL);
 		
 		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
@@ -557,7 +595,7 @@ public class KeyServerMain extends HTTPServer {
 		} catch (Exception ex) {
 			return errorMessage("ERROR in opensdx_message");
 		}
-		Result verified = msg.verifySignatures();
+		Result verified = msg.verifySignatures(keyverificator);
 		if (!verified.succeeded) {
 			return errorMessage("verification of signature failed"+(verified.errorMessage!=null?": "+verified.errorMessage:""));
 		}
@@ -702,7 +740,7 @@ public class KeyServerMain extends HTTPServer {
 		saveKeyStore();
 		
 		//add to trusted keys
-		KeyVerificator.addRatedKey(subkey, TrustRatingOfKey.RATING_MARGINAL);
+		keyverificator.addRatedKey(subkey, TrustRatingOfKey.RATING_MARGINAL);
 		
 		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;

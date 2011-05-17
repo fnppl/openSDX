@@ -126,9 +126,9 @@ public class KeyLog {
 		return kl;
 	}
 	
-	public Result uploadToKeyServer(String host, int port, String prepath, OSDXKey signingKey) {
+	public Result uploadToKeyServer(String host, int port, String prepath, OSDXKey signingKey, KeyVerificator keyverificator) {
 		try {
-			KeyClient client =  new KeyClient(host, port, prepath);
+			KeyClient client =  new KeyClient(host, port, prepath, keyverificator);
 			boolean ok = client.putKeyLog(this, signingKey);
 			if (ok) return Result.succeeded();
 			else Result.error(client.getMessage());
@@ -343,7 +343,7 @@ public class KeyLog {
 		kl.toKeyid = ea.getChildText("to_keyid");
 		Element est = ea.getChild(kl.action);
 		if (est!=null) {
-			kl.message = est.getChildText("message");
+			kl.message = est.getChildTextNN("message");
 			if (kl.message.length()==0) kl.message = null;
 			Element eId = est.getChild("identity");
 			if (eId!=null) kl.id = Identity.fromElement(eId);

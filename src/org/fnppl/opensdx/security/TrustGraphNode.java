@@ -63,12 +63,12 @@ public class TrustGraphNode {
 		this.g = graph;
 	}
 	
-	public Vector<TrustGraphNode> reloadChildren() {
+	public Vector<TrustGraphNode> reloadChildren(KeyVerificator keyverificator) {
 		children = null;
-		return getChildren();
+		return getChildren(keyverificator);
 	}
 	
-	public Vector<TrustGraphNode> getChildren() {
+	public Vector<TrustGraphNode> getChildren(KeyVerificator keyverificator) {
 		if (children == null) {
 			children = new Vector<TrustGraphNode>();
 			//check keylogs for keys that trust this key
@@ -76,7 +76,7 @@ public class TrustGraphNode {
 			System.out.println("requesting keylogs for: "+key.getKeyID()+ "  depth = "+depth);
 			// request keylogs includes verification of keyserver-key,
 			// when keyserver key is not trusted, no keylogs are found !!! 
-			Vector<KeyLog> keylogs = KeyVerificator.requestKeyLogs(key); 
+			Vector<KeyLog> keylogs = keyverificator.requestKeyLogs(key); 
 			if (key.isSub()) {
 				//sub keys can only have revocation keylogs
 				boolean hasRevokeLog = false;
@@ -84,7 +84,7 @@ public class TrustGraphNode {
 					try {
 						String action = keylog.getAction();
 						if (action.equals(KeyLog.REVOCATION)) {
-							if (!KeyVerificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
+							if (!keyverificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
 								hasRevokeLog = true;
 								System.out.println("found revocation for subkey: "+key.getKeyID());
 								TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
@@ -97,7 +97,7 @@ public class TrustGraphNode {
 				}
 				if (!hasRevokeLog) {
 					//next step: verify parent-key
-					MasterKey parent = KeyVerificator.requestParentKey((SubKey)key);
+					MasterKey parent = keyverificator.requestParentKey((SubKey)key);
 					if (parent!=null) {
 						((SubKey)key).setParentKey(parent);
 						TrustGraphNode n = g.addNode(parent);
@@ -117,7 +117,7 @@ public class TrustGraphNode {
 					for (KeyLog keylog : keylogs) {
 						try {
 							System.out.println("  found verified keylog from "+keylog.getKeyIDFrom()+" from date: "+keylog.getDateString());
-							if (!KeyVerificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
+							if (!keyverificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
 								String action = keylog.getAction();
 								if (action.equals(KeyLog.APPROVAL)) {
 									//only the newest approval should be a child
@@ -194,9 +194,9 @@ public class TrustGraphNode {
 		this.trusted = (trusted?1:0);
 	}
 	
-	public boolean isTrusted() {
+	public boolean isTrusted(KeyVerificator keyverificator) {
 		if  (trusted<0) {
-			if (KeyVerificator.isTrustedKey(id)) {
+			if (keyverificator.isTrustedKey(id)) {
 				trusted = 1;
 			} else {
 				trusted = 0;
