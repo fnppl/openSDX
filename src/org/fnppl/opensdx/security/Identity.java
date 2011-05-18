@@ -56,25 +56,27 @@ import org.fnppl.opensdx.xml.*;
 public class Identity {
 	int identnum = 0;
 	String email = null;
-	String mnemonic = null;
+	String mnemonic = null; boolean mnemonic_restricted = true;
 	
-	String country = null;
-	String region = null;
-	String city = null;
-	String postcode = null;
+	String country = null; boolean country_restricted = true;
+	String region = null; boolean region_restricted = true;
+	String city = null; boolean city_restricted = true;
+	String postcode = null; boolean postcode_restricted = true;
 	
-	String company = null;
-	String unit = null;
-	String subunit = null;
+	String company = null; boolean company_restricted = true;
+	String unit = null; boolean unit_restricted = true;
+	String subunit = null; boolean subunit_restricted = true;
+	String function = null; boolean function_restricted = true;
 	
-	String function = null;
-	String surname = null;
-	String middlename = null;
-	String name = null;
+	String surname = null; boolean surname_restricted = true;
+	String middlename = null; boolean middlename_restricted = true;
+	String firstname_s = null; boolean firstname_s_restricted = true;
+	long birthday_gmt = Long.MIN_VALUE; boolean birthday_gmt_restricted = true;
+	String placeofbirth = null; boolean placeofbirth_restricted = true;
 	
-	String phone = null;
+	String phone = null; boolean phone_restricted = true;
 	
-	String note = null;
+	String note = null; boolean note_restricted = true;
 	byte[] sha256FromElement = null;
 	
 	Vector<DataSourceStep> datapath = null;
@@ -101,7 +103,9 @@ public class Identity {
 		
 		idd.surname = "";
 		idd.middlename = "";
-		idd.name = "";
+		idd.firstname_s = "";
+		idd.birthday_gmt = Long.MIN_VALUE;
+		idd.placeofbirth = "";
 		
 		idd.phone = "";
 		
@@ -112,6 +116,7 @@ public class Identity {
 	}
 	
 	public Identity derive() {
+		//TODO die einzelnen restrictions...
 		Identity idd = new Identity();
 		idd.identnum = identnum+1;
 		idd.email = email;
@@ -129,7 +134,7 @@ public class Identity {
 		
 		idd.surname = surname;
 		idd.middlename = middlename;
-		idd.name = name;
+		idd.firstname_s = firstname_s;
 		
 		idd.phone = phone;
 		
@@ -163,7 +168,7 @@ public class Identity {
 		idd.function = id.getChildTextNN("function");
 		idd.surname = id.getChildTextNN("surname");
 		idd.middlename = id.getChildTextNN("middlename");
-		idd.name = id.getChildTextNN("name");
+		idd.firstname_s = id.getChildTextNN("name");
 		
 		idd.phone = id.getChildTextNN("phone");
 		
@@ -216,7 +221,7 @@ public class Identity {
 		
 		if (surname!=null && surname.length()>0) id.addContent("surname", surname);
 		if (middlename!=null && middlename.length()>0) id.addContent("middlename", middlename);
-		if (name!=null && name.length()>0) id.addContent("name", name);
+		if (firstname_s!=null && firstname_s.length()>0) id.addContent("name", firstname_s);
 		
 		if (phone!=null && phone.length()>0) id.addContent("phone", phone);
 		if (note!=null && note.length()>0) id.addContent("note", note);
@@ -262,7 +267,7 @@ public class Identity {
 		
 		id.addContent("surname", surname);
 		id.addContent("middlename", middlename);
-		id.addContent("name", name);
+		id.addContent("name", firstname_s);
 		
 		id.addContent("phone", phone);
 		id.addContent("note", note);
@@ -330,7 +335,7 @@ public class Identity {
 		updateSHA256(function, sha256);
 		updateSHA256(surname, sha256);
 		updateSHA256(middlename, sha256);
-		updateSHA256(name, sha256);
+		updateSHA256(firstname_s, sha256);
 		updateSHA256(phone, sha256);
 		updateSHA256(note, sha256);
 		
@@ -484,12 +489,12 @@ public class Identity {
 	}
 
 	public String getName() {
-		return name;
+		return firstname_s;
 	}
 
 	public void setName(String name) {
 		unsavedChanges = true;
-		this.name = name;
+		this.firstname_s = name;
 	}
 
 	public String getNote() {

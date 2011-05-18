@@ -123,6 +123,34 @@ public class KeyVerificator {
 	}
 	
 	public Result verifyKey(OSDXKey key) {
+		return verifyKey(key, false);
+	}
+	public Result verifyKey(OSDXKey key, boolean chainactive) {
+		//sha1 of key modulus = keyid
+		byte[] keyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(key.getKeyID()));
+		if (!Arrays.equals(keyid, SecurityHelper.getSHA1(key.getPublicModulusBytes()))) {
+			return Result.error("keyid dos not match sha1 of key modulus");
+		}
+		//already trusted key
+		if (isTrustedKey(key.getKeyID())) return Result.succeeded();
+		
+		//find a keylog of a trusted key that approves the given key		
+		Result r = checkForKeyLogsThatTrustKey(key);
+		if (!r.succeeded) {
+			//return Result.error("Given keyid is NOT directly trusted and NO approval keylog of a trusted key could be found.\nChain-of-trust verification is NOT IMPLEMENTED yet.");	
+		} else {
+			return Result.succeeded();
+		}
+		
+		if(chainactive) {
+//			return findChainOfTrustTo(key);
+			return Result.error("Given keyid is NOT directly trusted and NO approval keylog of a trusted key could be found.\nChain-of-trust verification is NOT IMPLEMENTED yet.");			
+		}
+		else {
+			return Result.error("Given keyid is NOT directly trusted and NO approval keylog of a trusted key could be found.\n");
+		}
+	}
+	public Result verifyTrustedKey(OSDXKey key, boolean chainactive) {
 		//sha1 of key modulus = keyid
 		byte[] keyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(key.getKeyID()));
 		if (!Arrays.equals(keyid, SecurityHelper.getSHA1(key.getPublicModulusBytes()))) {

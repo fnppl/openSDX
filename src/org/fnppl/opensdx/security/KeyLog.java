@@ -178,7 +178,7 @@ public class KeyLog {
 			
 			v.add(new String[]{"surname", id.surname});
 			v.add(new String[]{"middlename", id.middlename});
-			v.add(new String[]{"name", id.name});
+			v.add(new String[]{"name", id.firstname_s});
 			
 			v.add(new String[]{"phone", id.phone});
 			v.add(new String[]{"note", id.note});
