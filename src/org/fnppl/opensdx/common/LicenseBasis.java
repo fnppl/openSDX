@@ -2,6 +2,8 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 
+import org.fnppl.opensdx.xml.ChildElementIterator;
+
 /*
  * Software license
  *
@@ -49,7 +51,7 @@ public class LicenseBasis extends BusinessObject {
 
 	public static String KEY_NAME = "license_basis";
 	
-	private BusinessCollection<Territory> territorial;  //MUST
+	private Territorial territorial;  							 //MUST
 	private BusinessCollection<BusinessDatetimeItem> timeframe;	 //MUST
 	private BusinessObject pricing;								 //SHOULD
 	
@@ -57,13 +59,9 @@ public class LicenseBasis extends BusinessObject {
 		
 	}
 	
-	public static LicenseBasis make(Vector<String> territorialAllow, Vector<String> territorialDisallow, long from, long to) {
+	public static LicenseBasis make(Territorial territorial, long from, long to) {
 		LicenseBasis b = new LicenseBasis();
-		b.territorial = new BusinessCollection<Territory>() {
-			public String getKeyname() {
-				return "territorial";
-			}
-		};
+		b.territorial = territorial;
 		b.timeframe = new BusinessCollection<BusinessDatetimeItem>() {
 			public String getKeyname() {
 				return "timeframe";
@@ -72,6 +70,32 @@ public class LicenseBasis extends BusinessObject {
 		b.timeframe.add(new BusinessDatetimeItem("from", from));
 		b.timeframe.add(new BusinessDatetimeItem("to", to));
 		b.pricing = null;
+		return b;
+	}
+	
+	public static LicenseBasis fromBusinessObject(BusinessObject bo) {
+		if (bo==null) return null;
+		if (!bo.getKeyname().equals(KEY_NAME)) {
+			bo = bo.handleBusinessObject(KEY_NAME);
+		}
+		if (bo==null) return null;
+		final LicenseBasis b = new LicenseBasis();
+		b.initFromBusinessObject(bo);
+		
+		b.territorial = null; //TODO
+		b.timeframe = new BusinessCollection<BusinessDatetimeItem>() {
+			public String getKeyname() {
+				return "timeframe";
+			}
+		};
+		BusinessObject boTimeFrame = bo.handleBusinessObject("timeframe");
+		if (boTimeFrame!=null) {
+			BusinessDatetimeItem from = BusinessDatetimeItem.fromBusinessObject(boTimeFrame, "from");
+			if (from!=null) b.timeframe.add(from);
+			BusinessDatetimeItem to = BusinessDatetimeItem.fromBusinessObject(boTimeFrame, "to");
+			if (to!=null) b.timeframe.add(to);
+		}
+		b.pricing = bo.handleBusinessObject("pricing");
 		return b;
 	}
 	

@@ -75,6 +75,20 @@ public class LicenseRule extends BusinessObject {
 		return b;
 	}
 	
+	public static LicenseRule fromBusinessObject(BusinessObject bo) {
+		if (bo==null) return null;
+		if (!bo.getKeyname().equals(KEY_NAME)) {
+			bo = bo.handleBusinessObject(KEY_NAME);
+		}
+		if (bo==null) return null;
+		final LicenseRule b = new LicenseRule();
+		b.initFromBusinessObject(bo);
+		
+		//TODO
+		
+		return b;
+	}
+	
 	public LicenseRule set_if(String what, String operator, String value) {
 		rule_if.setObject(new BusinessStringItem("what", what));
 		rule_if.setObject(new BusinessStringItem("operator", operator));

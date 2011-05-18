@@ -57,11 +57,11 @@ public class Bundle extends BusinessObject {
 	private BusinessStringItem display_artist;				//SHOULD
 	private BusinessCollection<Contributor> contributors;	//MUST
 	private BundleInformation information;					//MUST
-	private BusinessStringItem license_basis;				//MUST //TODO
-	private BusinessStringItem license_specifics;			//MUST //TODO
+	private LicenseBasis license_basis;						//MUST
+	private LicenseSpecifics license_specifics;				//MUST
 
 
-	public static Bundle make(IDs ids, String displayname, String name, String version, String display_artist, BundleInformation information, String license_basis, String license_specifics) {
+	public static Bundle make(IDs ids, String displayname, String name, String version, String display_artist, BundleInformation information, LicenseBasis license_basis, LicenseSpecifics license_specifics) {
 		Bundle bundle = new Bundle();
 		bundle.ids = ids;
 		bundle.displayname = new BusinessStringItem("displayname", displayname);
@@ -74,8 +74,8 @@ public class Bundle extends BusinessObject {
 			}
 		};
 		bundle.information = information;
-		bundle.license_basis = null;
-		bundle.license_specifics = null;
+		bundle.license_basis = license_basis;
+		bundle.license_specifics = license_specifics;
 		return bundle;
 	}
 
@@ -107,8 +107,8 @@ public class Bundle extends BusinessObject {
 		
 		
 		bundle.information = BundleInformation.fromBusinessObject(bo);
-		bundle.license_basis = BusinessStringItem.fromBusinessObject(bo, "license_basis");
-		bundle.license_specifics = BusinessStringItem.fromBusinessObject(bo, "license_specifics");
+		bundle.license_basis = LicenseBasis.fromBusinessObject(bo);
+		bundle.license_specifics = LicenseSpecifics.fromBusinessObject(bo);
 		
 		return bundle;
 	}
@@ -148,13 +148,13 @@ public class Bundle extends BusinessObject {
 		return this;
 	}
 
-	public Bundle license_basis(String license_basis) {
-		this.license_basis = new BusinessStringItem("license_basis", license_basis);
+	public Bundle license_basis(LicenseBasis license_basis) {
+		this.license_basis = license_basis;
 		return this;
 	}
 
-	public Bundle license_specifics(String license_specifics) {
-		this.license_specifics = new BusinessStringItem("license_specifics", license_specifics);
+	public Bundle license_specifics(LicenseSpecifics license_specifics) {
+		this.license_specifics =license_specifics;
 		return this;
 	}
 
@@ -194,15 +194,14 @@ public class Bundle extends BusinessObject {
 		return information;
 	}
 
-	public String getLicense_basis() {
-		if (license_basis==null) return null;
-		return license_basis.getString();
+	public LicenseBasis getLicense_basis() {
+		return license_basis;
 	}
 
-	public String getLicense_specifics() {
-		if (license_specifics==null) return null;
-		return license_specifics.getString();
+	public LicenseSpecifics getLicense_specifics() {
+		return license_specifics;
 	}
+	
 	public String getKeyname() {
 		return KEY_NAME;
 	}

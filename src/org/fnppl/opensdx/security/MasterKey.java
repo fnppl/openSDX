@@ -137,6 +137,7 @@ public class MasterKey extends OSDXKey {
 		ret.datapath.add(new DataSourceStep("LOCAL", now));
 		ret.unsavedChanges = true;
 		ret.setParentKey(this);
+		this.addSubKey(ret);
 		return ret;
 	}
 	
@@ -156,7 +157,16 @@ public class MasterKey extends OSDXKey {
 		return ret;
 	}
 	
-	
+	public Result uploadToKeyServer(KeyServerIdentity keyserver, KeyVerificator keyverificator) {
+		if (authoritativekeyserver.equals("LOCAL")) {
+			setAuthoritativeKeyServer(keyserver.getHost());
+		} else {
+			if (!authoritativekeyserver.equals(keyserver.getHost())) {
+				return Result.error("authoritative keyserver does not match given keyserver");
+			}
+		}
+		return uploadToKeyServer(keyverificator);
+	}
 	public Result uploadToKeyServer(KeyVerificator keyverificator) {
 		if (!hasPrivateKey()) return Result.error("no private key available");
 		if (!isPrivateKeyUnlocked()) return Result.error("private key is locked");

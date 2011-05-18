@@ -52,18 +52,30 @@ package org.fnppl.opensdx.security.test;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Vector;
 
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
+import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
+import org.fnppl.opensdx.security.KeyClient;
+import org.fnppl.opensdx.security.KeyLog;
+import org.fnppl.opensdx.security.KeyServerIdentity;
+import org.fnppl.opensdx.security.KeyVerificator;
+import org.fnppl.opensdx.security.MasterKey;
+import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.PublicKey;
+import org.fnppl.opensdx.security.Result;
 import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.security.SubKey;
 import org.fnppl.opensdx.security.SymmetricKey;
+import org.fnppl.opensdx.security.TrustRatingOfKey;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
+
 
 
 public class Test {
@@ -75,17 +87,188 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
-		//try to read from example_keystore.xml
-		try {
-			KeyApprovingStore store = KeyApprovingStore.fromFile(new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml"), new DefaultMessageHandler());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		
+//		//try to read from example_keystore.xml
+//		try {
+//			KeyApprovingStore store = KeyApprovingStore.fromFile(new File("src/org/fnppl/opensdx/security/resources/example_keystore.xml"), new DefaultMessageHandler());
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 		
 		//testGenerateMasterKeyPair();
 		//testGeneratePublicKey();
+		
+		testHeadEmployeeSigning();
 	}
+	
+	
+	public static void testHeadEmployeeSigning() {
+		try {
+			// first we need
+			// a keyserver
+			// an employees keystore with master and subkey
+			// an head of department keystore with masterkey
+			// a contractkey (which is a subkey of head of departments masterkey
+			
+			
+			File testPath = new File(System.getProperty("user.home"), "openSDX_test");
+			testPath.mkdirs();
+			
+			File fEmployeeKeyStore = new File(testPath,"ksEmployee.xml");
+			File fHeadKeyStore = new File(testPath,"ksHead.xml");
+			
+			System.out.println(testPath.getAbsolutePath());
+			
+			MessageHandler messageHandler = new DefaultMessageHandler() {
+				public boolean requestOverwriteFile(File file) {//dont ask, just overwrite
+					return true;
+				}
+				public boolean requestIgnoreKeyLogVerificationFailure() {//dont ignore failed keylog verification
+					return false;
+				}
+			};
+			
+			
+			//keyserver
+			KeyServerIdentity keyserver = KeyServerIdentity.make("localhost", 8889, "");
+			
+			KeyVerificator keyverificator = new KeyVerificator();
+			keyverificator.addKeyServer(keyserver);
+			
+			KeyClient client = new KeyClient(keyserver, keyverificator);
+			client.connect();
+			
+			KeyServerIdentity ksid = client.requestKeyServerIdentity();
+			OSDXKey serverSigning = ksid.getKnownKeys().get(0);
+			keyserver.addKnownKey(serverSigning);
+			keyverificator.addRatedKey(serverSigning, TrustRatingOfKey.RATING_MARGINAL);
+			
+			
+			
+			//employees keystore
+			KeyApprovingStore ksEmployee = null;
+			if (fEmployeeKeyStore.exists()) {
+				ksEmployee = KeyApprovingStore.fromFile(fEmployeeKeyStore, messageHandler);
+			} else {
+				//generate keys
+				ksEmployee = KeyApprovingStore.createNewKeyApprovingStore(fEmployeeKeyStore, messageHandler);
+				MasterKey master = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+				Identity id = Identity.newEmptyIdentity();
+				id.setEmail("employee@fnppl.org");
+				id.setMnemonic("employee");
+				master.addIdentity(id);
+				SubKey sub = master.buildNewSubKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+				
+				//protect with password
+				master.createLockedPrivateKey("password", "password");
+				sub.createLockedPrivateKey("password", "password");
+				
+				//add to keystore
+				ksEmployee.addKey(master);
+				ksEmployee.addKey(sub);
+				ksEmployee.setSigningKey(master);
+				
+				//and upload to server
+				master.uploadToKeyServer(keyserver, keyverificator);
+				sub.uploadToKeyServer(keyverificator);
+				
+				ksEmployee.toFile(ksEmployee.getFile());
+			}
+			
+			//head of departments keystore
+			KeyApprovingStore ksHead = null;
+			if (fHeadKeyStore.exists()) {
+				ksHead = KeyApprovingStore.fromFile(fHeadKeyStore, messageHandler);
+			} else {
+				//generate keys
+				ksHead = KeyApprovingStore.createNewKeyApprovingStore(fHeadKeyStore, messageHandler);
+				MasterKey master = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+				Identity id = Identity.newEmptyIdentity();
+				id.setEmail("head@fnppl.org");
+				id.setMnemonic("head of department");
+				master.addIdentity(id);
+				SubKey sub = master.buildNewSubKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+				
+				//protect with password
+				master.createLockedPrivateKey("password", "password");
+				sub.createLockedPrivateKey("password", "password");
+				
+				//add to keystore
+				ksHead.addKey(master);
+				ksHead.addKey(sub);
+				ksHead.setSigningKey(master);
+				
+				//and upload to server
+				master.uploadToKeyServer(keyserver, keyverificator);
+				sub.uploadToKeyServer(keyverificator);
+				
+				ksHead.toFile(ksHead.getFile());
+			}
+			
+			//
+			MasterKey masterHead = ksHead.getAllMasterKeys().get(0);
+			SubKey contractKey = masterHead.getSubKeys().get(0);
+			
+			MasterKey masterEmployee = ksEmployee.getAllMasterKeys().get(0);
+			SubKey subEmployee = masterEmployee.getSubKeys().get(0);
+			
+			masterHead.unlockPrivateKey("password");
+			contractKey.unlockPrivateKey("password");
+			masterEmployee.unlockPrivateKey("password");
+			subEmployee.unlockPrivateKey("password");
+			
+			//output
+			System.out.println("MasterKey Head     :: "+masterHead.getKeyID());
+			System.out.println("Sub Contract       :: "+contractKey.getKeyID());
+			System.out.println("MasterKey Employee :: "+masterEmployee.getKeyID());
+			System.out.println("SubKey    Employee :: "+subEmployee.getKeyID());
+			System.out.println("KeyServer          :: "+keyserver.getKnownKeys().get(0).getKeyID());
+			
+			
+			//build approval from contractKey to subEmployee Key
+			
+			//check if approval already exits
+			boolean approval = false;
+			Vector<KeyLog> logs = client.requestKeyLogs(masterEmployee.getKeyID());
+			for (KeyLog kl : logs) {
+				if (kl.getAction().equals(KeyLog.APPROVAL) && kl.getKeyIDFrom().equals(contractKey.getKeyID())) {
+					approval = true;
+				}
+			}
+			System.out.println("approval: "+approval);
+			if (!approval) {
+				//no approval -> build it!
+	 			KeyLog kl = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, contractKey, masterEmployee.getKeyID(), masterEmployee.getCurrentIdentity());
+				boolean ok = client.putKeyLog(kl, masterHead);
+				if (ok) {
+					System.out.println("Generation of keylog on keyserver successful");
+				} else {
+					System.out.println("ERROR generating keylog on keyserver :: "+client.getMessage());
+				}
+			}
+			
+			//contract partner wants to verify a message signed by the subEmployee Key
+			//chain of trust:: contract partner -> contractKey -> masterEmployee -> subEmployee
+			KeyVerificator partnerKeyverificator = new KeyVerificator();
+			partnerKeyverificator.addKeyServer(keyserver);
+			partnerKeyverificator.addRatedKey(keyserver.getKnownKeys().get(0), TrustRatingOfKey.RATING_MARGINAL);
+			partnerKeyverificator.addRatedKey(contractKey, TrustRatingOfKey.RATING_COMPLETE);
+			
+			Result verifySubEmployeeKey = partnerKeyverificator.verifyKey(subEmployee);
+			if (verifySubEmployeeKey.succeeded) {
+				System.out.println("VERIFICATION of subEmployee Key SUCCESSFUL!");
+			} else {
+				System.out.println("WARNING: subEmployee Key could not be verified!\n"+verifySubEmployeeKey.errorMessage);
+			}
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		
+		
+		
+	}
+	
 	
 	public static void testGenerateMasterKeyPair() {
 		try {

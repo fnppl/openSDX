@@ -12,7 +12,14 @@ public abstract class ChildElementIterator {
 		if (bo==null) return;
 		bo = bo.handleBusinessObject(collectionName);
 		if (bo==null) return;
-		Vector<XMLElementable> eChildren = bo.handleObjects(name);
+		
+		Vector<XMLElementable> eChildren;
+		if (name.equals("*")) {
+			eChildren = bo.getOtherObjects();
+			bo.removeOtherObjects();
+		} else {
+			eChildren = bo.handleObjects(name);
+		}
 		for (XMLElementable eChild : eChildren) {
 			if (eChild instanceof BusinessObject) {
 				processBusinessObject((BusinessObject)eChild);	

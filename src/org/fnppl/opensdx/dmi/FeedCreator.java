@@ -60,24 +60,20 @@ import java.util.*;
 
 
 public class FeedCreator {
-	ContractPartner sender;
-	ContractPartner licensor;
-	BusinessObject creator;
+	private ContractPartner sender;
+	private ContractPartner licensor;
+	private String creator_email;
+	private String creator_userid;
 	
-	public Feed makeExampleFeed() {
-		return null;
+	
+	public FeedCreator(ContractPartner sender, ContractPartner licensor, String creator_email, String creator_userid) {
+		this.sender = sender;
+		this.licensor = licensor;
+		this.creator_userid = creator_userid;
+		this.creator_email = creator_email;
 	}
 	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-
-		// -- test Feedinfo --
-		boolean onlytest =true;
-		String feedid = "example feedid";
-		long creationdatetime = System.currentTimeMillis();
-		long effectivedatetime = System.currentTimeMillis();
+	public static Feed makeExampleFeed() {
 
 		ContractPartner sender
 			= ContractPartner.make(
@@ -95,7 +91,31 @@ public class FeedCreator {
 			)
 			.email("licensor@example.org");
 		
+		String creator_email = "creator@example.org";
+		String creator_userid = "creator_userid";
 		
+		FeedCreator fc = new FeedCreator(sender, licensor, creator_email, creator_userid);
+		
+		Feed feed = Feed.make(
+				fc.makeExampleFeedInfo()
+			)
+			.addBundle(
+				fc.makeExampleBundle()
+			)
+		;
+		
+		
+		
+		return feed;
+	}
+	
+	private FeedInfo makeExampleFeedInfo() {
+		
+		boolean onlytest =true;
+		String feedid = "example feedid";
+		long creationdatetime = System.currentTimeMillis();
+		long effectivedatetime = System.currentTimeMillis();
+
 		FeedInfo feedinfo
 			= FeedInfo.make(
 				onlytest,
@@ -105,7 +125,7 @@ public class FeedCreator {
 				sender,
 				licensor
 			)
-			.creator("creator@example.org", "creator_userid")
+			.creator(creator_email, creator_userid)
 			.receiver(
 				Receiver.make(
 					Receiver.TRANSFER_TYPE_FTP,
@@ -133,7 +153,71 @@ public class FeedCreator {
 				)
 			)
 			;
+		return feedinfo;
+	}
+	
+	public Bundle makeExampleBundle() {
+		Bundle bundle
+		= Bundle.make(
+			IDs.make()
+				.amzn("amazon")
+				.finetunesid("fineid")
+				.upc("a2312")
+			,
+			"displayname",
+			"name",
+			"version 1.0",
+			"display artist",
+			BundleInformation.make(
+					System.currentTimeMillis(),
+					System.currentTimeMillis()
+				)
+				.playlength(987)
+				.addPromotext("en", "EN promotext")
+				.addPromotext("de", "DE promotetext")
+				.addTeasertext("de", "DE teasertext")
+				.related(BundleRelatedInformation.make()
+						.physical_distributor("published physical distributor")
+						.physical_distributor("secret physical distributor", false)
+						.youtube_url("my.youtube.url")
+						.youtube_url("my.youtube.channel")
+						.addRelatedBundleIDs(IDs.make()
+								.ourid("our id")
+								.yourid("your id")
+						)
+				)
+			,
+			LicenseBasis.make(
+					Territorial.make(),
+					System.currentTimeMillis(),
+					System.currentTimeMillis()
+				)
+			,
+			LicenseSpecifics.make()
+		)
+		.addContributor(
+			Contributor.make(
+				"super label",
+				"label",
+				IDs.make()
+				   .labelordernum("123124124")
+			)
+			.www(InfoWWW.make()
+				.homepage("super-label-homepage.nät")
+				.phone("+49 44 9191919", false)
+			)
+		)
+		;
+		return bundle;
+	}
+	
+	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
 
+	
 		
 //		//test output
 //		Element eFeedinfo = feedinfo.toElement();
@@ -167,69 +251,24 @@ public class FeedCreator {
 //		}
 		
 		
-		Bundle bundle
-		= Bundle.make(
-			IDs.make()
-				.amzn("amazon")
-				.finetunesid("fineid")
-				.upc("a2312")
-			,
-			"displayname",
-			"name",
-			"version 1.0",
-			"display artist",
-			BundleInformation.make(
-					System.currentTimeMillis(),
-					System.currentTimeMillis()
-				)
-				.playlength(987)
-				.addPromotext("en", "EN promotext")
-				.addPromotext("de", "DE promotetext")
-				.addTeasertext("de", "DE teasertext")
-				.related(BundleRelatedInformation.make()
-						.physical_distributor("published physical distributor")
-						.physical_distributor("secret physical distributor", false)
-						.youtube_url("my.youtube.url")
-						.youtube_url("my.youtube.channel")
-						.addRelatedBundleIDs(IDs.make()
-								.ourid("our id")
-								.yourid("your id")
-						)
-				)
-			,
-			"license_basis",
-			"license_specifics"
-		)
-		.addContributor(
-			Contributor.make(
-				"super label",
-				"label",
-				IDs.make()
-				   .labelordernum("123124124")
-			)
-			.www(InfoWWW.make()
-				.homepage("super-label-homepage.nät")
-				.phone("+49 44 9191919", false)
-			)
-		)
-		;
 		
 		
-		Element eBundle = bundle.toElement();
-		Element eBundle2 = Bundle.fromBusinessObject(BusinessObject.fromElement(eBundle)).toElement();
 		
-		System.out.println("\n\nEXAMPLE BUNDLE\n--------------------");
-		Document.buildDocument(eBundle).output(System.out);
-		
-		System.out.println("\n\nRE-READ BUNDLE\n--------------------");
-		Document.buildDocument(eBundle2).output(System.out);
-
-		try {
-			System.out.println("bundle                 sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eBundle),'\0',-1));
-			System.out.println("bundle re-read         sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eBundle2),'\0',-1));			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		Element eBundle = bundle.toElement();
+//		Element eBundle2 = Bundle.fromBusinessObject(BusinessObject.fromElement(eBundle)).toElement();
+//		
+//		System.out.println("\n\nEXAMPLE BUNDLE\n--------------------");
+//		Document.buildDocument(eBundle).output(System.out);
+//		
+//		System.out.println("\n\nRE-READ BUNDLE\n--------------------");
+//		Document.buildDocument(eBundle2).output(System.out);
+//
+//		try {
+//			System.out.println("bundle                 sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eBundle),'\0',-1));
+//			System.out.println("bundle re-read         sha1: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1LocalProof(eBundle2),'\0',-1));			
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 		
 		
 	}
