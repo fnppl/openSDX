@@ -45,12 +45,31 @@ package org.fnppl.opensdx.common;
  */
 
 
+
+
 /**
  * 
  * @author Bertram Boedeker <bboedeker@gmx.de>
  * 
  */
-public class Territory {
+public class Territorial extends BusinessObject {
 
+	public static String KEY_NAME = "terrtorial";
+	
+	private Territorial() {
+		
+	}
+	
+	public static Territorial make() {
+		Territorial t = new Territorial();
+		
+		return t;
+	}
+
+	
+	public String getKeyname() {
+		return KEY_NAME;
+	}
+	
 	
 }

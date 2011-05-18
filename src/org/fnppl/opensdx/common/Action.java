@@ -1,5 +1,5 @@
 package org.fnppl.opensdx.common;
-
+import org.fnppl.opensdx.xml.XMLElementable;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -46,7 +46,7 @@ package org.fnppl.opensdx.common;
  */
 
 
-import org.fnppl.opensdx.xml.XMLElementable;
+
 
 /**
  * 
