@@ -238,7 +238,7 @@ public class OSDXKey {
 						if(ok) {
 							((MasterKey)ret).identities.addElement(idd);
 						} else {
-							System.out.println(" -> ERROR adding "+idd.email+": SHA256 NOT VALID");
+							System.out.println(" -> ERROR adding "+idd.getEmail()+": SHA256 NOT VALID");
 							return null;
 						}
 					}

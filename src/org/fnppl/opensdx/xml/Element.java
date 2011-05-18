@@ -116,12 +116,21 @@ public class Element {
 		String s = base.getChildText(name);		
 		return s;
 	}
+	
 	public int getChildInt(String name) {
 		//beware double-invoke!!!
 		try {
 			return Integer.parseInt(base.getChildText(name));
 		} catch (Exception ex) {
 			return Integer.MIN_VALUE;
+		}
+	}
+	public long getChildLong(String name) {
+		//beware double-invoke!!!
+		try {
+			return Long.parseLong(base.getChildText(name));
+		} catch (Exception ex) {
+			return Long.MIN_VALUE;
 		}
 	}
 	public String getText() {

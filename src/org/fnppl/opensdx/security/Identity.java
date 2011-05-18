@@ -54,32 +54,35 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.fnppl.opensdx.xml.*;
 
 public class Identity {
-	int identnum = 0;
-	String email = null;
-	String mnemonic = null; boolean mnemonic_restricted = true;
+	private int identnum = 0;
+	private String email = null;
+	private String mnemonic = null; 			private boolean mnemonic_restricted = true;
 	
-	String country = null; boolean country_restricted = true;
-	String region = null; boolean region_restricted = true;
-	String city = null; boolean city_restricted = true;
-	String postcode = null; boolean postcode_restricted = true;
+	private String country = null; 				private boolean country_restricted = true;
+	private String region = null; 				private boolean region_restricted = true;
+	private String city = null; 				private boolean city_restricted = true;
+	private String postcode = null; 			private boolean postcode_restricted = true;
 	
-	String company = null; boolean company_restricted = true;
-	String unit = null; boolean unit_restricted = true;
-	String subunit = null; boolean subunit_restricted = true;
-	String function = null; boolean function_restricted = true;
+	private String company = null; 				private boolean company_restricted = true;
+	private String unit = null; 				private boolean unit_restricted = true;
+	private String subunit = null; 				private boolean subunit_restricted = true;
+	private String function = null; 			private boolean function_restricted = true;
 	
-	String surname = null; boolean surname_restricted = true;
-	String middlename = null; boolean middlename_restricted = true;
-	String firstname_s = null; boolean firstname_s_restricted = true;
-	long birthday_gmt = Long.MIN_VALUE; boolean birthday_gmt_restricted = true;
-	String placeofbirth = null; boolean placeofbirth_restricted = true;
+	private String surname = null; 				private boolean surname_restricted = true;
+	private String middlename = null; 			private boolean middlename_restricted = true;
+	private String firstname_s = null; 			private boolean firstname_s_restricted = true;
+	private long birthday_gmt = Long.MIN_VALUE; private boolean birthday_gmt_restricted = true;
+	private String placeofbirth = null; 		private boolean placeofbirth_restricted = true;
 	
-	String phone = null; boolean phone_restricted = true;
+	private String phone = null; 				private boolean phone_restricted = true;
+	private String fax = null; 					private boolean fax_restricted = true;
 	
-	String note = null; boolean note_restricted = true;
-	byte[] sha256FromElement = null;
+	private String note = null; 				private boolean note_restricted = true;
+	private String photo = null; 				private boolean photo_restricted = true;
 	
-	Vector<DataSourceStep> datapath = null;
+	private byte[] sha256FromElement = null;
+	
+	private Vector<DataSourceStep> datapath = null;
 	private boolean unsavedChanges = false;
 	
 	private Identity() {
@@ -88,57 +91,40 @@ public class Identity {
 	
 	public static Identity newEmptyIdentity() {
 		Identity idd = new Identity();
-		idd.email = "";
-		idd.mnemonic = "";
 		
-		idd.country = "";
-		idd.region = "";
-		idd.city = "";
-		idd.postcode = "";
-		
-		idd.company = "";
-		idd.unit = "";
-		idd.subunit = "";
-		idd.function = "";
-		
-		idd.surname = "";
-		idd.middlename = "";
-		idd.firstname_s = "";
-		idd.birthday_gmt = Long.MIN_VALUE;
-		idd.placeofbirth = "";
-		
-		idd.phone = "";
-		
-		idd.note = "";
 		idd.datapath = new Vector<DataSourceStep>();
 		idd.unsavedChanges = true;
 		return idd;
 	}
 	
 	public Identity derive() {
-		//TODO die einzelnen restrictions...
 		Identity idd = new Identity();
 		idd.identnum = identnum+1;
 		idd.email = email;
-		idd.mnemonic = mnemonic;
+		idd.mnemonic = mnemonic;		idd.mnemonic_restricted = mnemonic_restricted;
 		
-		idd.country = country;
-		idd.region = region;
-		idd.city = city;
-		idd.postcode = postcode;
+		idd.country = country;			idd.country_restricted = country_restricted;
+		idd.region = region;			idd.region_restricted = region_restricted;
+		idd.city = city;				idd.city_restricted = city_restricted;
+		idd.postcode = postcode;		idd.postcode_restricted = postcode_restricted;
 		
-		idd.company = company;
-		idd.unit = unit;
-		idd.subunit = subunit;
-		idd.function = function;
+		idd.company = company;			idd.company_restricted = company_restricted;
+		idd.unit = unit;				idd.unit_restricted = unit_restricted;
+		idd.subunit = subunit;			idd.subunit_restricted = subunit_restricted;
+		idd.function = function;		idd.function_restricted = function_restricted;
 		
-		idd.surname = surname;
-		idd.middlename = middlename;
-		idd.firstname_s = firstname_s;
+		idd.surname = surname;			idd.surname_restricted = surname_restricted;
+		idd.middlename = middlename;	idd.middlename_restricted = middlename_restricted;
+		idd.firstname_s = firstname_s;	idd.firstname_s_restricted = firstname_s_restricted;
+		idd.birthday_gmt = birthday_gmt;idd.birthday_gmt_restricted = birthday_gmt_restricted;
+		idd.placeofbirth = placeofbirth;idd.placeofbirth_restricted = placeofbirth_restricted;
 		
-		idd.phone = phone;
+		idd.phone = phone;				idd.phone_restricted = phone_restricted;
+		idd.fax = fax;					idd.fax_restricted = fax_restricted;
 		
-		idd.note = note;
+		idd.note = note;				idd.note_restricted = note_restricted;
+		idd.phone = photo;				idd.phone_restricted = photo_restricted;
+		
 		idd.datapath = new Vector<DataSourceStep>();
 		idd.unsavedChanges = true;
 		return idd;
@@ -147,32 +133,37 @@ public class Identity {
 	public static Identity fromElement(Element id) throws Exception {
 		Identity idd = new Identity();
 		
-		idd.email = id.getChildTextNN("email");
+		idd.email = id.getChildText("email");
 		try {
-			idd.identnum = Integer.parseInt(id.getChildTextNN("identnum"));
+			idd.identnum = Integer.parseInt(id.getChildText("identnum"));
 		} catch (Exception ex) {
 			idd.identnum = 0;
 			System.out.println("CAUTION: Wrong identnum in identity: "+idd.email);
 		}
-		idd.mnemonic = id.getChildTextNN("mnemonic");
+		idd.mnemonic = id.getChildText("mnemonic");			idd.mnemonic_restricted = getRestricted(id, "mnemonic");
+	
+		idd.country = id.getChildText("country");			idd.country_restricted = getRestricted(id, "country");
+		idd.region = id.getChildText("region");				idd.region_restricted = getRestricted(id, "region");
+		idd.city = id.getChildText("city");					idd.city_restricted = getRestricted(id, "city");
 		
-		idd.country = id.getChildTextNN("country");
-		idd.region = id.getChildTextNN("region");
-		idd.city = id.getChildTextNN("city");
-		
-		idd.postcode = id.getChildTextNN("postcode");
-		idd.company = id.getChildTextNN("company");
-		idd.unit = id.getChildTextNN("unit");
-		idd.subunit = id.getChildTextNN("subunit");
+		idd.postcode = id.getChildText("postcode");			idd.postcode_restricted = getRestricted(id, "postcode");
+		idd.company = id.getChildText("company");			idd.company_restricted = getRestricted(id, "company");
+		idd.unit = id.getChildText("unit");					idd.unit_restricted = getRestricted(id, "unit");
+		idd.subunit = id.getChildText("subunit");			idd.subunit_restricted = getRestricted(id, "subunit");
 
-		idd.function = id.getChildTextNN("function");
-		idd.surname = id.getChildTextNN("surname");
-		idd.middlename = id.getChildTextNN("middlename");
-		idd.firstname_s = id.getChildTextNN("name");
+		idd.function = id.getChildText("function");			idd.function_restricted = getRestricted(id, "function");
+		idd.surname = id.getChildText("surname");			idd.surname_restricted = getRestricted(id, "surname");
+		idd.middlename = id.getChildText("middlename");		idd.middlename_restricted = getRestricted(id, "middlename");
+		idd.firstname_s = id.getChildText("name");			idd.firstname_s_restricted = getRestricted(id, "firstname_s");
+		idd.birthday_gmt = id.getChildLong("birthday_gmt");	idd.birthday_gmt_restricted = getRestricted(id, "birthday_gmt");
+		idd.placeofbirth = id.getChildText("placeofbirth"); idd.placeofbirth_restricted = getRestricted(id, "placeofbirth");
 		
-		idd.phone = id.getChildTextNN("phone");
+		idd.phone = id.getChildText("phone");				idd.phone_restricted = getRestricted(id, "phone");
+		idd.fax = id.getChildText("fax");					idd.fax_restricted = getRestricted(id, "fax");
 		
-		idd.note = id.getChildTextNN("note");
+		idd.note = id.getChildText("note");					idd.note_restricted = getRestricted(id, "note");
+		idd.photo = id.getChildText("photo");				idd.photo_restricted = getRestricted(id, "photo");
+		
 		
 		idd.sha256FromElement = SecurityHelper.HexDecoder.decode(id.getChildTextNN("sha256"));
 		
@@ -196,35 +187,27 @@ public class Identity {
 		return idd;
 	}
 	
+	private static boolean getRestricted(Element id, String keyname) {
+		Element c = id.getChild(keyname);
+		if (c==null) return true;
+		String rest = c.getAttribute("restricted");
+		if (rest != null || rest.equalsIgnoreCase("false")) return false;
+		return true;
+	}
+	
 	public boolean validate() throws Exception {
 		byte[] sha256 = calcSHA256();
 		//String ssha1 = SecurityHelper.HexDecoder.encode(sha1, '\0', -1);
 		return Arrays.equals(sha256,sha256FromElement);
 	}
 	
-	public Element toElementOfNotNull() {
+	public Element toElement() {
 		Element id = new Element("identity");
 
-		id.addContent("identnum", getIdentNumString());
-		id.addContent("email", email);
-		if (mnemonic!=null && mnemonic.length()>0) id.addContent("mnemonic", mnemonic);
+		for (Element e : getContentElements()) {
+			id.addContent(e);
+		}
 		
-		if (country!=null && country.length()>0) id.addContent("country", country);
-		if (region!=null && region.length()>0) id.addContent("region", region);
-		if (city!=null && city.length()>0) id.addContent("city", city);
-		if (postcode!=null && postcode.length()>0) id.addContent("postcode", postcode);
-		
-		if (company!=null && company.length()>0) id.addContent("company", company);
-		if (unit!=null && unit.length()>0) id.addContent("unit", unit);
-		if (subunit!=null && subunit.length()>0) id.addContent("subunit", subunit);
-		if (function!=null && function.length()>0) id.addContent("function", function);
-		
-		if (surname!=null && surname.length()>0) id.addContent("surname", surname);
-		if (middlename!=null && middlename.length()>0) id.addContent("middlename", middlename);
-		if (firstname_s!=null && firstname_s.length()>0) id.addContent("name", firstname_s);
-		
-		if (phone!=null && phone.length()>0) id.addContent("phone", phone);
-		if (note!=null && note.length()>0) id.addContent("note", note);
 		try {
 			byte[] sha256b = calcSHA256();
 			id.addContent("sha256", SecurityHelper.HexDecoder.encode(sha256b, ':', -1));
@@ -248,51 +231,92 @@ public class Identity {
 		return id;
 	}
 	
-	public Element toElement() {
-		Element id = new Element("identity");
+	public Vector<Element> getContentElements() {
+		Vector<Element> idFields = new Vector<Element>();
 
-		id.addContent("identnum", getIdentNumString());
-		id.addContent("email", email);
-		id.addContent("mnemonic", mnemonic);
+		idFields.add(new Element("identnum", getIdentNumString()));
+		idFields.add(new Element("email", email));
+		addContent(idFields, "mnemonic", mnemonic, mnemonic_restricted);
 		
-		id.addContent("country", country);
-		id.addContent("region", region);
-		id.addContent("city", city);
-		id.addContent("postcode", postcode);
+		addContent(idFields, "country", country, country_restricted);
+		addContent(idFields, "region", region, region_restricted);
+		addContent(idFields, "city", city, city_restricted);
+		addContent(idFields, "postcode", postcode, postcode_restricted);
 		
-		id.addContent("company", company);
-		id.addContent("unit", unit);
-		id.addContent("subunit", subunit);
-		id.addContent("function", function);
+		addContent(idFields, "company", company, company_restricted);
+		addContent(idFields, "unit", unit, unit_restricted);
+		addContent(idFields, "subunit", subunit, subunit_restricted);
+		addContent(idFields, "function", function, function_restricted);
 		
-		id.addContent("surname", surname);
-		id.addContent("middlename", middlename);
-		id.addContent("name", firstname_s);
+		addContent(idFields, "surname", surname, surname_restricted);
+		addContent(idFields, "middlename", middlename, middlename_restricted);
+		addContent(idFields, "firstname_s", firstname_s, firstname_s_restricted);
 		
-		id.addContent("phone", phone);
-		id.addContent("note", note);
-		try {
-			byte[] sha256b = calcSHA256();
-			id.addContent("sha256", SecurityHelper.HexDecoder.encode(sha256b, ':', -1));
-			sha256FromElement = sha256b;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
+		if (birthday_gmt!=Long.MIN_VALUE) addContent(idFields, "birthday_gmt", SecurityHelper.getFormattedDate(birthday_gmt), birthday_gmt_restricted);
+		addContent(idFields, "placeofbirth", placeofbirth, placeofbirth_restricted);
 		
-		//datapath
-		Element edp = new Element("datapath");
-		if (datapath !=null) {
-			for (int i=0;i<datapath.size();i++) {
-				Element edss = new Element("step"+(i+1));
-				edss.addContent("datasource",datapath.get(i).getDataSource());
-				edss.addContent("datainsertdatetime", datapath.get(i).getDataInsertDatetimeString());
-				edp.addContent(edss);
-			}
-		}
-		id.addContent(edp);
-		unsavedChanges = false;
-		return id;
+		addContent(idFields, "phone", phone, phone_restricted);
+		addContent(idFields, "fax", fax, fax_restricted);
+		
+		addContent(idFields, "note", note, note_restricted);
+		addContent(idFields, "photo", photo, photo_restricted);
+
+		return idFields;
 	}
+	
+	private static void addContent(Vector<Element> idFields, String keyname, String value, boolean restricted) {
+		if (value!=null) {
+			Element e = new Element(keyname, value);
+			e.setAttribute("restricted", ""+restricted);
+			idFields.add(e);
+		}
+	}
+	
+//	public Element toElement() {
+//		Element id = new Element("identity");
+//
+//		id.addContent("identnum", getIdentNumString());
+//		id.addContent("email", email);
+//		id.addContent("mnemonic", mnemonic);
+//		
+//		id.addContent("country", country);
+//		id.addContent("region", region);
+//		id.addContent("city", city);
+//		id.addContent("postcode", postcode);
+//		
+//		id.addContent("company", company);
+//		id.addContent("unit", unit);
+//		id.addContent("subunit", subunit);
+//		id.addContent("function", function);
+//		
+//		id.addContent("surname", surname);
+//		id.addContent("middlename", middlename);
+//		id.addContent("name", firstname_s);
+//		
+//		id.addContent("phone", phone);
+//		id.addContent("note", note);
+//		try {
+//			byte[] sha256b = calcSHA256();
+//			id.addContent("sha256", SecurityHelper.HexDecoder.encode(sha256b, ':', -1));
+//			sha256FromElement = sha256b;
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
+//		
+//		//datapath
+//		Element edp = new Element("datapath");
+//		if (datapath !=null) {
+//			for (int i=0;i<datapath.size();i++) {
+//				Element edss = new Element("step"+(i+1));
+//				edss.addContent("datasource",datapath.get(i).getDataSource());
+//				edss.addContent("datainsertdatetime", datapath.get(i).getDataInsertDatetimeString());
+//				edp.addContent(edss);
+//			}
+//		}
+//		id.addContent(edp);
+//		unsavedChanges = false;
+//		return id;
+//	}
 	
 	
 	public boolean validate(byte[] sha256b) throws Exception {
@@ -302,53 +326,7 @@ public class Identity {
 	
 	
 	public byte[] calcSHA256() throws Exception {
-		byte[] ret = new byte[32];  //256bit = 32 byte
-		SHA256Digest sha256 = new SHA256Digest();
-		
-//		byte[] k = null;
-//		k = getIdentNumString().getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-//		k = email.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-//		k = mnemonic.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-//		k = country.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
-//		k = region.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-//		k = city.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-//		k = postcode.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
-//		k = company.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
-//		k = unit.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-//		k = subunit.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-//		k = function.getBytes("UTF-8");if (k.length>0) sha256.update(k, 0, k.length);
-//		k = surname.getBytes("UTF-8"); if (k.length>0)sha256.update(k, 0, k.length);
-//		k = middlename.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-//		k = name.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-//		k = phone.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);		
-//		k = note.getBytes("UTF-8"); if (k.length>0) sha256.update(k, 0, k.length);
-		updateSHA256(getIdentNumString(), sha256);
-		updateSHA256(email, sha256);
-		updateSHA256(mnemonic, sha256);
-		updateSHA256(country, sha256);
-		updateSHA256(region, sha256);
-		updateSHA256(city, sha256);
-		updateSHA256(postcode, sha256);
-		updateSHA256(company, sha256);
-		updateSHA256(unit, sha256);
-		updateSHA256(subunit, sha256);
-		updateSHA256(function, sha256);
-		updateSHA256(surname, sha256);
-		updateSHA256(middlename, sha256);
-		updateSHA256(firstname_s, sha256);
-		updateSHA256(phone, sha256);
-		updateSHA256(note, sha256);
-		
-		sha256.doFinal(ret, 0);
-		//System.out.println("calc sha1: "+SecurityHelper.HexDecoder.encode(ret, ':', -1));
-		return ret;
-	}
-	
-	private void updateSHA256(String s, SHA256Digest sha256) throws Exception {
-		if (s!=null) {
-			byte[] k = s.getBytes("UTF-8");
-			if (k.length>0) sha256.update(k, 0, k.length);
-		}
+		return SecurityHelper.getSHA256LocalProof(getContentElements());
 	}
 	
 	public void createSHA256() {
@@ -488,7 +466,7 @@ public class Identity {
 		this.middlename = middlename;
 	}
 
-	public String getName() {
+	public String getFirstNames() {
 		return firstname_s;
 	}
 

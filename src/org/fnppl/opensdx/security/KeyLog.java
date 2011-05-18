@@ -156,35 +156,35 @@ public class KeyLog {
 		return kl;
 	}
 
-	public Vector<String[]> getStatusElements() {
-		Vector<String[]> v = new Vector<String[]>();
-		if (message!=null) {
-			v.add(new String[]{"message", message});
-		}
-		if (id!=null) {
-			v.add(new String[]{"identnum", id.getIdentNumString()});
-			v.add(new String[]{"email", id.email});
-			v.add(new String[]{"mnemonic", id.mnemonic});
-			
-			v.add(new String[]{"country", id.country});
-			v.add(new String[]{"region", id.region});
-			v.add(new String[]{"city", id.city});
-			v.add(new String[]{"postcode", id.postcode});
-			
-			v.add(new String[]{"company", id.company});
-			v.add(new String[]{"unit", id.unit});
-			v.add(new String[]{"subunit", id.subunit});
-			v.add(new String[]{"function", id.function});
-			
-			v.add(new String[]{"surname", id.surname});
-			v.add(new String[]{"middlename", id.middlename});
-			v.add(new String[]{"name", id.firstname_s});
-			
-			v.add(new String[]{"phone", id.phone});
-			v.add(new String[]{"note", id.note});
-		}
-		return v;
-	}
+//	public Vector<String[]> getStatusElements() {
+//		Vector<String[]> v = new Vector<String[]>();
+//		if (message!=null) {
+//			v.add(new String[]{"message", message});
+//		}
+//		if (id!=null) {
+//			v.add(new String[]{"identnum", id.getIdentNumString()});
+//			v.add(new String[]{"email", id.getEmail()});
+//			v.add(new String[]{"mnemonic", id.getMnemonic()});
+//			
+//			v.add(new String[]{"country", id.getCountry()});
+//			v.add(new String[]{"region", id.getRegion()});
+//			v.add(new String[]{"city", id.getCity()});
+//			v.add(new String[]{"postcode", id.getPostcode()});
+//			
+//			v.add(new String[]{"company", id.getCompany()});
+//			v.add(new String[]{"unit", id.getUnit()});
+//			v.add(new String[]{"subunit", id.getSubunit()});
+//			v.add(new String[]{"function", id.getFunction()});
+//			
+//			v.add(new String[]{"surname", id.getSurname()});
+//			v.add(new String[]{"middlename", id.getMiddlename()});
+//			v.add(new String[]{"name", id.getFirstNames()});
+//			
+//			v.add(new String[]{"phone", id.getPhone()});
+//			v.add(new String[]{"note", id.getNote()});
+//		}
+//		return v;
+//	}
 
 	public Result verify() throws Exception {
 		Result v = verifyActionSHA256localproofAndSignoff();
@@ -446,7 +446,9 @@ public class KeyLog {
 			eAction.addContent("message",message);
 		}
 		if (id!=null) {
-			eAction.addContent(id.toElementOfNotNull());
+			for (Element eIDContent : id.getContentElements()) {
+				eAction.addContent(eIDContent);
+			}
 		}
 		ea.add(eAction);
 		return ea;

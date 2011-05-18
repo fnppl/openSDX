@@ -147,7 +147,7 @@ public class KeyClientMessageFactory {
 	
 		Element content = new Element("masterpubkey");
 		content.addContent(masterkey.getSimplePubKeyElement());
-		content.addContent(id.toElementOfNotNull());
+		content.addContent(id.toElement());
 		OSDXMessage msg = OSDXMessage.buildMessage(content, masterkey); //self-signoff with masterkey
 		req.setContentElement(msg.toElement());
 		return req;

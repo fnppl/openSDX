@@ -2092,7 +2092,7 @@ private Component buildComponentTrustedKeys(Vector<OSDXKey> keys) {
 						texts.get(11).setText(id.getFunction());
 						texts.get(12).setText(id.getSurname());
 						texts.get(13).setText(id.getMiddlename());
-						texts.get(14).setText(id.getName());
+						texts.get(14).setText(id.getFirstNames());
 						texts.get(15).setText(id.getNote());
 					}
 				} else {
@@ -2126,7 +2126,7 @@ private Component buildComponentTrustedKeys(Vector<OSDXKey> keys) {
 		rows.add(new String[]{"function",id.getFunction()});
 		rows.add(new String[]{"surname",id.getSurname()});
 		rows.add(new String[]{"middlename",id.getMiddlename()});
-		rows.add(new String[]{"name",id.getName()});
+		rows.add(new String[]{"name",id.getFirstNames()});
 		rows.add(new String[]{"note",id.getNote()});
 		
 		
@@ -3194,7 +3194,7 @@ private Component buildComponentTrustedKeys(Vector<OSDXKey> keys) {
 			else if (rowIndex==11) return id.getFunction();
 			else if (rowIndex==12) return id.getSurname();
 			else if (rowIndex==13) return id.getMiddlename();
-			else if (rowIndex==14) return id.getName();
+			else if (rowIndex==14) return id.getFirstNames();
 			else if (rowIndex==15) return id.getNote();
 			else if (rowIndex>=16 && rowIndex<16+datapath.size()) {
 				DataSourceStep s = datapath.get(rowIndex-16);
