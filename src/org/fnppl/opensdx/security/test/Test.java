@@ -299,7 +299,7 @@ public class Test {
 		//id part
 		Element eids = new Element("identities");
 		for (int i=0;i<ids.size();i++) {
-			eids.addContent(ids.get(0).toElement());	
+			eids.addContent(ids.get(0).toElement(true));	
 		}
 		ekp.addContent(eids);
 		

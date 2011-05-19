@@ -460,7 +460,7 @@ public class OSDXKey {
 			if (mk.identities!=null && mk.identities.size()>0) {
 				Element eids = new Element("identities");
 				for (Identity id : mk.identities) {
-					eids.addContent(id.toElement());
+					eids.addContent(id.toElement(true));
 				}
 				ekp.addContent(eids);
 			}

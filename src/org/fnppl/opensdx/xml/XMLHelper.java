@@ -85,13 +85,14 @@ public class XMLHelper {
 			String n = from.getName();
 			String t = from.getText();
 			//System.out.println("adding value: "+n+" : "+t);
-			to.addContent(n,t);
+			Element enew = new Element(n,t);
 			Vector<String[]> atts = from.getAttributes();
 			if (atts!=null) {
 				for (String[] a : atts) {
-					to.setAttribute(a[0], a[1]);
+					enew.setAttribute(a[0], a[1]);
 				}
 			}
+			to.addContent(enew);
 		}
 	}
 }

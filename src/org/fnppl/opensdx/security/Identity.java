@@ -54,6 +54,9 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.fnppl.opensdx.xml.*;
 
 public class Identity {
+	
+	public static String RESTRICTED = "[RESTRICTED]";
+	
 	private int identnum = 0;
 	private String email = null;
 	private String mnemonic = null; 			private boolean mnemonic_restricted = true;
@@ -191,7 +194,7 @@ public class Identity {
 		Element c = id.getChild(keyname);
 		if (c==null) return true;
 		String rest = c.getAttribute("restricted");
-		if (rest != null || rest.equalsIgnoreCase("false")) return false;
+		if (rest != null && rest.equalsIgnoreCase("false")) return false;
 		return true;
 	}
 	
@@ -201,10 +204,10 @@ public class Identity {
 		return Arrays.equals(sha256,sha256FromElement);
 	}
 	
-	public Element toElement() {
+	public Element toElement(boolean showRestricted) {
 		Element id = new Element("identity");
 
-		for (Element e : getContentElements()) {
+		for (Element e : getContentElements(showRestricted)) {
 			id.addContent(e);
 		}
 		
@@ -231,42 +234,47 @@ public class Identity {
 		return id;
 	}
 	
-	public Vector<Element> getContentElements() {
+	public Vector<Element> getContentElements(boolean allow) {
 		Vector<Element> idFields = new Vector<Element>();
 
 		idFields.add(new Element("identnum", getIdentNumString()));
 		idFields.add(new Element("email", email));
-		addContent(idFields, "mnemonic", mnemonic, mnemonic_restricted);
+		addContent(idFields, "mnemonic", mnemonic, mnemonic_restricted, allow);
 		
-		addContent(idFields, "country", country, country_restricted);
-		addContent(idFields, "region", region, region_restricted);
-		addContent(idFields, "city", city, city_restricted);
-		addContent(idFields, "postcode", postcode, postcode_restricted);
+		addContent(idFields, "country", country, country_restricted, allow);
+		addContent(idFields, "region", region, region_restricted, allow);
+		addContent(idFields, "city", city, city_restricted, allow);
+		addContent(idFields, "postcode", postcode, postcode_restricted, allow);
 		
-		addContent(idFields, "company", company, company_restricted);
-		addContent(idFields, "unit", unit, unit_restricted);
-		addContent(idFields, "subunit", subunit, subunit_restricted);
-		addContent(idFields, "function", function, function_restricted);
+		addContent(idFields, "company", company, company_restricted, allow);
+		addContent(idFields, "unit", unit, unit_restricted, allow);
+		addContent(idFields, "subunit", subunit, subunit_restricted, allow);
+		addContent(idFields, "function", function, function_restricted, allow);
 		
-		addContent(idFields, "surname", surname, surname_restricted);
-		addContent(idFields, "middlename", middlename, middlename_restricted);
-		addContent(idFields, "firstname_s", firstname_s, firstname_s_restricted);
+		addContent(idFields, "surname", surname, surname_restricted, allow);
+		addContent(idFields, "middlename", middlename, middlename_restricted, allow);
+		addContent(idFields, "firstname_s", firstname_s, firstname_s_restricted, allow);
 		
-		if (birthday_gmt!=Long.MIN_VALUE) addContent(idFields, "birthday_gmt", SecurityHelper.getFormattedDate(birthday_gmt), birthday_gmt_restricted);
-		addContent(idFields, "placeofbirth", placeofbirth, placeofbirth_restricted);
+		if (birthday_gmt!=Long.MIN_VALUE) addContent(idFields, "birthday_gmt", SecurityHelper.getFormattedDate(birthday_gmt), birthday_gmt_restricted, allow);
+		addContent(idFields, "placeofbirth", placeofbirth, placeofbirth_restricted, allow);
 		
-		addContent(idFields, "phone", phone, phone_restricted);
-		addContent(idFields, "fax", fax, fax_restricted);
+		addContent(idFields, "phone", phone, phone_restricted, allow);
+		addContent(idFields, "fax", fax, fax_restricted, allow);
 		
-		addContent(idFields, "note", note, note_restricted);
-		addContent(idFields, "photo", photo, photo_restricted);
+		addContent(idFields, "note", note, note_restricted, allow);
+		addContent(idFields, "photo", photo, photo_restricted, allow);
 
 		return idFields;
 	}
 	
-	private static void addContent(Vector<Element> idFields, String keyname, String value, boolean restricted) {
+	private static void addContent(Vector<Element> idFields, String keyname, String value, boolean restricted, boolean allow) {
 		if (value!=null) {
-			Element e = new Element(keyname, value);
+			Element e;
+			if (restricted && !allow) {
+				e = new Element(keyname, RESTRICTED);
+			} else {
+				e = new Element(keyname, value);
+			}
 			e.setAttribute("restricted", ""+restricted);
 			idFields.add(e);
 		}
@@ -326,7 +334,7 @@ public class Identity {
 	
 	
 	public byte[] calcSHA256() throws Exception {
-		return SecurityHelper.getSHA256LocalProof(getContentElements());
+		return SecurityHelper.getSHA256LocalProof(getContentElements(true));
 	}
 	
 	public void createSHA256() {
@@ -353,7 +361,7 @@ public class Identity {
 	public String getEmail() {
 		return email;
 	}
-
+	
 	public void setEmail(String email) {
 		unsavedChanges = true;
 		this.email = email;
@@ -361,6 +369,10 @@ public class Identity {
 
 	public String getMnemonic() {
 		return mnemonic;
+	}
+	
+	public boolean isMnemonicRestricted() {
+		return mnemonic_restricted;
 	}
 
 	public void setMnemonic(String mnemonic) {
@@ -491,6 +503,150 @@ public class Identity {
 	public void setDatapath(Vector<DataSourceStep> datapath) {
 		unsavedChanges = true;
 		this.datapath = datapath;
+	}
+	
+	public boolean is_mnemonic_restricted() {
+		return mnemonic_restricted;
+	}
+
+	public void set_mnemonic_restricted(boolean restricted) {
+		mnemonic_restricted = restricted;
+	}
+
+	public boolean is_country_restricted() {
+		return country_restricted;
+	}
+
+	public void set_country_restricted(boolean restricted) {
+		country_restricted = restricted;
+	}
+
+	public boolean is_region_restricted() {
+		return region_restricted;
+	}
+
+	public void set_region_restricted(boolean restricted) {
+		region_restricted = restricted;
+	}
+
+	public boolean is_city_restricted() {
+		return city_restricted;
+	}
+
+	public void set_city_restricted(boolean restricted) {
+		city_restricted = restricted;
+	}
+
+	public boolean is_postcode_restricted() {
+		return postcode_restricted;
+	}
+
+	public void set_postcode_restricted(boolean restricted) {
+		postcode_restricted = restricted;
+	}
+
+	public boolean is_company_restricted() {
+		return company_restricted;
+	}
+
+	public void set_company_restricted(boolean restricted) {
+		company_restricted = restricted;
+	}
+
+	public boolean is_unit_restricted() {
+		return unit_restricted;
+	}
+
+	public void set_unit_restricted(boolean restricted) {
+		unit_restricted = restricted;
+	}
+
+	public boolean is_subunit_restricted() {
+		return subunit_restricted;
+	}
+
+	public void set_subunit_restricted(boolean restricted) {
+		subunit_restricted = restricted;
+	}
+
+	public boolean is_function_restricted() {
+		return function_restricted;
+	}
+
+	public void set_function_restricted(boolean restricted) {
+		function_restricted = restricted;
+	}
+
+	public boolean is_surname_restricted() {
+		return surname_restricted;
+	}
+
+	public void set_surname_restricted(boolean restricted) {
+		surname_restricted = restricted;
+	}
+
+	public boolean is_middlename_restricted() {
+		return middlename_restricted;
+	}
+
+	public void set_middlename_restricted(boolean restricted) {
+		middlename_restricted = restricted;
+	}
+
+	public boolean is_firstname_s_restricted() {
+		return firstname_s_restricted;
+	}
+
+	public void set_firstname_s_restricted(boolean restricted) {
+		firstname_s_restricted = restricted;
+	}
+
+	public boolean is_birthday_gmt_restricted() {
+		return birthday_gmt_restricted;
+	}
+
+	public void set_birthday_gmt_restricted(boolean restricted) {
+		birthday_gmt_restricted = restricted;
+	}
+
+	public boolean is_placeofbirth_restricted() {
+		return placeofbirth_restricted;
+	}
+
+	public void set_placeofbirth_restricted(boolean restricted) {
+		placeofbirth_restricted = restricted;
+	}
+
+	public boolean is_phone_restricted() {
+		return phone_restricted;
+	}
+
+	public void set_phone_restricted(boolean restricted) {
+		phone_restricted = restricted;
+	}
+
+	public boolean is_fax_restricted() {
+		return fax_restricted;
+	}
+
+	public void set_fax_restricted(boolean restricted) {
+		fax_restricted = restricted;
+	}
+
+	public boolean is_note_restricted() {
+		return note_restricted;
+	}
+
+	public void set_note_restricted(boolean restricted) {
+		note_restricted = restricted;
+	}
+
+	public boolean is_photo_restricted() {
+		return photo_restricted;
+	}
+
+	public void set_photo_restricted(boolean restricted) {
+		photo_restricted = restricted;
 	}
 	
 	public boolean hasUnsavedChanges() {

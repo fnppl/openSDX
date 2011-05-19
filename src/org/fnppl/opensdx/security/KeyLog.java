@@ -92,21 +92,53 @@ public class KeyLog {
 		
 	}
 	
-	public static KeyLog buildKeyLogAction(String action, OSDXKey from, String toKeyID, Identity id) throws Exception {
-		KeyLog kl = new KeyLog();
-		kl.action = action;
-		kl.datetime = System.currentTimeMillis();
-		kl.ipv4 = "LOCAL";
-		kl.ipv6 = "LOCAL";
-		kl.fromKeyid = from.getKeyID();
-		kl.fromKey = from;
-		kl.toKeyid = toKeyID;
-		kl.id = id;
-		kl.datapath = new Vector<DataSourceStep>();
-		kl.signoffAction(from);
-		kl.keyserverSha256localproof = null;
-		kl.keyserverSignature = null;
-		return kl;
+	public static Element buildKeyLogAction(String action, OSDXKey from, String toKeyID, Identity id) throws Exception {
+		long datetime = System.currentTimeMillis();
+		
+		//restricted -> for localproof only
+		Element eRestricted = new Element("keylogaction");
+		eRestricted.addContent("datetime", SecurityHelper.getFormattedDate(datetime));
+		eRestricted.addContent("from_keyid",from.getKeyID());
+		eRestricted.addContent("to_keyid",toKeyID);
+		Element eaRestricted =  new Element(action);
+		eRestricted.addContent(eaRestricted);
+		eaRestricted.addContent(id.toElement(false));
+		byte[] sha256restricted = SecurityHelper.getSHA256LocalProof(eRestricted);
+		
+		
+		//open
+		Element eOpen = new Element("keylogaction");
+		eOpen.addContent("datetime", SecurityHelper.getFormattedDate(datetime));
+		eOpen.addContent("from_keyid",from.getKeyID());
+		eOpen.addContent("to_keyid",toKeyID);
+		Element ea =  new Element(action);
+		eOpen.addContent(ea);
+		ea.addContent(id.toElement(true));
+		byte[] sha256open = SecurityHelper.getSHA256LocalProof(eOpen);
+		
+		//localproofs
+		eOpen.addContent("sha256localproof_open", SecurityHelper.HexDecoder.encode(sha256open, ':', -1));
+		eOpen.addContent("sha256localproof_restricted", SecurityHelper.HexDecoder.encode(sha256restricted, ':', -1));
+		byte[] localproof = SecurityHelper.concat(sha256open, sha256restricted);
+		
+		Signature s = Signature.createSignatureFromLocalProof(localproof, "signature of sha256localproof_open + sha256localproof_restricted", from); 
+		eOpen.addContent(s.toElement());
+		
+		return eOpen;
+//		KeyLog kl = new KeyLog();
+//		kl.action = action;
+//		kl.datetime = System.currentTimeMillis();
+//		kl.ipv4 = "LOCAL";
+//		kl.ipv6 = "LOCAL";
+//		kl.fromKeyid = from.getKeyID();
+//		kl.fromKey = from;
+//		kl.toKeyid = toKeyID;
+//		kl.id = id;
+//		kl.datapath = new Vector<DataSourceStep>();
+//		kl.signoffAction(from);
+//		kl.keyserverSha256localproof = null;
+//		kl.keyserverSignature = null;
+//		return kl;
 	}
 	
 	public static KeyLog buildNewKeyLog(String action, OSDXKey from, String toKeyID, String ip4, String ip6, Identity id) throws Exception {
@@ -446,7 +478,7 @@ public class KeyLog {
 			eAction.addContent("message",message);
 		}
 		if (id!=null) {
-			for (Element eIDContent : id.getContentElements()) {
+			for (Element eIDContent : id.getContentElements(true)) {
 				eAction.addContent(eIDContent);
 			}
 		}

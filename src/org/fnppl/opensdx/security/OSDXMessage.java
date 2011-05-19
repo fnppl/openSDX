@@ -3,8 +3,10 @@ package org.fnppl.opensdx.security;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLHelper;
+
 
 /*
  * Copyright (C) 2010-2011 
@@ -87,12 +89,18 @@ public class OSDXMessage {
 		}
 		Element content = XMLHelper.cloneElement(osdxMessage.getChild("content").getChildren().get(0));
 		OSDXMessage m = buildMessage(content);
+		
 		Element esha256 = osdxMessage.getChild("sha256localproof");
 		byte[] givenLocalproof = null;
 		if (esha256!=null) {
 			givenLocalproof = SecurityHelper.HexDecoder.decode(esha256.getText());
 		}
 		if (givenLocalproof==null || !Arrays.equals(m.sha256localproof, givenLocalproof)) {
+			System.out.println("givenLocalproof : "+SecurityHelper.HexDecoder.encode(givenLocalproof, '\0', -1));
+			System.out.println("calc  localproof: "+SecurityHelper.HexDecoder.encode(m.sha256localproof, '\0', -1));
+			System.out.println("calc2 localproof: "+SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA256LocalProof(content), '\0', -1));
+			Document.buildDocument(m.toElement()).output(System.out);
+			
 			throw new RuntimeException("ERROR: OSDXMessage::wrong or missing sha256localproof");
 		}
 		Element eSignatures = osdxMessage.getChild("signatures");

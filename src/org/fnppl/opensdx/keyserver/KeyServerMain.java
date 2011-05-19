@@ -395,6 +395,7 @@ public class KeyServerMain extends HTTPServer {
 		try {
 			msg = OSDXMessage.fromElement(request.xml.getRootElement());
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			return errorMessage("ERROR in opensdx_message");
 		}
 		Result verified = msg.verifySignaturesWithoutKeyVerification();

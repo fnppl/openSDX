@@ -648,25 +648,27 @@ public class SecurityMainFrame extends JFrame {
 		int buWidth = 200;
 		JButton bu;
 		
-//		bu = new JButton("add identity");
-//		bu.setPreferredSize(new Dimension(buWidth,25));
-//		bu.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				try {
-//					Identity id = Identity.newEmptyIdentity();
-//					id.setIdentNum(key.getIdentities().size()+1);
-//					boolean ok = showIdentityEditDialog(id, true);
-//					if (ok) {
-//						key.addIdentity(id);
-//						update();
-//					}
-//				} catch (Exception e1) {
-//					e1.printStackTrace();
-//				}
-//			}
-//		});
-//		b.add(bu);
-
+		if (key.getIdentities().size()==0) {
+			bu = new JButton("set identity");
+			bu.setPreferredSize(new Dimension(buWidth,25));
+			bu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						Identity id = Identity.newEmptyIdentity();
+						id.setIdentNum(key.getIdentities().size()+1);
+						boolean ok = showIdentityEditDialog(id, true);
+						if (ok) {
+							key.addIdentity(id);
+							update();
+						}
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+				}
+			});
+			b.add(bu);
+		}
+		
 		bu = new JButton("generate REVOKE Key");
 		bu.setPreferredSize(new Dimension(buWidth,25));
 		bu.addActionListener(new ActionListener() {
@@ -1492,12 +1494,13 @@ private Component buildComponentTrustedKeys(Vector<OSDXKey> keys) {
 		addLabelTextFieldPart("IPv4 :", keylog.getIPv4(), a, c, y);y++;
 		addLabelTextFieldPart("IPv6 :", keylog.getIPv6(), a, c, y);y++;
 		addLabelTextFieldPart("action :", keylog.getAction(), a, c, y);
-		Vector<String[]> el = keylog.getStatusElements();
-		if (el!=null) {
-			for (String[] s : el) {
-				if (s[1]!=null) {
+		Vector<Element> idsFields = keylog.getIdentity().getContentElements(true);
+		
+		if (idsFields!=null && idsFields.size()>0) {
+			for (Element e : idsFields) {
+				if (e.getText()!=null) {
 					y++;
-					addLabelTextFieldPart("  "+s[0]+":", s[1], a, c, y);
+					addLabelTextFieldPart("  "+e.getName()+":", e.getText(), a, c, y);
 				}
 			}
 		}
@@ -2112,26 +2115,26 @@ private Component buildComponentTrustedKeys(Vector<OSDXKey> keys) {
 		p.add(l, c);
 		
 		Vector<String[]> rows = new Vector<String[]>();
-		rows.add(new String[]{"identnum",id.getIdentNumString()});
-		rows.add(new String[]{"email",id.getEmail()});
-		rows.add(new String[]{"mnemonic",id.getMnemonic()});
-		rows.add(new String[]{"phone",id.getPhone()});
-		rows.add(new String[]{"country",id.getCountry()});
-		rows.add(new String[]{"region",id.getRegion()});
-		rows.add(new String[]{"city",id.getCity()});
-		rows.add(new String[]{"postcode",id.getPostcode()});
-		rows.add(new String[]{"company",id.getCompany()});
-		rows.add(new String[]{"unit",id.getUnit()});
-		rows.add(new String[]{"subunit",id.getSubunit()});
-		rows.add(new String[]{"function",id.getFunction()});
-		rows.add(new String[]{"surname",id.getSurname()});
-		rows.add(new String[]{"middlename",id.getMiddlename()});
-		rows.add(new String[]{"name",id.getFirstNames()});
-		rows.add(new String[]{"note",id.getNote()});
-		
+		rows.add(new String[]{"identnum",id.getIdentNumString(), null});
+		rows.add(new String[]{"email",id.getEmail(), null});
+		rows.add(new String[]{"mnemonic",id.getMnemonic(), ""+id.is_mnemonic_restricted()});
+		rows.add(new String[]{"phone",id.getPhone(),""+id.is_phone_restricted()});
+		rows.add(new String[]{"country",id.getCountry(),""+id.is_country_restricted()});
+		rows.add(new String[]{"region",id.getRegion(),""+id.is_region_restricted()});
+		rows.add(new String[]{"city",id.getCity(),""+id.is_city_restricted()});
+		rows.add(new String[]{"postcode",id.getPostcode(),""+id.is_postcode_restricted()});
+		rows.add(new String[]{"company",id.getCompany(),""+id.is_company_restricted()});
+		rows.add(new String[]{"unit",id.getUnit(),""+id.is_unit_restricted()});
+		rows.add(new String[]{"subunit",id.getSubunit(),""+id.is_subunit_restricted()});
+		rows.add(new String[]{"function",id.getFunction(),""+id.is_function_restricted()});
+		rows.add(new String[]{"surname",id.getSurname(),""+id.is_surname_restricted()});
+		rows.add(new String[]{"middlename",id.getMiddlename(),""+id.is_middlename_restricted()});
+		rows.add(new String[]{"firstname(s)",id.getFirstNames(),""+id.is_firstname_s_restricted()});
+		rows.add(new String[]{"note",id.getNote(),""+id.is_note_restricted()});
 		
 		for (int i=0;i<rows.size();i++) {
 			y++;
+			String[] row = rows.get(i);
 			l = new JLabel(rows.get(i)[0]);
 			final JTextField t = new JTextField(rows.get(i)[1]);
 			final JCheckBox check = new JCheckBox();
@@ -2146,6 +2149,9 @@ private Component buildComponentTrustedKeys(Vector<OSDXKey> keys) {
 					}
 				}
 			});
+			if (row[2].equals("true") && row[1].equals(Identity.RESTRICTED)) {
+				check.setEnabled(false);
+			}
 			c.weightx = 0;
 			c.weighty = 0.1;
 			c.fill = GridBagConstraints.NONE;
@@ -2659,6 +2665,17 @@ private Component buildComponentTrustedKeys(Vector<OSDXKey> keys) {
 		});
 		ps.add(ok);
 
+		if (canCancel) {
+			JButton cancel = new JButton("cancel");
+			cancel.setPreferredSize(new Dimension(200,30));
+			cancel.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					isOK[0] = false;
+					d.dispose();
+				}
+			});
+			ps.add(cancel);
+		}
 
 		d.setLayout(new BorderLayout());
 
@@ -3155,8 +3172,6 @@ private Component buildComponentTrustedKeys(Vector<OSDXKey> keys) {
 			for (int i=0;i<datapath.size();i++) {
 				rows.add("datapath "+(i+1));
 			}
-
-
 		}
 
 		public Class<?> getColumnClass(int columnIndex) {

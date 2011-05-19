@@ -66,7 +66,7 @@ public class Territorial extends BusinessObject {
 		return t;
 	}
 
-	
+		
 	public String getKeyname() {
 		return KEY_NAME;
 	}

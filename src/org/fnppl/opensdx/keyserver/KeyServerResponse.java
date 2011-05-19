@@ -130,7 +130,7 @@ public class KeyServerResponse extends HTTPServerResponse {
 			if (key != null && key instanceof MasterKey) {
 				Vector<Identity> ids = ((MasterKey)key).getIdentities();
 				for (Identity aid : ids) {
-					e.addContent(aid.toElement());
+					e.addContent(aid.toElement(false));  //TODO allow if approval of identity owner 
 				}
 			}
 			try {
