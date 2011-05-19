@@ -211,20 +211,19 @@ public class KeyApprovingStore {
 			for(int i=0; i<vkl.size(); i++) {
 				Element ee = vkl.elementAt(i);
 				try {
-					KeyLog kl = KeyLog.fromElement(ee,true);
-					kas.keylogs.add(kl);
-					if (!kl.isVerified()) kas.unsavedChanges = true;
-				} catch (Exception ex) {
-					if (ex.getMessage()!=null && ex.getMessage().startsWith("KeyStore:  localproof and signoff of keylog failed.")) {
+					KeyLog kl = KeyLog.fromElement(ee);
+					Result verified = kl.verify();
+					if (!verified.succeeded) {
 						boolean ignore = mh.requestIgnoreKeyLogVerificationFailure();
 						if (ignore) {
-							KeyLog kl = KeyLog.fromElement(ee,false);
 							kas.keylogs.add(kl);
 							kas.unsavedChanges = true;		
 						}
 					} else {
-						ex.printStackTrace();
+						kas.keylogs.add(kl);
 					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
 				
 			}
@@ -420,7 +419,7 @@ public class KeyApprovingStore {
 					System.out.println("KeyLog signature NOT verified!");
 				}
 				if (v) {
-					root.addContent(kl.toFullElement());
+					root.addContent(kl.toElement(true));
 				}
 			}
 		}
@@ -481,15 +480,15 @@ public class KeyApprovingStore {
 		Vector<KeyLog> kls = getKeyLogs(keyid);
 		if (kls==null || kls.size()==0) return null;
 		for (KeyLog kl : kls) {
-			System.out.println("found keylog... "+kl.getDateString());
+			System.out.println("found keylog... "+kl.getActionDatetimeString());
 		}
 		KeyLog kl = kls.lastElement();
 		String status = kl.getAction();
 		int validity = -1;
-		if (status.equals(KeyLog.APPROVAL)) validity =  KeyStatus.STATUS_VALID;
-		else if (status.equals(KeyLog.DISAPPROVAL)) validity =  KeyStatus.STATUS_UNAPPROVED;
-		else if (status.equals(KeyLog.APPROVAL_PENDING)) validity =  KeyStatus.STATUS_UNAPPROVED;
-		else if (status.equals(KeyLog.REVOCATION)) validity =  KeyStatus.STATUS_REVOKED;
+		if (status.equals(KeyLogAction.APPROVAL)) validity =  KeyStatus.STATUS_VALID;
+		else if (status.equals(KeyLogAction.DISAPPROVAL)) validity =  KeyStatus.STATUS_UNAPPROVED;
+		else if (status.equals(KeyLogAction.APPROVAL_PENDING)) validity =  KeyStatus.STATUS_UNAPPROVED;
+		else if (status.equals(KeyLogAction.REVOCATION)) validity =  KeyStatus.STATUS_REVOKED;
 		
 		int approvalPoints = 100;
 		int datetimeValidFrom = 0;  //TODO get from key
@@ -504,7 +503,7 @@ public class KeyApprovingStore {
 			
 			public int compare(KeyLog kl1, KeyLog kl2) {
 				try {
-					return (int)(kl1.getDate()-kl2.getDate());
+					return (int)(kl1.getActionDatetime()-kl2.getActionDatetime());
 				}	catch (Exception ex) {
 					ex.printStackTrace();
 				}

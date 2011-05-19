@@ -63,6 +63,7 @@ import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.KeyClient;
 import org.fnppl.opensdx.security.KeyLog;
+import org.fnppl.opensdx.security.KeyLogAction;
 import org.fnppl.opensdx.security.KeyServerIdentity;
 import org.fnppl.opensdx.security.KeyVerificator;
 import org.fnppl.opensdx.security.MasterKey;
@@ -169,7 +170,7 @@ public class Test {
 				ksEmployee.setSigningKey(master);
 				
 				//and upload to server
-				master.uploadToKeyServer(keyserver, keyverificator);
+				master.uploadToKeyServer(client);
 				sub.uploadToKeyServer(keyverificator);
 				
 				ksEmployee.toFile(ksEmployee.getFile());
@@ -199,7 +200,7 @@ public class Test {
 				ksHead.setSigningKey(master);
 				
 				//and upload to server
-				master.uploadToKeyServer(keyserver, keyverificator);
+				master.uploadToKeyServer(client);
 				sub.uploadToKeyServer(keyverificator);
 				
 				ksHead.toFile(ksHead.getFile());
@@ -231,19 +232,19 @@ public class Test {
 			boolean approval = false;
 			Vector<KeyLog> logs = client.requestKeyLogs(masterEmployee.getKeyID());
 			for (KeyLog kl : logs) {
-				if (kl.getAction().equals(KeyLog.APPROVAL) && kl.getKeyIDFrom().equals(contractKey.getKeyID())) {
+				if (kl.getAction().equals(KeyLogAction.APPROVAL) && kl.getKeyIDFrom().equals(contractKey.getKeyID())) {
 					approval = true;
 				}
 			}
 			System.out.println("approval: "+approval);
 			if (!approval) {
 				//no approval -> build it!
-	 			KeyLog kl = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, contractKey, masterEmployee.getKeyID(), masterEmployee.getCurrentIdentity());
-				boolean ok = client.putKeyLog(kl, masterHead);
-				if (ok) {
+	 			KeyLogAction kl = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, contractKey, masterEmployee.getKeyID(), masterEmployee.getCurrentIdentity());
+				Result upload = kl.uploadToKeyServer(client, masterEmployee);
+				if (upload.succeeded) {
 					System.out.println("Generation of keylog on keyserver successful");
 				} else {
-					System.out.println("ERROR generating keylog on keyserver :: "+client.getMessage());
+					System.out.println("ERROR generating keylog on keyserver :: "+upload.errorMessage);
 				}
 			}
 			

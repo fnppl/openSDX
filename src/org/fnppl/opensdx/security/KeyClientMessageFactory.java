@@ -215,13 +215,13 @@ public class KeyClientMessageFactory {
 		return req;
 	}
 	
-	public static HTTPClientRequest getPutRequestKeyLogs(String host, String prepath, Vector<KeyLog> keylogs, OSDXKey signingKey) throws Exception {
+	public static HTTPClientRequest getPutRequestKeyLogs(String host, String prepath, Vector<KeyLogAction> keylogActions, OSDXKey signingKey) throws Exception {
 		HTTPClientRequest req = new HTTPClientRequest();
 		req.setURI(host, prepath+"/keylogs");
 		
 		Element content = new Element("keylogactions");
-		for (KeyLog k : keylogs) {
-			content.addContent(k.toKeyLogActionElement());
+		for (KeyLogAction k : keylogActions) {
+			content.addContent(k.toElement(true));
 		}
 		
 		OSDXMessage msg = OSDXMessage.buildMessage(content, signingKey);

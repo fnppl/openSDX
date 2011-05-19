@@ -9,6 +9,7 @@ import org.fnppl.opensdx.http.HTTPClientRequest;
 import org.fnppl.opensdx.security.KeyClient;
 import org.fnppl.opensdx.security.KeyClientMessageFactory;
 import org.fnppl.opensdx.security.KeyLog;
+import org.fnppl.opensdx.security.KeyLogAction;
 import org.fnppl.opensdx.security.KeyServerIdentity;
 import org.fnppl.opensdx.security.KeyVerificator;
 import org.fnppl.opensdx.security.MasterKey;
@@ -72,9 +73,9 @@ public class KeyServerClientTest {
 		client.requestKeyLogs(masterkey.getKeyID());out.write("\n\n\n\n\n".getBytes());
 		
 		//self approval keylog
-		Element keylogAction
-		KeyLog keylogSelfApproval = KeyLog.buildKeyLogAction(KeyLog.APPROVAL, masterkey, masterkey.getKeyID(), masterkey.getCurrentIdentity());
-		client.putKeyLog(keylogSelfApproval, masterkey);out.write("\n\n\n\n\n".getBytes());
+		
+		KeyLogAction keylogSelfApproval = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, masterkey, masterkey.getKeyID(), masterkey.getCurrentIdentity());
+		keylogSelfApproval.uploadToKeyServer(client, masterkey);out.write("\n\n\n\n\n".getBytes());
 		
 		client.requestMasterPubKeys(idemail);out.write("\n\n\n\n\n".getBytes());
 		client.requestIdentities(masterkey.getKeyID());out.write("\n\n\n\n\n".getBytes());

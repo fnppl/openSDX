@@ -185,6 +185,10 @@ public class Signature {
 		return key;
 	}
 	
+	public long getSignDatetime() {
+		return signdatetime;
+	}
+	
 	public byte[] getSignatureBytes() {
 		return signaturebytes;
 	}

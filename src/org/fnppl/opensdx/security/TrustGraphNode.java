@@ -83,12 +83,12 @@ public class TrustGraphNode {
 				for (KeyLog keylog : keylogs) {
 					try {
 						String action = keylog.getAction();
-						if (action.equals(KeyLog.REVOCATION)) {
+						if (action.equals(KeyLogAction.REVOCATION)) {
 							if (!keyverificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
 								hasRevokeLog = true;
 								System.out.println("found revocation for subkey: "+key.getKeyID());
 								TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
-								g.addEdge(n, this, TrustGraphEdge.TYPE_REVOKE, keylog.getDate());
+								g.addEdge(n, this, TrustGraphEdge.TYPE_REVOKE, keylog.getActionDatetime());
 							}
 						}
 					} catch (Exception ex) {
@@ -116,10 +116,10 @@ public class TrustGraphNode {
 					SecurityHelper.sortByDate(keylogs);
 					for (KeyLog keylog : keylogs) {
 						try {
-							System.out.println("  found verified keylog from "+keylog.getKeyIDFrom()+" from date: "+keylog.getDateString());
+							System.out.println("  found verified keylog from "+keylog.getKeyIDFrom()+" from date: "+keylog.getActionDatetime());
 							if (!keyverificator.isNotTrustedKey(keylog.getKeyIDFrom())) {
 								String action = keylog.getAction();
-								if (action.equals(KeyLog.APPROVAL)) {
+								if (action.equals(KeyLogAction.APPROVAL)) {
 									//only the newest approval should be a child
 									OSDXKey fromKey = keylog.getActionSignatureKey();
 									String fromKeyID = fromKey.getKeyID();
@@ -135,11 +135,11 @@ public class TrustGraphNode {
 									}
 									preChildKeylogs.add(keylog);
 								}
-								else if (action.equals(KeyLog.REVOCATION)) {
+								else if (action.equals(KeyLogAction.REVOCATION)) {
 									TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
-									g.addEdge(n, this, TrustGraphEdge.TYPE_REVOKE, keylog.getDate());
+									g.addEdge(n, this, TrustGraphEdge.TYPE_REVOKE, keylog.getActionDatetime());
 								}
-								else if (action.equals(KeyLog.DISAPPROVAL)) {
+								else if (action.equals(KeyLogAction.DISAPPROVAL)) {
 									//check if key is in preChildKeyLogs
 									OSDXKey fromKey = keylog.getActionSignatureKey();
 									String fromKeyID = fromKey.getKeyID();
@@ -153,7 +153,7 @@ public class TrustGraphNode {
 									if (found!=null) {
 										preChildKeylogs.remove(found);
 										TrustGraphNode n = g.addNode(keylog.getActionSignatureKey());
-										g.addEdge(n, this, TrustGraphEdge.TYPE_DISAPPROVE, keylog.getDate());
+										g.addEdge(n, this, TrustGraphEdge.TYPE_DISAPPROVE, keylog.getActionDatetime());
 									}
 								}
 							}
@@ -164,7 +164,7 @@ public class TrustGraphNode {
 					for (KeyLog child : preChildKeylogs) {
 						try {
 							TrustGraphNode n = g.addNode(child.getActionSignatureKey());
-							g.addEdge(n, this, TrustGraphEdge.TYPE_APPROVE, child.getDate());
+							g.addEdge(n, this, TrustGraphEdge.TYPE_APPROVE, child.getActionDatetime());
 						} catch (Exception ex) {
 							ex.printStackTrace();
 						}

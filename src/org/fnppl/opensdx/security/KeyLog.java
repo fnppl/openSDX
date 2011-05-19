@@ -59,12 +59,6 @@ import org.fnppl.opensdx.xml.XMLHelper;
  */
 
 public class KeyLog {
-
-	public static String APPROVAL = "approval"; 
-	public static String APPROVAL_PENDING = "approval_pending";
-	public static String DISAPPROVAL = "disapproval";
-	public static String REVOCATION = "revocation";
-	private static String[] checkForAction = new String[] {APPROVAL, APPROVAL_PENDING, DISAPPROVAL, REVOCATION};
 	
 	private String ipv4 = null;
 	private String ipv6 = null;
@@ -72,9 +66,6 @@ public class KeyLog {
 	private byte[] sha256localproof = null;
 	private Signature signature = null;
 	private Vector<DataSourceStep> datapath = null;
-	
-	//private Element ekeylog;
-	private boolean verified = false;
 	
 	private KeyLog() {
 		
@@ -86,57 +77,75 @@ public class KeyLog {
 		kl.ipv4 = ip4;
 		kl.ipv6 = ip6;
 		kl.action = keylogAction;
-		
-		
+		kl.sha256localproof = kl.calcSha256LocalProof();
+		kl.signature = Signature.createSignatureFromLocalProof(kl.sha256localproof, "signature of ipv4, ipv6 and signaturebytes", signingKey);
 		return kl;
 	}
 	
-	public static KeyLog buildNewKeyLog(String action, OSDXKey from, String toKeyID, String ip4, String ip6, Identity id) throws Exception {
-		KeyLog kl = new KeyLog();
-		kl.action = action;
-		kl.datetime = System.currentTimeMillis();
-		kl.ipv4 = ip4;
-		kl.ipv6 = ip6;
-		kl.fromKeyid = from.getKeyID();
-		kl.toKeyid = toKeyID;
-		kl.id = id;
-		kl.datapath = new Vector<DataSourceStep>();
-		kl.signoffAction(from);
-		kl.sha256localproof = null;
-		kl.signature = null;
-			
-		return kl;
-	}
-	
-	public Result uploadToKeyServer(String host, int port, String prepath, OSDXKey signingKey, KeyVerificator keyverificator) {
-		try {
-			KeyClient client =  new KeyClient(host, port, prepath, keyverificator);
-			boolean ok = client.putKeyLog(this, signingKey);
-			if (ok) return Result.succeeded();
-			else Result.error(client.getMessage());
-		} catch (Exception ex) {
-			return Result.error(ex);
+	public Result verify() throws Exception {
+		Result v = action.verifySignature();
+		if (v.succeeded && signature!=null) {
+			v = verifyLocalproofAndSignature();
 		}
-		return Result.error("unknown error");
+		return v;
 	}
 	
-	public static KeyLog buildNewRevocationKeyLog(String fromKeyID, String toKeyID, String message, byte[] actionproof, Signature actionSignature, String ip4, String ip6, OSDXKey serverSignoffKey) throws Exception {
-		KeyLog kl = new KeyLog();
-		kl.action = KeyLog.REVOCATION;
-		kl.datetime = System.currentTimeMillis();
-		kl.ipv4 = ip4;
-		kl.ipv6 = ip6;
-		kl.fromKeyid = fromKeyID;
-		kl.toKeyid = toKeyID;
-		kl.id = null;
-		kl.message = message;
-		kl.datapath = new Vector<DataSourceStep>();
-		kl.actionSha256localproof = actionproof;
-		kl.actionSignature = actionSignature;
-		kl.signoffKeyServer(serverSignoffKey);
+	public byte[] calcSha256LocalProof() throws Exception {
+		//localproof of ipv4, ipv6, action.signature.signaturesbytes
+		byte[] ret = new byte[32];  //256 bit = 32 byte
+		SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();
 		
-		return kl;
+		byte[] data;
+		if (ipv4!=null && ipv4.length()>0) {
+			data = ipv4.getBytes("UTF-8");
+			sha256.update(data, 0,data.length);
+		}
+		if (ipv6!=null && ipv4.length()>0) {
+			data = ipv6.getBytes("UTF-8");
+			sha256.update(data, 0,data.length);
+		}
+		data = action.getSignatureBytes();
+		if (data!=null) {
+			sha256.update(data, 0,data.length);
+		}
+		sha256.doFinal(ret, 0);
+		return ret;
 	}
+	
+//	public static KeyLog buildNewKeyLog(String action, OSDXKey from, String toKeyID, String ip4, String ip6, Identity id) throws Exception {
+//		KeyLog kl = new KeyLog();
+//		kl.action = action;
+//		kl.datetime = System.currentTimeMillis();
+//		kl.ipv4 = ip4;
+//		kl.ipv6 = ip6;
+//		kl.fromKeyid = from.getKeyID();
+//		kl.toKeyid = toKeyID;
+//		kl.id = id;
+//		kl.datapath = new Vector<DataSourceStep>();
+//		kl.signoffAction(from);
+//		kl.sha256localproof = null;
+//		kl.signature = null;
+//			
+//		return kl;
+//	}
+//	
+//	public static KeyLog buildNewRevocationKeyLog(String fromKeyID, String toKeyID, String message, byte[] actionproof, Signature actionSignature, String ip4, String ip6, OSDXKey serverSignoffKey) throws Exception {
+//		KeyLog kl = new KeyLog();
+//		kl.action = KeyLog.REVOCATION;
+//		kl.datetime = System.currentTimeMillis();
+//		kl.ipv4 = ip4;
+//		kl.ipv6 = ip6;
+//		kl.fromKeyid = fromKeyID;
+//		kl.toKeyid = toKeyID;
+//		kl.id = null;
+//		kl.message = message;
+//		kl.datapath = new Vector<DataSourceStep>();
+//		kl.actionSha256localproof = actionproof;
+//		kl.actionSignature = actionSignature;
+//		kl.signoffKeyServer(serverSignoffKey);
+//		
+//		return kl;
+//	}
 
 //	public Vector<String[]> getStatusElements() {
 //		Vector<String[]> v = new Vector<String[]>();
@@ -168,148 +177,60 @@ public class KeyLog {
 //		return v;
 //	}
 
-	public Result verify() throws Exception {
-		Result v = verifyActionSHA256localproofAndSignoff();
-		if (v.succeeded && signature!=null) {
-			v = verifyKeyServerSHA256localproofAndSignoff();
-		}
-		return v;
-	}
 	
-	public Result verifyActionSHA256localproofAndSignoff() throws Exception {
-		if (actionSignature==null) return  Result.error("missing action signature");
-		if (actionSha256localproof == null) return  Result.error("missing action localproof");
+	
+	private Result verifyLocalproofAndSignature() throws Exception {
+		if (signature == null) return  Result.error("missing signature");
+		if (sha256localproof == null) return  Result.error("missing keyserver localproof");
 		
 		//check localproof
-		byte[] bsha256 = calcActionSha256LocalProof();
-		if (!Arrays.equals(bsha256, actionSha256localproof)) {
-			System.out.println("sha256localproof target: "+SecurityHelper.HexDecoder.encode(actionSha256localproof, '\0', -1));
-			System.out.println("sha256localproof real  : "+SecurityHelper.HexDecoder.encode(bsha256, '\0', -1));
-			return Result.error("verification of sha1localproof failed");
-		}	
-		//check signoff
-		return actionSignature.tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(bsha256));
-	}
-	public Result verifyKeyServerSHA256localproofAndSignoff() throws Exception {
-		if (signature==null) return  Result.error("missing signature");
-		if (sha256localproof == null) return  Result.error("missing keyserver localproof");
-		//check localproof
-		byte[] bsha256 = calcKeyServerSha256LocalProof();
+		byte[] bsha256 = calcSha256LocalProof();
 		if (!Arrays.equals(bsha256, sha256localproof)) {
-			System.out.println("sha256localproof target: "+SecurityHelper.HexDecoder.encode(sha256localproof, '\0', -1));
-			System.out.println("sha256localproof real  : "+SecurityHelper.HexDecoder.encode(bsha256, '\0', -1));
+			System.out.println("sha256localproof given      : "+SecurityHelper.HexDecoder.encode(sha256localproof, '\0', -1));
+			System.out.println("sha256localproof calculated : "+SecurityHelper.HexDecoder.encode(bsha256, '\0', -1));
 			return Result.error("verification of sha256localproof failed");
 		}
 		//check signoff
-		return signature.tryVerificationMD5SHA1SHA256(new ByteArrayInputStream(bsha256));
+		return signature.tryVerificationMD5SHA1SHA256(bsha256);
 	}
 	
-	public byte[] calcSha256LocalProof() throws Exception {
-		//localproof without datapath!
-		byte[] ret = new byte[32];  //256 bit = 32 byte
-		SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();
-		
-		byte[] data = ipv4.getBytes("UTF-8");
-		if (ipv4!=null && ipv4.length()>0) {
-			sha256.update(data, 0,data.length);
-		}
-		sha256.doFinal(ret, 16+20);
-		
-		//updateSha1(getDateString(), sha1);
-//		updateSha1(ipv4, sha1);
-//		updateSha1(ipv6, sha1);
-//		
-//		updateSha1(fromKeyid, sha1);
-//		updateSha1(toKeyid, sha1);
-//		if (action.equals(REVOCATION)) {
-//			updateSha1(message, sha1);
-//		} else {
-//			updateSha1(action, sha1);
-//			Vector<String[]> idFields = getStatusElements();
-//			for (String[] f : idFields) {
-//				updateSha1(f[1], sha1);
-//			}
+//	private void updateSha1(String field, org.bouncycastle.crypto.digests.SHA1Digest sha1) throws Exception {
+//		if (field==null || field.length()==0) return;
+//		byte[] k = field.getBytes("UTF-8");
+//		if (k.length>0) {
+//			sha1.update(k, 0, k.length);
+//			//System.out.println("update: "+field);//+"::"+SecurityHelper.HexDecoder.encode(k, ':', -1));
 //		}
-//		sha1.doFinal(ret, 0);
-//		//System.out.println("--- end ---\n");
-//		//System.out.println("calc sha1: "+SecurityHelper.HexDecoder.encode(ret, ':', -1));
-//		return ret;
-	}
-	
-	private void updateSha1(String field, org.bouncycastle.crypto.digests.SHA1Digest sha1) throws Exception {
-		if (field==null || field.length()==0) return;
-		byte[] k = field.getBytes("UTF-8");
-		if (k.length>0) {
-			sha1.update(k, 0, k.length);
-			//System.out.println("update: "+field);//+"::"+SecurityHelper.HexDecoder.encode(k, ':', -1));
-		}
-	}
-	
-	public void signoffAction(OSDXKey key) throws Exception {
-		actionSha256localproof = calcActionSha256LocalProof();
-		actionSignature = Signature.createSignatureFromLocalProof(actionSha256localproof, "signature of sha1localproof", key);
-		verified = true;
-	}
-	
-	public void signoffKeyServer(OSDXKey key) throws Exception {
-		sha256localproof = calcKeyServerSha256LocalProof();
-		signature = Signature.createSignatureFromLocalProof(sha256localproof, "signature of sha1localproof", key);
-		verified = true;
-	}
+//	}
 	
 	public static KeyLog fromElement(Element e)  throws Exception {
-		return fromElement(e, true);
+		return fromElement(e, false);
 	}
 	
-	public static KeyLog fromElement(Element e, boolean tryVerification)  throws Exception {
+	private static KeyLog fromElement(Element e, boolean tryVerification)  throws Exception {
 		//Document.buildDocument(e).output(System.out);
 		KeyLog kl = new KeyLog();
-		kl.action = "UNKNOWN";
+		kl.action = KeyLogAction.fromElement(e.getChild("keylogaction"));
 		
-		Element ea = null;
+		
 		if (e.getName().equals("keylog")) {
 			//full keylog
-			ea = e.getChild("keylogaction");
-			String sDate = e.getChildText("date");
-			if (sDate!=null && sDate.length()>0) kl.datetime = SecurityHelper.parseDate(sDate);
 			kl.ipv4 = e.getChildText("ipv4");
 			kl.ipv6 = e.getChildText("ipv6");
 			String sSha256 = e.getChildText("sha256localproof");
 			if (sSha256!=null && sSha256.length()>0) {
 				kl.sha256localproof = SecurityHelper.HexDecoder.decode(sSha256);
 				kl.signature = Signature.fromElement(e.getChild("signature"));
+				System.out.println("NO SIGNATURE FOUND");
 			}
 			//System.out.println(sDate+" -> datetime::"+kl.datetime);
 		} else {
-			//keylogaction only
-			ea = e;
-			kl.datetime = -1L;
-			kl.ipv4 = null;
-			kl.ipv6 = null;
-			kl.sha256localproof = null;
-			kl.signature = null;
-		}
-		
-		//handle <keylogaction> part
-		for (String c : checkForAction) {
-			if (ea.getChild(c)!=null) {
-				kl.action = c;
-				break;
-			}
-		}
-		kl.fromKeyid = ea.getChildText("from_keyid");
-		kl.toKeyid = ea.getChildText("to_keyid");
-		Element est = ea.getChild(kl.action);
-		if (est!=null) {
-			kl.message = est.getChildTextNN("message");
-			if (kl.message.length()==0) kl.message = null;
-			Element eId = est.getChild("identity");
-			if (eId!=null) kl.id = Identity.fromElement(eId);
+			throw new RuntimeException("wrong keyname");
 		}
 		
 		//build datapath
 		kl.datapath = new Vector<DataSourceStep>();
-		Element dp = ea.getChild("datapath");
+		Element dp = e.getChild("datapath");
 		if (dp!=null) {
 			Vector<Element> steps = dp.getChildren();
 			for (Element st : steps)
@@ -319,38 +240,20 @@ public class KeyLog {
 			}
 		}
 		
-		//check signatures
-		kl.actionSha256localproof = SecurityHelper.HexDecoder.decode(ea.getChildText("sha256localproof"));
-		kl.actionSignature = Signature.fromElement(ea.getChild("signature"));
 		if (tryVerification) {
-			Result v = kl.verifyActionSHA256localproofAndSignoff();
-			kl.verified = v.succeeded;
-			if(!kl.verified) {
-				throw new Exception("KeyLog:  localproof and signoff of action failed.");
-			}
-		}
-		
-	
-		if (tryVerification && kl.signature!=null) {
-			Result v = kl.verifyKeyServerSHA256localproofAndSignoff();
-			kl.verified = v.succeeded;
-			if(!kl.verified) {
-				throw new Exception("KeyLog:  localproof and signoff from keyserver failed.");
+			Result v = kl.verify();
+			//Document.buildDocument(kl.toElement(true)).output(System.out);
+			if(!v.succeeded) {
+				throw new Exception("KeyLog:  verification of localproof and signature failed.");
 			}
 		}
 		return kl;
 	}
 	
 	
-	public boolean isVerified() {
-		return verified;
-	}
-	
-	public Element toFullElement() {
+	public Element toElement(boolean showRestricted) {
 		Element e = new Element("keylog");
-		for (Element h : getFullKeyLogElementsWithoutLocalProofAndDataPath()) {
-			e.addContent(h);
-		}
+		e.addContent(action.toElement(showRestricted));
 		if (sha256localproof!=null) {
 			e.addContent("sha1256ocalproof", SecurityHelper.HexDecoder.encode(sha256localproof, ':', -1));
 			if (signature!=null) {
@@ -358,73 +261,63 @@ public class KeyLog {
 			}
 		}		
 		Element edp = new Element("datapath");
-		for (int i=0;i<datapath.size();i++) {
-			edp.addContent(datapath.get(i).toElement(i));
+		if (datapath!=null) {
+			for (int i=0;i<datapath.size();i++) {
+				edp.addContent(datapath.get(i).toElement(i));
+			}
 		}
 		e.addContent(edp);
-
+		
 		//Document doc = Document.buildDocument(e);
 		//doc.output(System.out);
 		
 		return e;
 	}
 	
-	private Vector<Element> getFullKeyLogElementsWithoutLocalProofAndDataPath() {
-		Vector<Element> ea = new Vector<Element>();
-		ea.add(new Element("date", getDateString()));
-		ea.add(new Element("ipv4", ipv4));
-		ea.add(new Element("ipv6", ipv6));
-		ea.add(toKeyLogActionElement());
-		return ea;
+//	private Vector<Element> getFullKeyLogElementsWithoutLocalProofAndDataPath() {
+//		Vector<Element> ea = new Vector<Element>();
+//		ea.add(new Element("date", getDateString()));
+//		ea.add(new Element("ipv4", ipv4));
+//		ea.add(new Element("ipv6", ipv6));
+//		ea.add(toKeyLogActionElement());
+//		return ea;
+//	}
+//	
+//	private Vector<Element> getKeyLogActionElementsWithoutLocalProof() {
+//		Vector<Element> ea = new Vector<Element>();
+//		ea.add(new Element("from_keyid",fromKeyid));
+//		ea.add(new Element("to_keyid",toKeyid));
+//		Element eAction = new Element(action);
+//		if (message!=null) {
+//			eAction.addContent("message",message);
+//		}
+//		if (id!=null) {
+//			for (Element eIDContent : id.getContentElements(true)) {
+//				eAction.addContent(eIDContent);
+//			}
+//		}
+//		ea.add(eAction);
+//		return ea;
+//	}
+	
+	public long getSignDatetime() {
+		return signature.getSignDatetime();
 	}
 	
-	public Element toKeyLogActionElement() {
-		Element ea = new Element("keylogaction");
-		for (Element e : getKeyLogActionElementsWithoutLocalProof()) {
-			ea.addContent(e);
-		}
-		if (actionSha256localproof!=null) {
-			ea.addContent("sha256localproof", SecurityHelper.HexDecoder.encode(actionSha256localproof, ':', -1));
-			if (actionSignature!=null) {
-				ea.addContent(actionSignature.toElement());
-			}
-		}
-		//Document doc = Document.buildDocument(e);
-		//doc.output(System.out);
+	public long getActionDatetime() {
+		return action.getSignDatetime();
+	}
+	
+	public String getActionDatetimeString() {
+		return SecurityHelper.getFormattedDate(action.getSignDatetime());
+	}
 		
-		return ea;
-	}
-	
-	private Vector<Element> getKeyLogActionElementsWithoutLocalProof() {
-		Vector<Element> ea = new Vector<Element>();
-		ea.add(new Element("from_keyid",fromKeyid));
-		ea.add(new Element("to_keyid",toKeyid));
-		Element eAction = new Element(action);
-		if (message!=null) {
-			eAction.addContent("message",message);
-		}
-		if (id!=null) {
-			for (Element eIDContent : id.getContentElements(true)) {
-				eAction.addContent(eIDContent);
-			}
-		}
-		ea.add(eAction);
-		return ea;
-	}
-	
-	public long getDate() throws Exception {
-		return datetime;
-	}
-	public String getDateString() {
-		return SecurityHelper.getFormattedDate(datetime);
-	}
-	
 	public String getKeyIDFrom() {
-		return fromKeyid;
+		return action.getKeyIDFrom();
 	}
 	
 	public String getKeyIDTo() {
-		return toKeyid;
+		return action.getKeyIDTo();
 	}
 		
 	public String getIPv4() {
@@ -434,7 +327,7 @@ public class KeyLog {
 		return ipv6;
 	}
 	public String getAction() {
-		return action;
+		return action.getAction();
 	}
 	
 	public void addDataPath(DataSourceStep step) {
@@ -446,32 +339,16 @@ public class KeyLog {
 	}
 	
 	public Identity getIdentity() {
-		return id;
+		return action.getIdentity();
 	}
 	
-	public void setIdentity(Identity id) {
-		this.id = id;
-	}
-
-	public void setDatetime(long datetime) {
-		this.datetime = datetime;
-	}
-	public void setIPv4(String ip) {
-		ipv4 = ip;
-	}
-	public void setIPv6(String ip) {
-		ipv6 = ip;
-	}
 	public String getMessage() {
-		return message;
+		return action.getMessage();
 	}
 
-	public void setMessage(String message) {
-		this.message = message;
-	}
 	
 	public OSDXKey getActionSignatureKey() {
-		return actionSignature.getKey();
+		return action.getSignatureKey();
 	}
 }
 //<keylog>

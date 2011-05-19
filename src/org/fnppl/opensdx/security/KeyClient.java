@@ -525,14 +525,14 @@ public class KeyClient extends HTTPClient {
 	
 	//   5. Ich, als user, möchte meine keylogs auf dem server ablegen können (ein löschen von keylogs ist NICHT möglich - für einen aktuellen status ist die "kette ist chronologisch abzuarbeiten")
 	
-	public boolean putKeyLog(KeyLog keylog, OSDXKey signingKey) throws Exception {
-		Vector<KeyLog> keylogs = new Vector<KeyLog>();
-		keylogs.add(keylog);
-		return putKeyLogs(keylogs, signingKey);	
+	public boolean putKeyLogAction(KeyLogAction keylogAction, OSDXKey signingKey) throws Exception {
+		Vector<KeyLogAction> keylogActions = new Vector<KeyLogAction>();
+		keylogActions.add(keylogAction);
+		return putKeyLogActions(keylogActions, signingKey);	
 	}
 	
-	public boolean putKeyLogs(Vector<KeyLog> keylogs, OSDXKey signingKey) throws Exception {
-		HTTPClientRequest req = KeyClientMessageFactory.getPutRequestKeyLogs(host, prepath, keylogs, signingKey);
+	public boolean putKeyLogActions(Vector<KeyLogAction> keylogActions, OSDXKey signingKey) throws Exception {
+		HTTPClientRequest req = KeyClientMessageFactory.getPutRequestKeyLogs(host, prepath, keylogActions, signingKey);
 		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST PUT KeyLogs ----------\n".getBytes());

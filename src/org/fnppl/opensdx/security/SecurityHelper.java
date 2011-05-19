@@ -93,7 +93,7 @@ public class SecurityHelper {
 		Collections.sort(keylogs, new Comparator<KeyLog>() {
 			public int compare(KeyLog k1, KeyLog k2) {
 				try {
-					return (int)(k1.getDate()-k2.getDate());		
+					return (int)(k1.getActionDatetime()-k2.getActionDatetime());		
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}

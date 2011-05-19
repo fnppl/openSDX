@@ -80,6 +80,7 @@ import org.fnppl.opensdx.security.DataSourceStep;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.KeyLog;
+import org.fnppl.opensdx.security.KeyLogAction;
 import org.fnppl.opensdx.security.KeyStatus;
 import org.fnppl.opensdx.security.KeyVerificator;
 import org.fnppl.opensdx.security.MasterKey;
@@ -466,8 +467,8 @@ public class KeyServerMain extends HTTPServer {
 		Identity apid = Identity.newEmptyIdentity();
 		apid.setIdentNum(idd.getIdentNum());
 		apid.setEmail(idd.getEmail());
-		KeyLog kl = KeyLog.buildNewKeyLog(KeyLog.APPROVAL_PENDING, keyServerSigningKey, key.getKeyID(), request.ipv4, request.ipv4, apid);
-		kl.signoffKeyServer(keyServerSigningKey);
+		KeyLogAction klAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL_PENDING, keyServerSigningKey, key.getKeyID(), apid);
+		KeyLog kl = KeyLog.buildNewKeyLog(klAction, request.ipv4, request.ipv4, keyServerSigningKey);
 		
 		//send email with token
 		byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
@@ -504,7 +505,9 @@ public class KeyServerMain extends HTTPServer {
 			idd.setIdentNum(kl.getIdentity().getIdentNum());
 			idd.setEmail(kl.getIdentity().getEmail());
 			
-			KeyLog klApprove = KeyLog.buildNewKeyLog(KeyLog.APPROVAL, keyServerSigningKey, kl.getKeyIDTo(), request.ipv4, request.ipv4, idd);
+			
+			KeyLogAction keylogAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, keyServerSigningKey, kl.getKeyIDTo(), idd);
+			KeyLog klApprove = KeyLog.buildNewKeyLog(keylogAction, request.ipv4, request.ipv4, keyServerSigningKey); 
 			keystore.addKeyLog(klApprove);
 			openTokens.remove(id);
 			
@@ -605,27 +608,29 @@ public class KeyServerMain extends HTTPServer {
 			return errorMessage("missing revokemasterkey element");
 		}
 		
-		String fromKeyID = content.getChildText("from_keyid");
-		String toKeyID = content.getChildText("to_keyid");
-		String message = content.getChildText("message");
-
+//		String fromKeyID = content.getChildText("from_keyid");
+//		String toKeyID = content.getChildText("to_keyid");
+//		String message = content.getChildText("message");
 		
-		OSDXKey revokekey = keyid_key.get(OSDXKey.getFormattedKeyIDModulusOnly(fromKeyID)); 
+		KeyLogAction keylogAction = KeyLogAction.fromElement(content.getChild("keylogaction"));
+		
+		OSDXKey revokekey = keyid_key.get(OSDXKey.getFormattedKeyIDModulusOnly(keylogAction.getKeyIDFrom())); 
 		if (revokekey==null || !(revokekey instanceof RevokeKey)) {
 			return errorMessage("revokekey not registered on keyserver");
 		}
 		
 		//check toKeyID is parent of revokekey
 		if (   !    OSDXKey.getFormattedKeyIDModulusOnly(((RevokeKey)revokekey).getParentKeyID())
-			.equals(OSDXKey.getFormattedKeyIDModulusOnly(toKeyID))) {
+			.equals(OSDXKey.getFormattedKeyIDModulusOnly(keylogAction.getKeyIDTo()))) {
 			return errorMessage("revokekey is not registered as child of masterkey");
 		}
+		Result res = keylogAction.verifySignature();
+		if (!res.succeeded) {
+			return errorMessage("verifcation of keylogaction localproof and signature failed.");	
+		}		
 		
-		Signature sig = msg.getSignatures().get(0);
-		byte[] givenSha256localproof = msg.getSha256LocalProof();
-		
-		KeyLog log = KeyLog.buildNewRevocationKeyLog(fromKeyID, toKeyID, message, givenSha256localproof, sig, request.ipv4, request.ipv4, keyServerSigningKey);
-		log.verify();
+		KeyLog log = KeyLog.buildNewKeyLog(keylogAction, request.ipv4, request.ipv4, keyServerSigningKey);
+		//log.verify();
 		
 		//save
 		updateCache(null,log);
@@ -652,27 +657,31 @@ public class KeyServerMain extends HTTPServer {
 			return errorMessage("missing revokesubkey element");
 		}
 		
-		String fromKeyID = content.getChildText("from_keyid");
-		String toKeyID = content.getChildText("to_keyid");
-		String message = content.getChildText("message");
+		KeyLogAction keylogAction = KeyLogAction.fromElement(content.getChild("keylogaction"));
+		
+		
+//		String fromKeyID = content.getChildText("from_keyid");
+//		String toKeyID = content.getChildText("to_keyid");
+//		String message = content.getChildText("message");
 
 		
-		OSDXKey subkey = keyid_key.get(OSDXKey.getFormattedKeyIDModulusOnly(toKeyID)); 
+		OSDXKey subkey = keyid_key.get(OSDXKey.getFormattedKeyIDModulusOnly(keylogAction.getKeyIDTo())); 
 		if (subkey==null || !(subkey instanceof SubKey)) {
 			return errorMessage("subkey not registered on keyserver");
 		}
 		
 		//check fromKeyID is parent of subkey
 		if (   !    OSDXKey.getFormattedKeyIDModulusOnly(((SubKey)subkey).getParentKeyID())
-			.equals(OSDXKey.getFormattedKeyIDModulusOnly(fromKeyID))) {
+			.equals(OSDXKey.getFormattedKeyIDModulusOnly(keylogAction.getKeyIDFrom()))) {
 			return errorMessage("subkey is not registered as child of masterkey");
 		}
 		
-		Signature sig = msg.getSignatures().get(0);
-		byte[] givenSha256localproof = msg.getSha256LocalProof();
-		
-		KeyLog log = KeyLog.buildNewRevocationKeyLog(fromKeyID, toKeyID, message, givenSha256localproof, sig, request.ipv4, request.ipv4, keyServerSigningKey);
-		log.verify();
+		Result res = keylogAction.verifySignature();
+		if (!res.succeeded) {
+			return errorMessage("verifcation of keylogaction localproof and signature failed.");	
+		}
+	
+		KeyLog log = KeyLog.buildNewKeyLog(keylogAction, request.ipv4, request.ipv4, keyServerSigningKey);
 		
 		//save
 		updateCache(null,log);
@@ -762,14 +771,15 @@ public class KeyServerMain extends HTTPServer {
 		if (!content.getName().equals("keylogactions")) {
 			return errorMessage("missing keylogactions element");
 		}
-
+		
 		Vector<Element> elogs = content.getChildren("keylogaction");
 		if (elogs==null || elogs.size()<=0) {
 			return errorMessage("missing keylogaction element");
 		}
+		
 		for (Element el : elogs) {
-			KeyLog log = KeyLog.fromElement(el);
-			Result v = log.verifyActionSHA256localproofAndSignoff();
+			KeyLogAction log = KeyLogAction.fromElement(el);
+			Result v = log.verifySignature();
 			if (!v.succeeded) {
 				return errorMessage("verification of keylogaction signature failed.");
 			}
@@ -779,13 +789,11 @@ public class KeyServerMain extends HTTPServer {
 				return errorMessage("key is already revoked.");	
 			}
 			
-			long datetime = System.currentTimeMillis();
-			log.setDatetime(datetime);
-			log.setIPv4(request.ipv4);
-			log.setIPv6(request.ipv4);
-			keystore.addKeyLog(log);
-			log.signoffKeyServer(keyServerSigningKey);
-			updateCache(null,log);
+			//TODO check given approved identitiy fields match the original (same identnum) identity fields  
+
+			KeyLog kl = KeyLog.buildNewKeyLog(log, request.ipv4, request.ipv4, keyServerSigningKey);
+			keystore.addKeyLog(kl);
+			updateCache(null,kl);
 
 		}
 		//save

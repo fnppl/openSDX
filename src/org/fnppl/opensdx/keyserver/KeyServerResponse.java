@@ -122,6 +122,12 @@ public class KeyServerResponse extends HTTPServerResponse {
 	public static KeyServerResponse createIdentityResponse(String serverid, HTTPServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
+		boolean showRestricted = false;
+		if (request.xml!=null) {
+			//TODO allow if identity owner approved signing key in osdxmessage
+			
+			
+		}
 		if (id != null) {
 			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("identities_response");
@@ -130,7 +136,7 @@ public class KeyServerResponse extends HTTPServerResponse {
 			if (key != null && key instanceof MasterKey) {
 				Vector<Identity> ids = ((MasterKey)key).getIdentities();
 				for (Identity aid : ids) {
-					e.addContent(aid.toElement(false));  //TODO allow if approval of identity owner 
+					e.addContent(aid.toElement(showRestricted)); 
 				}
 			}
 			try {
@@ -190,9 +196,15 @@ public class KeyServerResponse extends HTTPServerResponse {
 			Vector<KeyLog> keylogs = keyid_log.get(id);
 			if (keylogs!=null && keylogs.size()>0) {
 				for (KeyLog log : keylogs) {
-					e.addContent(log.toFullElement());
+					//TODO decide if client can see restricted fields 
+					boolean showRestricted = false;
+					if (request.xml!=null) {
+						//TODO allow if identity owner approved signing key in osdxmessage
+						
+						
+					}
+					e.addContent(log.toElement(showRestricted));
 				}
-				
 			}
 			try {
 				OSDXMessage msg = OSDXMessage.buildMessage(e, signoffkey);

@@ -157,17 +157,24 @@ public class MasterKey extends OSDXKey {
 		return ret;
 	}
 	
-	public Result uploadToKeyServer(KeyServerIdentity keyserver, KeyVerificator keyverificator) {
+//	public Result uploadToKeyServer(KeyServerIdentity keyserver, KeyVerificator keyverificator) {
+//		if (authoritativekeyserver.equals("LOCAL")) {
+//			setAuthoritativeKeyServer(keyserver.getHost());
+//		} else {
+//			if (!authoritativekeyserver.equals(keyserver.getHost())) {
+//				return Result.error("authoritative keyserver does not match given keyserver");
+//			}
+//		}
+//		return uploadToKeyServer(keyverificator);
+//	}
+	public Result uploadToKeyServer(KeyClient client) {
 		if (authoritativekeyserver.equals("LOCAL")) {
-			setAuthoritativeKeyServer(keyserver.getHost());
+			setAuthoritativeKeyServer(client.getHost());
 		} else {
-			if (!authoritativekeyserver.equals(keyserver.getHost())) {
+			if (!authoritativekeyserver.equals(client.getHost())) {
 				return Result.error("authoritative keyserver does not match given keyserver");
 			}
 		}
-		return uploadToKeyServer(keyverificator);
-	}
-	public Result uploadToKeyServer(KeyVerificator keyverificator) {
 		if (!hasPrivateKey()) return Result.error("no private key available");
 		if (!isPrivateKeyUnlocked()) return Result.error("private key is locked");
 		if (authoritativekeyserver.equals("LOCAL")) return Result.error("authoritative keyserver can not be LOCAL");
@@ -175,7 +182,6 @@ public class MasterKey extends OSDXKey {
 		Identity id = getCurrentIdentity();
 		if (id==null) return Result.error("No Identity found.");
 		try {
-			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "", keyverificator);
 			boolean ok = client.putMasterKey(this, id);
 			if (ok) {
 				return Result.succeeded();

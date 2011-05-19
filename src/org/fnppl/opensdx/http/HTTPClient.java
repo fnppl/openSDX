@@ -129,5 +129,8 @@ public class HTTPClient {
 		return false;
 	}
 
+	public String getHost() {
+		return host;
+	}
 	
 }

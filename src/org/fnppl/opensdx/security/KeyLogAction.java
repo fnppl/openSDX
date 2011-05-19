@@ -1,8 +1,12 @@
 package org.fnppl.opensdx.security;
 
+import java.util.Arrays;
+import java.util.Vector;
+
 import org.fnppl.opensdx.xml.Element;
 
 import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 /*
  * Copyright (C) 2010-2011 
@@ -51,6 +55,13 @@ import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 public class KeyLogAction {
 
+	public static String APPROVAL = "approval"; 
+	public static String APPROVAL_PENDING = "approval_pending";
+	public static String DISAPPROVAL = "disapproval";
+	public static String REVOCATION = "revocation";
+	
+	private static String[] checkForAction = new String[] {APPROVAL, APPROVAL_PENDING, DISAPPROVAL, REVOCATION};
+	
 	private String fromKeyid = null;
 	private OSDXKey fromKey = null;
 	private String toKeyid = null;
@@ -84,6 +95,91 @@ public class KeyLogAction {
 		return a;
 	}
 	
+	public static KeyLogAction buildRevocationKeyLogAction(OSDXKey from, String toKeyID, String message) throws Exception {
+		KeyLogAction a  = new KeyLogAction();
+		a.action = REVOCATION;
+		a.id = null;
+		a.message = message;
+		a.fromKey = from;
+		a.fromKeyid = from.getKeyID();
+		a.toKeyid = toKeyID;
+		a.sha256localproof_complete = a.getSha1LocalProof(true);
+		a.sha256localproof_restricted = a.getSha1LocalProof(false);
+		
+		//signature
+		byte[] localproof = SecurityHelper.concat(a.sha256localproof_complete, a.sha256localproof_restricted);
+		a.signature = Signature.createSignatureFromLocalProof(localproof, "signature of sha256localproof_complete + sha256localproof_restricted", from); 
+		return a;
+	}
+	
+	public static KeyLogAction fromElement(Element ea) {
+		if (ea==null) return null;
+		KeyLogAction a  = new KeyLogAction();
+		a.action = "UNKNOWN";
+		for (String c : checkForAction) {
+			if (ea.getChild(c)!=null) {
+				a.action = c;
+				break;
+			}
+		}
+		
+		Element est = ea.getChild(a.action);
+		if (est!=null) {
+			a.message = est.getChildText("message");
+			Element eId = est.getChild("identity");
+			try {
+				if (eId!=null) a.id = Identity.fromElement(eId);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				throw new RuntimeException("ERROR parsing identity");
+			}
+		} 
+		a.fromKey = null;
+		a.fromKeyid = ea.getChildText("from_keyid");
+		a.toKeyid = ea.getChildText("to_keyid");
+		
+		String sha256 = ea.getChildText("sha256localproof_complete");
+		if (sha256!=null && sha256.length()>0) {
+			a.sha256localproof_complete = SecurityHelper.HexDecoder.decode(sha256);
+		}
+		sha256 = ea.getChildText("sha256localproof_restricted");
+		if (sha256!=null && sha256.length()>0) {
+			a.sha256localproof_restricted = SecurityHelper.HexDecoder.decode(sha256);
+		}
+		try {
+			a.signature = Signature.fromElement(ea.getChild("signature"));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw new RuntimeException("ERROR parsing signature");
+		}
+		return a;
+	}
+	
+	public Result verifySignature() {
+		if (signature==null) return  Result.error("missing action signature");
+		if (sha256localproof_complete == null) return  Result.error("missing action localproof_complete");
+		if (sha256localproof_restricted == null) return  Result.error("missing action localproof_restricted");
+		
+		//check signatures
+		try {
+			byte[] calcLocalProof = getSha1LocalProof(true);
+			if (Arrays.equals(calcLocalProof, sha256localproof_complete) ||  Arrays.equals(calcLocalProof, sha256localproof_restricted)) {
+				byte[] localproof = SecurityHelper.concat(sha256localproof_complete, sha256localproof_restricted);
+				Result res = signature.tryVerificationMD5SHA1SHA256(localproof);
+				return res;	
+			} else {
+				System.out.println("sha256localproof complete    : "+SecurityHelper.HexDecoder.encode(sha256localproof_complete, '\0', -1));
+				System.out.println("sha256localproof restricted  : "+SecurityHelper.HexDecoder.encode(sha256localproof_restricted, '\0', -1));
+				System.out.println("sha256localproof calculated  : "+SecurityHelper.HexDecoder.encode(calcLocalProof, '\0', -1));
+				return Result.error("localproof does NOT match sha256localproof complete or restricted");
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Result.error(ex);
+		}
+		return Result.error("YOU WILL NEVER SEE ME!!");
+	}
+	
 	public Element toElement(boolean showRestricted) {
 		Element e = getElementWithoutSignature(showRestricted);
 		e.addContent("sha256localproof_complete", SecurityHelper.HexDecoder.encode(sha256localproof_complete,':',-1));
@@ -95,15 +191,64 @@ public class KeyLogAction {
 	private byte[] getSha1LocalProof(boolean showRestricted) throws Exception {
 		return SecurityHelper.getSHA256LocalProof(getElementWithoutSignature(showRestricted));
 	}
-		
 	
 	private Element getElementWithoutSignature(boolean showRestricted) {
 		Element e = new Element("keylogaction");
-		e.addContent("from_keyid",fromKey.getKeyID());
+		e.addContent("from_keyid",fromKeyid);
 		e.addContent("to_keyid",toKeyid);
 		Element ea =  new Element(action);
 		e.addContent(ea);
-		ea.addContent(id.toElement(showRestricted));
+		if (id!=null) {
+			ea.addContent(id.toElement(showRestricted));
+		}
+		if (message!=null) {
+			ea.addContent("message",message);
+		}
 		return e;
+	}
+	
+	public byte[] getSignatureBytes() {
+		if (signature==null) return null;
+		return signature.getSignatureBytes();
+	}
+	
+	public Result uploadToKeyServer(KeyClient client, OSDXKey signingKey) {
+		try {
+			boolean ok = client.putKeyLogAction(this, signingKey);
+			if (ok) return Result.succeeded();
+			else Result.error(client.getMessage());
+		} catch (Exception ex) {
+			return Result.error(ex);
+		}
+		return Result.error("unknown error");
+	}
+	
+	public long getSignDatetime() {
+		return signature.getSignDatetime();
+	}
+	
+	public String getKeyIDFrom() {
+		return fromKeyid;
+	}
+	
+	public String getKeyIDTo() {
+		return toKeyid;
+	}
+	
+	public String getAction() {
+		return action;
+	}
+	
+	public Identity getIdentity() {
+		return id;
+	}
+	
+	public String getMessage() {
+		return message;
+	}
+
+	
+	public OSDXKey getSignatureKey() {
+		return signature.getKey();
 	}
 }

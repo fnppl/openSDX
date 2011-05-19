@@ -46,6 +46,8 @@ package org.fnppl.opensdx.security;
  * 
  */
 
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.util.*;
 import org.fnppl.opensdx.xml.*;
 
@@ -153,7 +155,7 @@ public class Identity {
 		idd.function = id.getChildText("function");			idd.function_restricted = getRestricted(id, "function");
 		idd.surname = id.getChildText("surname");			idd.surname_restricted = getRestricted(id, "surname");
 		idd.middlename = id.getChildText("middlename");		idd.middlename_restricted = getRestricted(id, "middlename");
-		idd.firstname_s = id.getChildText("name");			idd.firstname_s_restricted = getRestricted(id, "firstname_s");
+		idd.firstname_s = id.getChildText("firstname_s");			idd.firstname_s_restricted = getRestricted(id, "firstname_s");
 		idd.birthday_gmt = id.getChildLong("birthday_gmt");	idd.birthday_gmt_restricted = getRestricted(id, "birthday_gmt");
 		idd.placeofbirth = id.getChildText("placeofbirth"); idd.placeofbirth_restricted = getRestricted(id, "placeofbirth");
 		
@@ -263,6 +265,14 @@ public class Identity {
 		return idFields;
 	}
 	
+	public void setPhoto(Image img) {
+		if (img == null) {
+			photo = null;
+		}
+		//TODO
+		photo = "[a photo]";
+	}
+	
 	private static void addContent(Vector<Element> idFields, String keyname, String value, boolean restricted, boolean allow) {
 		if (value!=null) {
 			Element e;
@@ -321,6 +331,18 @@ public class Identity {
 //		unsavedChanges = false;
 //		return id;
 //	}
+	
+	public void setBirthday_gmt(long birthday) {
+		birthday_gmt = birthday;
+	}
+	
+	public void setPlaceofbirth(String placeofbirth) {
+		this.placeofbirth = placeofbirth;
+	}
+	
+	public void setFax(String fax) {
+		this.fax = fax;
+	}
 	
 	
 	public boolean validate(byte[] sha256b) throws Exception {

@@ -173,9 +173,13 @@ public class KeyVerificator {
 	}
 	
 	private Result checkForKeyLogsThatTrustKey(OSDXKey key) {
+		if (isCheckInProgress(key.getKeyID())) {
+			return Result.error("key check is already progessing -> no loop");
+		}
 		if (isNotTrustedKey(key.getKeyID())) {
 			return Result.error("key is already registered as not trusted");
 		}
+		checkInProgress.add(key);
 		//check keylogs for keys that trust this key
 		System.out.println("requesting keylogs for: "+key.getKeyID());
 		// request keylogs includes verification of keyserver-key,
@@ -187,7 +191,7 @@ public class KeyVerificator {
 			for (KeyLog keylog : keylogs) {
 				try {
 					String action = keylog.getAction();
-					if (action.equals(KeyLog.REVOCATION)) {
+					if (action.equals(KeyLogAction.REVOCATION)) {
 						if (!isNotTrustedKey(keylog.getKeyIDFrom())) {
 							hasRevokeLog = true;
 							System.out.println("found revocation for subkey: "+key.getKeyID());
@@ -202,8 +206,10 @@ public class KeyVerificator {
 				MasterKey parent = requestParentKey((SubKey)key);
 				if (parent!=null) {
 					if (isTrustedKey(parent.getKeyID())) {
+						checkInProgress.remove(key);
 						return Result.succeeded();
 					} else {
+						checkInProgress.remove(key);
 						return checkForKeyLogsThatTrustKey(parent);
 					}
 				}
@@ -219,7 +225,7 @@ public class KeyVerificator {
 				SecurityHelper.sortByDate(keylogs);
 				for (KeyLog keylog : keylogs) {
 					try {
-						System.out.println("  found verified keylog from "+keylog.getKeyIDFrom()+" from date: "+keylog.getDateString());
+						System.out.println("  found verified keylog from "+keylog.getKeyIDFrom()+" from date: "+keylog.getActionDatetimeString());
 						if (!isNotTrustedKey(keylog.getKeyIDFrom())) {
 							//only the newest approval should be a child
 							OSDXKey fromKey = keylog.getActionSignatureKey();
@@ -232,18 +238,18 @@ public class KeyVerificator {
 								}
 							}
 							String action = keylog.getAction();
-							if (action.equals(KeyLog.APPROVAL)) {
+							if (action.equals(KeyLogAction.APPROVAL)) {
 								if (found!=null) {
 									preChildKeylogs.remove(found);
 								}
 								preChildKeylogs.add(keylog);
 							}
-							else if (action.equals(KeyLog.REVOCATION)) {
+							else if (action.equals(KeyLogAction.REVOCATION)) {
 								if (found!=null) {
 									preChildKeylogs.remove(found);
 								}
 							}
-							else if (action.equals(KeyLog.DISAPPROVAL)) {
+							else if (action.equals(KeyLogAction.DISAPPROVAL)) {
 								if (found!=null) {
 									preChildKeylogs.remove(found);
 								}
@@ -264,6 +270,7 @@ public class KeyVerificator {
 				}
 			}
 		}
+		checkInProgress.remove(key);
 		return Result.error("Sorry, no approval keylog of a trusted key found.");
 	}
 	
