@@ -47,10 +47,6 @@ package org.fnppl.opensdx.security;
  */
 
 import java.util.*;
-import java.net.*;
-import java.io.*;
-
-import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.fnppl.opensdx.xml.*;
 
 public class Identity {
