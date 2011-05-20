@@ -122,7 +122,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class KeyServerMain extends HTTPServer {
 	
-	private String serverid = "OSDX KeyServer v0.2";
+	private String serverid = "OSDX KeyServer v0.3";
 	
 	private File configFile = new File("keyserver_config.xml"); 
 	private File alterConfigFile = new File("src/org/fnppl/opensdx/keyserver/resources/config.xml"); 
@@ -756,7 +756,7 @@ public class KeyServerMain extends HTTPServer {
 		return resp;
 	}
 	
-	private KeyServerResponse handlePutKeyLogsRequest(HTTPServerRequest request) throws Exception {
+	private KeyServerResponse handlePutKeyLogActionsRequest(HTTPServerRequest request) throws Exception {
 		OSDXMessage msg;
 		try {
 			msg = OSDXMessage.fromElement(request.xml.getRootElement());
@@ -838,14 +838,20 @@ public class KeyServerMain extends HTTPServer {
 			else if (cmd.equals("/subkey")) {
 				return handlePutSubKeyRequest(request);
 			}
-			else if (cmd.equals("/keylogs")) {
-				return handlePutKeyLogsRequest(request);
+			else if (cmd.equals("/keylogactions")) {
+				return handlePutKeyLogActionsRequest(request);
 			}
 			else if (cmd.equals("/revokemasterkey")) {
 				return handlePutRevokeMasterkeyRequest(request);
 			}
 			else if (cmd.equals("/revokesubkey")) {
 				return handlePutRevokeSubkeyRequest(request);
+			}
+			else if (cmd.equals("/identities")) {
+				return KeyServerResponse.createIdentityResponse(serverid, request, keyid_key, keyid_log, keyServerSigningKey);
+			}
+			else if (cmd.equals("/keylogs")) {
+				return KeyServerResponse.createKeyLogResponse(serverid, request, keyid_log, keyServerSigningKey);
 			}
 		} 
 		else if (request.method.equals("GET")) {
@@ -856,7 +862,7 @@ public class KeyServerMain extends HTTPServer {
 				return KeyServerResponse.createMasterPubKeyToSubKeyResponse(serverid,request, keyid_key, keyServerSigningKey);
 			}
 			else if (cmd.equals("/identities")) {
-				return KeyServerResponse.createIdentityResponse(serverid, request, keyid_key, keyServerSigningKey);
+				return KeyServerResponse.createIdentityResponse(serverid, request, keyid_key, keyid_log, keyServerSigningKey);
 			}
 			else if (cmd.equals("/keystatus")) {
 				return KeyServerResponse.createKeyStatusyResponse(serverid, request, keystore, keyServerSigningKey);

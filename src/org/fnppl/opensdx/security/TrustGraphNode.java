@@ -113,7 +113,7 @@ public class TrustGraphNode {
 					// if revocation: remove from pre-Child-Keylogs
 					// at the end -> add all pre-ChildKeylogs to children
 					Vector<KeyLog> preChildKeylogs = new Vector<KeyLog>();
-					SecurityHelper.sortByDate(keylogs);
+					SecurityHelper.sortKeyLogsbyDate(keylogs);
 					for (KeyLog keylog : keylogs) {
 						try {
 							System.out.println("  found verified keylog from "+keylog.getKeyIDFrom()+" from date: "+keylog.getActionDatetime());

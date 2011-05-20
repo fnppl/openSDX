@@ -119,20 +119,28 @@ public class KeyServerResponse extends HTTPServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createIdentityResponse(String serverid, HTTPServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
+	public static KeyServerResponse createIdentityResponse(String serverid, HTTPServerRequest request, HashMap<String, OSDXKey> keyid_key, HashMap<String, Vector<KeyLog>> keyid_log, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
-		String id = request.getParamValue("KeyID");
+		String keyid = request.getParamValue("KeyID");
 		boolean showRestricted = false;
-		if (request.xml!=null) {
-			//TODO allow if identity owner approved signing key in osdxmessage
-			
-			
+		if (request.xml!=null && request.xml.getRootElement()!=null) {
+			//allow if identity owner approved signing key in osdxmessage
+			try {
+				OSDXMessage msg = OSDXMessage.fromElement(request.xml.getRootElement());
+				Result verify = msg.verifySignaturesWithoutKeyVerification();
+				if (verify.succeeded) {
+					OSDXKey sign = msg.getSignatures().get(0).getKey();
+					showRestricted = allowRestricted(keyid, sign, keyid_log);
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
-		if (id != null) {
-			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
+		if (keyid != null) {
+			keyid = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
 			Element e = new Element("identities_response");
-			e.addContent("keyid",id);
-			OSDXKey key = keyid_key.get(id);
+			e.addContent("keyid",keyid);
+			OSDXKey key = keyid_key.get(keyid);
 			if (key != null && key instanceof MasterKey) {
 				Vector<Identity> ids = ((MasterKey)key).getIdentities();
 				for (Identity aid : ids) {
@@ -151,6 +159,31 @@ public class KeyServerResponse extends HTTPServerResponse {
 		resp.setRetCode(404, "FAILED");
 		resp.createErrorMessageContent("Missing parameter: KeyID");
 		return null;
+	}
+	
+	private static boolean allowRestricted(String from_keyid, OSDXKey sign, HashMap<String, Vector<KeyLog>> keyid_log)  {
+		try {
+			boolean allow = false; 
+			String keyidSign = OSDXKey.getFormattedKeyIDModulusOnly(sign.getKeyID());
+			Vector<KeyLog> logs = keyid_log.get(keyidSign);
+			if (logs!=null) {
+				SecurityHelper.sortKeyLogsbyDate(logs);
+				for (KeyLog log : logs) {
+					System.out.println("log from: "+log.getKeyIDFrom()+" "+log.getAction());
+					if (log.getKeyIDFrom().equals(from_keyid) && log.getAction().equals(KeyLogAction.APPROVAL)) {
+						allow = true;							
+					}
+					if (log.getKeyIDFrom().equals(from_keyid) && log.getAction().equals(KeyLogAction.REVOCATION)) {
+						allow = false;
+					}
+				}
+			}
+			System.out.println("allow: "+allow);
+			return allow;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return false;
 	}
 	
 	public static KeyServerResponse createKeyStatusyResponse(String serverid, HTTPServerRequest request, KeyApprovingStore keystore, OSDXKey signoffkey) {
@@ -188,21 +221,29 @@ public class KeyServerResponse extends HTTPServerResponse {
 	
 	public static KeyServerResponse createKeyLogResponse(String serverid, HTTPServerRequest request, HashMap<String, Vector<KeyLog>> keyid_log, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
-		String id = request.getParamValue("KeyID");
-		if (id != null) {
-			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
-			Element e = new Element("keylogs_response");
-			e.addContent("keyid",id);
-			Vector<KeyLog> keylogs = keyid_log.get(id);
+		String keyid = request.getParamValue("KeyID");
+		if (keyid != null) {
+			String keyid_short = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
+			Element e = new Element("keylogactions_response");
+			e.addContent("keyid",keyid);
+			Vector<KeyLog> keylogs = keyid_log.get(keyid_short);
 			if (keylogs!=null && keylogs.size()>0) {
-				for (KeyLog log : keylogs) {
-					//TODO decide if client can see restricted fields 
-					boolean showRestricted = false;
-					if (request.xml!=null) {
-						//TODO allow if identity owner approved signing key in osdxmessage
-						
-						
+				//decide if client can see restricted fields
+				boolean showRestricted = false;
+				if (request.xml!=null && request.xml.getRootElement()!=null) {
+					//allow if identity owner approved signing key in osdxmessage
+					try {
+						OSDXMessage msg = OSDXMessage.fromElement(request.xml.getRootElement());
+						Result verify = msg.verifySignaturesWithoutKeyVerification();
+						if (verify.succeeded) {
+							OSDXKey sign = msg.getSignatures().get(0).getKey();
+							showRestricted = allowRestricted(keyid, sign, keyid_log);
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
 					}
+				}
+				for (KeyLog log : keylogs) {	
 					e.addContent(log.toElement(showRestricted));
 				}
 			}

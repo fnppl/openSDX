@@ -130,6 +130,60 @@ public class KeyApprovingStore {
 			throw new Exception("KeyStorefile must have \"keystore\" as root-element");
 		}
 		
+		//check signature
+		boolean ignore = false;
+		
+		Vector<Element> ves = e.getChildren();
+		
+		Element eSig = null;
+		Element eProof = null;
+		Signature storeProof = null;
+		for (Element el : ves) {
+			if (el.getName().equals("signature") && storeProof==null) {
+				eSig = el;
+				storeProof = Signature.fromElement(eSig);
+				if (!storeProof.getDataName().equals("signature of complete keystore")) {
+					storeProof = null;
+				}
+			}
+			else if (el.getName().equals("keystore_sha256_proof")) {
+				eProof = el;
+			}
+		}
+		if (eSig == null || storeProof == null) {
+			if (!ignore) ignore = mh.requestIgnoreVerificationFailure();
+			if (!ignore) 
+				throw new Exception("KeyStore: proof of keystore failed.");
+		}
+		ves.remove(eSig);
+		ves.remove(eProof);
+		
+		
+		if (!ignore) {
+			byte[] givenProof = SecurityHelper.HexDecoder.decode(eProof.getText());
+			byte[] bsha256 = SecurityHelper.getSHA256LocalProof(ves);
+			
+			if (!Arrays.equals(bsha256, givenProof)) {
+				System.out.println("sha256localproof given     :  \t"+SecurityHelper.HexDecoder.encode(givenProof, ':', -1));
+				System.out.println("sha256localproof calculated:  \t"+SecurityHelper.HexDecoder.encode(bsha256, ':', -1));
+				if (!ignore) ignore = mh.requestIgnoreVerificationFailure();
+				if (!ignore) 
+					throw new Exception("KeyStore: proof of keystore failed.");
+			}
+			boolean ok = false;
+			try {
+				Result v = storeProof.tryVerificationMD5SHA1SHA256(givenProof); 
+				ok = v.succeeded;
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			if(!ok) {
+				if (!ignore) ignore = mh.requestIgnoreVerificationFailure();
+				if (!ignore) 
+					throw new Exception("KeyStore: proof of keystore failed.");
+			}
+		
+		}
 		KeyApprovingStore kas = new KeyApprovingStore();
 		kas.f = f;
 		kas.unsavedChanges = false;
@@ -140,7 +194,7 @@ public class KeyApprovingStore {
 		Element keys = e.getChild("keys");
 		
 		//add all keypairs as OSDXKey
-		Vector<Element> ves = keys.getChildren("keypair");
+		ves = keys.getChildren("keypair");
 		if (ves.size()>0) {
 			System.out.println("keystore contains "+ves.size()+" keypairs.");
 			for(int i=0; i<ves.size(); i++) {
@@ -171,7 +225,7 @@ public class KeyApprovingStore {
 			}
 			if(!ok) {
 				
-				boolean ignore = mh.requestIgnoreVerificationFailure();
+				ignore = mh.requestIgnoreVerificationFailure();
 				if (!ignore) 
 					throw new Exception("KeyStore:  signoff of localproof of keypairs failed.");
 				kas.unsavedChanges = true;
@@ -214,7 +268,7 @@ public class KeyApprovingStore {
 					KeyLog kl = KeyLog.fromElement(ee);
 					Result verified = kl.verify();
 					if (!verified.succeeded) {
-						boolean ignore = mh.requestIgnoreKeyLogVerificationFailure();
+						ignore = mh.requestIgnoreKeyLogVerificationFailure();
 						if (ignore) {
 							kas.keylogs.add(kl);
 							kas.unsavedChanges = true;		
@@ -433,6 +487,14 @@ public class KeyApprovingStore {
 			root.addContent(eK);
 		}
 		
+		//complete signoff
+		System.out.println("ves.size "+root.getChildren().size());
+		byte[] proof = SecurityHelper.getSHA256LocalProof(root.getChildren());
+		Signature sign = Signature.createSignatureFromLocalProof(proof, "signature of complete keystore", keystoreSigningKey);
+		
+		root.addContent("keystore_sha256_proof",SecurityHelper.HexDecoder.encode(proof,':',-1));
+		root.addContent(sign.toElement());
+		
 		Document d = Document.buildDocument(root);
 		
 		if (!file.exists() || messageHandler.requestOverwriteFile(file)) {
@@ -472,7 +534,7 @@ public class KeyApprovingStore {
 				ret.add(kl);
 			}
 		}
-		sortKeyLogsbyDate(ret);
+		SecurityHelper.sortKeyLogsbyDate(ret);
 		return ret;
 	}
 	
@@ -497,20 +559,7 @@ public class KeyApprovingStore {
 		KeyStatus ks = new KeyStatus(validity, approvalPoints, datetimeValidFrom, datetimeValidUntil);
 		return ks;
 	}
-	
-	public static void sortKeyLogsbyDate(Vector<KeyLog> keylogs) {
-		Collections.sort(keylogs, new Comparator<KeyLog>() { 
-			
-			public int compare(KeyLog kl1, KeyLog kl2) {
-				try {
-					return (int)(kl1.getActionDatetime()-kl2.getActionDatetime());
-				}	catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				return 0;
-			}
-		});
-	}
+
 	
 	public File getFile() {
 		return f;

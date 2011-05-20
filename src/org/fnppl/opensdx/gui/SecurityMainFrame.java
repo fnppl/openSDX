@@ -1951,12 +1951,13 @@ public class SecurityMainFrame extends JFrame {
 			return;
 		}
 		
-		Vector<Identity> ids = requestIdentitiyDetails(to.getKeyID());
-		Identity id = null;
+		Vector<Identity> ids = requestIdentitiyDetails(to.getKeyID(),null);
+		final Identity[] id = new Identity[1];
+		id[0] = null;
 		if (ids!=null && ids.size()>0) {
-			id = ids.lastElement();
+			id[0] = ids.lastElement();
 		}
-		if (id==null) {
+		if (id[0]==null) {
 			Dialogs.showMessage("No identities found for "+to.getKeyID());
 			return;
 		}
@@ -1984,7 +1985,7 @@ public class SecurityMainFrame extends JFrame {
 		//Identity id = Identity.newEmptyIdentity();
 
 		JPanel p = new JPanel();
-		p.setLayout(new BorderLayout());
+		//p.setLayout(new BorderLayout());
 		GridBagLayout gb = new GridBagLayout();		
 		p.setLayout(gb);
 		
@@ -1994,6 +1995,8 @@ public class SecurityMainFrame extends JFrame {
 		int y = -1;
 		String head = "Generate KeyLog";
 		
+		final JPanel pDialog =  new JPanel();
+		final JPanel[] pSouth =  new JPanel[1];
 		final Vector<JCheckBox> checks = new Vector<JCheckBox>();
 		final Vector<JTextField> texts = new Vector<JTextField>();
 	
@@ -2073,93 +2076,59 @@ public class SecurityMainFrame extends JFrame {
 		c.gridwidth = 1;
 		p.add(selectMasterKey, c);
 		
-//		y++;
-//		l = new JLabel("IPv4:");
-//		c.weightx = 0;
-//		c.weighty = 0.1;
-//		c.fill = GridBagConstraints.HORIZONTAL;
-//		c.gridx = 0;
-//		c.gridy = y;
-//		c.gridwidth = 2;
-//		p.add(l, c);
-//		
-//		l = new JLabel(ip4);
-//		c.weightx = 0;
-//		c.weighty = 0.1;
-//		c.fill = GridBagConstraints.HORIZONTAL;
-//		c.gridx = 2;
-//		c.gridy = y;
-//		c.gridwidth = 1;
-//		p.add(l, c);
-//		
-//		y++;
-//		l = new JLabel("IPv6");
-//		c.weightx = 0;
-//		c.weighty = 0.1;
-//		c.fill = GridBagConstraints.HORIZONTAL;
-//		c.gridx = 0;
-//		c.gridy = y;
-//		c.gridwidth = 2;
-//		p.add(l, c);
-//		
-//		l = new JLabel(ip6);
-//		c.weightx = 0;
-//		c.weighty = 0.1;
-//		c.fill = GridBagConstraints.HORIZONTAL;
-//		c.gridx = 2;
-//		c.gridy = y;
-//		c.gridwidth = 1;
-//		p.add(l, c);
-		
 		y++;
-//		JButton requestId = new JButton("request identity details from keyserver");
-//		c.weightx = 0;
-//		c.weighty = 0.1;
-//		c.fill = GridBagConstraints.HORIZONTAL;
-//		c.gridx = 0;
-//		c.gridy = y;
-//		c.gridwidth = 3;
-//		p.add(requestId, c);
-//		requestId.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				Vector<Identity> ids = requestIdentitiyDetails(to.getKeyID());
-//				if (ids!=null && ids.size()>0) {
-//					Identity id = null;
-//					if (ids.size()==1) {
-//						id = ids.get(0);
-//					} else {
-//						Vector<String> idd = new Vector<String>();
-//						for (Identity aid : ids) {
-//							idd.add(aid.getIdentNum()+": "+aid.getEmail());
-//						}
-//						int a = Dialogs.showSelectDialog("Select Identity", "Please select an identity", idd);
-//						if (a>=0) {
-//							id = ids.get(a);
-//						}
-//					}
-//					if (id!=null) {
-//						texts.get( 0).setText(id.getIdentNumString());
-//						texts.get( 1).setText(id.getEmail());
-//						texts.get( 2).setText(id.getMnemonic());
-//						texts.get( 3).setText(id.getPhone());
-//						texts.get( 4).setText(id.getCountry());
-//						texts.get( 5).setText(id.getRegion());
-//						texts.get( 6).setText(id.getCity());
-//						texts.get( 7).setText(id.getPostcode());
-//						texts.get( 8).setText(id.getCompany());
-//						texts.get( 9).setText(id.getUnit());
-//						texts.get(10).setText(id.getSubunit());
-//						texts.get(11).setText(id.getFunction());
-//						texts.get(12).setText(id.getSurname());
-//						texts.get(13).setText(id.getMiddlename());
-//						texts.get(14).setText(id.getFirstNames());
-//						texts.get(15).setText(id.getNote());
-//					}
-//				} else {
-//					Dialogs.showMessage("No identity for this keyid found on keyserver.");
-//				}
-//			}
-//		});
+		
+		JButton requestId = new JButton("request (restricted) identity details from keyserver");
+		c.weightx = 0;
+		c.weighty = 0.1;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridx = 0;
+		c.gridy = y;
+		c.gridwidth = 3;
+		p.add(requestId, c);
+		requestId.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//select signing key
+				OSDXKey signinigKey = selectPrivateSigningKey();
+				if (signinigKey!=null) {
+					signinigKey.unlockPrivateKey(messageHandler);
+				}
+				Vector<Identity> ids = requestIdentitiyDetails(to.getKeyID(), signinigKey);	
+				
+				Identity idd = null;
+				if (ids!=null && ids.size()>0) {
+					idd = ids.lastElement();
+				}
+				if (idd==null) {
+					Dialogs.showMessage("No identities found for "+to.getKeyID());
+					return;
+				}
+				Vector<Element> content = idd.getContentElements(true);
+				for (int i=0;i<content.size();i++) {
+					Element ec = content.get(i);
+					String name = ec.getName();
+					String value = ec.getText();
+					texts.get(i).setText(value);
+					boolean restricted = Boolean.parseBoolean(ec.getAttribute("restricted"));
+					if (restricted) {
+						restricted = value.equals(Identity.RESTRICTED);
+					}
+					if (restricted) {
+						checks.get(i).setEnabled(false);
+						checks.get(i).setSelected(false);
+						texts.get(i).setBackground(Color.WHITE);
+					} else {
+						checks.get(i).setEnabled(true);
+					}
+					if  (name.equals("identnum")) {
+						checks.get(i).setEnabled(false);
+						checks.get(i).setSelected(true);
+						texts.get(i).setBackground(Color.GREEN);
+					}
+				}
+				id[0] = idd;		
+			}
+		});
 		
 		y++;
 		l = new JLabel("Please select fields for status update:");
@@ -2171,6 +2140,72 @@ public class SecurityMainFrame extends JFrame {
 		c.gridwidth = 3;
 		p.add(l, c);
 	
+		
+		Dimension d = new Dimension(700,4*30);
+		p.setPreferredSize(d);
+		p.setMinimumSize(d);
+		p.setMaximumSize(d);
+		
+		pDialog.setLayout(new BorderLayout());
+		pDialog.add(p, BorderLayout.NORTH);
+		pSouth[0] = buildIDElement(id[0], checks, texts);
+		pDialog.add(pSouth[0], BorderLayout.CENTER);
+		
+	    int ans = JOptionPane.showConfirmDialog(null,pDialog,head,JOptionPane.OK_CANCEL_OPTION);
+	    if (ans == JOptionPane.OK_OPTION) {
+	    	//delete all unchecked from id;
+	    	Vector<Element> content = id[0].getContentElements(true);
+	    	for (int i=0;i<content.size();i++) {
+				Element ec = content.get(i);
+				boolean selected = checks.get(i).isSelected();
+				if (!selected) {
+					String name = ec.getName();
+					if (name.equals("email")) id[0].setEmail(null);
+					else if (name.equals("mnemonic")) id[0].setMnemonic(null);
+					else if (name.equals("country")) id[0].setCountry(null);
+					else if (name.equals("region")) id[0].setRegion(null);
+					else if (name.equals("city")) id[0].setCity(null);
+					else if (name.equals("postcode")) id[0].setPostcode(null);
+					else if (name.equals("company")) id[0].setCompany(null);
+					else if (name.equals("unit")) id[0].setUnit(null);
+					else if (name.equals("subunit")) id[0].setSubunit(null);
+					else if (name.equals("function")) id[0].setFunction(null);
+					else if (name.equals("surname")) id[0].setSurname(null);
+					else if (name.equals("middlename")) id[0].setMiddlename(null);
+					else if (name.equals("name")) id[0].setName(null);
+					else if (name.equals("birthday_gmt")) id[0].setBirthday_gmt(Long.MIN_VALUE);
+					else if (name.equals("placeofbirth")) id[0].setPlaceofbirth(null);
+					else if (name.equals("phone")) id[0].setPhone(null);
+					else if (name.equals("fax")) id[0].setFax(null);
+					else if (name.equals("note")) id[0].setNote(null);
+					else if (name.equals("photo")) id[0].setPhoto(null);
+				}
+	    	}
+	    	
+	    	OSDXKey from = storedPrivateKeys.get(map[selectMasterKey.getSelectedIndex()]);
+			if (!from.isPrivateKeyUnlocked()) from.unlockPrivateKey(messageHandler);
+	    	try {
+	    		String status = (String)selectStatus.getSelectedItem();
+	    		uploadKeyLogActionToKeyServer(status, from, to.getKeyID(), id[0]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	    }
+	}
+	
+	private JPanel buildIDElement(Identity id, Vector<JCheckBox> checks, Vector<JTextField> texts) {
+		JPanel p = new JPanel();
+		checks.removeAllElements();
+		texts.removeAllElements();
+		//p.setLayout(new BorderLayout());
+		GridBagLayout gb = new GridBagLayout();		
+		p.setLayout(gb);
+		
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = GridBagConstraints.FIRST_LINE_START;
+		c.insets = new Insets(5, 5, 0, 0);
+		int y = -1;
+		JLabel l;
 		Vector<Element> content = id.getContentElements(true);
 		for (int i=0;i<content.size();i++) {
 			y++;
@@ -2181,6 +2216,7 @@ public class SecurityMainFrame extends JFrame {
 			
 			l = new JLabel(name);
 			final JTextField t = new JTextField(value);
+			t.setBackground(Color.WHITE);
 			t.setEditable(false);
 			final JCheckBox check = new JCheckBox();
 			check.setPreferredSize(new Dimension(20,20));
@@ -2188,9 +2224,9 @@ public class SecurityMainFrame extends JFrame {
 			check.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if (check.isSelected()) {
-						t.setEditable(true);
+						t.setBackground(Color.GREEN);
 					} else {
-						t.setEditable(false);
+						t.setBackground(Color.WHITE);
 					}
 				}
 			});
@@ -2201,6 +2237,7 @@ public class SecurityMainFrame extends JFrame {
 			if  (name.equals("identnum")) {
 				check.setEnabled(false);
 				check.setSelected(true);
+				t.setBackground(Color.GREEN);
 			}
 			c.weightx = 0;
 			c.weighty = 0.1;
@@ -2227,139 +2264,11 @@ public class SecurityMainFrame extends JFrame {
 			checks.add(check);
 			texts.add(t);
 		}
-		
-		Dimension d = new Dimension(700,(4+content.size())*30);
+		Dimension d = new Dimension(700,(content.size())*30);
 		p.setPreferredSize(d);
 		p.setMinimumSize(d);
 		p.setMaximumSize(d);
-		
-		
-//		Vector<String[]> rows = new Vector<String[]>();		
-//		rows.add(new String[]{"identnum",id.getIdentNumString(), null});
-//		rows.add(new String[]{"email",id.getEmail(), null});
-//		rows.add(new String[]{"mnemonic",id.getMnemonic(), ""+id.is_mnemonic_restricted()});
-//		rows.add(new String[]{"phone",id.getPhone(),""+id.is_phone_restricted()});
-//		rows.add(new String[]{"country",id.getCountry(),""+id.is_country_restricted()});
-//		rows.add(new String[]{"region",id.getRegion(),""+id.is_region_restricted()});
-//		rows.add(new String[]{"city",id.getCity(),""+id.is_city_restricted()});
-//		rows.add(new String[]{"postcode",id.getPostcode(),""+id.is_postcode_restricted()});
-//		rows.add(new String[]{"company",id.getCompany(),""+id.is_company_restricted()});
-//		rows.add(new String[]{"unit",id.getUnit(),""+id.is_unit_restricted()});
-//		rows.add(new String[]{"subunit",id.getSubunit(),""+id.is_subunit_restricted()});
-//		rows.add(new String[]{"function",id.getFunction(),""+id.is_function_restricted()});
-//		rows.add(new String[]{"surname",id.getSurname(),""+id.is_surname_restricted()});
-//		rows.add(new String[]{"middlename",id.getMiddlename(),""+id.is_middlename_restricted()});
-//		rows.add(new String[]{"firstname(s)",id.getFirstNames(),""+id.is_firstname_s_restricted()});
-//		rows.add(new String[]{"note",id.getNote(),""+id.is_note_restricted()});
-		
-//		for (int i=0;i<rows.size();i++) {
-//			y++;
-//			String[] row = rows.get(i);
-//			l = new JLabel(rows.get(i)[0]);
-//			final JTextField t = new JTextField(rows.get(i)[1]);
-//			final JCheckBox check = new JCheckBox();
-//			check.setPreferredSize(new Dimension(20,20));
-//			check.setSelected(false);
-//			check.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e) {
-//					if (check.isSelected()) {
-//						t.setEditable(true);
-//					} else {
-//						t.setEditable(false);
-//					}
-//				}
-//			});
-//			//System.out.println(Arrays.toString(row));
-//			if (row[2]!=null
-//				&& row[2].equals("true")
-//				&& row[1]!=null
-//				&& row[1].equals(Identity.RESTRICTED)) {
-//				check.setEnabled(false);
-//			}
-//			c.weightx = 0;
-//			c.weighty = 0.1;
-//			c.fill = GridBagConstraints.NONE;
-//			c.gridx = 0;
-//			c.gridy = y;
-//			p.add(check, c);
-//			
-//			l.setPreferredSize(new Dimension(100,20));
-//			c.weightx = 0;
-//			c.weighty = 0.1;
-//			c.fill = GridBagConstraints.NONE;
-//			c.gridx = 1;
-//			c.gridy = y;
-//			p.add(l, c);
-//
-//			t.setEditable(false);
-//			c.fill = GridBagConstraints.HORIZONTAL;
-//			c.weightx = 1;
-//			c.gridx = 2;
-//			c.gridy = y;
-//			c.gridwidth = 1;
-//			p.add(t,c);
-//			checks.add(check);
-//			texts.add(t);
-//		}
-		
-	    int ans = JOptionPane.showConfirmDialog(null,p,head,JOptionPane.OK_CANCEL_OPTION);
-	    if (ans == JOptionPane.OK_OPTION) {
-	    	//delete all unchecked from id;
-	    	for (int i=0;i<content.size();i++) {
-				Element ec = content.get(i);
-				boolean selected = checks.get(i).isSelected();
-				if (!selected) {
-					String name = ec.getName();
-					if (name.equals("email")) id.setEmail(null);
-					else if (name.equals("mnemonic")) id.setMnemonic(null);
-					else if (name.equals("country")) id.setCountry(null);
-					else if (name.equals("region")) id.setRegion(null);
-					else if (name.equals("city")) id.setCity(null);
-					else if (name.equals("postcode")) id.setPostcode(null);
-					else if (name.equals("company")) id.setCompany(null);
-					else if (name.equals("unit")) id.setUnit(null);
-					else if (name.equals("subunit")) id.setSubunit(null);
-					else if (name.equals("function")) id.setFunction(null);
-					else if (name.equals("surname")) id.setSurname(null);
-					else if (name.equals("middlename")) id.setMiddlename(null);
-					else if (name.equals("name")) id.setName(null);
-					else if (name.equals("birthday_gmt")) id.setBirthday_gmt(Long.MIN_VALUE);
-					else if (name.equals("placeofbirth")) id.setPlaceofbirth(null);
-					else if (name.equals("phone")) id.setPhone(null);
-					else if (name.equals("fax")) id.setFax(null);
-					else if (name.equals("note")) id.setNote(null);
-					else if (name.equals("photo")) id.setPhoto(null);
-				}
-	    	}
-	    	
-//	    	//build new ID
-//	    	Identity idd =  Identity.newEmptyIdentity();
-//	    	if (checks.get( 0).isSelected()) idd.setIdentNum(Integer.parseInt(texts.get( 0).getText()));
-//	    	if (checks.get( 1).isSelected()) idd.setEmail(texts.get( 1).getText());
-//	    	if (checks.get( 2).isSelected()) idd.setMnemonic(texts.get( 2).getText());
-//	    	if (checks.get( 3).isSelected()) idd.setPhone(texts.get( 3).getText());
-//	    	if (checks.get( 4).isSelected()) idd.setCountry(texts.get( 4).getText());
-//	    	if (checks.get( 5).isSelected()) idd.setRegion(texts.get( 5).getText());
-//	    	if (checks.get( 6).isSelected()) idd.setCity(texts.get( 6).getText());
-//	    	if (checks.get( 7).isSelected()) idd.setPostcode(texts.get( 7).getText());
-//	    	if (checks.get( 8).isSelected()) idd.setCompany(texts.get( 8).getText());
-//	    	if (checks.get( 9).isSelected()) idd.setUnit(texts.get( 9).getText());
-//	    	if (checks.get(10).isSelected()) idd.setSubunit(texts.get(10).getText());
-//	    	if (checks.get(11).isSelected()) idd.setFunction(texts.get(11).getText());
-//	    	if (checks.get(12).isSelected()) idd.setSurname(texts.get(12).getText());
-//	    	if (checks.get(13).isSelected()) idd.setMiddlename(texts.get(13).getText());
-//	    	if (checks.get(14).isSelected()) idd.setName(texts.get(14).getText());
-//	    	if (checks.get(15).isSelected()) idd.setNote(texts.get(15).getText());
-//	    	
-	    	OSDXKey from = storedPrivateKeys.get(map[selectMasterKey.getSelectedIndex()]);
-			if (!from.isPrivateKeyUnlocked()) from.unlockPrivateKey(messageHandler);
-	    	try {
-	    		String status = (String)selectStatus.getSelectedItem();
-	    		uploadKeyLogActionToKeyServer(status, from, to.getKeyID(), id);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-	    }
+		return p;
 	}
 	
 	private boolean testKeyServerSettings(KeyServerIdentity keyserver) {
@@ -2397,30 +2306,40 @@ public class SecurityMainFrame extends JFrame {
 	protected void requestKeyLogs(OSDXKey key) {
 		KeyClient client = getKeyClient(key.getAuthoritativekeyserver());
 		Vector<KeyLog> logs = null;
+		OSDXKey sign = selectPrivateSigningKey();
+		if (sign!=null) {
+			sign.unlockPrivateKey(messageHandler);
+		}
 		try {
-			logs = client.requestKeyLogs(key.getKeyID());
+			logs = client.requestKeyLogs(key.getKeyID(),sign);
 		} catch (Exception ex) {
-			if (ex.getMessage()!=null && ex.getMessage().startsWith("signing key NOT in trusted keys")) {
-				int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
-				if (antw != Dialogs.YES) return;
-				try {
-					//request servers signing key
-					String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
-					System.out.println("keyserver id: "+serverKeyID);
-					OSDXKey serversSigningKey = client.requestPublicKey(serverKeyID);
-					keyverificator.addRatedKey(serversSigningKey, TrustRatingOfKey.RATING_MARGINAL);
-					logs = client.requestKeyLogs(key.getKeyID());
-				} catch (Exception ex2) {
-					Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
-					return;
-				}
+//			if (ex.getMessage()!=null && ex.getMessage().startsWith("signing key NOT in trusted keys")) {
+//				int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
+//				if (antw != Dialogs.YES) return;
+//				try {
+//					//request servers signing key
+//					String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
+//					System.out.println("keyserver id: "+serverKeyID);
+//					OSDXKey serversSigningKey = client.requestPublicKey(serverKeyID);
+//					keyverificator.addRatedKey(serversSigningKey, TrustRatingOfKey.RATING_MARGINAL);
+//					logs = client.requestKeyLogs(key.getKeyID(),null);
+//				} catch (Exception ex2) {
+//					Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
+//					return;
+//				}
+//			} else {
+//				if (ex.getMessage()!=null && ex.getLocalizedMessage().startsWith("Connection refused")) {
+//					Dialogs.showMessage("Sorry, could not connect to server.");
+//					return;
+//				} else {
+//					ex.printStackTrace();
+//				}
+//			}
+			if (ex.getMessage()!=null && ex.getLocalizedMessage().startsWith("Connection refused")) {
+				Dialogs.showMessage("Sorry, could not connect to server.");
+				return;
 			} else {
-				if (ex.getMessage()!=null && ex.getLocalizedMessage().startsWith("Connection refused")) {
-					Dialogs.showMessage("Sorry, could not connect to server.");
-					return;
-				} else {
-					ex.printStackTrace();
-				}
+				ex.printStackTrace();
 			}
 		}
 		if (logs!=null && logs.size()>0) {
@@ -2548,13 +2467,18 @@ public class SecurityMainFrame extends JFrame {
 		}
 	}
 	
-	private Vector<Identity> requestIdentitiyDetails(String keyid) {
+	private Vector<Identity> requestIdentitiyDetails(String keyid, OSDXKey signingKey) {
 		if (currentKeyStore.getKeyServer() == null) {
 			Dialogs.showMessage("Sorry, no keyservers found.");
 			return null;
 		}
 		String authServer = keyid.substring(keyid.indexOf('@')+1);
 		KeyClient client =  getKeyClient(authServer);
+		try {
+			client.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 //		
 //		Vector<String> keyservernames = new Vector<String>();
 //		for (KeyServerIdentity id : currentKeyStore.getKeyServer()) {
@@ -2565,7 +2489,7 @@ public class SecurityMainFrame extends JFrame {
 			
 			Vector<Identity> ids = null;
 			try {
-				ids = client.requestIdentities(keyid);
+				ids = client.requestIdentities(keyid, signingKey);
 			} catch (Exception ex) {
 //				if (ex.getMessage()!=null && ex.getMessage().startsWith("signing key NOT in trusted keys")) {
 //					int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");

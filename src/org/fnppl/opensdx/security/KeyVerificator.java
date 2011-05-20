@@ -222,7 +222,7 @@ public class KeyVerificator {
 				// if revocation: remove from pre-Child-Keylogs
 				// at the end -> add test all pre-ChildKeylogs for a trusted key
 				Vector<KeyLog> preChildKeylogs = new Vector<KeyLog>();
-				SecurityHelper.sortByDate(keylogs);
+				SecurityHelper.sortKeyLogsbyDate(keylogs);
 				for (KeyLog keylog : keylogs) {
 					try {
 						System.out.println("  found verified keylog from "+keylog.getKeyIDFrom()+" from date: "+keylog.getActionDatetimeString());
@@ -287,7 +287,7 @@ public class KeyVerificator {
 	public Vector<KeyLog> requestKeyLogs(OSDXKey key) {
 		try {
 			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "",this);
-			Vector<KeyLog> result = client.requestKeyLogs(key.getKeyID());
+			Vector<KeyLog> result = client.requestKeyLogs(key.getKeyID(),null);
 			if (client.getMessage()!=null) {
 				System.out.println("request Keylogs: Message: "+client.getMessage());
 			}
@@ -331,7 +331,7 @@ public class KeyVerificator {
 	public Vector<Identity> requestIdentity(MasterKey key) {
 		try {
 			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "",this);
-			Vector<Identity> ids = client.requestIdentities(key.getKeyID());
+			Vector<Identity> ids = client.requestIdentities(key.getKeyID(),null);
 			if (client.getMessage()!=null) {
 				System.out.println("request parentkey: Message: "+client.getMessage());
 			}

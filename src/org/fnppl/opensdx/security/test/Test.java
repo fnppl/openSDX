@@ -230,7 +230,7 @@ public class Test {
 			
 			//check if approval already exits
 			boolean approval = false;
-			Vector<KeyLog> logs = client.requestKeyLogs(masterEmployee.getKeyID());
+			Vector<KeyLog> logs = client.requestKeyLogs(masterEmployee.getKeyID(),null);
 			for (KeyLog kl : logs) {
 				if (kl.getAction().equals(KeyLogAction.APPROVAL) && kl.getKeyIDFrom().equals(contractKey.getKeyID())) {
 					approval = true;

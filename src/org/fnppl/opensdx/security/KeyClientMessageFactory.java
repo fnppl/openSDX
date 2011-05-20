@@ -57,7 +57,7 @@ public class KeyClientMessageFactory {
 	public static String IDENTITIES_RESPONSE = "identities_response";
 	public static String KEYSTATUS_RESPONSE = "keystatus_response";
 	public static String SUBKEYS_RESPONSE = "subkeys_response";
-	public static String KEYLOGS_RESPONSE = "keylogs_response";
+	public static String KEYLOGS_RESPONSE = "keylogactions_response";
 	public static String PUBLICKEY_RESPONSE = "pubkey_response";
 	
 	
@@ -68,11 +68,24 @@ public class KeyClientMessageFactory {
 		return req;
 	}
 	
-	public static HTTPClientRequest buildRequestIdentities(String host, String prepath, String keyid) {
+	public static HTTPClientRequest buildRequestIdentities(String host, String prepath, String keyid, OSDXKey signingKey) {
 		HTTPClientRequest req = new HTTPClientRequest();
 		req.setURI(host, prepath+"/identities");
-		req.toggleGETMode();
 		req.addRequestParam("KeyID", keyid);
+		if (signingKey!=null) {
+			try {
+				//build osdxmessage
+				Element content = new Element("identities_request");
+				content.addContent("keyid", keyid);
+				OSDXMessage m = OSDXMessage.buildMessage(content, signingKey);
+				req.setContentElement(m.toElement());
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				throw new RuntimeException("ERROR building signed identity request");
+			}
+		} else {
+			req.toggleGETMode();
+		}
 		return req;
 	}
 	
@@ -129,11 +142,26 @@ public class KeyClientMessageFactory {
 //		return req;
 //	}
 	
-	public static HTTPClientRequest buildRequestKeyLogs(String host, String prepath, String keyid) {
+	public static HTTPClientRequest buildRequestKeyLogs(String host, String prepath, String keyid, OSDXKey sign) {
 		HTTPClientRequest req = new HTTPClientRequest();
 		req.setURI(host, prepath+"/keylogs");
-		req.toggleGETMode();
 		req.addRequestParam("KeyID", keyid);
+		
+		if (sign!=null) {
+			try {
+				//build osdxmessage
+				Element content = new Element("keylogs_request");
+				content.addContent("keyid", keyid);
+				OSDXMessage m = OSDXMessage.buildMessage(content, sign);
+				req.setContentElement(m.toElement());
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				throw new RuntimeException("ERROR building signed keylogs request");
+			}
+			
+		} else {
+			req.toggleGETMode();
+		}
 		return req;
 	}
 	
@@ -174,11 +202,8 @@ public class KeyClientMessageFactory {
 		req.setURI(host, prepath+"/revokemasterkey");
 		
 		Element content = new Element("revokemasterkey");
-		content.addContent("from_keyid", revokekey.getKeyID());
-		content.addContent("to_keyid", relatedMasterKey.getKeyID());
-		if (message!=null && message.length()>0)
-			content.addContent("message",message);
-		
+		KeyLogAction revokeAction = KeyLogAction.buildRevocationKeyLogAction(revokekey, relatedMasterKey.getKeyID(), message);
+		content.addContent(revokeAction.toElement(true));	
 		OSDXMessage msg = OSDXMessage.buildMessage(content, revokekey);  //signoff with revokekey
 		req.setContentElement(msg.toElement());		
 		return req;
@@ -189,11 +214,8 @@ public class KeyClientMessageFactory {
 		req.setURI(host, prepath+"/revokesubkey");
 		
 		Element content = new Element("revokesubkey");
-		content.addContent("from_keyid", relatedMasterKey.getKeyID());
-		content.addContent("to_keyid", subkey.getKeyID());
-		if (message!=null && message.length()>0)
-			content.addContent("message",message);
-		
+		KeyLogAction revokeAction = KeyLogAction.buildRevocationKeyLogAction(relatedMasterKey, subkey.getKeyID(), message);
+		content.addContent(revokeAction.toElement(true));	
 		OSDXMessage msg = OSDXMessage.buildMessage(content, relatedMasterKey);  //signoff with masterkey
 		req.setContentElement(msg.toElement());		
 		return req;
@@ -217,7 +239,7 @@ public class KeyClientMessageFactory {
 	
 	public static HTTPClientRequest getPutRequestKeyLogs(String host, String prepath, Vector<KeyLogAction> keylogActions, OSDXKey signingKey) throws Exception {
 		HTTPClientRequest req = new HTTPClientRequest();
-		req.setURI(host, prepath+"/keylogs");
+		req.setURI(host, prepath+"/keylogactions");
 		
 		Element content = new Element("keylogactions");
 		for (KeyLogAction k : keylogActions) {

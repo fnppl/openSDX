@@ -242,6 +242,10 @@ public class Signature {
 		return Result.succeeded();
 	}
 	
+	public String getDataName() {
+		return dataname;
+	}
+	
 //	public boolean tryVerification(byte[] data) throws Exception {
 //		//check md5 and sha256
 //		byte[] md5 = SecurityHelper.getMD5(data);

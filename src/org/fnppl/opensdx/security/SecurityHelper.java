@@ -89,18 +89,20 @@ public class SecurityHelper {
 		}
 	}
 	
-	public static void sortByDate(Vector<KeyLog> keylogs) {
-		Collections.sort(keylogs, new Comparator<KeyLog>() {
-			public int compare(KeyLog k1, KeyLog k2) {
+	public static void sortKeyLogsbyDate(Vector<KeyLog> keylogs) {
+		Collections.sort(keylogs, new Comparator<KeyLog>() { 
+			
+			public int compare(KeyLog kl1, KeyLog kl2) {
 				try {
-					return (int)(k1.getActionDatetime()-k2.getActionDatetime());		
-				} catch (Exception ex) {
+					return (int)(kl1.getActionDatetime()-kl2.getActionDatetime());
+				}	catch (Exception ex) {
 					ex.printStackTrace();
 				}
 				return 0;
 			}
 		});
 	}
+
 
 	
 	public final static class HexDecoder {	    

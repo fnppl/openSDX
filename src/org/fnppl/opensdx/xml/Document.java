@@ -149,6 +149,22 @@ public class Document {
 		
 		return null;
 	}
+	public String toStringCompact() {
+		try {
+			Format f = Format.getCompactFormat();
+			f.setEncoding("UTF-8");
+			XMLOutputter outp = new XMLOutputter(f);
+			StringWriter sw = new StringWriter();
+			outp.output(base, sw);      
+			sw.flush();
+			
+			return sw.toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
 }
 
 

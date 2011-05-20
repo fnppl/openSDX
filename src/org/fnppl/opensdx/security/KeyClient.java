@@ -218,8 +218,8 @@ public class KeyClient extends HTTPClient {
 	
 	
 	//2. Ich, als fremder user, möchte beim keyserver die weiteren identities (identity-details) zu einem pubkey bekommen können
-	public Vector<Identity> requestIdentities(String keyid) throws Exception {
-		HTTPClientRequest req = KeyClientMessageFactory.buildRequestIdentities(host, prepath, keyid);
+	public Vector<Identity> requestIdentities(String keyid, OSDXKey signingKey) throws Exception {
+		HTTPClientRequest req = KeyClientMessageFactory.buildRequestIdentities(host, prepath, keyid, signingKey);
 		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST IDENTITIES ----------\n".getBytes());
@@ -300,8 +300,8 @@ public class KeyClient extends HTTPClient {
 	}
 	
 	//4. Ich, als fremder user, möchte beim keyserver die keylogs eines (beliebigen) pubkeys bekommen können
-	public Vector<KeyLog> requestKeyLogs(String keyid) throws Exception {
-		HTTPClientRequest req = KeyClientMessageFactory.buildRequestKeyLogs(host, prepath, keyid);
+	public Vector<KeyLog> requestKeyLogs(String keyid, OSDXKey sign) throws Exception {
+		HTTPClientRequest req = KeyClientMessageFactory.buildRequestKeyLogs(host, prepath, keyid, sign);
 		HTTPClientResponse resp = send(req);
 		if (log!=null) {
 			log.write("--- REQUEST KeyLogs ----------\n".getBytes());
