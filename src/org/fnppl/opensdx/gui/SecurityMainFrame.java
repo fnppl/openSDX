@@ -2005,17 +2005,17 @@ public class SecurityMainFrame extends JFrame {
 		JLabel l = new JLabel("Key ID to:");
 		c.weightx = 0;
 		c.weighty = 0.1;
-		c.fill = GridBagConstraints.HORIZONTAL;
+		c.fill = GridBagConstraints.NONE;
 		c.gridx = 0;
 		c.gridy = y;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		p.add(l, c);
 		
 		l = new JLabel(to.getKeyID());
-		c.weightx = 0;
+		c.weightx = 1;
 		c.weighty = 0.1;
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 2;
+		c.gridx = 1;
 		c.gridy = y;
 		c.gridwidth = 1;
 		p.add(l, c);
@@ -2024,10 +2024,10 @@ public class SecurityMainFrame extends JFrame {
 		l = new JLabel("set action:");
 		c.weightx = 0;
 		c.weighty = 0.1;
-		c.fill = GridBagConstraints.HORIZONTAL;
+		c.fill = GridBagConstraints.NONE;
 		c.gridx = 0;
 		c.gridy = y;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		p.add(l, c);
 		
 		Vector<String> vStatus = new Vector<String>();
@@ -2038,10 +2038,10 @@ public class SecurityMainFrame extends JFrame {
 		JComboBox selectStatus = new JComboBox(vStatus);
 		selectStatus.setEditable(false);
 		selectStatus.setSelectedIndex(0);
-		c.weightx = 0;
+		c.weightx = 1;
 		c.weighty = 0.1;
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 2;
+		c.gridx = 1;
 		c.gridy = y;
 		c.gridwidth = 1;
 		p.add(selectStatus, c);
@@ -2059,19 +2059,19 @@ public class SecurityMainFrame extends JFrame {
 		l = new JLabel("Key ID from:");
 		c.weightx = 0;
 		c.weighty = 0.1;
-		c.fill = GridBagConstraints.HORIZONTAL;
+		c.fill = GridBagConstraints.NONE;
 		c.gridx = 0;
 		c.gridy = y;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		p.add(l, c);
 		
 		JComboBox selectMasterKey = new JComboBox(select);
 		selectMasterKey.setEditable(false);
 		selectMasterKey.setSelectedIndex(0);
-		c.weightx = 0;
+		c.weightx = 1;
 		c.weighty = 0.1;
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 2;
+		c.gridx = 1;
 		c.gridy = y;
 		c.gridwidth = 1;
 		p.add(selectMasterKey, c);
@@ -2084,7 +2084,7 @@ public class SecurityMainFrame extends JFrame {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridx = 0;
 		c.gridy = y;
-		c.gridwidth = 3;
+		c.gridwidth = 2;
 		p.add(requestId, c);
 		requestId.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -2137,11 +2137,11 @@ public class SecurityMainFrame extends JFrame {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridx = 0;
 		c.gridy = y;
-		c.gridwidth = 3;
+		c.gridwidth = 2;
 		p.add(l, c);
 	
 		
-		Dimension d = new Dimension(700,4*30);
+		Dimension d = new Dimension(700,4*40);
 		p.setPreferredSize(d);
 		p.setMinimumSize(d);
 		p.setMaximumSize(d);
@@ -2150,8 +2150,8 @@ public class SecurityMainFrame extends JFrame {
 		pDialog.add(p, BorderLayout.NORTH);
 		pSouth[0] = buildIDElement(id[0], checks, texts);
 		pDialog.add(pSouth[0], BorderLayout.CENTER);
-		
-	    int ans = JOptionPane.showConfirmDialog(null,pDialog,head,JOptionPane.OK_CANCEL_OPTION);
+
+	    int ans = JOptionPane.showConfirmDialog(null,pDialog,head,JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 	    if (ans == JOptionPane.OK_OPTION) {
 	    	//delete all unchecked from id;
 	    	Vector<Element> content = id[0].getContentElements(true);

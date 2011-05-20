@@ -488,7 +488,6 @@ public class KeyApprovingStore {
 		}
 		
 		//complete signoff
-		System.out.println("ves.size "+root.getChildren().size());
 		byte[] proof = SecurityHelper.getSHA256LocalProof(root.getChildren());
 		Signature sign = Signature.createSignatureFromLocalProof(proof, "signature of complete keystore", keystoreSigningKey);
 		

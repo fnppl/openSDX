@@ -166,7 +166,13 @@ public class Identity {
 		idd.photo = id.getChildText("photo");				idd.photo_restricted = getRestricted(id, "photo");
 		
 		
-		idd.sha256FromElement = SecurityHelper.HexDecoder.decode(id.getChildTextNN("sha256"));
+		
+		String sha256 = id.getChildText("sha256");
+		if (sha256 != null) {
+			idd.sha256FromElement = SecurityHelper.HexDecoder.decode(sha256);
+		} else {
+			idd.sha256FromElement = null;
+		}
 		
 		//datapath
 		Element dp = id.getChild("datapath");

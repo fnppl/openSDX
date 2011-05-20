@@ -226,6 +226,7 @@ public class Test {
 			System.out.println("KeyServer          :: "+keyserver.getKnownKeys().get(0).getKeyID());
 			
 			
+			
 			//build approval from contractKey to subEmployee Key
 			
 			//check if approval already exits
@@ -240,7 +241,25 @@ public class Test {
 			if (!approval) {
 				//no approval -> build it!
 	 			KeyLogAction kl = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, contractKey, masterEmployee.getKeyID(), masterEmployee.getCurrentIdentity());
-				Result upload = kl.uploadToKeyServer(client, masterEmployee);
+//				Result ok = kl.verifySignature();
+//				if (ok.succeeded) {
+//					System.out.println("ok");
+//				} else {
+//					System.out.println("error");
+//				}
+//	 			
+//	 			Document.buildDocument(kl.toElement(true)).output(System.out);
+//	 			KeyLogAction kl2 = KeyLogAction.fromElement(kl.toElement(false));
+//	 			Document.buildDocument(kl2.toElement(true)).output(System.out);
+//	 			ok = kl2.verifySignature();
+//	 			if (ok.succeeded) {
+//					System.out.println("ok");
+//				} else {
+//					System.out.println("error");
+//				}
+//	 			if (1==1) return;
+	 			
+	 			Result upload = kl.uploadToKeyServer(client, masterEmployee);
 				if (upload.succeeded) {
 					System.out.println("Generation of keylog on keyserver successful");
 				} else {

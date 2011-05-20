@@ -98,14 +98,17 @@ public class KeyLog {
 		byte[] data;
 		if (ipv4!=null && ipv4.length()>0) {
 			data = ipv4.getBytes("UTF-8");
+			//System.out.println("ipv4: "+ipv4);
 			sha256.update(data, 0,data.length);
 		}
 		if (ipv6!=null && ipv4.length()>0) {
 			data = ipv6.getBytes("UTF-8");
+			//System.out.println("ipv6: "+ipv6);
 			sha256.update(data, 0,data.length);
 		}
 		data = action.getSignatureBytes();
 		if (data!=null) {
+			//System.out.println("sigbytes: "+SecurityHelper.HexDecoder.encode(data, '\0', -1));
 			sha256.update(data, 0,data.length);
 		}
 		sha256.doFinal(ret, 0);
@@ -204,7 +207,7 @@ public class KeyLog {
 //	}
 	
 	public static KeyLog fromElement(Element e)  throws Exception {
-		return fromElement(e, false);
+		return fromElement(e, true);
 	}
 	
 	private static KeyLog fromElement(Element e, boolean tryVerification)  throws Exception {
@@ -221,7 +224,7 @@ public class KeyLog {
 			if (sSha256!=null && sSha256.length()>0) {
 				kl.sha256localproof = SecurityHelper.HexDecoder.decode(sSha256);
 				kl.signature = Signature.fromElement(e.getChild("signature"));
-				System.out.println("NO SIGNATURE FOUND");
+				//System.out.println("NO SIGNATURE FOUND");
 			}
 			//System.out.println(sDate+" -> datetime::"+kl.datetime);
 		} else {
@@ -253,9 +256,11 @@ public class KeyLog {
 	
 	public Element toElement(boolean showRestricted) {
 		Element e = new Element("keylog");
+		e.addContent("ipv4",ipv4);
+		e.addContent("ipv6",ipv6);
 		e.addContent(action.toElement(showRestricted));
 		if (sha256localproof!=null) {
-			e.addContent("sha1256ocalproof", SecurityHelper.HexDecoder.encode(sha256localproof, ':', -1));
+			e.addContent("sha256localproof", SecurityHelper.HexDecoder.encode(sha256localproof, ':', -1));
 			if (signature!=null) {
 				e.addContent(signature.toElement());
 			}

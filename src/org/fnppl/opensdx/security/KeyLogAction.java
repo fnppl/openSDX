@@ -3,6 +3,7 @@ package org.fnppl.opensdx.security;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
 import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
@@ -86,8 +87,8 @@ public class KeyLogAction {
 		a.fromKey = from;
 		a.fromKeyid = from.getKeyID();
 		a.toKeyid = toKeyID;
-		a.sha256localproof_complete = a.getSha1LocalProof(true);
-		a.sha256localproof_restricted = a.getSha1LocalProof(false);
+		a.sha256localproof_complete = a.getSha256LocalProof(true);
+		a.sha256localproof_restricted = a.getSha256LocalProof(false);
 		
 		//signature
 		byte[] localproof = SecurityHelper.concat(a.sha256localproof_complete, a.sha256localproof_restricted);
@@ -103,8 +104,8 @@ public class KeyLogAction {
 		a.fromKey = from;
 		a.fromKeyid = from.getKeyID();
 		a.toKeyid = toKeyID;
-		a.sha256localproof_complete = a.getSha1LocalProof(true);
-		a.sha256localproof_restricted = a.getSha1LocalProof(false);
+		a.sha256localproof_complete = a.getSha256LocalProof(true);
+		a.sha256localproof_restricted = a.getSha256LocalProof(false);
 		
 		//signature
 		byte[] localproof = SecurityHelper.concat(a.sha256localproof_complete, a.sha256localproof_restricted);
@@ -162,7 +163,7 @@ public class KeyLogAction {
 		
 		//check signatures
 		try {
-			byte[] calcLocalProof = getSha1LocalProof(true);
+			byte[] calcLocalProof = getSha256LocalProof(true);
 			if (Arrays.equals(calcLocalProof, sha256localproof_complete) ||  Arrays.equals(calcLocalProof, sha256localproof_restricted)) {
 				byte[] localproof = SecurityHelper.concat(sha256localproof_complete, sha256localproof_restricted);
 				Result res = signature.tryVerificationMD5SHA1SHA256(localproof);
@@ -171,6 +172,10 @@ public class KeyLogAction {
 				System.out.println("sha256localproof complete    : "+SecurityHelper.HexDecoder.encode(sha256localproof_complete, '\0', -1));
 				System.out.println("sha256localproof restricted  : "+SecurityHelper.HexDecoder.encode(sha256localproof_restricted, '\0', -1));
 				System.out.println("sha256localproof calculated  : "+SecurityHelper.HexDecoder.encode(calcLocalProof, '\0', -1));
+				
+				Document.buildDocument(this.toElement(true)).output(System.out);
+				
+				
 				return Result.error("localproof does NOT match sha256localproof complete or restricted");
 			}
 		} catch (Exception ex) {
@@ -188,7 +193,7 @@ public class KeyLogAction {
 		return e;
 	}
 	
-	private byte[] getSha1LocalProof(boolean showRestricted) throws Exception {
+	private byte[] getSha256LocalProof(boolean showRestricted) throws Exception {
 		return SecurityHelper.getSHA256LocalProof(getElementWithoutSignature(showRestricted));
 	}
 	
@@ -199,7 +204,13 @@ public class KeyLogAction {
 		Element ea =  new Element(action);
 		e.addContent(ea);
 		if (id!=null) {
-			ea.addContent(id.toElement(showRestricted));
+			//ea.addContent(id.toElement(true));
+			Element eID = new Element("identity");
+			Vector<Element> content = id.getContentElements(showRestricted);
+			for (Element ide : content) {
+				eID.addContent(ide);
+			}
+			ea.addContent(eID);
 		}
 		if (message!=null) {
 			ea.addContent("message",message);
