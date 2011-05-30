@@ -356,6 +356,11 @@ public class KeyLog {
 	public OSDXKey getActionSignatureKey() {
 		return action.getSignatureKey();
 	}
+	
+	public boolean hasRestrictedFields() {
+		return action.hasRestrictedFields();
+	}
+	
 }
 //<keylog>
 //	<date>2011-04-28 13:54:14 GMT+00:00</date>

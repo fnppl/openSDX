@@ -262,4 +262,9 @@ public class KeyLogAction {
 	public OSDXKey getSignatureKey() {
 		return signature.getKey();
 	}
+	
+	public boolean hasRestrictedFields() {
+		if (id==null) return false;
+		return id.hasRestrictedFields();
+	}
 }

@@ -135,6 +135,10 @@ public class IdentityEditDialog extends JDialog {
 					Dialogs.showMessage("Please enter mnemonic");
 					return;
 				}
+				if (!getText("birthday (gmt)").equals("") && Identity.isRightBirthdayFormat(getText("birthday (gmt)"))) {
+					Dialogs.showMessage("Wrong birthday format, please use yyyy-mm-dd");
+					return;
+				}
 				isOK = true;
 				dialog.dispose();
 			}
@@ -410,7 +414,7 @@ public class IdentityEditDialog extends JDialog {
 		}
 		setSize(800, y+100);
 		setModal(true);
-		Helper.centerMe(this, null);
+		//Helper.centerMe(this, null);
 		setVisible(true);
 		if (isOK) {
 			setToIdentity();

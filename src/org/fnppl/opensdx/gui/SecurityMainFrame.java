@@ -82,7 +82,6 @@ public class SecurityMainFrame extends JFrame {
 	private Vector<OSDXKey> storedTrustedPublicKeys = new Vector<OSDXKey>();
 	
 	
-	
 	private File lastDir = getDefaultDir(); //new File(System.getProperty("user.home"));
 	//	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
 
@@ -421,11 +420,13 @@ public class SecurityMainFrame extends JFrame {
 		} else {
 			setMenuOptionVisible(true);
 		}
-		JPanel p = new JPanel();
-		JScrollPane scroll = new JScrollPane(p);
-		setContentPane(scroll);
+		JTabbedPane tab = new JTabbedPane();
+		setContentPane(tab);
 
-		p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+//		JPanel p = new JPanel();
+//		JScrollPane scroll = new JScrollPane(p);
+//		tab.add("Key Groups", p);
+//		p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
 
 		storedPrivateKeys = new Vector<OSDXKey>();
 		storedPublicKeys = new Vector<OSDXKey>();
@@ -438,14 +439,19 @@ public class SecurityMainFrame extends JFrame {
 			JPanel pKeyLogs = null;
 			if (keylogs!=null && keylogs.size()>0) {
 				pKeyLogs = new JPanel();
-				pKeyLogs.setBorder(new TitledBorder("Key Log in KeyStore:"));
+				pKeyLogs.setBorder(new TitledBorder("Keylogs in KeyStore:"));
 				pKeyLogs.setLayout(new BoxLayout(pKeyLogs, BoxLayout.PAGE_AXIS));
 				for (KeyLog keylog : keylogs) {
-					pKeyLogs.add(buildComponentKeyLog(keylog));
+					pKeyLogs.add(buildComponentKeyLog(keylog,false));
 				}
 			}
 			
 			//keys
+			JPanel p = new JPanel();
+			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+			JScrollPane scroll = new JScrollPane(p);
+			tab.add("Key Groups", p);
+			
 			Vector<OSDXKey> all = currentKeyStore.getAllKeys();
 			int y = 0;
 			for (int i=0;i<all.size();i++) {
@@ -493,18 +499,32 @@ public class SecurityMainFrame extends JFrame {
 			}
 			
 			//known public keys from keystore
-			p.add(buildComponentKnownKeys(storedPublicKeys));
+			p = new JPanel();
+			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+			scroll = new JScrollPane(p);
+			tab.add("Known Public Keys", scroll);
 			
 			if (storedTrustedPublicKeys!=null && storedTrustedPublicKeys.size()>0) {
 				p.add(buildComponentTrustedKeys(storedTrustedPublicKeys));
 			}
+			p.add(buildComponentKnownKeys(storedPublicKeys));
+			
 			
 			//keylogs
+			p = new JPanel();
+			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+			scroll = new JScrollPane(p);
+			tab.add("KeyLogs", scroll);
 			if (pKeyLogs!=null) {
 				p.add(pKeyLogs);
 			}
 			
 			//keyserver
+			p = new JPanel();
+			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+			scroll = new JScrollPane(p);
+			tab.add("Key Server", scroll);
+			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
 			Vector<KeyServerIdentity> keyservers = currentKeyStore.getKeyServer();
 			if (keyservers!=null) {
 				JPanel pks = new JPanel();
@@ -1322,7 +1342,7 @@ public class SecurityMainFrame extends JFrame {
 			if (logs!=null) {
 				for (KeyLog kl : logs) {
 					y++;
-					Component ckl = buildComponentKeyLog(kl);
+					Component ckl = buildComponentKeyLog(kl, true);
 					c.weightx = 1;
 					c.weighty = 0.1;
 					c.fill = GridBagConstraints.BOTH;
@@ -1437,7 +1457,7 @@ public class SecurityMainFrame extends JFrame {
 			if (logs!=null) {
 				for (KeyLog kl : logs) {
 					y++;
-					Component ckl = buildComponentKeyLog(kl);
+					Component ckl = buildComponentKeyLog(kl,true);
 					c.weightx = 1;
 					c.weighty = 0.1;
 					c.fill = GridBagConstraints.BOTH;
@@ -1515,7 +1535,7 @@ public class SecurityMainFrame extends JFrame {
 		return p;
 	}
 	
-	private Component buildComponentKeyLog(final KeyLog keylog) {
+	private Component buildComponentKeyLog(final KeyLog keylog, boolean innerPublicKey) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -1559,8 +1579,14 @@ public class SecurityMainFrame extends JFrame {
 		}
 		final int w = 600;
 		final int h = y*30 + 80;
-
-		JButton head = createHeaderButton("KeyLog for KeyID: "+keylog.getKeyIDTo(),"KeyLog for KeyID: "+keylog.getKeyIDTo() , content, p, w, h);
+		String buText = "";
+		if(innerPublicKey) {
+			buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" from KeyID: "+keylog.getKeyIDFrom();
+		} else {
+			buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" for KeyID: "+keylog.getKeyIDTo();
+		}
+		
+		JButton head = createHeaderButton(buText, buText , content, p, w, h);
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -2430,6 +2456,12 @@ public class SecurityMainFrame extends JFrame {
 							//remove old key
 							String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(mkey.getKeyID());
 							for (OSDXKey k : storedPublicKeys) {
+								if (newkeyid.equals(OSDXKey.getFormattedKeyIDModulusOnly(k.getKeyID()))) {
+									currentKeyStore.removeKey(k);
+									break;
+								}
+							}
+							for (OSDXKey k : storedTrustedPublicKeys) {
 								if (newkeyid.equals(OSDXKey.getFormattedKeyIDModulusOnly(k.getKeyID()))) {
 									currentKeyStore.removeKey(k);
 									break;

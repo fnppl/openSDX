@@ -515,7 +515,26 @@ public class KeyApprovingStore {
 	public void addKeyLog(KeyLog kl) {
 		unsavedChanges = true;
 		if (keylogs==null) keylogs = new Vector<KeyLog>();
-		keylogs.add(kl);
+		//check if keystore already contains keylog
+		boolean add = true;
+		for (int i=0;i<keylogs.size() && add;i++) {
+			KeyLog log = keylogs.get(i);
+			if (	kl.getActionDatetime() == log.getActionDatetime()
+				 && kl.getKeyIDFrom().equals(log.getKeyIDFrom())
+				 && kl.getKeyIDTo().equals(log.getKeyIDTo())) 			{
+				
+				//look if log has restricted fields that are unrestricted in log
+				if (log.hasRestrictedFields() && !kl.hasRestrictedFields()) {
+					//replace
+					keylogs.remove(i);
+					keylogs.add(i,kl);
+				}
+				add = false;
+			}
+		}
+		if (add) {
+			keylogs.add(kl);
+		}
 	}
 	
 	public Vector<KeyLog> getKeyLogs() {

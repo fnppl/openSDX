@@ -74,6 +74,10 @@ public class Identity {
 	
 	public static String RESTRICTED = "[RESTRICTED]";
 	
+	private static final long BIRTHDAY_NULL = Long.MIN_VALUE;
+	private static final long BIRTHDAY_RESTRICTED = Long.MAX_VALUE;
+	
+	
 	private int identnum = 0;
 	private String email = null;
 	private String mnemonic = null; 			private boolean mnemonic_restricted = true;
@@ -86,7 +90,7 @@ public class Identity {
 	private String surname = null; 				private boolean surname_restricted = true;
 	private String firstname_s = null; 			private boolean firstname_s_restricted = true;
 	private String middlename = null; 			private boolean middlename_restricted = true;
-	private long birthday_gmt = Long.MIN_VALUE; private boolean birthday_gmt_restricted = true;
+	private long birthday_gmt = BIRTHDAY_NULL; 	private boolean birthday_gmt_restricted = true;
 	private String placeofbirth = null; 		private boolean placeofbirth_restricted = true;
 	
 	private String city = null; 				private boolean city_restricted = true;
@@ -176,10 +180,20 @@ public class Identity {
 		idd.surname = id.getChildText("surname");			idd.surname_restricted = getRestricted(id, "surname");
 		idd.middlename = id.getChildText("middlename");		idd.middlename_restricted = getRestricted(id, "middlename");
 		idd.firstname_s = id.getChildText("firstname_s");	idd.firstname_s_restricted = getRestricted(id, "firstname_s");
-		try {
-			idd.birthday_gmt = SecurityHelper.parseDateDay(id.getChildText("birthday_gmt"));
-		} catch (Exception ex) {
-			idd.birthday_gmt = Long.MIN_VALUE;
+		
+		String birthday = id.getChildText("birthday_gmt");
+		if (birthday == null || birthday.length()==0) {
+			idd.birthday_gmt = BIRTHDAY_NULL;
+		} 
+		else if (birthday.equals(RESTRICTED)) {
+			idd.birthday_gmt = BIRTHDAY_RESTRICTED;
+		}
+		else {
+			try {
+				idd.birthday_gmt = SecurityHelper.parseDateDay(birthday);
+			} catch (Exception ex) {
+				idd.birthday_gmt = BIRTHDAY_NULL;
+			}
 		}
 		idd.birthday_gmt_restricted = getRestricted(id, "birthday_gmt");
 		
@@ -285,12 +299,7 @@ public class Identity {
 		addContent(idFields, "middlename", middlename, middlename_restricted, allow);
 		addContent(idFields, "firstname_s", firstname_s, firstname_s_restricted, allow);
 		
-		if (birthday_gmt!=Long.MIN_VALUE) {
-			addContent(idFields, "birthday_gmt", SecurityHelper.getFormattedDateDay(birthday_gmt), birthday_gmt_restricted, allow);
-		}
-//		else {
-//			addContent(idFields, "birthday_gmt", "", birthday_gmt_restricted, allow);
-//		}
+		addContent(idFields, "birthday_gmt", getBirthdayGMTString(), birthday_gmt_restricted, allow);
 		addContent(idFields, "placeofbirth", placeofbirth, placeofbirth_restricted, allow);
 		
 		addContent(idFields, "phone", phone, phone_restricted, allow);
@@ -370,7 +379,7 @@ public class Identity {
 		try {
 			birthday_gmt = SecurityHelper.parseDateDay(birthday);
 		} catch (Exception ex) {
-			birthday_gmt = Long.MIN_VALUE;
+			birthday_gmt = BIRTHDAY_NULL;
 		}
 	}
 	
@@ -547,9 +556,13 @@ public class Identity {
 
 	
 	public String getBirthdayGMTString() {
-		if (birthday_gmt == Long.MIN_VALUE) {
+		if (birthday_gmt == BIRTHDAY_NULL) {
 			return null;
-		} else {
+		}
+		else if (birthday_gmt == BIRTHDAY_RESTRICTED) {
+			return RESTRICTED;
+		}
+		else {
 			return SecurityHelper.getFormattedDateDay(birthday_gmt);
 		}
 	}
@@ -798,25 +811,24 @@ public class Identity {
 		return unsavedChanges;
 	}
 	
-	public static void main(String[] a) {
+	public static boolean isRightBirthdayFormat(String text) {
 		try {
-			File f = new File("/home/neo/openSDX/bb.png");
-			Identity id = newEmptyIdentity();
-			BufferedImage image = ImageIO.read(f);
-			//id.setPhoto(image);
-			id.setPhoto(f);
-			id.photoImage = null;
-			
-			id = id.derive();
-			BufferedImage img = id.getPhoto();
-			int w = img.getWidth();
-			int h = img.getHeight();
-			System.out.println("image: "+w+" x "+h);
-			
-			//Document.buildDocument(id.toElement(true)).output(System.out);
-		} catch (IOException e) {
-			e.printStackTrace();
+			long l = SecurityHelper.parseDateDay(text);
+			return true;
+		} catch (Exception ex) {
+			return false;
 		}
 	}
+
+	public boolean hasRestrictedFields() {
+		Vector<Element> f = getContentElements(true);
+		for (Element e : f) {
+			if (e.getText().equals(RESTRICTED)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }
 
