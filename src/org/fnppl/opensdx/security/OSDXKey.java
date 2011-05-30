@@ -229,16 +229,16 @@ public class OSDXKey {
 				if (idc!=null) {
 					//System.out.println("identities found: "+idc.size());
 					for(int j=0;j<idc.size();j++) {
-						Element id = idc.elementAt(j);
+						Element elementID = idc.elementAt(j);
 						
-						Identity idd = Identity.fromElement(id);
+						Identity id = Identity.fromElement(elementID);
 						//System.out.println("adding id: "+idd.email);
 						//System.out.println("sha1: "+id.getChildText("sha1"));
-						boolean ok = idd.validate(SecurityHelper.HexDecoder.decode(id.getChildText("sha256")));
+						boolean ok = id.validate(SecurityHelper.HexDecoder.decode(elementID.getChildText("sha256")));
 						if(ok) {
-							((MasterKey)ret).identities.addElement(idd);
+							((MasterKey)ret).identities.addElement(id);
 						} else {
-							System.out.println(" -> ERROR adding "+idd.getEmail()+": SHA256 NOT VALID");
+							System.out.println(" -> ERROR adding "+id.getIdentNumString()+" "+id.getEmail()+": SHA256 NOT VALID");
 							return null;
 						}
 					}

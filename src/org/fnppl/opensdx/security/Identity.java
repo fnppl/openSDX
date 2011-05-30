@@ -48,8 +48,27 @@ package org.fnppl.opensdx.security;
 
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringBufferInputStream;
+import java.io.StringWriter;
+import java.nio.ByteBuffer;
 import java.util.*;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+
 import org.fnppl.opensdx.xml.*;
+
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 public class Identity {
 	
@@ -59,27 +78,28 @@ public class Identity {
 	private String email = null;
 	private String mnemonic = null; 			private boolean mnemonic_restricted = true;
 	
-	private String country = null; 				private boolean country_restricted = true;
-	private String region = null; 				private boolean region_restricted = true;
-	private String city = null; 				private boolean city_restricted = true;
-	private String postcode = null; 			private boolean postcode_restricted = true;
-	
 	private String company = null; 				private boolean company_restricted = true;
 	private String unit = null; 				private boolean unit_restricted = true;
 	private String subunit = null; 				private boolean subunit_restricted = true;
 	private String function = null; 			private boolean function_restricted = true;
-	
+
 	private String surname = null; 				private boolean surname_restricted = true;
-	private String middlename = null; 			private boolean middlename_restricted = true;
 	private String firstname_s = null; 			private boolean firstname_s_restricted = true;
+	private String middlename = null; 			private boolean middlename_restricted = true;
 	private long birthday_gmt = Long.MIN_VALUE; private boolean birthday_gmt_restricted = true;
 	private String placeofbirth = null; 		private boolean placeofbirth_restricted = true;
 	
+	private String city = null; 				private boolean city_restricted = true;
+	private String postcode = null; 			private boolean postcode_restricted = true;
+	private String region = null; 				private boolean region_restricted = true;
+	private String country = null; 				private boolean country_restricted = true;
+		
 	private String phone = null; 				private boolean phone_restricted = true;
 	private String fax = null; 					private boolean fax_restricted = true;
 	
 	private String note = null; 				private boolean note_restricted = true;
 	private String photo = null; 				private boolean photo_restricted = true;
+	private BufferedImage photoImage = null;
 	
 	private byte[] sha256FromElement = null;
 	
@@ -124,7 +144,7 @@ public class Identity {
 		idd.fax = fax;					idd.fax_restricted = fax_restricted;
 		
 		idd.note = note;				idd.note_restricted = note_restricted;
-		idd.phone = photo;				idd.phone_restricted = photo_restricted;
+		idd.photo = photo;				idd.photo_restricted = photo_restricted;
 		
 		idd.datapath = new Vector<DataSourceStep>();
 		idd.unsavedChanges = true;
@@ -155,8 +175,14 @@ public class Identity {
 		idd.function = id.getChildText("function");			idd.function_restricted = getRestricted(id, "function");
 		idd.surname = id.getChildText("surname");			idd.surname_restricted = getRestricted(id, "surname");
 		idd.middlename = id.getChildText("middlename");		idd.middlename_restricted = getRestricted(id, "middlename");
-		idd.firstname_s = id.getChildText("firstname_s");			idd.firstname_s_restricted = getRestricted(id, "firstname_s");
-		idd.birthday_gmt = id.getChildLong("birthday_gmt");	idd.birthday_gmt_restricted = getRestricted(id, "birthday_gmt");
+		idd.firstname_s = id.getChildText("firstname_s");	idd.firstname_s_restricted = getRestricted(id, "firstname_s");
+		try {
+			idd.birthday_gmt = SecurityHelper.parseDateDay(id.getChildText("birthday_gmt"));
+		} catch (Exception ex) {
+			idd.birthday_gmt = Long.MIN_VALUE;
+		}
+		idd.birthday_gmt_restricted = getRestricted(id, "birthday_gmt");
+		
 		idd.placeofbirth = id.getChildText("placeofbirth"); idd.placeofbirth_restricted = getRestricted(id, "placeofbirth");
 		
 		idd.phone = id.getChildText("phone");				idd.phone_restricted = getRestricted(id, "phone");
@@ -259,7 +285,12 @@ public class Identity {
 		addContent(idFields, "middlename", middlename, middlename_restricted, allow);
 		addContent(idFields, "firstname_s", firstname_s, firstname_s_restricted, allow);
 		
-		if (birthday_gmt!=Long.MIN_VALUE) addContent(idFields, "birthday_gmt", SecurityHelper.getFormattedDate(birthday_gmt), birthday_gmt_restricted, allow);
+		if (birthday_gmt!=Long.MIN_VALUE) {
+			addContent(idFields, "birthday_gmt", SecurityHelper.getFormattedDateDay(birthday_gmt), birthday_gmt_restricted, allow);
+		}
+//		else {
+//			addContent(idFields, "birthday_gmt", "", birthday_gmt_restricted, allow);
+//		}
 		addContent(idFields, "placeofbirth", placeofbirth, placeofbirth_restricted, allow);
 		
 		addContent(idFields, "phone", phone, phone_restricted, allow);
@@ -270,14 +301,7 @@ public class Identity {
 
 		return idFields;
 	}
-	
-	public void setPhoto(Image img) {
-		if (img == null) {
-			photo = null;
-		}
-		//TODO
-		photo = "[a photo]";
-	}
+
 	
 	private static void addContent(Vector<Element> idFields, String keyname, String value, boolean restricted, boolean allow) {
 		if (value!=null) {
@@ -340,6 +364,14 @@ public class Identity {
 	
 	public void setBirthday_gmt(long birthday) {
 		birthday_gmt = birthday;
+	}
+	
+	public void setBirthday_gmt(String birthday) {
+		try {
+			birthday_gmt = SecurityHelper.parseDateDay(birthday);
+		} catch (Exception ex) {
+			birthday_gmt = Long.MIN_VALUE;
+		}
 	}
 	
 	public void setPlaceofbirth(String placeofbirth) {
@@ -407,7 +439,6 @@ public class Identity {
 	public String getPhone() {
 		return phone;
 	}
-
 	public void setPhone(String phone) {
 		unsavedChanges = true;
 		this.phone = phone;
@@ -506,7 +537,28 @@ public class Identity {
 		return firstname_s;
 	}
 
-	public void setName(String name) {
+	public String getFax() {
+		return fax;
+	}
+
+	public String getPlaceOfBirth() {
+		return placeofbirth;
+	}
+
+	
+	public String getBirthdayGMTString() {
+		if (birthday_gmt == Long.MIN_VALUE) {
+			return null;
+		} else {
+			return SecurityHelper.getFormattedDateDay(birthday_gmt);
+		}
+	}
+	
+	public long getBirthdayGMT() {
+		return birthday_gmt;
+	}
+	
+	public void setFirstNames(String name) {
 		unsavedChanges = true;
 		this.firstname_s = name;
 	}
@@ -519,7 +571,76 @@ public class Identity {
 		unsavedChanges = true;
 		this.note = note;
 	}
-
+	
+	public boolean setPhoto(BufferedImage image) {
+		if (image==photoImage) return true;
+		if (image==null) {
+			photo = null;
+			photoImage = null;
+			return true;
+		}
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ImageIO.write(image, "png", out);
+			byte[] imagedata = out.toByteArray();
+			//System.out.println("photo raw data size in bytes: "+imagedata.length);
+			photo = new BASE64Encoder().encode(imagedata);
+			photoImage = null;
+			return true;
+		} catch (IOException e) {
+			photo = null;
+			photoImage = null;
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public void setPhoto(File file) {
+		if (file==null) {
+			photo = null;
+			photoImage = null;
+			return;
+		}
+		if (file.getName().toLowerCase().endsWith(".png")) {
+			try {
+				FileInputStream s = new FileInputStream(file);
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				new BASE64Encoder().encode(s,out);
+				photo = out.toString();
+				//System.out.println("photo: "+photo);
+			} catch (IOException e) {
+				photo = null;
+				e.printStackTrace();
+			}
+		} else {
+			try {
+				BufferedImage img = ImageIO.read(file);
+				setPhoto(img);
+			} catch (IOException e) {
+				photo = null;
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public BufferedImage getPhoto() {
+		if (photo==null || photo.equals("")) {
+			photoImage = null;
+			return null;
+		} else {
+			if (photoImage==null) {
+				try {
+					byte[] imagedata = new BASE64Decoder().decodeBuffer(photo);
+					photoImage = ImageIO.read(new ByteArrayInputStream(imagedata));					
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					photoImage = null;
+				}
+			}
+		}
+		return photoImage;
+	}
+	
 	public Vector<DataSourceStep> getDatapath() {
 		return datapath;
 	}
@@ -675,6 +796,27 @@ public class Identity {
 	
 	public boolean hasUnsavedChanges() {
 		return unsavedChanges;
+	}
+	
+	public static void main(String[] a) {
+		try {
+			File f = new File("/home/neo/openSDX/bb.png");
+			Identity id = newEmptyIdentity();
+			BufferedImage image = ImageIO.read(f);
+			//id.setPhoto(image);
+			id.setPhoto(f);
+			id.photoImage = null;
+			
+			id = id.derive();
+			BufferedImage img = id.getPhoto();
+			int w = img.getWidth();
+			int h = img.getHeight();
+			System.out.println("image: "+w+" x "+h);
+			
+			//Document.buildDocument(id.toElement(true)).output(System.out);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
 

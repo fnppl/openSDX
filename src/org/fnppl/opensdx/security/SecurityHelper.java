@@ -70,10 +70,22 @@ public class SecurityHelper {
 	
 	final static Locale ml = new Locale("en", "DE");
 	private final static SimpleDateFormat datemeGMT = new SimpleDateFormat(RFC1123_CUT, ml);
+	private final static SimpleDateFormat dayGMT = new SimpleDateFormat("yyyy-MM-dd", ml);
+
 	static {
 		datemeGMT.setTimeZone(java.util.TimeZone.getTimeZone("GMT+00:00"));
+		dayGMT.setTimeZone(java.util.TimeZone.getTimeZone("GMT+00:00"));
 	}
 
+	public static String getFormattedDateDay(long date) {
+		String s = dayGMT.format(new Date(date));
+		return s;
+	}
+	
+	public static long parseDateDay(String date) throws Exception {
+		return dayGMT.parse(date).getTime();
+	}
+	
 	public static String getFormattedDate(long date) {
 		String s = datemeGMT.format(new Date(date));
 		return s;
@@ -593,22 +605,22 @@ public class SecurityHelper {
 		sha256.doFinal(ret, 0);
 		return ret;
 	}
-	public static byte[] getSHA256(InputStream in) {
-		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();		
-		int l = 0;
-		byte[] buffer = new byte[512];
-		try {
-			while ((l=in.read(buffer))>0) {
-				sha256.update(buffer, 0, l);
-			}
-			byte[] ret = new byte[32]; //256 bit = 32 byte
-			sha256.doFinal(ret, 0);
-			return ret;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
+//	public static byte[] getSHA256(InputStream in) {
+//		org.bouncycastle.crypto.digests.SHA256Digest sha256 = new org.bouncycastle.crypto.digests.SHA256Digest();		
+//		int l = 0;
+//		byte[] buffer = new byte[512];
+//		try {
+//			while ((l=in.read(buffer))>0) {
+//				sha256.update(buffer, 0, l);
+//			}
+//			byte[] ret = new byte[32]; //256 bit = 32 byte
+//			sha256.doFinal(ret, 0);
+//			return ret;
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		return null;
+//	}
 	
 	
 	public static byte[] getMD5(byte[] data) {

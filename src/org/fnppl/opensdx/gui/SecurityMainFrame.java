@@ -2172,13 +2172,13 @@ public class SecurityMainFrame extends JFrame {
 					else if (name.equals("function")) id[0].setFunction(null);
 					else if (name.equals("surname")) id[0].setSurname(null);
 					else if (name.equals("middlename")) id[0].setMiddlename(null);
-					else if (name.equals("name")) id[0].setName(null);
+					else if (name.equals("name")) id[0].setFirstNames(null);
 					else if (name.equals("birthday_gmt")) id[0].setBirthday_gmt(Long.MIN_VALUE);
 					else if (name.equals("placeofbirth")) id[0].setPlaceofbirth(null);
 					else if (name.equals("phone")) id[0].setPhone(null);
 					else if (name.equals("fax")) id[0].setFax(null);
 					else if (name.equals("note")) id[0].setNote(null);
-					else if (name.equals("photo")) id[0].setPhoto(null);
+					else if (name.equals("photo")) id[0].setPhoto((BufferedImage)null);
 				}
 	    	}
 	    	
@@ -2678,65 +2678,68 @@ public class SecurityMainFrame extends JFrame {
 	}
 
 	private boolean showIdentityEditDialog(final Identity id, boolean canCancel) {
-		final JDialog d = new JDialog(instance);
-		d.setTitle("Edit Identity");
-		final boolean[] isOK = new boolean[] {!canCancel};		
-
-		JPanel p = new JPanel();
-		p.setLayout(new BorderLayout());
-
-		JTable edit = new JTable();
-		edit.setModel(new IdentityTableModel(id));
-		fitAllColumnWidth(edit);
-		edit.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-		TableColumn column = edit.getColumnModel().getColumn(0);
-		column.setPreferredWidth(100);
-		column.setMaxWidth(100);
-
-		p.add(new JScrollPane(edit), BorderLayout.CENTER);
-
-		JPanel ps = new JPanel();
-		JButton ok = new JButton("ok");
-		ok.setPreferredSize(new Dimension(200,30));
-		ok.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (id.getEmail()==null || id.getEmail().equals("")) {
-					Dialogs.showMessage("Please enter email adress");
-					return;
-				}
-				if (id.getMnemonic()==null || id.getMnemonic().equals("")) {
-					Dialogs.showMessage("Please enter mnemonic");
-					return;
-				}
-				isOK[0] = true;
-				d.dispose();
-			}
-		});
-		ps.add(ok);
-
-		if (canCancel) {
-			JButton cancel = new JButton("cancel");
-			cancel.setPreferredSize(new Dimension(200,30));
-			cancel.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					isOK[0] = false;
-					d.dispose();
-				}
-			});
-			ps.add(cancel);
-		}
-
-		d.setLayout(new BorderLayout());
-
-		d.setSize(700, 400);
-		d.add(p, BorderLayout.CENTER);
-		d.add(ps, BorderLayout.SOUTH);
-		d.setModal(true);
-
-		Helper.centerMe(d, null);
-
-		d.setVisible(true);
-		return isOK[0];
+		IdentityEditDialog d = new IdentityEditDialog(this);
+		return d.show(id, canCancel);
+		
+//		final JDialog d = new JDialog(instance);
+//		d.setTitle("Edit Identity");
+//		final boolean[] isOK = new boolean[] {!canCancel};		
+//
+//		JPanel p = new JPanel();
+//		p.setLayout(new BorderLayout());
+//
+//		JTable edit = new JTable();
+//		edit.setModel(new IdentityTableModel(id));
+//		fitAllColumnWidth(edit);
+//		edit.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+//		TableColumn column = edit.getColumnModel().getColumn(0);
+//		column.setPreferredWidth(100);
+//		column.setMaxWidth(100);
+//
+//		p.add(new JScrollPane(edit), BorderLayout.CENTER);
+//
+//		JPanel ps = new JPanel();
+//		JButton ok = new JButton("ok");
+//		ok.setPreferredSize(new Dimension(200,30));
+//		ok.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				if (id.getEmail()==null || id.getEmail().equals("")) {
+//					Dialogs.showMessage("Please enter email adress");
+//					return;
+//				}
+//				if (id.getMnemonic()==null || id.getMnemonic().equals("")) {
+//					Dialogs.showMessage("Please enter mnemonic");
+//					return;
+//				}
+//				isOK[0] = true;
+//				d.dispose();
+//			}
+//		});
+//		ps.add(ok);
+//
+//		if (canCancel) {
+//			JButton cancel = new JButton("cancel");
+//			cancel.setPreferredSize(new Dimension(200,30));
+//			cancel.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e) {
+//					isOK[0] = false;
+//					d.dispose();
+//				}
+//			});
+//			ps.add(cancel);
+//		}
+//
+//		d.setLayout(new BorderLayout());
+//
+//		d.setSize(700, 400);
+//		d.add(p, BorderLayout.CENTER);
+//		d.add(ps, BorderLayout.SOUTH);
+//		d.setModal(true);
+//
+//		Helper.centerMe(d, null);
+//
+//		d.setVisible(true);
+//		return isOK[0];
 	}
 
 	private static final MouseListener consumeMouseListener 
@@ -3289,7 +3292,7 @@ public class SecurityMainFrame extends JFrame {
 			else if (rowIndex==11) id.setFunction(s);
 			else if (rowIndex==12) id.setSurname(s);
 			else if (rowIndex==13) id.setMiddlename(s);
-			else if (rowIndex==14) id.setName(s);
+			else if (rowIndex==14) id.setFirstNames(s);
 			else if (rowIndex==15) id.setNote(s);
 			id.createSHA256();
 		}
