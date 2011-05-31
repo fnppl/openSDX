@@ -53,15 +53,28 @@ public class TrustGraphEdge {
 	public static int TYPE_REVOKE = -1;
 	public static int TYPE_PATH = 99;
 	
-	public TrustGraphNode from;
-	public TrustGraphNode to;
+//	public TrustGraphNode from;
+//	public TrustGraphNode to;
+//	public int type;
+//	public long datetime;
+//	
+//	public TrustGraphEdge(TrustGraphNode from, TrustGraphNode to, int type, long datetime) {
+//		super();
+//		this.from = from;
+//		this.to = to;
+//		this.type = type;
+//		this.datetime = datetime;
+//	}
+	
+	public String keyid_from;
+	public String keyid_to;
 	public int type;
 	public long datetime;
 	
-	public TrustGraphEdge(TrustGraphNode from, TrustGraphNode to, int type, long datetime) {
+	public TrustGraphEdge(String keyid_from, String keyid_to, int type, long datetime) {
 		super();
-		this.from = from;
-		this.to = to;
+		this.keyid_from = keyid_from;
+		this.keyid_to = keyid_to;
 		this.type = type;
 		this.datetime = datetime;
 	}

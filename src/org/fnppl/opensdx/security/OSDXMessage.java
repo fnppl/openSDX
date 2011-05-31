@@ -153,7 +153,7 @@ public class OSDXMessage {
 			}
 			if (verified.succeeded && verifyKeys) {
 				//verify key from signature
-				verified = keyverificator.verifyKey(signature.getKey());
+				verified = keyverificator.verifyKey(signature.getKey(), signature.getSignDatetime());
 			}
 			if (!verified.succeeded) return verified;
 		}

@@ -89,7 +89,7 @@ public class KeyServerClientTest {
 		boolean ok;
 		
 		KeyServerIdentity keyserverID = client.requestKeyServerIdentity();
-		keyverificator.addRatedKey(keyserverID.getKnownKeys().get(0), TrustRatingOfKey.RATING_MARGINAL);
+		keyverificator.addKeyRating(keyserverID.getKnownKeys().get(0), TrustRatingOfKey.RATING_MARGINAL);
 		
 		ok = client.putMasterKey(masterkey, masterkey.getCurrentIdentity()); out.write("\n\n\n\n\n".getBytes());
 		ok = client.putRevokeKey(revokekey, masterkey);out.write("\n\n\n\n\n".getBytes());

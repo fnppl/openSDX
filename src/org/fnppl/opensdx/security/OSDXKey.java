@@ -549,6 +549,9 @@ public class OSDXKey {
 		validUntil = datetime;
 	}
 	
+	public int getLevel() {
+		return level;
+	}
 	public String getLevelName() {
 		if (level>=0) {
 			return level_name.get(level);

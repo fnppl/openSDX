@@ -142,7 +142,7 @@ public class Test {
 			KeyServerIdentity ksid = client.requestKeyServerIdentity();
 			OSDXKey serverSigning = ksid.getKnownKeys().get(0);
 			keyserver.addKnownKey(serverSigning);
-			keyverificator.addRatedKey(serverSigning, TrustRatingOfKey.RATING_MARGINAL);
+			keyverificator.addKeyRating(serverSigning, TrustRatingOfKey.RATING_MARGINAL);
 			
 			
 			
@@ -237,7 +237,7 @@ public class Test {
 					approval = true;
 				}
 			}
-			System.out.println("approval: "+approval);
+			//System.out.println("approval: "+approval);
 			if (!approval) {
 				//no approval -> build it!
 	 			KeyLogAction kl = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, contractKey, masterEmployee.getKeyID(), masterEmployee.getCurrentIdentity());
@@ -271,10 +271,10 @@ public class Test {
 			//chain of trust:: contract partner -> contractKey -> masterEmployee -> subEmployee
 			KeyVerificator partnerKeyverificator = new KeyVerificator();
 			partnerKeyverificator.addKeyServer(keyserver);
-			partnerKeyverificator.addRatedKey(keyserver.getKnownKeys().get(0), TrustRatingOfKey.RATING_MARGINAL);
-			partnerKeyverificator.addRatedKey(contractKey, TrustRatingOfKey.RATING_COMPLETE);
+			partnerKeyverificator.addKeyRating(keyserver.getKnownKeys().get(0), TrustRatingOfKey.RATING_MARGINAL);
+			partnerKeyverificator.addKeyRating(contractKey, TrustRatingOfKey.RATING_COMPLETE);
 			
-			Result verifySubEmployeeKey = partnerKeyverificator.verifyKey(subEmployee);
+			Result verifySubEmployeeKey = partnerKeyverificator.verifyKey(subEmployee, System.currentTimeMillis());
 			if (verifySubEmployeeKey.succeeded) {
 				System.out.println("VERIFICATION of subEmployee Key SUCCESSFUL!");
 			} else {

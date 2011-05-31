@@ -518,7 +518,7 @@ public class KeyServerMain extends HTTPServer {
 			//add key to trusted keys
 			OSDXKey key = keyid_key.get(kl.getKeyIDTo());
 			if (key!=null) {
-				keyverificator.addRatedKey(key, TrustRatingOfKey.RATING_MARGINAL);
+				keyverificator.addKeyRating(key, TrustRatingOfKey.RATING_MARGINAL);
 			}
 			
 			//send response
@@ -586,7 +586,7 @@ public class KeyServerMain extends HTTPServer {
 		saveKeyStore();
 		
 		//add revokekey to trusted keys
-		keyverificator.addRatedKey(revokekey, TrustRatingOfKey.RATING_MARGINAL);
+		keyverificator.addKeyRating(revokekey, TrustRatingOfKey.RATING_MARGINAL);
 		
 		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
@@ -750,7 +750,7 @@ public class KeyServerMain extends HTTPServer {
 		saveKeyStore();
 		
 		//add to trusted keys
-		keyverificator.addRatedKey(subkey, TrustRatingOfKey.RATING_MARGINAL);
+		keyverificator.addKeyRating(subkey, TrustRatingOfKey.RATING_MARGINAL);
 		
 		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;

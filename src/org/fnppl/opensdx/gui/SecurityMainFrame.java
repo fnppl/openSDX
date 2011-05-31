@@ -131,7 +131,7 @@ public class SecurityMainFrame extends JFrame {
 				keyverificator.addKeyServer(ks);
 				Vector<OSDXKey> knownKeys = ks.getKnownKeys();
 				for (OSDXKey k : knownKeys) {
-					keyverificator.addRatedKey(k, TrustRatingOfKey.RATING_MARGINAL);
+					keyverificator.addKeyRating(k, TrustRatingOfKey.RATING_MARGINAL);
 				}
 			}
 			if (ks==null) {
@@ -149,7 +149,7 @@ public class SecurityMainFrame extends JFrame {
 						Vector<OSDXKey> serverSigning = ksid.getKnownKeys();
 						for (OSDXKey k : serverSigning) {
 							ks.addKnownKey(k);
-							keyverificator.addRatedKey(k, TrustRatingOfKey.RATING_MARGINAL);
+							keyverificator.addKeyRating(k, TrustRatingOfKey.RATING_MARGINAL);
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace();
@@ -403,11 +403,11 @@ public class SecurityMainFrame extends JFrame {
 			keyverificator.removeAllDirectRatings();
 		} else {
 			for (OSDXKey k : storedTrustedPublicKeys) {
-				keyverificator.addRatedKey(k, TrustRatingOfKey.RATING_COMPLETE);
+				keyverificator.addKeyRating(k, TrustRatingOfKey.RATING_COMPLETE);
 			}
 			for (KeyServerIdentity ks : currentKeyStore.getKeyServer()) {
 				for (OSDXKey k : ks.getKnownKeys()) {
-					keyverificator.addRatedKey(k, TrustRatingOfKey.RATING_MARGINAL);
+					keyverificator.addKeyRating(k, TrustRatingOfKey.RATING_MARGINAL);
 				}
 			}
 		}
@@ -1781,7 +1781,7 @@ public class SecurityMainFrame extends JFrame {
 						if (v) {
 							//Dialogs.showMessage("Signature verified!");
 							//verify signature key
-							Result r = keyverificator.verifyKey(s.getKey());
+							Result r = keyverificator.verifyKey(s.getKey(), s.getSignDatetime());
 							if (r.succeeded) {
 								Dialogs.showMessage("Signature verified!");
 							} else {
