@@ -118,8 +118,8 @@ public class IdentityEditDialog extends JDialog {
 	int x3 = x2+w2+absX;
 	int x4 = x3+w3+absX+absX+absX;
 	
-	int absY = 10;
-	int h = 25;
+	int absY = 6;
+	int h = 22;
 	
 	int y = 20;
 	
@@ -172,18 +172,26 @@ public class IdentityEditDialog extends JDialog {
 		y += absY;
 		addComponent("note", true);
 		y += absY+absY;
+		Dimension d = new Dimension(770,y);
+		
+		mainPanel.setPreferredSize(d);
+		mainPanel.setMinimumSize(d);
+		mainPanel.setMaximumSize(d);
+		
+		
+		
 		JButton ok = new JButton("ok");
 		ok.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (getText("email").equals("")) {
-					Dialogs.showMessage("Please enter email adress");
+				if (getText("email")==null || !getText("email").contains("@")) {
+					Dialogs.showMessage("Please enter valid email adress");
 					return;
 				}
-				if (getText("mnemonic").equals("")) {
+				if (getText("mnemonic")==null) {
 					Dialogs.showMessage("Please enter mnemonic");
 					return;
 				}
-				if (!getText("birthday (gmt)").equals("") && Identity.isRightBirthdayFormat(getText("birthday (gmt)"))) {
+				if (getText("birthday (gmt)")!=null && !Identity.isRightBirthdayFormat(getText("birthday (gmt)"))) {
 					Dialogs.showMessage("Wrong birthday format, please use yyyy-mm-dd");
 					return;
 				}
@@ -191,8 +199,10 @@ public class IdentityEditDialog extends JDialog {
 				dialog.dispose();
 			}
 		});
-		ok.setBounds(x1, y, w1, h);
-		mainPanel.add(ok);
+		
+		JPanel buttons = new JPanel();
+		ok.setPreferredSize(new Dimension(100,22));
+		buttons.add(ok);
 
 		cancel = new JButton("cancel");
 		cancel.addActionListener(new ActionListener() {
@@ -201,11 +211,11 @@ public class IdentityEditDialog extends JDialog {
 				dispose();
 			}
 		});
-		cancel.setBounds(x2, y, w1, h);
-		mainPanel.add(cancel);
-
-		this.add(mainPanel, BorderLayout.CENTER);
+		cancel.setPreferredSize(new Dimension(100,22));
+		buttons.add(cancel);
 		
+		this.add(new JScrollPane(mainPanel), BorderLayout.CENTER);
+		this.add(buttons,BorderLayout.SOUTH);
 		
 		//Photobutton
 		photo.addActionListener(new ActionListener() {

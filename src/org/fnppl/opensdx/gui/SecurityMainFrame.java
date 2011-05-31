@@ -80,7 +80,7 @@ public class SecurityMainFrame extends JFrame {
 	private Vector<OSDXKey> storedPrivateKeys = new Vector<OSDXKey>();
 	private Vector<OSDXKey> storedPublicKeys = new Vector<OSDXKey>();
 	private Vector<OSDXKey> storedTrustedPublicKeys = new Vector<OSDXKey>();
-	
+	private JTabbedPane tab = null;	
 	
 	private File lastDir = getDefaultDir(); //new File(System.getProperty("user.home"));
 	//	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
@@ -240,6 +240,8 @@ public class SecurityMainFrame extends JFrame {
 				KeyApprovingStore kas = KeyApprovingStore.fromFile(f, messageHandler);
 				this.currentKeyStore = kas;	
 				keyverificator = KeyVerificator.make();
+				keyclients = new HashMap<String, KeyClient>();
+				
 //				MasterKey m = kas.getAllMasterKeys().get(0);
 //				Document.buildDocument(m.toElement(null)).outputCompact(System.out);
 //				Document.buildDocument(m.getRevokeKeys().get(0).toElement(null)).outputCompact(System.out);
@@ -420,7 +422,10 @@ public class SecurityMainFrame extends JFrame {
 		} else {
 			setMenuOptionVisible(true);
 		}
-		JTabbedPane tab = new JTabbedPane();
+		int lastOpenTab = -1;
+		if (tab!=null) lastOpenTab = tab.getSelectedIndex();
+		
+		tab = new JTabbedPane();
 		setContentPane(tab);
 
 //		JPanel p = new JPanel();
@@ -450,7 +455,7 @@ public class SecurityMainFrame extends JFrame {
 			JPanel p = new JPanel();
 			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
 			JScrollPane scroll = new JScrollPane(p);
-			tab.add("Key Groups", p);
+			tab.add("My Private Keys", p);
 			
 			Vector<OSDXKey> all = currentKeyStore.getAllKeys();
 			int y = 0;
@@ -546,6 +551,9 @@ public class SecurityMainFrame extends JFrame {
 //		}
 		updateKeyVerificatior();
 		validate();
+		if (lastOpenTab>=0 && lastOpenTab<tab.getTabCount()) {
+			tab.setSelectedIndex(lastOpenTab);
+		}
 	}
 	
 	private boolean isStoredPrivateKey(String keyid) {
@@ -1323,12 +1331,12 @@ public class SecurityMainFrame extends JFrame {
 		c.insets = new Insets(5, 5, 0, 0);
 
 		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
-		KeyStatus ks = key_status.get(key);
-		if (ks==null) {
-			addLabelTextFieldPart("status:", "unknown", a, c, y,false); y++;	
-		} else {
-			addLabelTextFieldPart("status:", ks.getValidityStatusName(), a, c, y,false); y++;
-		}
+//		KeyStatus ks = key_status.get(key);
+//		if (ks==null) {
+//			addLabelTextFieldPart("status:", "unknown", a, c, y,false); y++;	
+//		} else {
+//			addLabelTextFieldPart("status:", ks.getValidityStatusName(), a, c, y,false); y++;
+//		}
 		addLabelTextFieldPart("level:", key.getLevelName(), a, c, y,false); y++;
 		if (key instanceof MasterKey) {
 			String ids = ((MasterKey)key).getIDEmails();
@@ -1336,7 +1344,7 @@ public class SecurityMainFrame extends JFrame {
 		}
 		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
 		addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y); y++;
-		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
+		//addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
 		if (currentKeyStore != null) {
 			Vector<KeyLog> logs = currentKeyStore.getKeyLogs(key.getKeyID());
 			if (logs!=null) {
@@ -1368,15 +1376,15 @@ public class SecurityMainFrame extends JFrame {
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
-		JButton bu = new JButton("update status");
-		bu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateStatus(key);
-			}
-		});
-		b.add(bu);
+//		JButton bu = new JButton("update status");
+//		bu.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				updateStatus(key);
+//			}
+//		});
+//		b.add(bu);
 
-		bu = new JButton("request keylogs");
+		JButton bu = new JButton("request keylogs");
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				requestKeyLogs(key);
@@ -1438,12 +1446,12 @@ public class SecurityMainFrame extends JFrame {
 		c.insets = new Insets(5, 5, 0, 0);
 
 		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
-		KeyStatus ks = key_status.get(key);
-		if (ks==null) {
-			addLabelTextFieldPart("status:", "unknown", a, c, y,false); y++;	
-		} else {
-			addLabelTextFieldPart("status:", ks.getValidityStatusName(), a, c, y,false); y++;
-		}
+//		KeyStatus ks = key_status.get(key);
+//		if (ks==null) {
+//			addLabelTextFieldPart("status:", "unknown", a, c, y,false); y++;	
+//		} else {
+//			addLabelTextFieldPart("status:", ks.getValidityStatusName(), a, c, y,false); y++;
+//		}
 		addLabelTextFieldPart("level:", key.getLevelName(), a, c, y,false); y++;
 		if (key instanceof MasterKey) {
 			String ids = ((MasterKey)key).getIDEmails();
@@ -1451,7 +1459,7 @@ public class SecurityMainFrame extends JFrame {
 		}
 		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
 		addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y); y++;
-		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
+//		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
 		if (currentKeyStore != null) {
 			Vector<KeyLog> logs = currentKeyStore.getKeyLogs(key.getKeyID());
 			if (logs!=null) {
@@ -1483,15 +1491,15 @@ public class SecurityMainFrame extends JFrame {
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
-		JButton bu = new JButton("update status");
-		bu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateStatus(key);
-			}
-		});
-		b.add(bu);
+//		JButton bu = new JButton("update status");
+//		bu.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				updateStatus(key);
+//			}
+//		});
+//		b.add(bu);
 
-		bu = new JButton("request keylogs");
+		JButton bu = new JButton("request keylogs");
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				requestKeyLogs(key);
@@ -2425,33 +2433,18 @@ public class SecurityMainFrame extends JFrame {
 					try {
 						masterkeys = client.requestMasterPubKeys(email);
 					} catch (Exception ex) {
-//						if (ex.getMessage().startsWith("signing key NOT in trusted keys")) {
-//							int antw = Dialogs.showYES_NO_Dialog("Continue", "Signing key of keyserver NOT trusted.\nContinue anyway?");
-//							if (antw != Dialogs.YES) return;
-//							try {
-//								//request servers signing key
-//								String serverKeyID = ex.getMessage().substring(ex.getMessage().indexOf("keyid: ")+7);
-//								System.out.println("keyserver id: "+serverKeyID);
-//								OSDXKey serversSigningKey = client.requestPublicKey(serverKeyID, null);
-//								trustedKeys.add(serversSigningKey);
-//								masterkeys = client.requestMasterPubKeys(email);
-//							} catch (Exception ex2) {
-//								Dialogs.showMessage("Sorry, request of keyserver signing key faild.");
-//								return;
-//							}
-//						} else {
-							if (ex.getLocalizedMessage()!=null && ex.getLocalizedMessage().startsWith("Connection refused")) {
-								Dialogs.showMessage("Sorry, could not connect to server.");
-								return;
-							} else {
-								ex.printStackTrace();
-							}
-						//}
+						if (ex.getLocalizedMessage()!=null && ex.getLocalizedMessage().startsWith("Connection refused")) {
+							Dialogs.showMessage("Sorry, could not connect to server.");
+							return;
+						} else {
+							ex.printStackTrace();
+						}
 					}
 					
 					String kt = "";
 					if (masterkeys!=null && masterkeys.size()>0) {
 						for (String masterkey : masterkeys) {
+							System.out.println("requesting key: "+masterkey);
 							OSDXKey mkey = client.requestPublicKey(masterkey);
 							//remove old key
 							String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(mkey.getKeyID());

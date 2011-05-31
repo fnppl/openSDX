@@ -154,6 +154,7 @@ public class MasterKey extends OSDXKey {
 		ret.datapath.add(new DataSourceStep("LOCAL", now));
 		ret.unsavedChanges = true;
 		ret.setParentKey(this);
+		this.addRevokeKey(ret);
 		return ret;
 	}
 	
