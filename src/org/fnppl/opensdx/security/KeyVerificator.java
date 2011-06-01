@@ -103,10 +103,10 @@ public class KeyVerificator {
 		
 		if(chainactive) {
 //			return findChainOfTrustTo(key);
-			return Result.error("Given keyid is NOT directly trusted and NO approval keylog of a trusted key could be found.\nChain-of-trust verification is NOT IMPLEMENTED yet.");			
+			return Result.error("Given keyid: "+key.getKeyID()+"\nis NOT directly trusted and NO approval keylog of a trusted key could be found.\nChain-of-trust verification is NOT IMPLEMENTED yet.");			
 		}
 		else {
-			return Result.error("Given keyid is NOT directly trusted and NO approval keylog of a trusted key could be found.\n");
+			return Result.error("Given keyid: "+key.getKeyID()+"\nis NOT directly trusted and NO approval keylog of a trusted key could be found.\n");
 		}
 	}
 	

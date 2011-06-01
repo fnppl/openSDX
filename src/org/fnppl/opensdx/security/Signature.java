@@ -46,27 +46,13 @@ package org.fnppl.opensdx.security;
  * 
  */
 
-import java.io.*;
-import java.math.BigInteger;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Arrays;
 
-import org.bouncycastle.bcpg.ArmoredInputStream;
-import org.bouncycastle.bcpg.ArmoredOutputStream;
-import org.bouncycastle.bcpg.BCPGOutputStream;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openpgp.PGPCompressedData;
-import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPObjectFactory;
-import org.bouncycastle.openpgp.PGPPrivateKey;
-import org.bouncycastle.openpgp.PGPPublicKey;
-import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
-import org.bouncycastle.openpgp.PGPSecretKey;
-import org.bouncycastle.openpgp.PGPSecretKeyRing;
-import org.bouncycastle.openpgp.PGPSecretKeyRingCollection;
-import org.bouncycastle.openpgp.PGPSignature;
-import org.bouncycastle.openpgp.PGPSignatureGenerator;
-import org.bouncycastle.openpgp.PGPSignatureList;
-import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;

@@ -58,7 +58,6 @@ import org.bouncycastle.crypto.generators.*;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.crypto.params.*;
 
-import org.bouncycastle.openpgp.*;
 
 /*
  * 

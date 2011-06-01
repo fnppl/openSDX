@@ -47,8 +47,10 @@ package org.fnppl.opensdx.security;
  */
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 
+import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.xml.*;
 
@@ -58,7 +60,7 @@ public class KeyApprovingStore {
 	private File f = null;
 	private Vector<OSDXKey> keys = null;
 	private Vector<KeyLog> keylogs = null;
-	private Vector<KeyServerIdentity> keyservers = null;
+	private Vector<KeyServerIdentity> keyservers;
 	private boolean unsavedChanges = false;
 	private OSDXKey keystoreSigningKey = null;
 	
@@ -70,17 +72,19 @@ public class KeyApprovingStore {
 		kas.f = f;
 		kas.keys = new Vector<OSDXKey>();
 		kas.keylogs = new Vector<KeyLog>();
+		kas.keyservers = new Vector<KeyServerIdentity>();
 		kas.unsavedChanges = true;
 		kas.messageHandler = mh;
 		return kas;
 	}
 	
-	public void addKeyserverAndPublicKeysFromConfig(File configFile) {
+	public void addKeyserverAndPublicKeysFromConfig(URL configURL) {
 		try {
-			if (!configFile.exists() || configFile.isDirectory()) {
-				return;
-			}
-			Element root = Document.fromFile(configFile).getRootElement();
+//			if (!configFile.exists() || configFile.isDirectory()) {
+//				return;
+//			}
+			Element root = Document.fromURL(configURL).getRootElement();
+			
 			if (keys==null) keys = new Vector<OSDXKey>();
 			if (keyservers==null) keyservers = new Vector<KeyServerIdentity>();
 			
@@ -109,6 +113,7 @@ public class KeyApprovingStore {
 			//TODO check localproofs and signatures 
 
 		} catch (Exception ex) {
+			Dialogs.showMessage("ERROR: init of known keyservers failed.\n"+configURL.toString());
 			ex.printStackTrace();
 		}
 	}
@@ -509,6 +514,18 @@ public class KeyApprovingStore {
 	
 	public void addKey(OSDXKey key) {
 		unsavedChanges = true;
+		if (keys==null) {
+			keys = new Vector<OSDXKey>();
+		}
+		//check if already in keystore
+		for (int i=0;i<keys.size();i++) {
+			OSDXKey k = keys.get(i);
+			if (k.getKeyID().equals(key.getKeyID())) {
+//				if (!k.hasPrivateKey() && k.hasPrivateKey()) {
+//				}
+				return;
+			}
+		}
 		keys.add(key);
 	}
 	

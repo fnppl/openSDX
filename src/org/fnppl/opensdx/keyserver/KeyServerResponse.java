@@ -46,16 +46,23 @@ package org.fnppl.opensdx.keyserver;
  * 
  */
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Vector;
 
 import org.fnppl.opensdx.http.HTTPServerRequest;
 import org.fnppl.opensdx.http.HTTPServerResponse;
-import org.fnppl.opensdx.security.*;
-import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.security.Identity;
+import org.fnppl.opensdx.security.KeyApprovingStore;
+import org.fnppl.opensdx.security.KeyLog;
+import org.fnppl.opensdx.security.KeyLogAction;
+import org.fnppl.opensdx.security.KeyStatus;
+import org.fnppl.opensdx.security.MasterKey;
+import org.fnppl.opensdx.security.OSDXKey;
+import org.fnppl.opensdx.security.OSDXMessage;
+import org.fnppl.opensdx.security.Result;
+import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.security.SubKey;
 import org.fnppl.opensdx.xml.Element;
-import org.fnppl.opensdx.xml.XMLHelper;
 
 //http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol
 

@@ -51,11 +51,8 @@ import java.security.Security;
 
 import org.fnppl.opensdx.security.*;
 
-import org.bouncycastle.bcpg.ArmoredOutputStream;
-import org.bouncycastle.bcpg.BCPGOutputStream;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openpgp.PGPKeyPair;
-import org.bouncycastle.openpgp.PGPPublicKey;
+
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 
 import org.fnppl.opensdx.security.PublicKey;

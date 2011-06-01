@@ -47,6 +47,7 @@ package org.fnppl.opensdx.xml;
  */
 
 import java.io.*;
+import java.net.URL;
 
 import org.jdom.*;
 import org.jdom.input.*;
@@ -72,6 +73,12 @@ public class Document {
 		
 		Document ret = new Document(sax.build(f));
 		
+		return ret;
+	}
+	
+	public static Document fromURL(URL url) throws Exception {		
+		SAXBuilder sax = new SAXBuilder();
+		Document ret = new Document(sax.build(url));
 		return ret;
 	}
 	

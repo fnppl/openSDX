@@ -45,20 +45,14 @@ package org.fnppl.opensdx.keyserver;
  * 
  */
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.Console;
 import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.Map.Entry;
 
 import javax.mail.Address;
 import javax.mail.Authenticator;
@@ -89,7 +83,6 @@ import org.fnppl.opensdx.security.OSDXMessage;
 import org.fnppl.opensdx.security.Result;
 import org.fnppl.opensdx.security.RevokeKey;
 import org.fnppl.opensdx.security.SecurityHelper;
-import org.fnppl.opensdx.security.Signature;
 import org.fnppl.opensdx.security.SubKey;
 import org.fnppl.opensdx.security.TrustRatingOfKey;
 import org.fnppl.opensdx.xml.Document;
@@ -341,7 +334,10 @@ public class KeyServerMain extends HTTPServer {
 						id_keys.put(id.getEmail(),
 								new Vector<OSDXKey>());
 					}
-					id_keys.get(id.getEmail()).add(k);
+					Vector<OSDXKey> listId = id_keys.get(id.getEmail());
+					if (!listId.contains(k)) {
+						listId.add(k);
+					}
 					System.out.println("adding id_keys: "+id.getEmail()+"::"+k.getKeyModulusSHA1());
 						
 //					for (Identity id : ids) {
@@ -925,9 +921,64 @@ public class KeyServerMain extends HTTPServer {
 		Transport.send(msg);
 	}
 	
+	private static void makeConfig() {
+		Console console = System.console();
+	    if (console == null) {
+	      return;
+	    }
+	    String host = console.readLine("host: ");
+	    String port = console.readLine("port: ");
+	    String prepath = console.readLine("prepath: ");
+	    String ipv4 = console.readLine("ipv4: ");
+	    String ipv6 = console.readLine("ipv6: ");
+	    String mail_user = console.readLine("mail user: ");
+	    String mail_sender = console.readLine("mail sender: ");
+	    String mail_smtp_host = console.readLine("mail smtp host: ");
+	    String id_email = console.readLine("id email: ");
+	    String id_mnemonic = console.readLine("id mnemonic: ");
+	    String pass = console.readLine("key password: ");
+	    
+	    Element root = new Element("opensdxkeyserver");
+	    Element eKeyServer = new Element("keyserver");
+	    eKeyServer.addContent("port", port);
+	    eKeyServer.addContent("prepath",prepath);
+	    eKeyServer.addContent("ipv4",ipv4);
+	    eKeyServer.addContent("ipv6",ipv6);
+	    Element eMail = new Element("mail");
+	    eMail.addContent("user", mail_user);
+	    eMail.addContent("sender", mail_sender);
+	    eMail.addContent("smtp_host", mail_smtp_host);
+	    eKeyServer.addContent(eMail);
+	    root.addContent(eKeyServer);
+	    
+	    try {
+	    	Element eSig = new Element("rootsigningkey");
+	    	MasterKey key = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+			Identity id = Identity.newEmptyIdentity();
+			id.setIdentNum(1);
+			id.setEmail(id_email);
+			id.setMnemonic(id_mnemonic);
+			key.addIdentity(id);
+			key.setAuthoritativeKeyServer(host);
+			key.createLockedPrivateKey("", pass);
+			eSig.addContent(key.toElement(null));
+			root.addContent(eSig);
+			Document.buildDocument(root).writeToFile(new File("keyserver_config.xml"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	    
+	}
+	
 	public static void main(String[] args) throws Exception {
+		if (args!=null && args.length==1 && args[0].equals("--makeconfig")) {
+			makeConfig();
+			return;
+		}
 		if (args==null || args.length!=6) {
 			System.out.println("usage: KeysServer -s \"password signingkey\" -m \"password mail\" -h servername");
+			System.out.println("or: KeysServer --makeconfig");
+			
 			return;
 		}
 		String pwS = null;

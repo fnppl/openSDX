@@ -51,7 +51,6 @@ import java.security.Key;
 import java.security.SecureRandom;
 
 import org.bouncycastle.crypto.*;
-import org.bouncycastle.openpgp.*;
 import org.bouncycastle.crypto.encodings.*;
 import org.bouncycastle.crypto.engines.*;
 import org.bouncycastle.crypto.modes.*;
