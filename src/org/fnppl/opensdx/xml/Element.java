@@ -50,6 +50,7 @@ package org.fnppl.opensdx.xml;
 import java.util.*;
 
 import org.jdom.Attribute;
+import org.jdom.Comment;
 
 public class Element {
 	protected org.jdom.Element base = null;
@@ -73,6 +74,17 @@ public class Element {
 	
 	public void setText(String value) {
 		base.setText(value);
+	}
+	
+	public void addComment(String comment)  {
+		base.addContent(new Comment(comment));
+	}
+	public void addCommentFirst(String comment)  {
+		base.addContent(0, new Comment(comment));
+	}
+	public void addCommentAfter(String name, String comment)  {
+		int ind = base.indexOf(base.getChild(name));
+		base.addContent(ind+1, new Comment(comment));
 	}
 	
 	public String getAttribute(String attName) {

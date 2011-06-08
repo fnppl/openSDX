@@ -236,6 +236,7 @@ public class KeyServerMain extends HTTPServer {
 			Element ks = root.getChild("keyserver");
 //			host = ks.getChildText("host");
 			port = ks.getChildInt("port");
+			prepath = ks.getChildTextNN("prepath");
 			
 			String ip4 = ks.getChildText("ipv4");
 			try {

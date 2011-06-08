@@ -65,6 +65,7 @@ public abstract class HTTPServer {
 	
 //	protected String host = "localhost";
 	protected int port = -1;
+	protected String prepath = "";
 	private int maxRequestsPerMinute = 100;
 	private int maxThreadCount = 30;
 	protected InetAddress address = null;
@@ -78,15 +79,12 @@ public abstract class HTTPServer {
 	
 	public abstract String getServerID();
 	public abstract void readConfig();
-//	public abstract OSDXKey createNewSigningKey(String pwSigning, String hostname);
 	public abstract HTTPServerResponse prepareResponse(HTTPServerRequest request) throws Exception;
 	
 	public HTTPServer() {
 			
 	}
-	
-	
-	
+
 
 	public void exit() {
 		System.exit(0);

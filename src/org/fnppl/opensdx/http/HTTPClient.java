@@ -58,7 +58,7 @@ import org.fnppl.opensdx.xml.*;
 
 public class HTTPClient {
 	
-	private Socket socket = null;
+	protected Socket socket = null;
 	private long timeout = 2000;
 	protected String host = null;
 	private int port = -1;
@@ -81,6 +81,25 @@ public class HTTPClient {
 		} else {
 			System.out.println("ERROR: Connection to server could NOT be established!");
 			return false;
+		}
+	}
+	
+	public void writeLog(HTTPClientRequest req, HTTPClientResponse resp, String name) {
+		if (log!=null) {
+			try {
+				log.write(("--- REQUEST "+name+" ----------\n").getBytes());
+				req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
+				log.write(("--- END of REQUEST "+name+" ---\n").getBytes());
+				if (resp == null) {
+					log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
+				} else {
+					log.write(("\n--- RESPONSE "+name+" ----------\n").getBytes());
+					resp.toOutput(log);
+					log.write(("--- END of RESPONSE "+name+" ---\n").getBytes());
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 

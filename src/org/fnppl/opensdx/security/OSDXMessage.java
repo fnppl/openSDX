@@ -1,11 +1,16 @@
 package org.fnppl.opensdx.security;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Vector;
 
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLHelper;
+
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 
 /*
@@ -57,11 +62,12 @@ public class OSDXMessage {
 	private Element content = null;
 	private byte[] sha256localproof = null;
 	private Vector<Signature> signatures = null;
+	private OSDXKey contentEncryptionKey = null;
 	
 	private OSDXMessage() {
 		
 	}
-	
+
 	public static OSDXMessage buildMessage(Element content) throws Exception {
 		if (content==null) throw new RuntimeException("ERROR: OSDXMessage::empty content");
 		OSDXMessage m = new OSDXMessage();
@@ -70,12 +76,34 @@ public class OSDXMessage {
 		m.signatures = null;
 		return m;
 	}
-	
 	public static OSDXMessage buildMessage(Element content, OSDXKey signingkey) throws Exception {
 		OSDXMessage m = buildMessage(content);
 		m.signContent(signingkey);
 		return m;
 	}
+	public static OSDXMessage buildEncryptedMessage(Element content, OSDXKey contentEncryptionKey) throws Exception {
+		if (content==null) throw new RuntimeException("ERROR: OSDXMessage::empty content");
+		OSDXMessage m = new OSDXMessage();
+		
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		Document.buildDocument(content).outputCompact(bout);
+		byte[] encrypted = contentEncryptionKey.encrypt(bout.toByteArray());
+		
+		Element encryptedContent = new Element("encrypted_content");
+		encryptedContent.setText(new BASE64Encoder().encode(encrypted));
+		
+		m.content = encryptedContent;
+		m.sha256localproof = SecurityHelper.getSHA256LocalProof(m.content);
+		m.signatures = null;
+		return m;
+	}
+	
+	public static OSDXMessage buildEncryptedMessage(Element content, OSDXKey contentEncryptionKey, OSDXKey signingkey) throws Exception {
+		OSDXMessage m = buildEncryptedMessage(content, contentEncryptionKey);
+		m.signContent(signingkey);
+		return m;
+	}
+	
 	
 	public static OSDXMessage fromElement(Element osdxMessage) throws Exception {
 		if (!osdxMessage.getName().equals("opensdx_message")) {
@@ -115,6 +143,19 @@ public class OSDXMessage {
 	
 	public Element getContent() {
 		return content;
+	}
+	
+	public Element getDecryptedContent(OSDXKey decryptionKey) {
+		try {
+			byte[] encrypt = new BASE64Decoder().decodeBuffer(content.getChildText("encrypted_content"));
+			byte[] decrypt = decryptionKey.decrypt(encrypt);
+			String s = new String(decrypt, "UTF-8");
+			System.out.println(s);
+			return Document.fromString(s).getRootElement();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public void signContent(OSDXKey signingkey) throws Exception {
@@ -163,9 +204,11 @@ public class OSDXMessage {
 	public Element toElement() {
 		if (content==null) return null;
 		Element e = new Element("opensdx_message");
+
 		Element c = new Element("content");
+		c.addContent(content);			
+		
 		Element s = new Element("signatures");
-		c.addContent(content);
 		if (signatures!=null) {
 			for (Signature signature : signatures) {
 				s.addContent(signature.toElement());

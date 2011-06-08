@@ -85,18 +85,8 @@ public class KeyClient extends HTTPClient {
 	public Vector<String> requestMasterPubKeys(final String idemail) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildRequestMasterPubKeys(host, prepath, idemail);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST MASTERPUBKEY ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST MASTERPUBKEY ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE MASTERPUBKEY ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE MASTERPUBKEY ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "MASTERPUBKEY");
+		
 		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
 		Result result = msg.verifySignatures(keyverificator);
 		
@@ -125,18 +115,8 @@ public class KeyClient extends HTTPClient {
 	public MasterKey requestMasterPubKey(final String keyid) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildRequestMasterPubKey(host, prepath, keyid);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST SUBKEYS MASTERPUBKEY ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST SUBKEYS MASTERPUBKEY ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE SUBKEYS MASTERPUBKEY ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE SUBKEYS MASTERPUBKEY ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "SUBKEYS MASTERPUBKEY");
+		
 		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
 		Result result = msg.verifySignatures(keyverificator);
 		
@@ -178,18 +158,8 @@ public class KeyClient extends HTTPClient {
 	public KeyServerIdentity requestKeyServerIdentity() throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildRequestKeyServerIdentity(host, prepath);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST KEYSERVER IDENTITY ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST KEYSERVER IDENTITY ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE KEYSERVER IDENTITY ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE KEYSERVER IDENTITY ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "KEYSERVER IDENTITY");
+		
 		if (resp==null || resp.status == null) {
 			message = ERROR_NO_RESPONSE;
 			return null;
@@ -221,18 +191,7 @@ public class KeyClient extends HTTPClient {
 	public Vector<Identity> requestIdentities(String keyid, OSDXKey signingKey) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildRequestIdentities(host, prepath, keyid, signingKey);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST IDENTITIES ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST IDENTITIES ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE IDENTITIES ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE IDENTITIES ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "IDENTITIES");
 		if (resp==null || resp.status == null) {
 			message = ERROR_NO_RESPONSE;
 			return null;
@@ -262,18 +221,8 @@ public class KeyClient extends HTTPClient {
 	public KeyStatus requestKeyStatus(String keyid) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildRequestKeyStatus(host, prepath, keyid);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST KEYSTATUS ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST KEYSTATUS ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE KEYSTATUS ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE KEYSTATUS ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "KEYSTATUS");
+		
 		if (resp==null || resp.status == null) {
 			message = ERROR_NO_RESPONSE;
 			return null;
@@ -303,18 +252,7 @@ public class KeyClient extends HTTPClient {
 	public Vector<KeyLog> requestKeyLogs(String keyid, OSDXKey sign) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildRequestKeyLogs(host, prepath, keyid, sign);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST KeyLogs ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST KeyLogs ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE KeyLogs ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE KeyLogs ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "KeyLogs");
 		if (resp==null || resp.status == null) {
 			message = ERROR_NO_RESPONSE;
 			return null;
@@ -345,18 +283,7 @@ public class KeyClient extends HTTPClient {
 	public Vector<String> requestSubKeys(String masterkeyid) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildRequestSubkeys(host, prepath, masterkeyid);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST SubKeys ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST SubKeys ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE SubKeys ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE SubKeys ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "SubKeys");
 		if (resp==null || resp.status == null) {
 			message = ERROR_NO_RESPONSE;
 			return null;
@@ -385,18 +312,7 @@ public class KeyClient extends HTTPClient {
 	public OSDXKey requestPublicKey(String keyid) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildRequestPublicKey(host, prepath, keyid);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST PublicKey ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST PublicKey ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE PublicKey ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE PublicKey ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "PublicKey");
 		if (resp==null || resp.status == null) {
 			message = ERROR_NO_RESPONSE;
 			return null;
@@ -430,18 +346,7 @@ public class KeyClient extends HTTPClient {
 		try {
 			HTTPClientRequest req = KeyClientMessageFactory.buildPutRequestMasterKey(host, prepath, masterkey, id);
 			HTTPClientResponse resp = send(req);
-			if (log!=null) {
-				log.write("--- REQUEST PUT MasterKey ----------\n".getBytes());
-				req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-				log.write("--- END of REQUEST PUT MasterKey ---\n".getBytes());
-				if (resp == null) {
-					log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-				} else {
-					log.write("\n--- RESPONSE PUT MasterKey ----------\n".getBytes());
-					resp.toOutput(log);
-					log.write("--- END of RESPONSE PUT MasterKey ---\n".getBytes());
-				}
-			}
+			writeLog(req, resp, "PUT MasterKey");
 			return checkResponse(resp);
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -454,72 +359,28 @@ public class KeyClient extends HTTPClient {
 	public boolean putRevokeKey(RevokeKey revokekey, MasterKey relatedMasterKey) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildPutRequestRevokeKey(host, prepath, revokekey, relatedMasterKey);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST PUT RevokeKey ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST PUT RevokeKey ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE PUT RevokeKey ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE PUT RevokeKey ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "PUT RevokeKey");
 		return checkResponse(resp);
 	}
 	
 	public boolean putRevokeMasterKeyRequest(RevokeKey revokekey, MasterKey relatedMasterKey, String message) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildPutRequestRevokeMasterKey(host, prepath, revokekey, relatedMasterKey, message);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST Revoke-MasterKey ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST Revoke-MasterKey ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE Revoke-MasterKey ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE Revoke-MasterKey ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "PUT Revoke-MasterKey");
 		return checkResponse(resp);
 	}
 	
 	public boolean putSubKey(SubKey subkey, MasterKey relatedMasterKey) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildPutRequestSubKey(host, prepath, subkey, relatedMasterKey);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST PUT SubKey ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST PUT SubKey ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE PUT SubKey ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE PUT SubKey ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "PUT SubKey");
 		return checkResponse(resp);
 	}
 
 	public boolean putRevokeSubKeyRequest(SubKey subkey, MasterKey relatedMasterKey, String message) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildPutRequestRevokeSubKey(host, prepath, subkey, relatedMasterKey, message);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST Revoke-SubKey ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST Revoke-SubKey ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE Revoke-SubKey ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE Revoke-SubKey ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "Revoke SubKey");
 		return checkResponse(resp);
 	}
 	
@@ -534,18 +395,7 @@ public class KeyClient extends HTTPClient {
 	public boolean putKeyLogActions(Vector<KeyLogAction> keylogActions, OSDXKey signingKey) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.getPutRequestKeyLogs(host, prepath, keylogActions, signingKey);
 		HTTPClientResponse resp = send(req);
-		if (log!=null) {
-			log.write("--- REQUEST PUT KeyLogs ----------\n".getBytes());
-			req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
-			log.write("--- END of REQUEST PUT KeyLogs ---\n".getBytes());
-			if (resp == null) {
-				log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
-			} else {
-				log.write("\n--- RESPONSE PUT KeyLogs ----------\n".getBytes());
-				resp.toOutput(log);
-				log.write("--- END of RESPONSE PUT KeyLogs ---\n".getBytes());
-			}
-		}
+		writeLog(req, resp, "PUT KeyLogs");
 		return checkResponse(resp);
 	}
 

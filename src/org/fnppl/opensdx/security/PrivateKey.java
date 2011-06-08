@@ -104,7 +104,7 @@ public class PrivateKey {
 		
 		return oaep.processBlock(data, 0, data.length);
 	}
-	public byte[] encrypt(byte[] data, PublicKey pubkey) throws Exception {
+	public byte[] encrypt(byte[] data) throws Exception {
 		RSABlindedEngine rsae = new RSABlindedEngine();
 		
 //		RSABlindingEngine rsae = new RSABlindingEngine();

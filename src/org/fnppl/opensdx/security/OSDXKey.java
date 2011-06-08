@@ -45,11 +45,14 @@ package org.fnppl.opensdx.security;
  * 
  */
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.fnppl.opensdx.gui.MessageHandler;
+import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
 
@@ -92,8 +95,8 @@ public class OSDXKey {
 	private int	level = LEVEL_MASTER;
 	protected int	usage = USAGE_WHATEVER;
 	protected int	algo = ALGO_RSA;
-	protected long validFrom = System.currentTimeMillis();
-	protected long validUntil = validFrom + 25L*ONE_YEAR; //25 years
+	protected long validFrom = Long.MIN_VALUE;
+	protected long validUntil = Long.MAX_VALUE;
 	
 	protected String authoritativekeyserver = null;
 	//protected int authoritativekeyserverPort = 8889;
@@ -109,7 +112,9 @@ public class OSDXKey {
 	protected boolean unsavedChanges = false;
 	
 	protected OSDXKey() {
-		
+		validFrom = System.currentTimeMillis();
+		validFrom = validFrom - validFrom%1000; //no milliseconds in datemeGMT format;
+		validUntil = validFrom + 25L*ONE_YEAR; //25 years
 	}
 	
 	public PublicKey getPubKey() {
@@ -126,6 +131,24 @@ public class OSDXKey {
 	
 	public byte[] getPublicModulusBytes() {
 		return akp.getModulus();
+	}
+	
+	public byte[] encrypt(byte[] bytes) {
+		try {
+			return akp.encryptWithPublicKey(bytes);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public byte[] decrypt(byte[] bytes) {
+		try {
+			return akp.decryptWithPrivateKey(bytes);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public static OSDXKey fromPubKeyElement(Element e) throws Exception {
@@ -535,6 +558,7 @@ public class OSDXKey {
 	public void setValidFrom(long datetime) {
 		unsavedChanges = true;
 		validFrom = datetime;
+		validFrom = validFrom - validFrom%1000; //no milliseconds in datemeGMT format;
 	}
 	
 	public long getValidFrom() {
@@ -622,6 +646,29 @@ public class OSDXKey {
 		return lockedPrivateKey!=null || akp.hasPrivateKey();
 	}
 	
+	public String getJavaCodeString() {
+		try {
+			OutputStream out = new OutputStream() {
+				private StringBuilder string = new StringBuilder();
+				public void write(int b) throws IOException {
+					this.string.append((char) b );
+				}
+				public String toString(){
+					return string.toString();
+				}
+			};
+			Document.buildDocument(toElement(null)).outputCompact(out);
+			StringBuffer s  = new StringBuffer();
+			s.append("OSDXKey key = OSDXKey.fromElement(Document.fromString(\"");
+			s.append(out.toString().replace('\n',' ').replace('\r',' ').replace("\"", "\\\""));
+			s.append("\").getRootElement());\n");
+			return s.toString();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+	
 	public static String getFormattedKeyIDModulusOnly(String id) {
 		if (id.charAt(4)==':') {//starts with idnum e.g. 0001:
 			id = id.substring(4);
@@ -633,7 +680,6 @@ public class OSDXKey {
 			return SecurityHelper.HexDecoder.encode(SecurityHelper.HexDecoder.decode(id), ':', -1);
 		}
 	}
-
 	
 	
 	public static void main(String[] args) throws Exception {

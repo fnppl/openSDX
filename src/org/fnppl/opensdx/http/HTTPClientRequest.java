@@ -16,6 +16,7 @@ import org.fnppl.opensdx.xml.*;
 public class HTTPClientRequest {
 	public final static String XMLDOCPARAMNAME = "xmldocument";//check out KeyServerRequest
 
+	public final static String TYPE_OSDX_ENCRYPTED = "application/osdx-encrypted";
 	private final static String version = "HTTP/1.1";
 	private String method = "POST";
 	
@@ -24,8 +25,10 @@ public class HTTPClientRequest {
 	private String uri;
 	private String host;
 	private Element contentElement;
+	private byte[] contentData = null;
 	private Hashtable<String, String> parameters = new Hashtable<String, String>();
-	private Hashtable<String, String> headers = new Hashtable<String, String>();
+	//private Hashtable<String, String> headers = new Hashtable<String, String>();
+	private Vector<String[]> headers = new Vector<String[]>();
 	protected OSDXKey signoffkey = null;
 	
 	
@@ -57,6 +60,12 @@ public class HTTPClientRequest {
 	public void togglePOSTMode() {
 		this.method = "POST";
 		toggleFormDataMode();
+	}
+	
+	public void setContentEncryptedData(byte[] bytes) {
+		togglePOSTMode();
+		contentType = TYPE_OSDX_ENCRYPTED;
+		contentData = bytes;
 	}
 	
 	public HTTPClientRequest() {
@@ -163,49 +172,60 @@ public class HTTPClientRequest {
 			
 			out.flush();
 		}
+		else if(contentType.equalsIgnoreCase(TYPE_OSDX_ENCRYPTED) && contentData!=null) {
+			out.write(getCMDLine().getBytes("ASCII"));
+			out.write("\r\n".getBytes("ASCII"));
+			for (String[] h : headers) {
+				out.write((h[0]+": "+h[1]+"\r\n").getBytes("ASCII"));
+			}
+			out.write(getHeader(contentData.length, contentType).getBytes("ASCII"));
+			out.write("\r\n".getBytes("ASCII"));
+			out.write(contentData);
+			out.flush();
+		}
 		else if(contentType.equalsIgnoreCase("text/xml")) {
 			if(true) {
 				throw new RuntimeException("Hmm, thou shalt not use me...");
 			}
 			
-			if (contentElement != null) {
-				Element eContent = contentElement;
-				//signoff if signoffkey present
-				if (signoffkey!=null) {
-					eContent = XMLHelper.cloneElement(contentElement);//HT 23.03.2011 - why cloned?!
-					//signoff
-					byte[] sha1proof = SecurityHelper.getSHA1LocalProof(eContent);
-					eContent.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
-					eContent.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", signoffkey).toElement());
-				}
-				
-				
-				ByteArrayOutputStream contentout = new ByteArrayOutputStream();
-				
-				Document xml = Document.buildDocument(eContent);
-				xml.output(contentout);
-				contentout.flush();
-				contentout.close();
-				
-				byte[] content = contentout.toByteArray();
-				contentout = null;
-				
-				out.write(getCMDLine().getBytes("ASCII"));
-				out.write("\r\n".getBytes("ASCII"));
-				out.write(getHeader(content.length, contentType).getBytes("ASCII"));
-				out.write("\r\n".getBytes("ASCII"));
-				
-				out.flush();
-				out.write(content);
-			} 
-			else {
-				out.write(getCMDLine().getBytes("ASCII"));
-				out.write("\r\n".getBytes("ASCII"));
-				out.write(getHeader(0, contentType).getBytes("ASCII"));
-				out.write("\r\n".getBytes("ASCII"));
-			}
-			
-			out.flush();
+//			if (contentElement != null) {
+//				Element eContent = contentElement;
+//				//signoff if signoffkey present
+//				if (signoffkey!=null) {
+//					eContent = XMLHelper.cloneElement(contentElement);//HT 23.03.2011 - why cloned?!
+//					//signoff
+//					byte[] sha1proof = SecurityHelper.getSHA1LocalProof(eContent);
+//					eContent.addContent("sha1localproof", SecurityHelper.HexDecoder.encode(sha1proof, ':', -1));
+//					eContent.addContent(Signature.createSignatureFromLocalProof(sha1proof, "signature of sha1localproof", signoffkey).toElement());
+//				}
+//				
+//				
+//				ByteArrayOutputStream contentout = new ByteArrayOutputStream();
+//				
+//				Document xml = Document.buildDocument(eContent);
+//				xml.output(contentout);
+//				contentout.flush();
+//				contentout.close();
+//				
+//				byte[] content = contentout.toByteArray();
+//				contentout = null;
+//				
+//				out.write(getCMDLine().getBytes("ASCII"));
+//				out.write("\r\n".getBytes("ASCII"));
+//				out.write(getHeader(content.length, contentType).getBytes("ASCII"));
+//				out.write("\r\n".getBytes("ASCII"));
+//				
+//				out.flush();
+//				out.write(content);
+//			} 
+//			else {
+//				out.write(getCMDLine().getBytes("ASCII"));
+//				out.write("\r\n".getBytes("ASCII"));
+//				out.write(getHeader(0, contentType).getBytes("ASCII"));
+//				out.write("\r\n".getBytes("ASCII"));
+//			}
+//			
+//			out.flush();
 		}
 	}
 	
@@ -222,7 +242,8 @@ public class HTTPClientRequest {
 //		this.request = request;
 //	}
 	public void addHeaderValue(String name, String value) {
-		headers.put(name, value);
+		//headers.put(name, value);
+		headers.add(new String[] {name, value});
 	}
 	public void addRequestParam(String name, String value) {
 		if(contentElement != null) {
@@ -286,6 +307,17 @@ public class HTTPClientRequest {
 				out.write("\r\n".getBytes("ASCII"));
 			}
 			
+			out.flush();
+		}
+		else if(contentType.equalsIgnoreCase(TYPE_OSDX_ENCRYPTED) && contentData!=null) {
+			out.write(getCMDLineNOT_URL_ENCODED_FOR_TESTING().getBytes("ASCII"));
+			out.write("\r\n".getBytes("ASCII"));
+			for (String[] h : headers) {
+				out.write((h[0]+": "+h[1]+"\r\n").getBytes("ASCII"));
+			}
+			out.write(getHeader(contentData.length, contentType).getBytes("ASCII"));
+			out.write("\r\n".getBytes("ASCII"));
+			out.write(contentData);
 			out.flush();
 		}
 		else if(contentType.equalsIgnoreCase("text/xml")) {

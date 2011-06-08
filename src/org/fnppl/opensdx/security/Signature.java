@@ -179,7 +179,15 @@ public class Signature {
 		return signaturebytes;
 	}
 	
-	
+	public byte[] getMD5() {
+		return datamd5;
+	}
+	public byte[] getSHA1() {
+		return datasha1;
+	}
+	public byte[] getSHA256() {
+		return datasha256;
+	}
 	public Result tryVerificationFile(File f) throws Exception {
 		FileInputStream in = new FileInputStream(f);
 		BufferedInputStream bin = new BufferedInputStream(in);

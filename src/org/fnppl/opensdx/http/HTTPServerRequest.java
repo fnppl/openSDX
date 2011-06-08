@@ -61,7 +61,7 @@ public class HTTPServerRequest {
 	public Hashtable<String, String> headers = new Hashtable<String, String>();
 	public Hashtable<String, String> parameters = new Hashtable<String, String>();
 	public Document xml;
-	
+	public byte[] contentData;
 	public String cmd = null;
 	public String method = null;
 	public String ipv4 = null;
@@ -101,6 +101,9 @@ public class HTTPServerRequest {
 			else if(ret.method.equals("POST") && ret.headers.get("Content-Type").equals("application/x-www-form-urlencoded")) {
 	//			Content-Type: application/x-www-form-urlencoded
 				readPostParams(in, ret);
+			}
+			else if(ret.method.equals("POST") && ret.headers.get("Content-Type").equals("application/osdx-encrypted")) {
+				readContentData(in, ret);
 			}
 			else if(ret.method.equals("GET")) {
 				readGetParams(ret);
@@ -195,6 +198,16 @@ public class HTTPServerRequest {
 					re.parameters.put(pn, pv);
 				}
 			}
+		}
+	}
+	
+	private static void readContentData(InputStream in, HTTPServerRequest re) throws Exception {
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		int toread = Integer.parseInt(re.headers.get("Content-Length"));
+		re.contentData = new byte[toread];
+		int read = in.read(re.contentData, 0, toread);
+		if (toread != read) {
+			throw new Exception("Wrong content length!!");
 		}
 	}
 	

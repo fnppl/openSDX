@@ -408,16 +408,18 @@ public class SecurityMainFrame extends JFrame {
 		if (currentKeyStore==null) {
 			keyverificator.removeAllDirectRatings();
 		} else {
-			for (KeyServerIdentity ks : currentKeyStore.getKeyServer()) {
-				for (OSDXKey k : ks.getKnownKeys()) {
-					keyverificator.addKeyRating(k, TrustRatingOfKey.RATING_MARGINAL);
+			if (currentKeyStore.getKeyServer()!=null) {
+				for (KeyServerIdentity ks : currentKeyStore.getKeyServer()) {
+					for (OSDXKey k : ks.getKnownKeys()) {
+						keyverificator.addKeyRating(k, TrustRatingOfKey.RATING_MARGINAL);
+					}
 				}
-			}
-			for (OSDXKey k : storedTrustedPublicKeys) {
-				keyverificator.addKeyRating(k, TrustRatingOfKey.RATING_COMPLETE);
-			}
-			for (OSDXKey k : storedPrivateKeys) {
-				keyverificator.addKeyRating(k, TrustRatingOfKey.RATING_ULTIMATE);
+				for (OSDXKey k : storedTrustedPublicKeys) {
+					keyverificator.addKeyRating(k, TrustRatingOfKey.RATING_COMPLETE);
+				}
+				for (OSDXKey k : storedPrivateKeys) {
+					keyverificator.addKeyRating(k, TrustRatingOfKey.RATING_ULTIMATE);
+				}
 			}
 		}
 	}

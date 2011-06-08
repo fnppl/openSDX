@@ -187,7 +187,6 @@ public class KeyApprovingStore {
 				if (!ignore) 
 					throw new Exception("KeyStore: proof of keystore failed.");
 			}
-		
 		}
 		KeyApprovingStore kas = new KeyApprovingStore();
 		kas.f = f;
@@ -443,6 +442,20 @@ public class KeyApprovingStore {
 	
 	public boolean toFile(File file) throws Exception {
 		this.f = file;
+		
+		Element root = toElement();
+		if (root == null) return false;
+		Document d = Document.buildDocument(root);
+		
+		if (!file.exists() || messageHandler.requestOverwriteFile(file)) {
+			d.writeToFile(file);
+			unsavedChanges = false;
+			return true;
+		}
+		return false;
+	}
+	
+	public Element toElement() throws Exception {
 		Element root = new Element("keystore");
 
 		Element ek = new Element("keys");
@@ -461,7 +474,7 @@ public class KeyApprovingStore {
 			keystoreSigningKey.unlockPrivateKey(messageHandler);
 		}
 		if (!keystoreSigningKey.isPrivateKeyUnlocked()) {
-			return false;
+			return null;
 		}
 		Signature s = Signature.createSignatureFromLocalProof(sha256localproof, "signature of sha256localproof of keys", keystoreSigningKey);
 		ek.addContent(s.toElement());
@@ -469,16 +482,19 @@ public class KeyApprovingStore {
 		//keylog
 		if (keylogs!=null && keylogs.size()>0) {
 			for (KeyLog kl : keylogs) {
-				boolean v = false;
+				Result vr = Result.error("unknown error");
 				try {
-					Result vr = kl.verify(); 
-					v = vr.succeeded;
+					vr = kl.verify(); 
 				} catch (Exception e) {
 					//e.printStackTrace();
 					System.out.println("KeyLog signature NOT verified!");
 				}
-				if (v) {
+				if (vr.succeeded) {
 					root.addContent(kl.toElement(true));
+				} else {
+					System.out.println("KeyLog signature NOT verified! from_keyid: "+kl.getKeyIDFrom());
+					System.out.println("msg: "+vr.errorMessage);
+					//Document.buildDocument(kl.toElement(true)).output(System.out);
 				}
 			}
 		}
@@ -498,15 +514,7 @@ public class KeyApprovingStore {
 		
 		root.addContent("keystore_sha256_proof",SecurityHelper.HexDecoder.encode(proof,':',-1));
 		root.addContent(sign.toElement());
-		
-		Document d = Document.buildDocument(root);
-		
-		if (!file.exists() || messageHandler.requestOverwriteFile(file)) {
-			d.writeToFile(file);
-			unsavedChanges = false;
-			return true;
-		}
-		return false;
+		return root;
 	}
 	
 	

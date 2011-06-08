@@ -212,7 +212,9 @@ public class SymmetricKey {
 	public byte[] getInitVector() {
 		return initVector;
 	}
-	
+	public byte[] getKeyBytes() {
+		return keyBytes;
+	}
 	public static void main(String[] args) throws Exception {
 	
 		//test encryption of private key
