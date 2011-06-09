@@ -56,11 +56,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Vector;
-
-import javax.print.Doc;
 
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.MessageHandler;

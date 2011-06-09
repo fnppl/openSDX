@@ -123,10 +123,7 @@ public class SymmetricKey {
 	}
 	
 	public void encrypt(InputStream in, OutputStream out) throws Exception {
-//		if(key.length!=initvector.length || key.length!=keybits/8) {
-//			throw new Exception("invalid params");
-//		}
-		
+
 		CBCBlockCipher aesCBC = new CBCBlockCipher(new AESEngine());
 		KeyParameter kp = new KeyParameter(keyBytes);
 		ParametersWithIV aesCBCParams = new ParametersWithIV(kp, initVector);
@@ -134,7 +131,7 @@ public class SymmetricKey {
 	    PaddedBufferedBlockCipher aesCipher = new PaddedBufferedBlockCipher(
 	    		aesCBC,
 	            new PKCS7Padding()
-	    	);	    
+	    	);
 	    aesCipher.init(true, aesCBCParams);
 	    
 	    int read = -1;

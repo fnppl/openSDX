@@ -150,7 +150,7 @@ public class OSDXMessage {
 			byte[] encrypt = new BASE64Decoder().decodeBuffer(content.getChildText("encrypted_content"));
 			byte[] decrypt = decryptionKey.decrypt(encrypt);
 			String s = new String(decrypt, "UTF-8");
-			System.out.println(s);
+			//System.out.println(s);
 			return Document.fromString(s).getRootElement();
 		} catch (Exception e) {
 			e.printStackTrace();
