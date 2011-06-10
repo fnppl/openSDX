@@ -50,12 +50,13 @@
 -->
 
 <opensdxserver>
-	<osdxserver>
-		<port>8899</port>
+	<osdxfiletransferserver>
+		<port>4221</port>
 		<prepath></prepath><!-- e.g. /osdxuploadserver as path-prefix -->
 		<ipv4>127.0.0.1</ipv4>
       	<ipv6>127.0.0.1</ipv6>
-	</osdxserver>
+      	<path_uploaded_files>/home/neo/openSDX/file_transfer_server</path_uploaded_files>
+	</osdxfiletransferserver>
 	<rootsigningkey>
 		 <keypair>
 	      <identities>
