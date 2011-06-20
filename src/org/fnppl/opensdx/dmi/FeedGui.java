@@ -60,6 +60,7 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.SecurityMainFrame;
 import org.fnppl.opensdx.security.*;
@@ -82,6 +83,7 @@ public class FeedGui extends JFrame {
 	BundlePanel bundle_panel = null;
 	FeedInfoPanel feedinfo_panel = null;
 	BundledItemsPanel bundled_items_panel = null;
+	private Feed currentFeed = null;
 	
 	
 	private FeedGui() {
@@ -97,6 +99,7 @@ public class FeedGui extends JFrame {
 		makeMenuBar();
 		Helper.centerMe(this, null);
 	}
+	
 	public void makeMenuBar() {
 		ActionListener ja = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -104,6 +107,9 @@ public class FeedGui extends JFrame {
 
 				if(cmd.equalsIgnoreCase("quit")) {
 					quit();
+				}
+				else if(cmd.equalsIgnoreCase("init example feed")) {
+					init_example_feed();
 				}
 			}
 
@@ -114,11 +120,15 @@ public class FeedGui extends JFrame {
 		jb.add(jm);
 		JMenuItem jmi = null;
 
+		jmi = new JMenuItem("init example feed");
+		jmi.setActionCommand("init example feed");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+		
 		jmi = new JMenuItem("Quit");
 		jmi.setActionCommand("quit");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
-		
 		
 		setJMenuBar(jb);
 	}
@@ -175,9 +185,9 @@ public class FeedGui extends JFrame {
 		JTabbedPane tabbedPane = jt; //ref.
 //		ImageIcon icon = createImageIcon("images/middle.gif");
 
-		feedinfo_panel = new FeedInfoPanel();
-		bundle_panel = new BundlePanel();
-		bundled_items_panel = new BundledItemsPanel();
+		feedinfo_panel = new FeedInfoPanel(this);
+		bundle_panel = new BundlePanel(this);
+		bundled_items_panel = new BundledItemsPanel(this);
 		
 		tabbedPane.addTab("FeedInfo", null, feedinfo_panel, "Does nothing !!!change_me_");
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
@@ -193,6 +203,28 @@ public class FeedGui extends JFrame {
 		StatusBar sb = makeStatusBar(); //also sets. class-variable.
 		jp.add(sb, BorderLayout.SOUTH);
 	}
+	
+	public Feed getCurrentFeed() {
+		return currentFeed;
+	}
+	
+	public void update() {
+		if (feedinfo_panel!=null) {
+			feedinfo_panel.update();
+		}
+		if (bundle_panel!=null) {
+			bundle_panel.update();
+		}
+		if (bundled_items_panel!=null) {
+			bundled_items_panel.update();
+		}
+	}
+	
+	public void init_example_feed() {
+		currentFeed = FeedCreator.makeExampleFeed();
+		update();
+	}
+	
 	public void quit() {
 		System.exit(0);
 	}

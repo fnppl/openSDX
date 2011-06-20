@@ -58,38 +58,63 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+import org.fnppl.opensdx.common.Feed;
+import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.SecurityMainFrame;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
 public class BundlePanel extends JPanel {
-	public BundlePanel() {
+	
+	
+	private FeedGui feedgui = null; 
+	private JPanel mainContent = null;
+	
+	public BundlePanel(FeedGui parent) {
 		super();
-		
+		this.feedgui = parent; 
 		buildUi();
 	}
 	
+	public void update() {
+		Feed feed = feedgui.getCurrentFeed();
+		if (feed != null && feed.getBundle(0)!=null) {
+			EditBusinessObjectTree tree = new EditBusinessObjectTree(feed.getBundle(0));
+			int anz = mainContent.getComponentCount();
+			mainContent.removeAll();
+			mainContent.add(new JScrollPane(tree),BorderLayout.CENTER);
+		} else {
+			mainContent.removeAll();
+		}
+	}
+	
 	private void buildUi() {
-		GridBagLayout gb = new GridBagLayout();
-		GridBagConstraints c = new GridBagConstraints();
-		c.gridx = 0; c.gridy = 0;
-		c.anchor = GridBagConstraints.NORTHWEST;
+		setLayout(new BorderLayout());
+		mainContent = new JPanel();
+		mainContent.setLayout(new BorderLayout());
+		add(mainContent, BorderLayout.CENTER);
+		update();
 		
-		setLayout(gb);
-		
-		
-
-		JLabel l = new JLabel("Me is BundlePanel.java");
-		add(l, c);
-		
-		
-		
-		c.gridy++;
-		c.gridx++;
-		JLabel filler = new JLabel(); //invisible
-		c.weightx = 1.0;
-		c.weighty = 1.0;
-		add(filler, c);
+//		GridBagLayout gb = new GridBagLayout();
+//		GridBagConstraints c = new GridBagConstraints();
+//		c.gridx = 0; c.gridy = 0;
+//		c.anchor = GridBagConstraints.NORTHWEST;
+//		
+//		setLayout(gb);
+//		
+//		
+//
+//		JLabel l = new JLabel("Me is BundlePanel.java");
+//		add(l, c);
+//		
+//		
+//		
+//		c.gridy++;
+//		c.gridx++;
+//		JLabel filler = new JLabel(); //invisible
+//		c.weightx = 1.0;
+//		c.weighty = 1.0;
+//		add(filler, c);
 	}
 }

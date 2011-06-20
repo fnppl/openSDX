@@ -62,7 +62,7 @@ import org.fnppl.opensdx.xml.XMLHelper;
 public abstract class BusinessObject implements XMLElementable {
 	
 	private Vector<XMLElementable> otherObjects = new Vector<XMLElementable>();
-	private boolean appendOtherObjects = false; 
+	private boolean appendOtherObjects = true; 
  	
 	public abstract String getKeyname();
 	
@@ -126,6 +126,53 @@ public abstract class BusinessObject implements XMLElementable {
 		return resultElement;
 	}
 	
+	
+	public Vector<XMLElementable> getElements() {
+		Vector<XMLElementable> result = new Vector<XMLElementable>();
+		
+		Field[] fields = getDeclaredFieldsCache.get(this.getClass());
+		if(fields == null) {
+			fields = this.getClass().getDeclaredFields();
+			getDeclaredFieldsCache.put(this.getClass(), fields);
+			
+			for(int i=0; i<fields.length; i++) {
+				fields[i].setAccessible(true);
+			}
+		}
+		
+		for (Field f : fields) {
+			if (!f.getName().equals("this$0")) { //argg, watch out when directly using BusinessObjects
+				try {	
+					//System.out.println(f.getName());
+					Object thisFieldsObject = f.get(this);
+					if (thisFieldsObject instanceof XMLElementable) {
+						result.add((XMLElementable)thisFieldsObject);
+					}
+					else if (thisFieldsObject instanceof Vector<?>) {
+						Vector<?> vector = (Vector<?>)thisFieldsObject;
+						for (Object vectorsObject : vector) {
+							if (vectorsObject instanceof XMLElementable) {
+								result.add((XMLElementable)vectorsObject);
+							}
+						}
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+		if (appendOtherObjects) {
+			for (XMLElementable ue : otherObjects) {
+				System.out.println("appending other object:: "+getKeyname()+"::"+ue.getKeyname());
+				result.add(ue);
+			}
+		} else {
+			for (XMLElementable ue : otherObjects) {
+				System.out.println("unhandled object:: "+getKeyname()+"::"+ue.getKeyname());
+			}
+		}
+		return result;
+	}
 	
 	//for anonymous BusinessObject -> can be transformed by child classes
 	public static BusinessObject fromElement(Element e) {

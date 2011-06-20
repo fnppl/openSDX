@@ -45,185 +45,209 @@ package org.fnppl.opensdx.dmi;
  */
 
 
-import java.awt.*;
-import java.io.*;
-import java.net.URL;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
-
-import org.fnppl.opensdx.gui.Helper;
-import org.fnppl.opensdx.gui.SecurityMainFrame;
-import org.fnppl.opensdx.security.*;
-import org.fnppl.opensdx.xml.*;
+import org.fnppl.opensdx.common.Feed;
+import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 
 public class FeedInfoPanel extends JPanel {
-	public FeedInfoPanel() {
+	
+	private FeedGui feedgui = null; 
+	private JPanel mainContent = null;
+	
+	public FeedInfoPanel(FeedGui parent) {
 		super();
-
+		this.feedgui = parent; 
 		buildUi();
 	}
 	
-	private JPanel makeMainBlock() {
-		JPanel ret = new JPanel();
-//		<onlytest>true</onlytest><!-- MUST testmode true|false -->
-//		<feedid>kaakka</feedid><!-- MUST id is provided by sender; should be unique -->
-//		<creationdatetime>2010-10-01 00:00:00 GMT+00:00</creationdatetime><!-- MUST datetime of creation of this feed -->
-//		<effectivedatetime>2010-10-01 00:00:00 GMT+00:00</effectivedatetime><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
-		return ret;
+	
+	public void update() {
+		System.out.println("FeedInfoPanel::update");
+		Feed feed = feedgui.getCurrentFeed();
+		if (feed != null && feed.getFeedinfo()!=null) {
+			EditBusinessObjectTree tree = new EditBusinessObjectTree(feed.getFeedinfo());
+			System.out.println("feedinfo not null");
+			int anz = mainContent.getComponentCount();
+			System.out.println("anz comp: "+anz);
+			mainContent.removeAll();
+			mainContent.add(new JScrollPane(tree),BorderLayout.CENTER);
+		} else {
+			mainContent.removeAll();
+			//mainContent.add(new JButton("no feedinfo"), BorderLayout.CENTER);
+		}
 	}
+	
+//	private JPanel makeMainBlock() {
+//		JPanel ret = new JPanel();
+////		<onlytest>true</onlytest><!-- MUST testmode true|false -->
+////		<feedid>kaakka</feedid><!-- MUST id is provided by sender; should be unique -->
+////		<creationdatetime>2010-10-01 00:00:00 GMT+00:00</creationdatetime><!-- MUST datetime of creation of this feed -->
+////		<effectivedatetime>2010-10-01 00:00:00 GMT+00:00</effectivedatetime><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
+//		return ret;
+//	}
+	
 	private void buildUi() {
-		GridBagLayout gb = new GridBagLayout();
-		GridBagConstraints c = new GridBagConstraints();
-		c.gridx = 0; c.gridy = 0;
-		c.anchor = GridBagConstraints.NORTHWEST;
-		
-		setLayout(gb);
-		
-		JLabel l = new JLabel("Me is FeedInfoPanel.java");
-		add(l, c);
-		
-
-		c.gridy++;
-		c.gridx++;
-		JLabel filler = new JLabel(); //invisible
-		c.weightx = 1.0;
-		c.weighty = 1.0;
-		add(filler, c);
-		
-		makeMainBlock();
+		System.out.println("FeedInfoPanel::buildUi");
+		setLayout(new BorderLayout());
+		mainContent = new JPanel();
+		mainContent.setLayout(new BorderLayout());
+		add(mainContent, BorderLayout.CENTER);
+		update();
 		
 		
-		<creator>
-			<email>user@sendingparty.nät</email><!-- should be an email-address of the *user* on the sending side -->
-			<userid>1919kdkdk12929</userid><!-- should be an unique id of the *user* on the sending side-->
-		</creator><!-- creator is a mere info-field for the sending-party ; receiving party may totally feel free to ignore this -->
-
-		<receiver>
-			<type>ftp</type><!-- ftp|sftp|ftps|webdav| -->
-			<servername></servername><!-- MUST provider should really give hostname instead of ip ; if hostname is given as ip, then put that one here -->
-			<serveripv4></serveripv4><!-- MUST resolved servername ipv4 -->
-			<serveripv6></serveripv6><!-- COULD resolved servername ipv6 -->
-			<authtype>login</authtype><!-- MUST login|keyfile|token|other -->
-			<authsha1>login</authsha1><!-- MUST case(login): SHA1(USERNAME:PASS) case(keyfile): SHA1(KEYFILE-data); case(token): SHA1(TOKEN-data) case(other): SHA1(relevant-data) -->
-
-			<crypto>
-				<relatedemail></relatedemail><!-- SHOULD -->
-				<usedkeyid></usedkeyid><!-- COULD ; keyid on gpgkesyerver -->
-				<usedpubkey></usedpubkey><!-- SHOULD ; ascii-armored / base64-form ; either this or keyid must be given -->
-			</crypto><!-- COULD -->					
-		</receiver>
+//		GridBagLayout gb = new GridBagLayout();
+//		GridBagConstraints c = new GridBagConstraints();
+//		c.gridx = 0; c.gridy = 0;
+//		c.anchor = GridBagConstraints.NORTHWEST;
+//		
+//		setLayout(gb);
+//		
+//		JLabel l = new JLabel("Me is FeedInfoPanel.java");
+//		add(l, c);
+//		
+//
+//		c.gridy++;
+//		c.gridx++;
+//		JLabel filler = new JLabel(); //invisible
+//		c.weightx = 1.0;
+//		c.weighty = 1.0;
+//		add(filler, c);
+//		
+//		makeMainBlock();
+//		
 		
-		<sender>
-			<contractpartnerid></contractpartnerid><!-- MUST your side of "ID" ; worst case: the sending-company's correct trade-register-name/number -->
-			<ourcontractpartnerid></ourcontractpartnerid><!-- MUST our side of "ID" -->
-			<email></email><!-- MUST esp. for signature-check ; could of course be a generic account e.g. deliveryteam@dsphouse.nät -->		
-		</sender><!-- MUST -->
-		<licensor>
-			<contractpartnerid></contractpartnerid><!-- MUST your side of "ID" ; worst case: the license-giving-company's correct trade-register-name/number -->
-			<ourcontractpartnerid></ourcontractpartnerid><!-- MUST our side of "ID" -->
-			<email></email><!-- SHOULD good, but not neccessarily needed -->
-		</licensor><!-- MUST could be identical to sender, but has to be given -->
-	
-	
-		<actions>
-			<oninitialreceive>
-				<mailto>
-					<receiver>lala@nowhere.nät, lala1@nowhere.nät</receiver><!-- MUST -->
-					<subject></subject><!-- SHOULD this should be added to (an possibly empty) the emails subject ; SHOULD not be more than 200 7-byte-chars-->
-					<text></text><!-- SHOULD this should be added to (an possibly empty) the emails text ; SHOULD not be more than 4048 7-byte-chars-->
-				</mailto>
-				<http>
-					<url>http://nowhere.nät/callme.php?w=initireceive&amp;k=true</url>
-					<type>GET</type><!-- GET|POST|HEAD ; most probably GET -->
-					<addheader>
-						<header>
-							<name>gumpy</name>
-							<value>RWJ</value>
-						</header>
-					</addheader><!-- those headers are then added "X-" to the call - the url-caller may choose to ignore any header (especially those already used by himself) -->
-					<addparams>
-						<param>
-							<name>cmd</name>
-							<value>ehlo</value>
-						</param>
-						<param>
-							<name>jump</name>
-							<value>neverfrombridgbe</value>
-						</param>
-					</addparams>
-				</http>
-				<http>
-					<url>http://nowhere.nät/callme.php?w=initireceive&amp;k=true</url>
-					<type>POST</type><!-- GET|POST|HEAD ; most probably GET ; in case of POST, there SHOULD no (GET)params included in url-call ; so, this example shows *bad* stuff -->
-					<addheader>
-						<header>
-							<name>gumpy</name>
-							<value>RWJ</value>
-						</header>
-					</addheader><!-- those headers are then added "X-" to the call - the url-caller may choose to ignore any header (especially those already used by himself) -->
-					<addparams>
-						<param>
-							<name>cmd</name>
-							<value>ehlo</value>
-						</param>
-						<param>
-							<name>jump</name>
-							<value>neverfrombridgbe</value>
-						</param>
-					</addparams>
-				</http>
-			</oninitialreceive><!-- SHOULD when the *machine* picks up this delivery (aka pulls it away from *inbox*) -->
-			<onprocessstart></onprocessstart><!-- SHOULD when the *machine* start processing this feed -->
-			<onprocessend></onprocessend><!-- SHOULD when *machine* has ended working on this -->
-			<onfullsuccess>
-				<fax>
-					<number>+44 77 919191919</number>
-					<to>
-						<name>yeah company ltd.</name>
-						<department>it crowd</department><!-- resolves to: dep. *department* -->
-						<nameperson>jonathan jones</nameperson><!-- resolves to: Attn. *nameperson* -->
-						<street>main street 1010</street>
-						<postcode>112233</postcode>
-						<country>DK</country><!-- ISO -->
-						<additionaladdressinfo>Building 7</additionaladdressinfo>
-					</to>
-					<text></text><!-- text which MUST be on that fax -->
-					<costscoveredby>
-						<contractpartnerid></contractpartnerid><!-- MUST contractpartnerid on your side ; see above -->
-						<ourcontractpartnerid></ourcontractpartnerid><!-- MUST contractpartnerid on our side ; see above -->					
-						<maxcostscovered>EUR 0.77</maxcostscovered>
-					</costscoveredby>
-				</fax><!-- would be total awesome, if someone would provide even *non*-digital reports; of course this costs money ; receving party can decide to ignore this -->
-				
-				<letter>
-					<registered>true</registered><!-- MUST true|false ; must be registered letter yes/no -->
-					<to>
-						<name>yeah company ltd.</name>
-						<department>it crowd</department><!-- resolves to: dep. *department* -->
-						<nameperson>jonathan jones</nameperson><!-- resolves to: Attn. *nameperson* -->
-						<street>main street 1010</street>
-						<postcode>112233</postcode>
-						<country>DK</country><!-- ISO -->
-						<additionaladdressinfo>Building 7</additionaladdressinfo>
-					</to>
-					<text></text><!-- text which MUST be on that letter -->
-					<costscoveredby>
-						<contractpartnerid></contractpartnerid><!-- MUST contractpartnerid on your side ; see above -->
-						<ourcontractpartnerid></ourcontractpartnerid><!-- MUST contractpartnerid on our side ; see above -->					
-						<maxcostscovered>EUR 0.77</maxcostscovered>
-					</costscoveredby>
-				</letter><!-- would be total awesome, if someone would provide even *non*-digital reports; of course this costs money ; receving party can decide to ignore this -->			
-			</onfullsuccess><!-- SHOULD when *machine* thinks, everything was read and successfully process - without ANY error -->
-			<onerror></onerror><!-- SHOULD when *machine* could process this, but some error, or total fail occured -->
-		</actions><!-- SHOULD - hopefully the receiving party also respects this ; this would ease a lot in the chain... -->
-	</feedinfo>
+//		<creator>
+//			<email>user@sendingparty.nät</email><!-- should be an email-address of the *user* on the sending side -->
+//			<userid>1919kdkdk12929</userid><!-- should be an unique id of the *user* on the sending side-->
+//		</creator><!-- creator is a mere info-field for the sending-party ; receiving party may totally feel free to ignore this -->
+//
+//		<receiver>
+//			<type>ftp</type><!-- ftp|sftp|ftps|webdav| -->
+//			<servername></servername><!-- MUST provider should really give hostname instead of ip ; if hostname is given as ip, then put that one here -->
+//			<serveripv4></serveripv4><!-- MUST resolved servername ipv4 -->
+//			<serveripv6></serveripv6><!-- COULD resolved servername ipv6 -->
+//			<authtype>login</authtype><!-- MUST login|keyfile|token|other -->
+//			<authsha1>login</authsha1><!-- MUST case(login): SHA1(USERNAME:PASS) case(keyfile): SHA1(KEYFILE-data); case(token): SHA1(TOKEN-data) case(other): SHA1(relevant-data) -->
+//
+//			<crypto>
+//				<relatedemail></relatedemail><!-- SHOULD -->
+//				<usedkeyid></usedkeyid><!-- COULD ; keyid on gpgkesyerver -->
+//				<usedpubkey></usedpubkey><!-- SHOULD ; ascii-armored / base64-form ; either this or keyid must be given -->
+//			</crypto><!-- COULD -->					
+//		</receiver>
+//		
+//		<sender>
+//			<contractpartnerid></contractpartnerid><!-- MUST your side of "ID" ; worst case: the sending-company's correct trade-register-name/number -->
+//			<ourcontractpartnerid></ourcontractpartnerid><!-- MUST our side of "ID" -->
+//			<email></email><!-- MUST esp. for signature-check ; could of course be a generic account e.g. deliveryteam@dsphouse.nät -->		
+//		</sender><!-- MUST -->
+//		<licensor>
+//			<contractpartnerid></contractpartnerid><!-- MUST your side of "ID" ; worst case: the license-giving-company's correct trade-register-name/number -->
+//			<ourcontractpartnerid></ourcontractpartnerid><!-- MUST our side of "ID" -->
+//			<email></email><!-- SHOULD good, but not neccessarily needed -->
+//		</licensor><!-- MUST could be identical to sender, but has to be given -->
+//	
+//	
+//		<actions>
+//			<oninitialreceive>
+//				<mailto>
+//					<receiver>lala@nowhere.nät, lala1@nowhere.nät</receiver><!-- MUST -->
+//					<subject></subject><!-- SHOULD this should be added to (an possibly empty) the emails subject ; SHOULD not be more than 200 7-byte-chars-->
+//					<text></text><!-- SHOULD this should be added to (an possibly empty) the emails text ; SHOULD not be more than 4048 7-byte-chars-->
+//				</mailto>
+//				<http>
+//					<url>http://nowhere.nät/callme.php?w=initireceive&amp;k=true</url>
+//					<type>GET</type><!-- GET|POST|HEAD ; most probably GET -->
+//					<addheader>
+//						<header>
+//							<name>gumpy</name>
+//							<value>RWJ</value>
+//						</header>
+//					</addheader><!-- those headers are then added "X-" to the call - the url-caller may choose to ignore any header (especially those already used by himself) -->
+//					<addparams>
+//						<param>
+//							<name>cmd</name>
+//							<value>ehlo</value>
+//						</param>
+//						<param>
+//							<name>jump</name>
+//							<value>neverfrombridgbe</value>
+//						</param>
+//					</addparams>
+//				</http>
+//				<http>
+//					<url>http://nowhere.nät/callme.php?w=initireceive&amp;k=true</url>
+//					<type>POST</type><!-- GET|POST|HEAD ; most probably GET ; in case of POST, there SHOULD no (GET)params included in url-call ; so, this example shows *bad* stuff -->
+//					<addheader>
+//						<header>
+//							<name>gumpy</name>
+//							<value>RWJ</value>
+//						</header>
+//					</addheader><!-- those headers are then added "X-" to the call - the url-caller may choose to ignore any header (especially those already used by himself) -->
+//					<addparams>
+//						<param>
+//							<name>cmd</name>
+//							<value>ehlo</value>
+//						</param>
+//						<param>
+//							<name>jump</name>
+//							<value>neverfrombridgbe</value>
+//						</param>
+//					</addparams>
+//				</http>
+//			</oninitialreceive><!-- SHOULD when the *machine* picks up this delivery (aka pulls it away from *inbox*) -->
+//			<onprocessstart></onprocessstart><!-- SHOULD when the *machine* start processing this feed -->
+//			<onprocessend></onprocessend><!-- SHOULD when *machine* has ended working on this -->
+//			<onfullsuccess>
+//				<fax>
+//					<number>+44 77 919191919</number>
+//					<to>
+//						<name>yeah company ltd.</name>
+//						<department>it crowd</department><!-- resolves to: dep. *department* -->
+//						<nameperson>jonathan jones</nameperson><!-- resolves to: Attn. *nameperson* -->
+//						<street>main street 1010</street>
+//						<postcode>112233</postcode>
+//						<country>DK</country><!-- ISO -->
+//						<additionaladdressinfo>Building 7</additionaladdressinfo>
+//					</to>
+//					<text></text><!-- text which MUST be on that fax -->
+//					<costscoveredby>
+//						<contractpartnerid></contractpartnerid><!-- MUST contractpartnerid on your side ; see above -->
+//						<ourcontractpartnerid></ourcontractpartnerid><!-- MUST contractpartnerid on our side ; see above -->					
+//						<maxcostscovered>EUR 0.77</maxcostscovered>
+//					</costscoveredby>
+//				</fax><!-- would be total awesome, if someone would provide even *non*-digital reports; of course this costs money ; receving party can decide to ignore this -->
+//				
+//				<letter>
+//					<registered>true</registered><!-- MUST true|false ; must be registered letter yes/no -->
+//					<to>
+//						<name>yeah company ltd.</name>
+//						<department>it crowd</department><!-- resolves to: dep. *department* -->
+//						<nameperson>jonathan jones</nameperson><!-- resolves to: Attn. *nameperson* -->
+//						<street>main street 1010</street>
+//						<postcode>112233</postcode>
+//						<country>DK</country><!-- ISO -->
+//						<additionaladdressinfo>Building 7</additionaladdressinfo>
+//					</to>
+//					<text></text><!-- text which MUST be on that letter -->
+//					<costscoveredby>
+//						<contractpartnerid></contractpartnerid><!-- MUST contractpartnerid on your side ; see above -->
+//						<ourcontractpartnerid></ourcontractpartnerid><!-- MUST contractpartnerid on our side ; see above -->					
+//						<maxcostscovered>EUR 0.77</maxcostscovered>
+//					</costscoveredby>
+//				</letter><!-- would be total awesome, if someone would provide even *non*-digital reports; of course this costs money ; receving party can decide to ignore this -->			
+//			</onfullsuccess><!-- SHOULD when *machine* thinks, everything was read and successfully process - without ANY error -->
+//			<onerror></onerror><!-- SHOULD when *machine* could process this, but some error, or total fail occured -->
+//		</actions><!-- SHOULD - hopefully the receiving party also respects this ; this would ease a lot in the chain... -->
+//	</feedinfo>
 		
 	}
 }

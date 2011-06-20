@@ -115,11 +115,17 @@ public class Feed extends BusinessObject {
 	}
 
 	public Bundle getBundle(int index) {
-		return bundles.get(index);
+		if (bundles!=null && index<bundles.size()) {
+			return bundles.get(index);
+		}
+		return null;
 	}
 
 	public Item getSingleItems(int index) {
-		return single_items.get(index);
+		if (single_items!=null && index<single_items.size()) {
+			return single_items.get(index);
+		}
+		return null;
 	}
 
 	public String getKeyname() {
