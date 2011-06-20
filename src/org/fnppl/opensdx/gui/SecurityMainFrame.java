@@ -62,7 +62,6 @@ import javax.swing.table.*;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.ResultTreeType;
 
 
 public class SecurityMainFrame extends JFrame {
