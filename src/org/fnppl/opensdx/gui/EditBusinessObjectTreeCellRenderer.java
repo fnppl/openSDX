@@ -64,6 +64,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.MutableTreeNode;
 
 import org.fnppl.opensdx.common.BusinessBooleanItem;
+import org.fnppl.opensdx.common.BusinessCollection;
 import org.fnppl.opensdx.common.BusinessDatetimeItem;
 import org.fnppl.opensdx.common.BusinessObject;
 import org.fnppl.opensdx.common.BusinessStringItem;
@@ -91,6 +92,26 @@ public class EditBusinessObjectTreeCellRenderer extends DefaultTreeCellRenderer 
 	    	
 	    	if (value instanceof BusinessObject) {
 		    	BusinessObject bo = (BusinessObject)value;
+		    	int sizeX1 = 200;
+		    	JLabel lab  = new JLabel(bo.getKeyname());
+		    	JPanel p = new JPanel();
+		    	FlowLayout layout = new FlowLayout();
+		    	layout.setVgap(1);
+		    	layout.setHgap(10);
+		    	layout.setAlignment(FlowLayout.LEFT);
+		    	p.setLayout(layout);
+		    	
+		    	p.setAlignmentX(JPanel.LEFT_ALIGNMENT);
+	    		p.setAlignmentY(JPanel.CENTER_ALIGNMENT);
+	    		
+	    		sizeX += sizeX1+10;
+	    		lab.setPreferredSize(new Dimension(sizeX1,sizeY));
+	    		p.add(lab);
+	    		return p;
+	    	}
+	    	
+	    	if (value instanceof BusinessCollection) {
+	    		BusinessCollection bo = (BusinessCollection)value;
 		    	int sizeX1 = 200;
 		    	JLabel lab  = new JLabel(bo.getKeyname());
 		    	JPanel p = new JPanel();

@@ -61,13 +61,16 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 
 import org.fnppl.opensdx.common.Feed;
+import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 import org.fnppl.opensdx.gui.Helper;
+import org.fnppl.opensdx.gui.MyObserver;
+import org.fnppl.opensdx.gui.PanelFeedInfo;
 import org.fnppl.opensdx.gui.SecurityMainFrame;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
 
-public class FeedGui extends JFrame {
+public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
 	public static FeedGui getInstance() {
 		if(instance == null) {
@@ -81,8 +84,11 @@ public class FeedGui extends JFrame {
 	private StatusBar status = null;
 	
 	BundlePanel bundle_panel = null;
-	FeedInfoPanel feedinfo_panel = null;
+//	FeedInfoPanel feedinfo_panel = null;
+	PanelFeedInfo feedinfo_panel = null;
 	BundledItemsPanel bundled_items_panel = null;
+	JPanel treePanel = null;
+	
 	private Feed currentFeed = null;
 	
 	
@@ -131,6 +137,10 @@ public class FeedGui extends JFrame {
 		jm.add(jmi);
 		
 		setJMenuBar(jb);
+	}
+	
+	public void notifyChange() {
+		update();
 	}
 	
 	protected JComponent makeTextPanel(String text) {
@@ -185,9 +195,14 @@ public class FeedGui extends JFrame {
 		JTabbedPane tabbedPane = jt; //ref.
 //		ImageIcon icon = createImageIcon("images/middle.gif");
 
-		feedinfo_panel = new FeedInfoPanel(this);
+		//feedinfo_panel = new FeedInfoPanel(this);
+		feedinfo_panel = new PanelFeedInfo();
+		feedinfo_panel.addObserver(this);
+		
 		bundle_panel = new BundlePanel(this);
 		bundled_items_panel = new BundledItemsPanel(this);
+		treePanel = new JPanel();
+		treePanel.setLayout(new BorderLayout());
 		
 		tabbedPane.addTab("FeedInfo", null, feedinfo_panel, "Does nothing !!!change_me_");
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
@@ -197,6 +212,9 @@ public class FeedGui extends JFrame {
 
 		tabbedPane.addTab("BundledItems", null, bundled_items_panel, "Still does nothing !!!change_me_");
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
+
+		tabbedPane.addTab("Tree", null, treePanel, "");
+		tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 
 		jp.add(jt, BorderLayout.CENTER);
 		
@@ -210,13 +228,22 @@ public class FeedGui extends JFrame {
 	
 	public void update() {
 		if (feedinfo_panel!=null) {
-			feedinfo_panel.update();
+			feedinfo_panel.update(currentFeed);
 		}
 		if (bundle_panel!=null) {
 			bundle_panel.update();
 		}
 		if (bundled_items_panel!=null) {
 			bundled_items_panel.update();
+		}
+		if (treePanel!=null) {
+			if (currentFeed != null) {
+				EditBusinessObjectTree tree = new EditBusinessObjectTree(currentFeed);
+				treePanel.removeAll();
+				treePanel.add(new JScrollPane(tree),BorderLayout.CENTER);
+			} else {
+				treePanel.removeAll();
+			}
 		}
 	}
 	

@@ -108,7 +108,10 @@ public class Feed extends BusinessObject {
 		return this;
 	}
 	
-	
+	public Feed setFeedInfo(FeedInfo feedinfo) {
+		this.feedinfo = feedinfo;
+		return this;
+	}
 	
 	public FeedInfo getFeedinfo() {
 		return feedinfo;

@@ -57,6 +57,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
+import org.fnppl.opensdx.common.BusinessCollection;
 import org.fnppl.opensdx.common.BusinessItem;
 import org.fnppl.opensdx.common.BusinessObject;
 import org.fnppl.opensdx.common.BusinessStringItem;
@@ -188,6 +189,24 @@ class MyTreeNode implements MutableTreeNode {
 				
 			};
 		}
+		if (xml instanceof BusinessCollection)  {
+			final BusinessCollection bc = (BusinessCollection)xml;
+			final int childCount = bc.size();
+			Enumeration e = new Enumeration<TreeNode>() {
+				private int pos = 0;
+				public boolean hasMoreElements() {
+					if (pos<childCount) return true;
+					return false;
+				}
+				public TreeNode nextElement() {
+					//TreeNode n = tree.get(list.get(pos));
+					TreeNode n = new MyTreeNode(me, tree, (XMLElementable)bc.get(pos));
+					pos++;
+					return n;
+				}
+				
+			};
+		}
 		return null;
 	}
 
@@ -205,6 +224,11 @@ class MyTreeNode implements MutableTreeNode {
 			TreeNode n = new MyTreeNode(me, tree, bo.getElements().get(childIndex));
 			return n;
 		}
+		if (xml instanceof BusinessCollection<?>)  {
+			BusinessCollection bc = (BusinessCollection)xml;
+			TreeNode n = new MyTreeNode(me, tree, (XMLElementable)bc.get(childIndex));
+			return n;
+		}
 		//System.out.println("ERROR in getChildAt");
 		return null;
 	}
@@ -214,6 +238,10 @@ class MyTreeNode implements MutableTreeNode {
 			BusinessObject bo = (BusinessObject)xml;
 			//System.out.println("childcount = "+bo.getOtherObjects().size());
 			return bo.getElements().size();
+		}
+		if (xml instanceof BusinessCollection<?>)  {
+			BusinessCollection bc = (BusinessCollection)xml;
+			return bc.size();
 		}
 		//System.out.println("no children");
 		return 0;
@@ -233,7 +261,7 @@ class MyTreeNode implements MutableTreeNode {
 	}
 
 	public boolean isLeaf() {
-		if (xml instanceof BusinessObject)  {
+		if (xml instanceof BusinessObject || xml instanceof BusinessCollection<?>)  {
 			return false;
 		}
 		return true;
