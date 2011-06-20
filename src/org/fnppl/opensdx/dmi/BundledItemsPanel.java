@@ -79,6 +79,17 @@ public class BundledItemsPanel extends JPanel {
 		c.anchor = GridBagConstraints.NORTHWEST;
 		
 		setLayout(gb);
+
+		JLabel l = new JLabel("Me is BundledItemsPanel.java");
+		add(l, c);
 		
+		
+
+		c.gridy++;
+		c.gridx++;
+		JLabel filler = new JLabel(); //invisible
+		c.weightx = 1.0;
+		c.weighty = 1.0;
+		add(filler, c);
 	}
 }
