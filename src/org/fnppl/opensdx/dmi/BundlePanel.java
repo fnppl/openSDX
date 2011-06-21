@@ -66,19 +66,15 @@ import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
 public class BundlePanel extends JPanel {
-	
-	
-	private FeedGui feedgui = null; 
 	private JPanel mainContent = null;
 	
-	public BundlePanel(FeedGui parent) {
+	public BundlePanel() {
 		super();
-		this.feedgui = parent; 
 		buildUi();
 	}
 	
 	public void update() {
-		Feed feed = feedgui.getCurrentFeed();
+		Feed feed = FeedGui.getInstance().getCurrentFeed();
 		if (feed != null && feed.getBundle(0)!=null) {
 			EditBusinessObjectTree tree = new EditBusinessObjectTree(feed.getBundle(0));
 			int anz = mainContent.getComponentCount();
