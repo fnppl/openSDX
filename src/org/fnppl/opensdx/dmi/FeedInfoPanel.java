@@ -58,20 +58,17 @@ import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 
 public class FeedInfoPanel extends JPanel {
-	
-	private FeedGui feedgui = null; 
 	private JPanel mainContent = null;
 	
-	public FeedInfoPanel(FeedGui parent) {
+	public FeedInfoPanel() {
 		super();
-		this.feedgui = parent; 
 		buildUi();
 	}
 	
 	
 	public void update() {
 		System.out.println("FeedInfoPanel::update");
-		Feed feed = feedgui.getCurrentFeed();
+		Feed feed = FeedGui.getInstance().getCurrentFeed();
 		if (feed != null && feed.getFeedinfo()!=null) {
 			EditBusinessObjectTree tree = new EditBusinessObjectTree(feed.getFeedinfo());
 			System.out.println("feedinfo not null");

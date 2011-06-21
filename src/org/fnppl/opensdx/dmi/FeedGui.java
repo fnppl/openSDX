@@ -199,8 +199,8 @@ public class FeedGui extends JFrame implements MyObserver {
 		feedinfo_panel = new PanelFeedInfo();
 		feedinfo_panel.addObserver(this);
 		
-		bundle_panel = new BundlePanel(this);
-		bundled_items_panel = new BundledItemsPanel(this);
+		bundle_panel = new BundlePanel();
+		bundled_items_panel = new BundledItemsPanel();
 		treePanel = new JPanel();
 		treePanel.setLayout(new BorderLayout());
 		
