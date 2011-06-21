@@ -64,6 +64,7 @@ public class IDs extends BusinessObject {
 	private BusinessStringItem finetunesid;			//COULD
 	private BusinessStringItem ourid;				//COULD
 	private BusinessStringItem yourid;				//COULD
+	private BusinessStringItem gvl;					//COULD
 
 
 	public static IDs make() {
@@ -78,6 +79,7 @@ public class IDs extends BusinessObject {
 		ids.finetunesid = null;
 		ids.ourid = null;
 		ids.yourid = null;
+		ids.gvl = null;
 		return ids;
 	}
 
@@ -100,6 +102,8 @@ public class IDs extends BusinessObject {
 		ids.finetunesid = BusinessStringItem.fromBusinessObject(bo, "finetunesid");
 		ids.ourid = BusinessStringItem.fromBusinessObject(bo, "ourid");
 		ids.yourid = BusinessStringItem.fromBusinessObject(bo, "yourid");
+		ids.gvl = BusinessStringItem.fromBusinessObject(bo, "gvl");
+		
 		
 		return ids;
 	}
@@ -154,7 +158,10 @@ public class IDs extends BusinessObject {
 		return this;
 	}
 
-
+	public IDs gvl(String gvl) {
+		this.gvl = new BusinessStringItem("gvl", gvl);
+		return this;
+	}
 
 
 	public String getGrid() {
@@ -206,6 +213,12 @@ public class IDs extends BusinessObject {
 		if (yourid==null) return null;
 		return yourid.getString();
 	}
+	
+	public String getGvl() {
+		if (gvl==null) return null;
+		return gvl.getString();
+	}
+	
 	public String getKeyname() {
 		return KEY_NAME;
 	}

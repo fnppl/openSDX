@@ -188,6 +188,11 @@ public class Bundle extends BusinessObject {
 		if (index<0 || index>=contributors.size()) return null;
 		return contributors.get(index);
 	}
+	
+	public int getContributorCount() {
+		if (contributors==null) return 0;
+		return contributors.size();
+	}
 
 	public BundleInformation getInformation() {
 		if (information==null) return null;

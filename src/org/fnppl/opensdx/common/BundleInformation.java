@@ -149,6 +149,11 @@ public class BundleInformation extends BusinessObject {
 		if (promotext==null || index<0 || index>=promotext.size()) return null;
 		return promotext.get(index).getAttribute("lang");
 	}
+	
+	public int getPromotextCount() {
+		if (promotext==null) return 0;
+		return promotext.size();
+	}
 
 	public String getTeasertext(int index) {
 		if (teasertext==null || index<0 || index>=teasertext.size()) return null;
@@ -158,7 +163,12 @@ public class BundleInformation extends BusinessObject {
 		if (teasertext==null || index<0 || index>=teasertext.size()) return null;
 		return teasertext.get(index).getAttribute("lang");
 	}
-
+	
+	public int getTeasertextCount() {
+		if (teasertext==null) return 0;
+		return teasertext.size();
+	}
+	
 	public String getPhysicalReleaseDatetimeText() {
 		if (physical_release_datetime==null) return null;
 		return physical_release_datetime.getDatetimeStringGMT();

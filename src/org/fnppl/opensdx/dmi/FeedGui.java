@@ -246,7 +246,9 @@ public class FeedGui extends JFrame implements MyObserver {
 			feedinfo_panel.update(currentFeed);
 		}
 		if (bundle_panel!=null) {
-			bundle_panel.update(currentFeed);
+			if (currentFeed.getBundle(0)!=null) {
+				bundle_panel.update(currentFeed.getBundle(0));
+			}
 		}
 		if (bundled_items_panel!=null) {
 			bundled_items_panel.update(currentFeed);
