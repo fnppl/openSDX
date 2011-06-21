@@ -163,12 +163,12 @@ public abstract class BusinessObject implements XMLElementable {
 		}
 		if (appendOtherObjects) {
 			for (XMLElementable ue : otherObjects) {
-				System.out.println("appending other object:: "+getKeyname()+"::"+ue.getKeyname());
+				//System.out.println("appending other object:: "+getKeyname()+"::"+ue.getKeyname());
 				result.add(ue);
 			}
 		} else {
 			for (XMLElementable ue : otherObjects) {
-				System.out.println("unhandled object:: "+getKeyname()+"::"+ue.getKeyname());
+				//System.out.println("unhandled object:: "+getKeyname()+"::"+ue.getKeyname());
 			}
 		}
 		return result;

@@ -64,7 +64,9 @@ import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.MyObserver;
+import org.fnppl.opensdx.gui.PanelBundle;
 import org.fnppl.opensdx.gui.PanelFeedInfo;
+import org.fnppl.opensdx.gui.PanelItems;
 import org.fnppl.opensdx.gui.SecurityMainFrame;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
@@ -83,10 +85,14 @@ public class FeedGui extends JFrame implements MyObserver {
 	private JTabbedPane jt = null;
 	private StatusBar status = null;
 	
-	BundlePanel bundle_panel = null;
+//	BundlePanel bundle_panel = null;
 //	FeedInfoPanel feedinfo_panel = null;
+//	BundledItemsPanel bundled_items_panel = null;
+	
 	PanelFeedInfo feedinfo_panel = null;
-	BundledItemsPanel bundled_items_panel = null;
+	PanelBundle bundle_panel = null;
+	PanelItems bundled_items_panel = null;
+	
 	JPanel treePanel = null;
 	
 	private Feed currentFeed = null;
@@ -196,18 +202,26 @@ public class FeedGui extends JFrame implements MyObserver {
 //		ImageIcon icon = createImageIcon("images/middle.gif");
 
 		//feedinfo_panel = new FeedInfoPanel(this);
+		//bundle_panel = new BundlePanel(this);
+		//bundled_items_panel = new BundledItemsPanel(this);
+		
 		feedinfo_panel = new PanelFeedInfo();
 		feedinfo_panel.addObserver(this);
 		
-		bundle_panel = new BundlePanel(this);
-		bundled_items_panel = new BundledItemsPanel(this);
+		bundle_panel = new PanelBundle();
+		bundle_panel.addObserver(this);
+		
+		
+		bundled_items_panel = new PanelItems();
+		bundled_items_panel.addObserver(this);
+		
 		treePanel = new JPanel();
 		treePanel.setLayout(new BorderLayout());
 		
 		tabbedPane.addTab("FeedInfo", null, feedinfo_panel, "Does nothing !!!change_me_");
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 
-		tabbedPane.addTab("Bundle", null, bundle_panel, "Does twice as much nothing !!!change_me_");
+		tabbedPane.addTab("Bundle", null,new JScrollPane(bundle_panel), "Does twice as much nothing !!!change_me_");
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
 		tabbedPane.addTab("BundledItems", null, bundled_items_panel, "Still does nothing !!!change_me_");
@@ -231,10 +245,10 @@ public class FeedGui extends JFrame implements MyObserver {
 			feedinfo_panel.update(currentFeed);
 		}
 		if (bundle_panel!=null) {
-			bundle_panel.update();
+			bundle_panel.update(currentFeed);
 		}
 		if (bundled_items_panel!=null) {
-			bundled_items_panel.update();
+			bundled_items_panel.update(currentFeed);
 		}
 		if (treePanel!=null) {
 			if (currentFeed != null) {

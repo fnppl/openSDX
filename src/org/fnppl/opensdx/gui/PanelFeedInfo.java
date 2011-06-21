@@ -45,13 +45,30 @@ package org.fnppl.opensdx.gui;
  * Free Documentation License" resp. in the file called "FDL.txt".
  *
  */
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.security.SecurityHelper;
 
 public class PanelFeedInfo extends javax.swing.JPanel {
 
     private Feed feed = null;
+    private DocumentListener changeListener;
+    private Vector<String[]> bindings;
+    private PanelFeedInfo me;
 
     private Vector<MyObserver> observers = new Vector<MyObserver>();
     public void addObserver(MyObserver observer) {
@@ -154,12 +171,151 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         text_receiver_serveripv4.setText("");
         select_authtype.setSelectedIndex(0);
         text_authsha1.setText("");
+
     }
 
 
     /** Creates new form PanelFeedInfo */
     public PanelFeedInfo() {
+        super();
+        me = this;
         initComponents();
+        initChangeListeners();
+    }
+
+    private void initChangeListeners() {
+        bindings = new Vector<String[]>();
+        bindings.add(new String[] {"text_feedid","getFeedID"});
+        bindings.add(new String[] {"text_creation_datetime","getCreationDatetimeString"});
+        bindings.add(new String[] {"text_effictive_datetime","getEffectiveDatetimeString"});
+
+        bindings.add(new String[] {"text_creator_userid","getCreatorUserID"});
+        bindings.add(new String[] {"text_creator_email","getCreatorEmail"});
+
+        bindings.add(new String[] {"text_sender_contractpartnerid","getSender.getContractPartnerID"});
+        bindings.add(new String[] {"text_sender_ourcontractpartnerid","getSender.getOurContractPartnerID"});
+        bindings.add(new String[] {"text_sender_email","getSender.getEmail"});
+
+        bindings.add(new String[] {"text_licensor_contractpartnerid","getLicensor.getContractPartnerID"});
+        bindings.add(new String[] {"text_licensor_ourcontractpartnerid","getLicensor.getOurContractPartnerID"});
+        bindings.add(new String[] {"text_licensor_email","getLicensor.getEmail"});
+
+        bindings.add(new String[] {"text_receiver_servername","getReceiver.getServername"});
+        bindings.add(new String[] {"text_receiver_serveripv4","getReceiver.getServerIPv4"});
+        bindings.add(new String[] {"text_authsha1","getReceiver.getAuthSha1Text"});
+
+        bindings.add(new String[] {"check_onlytest","getOnlyTest"});
+        bindings.add(new String[] {"select_receiver_type","getReceiver.getType"});
+        bindings.add(new String[] {"select_authtype","getReceiver.getAuthType"});
+
+
+        changeListener = new DocumentListener() {
+            public void removeUpdate(DocumentEvent e) {action();}
+            public void insertUpdate(DocumentEvent e) {action();}
+            public void changedUpdate(DocumentEvent e) {action();}
+            private void action() {
+                updateStatusColors();
+            }
+        };
+
+        text_feedid.getDocument().addDocumentListener(changeListener);
+        text_creation_datetime.getDocument().addDocumentListener(changeListener);
+        text_effictive_datetime.getDocument().addDocumentListener(changeListener);
+
+        text_creator_userid.getDocument().addDocumentListener(changeListener);
+        text_creator_email.getDocument().addDocumentListener(changeListener);
+
+        text_sender_contractpartnerid.getDocument().addDocumentListener(changeListener);
+        text_sender_ourcontractpartnerid.getDocument().addDocumentListener(changeListener);
+        text_sender_email.getDocument().addDocumentListener(changeListener);
+
+        text_licensor_contractpartnerid.getDocument().addDocumentListener(changeListener);
+        text_licensor_ourcontractpartnerid.getDocument().addDocumentListener(changeListener);
+        text_licensor_email.getDocument().addDocumentListener(changeListener);
+
+        text_receiver_servername.getDocument().addDocumentListener(changeListener);
+        text_receiver_serveripv4.getDocument().addDocumentListener(changeListener);
+        text_authsha1.getDocument().addDocumentListener(changeListener);
+
+        
+        ChangeListener chListen = new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                updateStatusColors();
+            }
+        };
+        ActionListener actionListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updateStatusColors();
+            }
+        };
+        check_onlytest.addChangeListener(chListen);
+        select_receiver_type.addActionListener(actionListener);
+        select_authtype.addActionListener(actionListener);
+    }
+
+    private void updateStatusColors() {
+        if (feed==null) return;
+            FeedInfo fi = feed.getFeedinfo();
+            if (fi==null) return;
+            for (String[] b : bindings) {
+                try {
+                    Field field = me.getClass().getDeclaredField(b[0]);
+                    field.setAccessible(true);
+                    Object ob = field.get(me);
+                    Method getter = null;
+                    Object getOb = null;
+                    if (b[1].contains(".")) {
+                      String[] t = b[1].split("[.]");
+                      getOb = fi;
+                      for (int i=0;i<t.length;i++) {
+                          getter = getOb.getClass().getMethod(t[i]);
+                          getOb = getter.invoke(getOb);
+                       }
+                    } else {
+                        getter = fi.getClass().getMethod(b[1]);
+                        getOb = getter.invoke(fi);
+                    }
+                    String text = null;
+                    Color color = Color.WHITE;
+                    if (ob instanceof JTextField) {
+                        text = ((JTextField)ob).getText();
+                    } else if (ob instanceof JComboBox) {
+                        text = ((JComboBox)ob).getSelectedItem().toString();
+                    } else if (ob instanceof JCheckBox) {
+                        if (((JCheckBox)ob).isSelected() != ((Boolean)getOb).booleanValue()) {
+                            color = Color.YELLOW;
+                        }
+                    }
+                    if (text !=null && getOb instanceof String) {
+                        boolean wrongFormat = false;
+                        if (field.getName().contains("datetime")) {
+                          try {
+                              SecurityHelper.parseDate(text);
+                          }  catch (Exception ex) {
+                              wrongFormat = true;
+                          }
+                        }
+                        if (wrongFormat) {
+                           color = Color.RED;
+                        } else {
+                            if (text.equals((String)getOb)) {
+                               color= Color.WHITE;
+                            } else {
+                                color = Color.YELLOW;
+                            }
+                        }
+                    }
+                    if (ob instanceof JTextField) {
+                        ((JTextField)ob).setBackground(color);
+                    } else if (ob instanceof JComboBox) {
+                        ((JComboBox)ob).setBackground(color);
+                    } else if (ob instanceof JCheckBox) {
+                        ((JCheckBox)ob).setBackground(color);
+                    }
+                } catch (Exception ex) {
+                  ex.printStackTrace();
+                }
+        }
     }
 
     /** This method is called from within the constructor to
@@ -356,6 +512,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
 
         jLabel12.setText("type");
 
+        select_receiver_type.setBackground(new java.awt.Color(242, 242, 240));
         select_receiver_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "openSDX fileserver", "ftp", "sftp", "ftps", "webdav" }));
         select_receiver_type.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
