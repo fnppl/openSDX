@@ -83,6 +83,31 @@ public class LicenseBasis extends BusinessObject {
 		return this;
 	}
 	
+	public long getTimeframeFrom() {
+		if (timeframe==null) throw new RuntimeException("value not set");
+		BusinessDatetimeItem d = timeframe.get(0);
+		return d.getDatetime();
+	}
+	
+	public String getTimeframeFromText() {
+		if (timeframe==null) throw new RuntimeException("value not set");
+		BusinessDatetimeItem d = timeframe.get(0);
+		return d.getDatetimeStringGMT();
+	}
+	
+	public long getTimeframeTo() {
+		if (timeframe==null) throw new RuntimeException("value not set");
+		BusinessDatetimeItem d = timeframe.get(1);
+		return d.getDatetime();
+	}
+	
+	public String getTimeframeToText() {
+		if (timeframe==null) throw new RuntimeException("value not set");
+		BusinessDatetimeItem d = timeframe.get(1);
+		return d.getDatetimeStringGMT();
+	}
+	
+	
 	public static LicenseBasis fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(KEY_NAME)) {
@@ -117,7 +142,11 @@ public class LicenseBasis extends BusinessObject {
 				}
 			};
 		}
-		pricing.setObject(new BusinessStringItem("pricecode", pricecode));
+		if (pricecode==null) {
+			pricing.removeObject("pricecode");
+		} else {
+			pricing.setObject(new BusinessStringItem("pricecode", pricecode));
+		}
 		return this;
 	}
 
@@ -129,7 +158,11 @@ public class LicenseBasis extends BusinessObject {
 				}
 			};
 		}
-		pricing.setObject(new BusinessStringItem("wholesale", wholesale));
+		if (wholesale==null) {
+			pricing.removeObject("wholesale");
+		} else {
+			pricing.setObject(new BusinessStringItem("wholesale", wholesale));
+		}
 		return this;
 	}
 	
@@ -137,6 +170,19 @@ public class LicenseBasis extends BusinessObject {
 		return KEY_NAME;
 	}
 	
+	public String getPricingWholesale() {
+		if (pricing == null || pricing.getBusinessStringItem("wholesale")==null) return null;
+		return pricing.getBusinessStringItem("wholesale").getString();
+	}
+	
+	public String getPricingPricecode() {
+		if (pricing == null || pricing.getBusinessStringItem("pricecode")==null) return null;
+		return pricing.getBusinessStringItem("pricecode").getString();
+	}
+	
+	public Territorial getTerritorial() {
+		return territorial;
+	}
 	
 	
 }

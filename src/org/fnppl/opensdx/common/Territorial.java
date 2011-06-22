@@ -1,4 +1,6 @@
 package org.fnppl.opensdx.common;
+
+import java.util.Vector;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -6,6 +8,8 @@ package org.fnppl.opensdx.common;
  * 
  * 							http://fnppl.org
 */
+
+import org.fnppl.opensdx.xml.ChildElementIterator;
 
 /*
  * Software license
@@ -55,7 +59,9 @@ package org.fnppl.opensdx.common;
 public class Territorial extends BusinessObject {
 
 	public static String KEY_NAME = "terrtorial";
+	public Vector<BusinessStringItem> territories = new Vector<BusinessStringItem>();
 	
+
 	private Territorial() {
 		
 	}
@@ -65,7 +71,59 @@ public class Territorial extends BusinessObject {
 		
 		return t;
 	}
+	
+	public static Territorial fromBusinessObject(BusinessObject bo) {
+		if (bo==null) return null;
+		if (!bo.getKeyname().equals(KEY_NAME)) {
+			bo = bo.handleBusinessObject(KEY_NAME);
+		}
+		if (bo==null) return null;
+		final Territorial t = new Territorial();
+		t.initFromBusinessObject(bo);
+		
+		new ChildElementIterator(bo, "promotext") {
+			public void processBusinessStringItem(BusinessStringItem item) {
+				t.territories.add(item);			}
+		};		
+		return t;
+	}
+	
+	public void allow(String territory) {
+		BusinessStringItem item = new BusinessStringItem("territory", territory);
+		item.setAttribute("type", "allow");
+		territories.add(item);
+	}
+	
+	public void disallow(String territory) {
+		BusinessStringItem item = new BusinessStringItem("territory", territory);
+		item.setAttribute("type", "disallow");
+		territories.add(item);
+	}
+	
+	public void remove(String territory) {
+		for (int i=0;i<territories.size();i++) {
+			if (territories.get(i).getString().equals(territory)) {
+				territories.remove(i);
+				i--;
+			}
+		}
+	}
+	
+	
 
+	public int getTerritorialCount() {
+		return territories.size();
+	}
+	
+	public String getTerritory(int index) {
+		if (index<0 || index >= territories.size()) return null;
+		return territories.get(index).getString();
+	}
+	
+	public boolean isTerritoryAllowed(int index) {
+		if (index<0 || index >= territories.size()) return false;
+		return territories.get(index).getAttribute("type").equals("allow");
+	}
 		
 	public String getKeyname() {
 		return KEY_NAME;

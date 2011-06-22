@@ -302,6 +302,15 @@ public abstract class BusinessObject implements XMLElementable {
 		addObject(object);
 	}
 	
+	public void removeObject(String keyname) {
+		for (int p=0;p<otherObjects.size();p++) {
+			if (otherObjects.get(p).getKeyname().equals(keyname)) {
+				otherObjects.remove(p);
+				return;
+			}
+		}
+	}
+	
 	public void addObject(XMLElementable object) {
 		otherObjects.add(object);
 	}
