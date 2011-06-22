@@ -78,6 +78,11 @@ public abstract class BusinessCollection<E> implements XMLElementable {
 		list.add(object);
 	}
 	
+	public void remove(int index) {
+		if (index<0 || index >= list.size()) return;
+		list.remove(index);
+	}
+	
 	public E get(int i) {
 		return list.get(i);
 	}

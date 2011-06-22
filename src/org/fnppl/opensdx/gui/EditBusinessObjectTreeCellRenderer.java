@@ -51,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -83,7 +84,7 @@ public class EditBusinessObjectTreeCellRenderer extends DefaultTreeCellRenderer 
 		
 		public Component getTreeCellRendererComponent(JTree tree, Object obValue, boolean sel, boolean expanded, boolean leaf, final int row, boolean hasFocus) {
 	    	
-			int sizeY = 20;
+			int sizeY = 25;
 	    	int sizeYp = sizeY+2;
 	    	int sizeX = 0;
 	    	
@@ -135,8 +136,14 @@ public class EditBusinessObjectTreeCellRenderer extends DefaultTreeCellRenderer 
 	    		int sizeX1 = 200;
 	    		final String origValue = s.getString();
 	    		
-	    		
-	    		JLabel lab  = new JLabel(s.getKeyname());
+	    		String lname = s.getKeyname();
+	    		Vector<String[]> atts = s.getAttributes();
+	    		if (atts!=null && atts.size()>0) {
+	    			for (String[] att : atts) {
+	    				lname +=  ", "+att[0]+"="+att[1];
+	    			}
+	    		}
+	    		JLabel lab  = new JLabel(lname);
 	    		lab.setPreferredSize(new Dimension(sizeX1,sizeY));
 	    		
 	    		JPanel p = new JPanel();

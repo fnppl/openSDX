@@ -146,6 +146,19 @@ public class FeedGui extends JFrame implements MyObserver {
 	}
 	
 	public void notifyChange() {
+		if (treePanel!=null) {
+			if (currentFeed != null) {
+				EditBusinessObjectTree tree = new EditBusinessObjectTree(currentFeed);
+				treePanel.removeAll();
+				treePanel.add(new JScrollPane(tree),BorderLayout.CENTER);
+			} else {
+				treePanel.removeAll();
+			}
+		}
+	}
+	
+	public void newEmptyFeed() {
+		currentFeed = FeedCreator.makeExampleFeed();
 		update();
 	}
 	
@@ -235,6 +248,8 @@ public class FeedGui extends JFrame implements MyObserver {
 		
 		StatusBar sb = makeStatusBar(); //also sets. class-variable.
 		jp.add(sb, BorderLayout.SOUTH);
+		
+		newEmptyFeed();
 	}
 	
 	public Feed getCurrentFeed() {
@@ -286,6 +301,11 @@ public class FeedGui extends JFrame implements MyObserver {
 		//		11. decrypt arbitrary files (AES)
 		//		12. Modify Keys (in terms of deletion/revokation/submission to server)
 
+		try {
+	        UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+	    } catch(Exception ex){
+	        System.out.println("Nimbus look & feel not available");
+	    }
 		FeedGui s = FeedGui.getInstance();
 		s.buildUi();
 		s.setVisible(true);

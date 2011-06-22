@@ -117,6 +117,11 @@ public class Bundle extends BusinessObject {
 		contributors.add(contributor);
 		return this;
 	}
+	
+	public void removeContributor(int index) {
+		if (contributors==null) return;
+		contributors.remove(index);
+	}
 
 	public Bundle ids(IDs ids) {
 		this.ids = ids;

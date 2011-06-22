@@ -1,21 +1,29 @@
 package org.fnppl.opensdx.gui;
 
+import java.awt.Color;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
+import javax.swing.text.Document;
 import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.common.Contributor;
 import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.InfoWWW;
+import org.fnppl.opensdx.security.SecurityHelper;
 
 
 /*
@@ -65,7 +73,7 @@ import org.fnppl.opensdx.common.InfoWWW;
 public class PanelBundle extends javax.swing.JPanel {
 
     private Bundle bundle = null;
-    private DocumentListener changeListener;
+    private MyDocListener changeListener;
     private Vector<String[]> bindings;
     private PanelFeedInfo me;
     private Vector<MyObserver> observers = new Vector<MyObserver>();
@@ -77,10 +85,14 @@ public class PanelBundle extends javax.swing.JPanel {
     /** Creates new form PanelBundle */
     public PanelBundle() {
         initComponents();
+        list_allowed_territories.setModel(new DefaultListModel());
+        list_disallowed_territories.setModel(new DefaultListModel());
+        initChangeListeners();
     }
 
     public static void main(String[] args) {
         Field[] fields = PanelBundle.class.getDeclaredFields();
+        
         //newEmpty
         System.out.println("public void newEmpty() {");
         for (Field f : fields) {
@@ -110,6 +122,30 @@ public class PanelBundle extends javax.swing.JPanel {
             }
         }
         System.out.println("}");
+        
+        System.out.println("Hallo");
+        
+        for (Field f : fields) {
+            f.setAccessible(true);
+            if (f.getName().startsWith("text_")) {
+                System.out.println("texts.add("+f.getName()+ ");");
+            }
+        }
+
+        for (Field f : fields) {
+            f.setAccessible(true);
+            if (f.getName().startsWith("text_")) {
+                System.out.println(f.getName()+ ".addKeyListener(keyAdapt);");
+            }
+        }
+
+        for (Field f : fields) {
+            f.setAccessible(true);
+            if (f.getName().startsWith("text_")) {
+                System.out.println("else if(text == "+f.getName()+ ") c.getIDs().contentauthid(t);");
+            }
+        }
+   
     }
 
     public void newEmpty() {
@@ -155,23 +191,7 @@ public class PanelBundle extends javax.swing.JPanel {
         text_name.setText(bundle.getName());
         text_version.setText(bundle.getVersion());
 
-        int anzContributors = bundle.getContributorCount();
-        DefaultListModel lm = new DefaultListModel();
-        for (int i=0;i<anzContributors;i++) {
-            lm.addElement(bundle.getContributor(i).getName()+" ("+bundle.getContributor(i).getType()+")");
-        }
-        list_contributors.setModel(lm);
-        list_contributors.setSelectedIndex(0);
-        list_contributors.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list_contributors.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                int sel = e.getFirstIndex();
-                if (sel>=0 && sel < bundle.getContributorCount()) {
-                    Contributor c = bundle.getContributor(sel);
-                    updateContributor(c);
-                }
-            }
-        });
+        updateContributorList();
 
         Contributor c = bundle.getContributor(0);
         updateContributor(c);
@@ -192,14 +212,24 @@ public class PanelBundle extends javax.swing.JPanel {
 
         //information
         BundleInformation info = bundle.getInformation();
-        if (info!=null) {
+        if (info != null) {
             text_physical_release_datetime.setText(info.getPhysicalReleaseDatetimeText());
             text_digital_release_date.setText(info.getDigitalReleaseDatetimeText());
             table_promotext.setModel(new PromotextTableModel(info));
         }
 
+        //License
+
         //text_license_from_datetime.setText(info.);
         //text_license_to_datetime.setText(bundle.get);
+        
+        changeListener.saveStates();
+    }
+
+    private void notifyChanges() {
+        for (MyObserver ob : observers) {
+            ob.notifyChange();
+        }
     }
 
     private void updateContributor(Contributor c) {
@@ -214,6 +244,12 @@ public class PanelBundle extends javax.swing.JPanel {
                 text_contributor_gvl.setText(cid.getGvl());
                 text_contributor_ourid.setText(cid.getOurid());
                 text_contributor_yourid.setText(cid.getYourid());
+            } else {
+                text_contributor_contentauthid.setText("");
+                text_contributor_finetunesid.setText("");
+                text_contributor_gvl.setText("");
+                text_contributor_ourid.setText("");
+                text_contributor_yourid.setText("");
             }
             InfoWWW www = c.getWww();
             if (www != null) {
@@ -223,33 +259,92 @@ public class PanelBundle extends javax.swing.JPanel {
                 text_contributor_phone.setText(www.getPhone());
                 text_contributor_twitter.setText(www.getTwitter());
                 check_contributor_publish_phone.setSelected(www.isPhonePublishable());
+            } else {
+                 text_contributor_facebook.setText("");
+                text_contributor_homepage.setText("");
+                text_contributor_myspace.setText("");
+                text_contributor_phone.setText("");
+                text_contributor_twitter.setText("");
+                check_contributor_publish_phone.setSelected(false);
             }
+        } else {
+            select_contributor_type.setSelectedItem(0);
+            text_contributor_name.setText("");
+            text_contributor_contentauthid.setText("");
+            text_contributor_finetunesid.setText("");
+            text_contributor_gvl.setText("");
+            text_contributor_ourid.setText("");
+            text_contributor_yourid.setText("");
+            text_contributor_facebook.setText("");
+            text_contributor_homepage.setText("");
+            text_contributor_myspace.setText("");
+            text_contributor_phone.setText("");
+            text_contributor_twitter.setText("");
+            check_contributor_publish_phone.setSelected(false);
         }
+        changeListener.saveState(text_contributor_name);
+        changeListener.saveState(text_contributor_contentauthid);
+        changeListener.saveState(text_contributor_finetunesid);
+        changeListener.saveState(text_contributor_gvl);
+        changeListener.saveState(text_contributor_homepage);
+        changeListener.saveState(text_contributor_myspace);
+        changeListener.saveState(text_contributor_ourid);
+        changeListener.saveState(text_contributor_phone);
+        changeListener.saveState(text_contributor_twitter);
+        changeListener.saveState(text_contributor_yourid);
+        changeListener.saveState(text_contributor_facebook);
+
+    }
+
+    private void updateContributorList() {
+        int anzContributors = bundle.getContributorCount();
+        DefaultListModel lm = new DefaultListModel();
+        for (int i = 0; i < anzContributors; i++) {
+            lm.addElement(bundle.getContributor(i).getName() + " (" + bundle.getContributor(i).getType() + ")");
+        }
+        list_contributors.setModel(lm);
+        list_contributors.setSelectedIndex(0);
+        list_contributors.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list_contributors.addListSelectionListener(new ListSelectionListener() {
+
+            public void valueChanged(ListSelectionEvent e) {
+                int sel = e.getFirstIndex();
+                if (sel >= 0 && sel < bundle.getContributorCount()) {
+                    Contributor c = bundle.getContributor(sel);
+                    updateContributor(c);
+                }
+            }
+        });
     }
 
     private class PromotextTableModel implements TableModel {
-        private BundleInformation info;
 
+        private BundleInformation info;
         private Vector<String[]> rows = new Vector<String[]>();
+        private Vector<int[]> index = new Vector<int[]>();
 
         private void updateRows() {
             rows = new Vector<String[]>();
             int countPromotext = info.getPromotextCount();
-            for (int i=0;i<countPromotext;i++) {
-                rows.add(new String[] {info.getPromotextLanguage(i),info.getPromotext(i),""});
+            for (int i = 0; i < countPromotext; i++) {
+                rows.add(new String[]{info.getPromotextLanguage(i), info.getPromotext(i), ""});
+                index.add(new int[] {i,-1});
             }
             int countTeasertext = info.getTeasertextCount();
-            for (int i=0;i<countTeasertext;i++) {
+            for (int i = 0; i < countTeasertext; i++) {
                 boolean add = true;
                 String lang = info.getTeasertextLanguage(i);
-                for (String[] row : rows) {
+                for (int j=0;j<rows.size();j++) {
+                    String[] row = rows.get(j);
                     if (row[0].equals(lang)) {
                         add = false;
                         row[2] = info.getTeasertext(i);
+                        index.get(j)[1] = i;
                     }
                 }
                 if (add) {
-                    rows.add(new String[] {lang,"",info.getTeasertext(i)});
+                    rows.add(new String[]{lang, "", info.getTeasertext(i)});
+                    index.add(new int[] {-1,i});
                 }
             }
         }
@@ -260,7 +355,7 @@ public class PanelBundle extends javax.swing.JPanel {
         }
 
         public int getRowCount() {
-           return rows.size();
+            return rows.size();
         }
 
         public int getColumnCount() {
@@ -268,8 +363,12 @@ public class PanelBundle extends javax.swing.JPanel {
         }
 
         public String getColumnName(int columnIndex) {
-            if (columnIndex==0) return "language";
-            if (columnIndex==1) return "promotext";
+            if (columnIndex == 0) {
+                return "language";
+            }
+            if (columnIndex == 1) {
+                return "promotext";
+            }
             return "teasertext";
         }
 
@@ -286,7 +385,29 @@ public class PanelBundle extends javax.swing.JPanel {
         }
 
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            rows.get(rowIndex)[columnIndex] = (String)aValue;
+            rows.get(rowIndex)[columnIndex] = (String) aValue;
+            if (columnIndex==1) {
+                int row = index.get(rowIndex)[0];
+                if (row==-1) {
+                    info.addPromotext((String)table_promotext.getValueAt(rowIndex, 0), (String)aValue);
+                } else {
+                    info.promotext(row, (String)aValue);
+                }
+            }
+            else if(columnIndex == 2) {
+                 int row = index.get(rowIndex)[1];
+                if (row==-1) {
+                    info.addTeasertext((String)table_promotext.getValueAt(rowIndex, 0), (String)aValue);
+                } else {
+                   info.teasertext(row, (String)aValue);
+                }
+            }
+            else if(columnIndex == 0) {
+                info.promotext_language(index.get(rowIndex)[0], (String)aValue);
+                info.teasertext_language(index.get(rowIndex)[1], (String)aValue);
+            }
+            org.fnppl.opensdx.xml.Document.buildDocument(info.toElement()).output(System.out);
+            notifyChanges();
         }
 
         public void addTableModelListener(TableModelListener l) {
@@ -295,6 +416,219 @@ public class PanelBundle extends javax.swing.JPanel {
 
         public void removeTableModelListener(TableModelListener l) {
             //throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+
+    private void initChangeListeners() {
+        Vector<JTextField> texts = new Vector<JTextField>();
+        texts.add(text_amazon);
+        texts.add(text_contentauthid);
+        texts.add(text_contributor_contentauthid);
+        texts.add(text_contributor_facebook);
+        texts.add(text_contributor_finetunesid);
+        texts.add(text_contributor_gvl);
+        texts.add(text_contributor_homepage);
+        texts.add(text_contributor_myspace);
+        texts.add(text_contributor_name);
+        texts.add(text_contributor_ourid);
+        texts.add(text_contributor_phone);
+        texts.add(text_contributor_twitter);
+        texts.add(text_contributor_yourid);
+        texts.add(text_digital_release_date);
+        texts.add(text_display_artist);
+        texts.add(text_displayname);
+        texts.add(text_finetunesid);
+        texts.add(text_grid);
+        texts.add(text_isbn);
+        texts.add(text_isrc);
+        texts.add(text_labelordernum);
+        texts.add(text_license_from_datetime);
+        texts.add(text_license_to_datetime);
+        texts.add(text_name);
+        texts.add(text_ourid);
+        texts.add(text_physical_release_datetime);
+        texts.add(text_upc);
+        texts.add(text_version);
+        texts.add(text_yourid);
+        changeListener = new MyDocListener(texts);
+        for (JTextField text : texts) {
+            text.getDocument().addDocumentListener(changeListener);
+        }
+
+        KeyAdapter keyAdapt = new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode() == KeyEvent.VK_ENTER){
+                    if (e.getComponent() instanceof JTextField) {
+                        JTextField text = (JTextField)e.getComponent();
+                        String t = text.getText();
+                        if (t.equals("")) t = null;
+                        int selCon = list_contributors.getSelectedIndex();
+                        Contributor c = null;
+                        if (selCon>=0 && selCon < bundle.getContributorCount()) {
+                            c = bundle.getContributor(selCon);
+                        }
+                        IDs ids = bundle.getIds();
+                        BundleInformation info = bundle.getInformation();
+                        try {
+                            if (text == text_amazon) bundle.getIds().amzn(t);
+                            else if(text == text_contentauthid) ids.contentauthid(t);
+                            else if(text == text_contributor_contentauthid) c.getIDs().contentauthid(t);
+                            else if(text == text_contributor_facebook) c.getWww().facebook(t);
+                            else if(text == text_contributor_finetunesid) c.getIDs().finetunesid(t);
+                            else if(text == text_contributor_gvl) c.getIDs().gvl(t);
+                            else if(text == text_contributor_homepage) c.getWww().homepage(t);
+                            else if(text == text_contributor_myspace) c.getWww().myspace(t);
+                            else if(text == text_contributor_name) {
+                                c.name(t);
+                                DefaultListModel lm = (DefaultListModel)list_contributors.getModel();
+                                lm.set(selCon, c.getName() + " (" + c.getType() + ")");
+                            }
+                            else if(text == text_contributor_ourid) c.getIDs().ourid(t);
+                            else if(text == text_contributor_phone) c.getWww().phone(t);
+                            else if(text == text_contributor_twitter) c.getWww().twitter(t);
+                            else if(text == text_contributor_yourid) c.getIDs().yourid(t);
+                            else if(text == text_digital_release_date) info.physical_release_datetime(SecurityHelper.parseDate(t));
+                            else if(text == text_display_artist) bundle.display_artist(t);
+                            else if(text == text_displayname) bundle.displayname(t);
+                            else if(text == text_finetunesid) ids.finetunesid(t);
+                            else if(text == text_grid) ids.grid(t);
+                            else if(text == text_isbn) ids.isbn(t);
+                            else if(text == text_isrc) ids.isrc(t);
+                            else if(text == text_labelordernum) ids.labelordernum(t);
+                            else if(text == text_license_from_datetime) bundle.getLicense_basis().timeframe_from_datetime(SecurityHelper.parseDate(t));
+                            else if(text == text_license_to_datetime) bundle.getLicense_basis().timeframe_to_datetime(SecurityHelper.parseDate(t));
+                            else if(text == text_name) bundle.name(t);
+                            else if(text == text_ourid) ids.ourid(t);
+                            else if(text == text_physical_release_datetime) info.physical_release_datetime(SecurityHelper.parseDate(t));
+                            else if(text == text_upc) ids.upc(t);
+                            else if(text == text_version) bundle.version(t);
+                            else if(text == text_yourid) ids.yourid(t);
+                            
+                            text.setBackground(Color.WHITE);
+                            changeListener.saveState(text);
+                            notifyChanges();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                        
+                    }
+                }
+                else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    if (e.getComponent() instanceof JTextField) {
+                        JTextField text = (JTextField)e.getComponent();
+                        text.setText(changeListener.getSavedText(text));
+                        text.setBackground(Color.WHITE);
+                    }
+                }
+            }
+        };
+        text_amazon.addKeyListener(keyAdapt);
+        text_contentauthid.addKeyListener(keyAdapt);
+        text_contributor_contentauthid.addKeyListener(keyAdapt);
+        text_contributor_facebook.addKeyListener(keyAdapt);
+        text_contributor_finetunesid.addKeyListener(keyAdapt);
+        text_contributor_gvl.addKeyListener(keyAdapt);
+        text_contributor_homepage.addKeyListener(keyAdapt);
+        text_contributor_myspace.addKeyListener(keyAdapt);
+        text_contributor_name.addKeyListener(keyAdapt);
+        text_contributor_ourid.addKeyListener(keyAdapt);
+        text_contributor_phone.addKeyListener(keyAdapt);
+        text_contributor_twitter.addKeyListener(keyAdapt);
+        text_contributor_yourid.addKeyListener(keyAdapt);
+        text_digital_release_date.addKeyListener(keyAdapt);
+        text_display_artist.addKeyListener(keyAdapt);
+        text_displayname.addKeyListener(keyAdapt);
+        text_finetunesid.addKeyListener(keyAdapt);
+        text_grid.addKeyListener(keyAdapt);
+        text_isbn.addKeyListener(keyAdapt);
+        text_isrc.addKeyListener(keyAdapt);
+        text_labelordernum.addKeyListener(keyAdapt);
+        text_license_from_datetime.addKeyListener(keyAdapt);
+        text_license_to_datetime.addKeyListener(keyAdapt);
+        text_name.addKeyListener(keyAdapt);
+        text_ourid.addKeyListener(keyAdapt);
+        text_physical_release_datetime.addKeyListener(keyAdapt);
+        text_upc.addKeyListener(keyAdapt);
+        text_version.addKeyListener(keyAdapt);
+        text_yourid.addKeyListener(keyAdapt);
+
+        /*
+
+
+        ChangeListener chListen = new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+        updateStatusColors();
+        }
+        };
+        ActionListener actionListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+        updateStatusColors();
+        }
+        };
+        check_onlytest.addChangeListener(chListen);
+        select_receiver_type.addActionListener(actionListener);
+        select_authtype.addActionListener(actionListener);
+         * */
+
+    }
+
+    private class MyDocListener implements DocumentListener {
+
+        private Vector<JTextField> texts;
+        private Vector<String> saves;
+
+        public MyDocListener(Vector<JTextField> texts) {
+            this.texts = texts;
+
+        }
+
+        public void saveStates() {
+            saves = new Vector<String>();
+            for (JTextField text : texts) {
+                saves.add(text.getText());
+                text.setBackground(Color.WHITE);
+            }
+        }
+
+        public void saveState(JTextField t) {
+            int ind = texts.indexOf(t);
+            if (ind<0 || saves == null) return;
+            saves.set(ind, t.getText());
+            t.setBackground(Color.WHITE);
+        }
+
+        public String getSavedText(JTextField t) {
+            int ind = texts.indexOf(t);
+            if (ind<0 || saves == null) return "";
+            return saves.get(ind);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            action(e);
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            action(e);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            action(e);
+        }
+
+        private void action(DocumentEvent e) {
+            if (saves == null) {
+                for (JTextField text : texts) {
+                    text.setBackground(Color.WHITE);
+                }
+            } else {
+                for (int i = 0; i < texts.size(); i++) {
+                    if (texts.get(i).getText().equals(saves.get(i))) {
+                        texts.get(i).setBackground(Color.WHITE);
+                    } else {
+                        texts.get(i).setBackground(Color.YELLOW);
+                    }
+                }
+            }
         }
     }
 
@@ -391,6 +725,8 @@ public class PanelBundle extends javax.swing.JPanel {
         bu_remove_allowed_territory = new javax.swing.JButton();
         bu_remove_disallowed_territory = new javax.swing.JButton();
         bu_add_disallowed_territory = new javax.swing.JButton();
+        text_new_territory = new javax.swing.JTextField();
+        jLabel23 = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(760, 989));
 
@@ -480,36 +816,33 @@ public class PanelBundle extends javax.swing.JPanel {
             .addGroup(panelIDsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelIDsLayout.createSequentialGroup()
-                        .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel8)
-                            .addComponent(jLabel10)
-                            .addComponent(jLabel9))
-                        .addGap(95, 95, 95)
-                        .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(text_isrc, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                            .addComponent(text_grid, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                            .addComponent(text_upc, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)))
-                    .addGroup(panelIDsLayout.createSequentialGroup()
-                        .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel11)
-                            .addComponent(jLabel12)
-                            .addComponent(jLabel13)
-                            .addComponent(jLabel14)
-                            .addComponent(jLabel15)
-                            .addComponent(jLabel16)
-                            .addComponent(jLabel17))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(text_labelordernum, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                            .addComponent(text_contentauthid, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                            .addComponent(text_amazon, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                            .addComponent(text_isbn, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                            .addComponent(text_finetunesid, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                            .addComponent(text_ourid, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                            .addComponent(text_yourid, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE))))
+                    .addComponent(jLabel11)
+                    .addComponent(jLabel12)
+                    .addComponent(jLabel13)
+                    .addComponent(jLabel14)
+                    .addComponent(jLabel15)
+                    .addComponent(jLabel16)
+                    .addComponent(jLabel17)
+                    .addComponent(jLabel8)
+                    .addComponent(jLabel10)
+                    .addComponent(jLabel9))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(text_isrc)
+                    .addComponent(text_amazon)
+                    .addComponent(text_isbn)
+                    .addComponent(text_upc)
+                    .addComponent(text_finetunesid)
+                    .addComponent(text_ourid)
+                    .addComponent(text_yourid, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
+                    .addComponent(text_grid)
+                    .addComponent(text_labelordernum)
+                    .addComponent(text_contentauthid))
                 .addContainerGap())
         );
+
+        panelIDsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {text_amazon, text_contentauthid, text_finetunesid, text_grid, text_isbn, text_isrc, text_labelordernum, text_ourid, text_upc, text_yourid});
+
         panelIDsLayout.setVerticalGroup(
             panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelIDsLayout.createSequentialGroup()
@@ -553,7 +886,7 @@ public class PanelBundle extends javax.swing.JPanel {
                 .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(text_yourid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel17))
-                .addContainerGap(256, Short.MAX_VALUE))
+                .addContainerGap(275, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("IDs", panelIDs);
@@ -565,6 +898,11 @@ public class PanelBundle extends javax.swing.JPanel {
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
+        list_contributors.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                list_contributorsValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(list_contributors);
 
         jLabel1.setText("name");
@@ -574,6 +912,11 @@ public class PanelBundle extends javax.swing.JPanel {
         jLabel2.setText("type");
 
         select_contributor_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "label", "composer", "texter", "writer", "conductor" }));
+        select_contributor_type.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                select_contributor_typeActionPerformed(evt);
+            }
+        });
 
         jLabel3.setFont(new java.awt.Font("Ubuntu", 1, 15));
         jLabel3.setText("List of contributors");
@@ -720,9 +1063,9 @@ public class PanelBundle extends javax.swing.JPanel {
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel22)
                     .addComponent(text_contributor_phone, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(check_contributor_publish_phone)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel29.setFont(new java.awt.Font("Ubuntu", 1, 15));
@@ -736,6 +1079,11 @@ public class PanelBundle extends javax.swing.JPanel {
         });
 
         bu_contributor_remove.setText("remove");
+        bu_contributor_remove.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_contributor_removeActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelContributorsLayout = new javax.swing.GroupLayout(panelContributors);
         panelContributors.setLayout(panelContributorsLayout);
@@ -751,24 +1099,26 @@ public class PanelBundle extends javax.swing.JPanel {
                         .addComponent(bu_contributor_remove))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(66, 66, 66)
-                .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel29)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(panelContributorsLayout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(20, 20, 20)
-                        .addComponent(select_contributor_type, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(panelContributorsLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(text_contributor_name, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2))
+                        .addGap(18, 18, 18)
+                        .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(select_contributor_type, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(text_contributor_name, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE))))
                 .addGap(376, 376, 376))
         );
 
         panelContributorsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {bu_contributor_add, bu_contributor_remove});
 
         panelContributorsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel3, jPanel4});
+
+        panelContributorsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {select_contributor_type, text_contributor_name});
 
         panelContributorsLayout.setVerticalGroup(
             panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -790,13 +1140,14 @@ public class PanelBundle extends javax.swing.JPanel {
                             .addComponent(jLabel1)
                             .addComponent(text_contributor_name, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(select_contributor_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(select_contributor_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2))
                         .addGap(18, 18, 18)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
-                .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Contributors", panelContributors);
@@ -840,6 +1191,11 @@ public class PanelBundle extends javax.swing.JPanel {
         });
 
         bu_remove_promotext.setText("remove");
+        bu_remove_promotext.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_remove_promotextActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelInformationLayout = new javax.swing.GroupLayout(panelInformation);
         panelInformation.setLayout(panelInformationLayout);
@@ -879,7 +1235,7 @@ public class PanelBundle extends javax.swing.JPanel {
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bu_add_promotext)
                     .addComponent(bu_remove_promotext))
-                .addContainerGap(315, Short.MAX_VALUE))
+                .addContainerGap(334, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Information", panelInformation);
@@ -890,37 +1246,33 @@ public class PanelBundle extends javax.swing.JPanel {
 
         jLabel33.setText("timeframe to");
 
-        text_license_from_datetime.setText("jTextField28");
-
-        text_license_to_datetime.setText("jTextField29");
-
-        jTextField30.setText("jTextField30");
-
         jLabel34.setText("pricing");
 
         list_disallowed_territories.setBorder(javax.swing.BorderFactory.createTitledBorder("Disallowed Territories"));
-        list_disallowed_territories.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         jScrollPane3.setViewportView(list_disallowed_territories);
 
         list_allowed_territories.setBorder(javax.swing.BorderFactory.createTitledBorder("Allowed Territories"));
-        list_allowed_territories.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         jScrollPane4.setViewportView(list_allowed_territories);
 
-        bu_add_allowed_territory.setText("add");
+        bu_add_allowed_territory.setText("add allowed");
+        bu_add_allowed_territory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_add_allowed_territoryActionPerformed(evt);
+            }
+        });
 
         bu_remove_allowed_territory.setText("remove");
 
         bu_remove_disallowed_territory.setText("remove");
 
-        bu_add_disallowed_territory.setText("add");
+        bu_add_disallowed_territory.setText("add disallowed");
+        bu_add_disallowed_territory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_add_disallowed_territoryActionPerformed(evt);
+            }
+        });
+
+        jLabel23.setText("new terrotory");
 
         javax.swing.GroupLayout panelLicenseLayout = new javax.swing.GroupLayout(panelLicense);
         panelLicense.setLayout(panelLicenseLayout);
@@ -930,19 +1282,23 @@ public class PanelBundle extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelLicenseLayout.createSequentialGroup()
+                        .addComponent(jLabel23)
+                        .addGap(44, 44, 44)
                         .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(panelLicenseLayout.createSequentialGroup()
                                 .addComponent(bu_add_allowed_territory)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(bu_remove_allowed_territory))
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 161, Short.MAX_VALUE))
+                            .addComponent(text_new_territory, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)))
+                    .addGroup(panelLicenseLayout.createSequentialGroup()
+                        .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(bu_remove_allowed_territory))
                         .addGap(26, 26, 26)
                         .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(panelLicenseLayout.createSequentialGroup()
+                            .addComponent(bu_remove_disallowed_territory)
+                            .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                 .addComponent(bu_add_disallowed_territory)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(bu_remove_disallowed_territory))
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(panelLicenseLayout.createSequentialGroup()
                         .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel33)
@@ -979,13 +1335,17 @@ public class PanelBundle extends javax.swing.JPanel {
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(bu_add_allowed_territory)
-                        .addComponent(bu_remove_allowed_territory))
-                    .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(bu_add_disallowed_territory)
-                        .addComponent(bu_remove_disallowed_territory)))
-                .addContainerGap(248, Short.MAX_VALUE))
+                    .addComponent(bu_remove_allowed_territory)
+                    .addComponent(bu_remove_disallowed_territory))
+                .addGap(18, 18, 18)
+                .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(text_new_territory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel23))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(bu_add_allowed_territory)
+                    .addComponent(bu_add_disallowed_territory))
+                .addContainerGap(185, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("License", panelLicense);
@@ -1010,25 +1370,103 @@ public class PanelBundle extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(panelBasics, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 667, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(179, Short.MAX_VALUE))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(160, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void check_contributor_publish_phoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_check_contributor_publish_phoneActionPerformed
-        // TODO add your handling code here:
+	 int selCon = list_contributors.getSelectedIndex();
+         Contributor c = null;
+         if (selCon>=0 && selCon < bundle.getContributorCount()) {
+            c = bundle.getContributor(selCon);
+            if (c.getWww()==null) {
+                c.www(InfoWWW.make());
+            }
+            if (c.getWww().getPhone()==null) {
+                c.getWww().phone("");
+            }
+            c.getWww().phone(c.getWww().getPhone(), check_contributor_publish_phone.isSelected());
+            notifyChanges();
+        }
     }//GEN-LAST:event_check_contributor_publish_phoneActionPerformed
 
     private void bu_contributor_addActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_contributor_addActionPerformed
-        // TODO add your handling code here:
+        if (bundle != null) {
+            Contributor c = Contributor.make("new contributor", "new type", IDs.make());
+            bundle.addContributor(c);
+            updateContributorList();
+            list_contributors.setSelectedIndex(list_contributors.getModel().getSize() - 1);
+            notifyChanges();
+        }
     }//GEN-LAST:event_bu_contributor_addActionPerformed
 
     private void bu_add_promotextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_promotextActionPerformed
-        if (bundle!=null && bundle.getInformation()!=null) {
+        if (bundle != null && bundle.getInformation() != null) {
             bundle.getInformation().addPromotext("NEW_LANG", "");
             table_promotext.setModel(new PromotextTableModel(bundle.getInformation()));
+            notifyChanges();
         }
     }//GEN-LAST:event_bu_add_promotextActionPerformed
+
+    private void bu_contributor_removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_contributor_removeActionPerformed
+        if (bundle != null) {
+            int sel = list_contributors.getSelectedIndex();
+            if (sel >= 0 && sel < bundle.getContributorCount()) {
+                bundle.removeContributor(sel);
+                updateContributorList();
+            }
+        }
+    }//GEN-LAST:event_bu_contributor_removeActionPerformed
+
+    private void list_contributorsValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_list_contributorsValueChanged
+        int selCon = list_contributors.getSelectedIndex();
+        Contributor c = null;
+         if (selCon>=0 && selCon < bundle.getContributorCount()) {
+            c = bundle.getContributor(selCon);
+            updateContributor(c);
+        }
+    }//GEN-LAST:event_list_contributorsValueChanged
+
+    private void select_contributor_typeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_contributor_typeActionPerformed
+        int selCon = list_contributors.getSelectedIndex();
+        Contributor c = null;
+         if (selCon>=0 && selCon < bundle.getContributorCount()) {
+            c = bundle.getContributor(selCon);
+            c.type((String)select_contributor_type.getSelectedItem());
+            DefaultListModel lm = (DefaultListModel)list_contributors.getModel();
+            lm.set(selCon, c.getName() + " (" + c.getType() + ")");
+            notifyChanges();
+        }
+    }//GEN-LAST:event_select_contributor_typeActionPerformed
+
+    private void bu_remove_promotextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_promotextActionPerformed
+        int sel = table_promotext.getSelectedRow();
+        if (sel>=0) {
+            String lang = (String)table_promotext.getValueAt(sel, 0);
+            bundle.getInformation().removePromotext(lang);
+            bundle.getInformation().removeTeasertext(lang);
+            table_promotext.setModel(new PromotextTableModel(bundle.getInformation()));
+            notifyChanges();
+        }
+    }//GEN-LAST:event_bu_remove_promotextActionPerformed
+
+    private void bu_add_allowed_territoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_allowed_territoryActionPerformed
+       if (!text_new_territory.getText().equals("")) {
+           DefaultListModel lm = (DefaultListModel)list_allowed_territories.getModel();
+           lm.addElement(text_new_territory.getText());
+           text_new_territory.setText("");
+        }
+    }//GEN-LAST:event_bu_add_allowed_territoryActionPerformed
+
+    private void bu_add_disallowed_territoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_disallowed_territoryActionPerformed
+         if (!text_new_territory.getText().equals("")) {
+           DefaultListModel lm = (DefaultListModel)list_disallowed_territories.getModel();
+           lm.addElement(text_new_territory.getText());
+           text_new_territory.setText("");
+        }
+    }//GEN-LAST:event_bu_add_disallowed_territoryActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bu_add_allowed_territory;
     private javax.swing.JButton bu_add_disallowed_territory;
@@ -1054,6 +1492,7 @@ public class PanelBundle extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
@@ -1114,6 +1553,7 @@ public class PanelBundle extends javax.swing.JPanel {
     private javax.swing.JTextField text_license_from_datetime;
     private javax.swing.JTextField text_license_to_datetime;
     private javax.swing.JTextField text_name;
+    private javax.swing.JTextField text_new_territory;
     private javax.swing.JTextField text_ourid;
     private javax.swing.JTextField text_physical_release_datetime;
     private javax.swing.JTextField text_upc;

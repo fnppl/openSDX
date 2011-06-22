@@ -91,6 +91,12 @@ public class BusinessItem implements XMLElementable {
 			}
 			this.value = value;
 			hasChanged = true;
+		} else {
+			if (value!=null && value!=null && !type.isInstance(value)) {
+				throw new RuntimeException("wrong type of value");
+			} else {
+				this.value = value;
+			}
 		}
 	}
 	

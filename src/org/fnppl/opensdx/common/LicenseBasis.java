@@ -73,6 +73,16 @@ public class LicenseBasis extends BusinessObject {
 		return b;
 	}
 	
+	public LicenseBasis timeframe_from_datetime(long timeframe_from_datetime) {
+		timeframe.get(0).setDatetime(timeframe_from_datetime);
+		return this;
+	}
+	
+	public LicenseBasis timeframe_to_datetime(long timeframe_to_datetime) {
+		timeframe.get(1).setDatetime(timeframe_to_datetime);
+		return this;
+	}
+	
 	public static LicenseBasis fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(KEY_NAME)) {

@@ -113,6 +113,26 @@ public class BundleInformation extends BusinessObject {
 		this.promotext.add(text);
 		return this;
 	}
+	
+	public void removePromotext(String lang) {
+		if (promotext==null) return;
+		for (int i=0;i<promotext.size();i++) {
+			if (getPromotextLanguage(i)!=null && getPromotextLanguage(i).equals(lang)) {
+				promotext.remove(i);
+				i--;
+			}
+		}
+	}
+	
+	public void removeTeasertext(String lang) {
+		if (teasertext==null) return;
+		for (int i=0;i<teasertext.size();i++) {
+			if (getTeasertextLanguage(i)!=null && getTeasertextLanguage(i).equals(lang)) {
+				teasertext.remove(i);
+				i--;
+			}
+		}
+	}
 
 	public BundleInformation addTeasertext(String language, String teasertext) {
 		BusinessStringItem text = new BusinessStringItem("teasertext", teasertext);
@@ -145,9 +165,19 @@ public class BundleInformation extends BusinessObject {
 		if (promotext==null || index<0 || index>=promotext.size()) return null;
 		return promotext.get(index).getString();
 	}
+	
 	public String getPromotextLanguage(int index) {
 		if (promotext==null || index<0 || index>=promotext.size()) return null;
 		return promotext.get(index).getAttribute("lang");
+	}
+	
+	public void promotext_language(int index, String language) {
+		if (promotext == null || index < 0 || index >= promotext.size()) return;
+		promotext.get(index).setAttribute("lang",language);
+	}
+	public void promotext(int index, String text) {
+		if (promotext == null || index < 0 || index >= promotext.size()) return;
+		promotext.get(index).setString(text);
 	}
 	
 	public int getPromotextCount() {
@@ -162,6 +192,15 @@ public class BundleInformation extends BusinessObject {
 	public String getTeasertextLanguage(int index) {
 		if (teasertext==null || index<0 || index>=teasertext.size()) return null;
 		return teasertext.get(index).getAttribute("lang");
+	}
+	
+	public void teasertext_language(int index, String language) {
+		if (teasertext == null || index < 0 || index >= teasertext.size()) return;
+		teasertext.get(index).setAttribute("lang",language);
+	}
+	public void teasertext(int index, String text) {
+		if (teasertext == null || index < 0 || index >= teasertext.size()) return;
+		teasertext.get(index).setString(text);
 	}
 	
 	public int getTeasertextCount() {
