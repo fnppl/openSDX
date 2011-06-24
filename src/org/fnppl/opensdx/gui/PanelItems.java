@@ -64,9 +64,9 @@ import org.fnppl.opensdx.security.SecurityHelper;
 
 /**
  *
- * @author neo
+ * @author Bertram Boedeker <bboedeker@gmx.de>
  */
-public class PanelItems extends javax.swing.JPanel implements MyObservable{
+public class PanelItems extends javax.swing.JPanel implements MyObservable, MyObserver {
 
 
     private Bundle bundle;
@@ -78,29 +78,40 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable{
     	observers.add(observer);
     }
 
+    public void notifyChange() {
+      //check for  changes in bundle contributors
+      if (bundle==null || bundle.getItemsCount()==0) return;
+      int selItem = list_items.getSelectedIndex();
+      if (selItem<0) return;
+      Item item = bundle.getItem(selItem);
+      updateContributorList(item);
+    }
+
      public void update(Bundle bundle) {
         this.bundle = bundle;
         updateItemList();
-
-        int count = bundle.getItemsCount();
-        if (count >0) {
-            list_items.setSelectedIndex(0);
-            Item item = bundle.getItem(0);
-            updateItem(item);
+        if (bundle!=null) {
+            int count = bundle.getItemsCount();
+            if (count >0) {
+                list_items.setSelectedIndex(0);
+                Item item = bundle.getItem(0);
+                updateItem(item);
+            }
         }
     }
 
      private void updateItemList() {
-        int anz = bundle.getItemsCount();
         DefaultListModel lm = new DefaultListModel();
-        for (int i = 0; i < anz; i++) {
-            lm.addElement("Item: "+bundle.getItem(i).getDisplayname());
-        }
+    	 if (bundle!=null) {
+	        int anz = bundle.getItemsCount();
+	        for (int i = 0; i < anz; i++) {
+	            lm.addElement("Item: "+bundle.getItem(i).getDisplayname());
+	        }
+    	 }
         list_items.setModel(lm);
         list_items.setSelectedIndex(0);
         list_items.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list_items.addListSelectionListener(new ListSelectionListener() {
-
             public void valueChanged(ListSelectionEvent e) {
                 int sel = e.getFirstIndex();
                 if (sel >= 0 && sel < bundle.getItemsCount()) {
@@ -108,7 +119,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable{
                     updateItem(item);
                 }
             }
-        });
+	 });
     }
 
 
@@ -178,17 +189,19 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable{
                     text_license_pricing.setText(lb.getPricingWholesale());
                     text_license_pricing.setEnabled(true);
                 }
-                Territorial t = lb.getTerritorial();
-                int count = t.getTerritorialCount();
                 DefaultListModel lmAllow = (DefaultListModel)list_allowed_territories.getModel();
                 DefaultListModel lmDisallow = (DefaultListModel)list_disallowed_territories.getModel();
                 lmAllow.removeAllElements();
                 lmDisallow.removeAllElements();
-                for (int i=0;i<count;i++) {
-                    if (t.isTerritoryAllowed(i)) {
-                        lmAllow.addElement(t.getTerritory(i));
-                    } else {
-                        lmDisallow.addElement(t.getTerritory(i));
+                Territorial t = lb.getTerritorial();
+                if (t!=null) {
+                int count = t.getTerritorialCount();
+                    for (int i=0;i<count;i++) {
+                        if (t.isTerritoryAllowed(i)) {
+                            lmAllow.addElement(t.getTerritory(i));
+                        } else {
+                            lmDisallow.addElement(t.getTerritory(i));
+                        }
                     }
                 }
             }
@@ -1141,7 +1154,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable{
         } else {
             panelLicense1.setVisible(true);
         }
-
+        notifyChanges();
     }//GEN-LAST:event_checkLicenseAsOnBundleActionPerformed
 
     private void checkLicenseAsOnBundleStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_checkLicenseAsOnBundleStateChanged
@@ -1345,5 +1358,6 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable{
     private javax.swing.JTextField text_version;
     private javax.swing.JTextField text_yourid;
     // End of variables declaration//GEN-END:variables
+
 
 }

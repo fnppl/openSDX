@@ -132,7 +132,23 @@ public class Bundle extends BusinessObject {
 	
 	public void removeContributor(int index) {
 		if (contributors==null) return;
-		contributors.remove(index);
+		Contributor c = contributors.get(index);
+		if (c!=null) {
+			contributors.remove(index);
+			//also remove this contributor in all items in this bundle
+			for (int i=0;i<getItemsCount();i++) {
+				Item item = items.get(i);
+				for (int j=0;j<item.getContributorCount();j++) {
+					Contributor ic = item.getContributor(j);
+					if (	ic.getName().equals(c.getName())
+							&& ic.getType().equals(c.getType())
+						) {
+						item.removeContributor(j);
+						j--;
+					}
+				}
+			}
+		}
 	}
 	
 	public int getContributorCount() {

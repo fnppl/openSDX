@@ -109,36 +109,43 @@ public class IDs extends BusinessObject {
 	}
 
 	public IDs grid(String grid) {
+		if (grid==null) this.grid=null;
 		this.grid = new BusinessStringItem("grid", grid);
 		return this;
 	}
 
 	public IDs upc(String upc) {
+		if (upc==null) this.upc=null;
 		this.upc = new BusinessStringItem("upc", upc);
 		return this;
 	}
 
 	public IDs isrc(String isrc) {
+		if (isrc==null) this.isrc=null;
 		this.isrc = new BusinessStringItem("isrc", isrc);
 		return this;
 	}
 
 	public IDs contentauthid(String contentauthid) {
+		if (contentauthid==null) this.contentauthid=null;
 		this.contentauthid = new BusinessStringItem("contentauthid", contentauthid);
 		return this;
 	}
 
-	public IDs labelordernum(String labelordernum) {
+	public IDs labelordernum(String labelordernum) { 
+		if (labelordernum==null) this.labelordernum=null;
 		this.labelordernum = new BusinessStringItem("labelordernum", labelordernum);
 		return this;
 	}
 
 	public IDs amzn(String amzn) {
+		if (amzn==null) this.amzn=null;
 		this.amzn = new BusinessStringItem("amzn", amzn);
 		return this;
 	}
 
 	public IDs isbn(String isbn) {
+		if (isbn==null) this.isbn=null;
 		this.isbn = new BusinessStringItem("isbn", isbn);
 		return this;
 	}
@@ -149,16 +156,19 @@ public class IDs extends BusinessObject {
 	}
 
 	public IDs ourid(String ourid) {
+		if (ourid==null) this.ourid=null;
 		this.ourid = new BusinessStringItem("ourid", ourid);
 		return this;
 	}
 
 	public IDs yourid(String yourid) {
+		if (yourid==null) this.yourid=null;
 		this.yourid = new BusinessStringItem("yourid", yourid);
 		return this;
 	}
 
 	public IDs gvl(String gvl) {
+		if (gvl==null) this.gvl=null;
 		this.gvl = new BusinessStringItem("gvl", gvl);
 		return this;
 	}

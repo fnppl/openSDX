@@ -169,7 +169,7 @@ public class EditBusinessObjectTreeCellRenderer extends DefaultTreeCellRenderer 
 	    		int sizeX2 = 350;
     			text.setPreferredSize(new Dimension(sizeX2,sizeY));
 	    		text.setFocusable(true);
-	    		text.setEditable(true);
+	    		text.setEditable(false); //TODO
 	    		
 	    		sizeX += sizeX2+20;
 	    		p.add(text);
@@ -219,6 +219,8 @@ public class EditBusinessObjectTreeCellRenderer extends DefaultTreeCellRenderer 
 	    		
 	    		sizeX += sizeX1+10;
 	    		JCheckBox cb = new JCheckBox(item.getKeyname());
+	    		cb.setSelected(item.getBoolean());
+	    		cb.setEnabled(false); //TODO
 	    		p.add(cb);
 	    		
 	    		if (sel) {
@@ -262,7 +264,7 @@ public class EditBusinessObjectTreeCellRenderer extends DefaultTreeCellRenderer 
 	    		int sizeX2 = 350;
     			text.setPreferredSize(new Dimension(sizeX2,sizeY));
 	    		text.setFocusable(true);
-	    		text.setEditable(true);
+	    		text.setEditable(false); //TODO
 	    		
 	    		sizeX += sizeX2+10;
 	    		p.add(text);

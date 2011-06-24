@@ -61,10 +61,12 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 
 import org.fnppl.opensdx.common.BundleInformation;
+import org.fnppl.opensdx.common.BusinessObject;
 import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.common.LicenseBasis;
+import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.MyObserver;
@@ -85,7 +87,9 @@ public class FeedGui extends JFrame implements MyObserver {
 		
 		return instance;
 	}
-
+	
+	private File lastDir = new File(System.getProperty("user.home"));
+	
 	private JTabbedPane jt = null;
 	private StatusBar status = null;
 	
@@ -124,11 +128,19 @@ public class FeedGui extends JFrame implements MyObserver {
 				if(cmd.equalsIgnoreCase("quit")) {
 					quit();
 				}
+				else if(cmd.equalsIgnoreCase("new feed")) {
+					newEmptyFeed();
+				}
+				else if(cmd.equalsIgnoreCase("open feed")) {
+					openFeed();
+				}
+				else if(cmd.equalsIgnoreCase("save feed")) {
+					saveFeed();
+				}
 				else if(cmd.equalsIgnoreCase("init example feed")) {
 					init_example_feed();
 				}
 			}
-
 		};
 
 		JMenuBar jb = new JMenuBar();
@@ -136,10 +148,29 @@ public class FeedGui extends JFrame implements MyObserver {
 		jb.add(jm);
 		JMenuItem jmi = null;
 
-		jmi = new JMenuItem("init example feed");
+		jmi = new JMenuItem("New Empty Feed");
+		jmi.setActionCommand("new feed");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+		
+		jmi = new JMenuItem("Open xml Feed ...");
+		jmi.setActionCommand("open feed");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+		
+		jmi = new JMenuItem("Save Feed to xml ...");
+		jmi.setActionCommand("save feed");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+		
+		jm.addSeparator();
+		
+		jmi = new JMenuItem("Init Example Feed");
 		jmi.setActionCommand("init example feed");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
+		
+		jm.addSeparator();
 		
 		jmi = new JMenuItem("Quit");
 		jmi.setActionCommand("quit");
@@ -148,6 +179,42 @@ public class FeedGui extends JFrame implements MyObserver {
 		
 		setJMenuBar(jb);
 	}
+	
+	public void openFeed() {
+		File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
+		if (f!=null && f.exists()) {
+			try {
+				Document doc = Document.fromFile(f);
+				Feed feed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
+				currentFeed = feed;
+				update();
+			} catch (Exception e) {
+				Dialogs.showMessage("ERROR, could not open feed in file\n"+f.getAbsolutePath());
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void saveFeed() {
+		if (currentFeed!=null) {
+			String name = "feed.xml";
+			String feedid = currentFeed.getFeedinfo().getFeedID();
+			if (feedid!=null && feedid.length()>0) {
+				name = feedid+".xml";
+			}
+			File f = Dialogs.chooseSaveFile("Select filename for saving feed", lastDir, name);
+			if (f!=null) {
+				try {
+					Document doc = Document.buildDocument(currentFeed.toElement());
+					doc.writeToFile(f);
+				} catch (Exception ex) {
+					Dialogs.showMessage("ERROR, feed could not be saved to "+f.getAbsolutePath());
+					ex.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	
 	public void notifyChange() {
 		if (treePanel!=null) {
@@ -162,7 +229,7 @@ public class FeedGui extends JFrame implements MyObserver {
 	}
 	
 	public void newEmptyFeed() {
-		currentFeed = FeedCreator.makeExampleFeed();
+		currentFeed = FeedCreator.makeEmptyFeedWithBundle();
 		update();
 	}
 	
@@ -223,26 +290,26 @@ public class FeedGui extends JFrame implements MyObserver {
 		//bundled_items_panel = new BundledItemsPanel(this);
 		
 		feedinfo_panel = new PanelFeedInfo();
-		feedinfo_panel.addObserver(this);
-		
-
 		bundle_panel = new PanelBundle();
-		bundle_panel.addObserver(this);
-		
-		
 		bundled_items_panel = new PanelItems();
+		
+		//observe changes
+		feedinfo_panel.addObserver(this);
+		bundle_panel.addObserver(this);
+		bundle_panel.addObserver(bundled_items_panel); //watch out for changes in contributors
 		bundled_items_panel.addObserver(this);
-
+		
+		
 		treePanel = new JPanel();
 		treePanel.setLayout(new BorderLayout());
 		
-		tabbedPane.addTab("FeedInfo", null, feedinfo_panel, "Does nothing !!!change_me_");
+		tabbedPane.addTab("FeedInfo", null, new JScrollPane(feedinfo_panel), "");
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 
-		tabbedPane.addTab("Bundle", null,new JScrollPane(bundle_panel), "Does twice as much nothing !!!change_me_");
+		tabbedPane.addTab("Bundle", null,new JScrollPane(bundle_panel), "");
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
-		tabbedPane.addTab("BundledItems", null, bundled_items_panel, "Still does nothing !!!change_me_");
+		tabbedPane.addTab("BundledItems", null, new JScrollPane(bundled_items_panel), "");
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 
 		tabbedPane.addTab("Tree", null, treePanel, "");
@@ -290,7 +357,6 @@ public class FeedGui extends JFrame implements MyObserver {
 				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
 						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)
 		);
-		
 		update();
 	}
 	

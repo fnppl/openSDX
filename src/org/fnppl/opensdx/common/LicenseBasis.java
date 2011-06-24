@@ -119,25 +119,27 @@ public class LicenseBasis extends BusinessObject {
 	}
 	
 	public long getTimeframeFrom() {
-		if (timeframe==null) throw new RuntimeException("value not set");
+		if (timeframe==null || timeframe.size()<2) throw new RuntimeException("value not set");
 		BusinessDatetimeItem d = timeframe.get(0);
 		return d.getDatetime();
 	}
 	
 	public String getTimeframeFromText() {
-		if (timeframe==null) throw new RuntimeException("value not set");
+		//if (timeframe==null) throw new RuntimeException("value not set");
+		if (timeframe==null || timeframe.size()<2) return null;
 		BusinessDatetimeItem d = timeframe.get(0);
 		return d.getDatetimeStringGMT();
 	}
 	
 	public long getTimeframeTo() {
-		if (timeframe==null) throw new RuntimeException("value not set");
+		if (timeframe==null || timeframe.size()<2) throw new RuntimeException("value not set");
 		BusinessDatetimeItem d = timeframe.get(1);
 		return d.getDatetime();
 	}
 	
 	public String getTimeframeToText() {
-		if (timeframe==null) throw new RuntimeException("value not set");
+		//if (timeframe==null) throw new RuntimeException("value not set");
+		if (timeframe==null || timeframe.size()<2) return null;
 		BusinessDatetimeItem d = timeframe.get(1);
 		return d.getDatetimeStringGMT();
 	}
@@ -166,6 +168,7 @@ public class LicenseBasis extends BusinessObject {
 			if (to!=null) b.timeframe.add(to);
 		}
 		b.pricing = bo.handleBusinessObject("pricing");
+		b.asOnBundle = BusinessStringItem.fromBusinessObject(bo, "as_on_bundle");
 		return b;
 	}
 	

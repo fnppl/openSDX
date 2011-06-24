@@ -236,18 +236,20 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
                 text_license_pricing.setText(lb.getPricingWholesale());
                 text_license_pricing.setEnabled(true);
             }
-            Territorial t = lb.getTerritorial();
-            int count = t.getTerritorialCount();
             DefaultListModel lmAllow = (DefaultListModel)list_allowed_territories.getModel();
             DefaultListModel lmDisallow = (DefaultListModel)list_disallowed_territories.getModel();
             lmAllow.removeAllElements();
             lmDisallow.removeAllElements();
-            for (int i=0;i<count;i++) {
-                if (t.isTerritoryAllowed(i)) {
-                    lmAllow.addElement(t.getTerritory(i));
-                } else {
-                    lmDisallow.addElement(t.getTerritory(i));
-                }
+            Territorial t = lb.getTerritorial();
+            if (t!=null) {
+            	int count = t.getTerritorialCount();
+	            for (int i=0;i<count;i++) {
+	                if (t.isTerritoryAllowed(i)) {
+	                    lmAllow.addElement(t.getTerritory(i));
+	                } else {
+	                    lmDisallow.addElement(t.getTerritory(i));
+	                }
+	            }
             }
         } else {
             text_license_from_datetime.setText("");

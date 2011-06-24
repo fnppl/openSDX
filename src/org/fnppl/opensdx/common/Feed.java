@@ -1,4 +1,6 @@
 package org.fnppl.opensdx.common;
+
+import org.fnppl.opensdx.xml.ChildElementIterator;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -61,6 +63,7 @@ public class Feed extends BusinessObject {
 				return "bundles";
 			}
 		};
+		
 		f.single_items = new BusinessCollection<Item>() {
 			public String getKeyname() {
 				return "items";
@@ -76,7 +79,7 @@ public class Feed extends BusinessObject {
 		}
 		if (bo==null) return null;
 		
-		Feed f = new Feed();
+		final Feed f = new Feed();
 		f.initFromBusinessObject(bo);
 		
 		try {
@@ -86,11 +89,24 @@ public class Feed extends BusinessObject {
 					return "bundles";
 				}
 			};
+			new ChildElementIterator(bo, "bundles","bundle") {
+				public void processBusinessObject(BusinessObject bo) {
+					f.addBundle(Bundle.fromBusinessObject(bo));
+				}
+			};
 			f.single_items = new BusinessCollection<Item>() {
 				public String getKeyname() {
 					return "items";
 				}
-			};			
+			};
+			new ChildElementIterator(bo, "items","item") {
+				public void processBusinessObject(BusinessObject bo) {
+					Item item = Item.fromBusinessObject(bo);
+					if (item!=null) {
+						f.addSingleItem(item);
+					}
+				}
+			};
 			return f;
 		} catch (Exception ex) {
 			ex.printStackTrace();

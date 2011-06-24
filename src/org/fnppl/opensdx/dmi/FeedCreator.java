@@ -109,6 +109,26 @@ public class FeedCreator {
 		return feed;
 	}
 	
+	public static Feed makeEmptyFeedWithBundle() {
+
+		ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER,"","");
+		ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR,"","");
+		
+		long now = System.currentTimeMillis();
+		FeedInfo feedinfo = FeedInfo.make(true, "", now, now, sender, licensor)
+									.creator("","");
+		
+		BundleInformation info = BundleInformation.make(now,now);
+		LicenseBasis license_basis = LicenseBasis.make(Territorial.make(), now, now);
+		LicenseSpecifics license_specifics = null;
+		Bundle bundle = Bundle.make(IDs.make(), "","", "", "", info, license_basis, license_specifics);
+		Feed feed = Feed.make(feedinfo)
+			.addBundle(bundle);
+		
+		
+		return feed;
+	}
+	
 	private FeedInfo makeExampleFeedInfo() {
 		
 		boolean onlytest =true;
