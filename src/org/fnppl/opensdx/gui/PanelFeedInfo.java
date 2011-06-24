@@ -48,6 +48,8 @@ package org.fnppl.opensdx.gui;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Vector;
@@ -65,9 +67,8 @@ import org.fnppl.opensdx.security.SecurityHelper;
 
 public class PanelFeedInfo extends javax.swing.JPanel {
 
-    private Feed feed = null;
-    private DocumentListener changeListener;
-    private Vector<String[]> bindings;
+    private FeedInfo feedinfo = null;
+    private DocumentChangeListener changeListener;
     private PanelFeedInfo me;
 
     private Vector<MyObserver> observers = new Vector<MyObserver>();
@@ -75,48 +76,50 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     	observers.add(observer);
     }
 
-    private void updateToFeed() {
-        if (feed!=null) {
-            long creation_datetime = -1L;
-            long effective_datetime = -1L;
-            try {
-               creation_datetime = SecurityHelper.parseDate(text_creation_datetime.getText());
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-            try {
-               effective_datetime = SecurityHelper.parseDate(text_effictive_datetime.getText());
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-            ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER, text_sender_contractpartnerid.getText(), text_sender_ourcontractpartnerid.getText());
-            sender.email(text_sender_email.getText());
+//    private void updateToFeed() {
+//        if (feed!=null) {
+//            long creation_datetime = -1L;
+//            long effective_datetime = -1L;
+//            try {
+//               creation_datetime = SecurityHelper.parseDate(text_creation_datetime.getText());
+//            } catch (Exception ex) {
+//                ex.printStackTrace();
+//            }
+//            try {
+//               effective_datetime = SecurityHelper.parseDate(text_effictive_datetime.getText());
+//            } catch (Exception ex) {
+//                ex.printStackTrace();
+//            }
+//            ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER, text_sender_contractpartnerid.getText(), text_sender_ourcontractpartnerid.getText());
+//            sender.email(text_sender_email.getText());
+//
+//            ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR, text_licensor_contractpartnerid.getText(), text_licensor_ourcontractpartnerid.getText());
+//            licensor.email(text_licensor_email.getText());
+//
+//            FeedInfo fi = FeedInfo.make(check_onlytest.isSelected(), text_feedid.getText(), creation_datetime, effective_datetime, sender, licensor);
+//            fi.creator(text_creator_email.getText(), text_creator_userid.getText());
+//
+//            byte[] authsha1 = null;
+//            try {
+//                authsha1 = SecurityHelper.HexDecoder.decode(text_authsha1.getText());
+//            } catch (Exception ex) {
+//                ex.printStackTrace();
+//            }
+//            fi.receiver(Receiver.make(select_receiver_type.getSelectedItem().toString(), text_receiver_servername.getText(),text_receiver_serveripv4.getText(), select_authtype.getSelectedItem().toString(), authsha1));
+//
+//            feed.setFeedInfo(fi);
+//            for (MyObserver ob : observers) {
+//                ob.notifyChange();
+//            }
+//        }
+//    }
 
-            ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR, text_licensor_contractpartnerid.getText(), text_licensor_ourcontractpartnerid.getText());
-            licensor.email(text_licensor_email.getText());
-
-            FeedInfo fi = FeedInfo.make(check_onlytest.isSelected(), text_feedid.getText(), creation_datetime, effective_datetime, sender, licensor);
-            fi.creator(text_creator_email.getText(), text_creator_userid.getText());
-
-            byte[] authsha1 = null;
-            try {
-                authsha1 = SecurityHelper.HexDecoder.decode(text_authsha1.getText());
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-            fi.receiver(Receiver.make(select_receiver_type.getSelectedItem().toString(), text_receiver_servername.getText(),text_receiver_serveripv4.getText(), select_authtype.getSelectedItem().toString(), authsha1));
-
-            feed.setFeedInfo(fi);
-            for (MyObserver ob : observers) {
-                ob.notifyChange();
-            }
+    public void update(FeedInfo fi) {
+        if (fi==null) {
+            long now = System.currentTimeMillis();
+            fi = FeedInfo.make(true, "",now, now, ContractPartner.make(ContractPartner.ROLE_SENDER, "", ""), ContractPartner.make(ContractPartner.ROLE_LICENSOR, "", ""));
         }
-    }
-
-    public void update(Feed feed) {
-        this.feed = feed;
-        FeedInfo fi = feed.getFeedinfo();
-
+        this.feedinfo = fi;
         check_onlytest.setSelected(fi.getOnlyTest());
         text_feedid.setText(fi.getFeedID());
         text_creation_datetime.setText(fi.getCreationDatetimeString());
@@ -139,14 +142,15 @@ public class PanelFeedInfo extends javax.swing.JPanel {
             text_receiver_servername.setText(r.getServername());
             text_receiver_serveripv4.setText(r.getServerIPv4());
             select_authtype.setSelectedItem(r.getAuthType());
-            text_authsha1.setText(r.getAuthSha1Text());
+            text_receiver_authsha1_bytes.setText(r.getAuthSha1Text());
         } else {
             select_receiver_type.setSelectedIndex(0);
             text_receiver_servername.setText("");
             text_receiver_serveripv4.setText("");
             select_authtype.setSelectedIndex(0);
-            text_authsha1.setText("");
+            text_receiver_authsha1_bytes.setText("");
         }
+        changeListener.saveStates();
     }
 
     private void newEmpty() {
@@ -170,7 +174,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         text_receiver_servername.setText("");
         text_receiver_serveripv4.setText("");
         select_authtype.setSelectedIndex(0);
-        text_authsha1.setText("");
+        text_receiver_authsha1_bytes.setText("");
 
     }
 
@@ -180,143 +184,157 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         super();
         me = this;
         initComponents();
+        text_creation_datetime.setName("datetime");
+        text_effictive_datetime.setName("datetime");
+        text_receiver_authsha1_bytes.setName("bytes");
         initChangeListeners();
     }
 
     private void initChangeListeners() {
-        bindings = new Vector<String[]>();
-        bindings.add(new String[] {"text_feedid","getFeedID"});
-        bindings.add(new String[] {"text_creation_datetime","getCreationDatetimeString"});
-        bindings.add(new String[] {"text_effictive_datetime","getEffectiveDatetimeString"});
+        Vector<JTextField> texts = new Vector<JTextField>();
+        texts.add(text_feedid);
+        texts.add(text_creation_datetime);
+        texts.add(text_effictive_datetime);
 
-        bindings.add(new String[] {"text_creator_userid","getCreatorUserID"});
-        bindings.add(new String[] {"text_creator_email","getCreatorEmail"});
+        texts.add(text_creator_userid);
+        texts.add(text_creator_email);
 
-        bindings.add(new String[] {"text_sender_contractpartnerid","getSender.getContractPartnerID"});
-        bindings.add(new String[] {"text_sender_ourcontractpartnerid","getSender.getOurContractPartnerID"});
-        bindings.add(new String[] {"text_sender_email","getSender.getEmail"});
+        texts.add(text_sender_contractpartnerid);
+        texts.add(text_sender_ourcontractpartnerid);
+        texts.add(text_sender_email);
 
-        bindings.add(new String[] {"text_licensor_contractpartnerid","getLicensor.getContractPartnerID"});
-        bindings.add(new String[] {"text_licensor_ourcontractpartnerid","getLicensor.getOurContractPartnerID"});
-        bindings.add(new String[] {"text_licensor_email","getLicensor.getEmail"});
+        texts.add(text_licensor_contractpartnerid);
+        texts.add(text_licensor_ourcontractpartnerid);
+        texts.add(text_licensor_email);
 
-        bindings.add(new String[] {"text_receiver_servername","getReceiver.getServername"});
-        bindings.add(new String[] {"text_receiver_serveripv4","getReceiver.getServerIPv4"});
-        bindings.add(new String[] {"text_authsha1","getReceiver.getAuthSha1Text"});
-
-        bindings.add(new String[] {"check_onlytest","getOnlyTest"});
-        bindings.add(new String[] {"select_receiver_type","getReceiver.getType"});
-        bindings.add(new String[] {"select_authtype","getReceiver.getAuthType"});
-
-
-        changeListener = new DocumentListener() {
-            public void removeUpdate(DocumentEvent e) {action();}
-            public void insertUpdate(DocumentEvent e) {action();}
-            public void changedUpdate(DocumentEvent e) {action();}
-            private void action() {
-                updateStatusColors();
-            }
-        };
-
-        text_feedid.getDocument().addDocumentListener(changeListener);
-        text_creation_datetime.getDocument().addDocumentListener(changeListener);
-        text_effictive_datetime.getDocument().addDocumentListener(changeListener);
-
-        text_creator_userid.getDocument().addDocumentListener(changeListener);
-        text_creator_email.getDocument().addDocumentListener(changeListener);
-
-        text_sender_contractpartnerid.getDocument().addDocumentListener(changeListener);
-        text_sender_ourcontractpartnerid.getDocument().addDocumentListener(changeListener);
-        text_sender_email.getDocument().addDocumentListener(changeListener);
-
-        text_licensor_contractpartnerid.getDocument().addDocumentListener(changeListener);
-        text_licensor_ourcontractpartnerid.getDocument().addDocumentListener(changeListener);
-        text_licensor_email.getDocument().addDocumentListener(changeListener);
-
-        text_receiver_servername.getDocument().addDocumentListener(changeListener);
-        text_receiver_serveripv4.getDocument().addDocumentListener(changeListener);
-        text_authsha1.getDocument().addDocumentListener(changeListener);
-
+        texts.add(text_receiver_servername);
+        texts.add(text_receiver_serveripv4);
+        texts.add(text_receiver_authsha1_bytes);
         
-        ChangeListener chListen = new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                updateStatusColors();
+        changeListener = new DocumentChangeListener(texts);
+
+         KeyAdapter keyAdapt = new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode() == KeyEvent.VK_ENTER){
+                    if (e.getComponent() instanceof JTextField) {
+                        JTextField text = (JTextField)e.getComponent();
+                        String t = text.getText();
+                        if (t.equals("")) t = null;
+
+                        try {
+                            if (text == text_feedid) feedinfo.feedid(t);
+                            else if(text == text_creation_datetime) feedinfo.creation_datetime(SecurityHelper.parseDate(t));
+                            else if(text == text_effictive_datetime) feedinfo.effective_datetime(SecurityHelper.parseDate(t));
+
+                            else if(text == text_sender_contractpartnerid) feedinfo.getSender().contractpartnerid(t);
+                            else if(text == text_sender_ourcontractpartnerid) feedinfo.getSender().ourcontractpartnerid(t);
+                            else if(text == text_sender_email) feedinfo.getSender().email(t);
+
+                            else if(text == text_licensor_contractpartnerid) feedinfo.getLicensor().contractpartnerid(t);
+                            else if(text == text_licensor_ourcontractpartnerid) feedinfo.getLicensor().ourcontractpartnerid(t);
+                            else if(text == text_licensor_email) feedinfo.getLicensor().email(t);
+
+                            else if(text == text_receiver_servername) feedinfo.getReceiver().servername(t);
+                            else if(text == text_receiver_serveripv4) feedinfo.getReceiver().serveripv4(t);
+                            else if(text == text_receiver_authsha1_bytes) feedinfo.getReceiver().authsha1(SecurityHelper.HexDecoder.decode(t));
+                            
+                            text.setBackground(Color.WHITE);
+                            changeListener.saveState(text);
+                            notifyChanges();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+
+                    }
+                }
+                else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    if (e.getComponent() instanceof JTextField) {
+                        JTextField text = (JTextField)e.getComponent();
+                        text.setText(changeListener.getSavedText(text));
+                        text.setBackground(Color.WHITE);
+                    }
+                }
             }
         };
-        ActionListener actionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                updateStatusColors();
-            }
-        };
-        check_onlytest.addChangeListener(chListen);
-        select_receiver_type.addActionListener(actionListener);
-        select_authtype.addActionListener(actionListener);
+
+
+        for (JTextField text : texts) {
+            text.getDocument().addDocumentListener(changeListener);
+            text.addKeyListener(keyAdapt);
+        }
+
     }
 
-    private void updateStatusColors() {
-        if (feed==null) return;
-            FeedInfo fi = feed.getFeedinfo();
-            if (fi==null) return;
-            for (String[] b : bindings) {
-                try {
-                    Field field = me.getClass().getDeclaredField(b[0]);
-                    field.setAccessible(true);
-                    Object ob = field.get(me);
-                    Method getter = null;
-                    Object getOb = null;
-                    if (b[1].contains(".")) {
-                      String[] t = b[1].split("[.]");
-                      getOb = fi;
-                      for (int i=0;i<t.length;i++) {
-                          getter = getOb.getClass().getMethod(t[i]);
-                          getOb = getter.invoke(getOb);
-                       }
-                    } else {
-                        getter = fi.getClass().getMethod(b[1]);
-                        getOb = getter.invoke(fi);
-                    }
-                    String text = null;
-                    Color color = Color.WHITE;
-                    if (ob instanceof JTextField) {
-                        text = ((JTextField)ob).getText();
-                    } else if (ob instanceof JComboBox) {
-                        text = ((JComboBox)ob).getSelectedItem().toString();
-                    } else if (ob instanceof JCheckBox) {
-                        if (((JCheckBox)ob).isSelected() != ((Boolean)getOb).booleanValue()) {
-                            color = Color.YELLOW;
-                        }
-                    }
-                    if (text !=null && getOb instanceof String) {
-                        boolean wrongFormat = false;
-                        if (field.getName().contains("datetime")) {
-                          try {
-                              SecurityHelper.parseDate(text);
-                          }  catch (Exception ex) {
-                              wrongFormat = true;
-                          }
-                        }
-                        if (wrongFormat) {
-                           color = Color.RED;
-                        } else {
-                            if (text.equals((String)getOb)) {
-                               color= Color.WHITE;
-                            } else {
-                                color = Color.YELLOW;
-                            }
-                        }
-                    }
-                    if (ob instanceof JTextField) {
-                        ((JTextField)ob).setBackground(color);
-                    } else if (ob instanceof JComboBox) {
-                        ((JComboBox)ob).setBackground(color);
-                    } else if (ob instanceof JCheckBox) {
-                        ((JCheckBox)ob).setBackground(color);
-                    }
-                } catch (Exception ex) {
-                  ex.printStackTrace();
-                }
+     private void notifyChanges() {
+        for (MyObserver ob : observers) {
+            ob.notifyChange();
         }
     }
+
+//    private void updateStatusColors() {
+//        if (feed==null) return;
+//            FeedInfo fi = feed.getFeedinfo();
+//            if (fi==null) return;
+//            for (String[] b : bindings) {
+//                try {
+//                    Field field = me.getClass().getDeclaredField(b[0]);
+//                    field.setAccessible(true);
+//                    Object ob = field.get(me);
+//                    Method getter = null;
+//                    Object getOb = null;
+//                    if (b[1].contains(".")) {
+//                      String[] t = b[1].split("[.]");
+//                      getOb = fi;
+//                      for (int i=0;i<t.length;i++) {
+//                          getter = getOb.getClass().getMethod(t[i]);
+//                          getOb = getter.invoke(getOb);
+//                       }
+//                    } else {
+//                        getter = fi.getClass().getMethod(b[1]);
+//                        getOb = getter.invoke(fi);
+//                    }
+//                    String text = null;
+//                    Color color = Color.WHITE;
+//                    if (ob instanceof JTextField) {
+//                        text = ((JTextField)ob).getText();
+//                    } else if (ob instanceof JComboBox) {
+//                        text = ((JComboBox)ob).getSelectedItem().toString();
+//                    } else if (ob instanceof JCheckBox) {
+//                        if (((JCheckBox)ob).isSelected() != ((Boolean)getOb).booleanValue()) {
+//                            color = Color.YELLOW;
+//                        }
+//                    }
+//                    if (text !=null && getOb instanceof String) {
+//                        boolean wrongFormat = false;
+//                        if (field.getName().contains("datetime")) {
+//                          try {
+//                              SecurityHelper.parseDate(text);
+//                          }  catch (Exception ex) {
+//                              wrongFormat = true;
+//                          }
+//                        }
+//                        if (wrongFormat) {
+//                           color = Color.RED;
+//                        } else {
+//                            if (text.equals((String)getOb)) {
+//                               color= Color.WHITE;
+//                            } else {
+//                                color = Color.YELLOW;
+//                            }
+//                        }
+//                    }
+//                    if (ob instanceof JTextField) {
+//                        ((JTextField)ob).setBackground(color);
+//                    } else if (ob instanceof JComboBox) {
+//                        ((JComboBox)ob).setBackground(color);
+//                    } else if (ob instanceof JCheckBox) {
+//                        ((JCheckBox)ob).setBackground(color);
+//                    }
+//                } catch (Exception ex) {
+//                  ex.printStackTrace();
+//                }
+//        }
+//    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -357,7 +375,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         jLabel16 = new javax.swing.JLabel();
         select_authtype = new javax.swing.JComboBox();
         jLabel17 = new javax.swing.JLabel();
-        text_authsha1 = new javax.swing.JTextField();
+        text_receiver_authsha1_bytes = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
         check_onlytest = new javax.swing.JCheckBox();
         jLabel2 = new javax.swing.JLabel();
@@ -367,11 +385,8 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         text_feedid = new javax.swing.JTextField();
         text_creation_datetime = new javax.swing.JTextField();
         text_effictive_datetime = new javax.swing.JTextField();
-        buNew = new javax.swing.JButton();
-        buSave = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder("Feedinfo"));
-        setPreferredSize(new java.awt.Dimension(760, 457));
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Creator"));
         jPanel1.setPreferredSize(new java.awt.Dimension(375, 113));
@@ -391,8 +406,8 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jLabel5))
                 .addGap(44, 44, 44)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_creator_email, javax.swing.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)
-                    .addComponent(text_creator_userid, javax.swing.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
+                    .addComponent(text_creator_email, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                    .addComponent(text_creator_userid, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -436,9 +451,9 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_licensor_email, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
-                    .addComponent(text_licensor_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
-                    .addComponent(text_licensor_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
+                    .addComponent(text_licensor_email, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                    .addComponent(text_licensor_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                    .addComponent(text_licensor_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -485,9 +500,9 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jLabel10))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_sender_email, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
-                    .addComponent(text_sender_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
-                    .addComponent(text_sender_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
+                    .addComponent(text_sender_email, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                    .addComponent(text_sender_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                    .addComponent(text_sender_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -512,7 +527,6 @@ public class PanelFeedInfo extends javax.swing.JPanel {
 
         jLabel12.setText("type");
 
-        select_receiver_type.setBackground(new java.awt.Color(242, 242, 240));
         select_receiver_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "openSDX fileserver", "ftp", "sftp", "ftps", "webdav" }));
         select_receiver_type.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -527,6 +541,11 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         jLabel16.setText("auth type");
 
         select_authtype.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "login", "keyfile", "token", "other" }));
+        select_authtype.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                select_authtypeActionPerformed(evt);
+            }
+        });
 
         jLabel17.setText("auth sha1");
 
@@ -548,10 +567,10 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(select_receiver_type, 0, 0, Short.MAX_VALUE)
-                            .addComponent(text_receiver_servername, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
-                            .addComponent(text_receiver_serveripv4, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
-                            .addComponent(select_authtype, javax.swing.GroupLayout.Alignment.TRAILING, 0, 306, Short.MAX_VALUE)
-                            .addComponent(text_authsha1, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))))
+                            .addComponent(text_receiver_servername, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+                            .addComponent(text_receiver_serveripv4, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+                            .addComponent(select_authtype, javax.swing.GroupLayout.Alignment.TRAILING, 0, 348, Short.MAX_VALUE)
+                            .addComponent(text_receiver_authsha1_bytes, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -581,7 +600,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel17)
-                    .addComponent(text_authsha1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(text_receiver_authsha1_bytes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         check_onlytest.setText("onlytest");
@@ -617,16 +636,22 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                         .addGap(1, 1, 1)
                         .addComponent(jLabel3)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(text_feedid, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                    .addComponent(text_creation_datetime, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                    .addComponent(text_effictive_datetime, javax.swing.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(check_onlytest, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(buNow, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(text_effictive_datetime, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(text_creation_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(buNow))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addComponent(text_feedid, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(check_onlytest, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)))
                 .addContainerGap())
         );
+
+        jPanel5Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {text_creation_datetime, text_effictive_datetime});
+
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
@@ -635,35 +660,27 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jLabel1)
                     .addComponent(text_feedid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(check_onlytest))
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(text_creation_datetime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(text_effictive_datetime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(buNow)
-                        .addGap(25, 25, 25))))
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addGap(17, 17, 17)
+                                .addComponent(jLabel2))
+                            .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(text_creation_datetime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addGap(17, 17, 17)
+                                .addComponent(jLabel3))
+                            .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(text_effictive_datetime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(buNow)))
+                .addContainerGap())
         );
-
-        buNew.setText("New");
-        buNew.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buNewActionPerformed(evt);
-            }
-        });
-
-        buSave.setText("Save");
-        buSave.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buSaveActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -671,25 +688,21 @@ public class PanelFeedInfo extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(299, 299, 299)
-                        .addComponent(buNew, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(buSave, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 479, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE))))
+                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel1, jPanel2, jPanel3});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel1, jPanel2, jPanel3, jPanel4, jPanel5});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -699,18 +712,11 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(208, 208, 208)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(buSave)
-                            .addComponent(buNew)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(17, 17, 17))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jPanel2, jPanel3});
@@ -718,11 +724,14 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void check_onlytestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_check_onlytestActionPerformed
-        // TODO add your handling code here:
+        if (feedinfo != null) {
+            feedinfo.only_test(check_onlytest.isSelected());
+            notifyChanges();
+        }
     }//GEN-LAST:event_check_onlytestActionPerformed
 
     private void text_licensor_contractpartneridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_text_licensor_contractpartneridActionPerformed
-        // TODO add your handling code here:
+       
     }//GEN-LAST:event_text_licensor_contractpartneridActionPerformed
 
     private void text_sender_contractpartneridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_text_sender_contractpartneridActionPerformed
@@ -730,28 +739,34 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     }//GEN-LAST:event_text_sender_contractpartneridActionPerformed
 
     private void select_receiver_typeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_receiver_typeActionPerformed
-        // TODO add your handling code here:
+        if (feedinfo != null && feedinfo.getReceiver()!=null) {
+            feedinfo.getReceiver().type((String)select_receiver_type.getSelectedItem());
+            notifyChanges();
+        }
     }//GEN-LAST:event_select_receiver_typeActionPerformed
 
     private void buNowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buNowActionPerformed
-        String s = SecurityHelper.getFormattedDate(System.currentTimeMillis());
+        long now = System.currentTimeMillis();
+        String s = SecurityHelper.getFormattedDate(now);
+        feedinfo.creation_datetime(now);
+        feedinfo.effective_datetime(now);
         text_creation_datetime.setText(s);
         text_effictive_datetime.setText(s);
+        changeListener.saveState(text_creation_datetime);
+        changeListener.saveState(text_effictive_datetime);
+
     }//GEN-LAST:event_buNowActionPerformed
 
-    private void buSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buSaveActionPerformed
-        updateToFeed();
-    }//GEN-LAST:event_buSaveActionPerformed
-
-    private void buNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buNewActionPerformed
-       newEmpty();
-    }//GEN-LAST:event_buNewActionPerformed
+    private void select_authtypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_authtypeActionPerformed
+        if (feedinfo != null && feedinfo.getReceiver()!=null) {
+            feedinfo.getReceiver().type((String)select_receiver_type.getSelectedItem());
+            notifyChanges();
+        }
+    }//GEN-LAST:event_select_authtypeActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton buNew;
     private javax.swing.JButton buNow;
-    private javax.swing.JButton buSave;
     private javax.swing.JCheckBox check_onlytest;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -777,7 +792,6 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JComboBox select_authtype;
     private javax.swing.JComboBox select_receiver_type;
-    private javax.swing.JTextField text_authsha1;
     private javax.swing.JTextField text_creation_datetime;
     private javax.swing.JTextField text_creator_email;
     private javax.swing.JTextField text_creator_userid;
@@ -786,6 +800,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     private javax.swing.JTextField text_licensor_contractpartnerid;
     private javax.swing.JTextField text_licensor_email;
     private javax.swing.JTextField text_licensor_ourcontractpartnerid;
+    private javax.swing.JTextField text_receiver_authsha1_bytes;
     private javax.swing.JTextField text_receiver_serveripv4;
     private javax.swing.JTextField text_receiver_servername;
     private javax.swing.JTextField text_sender_contractpartnerid;

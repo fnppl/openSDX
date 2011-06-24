@@ -65,7 +65,6 @@ public class BundleInformation extends BusinessObject {
 	private BusinessIntegerItem playlength;								//MUST for media files
 	private BundleRelatedInformation related;							//SHOULD
 
-
 	public static BundleInformation make(long physical_release_datetime, long digital_release_datetime) {
 		BundleInformation information = new BundleInformation();
 		information.promotext = new Vector<BusinessStringItem>();

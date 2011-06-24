@@ -73,10 +73,10 @@ import org.fnppl.opensdx.security.SecurityHelper;
  * Free Documentation License" resp. in the file called "FDL.txt".
  *
  */
-public class PanelBundle extends javax.swing.JPanel {
+public class PanelBundle extends javax.swing.JPanel implements MyObservable {
 
     private Bundle bundle = null;
-    private MyDocListener changeListener;
+    private DocumentChangeListener changeListener;
     private Vector<String[]> bindings;
     private PanelFeedInfo me;
     private Vector<MyObserver> observers = new Vector<MyObserver>();
@@ -219,7 +219,7 @@ public class PanelBundle extends javax.swing.JPanel {
         if (info != null) {
             text_physical_release_datetime.setText(info.getPhysicalReleaseDatetimeText());
             text_digital_release_date.setText(info.getDigitalReleaseDatetimeText());
-            table_promotext.setModel(new PromotextTableModel(info));
+            table_promotext.setModel(new PromotextTableModel(info,this));
         }
 
         //License
@@ -264,7 +264,7 @@ public class PanelBundle extends javax.swing.JPanel {
         changeListener.saveStates();
     }
 
-    private void notifyChanges() {
+    public void notifyChanges() {
         for (MyObserver ob : observers) {
             ob.notifyChange();
         }
@@ -355,108 +355,6 @@ public class PanelBundle extends javax.swing.JPanel {
         });
     }
 
-    private class PromotextTableModel implements TableModel {
-
-        private BundleInformation info;
-        private Vector<String[]> rows = new Vector<String[]>();
-        private Vector<int[]> index = new Vector<int[]>();
-
-        private void updateRows() {
-            rows = new Vector<String[]>();
-            int countPromotext = info.getPromotextCount();
-            for (int i = 0; i < countPromotext; i++) {
-                rows.add(new String[]{info.getPromotextLanguage(i), info.getPromotext(i), ""});
-                index.add(new int[] {i,-1});
-            }
-            int countTeasertext = info.getTeasertextCount();
-            for (int i = 0; i < countTeasertext; i++) {
-                boolean add = true;
-                String lang = info.getTeasertextLanguage(i);
-                for (int j=0;j<rows.size();j++) {
-                    String[] row = rows.get(j);
-                    if (row[0].equals(lang)) {
-                        add = false;
-                        row[2] = info.getTeasertext(i);
-                        index.get(j)[1] = i;
-                    }
-                }
-                if (add) {
-                    rows.add(new String[]{lang, "", info.getTeasertext(i)});
-                    index.add(new int[] {-1,i});
-                }
-            }
-        }
-
-        public PromotextTableModel(BundleInformation info) {
-            this.info = info;
-            updateRows();
-        }
-
-        public int getRowCount() {
-            return rows.size();
-        }
-
-        public int getColumnCount() {
-            return 3;
-        }
-
-        public String getColumnName(int columnIndex) {
-            if (columnIndex == 0) {
-                return "language";
-            }
-            if (columnIndex == 1) {
-                return "promotext";
-            }
-            return "teasertext";
-        }
-
-        public Class<?> getColumnClass(int columnIndex) {
-            return String.class;
-        }
-
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return true;
-        }
-
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            return rows.get(rowIndex)[columnIndex];
-        }
-
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            rows.get(rowIndex)[columnIndex] = (String) aValue;
-            if (columnIndex==1) {
-                int row = index.get(rowIndex)[0];
-                if (row==-1) {
-                    info.addPromotext((String)table_promotext.getValueAt(rowIndex, 0), (String)aValue);
-                } else {
-                    info.promotext(row, (String)aValue);
-                }
-            }
-            else if(columnIndex == 2) {
-                 int row = index.get(rowIndex)[1];
-                if (row==-1) {
-                    info.addTeasertext((String)table_promotext.getValueAt(rowIndex, 0), (String)aValue);
-                } else {
-                   info.teasertext(row, (String)aValue);
-                }
-            }
-            else if(columnIndex == 0) {
-                info.promotext_language(index.get(rowIndex)[0], (String)aValue);
-                info.teasertext_language(index.get(rowIndex)[1], (String)aValue);
-            }
-            org.fnppl.opensdx.xml.Document.buildDocument(info.toElement()).output(System.out);
-            notifyChanges();
-        }
-
-        public void addTableModelListener(TableModelListener l) {
-            //throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void removeTableModelListener(TableModelListener l) {
-            //throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-
     private void initChangeListeners() {
         Vector<JTextField> texts = new Vector<JTextField>();
         texts.add(text_amazon);
@@ -489,7 +387,7 @@ public class PanelBundle extends javax.swing.JPanel {
         texts.add(text_version);
         texts.add(text_yourid);
         texts.add(text_license_pricing);
-        changeListener = new MyDocListener(texts);
+        changeListener = new DocumentChangeListener(texts);
         for (JTextField text : texts) {
             text.getDocument().addDocumentListener(changeListener);
         }
@@ -615,66 +513,6 @@ public class PanelBundle extends javax.swing.JPanel {
 
     }
 
-    private class MyDocListener implements DocumentListener {
-
-        private Vector<JTextField> texts;
-        private Vector<String> saves;
-
-        public MyDocListener(Vector<JTextField> texts) {
-            this.texts = texts;
-
-        }
-
-        public void saveStates() {
-            saves = new Vector<String>();
-            for (JTextField text : texts) {
-                saves.add(text.getText());
-                text.setBackground(Color.WHITE);
-            }
-        }
-
-        public void saveState(JTextField t) {
-            int ind = texts.indexOf(t);
-            if (ind<0 || saves == null) return;
-            saves.set(ind, t.getText());
-            t.setBackground(Color.WHITE);
-        }
-
-        public String getSavedText(JTextField t) {
-            int ind = texts.indexOf(t);
-            if (ind<0 || saves == null) return "";
-            return saves.get(ind);
-        }
-
-        public void removeUpdate(DocumentEvent e) {
-            action(e);
-        }
-
-        public void insertUpdate(DocumentEvent e) {
-            action(e);
-        }
-
-        public void changedUpdate(DocumentEvent e) {
-            action(e);
-        }
-
-        private void action(DocumentEvent e) {
-            if (saves == null) {
-                for (JTextField text : texts) {
-                    text.setBackground(Color.WHITE);
-                }
-            } else {
-                for (int i = 0; i < texts.size(); i++) {
-                    if (texts.get(i).getText().equals(saves.get(i))) {
-                        texts.get(i).setBackground(Color.WHITE);
-                    } else {
-                        texts.get(i).setBackground(Color.YELLOW);
-                    }
-                }
-            }
-        }
-    }
-
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -689,6 +527,7 @@ public class PanelBundle extends javax.swing.JPanel {
         jLabel7 = new javax.swing.JLabel();
         text_display_artist = new javax.swing.JTextField();
         jTabbedPane1 = new javax.swing.JTabbedPane();
+        panelIDsBig = new javax.swing.JPanel();
         panelIDs = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         text_grid = new javax.swing.JTextField();
@@ -872,21 +711,18 @@ public class PanelBundle extends javax.swing.JPanel {
                     .addComponent(jLabel9))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_isrc)
-                    .addComponent(text_amazon)
-                    .addComponent(text_isbn)
-                    .addComponent(text_upc)
-                    .addComponent(text_finetunesid)
-                    .addComponent(text_ourid)
-                    .addComponent(text_yourid, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                    .addComponent(text_grid)
-                    .addComponent(text_labelordernum)
-                    .addComponent(text_contentauthid))
+                    .addComponent(text_isrc, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                    .addComponent(text_amazon, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                    .addComponent(text_isbn, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                    .addComponent(text_upc, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                    .addComponent(text_finetunesid, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                    .addComponent(text_ourid, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                    .addComponent(text_yourid, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                    .addComponent(text_labelordernum, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                    .addComponent(text_contentauthid, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                    .addComponent(text_grid, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE))
                 .addContainerGap())
         );
-
-        panelIDsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {text_amazon, text_contentauthid, text_finetunesid, text_grid, text_isbn, text_isrc, text_labelordernum, text_ourid, text_upc, text_yourid});
-
         panelIDsLayout.setVerticalGroup(
             panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelIDsLayout.createSequentialGroup()
@@ -930,10 +766,27 @@ public class PanelBundle extends javax.swing.JPanel {
                 .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(text_yourid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel17))
-                .addContainerGap(275, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("IDs", panelIDs);
+        javax.swing.GroupLayout panelIDsBigLayout = new javax.swing.GroupLayout(panelIDsBig);
+        panelIDsBig.setLayout(panelIDsBigLayout);
+        panelIDsBigLayout.setHorizontalGroup(
+            panelIDsBigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelIDsBigLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(panelIDs, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(288, Short.MAX_VALUE))
+        );
+        panelIDsBigLayout.setVerticalGroup(
+            panelIDsBigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelIDsBigLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(panelIDs, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(251, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("IDs", panelIDsBig);
 
         panelContributors.setBorder(javax.swing.BorderFactory.createTitledBorder("Contributors"));
 
@@ -1373,7 +1226,7 @@ public class PanelBundle extends javax.swing.JPanel {
                                 .addComponent(text_license_pricing, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(text_license_to_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
                             .addComponent(text_license_from_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))))
-                .addGap(251, 251, 251))
+                .addGap(599, 599, 599))
         );
 
         panelLicenseLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jScrollPane3, jScrollPane4});
@@ -1469,7 +1322,7 @@ public class PanelBundle extends javax.swing.JPanel {
     private void bu_add_promotextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_promotextActionPerformed
         if (bundle != null && bundle.getInformation() != null) {
             bundle.getInformation().addPromotext("NEW_LANG", "");
-            table_promotext.setModel(new PromotextTableModel(bundle.getInformation()));
+            table_promotext.setModel(new PromotextTableModel(bundle.getInformation(),this));
             notifyChanges();
         }
     }//GEN-LAST:event_bu_add_promotextActionPerformed
@@ -1511,7 +1364,7 @@ public class PanelBundle extends javax.swing.JPanel {
             String lang = (String)table_promotext.getValueAt(sel, 0);
             bundle.getInformation().removePromotext(lang);
             bundle.getInformation().removeTeasertext(lang);
-            table_promotext.setModel(new PromotextTableModel(bundle.getInformation()));
+            table_promotext.setModel(new PromotextTableModel(bundle.getInformation(),this));
             notifyChanges();
         }
     }//GEN-LAST:event_bu_remove_promotextActionPerformed
@@ -1632,6 +1485,7 @@ public class PanelBundle extends javax.swing.JPanel {
     private javax.swing.JPanel panelBasics;
     private javax.swing.JPanel panelContributors;
     private javax.swing.JPanel panelIDs;
+    private javax.swing.JPanel panelIDsBig;
     private javax.swing.JPanel panelInformation;
     private javax.swing.JPanel panelLicense;
     private javax.swing.JScrollPane scroll_table_promotext;

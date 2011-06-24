@@ -60,7 +60,11 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.common.Feed;
+import org.fnppl.opensdx.common.IDs;
+import org.fnppl.opensdx.common.Item;
+import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.MyObserver;
@@ -258,7 +262,7 @@ public class FeedGui extends JFrame implements MyObserver {
 	
 	public void update() {
 		if (feedinfo_panel!=null) {
-			feedinfo_panel.update(currentFeed);
+			feedinfo_panel.update(currentFeed.getFeedinfo());
 		}
 		if (bundle_panel!=null) {
 			if (currentFeed.getBundle(0)!=null) {
@@ -266,7 +270,7 @@ public class FeedGui extends JFrame implements MyObserver {
 			}
 		}
 		if (bundled_items_panel!=null) {
-			bundled_items_panel.update(currentFeed);
+			bundled_items_panel.update(currentFeed.getBundle(0));
 		}
 		if (treePanel!=null) {
 			if (currentFeed != null) {
@@ -281,6 +285,12 @@ public class FeedGui extends JFrame implements MyObserver {
 	
 	public void init_example_feed() {
 		currentFeed = FeedCreator.makeExampleFeed();
+		long now = System.currentTimeMillis();
+		currentFeed.getBundle(0).addItem(
+				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
+						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)
+		);
+		
 		update();
 	}
 	

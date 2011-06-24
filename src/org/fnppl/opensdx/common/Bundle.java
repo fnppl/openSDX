@@ -59,7 +59,8 @@ public class Bundle extends BusinessObject {
 	private BundleInformation information;					//MUST
 	private LicenseBasis license_basis;						//MUST
 	private LicenseSpecifics license_specifics;				//MUST
-
+	private BusinessCollection<Item> items;					//SHOULD
+	
 
 	public static Bundle make(IDs ids, String displayname, String name, String version, String display_artist, BundleInformation information, LicenseBasis license_basis, LicenseSpecifics license_specifics) {
 		Bundle bundle = new Bundle();
@@ -76,6 +77,11 @@ public class Bundle extends BusinessObject {
 		bundle.information = information;
 		bundle.license_basis = license_basis;
 		bundle.license_specifics = license_specifics;
+		bundle.items = new BusinessCollection<Item>() {
+			public String getKeyname() {
+				return "items";
+			}
+		};
 		return bundle;
 	}
 
@@ -110,6 +116,12 @@ public class Bundle extends BusinessObject {
 		bundle.license_basis = LicenseBasis.fromBusinessObject(bo);
 		bundle.license_specifics = LicenseSpecifics.fromBusinessObject(bo);
 		
+		bundle.items =  null;
+		new ChildElementIterator(bo, "items","item") {
+			public void processBusinessObject(BusinessObject bo) {
+				bundle.addItem(Item.fromBusinessObject(bo));
+			}
+		};
 		return bundle;
 	}
 
@@ -122,6 +134,42 @@ public class Bundle extends BusinessObject {
 		if (contributors==null) return;
 		contributors.remove(index);
 	}
+	
+	public int getContributorCount() {
+		if (contributors==null) return 0;
+		return contributors.size();
+	}
+	
+	public Bundle addItem(Item item) {
+		if (items==null) {
+			items = new BusinessCollection<Item>() {
+				public String getKeyname() {
+					return "items";
+				}
+			};
+		}
+		items.add(item);
+		return this;
+	}
+	
+	public void removeItem(int index) {
+		if (items==null) return;
+		items.remove(index);
+	}
+	
+	public int getItemsCount() {
+		if (items==null) return 0;
+		return items.size();
+	}
+	
+	public Item getItem(int index) {
+		if (items==null) return null;
+		return items.get(index);
+	}
+	
+//	public BusinessCollection<Item> getItems() {
+//		return items;
+//	}
 
 	public Bundle ids(IDs ids) {
 		this.ids = ids;
@@ -193,11 +241,7 @@ public class Bundle extends BusinessObject {
 		if (index<0 || index>=contributors.size()) return null;
 		return contributors.get(index);
 	}
-	
-	public int getContributorCount() {
-		if (contributors==null) return 0;
-		return contributors.size();
-	}
+
 
 	public BundleInformation getInformation() {
 		if (information==null) return null;

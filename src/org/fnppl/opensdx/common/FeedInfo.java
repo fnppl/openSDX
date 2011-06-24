@@ -189,6 +189,58 @@ public class FeedInfo extends BusinessObject {
 		return this;
 	}
 	
+	public FeedInfo feedid(String feedid) {
+		this.feedid.setString(feedid);
+		return this;
+	}
+	
+	public FeedInfo creation_datetime(long datetime) {
+		this.creationdatetime.setDatetime(datetime);
+		return this;
+	}
+	
+	public FeedInfo effective_datetime(long datetime) {
+		this.effectivedatetime.setDatetime(datetime);
+		return this;
+	}
+	
+	public FeedInfo only_test(boolean test) {
+		onlytest.setBoolean(test);
+		return this;
+	}
+	
+	public FeedInfo creator_email(String email) {
+		if (creator==null) {
+			creator = new BusinessObject() {
+				public String getKeyname() {
+					return "creator";
+				}
+			};
+		};
+		if (creator.getBusinessStringItem("email")==null) {
+			creator.setObject(new BusinessStringItem("email", email));
+		} else {
+			creator.getBusinessStringItem("email").setString(email);
+		}
+		return this;
+	}
+	
+	public FeedInfo creator_userid(String userid) {
+		if (creator==null) {
+			creator = new BusinessObject() {
+				public String getKeyname() {
+					return "creator";
+				}
+			};
+		};
+		if (creator.getBusinessStringItem("userid")==null) {
+			creator.setObject(new BusinessStringItem("userid", userid));
+		} else {
+			creator.getBusinessStringItem("userid").setString(userid);
+		}
+		return this;
+	}
+	
 	public FeedInfo creator(String email, String userid) {
 		if (creator==null) {
 			creator = new BusinessObject() {

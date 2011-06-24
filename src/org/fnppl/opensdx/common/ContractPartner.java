@@ -89,6 +89,16 @@ public class ContractPartner extends BusinessObject {
 		return p;
 	}
 	
+	public ContractPartner contractpartnerid(String value) {
+		contractpartnerid.setString(value);
+		return this;
+	}
+	
+	public ContractPartner ourcontractpartnerid(String value) {
+		ourcontractpartnerid.setString(value);
+		return this;
+	}
+	
 	public static ContractPartner fromBusinessObject(BusinessObject bo, int role) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(getKeyname(role))) {

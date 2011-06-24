@@ -120,7 +120,6 @@ public class Receiver extends BusinessObject {
 		return r;
 	}
 	
-	
 	public static Receiver fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(KEY_NAME)) {
@@ -140,6 +139,31 @@ public class Receiver extends BusinessObject {
 		r.crypto = bo.handleBusinessObject("crypto");
 		
 		return r;
+	}
+
+	public Receiver type(String value) {
+		type.setString(value);
+		return this;
+	}
+	public Receiver servername(String value) {
+		servername.setString(value);
+		return this;
+	}
+	public Receiver serveripv4(String value) {
+		serveripv4.setString(value);
+		return this;
+	}
+	public Receiver authtype(String value) {
+		authtype.setString(value);
+		return this;
+	}
+	public Receiver authsha1(byte[] authsha1) {
+		if (authsha1 == null) {
+			this.authtype.setString(null);
+		} else {
+			this.authsha1.setString(SecurityHelper.HexDecoder.encode(authsha1, ':', -1));
+		}
+		return this;
 	}
 	
 	public Receiver serveripv6(String serveripv6) {

@@ -54,6 +54,7 @@ public class LicenseBasis extends BusinessObject {
 	private Territorial territorial;  							 //MUST
 	private BusinessCollection<BusinessDatetimeItem> timeframe;	 //MUST
 	private BusinessObject pricing;								 //SHOULD
+	private BusinessStringItem asOnBundle;
 	
 	private LicenseBasis() {
 		
@@ -70,6 +71,16 @@ public class LicenseBasis extends BusinessObject {
 		b.timeframe.add(new BusinessDatetimeItem("from", from));
 		b.timeframe.add(new BusinessDatetimeItem("to", to));
 		b.pricing = null;
+		b.asOnBundle = null;
+		return b;
+	}
+	
+	public static LicenseBasis makeAsOnBundle() {
+		LicenseBasis b = new LicenseBasis();
+		b.territorial = null;
+		b.timeframe = null;
+		b.pricing = null;
+		b.asOnBundle = new BusinessStringItem("as_on_bundle", "");
 		return b;
 	}
 	
@@ -81,6 +92,30 @@ public class LicenseBasis extends BusinessObject {
 	public LicenseBasis timeframe_to_datetime(long timeframe_to_datetime) {
 		timeframe.get(1).setDatetime(timeframe_to_datetime);
 		return this;
+	}
+	
+	public LicenseBasis as_on_bundle(boolean value) {
+		if (value) {
+			asOnBundle = new BusinessStringItem("as_on_bundle", "");
+			territorial = null;
+			timeframe = null;
+			pricing = null;
+		} else {
+			asOnBundle = null;
+			timeframe = new BusinessCollection<BusinessDatetimeItem>() {
+				public String getKeyname() {
+					return "timeframe";
+				}
+			};
+			timeframe.add(new BusinessDatetimeItem("from", -1L));
+			timeframe.add(new BusinessDatetimeItem("to", -1L));
+		}
+		return this;
+	}
+	
+	public boolean isAsOnBundle() {
+		if (asOnBundle==null) return false;
+		else return true;
 	}
 	
 	public long getTimeframeFrom() {
