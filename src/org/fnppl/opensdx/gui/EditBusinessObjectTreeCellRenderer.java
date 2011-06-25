@@ -65,8 +65,10 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.MutableTreeNode;
 
 import org.fnppl.opensdx.common.BusinessBooleanItem;
+import org.fnppl.opensdx.common.BusinessBytesItem;
 import org.fnppl.opensdx.common.BusinessCollection;
 import org.fnppl.opensdx.common.BusinessDatetimeItem;
+import org.fnppl.opensdx.common.BusinessIntegerItem;
 import org.fnppl.opensdx.common.BusinessObject;
 import org.fnppl.opensdx.common.BusinessStringItem;
 import org.fnppl.opensdx.security.SecurityHelper;
@@ -196,6 +198,158 @@ public class EditBusinessObjectTreeCellRenderer extends DefaultTreeCellRenderer 
 	                    if(e.getKeyCode() == KeyEvent.VK_ENTER){
 	                    	s.setString(text.getText());
 	                    	text.setBackground(Color.WHITE);
+	                    }
+	                }
+	            });
+    			
+    			return p;
+	    	}
+	    	
+	    	if (value instanceof BusinessIntegerItem) {
+	    		final BusinessIntegerItem s = (BusinessIntegerItem)value;
+	    		int sizeX1 = 200;
+	    		final String origValue = ""+s.getIntValue();
+	    		
+	    		String lname = s.getKeyname();
+	    		Vector<String[]> atts = s.getAttributes();
+	    		if (atts!=null && atts.size()>0) {
+	    			for (String[] att : atts) {
+	    				lname +=  ", "+att[0]+"="+att[1];
+	    			}
+	    		}
+	    		JLabel lab  = new JLabel(lname);
+	    		lab.setPreferredSize(new Dimension(sizeX1,sizeY));
+	    		
+	    		JPanel p = new JPanel();
+		    	FlowLayout layout = new FlowLayout();
+		    	layout.setVgap(1);
+		    	layout.setHgap(10);
+		    	layout.setAlignment(FlowLayout.LEFT);
+		    	p.setLayout(layout);
+		    	
+		    	p.setAlignmentX(JPanel.LEFT_ALIGNMENT);
+	    		p.setAlignmentY(JPanel.CENTER_ALIGNMENT);
+	    		
+	    		sizeX += sizeX1+10;
+	    		p.add(lab);
+	    		
+	    		if (sel) {
+	    			p.setBackground(Color.lightGray);
+				} else {
+	    			p.setBackground(new Color(230,230,230));
+	    		}
+	    		
+    			final JTextField text = new JTextField(""+s.getIntValue());
+	    		int sizeX2 = 350;
+    			text.setPreferredSize(new Dimension(sizeX2,sizeY));
+	    		text.setFocusable(true);
+	    		text.setEditable(false); //TODO
+	    		
+	    		sizeX += sizeX2+20;
+	    		p.add(text);
+	    		
+	    		p.setPreferredSize(new Dimension(sizeX,sizeY));
+	    		
+	    		DocumentListener chListen = new DocumentListener() {
+    				public void removeUpdate(DocumentEvent e) {action();}
+    				public void insertUpdate(DocumentEvent e) {action();}
+    				public void changedUpdate(DocumentEvent e) {action();}
+    				private void action() {
+    					
+    					if (origValue!=null && !text.getText().equals(origValue)) {
+    						text.setBackground(Color.YELLOW);
+    					} else {
+    						text.setBackground(Color.WHITE);
+    					}
+    					
+    				}
+    			};
+    			text.getDocument().addDocumentListener(chListen);
+    			text.addKeyListener(new KeyAdapter() {
+	                public void keyPressed(KeyEvent e) {
+	                    if(e.getKeyCode() == KeyEvent.VK_ENTER){
+	                    	try {
+		                    	s.setInteger(Integer.parseInt(text.getText()));
+		                    	text.setBackground(Color.WHITE);
+	                    	} catch (Exception ex) {
+	                    		text.setBackground(Color.RED);
+	                    	}
+	                    }
+	                }
+	            });
+    			
+    			return p;
+	    	}
+	    	
+	    	if (value instanceof BusinessBytesItem) {
+	    		final BusinessBytesItem s = (BusinessBytesItem)value;
+	    		int sizeX1 = 200;
+	    		final String origValue = s.getString();
+	    		
+	    		String lname = s.getKeyname();
+	    		Vector<String[]> atts = s.getAttributes();
+	    		if (atts!=null && atts.size()>0) {
+	    			for (String[] att : atts) {
+	    				lname +=  ", "+att[0]+"="+att[1];
+	    			}
+	    		}
+	    		JLabel lab  = new JLabel(lname);
+	    		lab.setPreferredSize(new Dimension(sizeX1,sizeY));
+	    		
+	    		JPanel p = new JPanel();
+		    	FlowLayout layout = new FlowLayout();
+		    	layout.setVgap(1);
+		    	layout.setHgap(10);
+		    	layout.setAlignment(FlowLayout.LEFT);
+		    	p.setLayout(layout);
+		    	
+		    	p.setAlignmentX(JPanel.LEFT_ALIGNMENT);
+	    		p.setAlignmentY(JPanel.CENTER_ALIGNMENT);
+	    		
+	    		sizeX += sizeX1+10;
+	    		p.add(lab);
+	    		
+	    		if (sel) {
+	    			p.setBackground(Color.lightGray);
+				} else {
+	    			p.setBackground(new Color(230,230,230));
+	    		}
+	    		
+    			final JTextField text = new JTextField(s.getString());
+	    		int sizeX2 = 350;
+    			text.setPreferredSize(new Dimension(sizeX2,sizeY));
+	    		text.setFocusable(true);
+	    		text.setEditable(false); //TODO
+	    		
+	    		sizeX += sizeX2+20;
+	    		p.add(text);
+	    		
+	    		p.setPreferredSize(new Dimension(sizeX,sizeY));
+	    		
+	    		DocumentListener chListen = new DocumentListener() {
+    				public void removeUpdate(DocumentEvent e) {action();}
+    				public void insertUpdate(DocumentEvent e) {action();}
+    				public void changedUpdate(DocumentEvent e) {action();}
+    				private void action() {
+    					
+    					if (origValue!=null && !text.getText().equals(origValue)) {
+    						text.setBackground(Color.YELLOW);
+    					} else {
+    						text.setBackground(Color.WHITE);
+    					}
+    					
+    				}
+    			};
+    			text.getDocument().addDocumentListener(chListen);
+    			text.addKeyListener(new KeyAdapter() {
+	                public void keyPressed(KeyEvent e) {
+	                    if(e.getKeyCode() == KeyEvent.VK_ENTER){
+	                    	try {
+		                    	s.setBytes(SecurityHelper.HexDecoder.decode(text.getText()));
+		                    	text.setBackground(Color.WHITE);
+	                    	} catch (Exception ex) {
+	                    		text.setBackground(Color.RED);
+	                    	}
 	                    }
 	                }
 	            });

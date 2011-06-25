@@ -237,6 +237,32 @@ public class Item extends BusinessObject {
 		return license_specifics;
 	}
 	
+	public Item addFile(ItemFile file) {
+		if (files==null) {
+			files = new BusinessCollection<ItemFile>() {
+				public String getKeyname() {
+					return "files";
+				}
+			};
+		}
+		files.add(file);
+		return this;
+	}
+	
+	public void removeFile(int index) {
+		if (files==null) return;
+		files.remove(index);
+	}
+	
+	public int getFilesCount() {
+		if (files==null) return 0;
+		return files.size();
+	}
+	public ItemFile getFile(int index) {
+		if (files==null) return null;
+		if (index<0 || index>=files.size()) return null;
+		return files.get(index);
+	}
 	
 	public String getKeyname() {
 		return KEY_NAME;

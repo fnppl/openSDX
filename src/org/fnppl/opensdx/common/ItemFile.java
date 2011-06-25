@@ -1,4 +1,8 @@
 package org.fnppl.opensdx.common;
+
+import java.io.File;
+
+import org.fnppl.opensdx.security.SecurityHelper;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -47,12 +51,75 @@ package org.fnppl.opensdx.common;
 //import org.fnppl.opensdx.common.*;
 
 public class ItemFile extends BusinessObject {
+
 	public static String KEY_NAME = "file";
+
+	private FileLocation location;				//MUST
+	private BusinessStringItem type;			//COULD
+	private BusinessIntegerItem bytes;			//COULD
+	private Checksums checksums;				//COULD
+	private BusinessStringItem filetype;		//COULD
+	private BusinessStringItem channels;		//COULD
 	
-	
+	public static ItemFile make(File f) {
+		ItemFile file = new ItemFile();
+		file.type = null;
+		file.filetype = null;
+		file.channels = null;
+		
+		file.location = null;
+		file.checksums = null;
+		file.bytes = null;
+		if (f.exists() && !f.isDirectory()) {
+			file.location = FileLocation.make(f.getAbsolutePath());
+			int bytes = (int)f.length();
+			file.bytes = new BusinessIntegerItem("bytes", bytes);
+			try {
+				byte[][] checksums = SecurityHelper.getMD5SHA1SHA256(f);
+				file.checksums = Checksums.make(checksums[1],checksums[2],checksums[3]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if (f.getName().contains(".")) {
+				file.filetype = new BusinessStringItem("filetype", f.getName().substring(f.getName().lastIndexOf('.')+1).toLowerCase());	
+			}
+		}
+		return file;
+	}
+
+
 	public static ItemFile make() {
-		ItemFile f = new ItemFile();
-		return f;
+		ItemFile file = new ItemFile();
+		file.type = null;
+		file.filetype = null;
+		file.channels = null;
+		file.bytes = null;
+		file.location = null;
+		file.checksums = null;
+		return file;
+	}
+	
+	public ItemFile setFile(File f) {
+		if (filetype == null || filetype.getString().equals("")) {
+			if (f.getName().contains(".")) {
+				filetype = new BusinessStringItem("filetype", f.getName().substring(f.getName().lastIndexOf('.')+1).toLowerCase());	
+			}
+		}
+		location = null;
+		checksums = null;
+		bytes = null;
+		if (f.exists() && !f.isDirectory()) {
+			location = FileLocation.make(f.getAbsolutePath());
+			int b = (int)f.length();
+			bytes = new BusinessIntegerItem("bytes", b);
+			try {
+				byte[][] sums = SecurityHelper.getMD5SHA1SHA256(f);
+				checksums = Checksums.make(sums[1],sums[2],sums[3]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return this;
 	}
 	
 	public static ItemFile fromBusinessObject(BusinessObject bo) {
@@ -61,22 +128,115 @@ public class ItemFile extends BusinessObject {
 			bo = bo.handleBusinessObject(KEY_NAME);
 		}
 		if (bo==null) return null;
+		ItemFile file = new ItemFile();
+		file.initFromBusinessObject(bo);
 		
-		ItemFile f = new ItemFile();
-		f.initFromBusinessObject(bo);
+		file.type = BusinessStringItem.fromBusinessObject(bo, "type");
+		file.filetype = BusinessStringItem.fromBusinessObject(bo, "filetype");
+		file.channels = BusinessStringItem.fromBusinessObject(bo, "channels");
+		file.bytes = BusinessIntegerItem.fromBusinessObject(bo, "bytes");
 		
-		try {
-			//f.bla = Bla.fromBusinessObject(f);		
-			return f;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return null;
+		file.checksums = Checksums.fromBusinessObject(bo);
+		file.location = FileLocation.fromBusinessObject(bo);
+		
+		return file;
 	}
 	
+	public ItemFile md5(byte[] bytes) {
+		if (checksums==null) {
+			checksums = Checksums.make();
+		}
+		checksums.md5(bytes);
+		return this;
+	}
+
+	public ItemFile sha1(byte[] bytes) {
+		if (checksums==null) {
+			checksums = Checksums.make();
+		}
+		checksums.sha1(bytes);
+		return this;
+	}
+	
+	public ItemFile sha256(byte[] bytes) {
+		if (checksums==null) {
+			checksums = Checksums.make();
+		}
+		checksums.sha256(bytes);
+		return this;
+	}
+
+	public ItemFile type(String type) {
+		if (type == null) {
+			this.type = null;
+		} else {
+			this.type = new BusinessStringItem("type", type);
+		}
+		return this;
+	}
+
+	public ItemFile filetype(String filetype) {
+		if (filetype==null) {
+			this.filetype = null;
+		} else {
+			this.filetype = new BusinessStringItem("filetype", filetype);
+		}
+		return this;
+	}
+
+	public ItemFile channels(String channels) {
+		if (channels == null) {
+			this.channels = null;
+		} else {
+			this.channels = new BusinessStringItem("channels", channels);
+		}
+		return this;
+	}
+
+	public ItemFile bytes(int length) {
+		this.bytes = new BusinessIntegerItem("bytes", length);
+		return this;
+	}
+
+
+
+	public String getType() {
+		if (type==null) return null;
+		return type.getString();
+	}
+
+	public String getFiletype() {
+		if (filetype==null) return null;
+		return filetype.getString();
+	}
+
+	public String getChannels() {
+		if (channels==null) return null;
+		return channels.getString();
+	}
+	
+	public String getLocationPath() {
+		if (location==null) return null;
+		return location.getPath();
+	}
+	
+	public int getBytes() {
+		if (bytes==null) return -1;
+		return bytes.getIntValue();
+	}
+
 	public String getKeyname() {
 		return KEY_NAME;
 	}
-
-
+	
+	public ItemFile checksums(Checksums checksums) {
+		this.checksums = checksums;
+		return this;
+	}
+	
+	public Checksums getChecksums() {
+		return checksums;
+	}
 }
+
+

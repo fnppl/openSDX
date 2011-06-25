@@ -65,6 +65,7 @@ import org.fnppl.opensdx.common.BusinessObject;
 import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.Item;
+import org.fnppl.opensdx.common.ItemFile;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.EditBusinessObjectTree;
@@ -356,6 +357,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		currentFeed.getBundle(0).addItem(
 				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
 						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)
+						.addFile(ItemFile.make(new File("fnppl_contributor_license.pdf")))
 		);
 		update();
 	}

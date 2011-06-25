@@ -46,6 +46,7 @@ package org.fnppl.opensdx.gui;
 import java.awt.Color;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
@@ -58,6 +59,7 @@ import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.common.Contributor;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.Item;
+import org.fnppl.opensdx.common.ItemFile;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Territorial;
 import org.fnppl.opensdx.security.SecurityHelper;
@@ -122,6 +124,48 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
 	 });
     }
 
+     private void updateFileList(final Item item) {
+        DefaultListModel lm = new DefaultListModel();
+    	 if (item!=null) {
+	        int anz = item.getFilesCount();
+	        for (int i = 0; i < anz; i++) {
+	            lm.addElement("File: "+item.getFile(i).getLocationPath());
+	        }
+    	 }
+        list_files.setModel(lm);
+        list_files.setSelectedIndex(0);
+        list_files.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list_files.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                int sel = list_files.getSelectedIndex();
+                if (sel>= 0 && sel < item.getFilesCount()) {
+                    ItemFile file = item.getFile(sel);
+                    updateFile(file);
+                }
+            }
+	 });
+    }
+
+    private void updateFile(ItemFile file) {
+        if (file != null) {
+            text_file_path.setText(file.getLocationPath());
+            text_file_format.setText(file.getFiletype());
+            String channel = file.getChannels();
+            if (channel == null) {
+                channel =  "[no audio]";
+            }
+            select_file_channel.setSelectedItem(channel);
+            String type = file.getType();
+            if (type == null) {
+                type = "[not specified]";
+            }
+            select_file_type.setSelectedItem(type);
+            text_file_length.setText(""+file.getBytes());
+            text_file_md5.setText(file.getChecksums().getMd5String());
+            text_file_sha1.setText(file.getChecksums().getSha1String());
+            changeListener.saveState(text_file_format);
+        }
+    }
 
       private void updateItem(Item item) {
         if (item != null) {
@@ -219,7 +263,16 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             lmDisallow.removeAllElements();
         }
         checkLicenseAsOnBundleActionPerformed(null);
-        
+
+        //tags
+        //TODO
+
+        //files
+        updateFileList(item);
+        ItemFile itemfile = getSelectedFile();
+        if (itemfile!=null) {
+            updateFile(itemfile);
+        }
         changeListener.saveStates();
         }
     }
@@ -287,6 +340,8 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         texts.add(text_license_pricing);
         texts.add(text_license_to_datetime);
 
+        //files
+        texts.add(text_file_format);
 
         changeListener = new DocumentChangeListener(texts);
 
@@ -335,6 +390,10 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                             else if(text == text_license_pricing) {
                                 item.getLicense_basis().pricing_pricecode(null);
                                 item.getLicense_basis().pricing_wholesale(t);
+                            }
+                            else if(text == text_file_format) {
+                                ItemFile file = item.getFile(list_files.getSelectedIndex());
+                                file.filetype(t);
                             }
                             text.setBackground(Color.WHITE);
                             changeListener.saveState(text);
@@ -470,7 +529,38 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         jLabel23 = new javax.swing.JLabel();
         select_license_pricing = new javax.swing.JComboBox();
         jPanel2 = new javax.swing.JPanel();
+        check_tags_bundle_only = new javax.swing.JCheckBox();
+        check_tags_stream_allowed = new javax.swing.JCheckBox();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        list_genres = new javax.swing.JList();
+        jLabel20 = new javax.swing.JLabel();
+        jLabel21 = new javax.swing.JLabel();
+        text_main_language = new javax.swing.JTextField();
+        text_origin_country = new javax.swing.JTextField();
+        jLabel22 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        list_files = new javax.swing.JList();
+        jLabel24 = new javax.swing.JLabel();
+        bu_add_file = new javax.swing.JButton();
+        bu_remove_file = new javax.swing.JButton();
+        panelBasics1 = new javax.swing.JPanel();
+        jLabel26 = new javax.swing.JLabel();
+        text_file_path = new javax.swing.JTextField();
+        jLabel28 = new javax.swing.JLabel();
+        select_file_type = new javax.swing.JComboBox();
+        jLabel25 = new javax.swing.JLabel();
+        text_file_format = new javax.swing.JTextField();
+        jLabel27 = new javax.swing.JLabel();
+        select_file_channel = new javax.swing.JComboBox();
+        jLabel29 = new javax.swing.JLabel();
+        text_file_length = new javax.swing.JTextField();
+        jLabel35 = new javax.swing.JLabel();
+        text_file_md5 = new javax.swing.JTextField();
+        jLabel36 = new javax.swing.JLabel();
+        text_file_sha1 = new javax.swing.JTextField();
+        bu_change_file = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         list_items = new javax.swing.JList();
@@ -602,13 +692,13 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                             .addComponent(jLabel17))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(text_labelordernum, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                            .addComponent(text_contentauthid, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                            .addComponent(text_amazon, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                            .addComponent(text_isbn, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                            .addComponent(text_finetunesid, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                            .addComponent(text_ourid, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                            .addComponent(text_yourid, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE))))
+                            .addComponent(text_labelordernum, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                            .addComponent(text_contentauthid, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                            .addComponent(text_amazon, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                            .addComponent(text_isbn, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                            .addComponent(text_finetunesid, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                            .addComponent(text_ourid, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                            .addComponent(text_yourid, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         panelIDsLayout.setVerticalGroup(
@@ -661,26 +751,26 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         panelIDsBig.setLayout(panelIDsBigLayout);
         panelIDsBigLayout.setHorizontalGroup(
             panelIDsBigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 687, Short.MAX_VALUE)
+            .addGap(0, 678, Short.MAX_VALUE)
             .addGroup(panelIDsBigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panelIDsBigLayout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(panelIDs, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(324, Short.MAX_VALUE)))
+                    .addContainerGap(318, Short.MAX_VALUE)))
         );
         panelIDsBigLayout.setVerticalGroup(
             panelIDsBigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 704, Short.MAX_VALUE)
+            .addGap(0, 920, Short.MAX_VALUE)
             .addGroup(panelIDsBigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panelIDsBigLayout.createSequentialGroup()
                     .addGap(19, 19, 19)
                     .addComponent(panelIDs, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(300, Short.MAX_VALUE)))
+                    .addContainerGap(566, Short.MAX_VALUE)))
         );
 
         jTabbedPane1.addTab("IDs", panelIDsBig);
 
-        jLabel18.setFont(new java.awt.Font("Ubuntu", 1, 15));
+        jLabel18.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
         jLabel18.setText("List of contributors for this item");
 
         list_contributors.setModel(new javax.swing.AbstractListModel() {
@@ -729,7 +819,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                     .addComponent(jLabel19)
                     .addComponent(bu_add_contributor, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(100, Short.MAX_VALUE))
+                .addContainerGap(91, Short.MAX_VALUE))
         );
 
         panelContributorsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jScrollPane2, jScrollPane3});
@@ -754,7 +844,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelContributorsLayout.createSequentialGroup()
                         .addGap(2, 2, 2)
                         .addComponent(bu_add_contributor)))
-                .addContainerGap(499, Short.MAX_VALUE))
+                .addContainerGap(718, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Contributors", panelContributors);
@@ -810,7 +900,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                         .addComponent(bu_add_promotext, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(bu_remove_promotext))
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 651, Short.MAX_VALUE)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
                     .addGroup(panelInformationLayout.createSequentialGroup()
                         .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel30)
@@ -843,7 +933,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bu_add_promotext)
                     .addComponent(bu_remove_promotext))
-                .addContainerGap(343, Short.MAX_VALUE))
+                .addContainerGap(577, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Information", panelInformation);
@@ -927,8 +1017,8 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                         .addGroup(panelLicense1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(panelLicense1Layout.createSequentialGroup()
                                 .addComponent(bu_add_allowed_territory)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 160, Short.MAX_VALUE))
-                            .addComponent(add_new_territory_text, javax.swing.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 184, Short.MAX_VALUE))
+                            .addComponent(add_new_territory_text, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)))
                     .addGroup(panelLicense1Layout.createSequentialGroup()
                         .addGroup(panelLicense1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -947,11 +1037,11 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                         .addGap(39, 39, 39)
                         .addGroup(panelLicense1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(panelLicense1Layout.createSequentialGroup()
-                                .addComponent(select_license_pricing, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(select_license_pricing, 0, 112, Short.MAX_VALUE)
                                 .addGap(18, 18, 18)
                                 .addComponent(text_license_pricing, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(text_license_to_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
-                            .addComponent(text_license_from_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE))))
+                            .addComponent(text_license_to_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                            .addComponent(text_license_from_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE))))
                 .addGap(24, 24, 24))
         );
         panelLicense1Layout.setVerticalGroup(
@@ -998,7 +1088,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(panelLicense1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(checkLicenseAsOnBundle))
-                .addContainerGap(226, Short.MAX_VALUE))
+                .addContainerGap(217, Short.MAX_VALUE))
         );
         panelLicenseLayout.setVerticalGroup(
             panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1007,38 +1097,276 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addComponent(checkLicenseAsOnBundle)
                 .addGap(18, 18, 18)
                 .addComponent(panelLicense1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(173, Short.MAX_VALUE))
+                .addContainerGap(418, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("License", panelLicense);
+
+        check_tags_bundle_only.setText("bundle only");
+
+        check_tags_stream_allowed.setText("streaming allowed");
+
+        list_genres.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Contributor 1", "Contributor 2", "Contributor 3", "Contributor 4", "Contributor 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane7.setViewportView(list_genres);
+
+        jLabel20.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
+        jLabel20.setText("List of genres for this item");
+
+        jLabel21.setText("main language");
+
+        jLabel22.setText("origin country");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 687, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(33, 33, 33)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(check_tags_stream_allowed)
+                    .addComponent(check_tags_bundle_only)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel21)
+                            .addComponent(jLabel22))
+                        .addGap(38, 38, 38)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(text_origin_country)
+                            .addComponent(text_main_language, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane7)
+                    .addComponent(jLabel20, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(132, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 704, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(49, 49, 49)
+                        .addComponent(check_tags_bundle_only)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(check_tags_stream_allowed)
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel21)
+                            .addComponent(text_main_language, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(text_origin_country, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel22)))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(26, 26, 26)
+                        .addComponent(jLabel20)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(653, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Tags", jPanel2);
+
+        jScrollPane8.setViewportView(list_files);
+
+        jLabel24.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
+        jLabel24.setText("List of files");
+
+        bu_add_file.setText("add");
+        bu_add_file.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_add_fileActionPerformed(evt);
+            }
+        });
+
+        bu_remove_file.setText("remove");
+        bu_remove_file.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_remove_fileActionPerformed(evt);
+            }
+        });
+
+        panelBasics1.setBorder(javax.swing.BorderFactory.createTitledBorder("File properties"));
+
+        jLabel26.setText("path");
+
+        text_file_path.setEditable(false);
+        text_file_path.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                text_file_pathActionPerformed(evt);
+            }
+        });
+
+        jLabel28.setText("type");
+
+        select_file_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "[not specified]", "full", "pre-listening", "cover" }));
+        select_file_type.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                select_file_typeActionPerformed(evt);
+            }
+        });
+
+        jLabel25.setText("format");
+
+        jLabel27.setText("channels");
+
+        select_file_channel.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "[no audio]", "stereo", "mono", "joint-stereo", "5.1" }));
+        select_file_channel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                select_file_channelActionPerformed(evt);
+            }
+        });
+
+        jLabel29.setText("length in bytes");
+
+        text_file_length.setEditable(false);
+
+        jLabel35.setText("md5 checksum");
+
+        text_file_md5.setEditable(false);
+
+        jLabel36.setText("sha1 checksum");
+
+        text_file_sha1.setEditable(false);
+
+        bu_change_file.setText("change");
+        bu_change_file.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_change_fileActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panelBasics1Layout = new javax.swing.GroupLayout(panelBasics1);
+        panelBasics1.setLayout(panelBasics1Layout);
+        panelBasics1Layout.setHorizontalGroup(
+            panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelBasics1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel29)
+                    .addGroup(panelBasics1Layout.createSequentialGroup()
+                        .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel26)
+                            .addComponent(jLabel28)
+                            .addComponent(jLabel25)
+                            .addComponent(jLabel35)
+                            .addComponent(jLabel36))
+                        .addGap(51, 51, 51)
+                        .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBasics1Layout.createSequentialGroup()
+                                .addComponent(text_file_path, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
+                                .addComponent(bu_change_file))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBasics1Layout.createSequentialGroup()
+                                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(text_file_md5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)
+                                    .addGroup(panelBasics1Layout.createSequentialGroup()
+                                        .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(text_file_format, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                                            .addComponent(select_file_type, javax.swing.GroupLayout.Alignment.LEADING, 0, 204, Short.MAX_VALUE)
+                                            .addComponent(text_file_length, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE))
+                                        .addGap(18, 18, 18)
+                                        .addComponent(jLabel27)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(select_file_channel, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(text_file_sha1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE))
+                                .addGap(26, 26, 26)))))
+                .addContainerGap())
+        );
+        panelBasics1Layout.setVerticalGroup(
+            panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelBasics1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel26)
+                    .addComponent(text_file_path, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(bu_change_file))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(text_file_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel25)
+                    .addComponent(jLabel27)
+                    .addComponent(select_file_channel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(14, 14, 14)
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel28)
+                    .addComponent(select_file_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(40, 40, 40)
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel29)
+                    .addComponent(text_file_length, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel35)
+                    .addComponent(text_file_md5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel36)
+                    .addComponent(text_file_sha1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(panelBasics1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel24)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(bu_remove_file)
+                            .addComponent(bu_add_file, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(8, 8, 8)))
+                .addContainerGap())
+        );
+
+        jPanel1Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {bu_add_file, bu_remove_file});
+
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel24)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(bu_add_file)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(bu_remove_file))
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(panelBasics1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(51, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 687, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 704, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(397, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Files", jPanel3);
 
-        jLabel3.setFont(new java.awt.Font("Ubuntu", 1, 15));
+        jLabel3.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
         jLabel3.setText("List of items");
 
         list_items.setModel(new javax.swing.AbstractListModel() {
@@ -1069,16 +1397,18 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(panelBasics, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 695, Short.MAX_VALUE)
-                    .addComponent(jLabel3)
+                    .addComponent(jTabbedPane1, 0, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 490, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(bu_remove_item)
-                            .addComponent(bu_add_item, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
+                            .addComponent(jLabel3)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 490, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(bu_remove_item)
+                                    .addComponent(bu_add_item, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(panelBasics, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(12, Short.MAX_VALUE))))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {bu_add_item, bu_remove_item});
@@ -1274,20 +1604,119 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         notifyChanges();
     }//GEN-LAST:event_bu_remove_contributorActionPerformed
 
+    private void bu_add_fileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_fileActionPerformed
+        Item item = getSelectedItem();
+        if (item==null) return;
+        File path = null;
+        ItemFile selFile = getSelectedFile();
+        if (selFile!=null) {
+            try {
+                path = new File(selFile.getLocationPath()).getParentFile();
+            } catch (Exception ex) {
+            }
+        }
+        File f = Dialogs.chooseOpenFile("Choose file", path, "");
+        if (f==null || !f.exists() || f.isDirectory()) return;
+        ItemFile file = ItemFile.make(f);
+        item.addFile(file);
+        updateFileList(item);
+        list_files.setSelectedIndex(item.getFilesCount()-1);
+        updateFile(file);
+        notifyChanges();
+    }//GEN-LAST:event_bu_add_fileActionPerformed
+
+    private void bu_remove_fileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_fileActionPerformed
+        Item item = getSelectedItem();
+        if (item==null) return;
+        int sel = list_files.getSelectedIndex();
+        if (sel>=0 && sel < item.getFilesCount()) {
+            item.removeFile(sel);
+        }
+        updateFileList(item);
+        if (sel<item.getFilesCount()) {
+            list_files.setSelectedIndex(sel);
+        } else if (item.getFilesCount()>0) {
+            list_files.setSelectedIndex(item.getFilesCount()-1);
+        }
+        notifyChanges();
+    }//GEN-LAST:event_bu_remove_fileActionPerformed
+
+    private void text_file_pathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_text_file_pathActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_text_file_pathActionPerformed
+
+    private void bu_change_fileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_change_fileActionPerformed
+        File lastFile = new File(text_file_path.getText());
+        File f = Dialogs.chooseOpenFile("Choose file", lastFile.getParentFile(), lastFile.getName());
+        if (f==null || !f.exists() || f.isDirectory()) return;
+        ItemFile file = getSelectedFile();
+        if (file!=null) {
+            file.setFile(f);
+            updateFile(file);
+            notifyChanges();
+        }
+    }//GEN-LAST:event_bu_change_fileActionPerformed
+
+    private void select_file_channelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_file_channelActionPerformed
+       ItemFile file = getSelectedFile();
+       if (file!=null) {
+           int sel = select_file_channel.getSelectedIndex();
+           if (sel==0) {
+               file.channels(null);
+           } else {
+               file.channels((String)select_file_channel.getSelectedItem());
+           }
+           notifyChanges();
+       }
+    }//GEN-LAST:event_select_file_channelActionPerformed
+
+    private void select_file_typeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_file_typeActionPerformed
+       ItemFile file = getSelectedFile();
+       if (file!=null) {
+           int sel = select_file_type.getSelectedIndex();
+           if (sel==0) {
+               file.type(null);
+           } else {
+               file.type((String)select_file_type.getSelectedItem());
+           }
+           notifyChanges();
+       }
+    }//GEN-LAST:event_select_file_typeActionPerformed
+
+    private Item getSelectedItem() {
+        if (bundle==null || bundle.getItemsCount()==0) return null;
+        int selItem = list_items.getSelectedIndex();
+        if (selItem<0) return null;
+        Item item = bundle.getItem(selItem);
+        return item;
+    }
+    private ItemFile getSelectedFile() {
+        Item item = getSelectedItem();
+        if (item==null) return null;
+        int sel = list_files.getSelectedIndex();
+        if (sel<0 || sel>=item.getFilesCount()) return null;
+        ItemFile file = item.getFile(sel);
+        return file;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField add_new_territory_text;
     private javax.swing.JButton bu_add_allowed_territory;
     private javax.swing.JButton bu_add_contributor;
     private javax.swing.JButton bu_add_disallowed_territory;
+    private javax.swing.JButton bu_add_file;
     private javax.swing.JButton bu_add_item;
     private javax.swing.JButton bu_add_promotext;
+    private javax.swing.JButton bu_change_file;
     private javax.swing.JButton bu_remove_allowed_territory;
     private javax.swing.JButton bu_remove_contributor;
     private javax.swing.JButton bu_remove_disallowed_territory;
+    private javax.swing.JButton bu_remove_file;
     private javax.swing.JButton bu_remove_item;
     private javax.swing.JButton bu_remove_promotext;
     private javax.swing.JCheckBox checkLicenseAsOnBundle;
+    private javax.swing.JCheckBox check_tags_bundle_only;
+    private javax.swing.JCheckBox check_tags_stream_allowed;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1300,19 +1729,31 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel28;
+    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
     private javax.swing.JLabel jLabel31;
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
     private javax.swing.JLabel jLabel34;
+    private javax.swing.JLabel jLabel35;
+    private javax.swing.JLabel jLabel36;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
@@ -1321,19 +1762,26 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JList list_all_contributors;
     private javax.swing.JList list_allowed_territories;
     private javax.swing.JList list_contributors;
     private javax.swing.JList list_disallowed_territories;
+    private javax.swing.JList list_files;
+    private javax.swing.JList list_genres;
     private javax.swing.JList list_items;
     private javax.swing.JPanel panelBasics;
+    private javax.swing.JPanel panelBasics1;
     private javax.swing.JPanel panelContributors;
     private javax.swing.JPanel panelIDs;
     private javax.swing.JPanel panelIDsBig;
     private javax.swing.JPanel panelInformation;
     private javax.swing.JPanel panelLicense;
     private javax.swing.JPanel panelLicense1;
+    private javax.swing.JComboBox select_file_channel;
+    private javax.swing.JComboBox select_file_type;
     private javax.swing.JComboBox select_license_pricing;
     private javax.swing.JComboBox select_type;
     private javax.swing.JTable table_promotext;
@@ -1342,6 +1790,11 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JTextField text_digital_release_datetime;
     private javax.swing.JTextField text_display_artist;
     private javax.swing.JTextField text_displayname;
+    private javax.swing.JTextField text_file_format;
+    private javax.swing.JTextField text_file_length;
+    private javax.swing.JTextField text_file_md5;
+    private javax.swing.JTextField text_file_path;
+    private javax.swing.JTextField text_file_sha1;
     private javax.swing.JTextField text_finetunesid;
     private javax.swing.JTextField text_grid;
     private javax.swing.JTextField text_isbn;
@@ -1350,7 +1803,9 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JTextField text_license_from_datetime;
     private javax.swing.JTextField text_license_pricing;
     private javax.swing.JTextField text_license_to_datetime;
+    private javax.swing.JTextField text_main_language;
     private javax.swing.JTextField text_name;
+    private javax.swing.JTextField text_origin_country;
     private javax.swing.JTextField text_ourid;
     private javax.swing.JTextField text_physical_realease_datetime;
     private javax.swing.JTextField text_playlength;
