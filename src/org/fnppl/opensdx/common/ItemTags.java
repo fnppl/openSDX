@@ -52,11 +52,11 @@ public class ItemTags extends BusinessObject {
 	private BusinessCollection<BusinessStringItem> genres;	//COULD
 	private BusinessStringItem origin_country;		//COULD
 	private BusinessStringItem main_language;		//COULD
-	private BusinessStringItem bundle_only;			//COULD
-	private BusinessStringItem streaming_allowed;	//COULD
+	private BusinessBooleanItem bundle_only;			//COULD
+	private BusinessBooleanItem streaming_allowed;	//COULD
 
 
-	public static ItemTags make(String origin_country, String main_language, String bundle_only, String streaming_allowed) {
+	public static ItemTags make(String origin_country, String main_language, boolean bundle_only, boolean streaming_allowed) {
 		ItemTags tags = new ItemTags();
 		tags.genres = new  BusinessCollection<BusinessStringItem>() {
 			public String getKeyname() {
@@ -65,8 +65,8 @@ public class ItemTags extends BusinessObject {
 		};
 		tags.origin_country = new BusinessStringItem("origin_country", origin_country);
 		tags.main_language = new BusinessStringItem("main_language", main_language);
-		tags.bundle_only = new BusinessStringItem("bundle_only", bundle_only);
-		tags.streaming_allowed = new BusinessStringItem("streaming_allowed", streaming_allowed);
+		tags.bundle_only = new BusinessBooleanItem("bundle_only", bundle_only);
+		tags.streaming_allowed = new BusinessBooleanItem("streaming_allowed", streaming_allowed);
 		return tags;
 	}
 
@@ -104,8 +104,8 @@ public class ItemTags extends BusinessObject {
 		};
 		tags.origin_country = BusinessStringItem.fromBusinessObject(bo, "origin_country");
 		tags.main_language = BusinessStringItem.fromBusinessObject(bo, "main_language");
-		tags.bundle_only = BusinessStringItem.fromBusinessObject(bo, "bundle_only");
-		tags.streaming_allowed = BusinessStringItem.fromBusinessObject(bo, "streaming_allowed");
+		tags.bundle_only = BusinessBooleanItem.fromBusinessObject(bo, "bundle_only");
+		tags.streaming_allowed = BusinessBooleanItem.fromBusinessObject(bo, "streaming_allowed");
 		
 		return tags;
 	}
@@ -127,6 +127,11 @@ public class ItemTags extends BusinessObject {
 		genres.remove(index);
 	}
 	
+	public void removeAllGenres() {
+		if (genres==null) return;
+		genres.removeAll();
+	}
+	
 	public int getGenresCount() {
 		if (genres==null) return 0;
 		return genres.size();
@@ -139,22 +144,24 @@ public class ItemTags extends BusinessObject {
 
 
 	public ItemTags origin_country(String origin_country) {
+		if (origin_country==null) this.origin_country = null;
 		this.origin_country = new BusinessStringItem("origin_country", origin_country);
 		return this;
 	}
 
 	public ItemTags main_language(String main_language) {
+		if (main_language==null) this.main_language = null;
 		this.main_language = new BusinessStringItem("main_language", main_language);
 		return this;
 	}
 
-	public ItemTags bundle_only(String bundle_only) {
-		this.bundle_only = new BusinessStringItem("bundle_only", bundle_only);
+	public ItemTags bundle_only(boolean bundle_only) {
+		this.bundle_only = new BusinessBooleanItem("bundle_only", bundle_only);
 		return this;
 	}
 
-	public ItemTags streaming_allowed(String streaming_allowed) {
-		this.streaming_allowed = new BusinessStringItem("streaming_allowed", streaming_allowed);
+	public ItemTags streaming_allowed(boolean streaming_allowed) {
+		this.streaming_allowed = new BusinessBooleanItem("streaming_allowed", streaming_allowed);
 		return this;
 	}
 
@@ -169,14 +176,14 @@ public class ItemTags extends BusinessObject {
 		return main_language.getString();
 	}
 
-	public String getBundle_only() {
-		if (bundle_only==null) return null;
-		return bundle_only.getString();
+	public boolean isBundle_only() {
+		if (bundle_only==null) return false;
+		return bundle_only.getBoolean();
 	}
 
-	public String getStreaming_allowed() {
-		if (streaming_allowed==null) return null;
-		return streaming_allowed.getString();
+	public boolean isStreaming_allowed() {
+		if (streaming_allowed==null) return false;
+		return streaming_allowed.getBoolean();
 	}
 	public String getKeyname() {
 		return KEY_NAME;

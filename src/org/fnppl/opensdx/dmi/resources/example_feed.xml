@@ -391,6 +391,45 @@
 			</rule_2>
 		</license_specifics><!-- MUST ; if no specific rules should be applied: empty node -->
 		
+		<reporting>
+			<realtime>
+				<http>
+					<url>http://nowhere.nät/callme.php?w=initireceive&amp;k=true</url>
+					<type>GET</type><!-- GET|POST|HEAD ; most probably GET -->
+					<addheader>
+						<header>
+							<name>gumpy</name>
+							<value>RWJ</value>
+						</header>
+					</addheader><!-- those headers are then added "X-" to the call - the url-caller may choose to ignore any header (especially those already used by himself) -->
+					<addparams>
+						<param>
+							<name>cmd</name>
+							<value>ehlo</value>
+						</param>
+						<param>
+							<name>jump</name>
+							<value>neverfrombridgbe</value>
+						</param>
+					</addparams>
+				</http>
+			</realtime>
+			<postponed>
+				<id>some-reporting-id-whatever</id>
+			</postponed><!-- Some info on reporting when doing the "usual" time-gap-reporting -->
+		</reporting><!-- COULD -->
+		
+		<tags>
+			<genres>
+				<genre1></genre1>
+				<genre2></genre2>
+			</genres>
+			<origin_country>DE</origin_country>
+			<main_language>de</main_language>
+			<bundle_only>false</bundle_only>
+			<streaming_allowed>true</streaming_allowed>
+		</tags><!-- SHOULD -->
+				
 		<items> <!-- those items aka tracks/videos/flash/apps/whatever contained in this bundle -->
 			<item>
 				<type>audio</type><!-- MUST ; audio, video, android-app, win32-program, whatever -->
@@ -403,6 +442,9 @@
 				<displayname></displayname><!-- MUST this is how this should be displayed in pos -->
 				<name></name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
 				<version></version><!-- MUST version if different versions of this bundle exist - can be empty -->
+				<fingerprint>
+					<echoprint></echoprint><!-- see http://echoprint.me | https://github.com/echonest/echoprint-codegen -->
+				</fingerprint><!-- COULD -->
 				<contributors>
 					<contributor1>
 						<name></name><!-- could be artistname -->
@@ -467,6 +509,34 @@
 					<bundle_only>false</bundle_only>
 					<streaming_allowed>true</streaming_allowed>
 				</tags>
+				
+				<reporting>
+					<realtime>
+						<http>
+							<url>http://nowhere.nät/callme.php?w=initireceive&amp;k=true</url>
+							<type>GET</type><!-- GET|POST|HEAD ; most probably GET -->
+							<addheader>
+								<header>
+									<name>gumpy</name>
+									<value>RWJ</value>
+								</header>
+							</addheader><!-- those headers are then added "X-" to the call - the url-caller may choose to ignore any header (especially those already used by himself) -->
+							<addparams>
+								<param>
+									<name>cmd</name>
+									<value>ehlo</value>
+								</param>
+								<param>
+									<name>jump</name>
+									<value>neverfrombridgbe</value>
+								</param>
+							</addparams>
+						</http>
+					</realtime>
+					<postponed>
+						<id>some-reporting-id-whatever</id>
+					</postponed><!-- Some info on reporting when doing the "usual" time-gap-reporting -->
+				</reporting><!-- COULD -->
 				
 				<files>
 					<file>
@@ -534,6 +604,25 @@
 			</item>
 		</items>
 		
+		<files>
+			<file>
+				<type>cover</type><!-- MUST ; cover / booklet -->
+				<filetype></filetype><!-- MUST ; FILEFORMAT/BITRATE[KBIT/s]/CODEC/CODECSETTINGS e.g. mp3/320/unknown/CBR -->
+				<bytes>84848483838</bytes><!-- length of file in bytes -->
+				<location>
+					<http>
+						<url></url><!-- MUST ; should be tls -->
+						<user></user><!-- COULD ; http-basic-header-auth -->
+						<pass></pass><!-- COULD ; http-basic-header-auth -->
+						<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
+					</http><!-- http means that, this file is not delivered, but it can be pulled by the receiving parties ; integrity is assured by checksums -->
+				</location>
+				<checksums>
+					<sha1></sha1><!-- SHOULD sha1-checksum of that file -->
+					<md5></md5><!-- SHOULD sha1-checksum of that file -->
+				</checksums><!-- MUST one checksum must be given; -->
+			</file>
+		</files><!-- mainly/only used for cover or pdf-boklet -->
 	</bundle>
 	<!--  could have X more bundles -->
 	<bundle>

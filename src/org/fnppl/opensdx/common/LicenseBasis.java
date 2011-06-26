@@ -222,5 +222,9 @@ public class LicenseBasis extends BusinessObject {
 		return territorial;
 	}
 	
+	public void setTerritorial(Territorial t) {
+		territorial = t;
+	}
+	
 	
 }

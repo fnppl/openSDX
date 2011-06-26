@@ -67,6 +67,7 @@ import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.common.ItemFile;
 import org.fnppl.opensdx.common.LicenseBasis;
+import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 import org.fnppl.opensdx.gui.Helper;
@@ -79,8 +80,11 @@ import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
 
+
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
+	private URL configGenres = FeedCreator.class.getResource("resources/config_genres.xml");
+	
 	public static FeedGui getInstance() {
 		if(instance == null) {
 			instance = new FeedGui();
@@ -138,6 +142,9 @@ public class FeedGui extends JFrame implements MyObserver {
 				else if(cmd.equalsIgnoreCase("save feed")) {
 					saveFeed();
 				}
+				else if(cmd.equalsIgnoreCase("send feed")) {
+					sendFeedToReceiver();
+				}
 				else if(cmd.equalsIgnoreCase("init example feed")) {
 					init_example_feed();
 				}
@@ -161,6 +168,13 @@ public class FeedGui extends JFrame implements MyObserver {
 		
 		jmi = new JMenuItem("Save Feed to xml ...");
 		jmi.setActionCommand("save feed");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+		
+		jm.addSeparator();
+		
+		jmi = new JMenuItem("Send Feed to Receiver ...");
+		jmi.setActionCommand("send feed");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
 		
@@ -216,6 +230,28 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 	}
 	
+	public void sendFeedToReceiver() {
+		if (currentFeed!=null) {
+			Receiver receiver = currentFeed.getFeedinfo().getReceiver();
+			if (receiver==null) {
+				Dialogs.showMessage("Please enter complete receiver information in FeedInfo tab first.");
+				return;
+			}
+			String type = receiver.getType();
+			String servername = receiver.getServername();
+			if (type.equals("openSDX fileserver")) {
+				int ans = Dialogs.showYES_NO_Dialog("Sending Feed", "Do you really want to send the current feed to "+servername+"?");
+				if (ans==Dialogs.YES) {
+					//TODO send via openSDX fileserver
+					
+				}
+			}
+			else {
+				Dialogs.showMessage("Sorry, sending type \""+type+"\" not implemented.");
+			}
+		}
+	}
+	
 	
 	public void notifyChange() {
 		if (treePanel!=null) {
@@ -260,6 +296,27 @@ public class FeedGui extends JFrame implements MyObserver {
     	return status;
     }
     
+    private void readAndSetGenres() {
+    	try {
+			Element root = Document.fromURL(configGenres).getRootElement();
+			Vector<String> genres = new Vector<String>();
+			for (Element e : root.getChildren("genre")) {
+				String name = e.getChildTextNN("name");
+				genres.add(name);
+				Element e2 = e.getChild("subgenres");
+				if (e2!=null) {
+					for (Element e3 : e2.getChildren()) {
+						String subname = e3.getChildText("name");
+						genres.add(name+" :: "+subname);
+					}
+				}
+			}
+			bundled_items_panel.setAvailableGenres(genres);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+    
 	private void buildUi() {
 		BorderLayout bl = new BorderLayout();
 		JPanel jp = new JPanel();
@@ -293,6 +350,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		feedinfo_panel = new PanelFeedInfo();
 		bundle_panel = new PanelBundle();
 		bundled_items_panel = new PanelItems();
+		readAndSetGenres();
 		
 		//observe changes
 		feedinfo_panel.addObserver(this);
@@ -354,11 +412,17 @@ public class FeedGui extends JFrame implements MyObserver {
 	public void init_example_feed() {
 		currentFeed = FeedCreator.makeExampleFeed();
 		long now = System.currentTimeMillis();
+		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER, "localhost", "127.0.0.1", Receiver.AUTH_TYPE_KEYFILE, new byte[] {0});
+		currentFeed.getFeedinfo().receiver(receiver);
 		currentFeed.getBundle(0).addItem(
 				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
 						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)
 						.addFile(ItemFile.make(new File("fnppl_contributor_license.pdf")))
 		);
+		currentFeed.getBundle(0).getLicense_basis().getTerritorial()
+		.allow("de")
+		.allow("uk")
+		.disallow("us");
 		update();
 	}
 	

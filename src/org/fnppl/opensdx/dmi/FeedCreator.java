@@ -113,10 +113,12 @@ public class FeedCreator {
 
 		ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER,"","");
 		ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR,"","");
+		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER, "localhost", "127.0.0.1", Receiver.AUTH_TYPE_LOGIN, new byte[] {0});
 		
 		long now = System.currentTimeMillis();
 		FeedInfo feedinfo = FeedInfo.make(true, "", now, now, sender, licensor)
-									.creator("","");
+									.creator("","")
+									.receiver(receiver);
 		
 		BundleInformation info = BundleInformation.make(now,now);
 		LicenseBasis license_basis = LicenseBasis.make(Territorial.make(), now, now);
