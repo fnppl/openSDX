@@ -63,3 +63,248 @@
 		</america>
 	</ww>
 </territories>
+
+
+<!--
+ REGIONID | REGIONNAME |                    REGIONFULLNAME                    | REGIONGROUPCODE | REGIONDIGITCODE | GROUPID | ISO3 
+
+        1 | DE         | Germany                                              | 155             | 276             |      -1 | DEU
+        2 | GB         | United Kingdom of Great Britain and Northern Ireland | 833             | 826             |      -1 | GBR
+        3 | FR         | France                                               | 155             | 250             |      -1 | FRA
+        4 | ES         | Spain                                                | 039             | 724             |      -1 | ESP
+        6 | SE         | Sweden                                               | 833             | 752             |      -1 | SWE
+        8 | DK         | Denmark                                              | 154             | 208             |      -1 | DNK
+       10 | JP         | Japan                                                | 030             | 392             |      -1 | JPN
+       12 | IT         | Italy                                                | 039             | 380             |      -1 | ITA
+       13 | AT         | Austria                                              | 155             | 040             |      -1 | AUT
+       14 | CH         | Switzerland                                          | 155             | 756             |      -1 | CHE
+       15 | ZW         | Zimbabwe                                             | 014             | 716             |      -1 | ZWE
+       16 | AF         | Afghanistan                                          | 062             | 004             |      -1 | AFG
+       17 | AL         | Albania                                              | 039             | 008             |      -1 | ALB
+       18 | DZ         | Algeria                                              | 015             | 012             |      -1 | DZA
+       19 | AS         | American Samoa                                       | 061             | 016             |      -1 | ASM
+       20 | AD         | Andorra                                              | 039             | 020             |      -1 | AND
+       21 | AO         | Angola                                               | 017             | 024             |      -1 | AGO
+       22 | AI         | Anguilla                                             | 029             | 660             |      -1 | AIA
+       23 | AQ         | Antarctica                                           |                 | 010             |      -1 | ATA
+       24 | AG         | Antigua and Barbuda                                  | 029             | 028             |      -1 | ATG
+       25 | AR         | Argentina                                            | 005             | 032             |      -1 | ARG
+       26 | AM         | Armenia                                              | 145             | 051             |      -1 | ARM
+       27 | AW         | Aruba                                                | 029             | 533             |      -1 | ABW
+       28 | AU         | Australia                                            | 053             | 036             |      -1 | AUS
+       29 | AZ         | Azerbaijan                                           | 145             | 031             |      -1 | AZE
+       30 | BS         | Bahamas                                              | 029             | 044             |      -1 | BHS
+       31 | BH         | Bahrain                                              | 145             | 048             |      -1 | BHR
+       32 | BD         | Bangladesh                                           | 062             | 050             |      -1 | BGD
+       33 | BB         | Barbados                                             | 029             | 052             |      -1 | BRB
+       34 | BY         | Belarus                                              | 151             | 112             |      -1 | BLR
+       35 | BE         | Belgium                                              | 155             | 056             |      -1 | BEL
+       36 | BZ         | Belize                                               | 013             | 084             |      -1 | BLZ
+       37 | BJ         | Benin                                                | 011             | 204             |      -1 | BEN
+       38 | BM         | Bermuda                                              | 021             | 060             |      -1 | BMU
+       39 | BT         | Bhutan                                               | 062             | 064             |      -1 | BTN
+       40 | BO         | Bolivia                                              | 005             | 068             |      -1 | BOL
+       41 | BA         | Bosnia and Herzegovina                               | 039             | 070             |      -1 | BIH
+       42 | BW         | Botswana                                             | 018             | 072             |      -1 | BWA
+       43 | BV         | Bouvet Island                                        |                 | 074             |      -1 | BVT
+       44 | BR         | Brazil                                               | 005             | 076             |      -1 | BRA
+       45 | IO         | British Indian Ocean Territory                       |                 | 086             |      -1 | IOT
+       46 | BN         | Brunei Darussalam                                    | 035             | 096             |      -1 | BRN
+       47 | BG         | Bulgaria                                             | 151             | 100             |      -1 | BGR
+       48 | BF         | Burkina Faso                                         | 011             | 854             |      -1 | BFA
+       49 | BI         | Burundi                                              | 014             | 108             |      -1 | BDI
+       50 | KH         | Cambodia                                             | 035             | 116             |      -1 | KHM
+       51 | CM         | Cameroon                                             | 017             | 120             |      -1 | CMR
+       52 | CA         | Canada                                               | 021             | 124             |      -1 | CAN
+       53 | CV         | Cape Verde                                           | 011             | 132             |      -1 | CPV
+       54 | KY         | Cayman Islands                                       | 029             | 136             |      -1 | CYM
+       55 | CF         | Central African Republic                             | 017             | 140             |      -1 | CAF
+       56 | TD         | Chad                                                 | 017             | 148             |      -1 | TCD
+       57 | CL         | Chile                                                | 005             | 152             |      -1 | CHL
+       58 | CN         | China                                                | 030             | 156             |      -1 | CHN
+       59 | CX         | Cocos (Keeling) Islands                              |                 | 166             |      -1 | CXR
+       60 | CC         | Christmas Island                                     |                 | 162             |      -1 | CCK
+       61 | CO         | Colombia                                             | 005             | 170             |      -1 | COL
+       62 | KM         | Comoros                                              | 014             | 174             |      -1 | COM
+       63 | CD         | Democratic Republic of the Congo                     | 017             | 180             |      -1 | COD
+       64 | CG         | Congo                                                | 017             | 178             |      -1 | COG
+       65 | CK         | Cook Islands                                         | 061             | 184             |      -1 | COK
+       66 | CR         | Costa Rica                                           | 013             | 188             |      -1 | CRI
+       67 | CI         | Cote d'Ivoire                                        | 011             | 384             |      -1 | CIV
+       68 | HR         | Croatia                                              | 039             | 191             |      -1 | HRV
+       69 | CU         | Cuba                                                 | 029             | 192             |      -1 | CUB
+       70 | CY         | Cyprus                                               | 145             | 196             |      -1 | CYP
+       71 | CZ         | Czech Republic                                       | 151             | 203             |      -1 | CZE
+       72 | DJ         | Djibouti                                             | 014             | 262             |      -1 | DJI
+       73 | DM         | Dominica                                             | 029             | 212             |      -1 | DMA
+       74 | DO         | Dominican Republic                                   | 029             | 214             |      -1 | DOM
+       75 | EC         | Ecuador                                              | 005             | 218             |      -1 | ECU
+       76 | EG         | Egypt                                                | 015             | 818             |      -1 | EGY
+       77 | SV         | El Salvador                                          | 013             | 222             |      -1 | SLV
+       78 | GQ         | Equatorial Guinea                                    | 017             | 226             |      -1 | GNQ
+       79 | ER         | Eritrea                                              | 014             | 232             |      -1 | ERI
+       80 | EE         | Estonia                                              | 154             | 233             |      -1 | EST
+       81 | ET         | Ethiopia                                             | 014             | 231             |      -1 | ETH
+       82 | FK         | Falkland Islands (Malvinas)                          | 005             | 238             |      -1 | FLK
+       83 | FO         | Faeroe Islands                                       | 154             | 234             |      -1 | FRO
+       84 | FJ         | Fiji                                                 | 054             | 242             |      -1 | FJI
+       85 | FI         | Finland                                              | 154             | 246             |      -1 | FIN
+       86 | GF         | French Guiana                                        | 005             | 254             |      -1 | GUF
+       87 | PF         | French Polynesia                                     | 061             | 258             |      -1 | PYF
+       88 | GA         | Gabon                                                | 017             | 266             |      -1 | GAB
+       89 | GM         | Gambia                                               | 011             | 270             |      -1 | GMB
+       90 | GE         | Georgia                                              | 145             | 268             |      -1 | GEO
+       92 | GH         | Ghana                                                | 011             | 288             |      -1 | GHA
+       93 | GI         | Gibraltar                                            | 039             | 292             |      -1 | GIB
+       94 | GR         | Greece                                               | 039             | 300             |      -1 | GRC
+       95 | GL         | Greenland                                            | 021             | 304             |      -1 | GRL
+       96 | GD         | Grenada                                              | 029             | 308             |      -1 | GRD
+       97 | GP         | Guadeloupe                                           | 029             | 312             |      -1 | GLP
+       98 | GU         | Guam                                                 | 057             | 316             |      -1 | GUM
+       99 | GT         | Guatemala                                            | 013             | 320             |      -1 | GTM
+      101 | GN         | Guinea                                               | 011             | 324             |      -1 | GIN
+      102 | GW         | Guinea-Bissau                                        | 011             | 624             |      -1 | GNB
+      103 | GY         | Guyana                                               | 005             | 328             |      -1 | GUY
+      104 | HT         | Haiti                                                | 029             | 332             |      -1 | HTI
+      105 | HM         | Heard Island and McDonald Islands                    |                 | 334             |      -1 | HMD
+      106 | VA         | Holy See                                             | 039             | 336             |      -1 | VAT
+      107 | HN         | Honduras                                             | 013             | 340             |      -1 | HND
+      108 | HK         | Hong Kong Special Administrative Region of China     | 030             | 344             |      -1 | HKG
+      109 | HU         | Hungary                                              | 151             | 348             |      -1 | HUN
+      110 | IS         | Iceland                                              | 154             | 352             |      -1 | ISL
+      111 | IN         | India                                                | 062             | 356             |      -1 | IND
+      112 | ID         | Indonesia                                            | 035             | 360             |      -1 | IDN
+      113 | IR         | Iran (Islamic Republic of)                           | 062             | 364             |      -1 | IRN
+      114 | IQ         | Iraq                                                 | 145             | 368             |      -1 | IRQ
+      115 | IE         | Ireland                                              | 154             | 372             |      -1 | IRL
+      117 | IL         | Israel                                               | 145             | 376             |      -1 | ISR
+      118 | JM         | Jamaica                                              | 029             | 388             |      -1 | JAM
+      120 | JO         | Jordan                                               | 145             | 400             |      -1 | JOR
+      121 | KZ         | Kazakhstan                                           | 062             | 398             |      -1 | KAZ
+      122 | KE         | Kenya                                                | 014             | 404             |      -1 | KEN
+      123 | KP         | Democratic People's Republic of Korea                | 030             | 408             |      -1 | PRK
+      124 | KR         | Republic of Korea                                    | 030             | 410             |      -1 | KOR
+      125 | KW         | Kuwait                                               | 145             | 414             |      -1 | KWT
+      126 | KG         | Kyrgyzstan                                           | 062             | 417             |      -1 | KGZ
+      127 | LA         | Lao People's Democratic Republic                     | 035             | 418             |      -1 | LAO
+      128 | LV         | Latvia                                               | 833             | 428             |      -1 | LVA
+      129 | LB         | Lebanon                                              | 145             | 422             |      -1 | LBN
+      130 | LS         | Lesotho                                              | 018             | 426             |      -1 | LSO
+      131 | LR         | Liberia                                              | 011             | 430             |      -1 | LBR
+      132 | LY         | Libyan Arab Jamahiriya                               | 015             | 434             |      -1 | LBY
+      133 | LI         | Liechtenstein                                        | 155             | 438             |      -1 | LIE
+      134 | LT         | Lithuania                                            | 833             | 440             |      -1 | LTU
+      135 | LU         | Luxembourg                                           | 155             | 442             |      -1 | LUX
+      136 | MO         | Macao Special Administrative Region of China         | 030             | 446             |      -1 | MAC
+      137 | MK         | The former Yugoslav Republic of Macedonia            | 039             | 807             |      -1 | MKD
+      138 | MG         | Madagascar                                           | 014             | 450             |      -1 | MDG
+      139 | MW         | Malawi                                               | 014             | 454             |      -1 | MWI
+      140 | MY         | Malaysia                                             | 035             | 458             |      -1 | MYS
+      141 | MV         | Maldives                                             | 062             | 462             |      -1 | MDV
+      142 | ML         | Mali                                                 | 011             | 466             |      -1 | MLI
+      143 | MT         | Malta                                                | 039             | 470             |      -1 | MLT
+      144 | MH         | Marshall Islands                                     | 057             | 584             |      -1 | MHL
+      145 | MQ         | Martinique                                           | 029             | 474             |      -1 | MTQ
+      146 | MR         | Mauritania                                           | 011             | 478             |      -1 | MRT
+      147 | MU         | Mauritius                                            | 014             | 480             |      -1 | MUS
+      148 | YT         | Mayotte                                              | 014             | 175             |      -1 | MYT
+      149 | MX         | Mexico                                               | 013             | 484             |      -1 | MEX
+      150 | FM         | Micronesia (Federated States of)                     | 057             | 583             |      -1 | FSM
+      151 | MD         | Republic of Moldova                                  | 151             | 498             |      -1 | MDA
+      152 | MC         | Monaco                                               | 155             | 492             |      -1 | MCO
+      153 | MN         | Mongolia                                             | 030             | 496             |      -1 | MNG
+      154 | MS         | Montserrat                                           | 029             | 500             |      -1 | MSR
+      155 | MA         | Morocco                                              | 015             | 504             |      -1 | MAR
+      156 | MZ         | Mozambique                                           | 014             | 508             |      -1 | MOZ
+      157 | NA         | Namibia                                              | 018             | 516             |      -1 | NAM
+      158 | NR         | Nauru                                                | 057             | 520             |      -1 | NRU
+      159 | NP         | Nepal                                                | 062             | 524             |      -1 | NPL
+      160 | NL         | Netherlands                                          | 155             | 528             |      -1 | NLD
+      161 | AN         | Netherlands Antilles                                 | 029             | 530             |      -1 | ANT
+      162 | NC         | New Caledonia                                        | 054             | 540             |      -1 | NCL
+      163 | NZ         | New Zealand                                          | 053             | 554             |      -1 | NZL
+      164 | NI         | Nicaragua                                            | 013             | 558             |      -1 | NIC
+      165 | NE         | Niger                                                | 011             | 562             |      -1 | NER
+      166 | NG         | Nigeria                                              | 011             | 566             |      -1 | NGA
+      167 | NU         | Niue                                                 | 061             | 570             |      -1 | NIU
+      168 | NF         | Norfolk Island                                       | 053             | 574             |      -1 | NFK
+      169 | MP         | Northern Mariana Islands                             | 057             | 580             |      -1 | MNP
+      170 | NO         | Norway                                               | 833             | 578             |      -1 | NOR
+      171 | OM         | Oman                                                 | 145             | 512             |      -1 | OMN
+      172 | PK         | Pakistan                                             | 062             | 586             |      -1 | PAK
+      173 | PW         | Palau                                                | 057             | 585             |      -1 | PLW
+      174 | PA         | Panama                                               | 013             | 591             |      -1 | PAN
+      175 | PG         | Papua New Guinea                                     | 054             | 598             |      -1 | PNG
+      176 | PY         | Paraguay                                             | 005             | 600             |      -1 | PRY
+      177 | PE         | Peru                                                 | 005             | 604             |      -1 | PER
+      178 | PH         | Philippines                                          | 035             | 608             |      -1 | PHL
+      179 | PN         | Pitcairn                                             | 061             | 612             |      -1 | PCN
+      180 | PL         | Poland                                               | 151             | 616             |      -1 | POL
+      181 | PT         | Portugal                                             | 039             | 620             |      -1 | PRT
+      182 | PR         | Puerto Rico                                          | 029             | 630             |      -1 | PRI
+      183 | QA         | Qatar                                                | 145             | 634             |      -1 | QAT
+      184 | RE         | Réunion                                              | 014             | 638             |      -1 | REU
+      185 | RO         | Romania                                              | 151             | 642             |      -1 | ROU
+      186 | RU         | Russian Federation                                   | 151             | 643             |      -1 | RUS
+      187 | RW         | Rwanda                                               | 014             | 646             |      -1 | RWA
+      188 | KN         | Saint Kitts and Nevis                                | 029             | 659             |      -1 | KNA
+      189 | LC         | Saint Lucia                                          | 029             | 662             |      -1 | LCA
+      190 | VC         | Saint Vincent and the Grenadines                     | 029             | 670             |      -1 | VCT
+      191 | SM         | San Marino                                           | 039             | 674             |      -1 | SMR
+      192 | ST         | Sao Tome and Principe                                | 017             | 678             |      -1 | STP
+      193 | SA         | Saudi Arabia                                         | 145             | 682             |      -1 | SAU
+      194 | SN         | Senegal                                              | 011             | 686             |      -1 | SEN
+      195 | SC         | Seychelles                                           | 014             | 690             |      -1 | SYC
+      196 | SL         | Sierra Leone                                         | 011             | 694             |      -1 | SLE
+      197 | SG         | Singapore                                            | 035             | 702             |      -1 | SGP
+      198 | SK         | Slovakia                                             | 151             | 703             |      -1 | SVK
+      199 | SI         | Slovenia                                             | 039             | 705             |      -1 | SVN
+      200 | SB         | Solomon Islands                                      | 054             | 090             |      -1 | SLB
+      201 | SO         | Somalia                                              | 014             | 706             |      -1 | SOM
+      202 | ZA         | South Africa                                         | 018             | 710             |      -1 | ZAF
+      203 | GS         | South Georgia and the South Sandwich Islands         |                 | 239             |      -1 | SGS
+      204 | LK         | Sri Lanka                                            | 062             | 144             |      -1 | LKA
+      205 | SH         | Saint Helena                                         | 011             | 654             |      -1 | SHN
+      206 | PM         | Saint Pierre and Miquelon                            | 021             | 666             |      -1 | SPM
+      207 | SD         | Sudan                                                | 015             | 736             |      -1 | SDN
+      208 | SR         | Suriname                                             | 005             | 740             |      -1 | SUR
+      209 | SJ         | Svalbard and Jan Mayen Islands                       | 833             | 744             |      -1 | SJM
+      210 | SZ         | Swaziland                                            | 018             | 748             |      -1 | SWZ
+      211 | SY         | Syrian Arab Republic                                 | 145             | 760             |      -1 | SYR
+      212 | TW         | Taiwan, Province of China                            |                 | 158             |      -1 | TWN
+      213 | TJ         | Tajikistan                                           | 062             | 762             |      -1 | TJK
+      214 | TZ         | United Republic of Tanzania                          | 014             | 834             |      -1 | TZA
+      215 | TH         | Thailand                                             | 035             | 764             |      -1 | THA
+      216 | TG         | Togo                                                 | 011             | 768             |      -1 | TGO
+      217 | TK         | Tokelau                                              | 061             | 772             |      -1 | TKL
+      218 | TO         | Tonga                                                | 061             | 776             |      -1 | TON
+      219 | TT         | Trinidad and Tobago                                  | 029             | 780             |      -1 | TTO
+      220 | TN         | Tunisia                                              | 015             | 788             |      -1 | TUN
+      221 | TM         | Turkmenistan                                         | 062             | 795             |      -1 | TKM
+      222 | TC         | Turks and Caicos Islands                             | 029             | 796             |      -1 | TCA
+      223 | TV         | Tuvalu                                               | 061             | 798             |      -1 | TUV
+      224 | UG         | Uganda                                               | 014             | 800             |      -1 | UGA
+      225 | UA         | Ukraine                                              | 151             | 804             |      -1 | UKR
+      226 | AE         | United Arab Emirates                                 | 145             | 784             |      -1 | ARE
+      228 | US         | United States of America                             | 021             | 840             |      -1 | USA
+      229 | UY         | Uruguay                                              | 005             | 858             |      -1 | URY
+      230 | UZ         | Uzbekistan                                           | 062             | 860             |      -1 | UZB
+      231 | VU         | Vanuatu                                              | 054             | 548             |      -1 | VUT
+      232 | VE         | Venezuela                                            | 005             | 862             |      -1 | VEN
+      233 | VN         | Viet Nam                                             | 035             | 704             |      -1 | VNM
+      234 | VG         | British Virgin Islands                               | 029             | 092             |      -1 | VGB
+      235 | VI         | United States Virgin Islands                         | 029             | 850             |      -1 | VIR
+      236 | WF         | Wallis and Futuna Islands                            | 061             | 876             |      -1 | WLF
+      237 | EH         | Western Sahara                                       | 015             | 732             |      -1 | ESH
+      238 | WS         | Samoa                                                | 061             | 882             |      -1 | WSM
+      239 | YE         | Yemen                                                | 145             | 887             |      -1 | YEM
+      240 | ZM         | Zambia                                               | 014             | 894             |      -1 | ZMB
+      241 | TR         | Turkey                                               |                 | 792             |      -1 | TUR
+      242 | AX         | Aaland Islands                                       |                 | 248             |      -1 | ALA
+      244 | KI         | Kiribati                                             |                 | 296             |      -1 | KIR
+      245 | MM         | Myanmar                                              |                 | 104             |      -1 | MMR
+      246 | PS         | Palestinian Territories                              |                 | 275             |      -1 | PSE
+      247 | TF         | French Southern Territories                          |                 | 260             |      -1 | ATF
+      248 | TL         | Timor-Leste                                          |                 | 626             |      -1 | TLS
+      249 | UM         | United States Minor Outlying Countries               |                 | 100             |      -1 | UMI
+-->
