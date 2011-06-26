@@ -467,14 +467,14 @@ public class KeyServerMain extends HTTPServer {
 		Identity idd = Identity.fromElement(content.getChild("identity"));
 		
 		key.addIdentity(idd);
-		key.addDataSourceStep(new DataSourceStep(request.ipv4, request.datetime));
+		key.addDataSourceStep(new DataSourceStep(request.getRealIP(), request.datetime));
 		
 		//generate keylog for approve_pending of email
 		Identity apid = Identity.newEmptyIdentity();
 		apid.setIdentNum(idd.getIdentNum());
 		apid.setEmail(idd.getEmail());
 		KeyLogAction klAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL_PENDING, keyServerSigningKey, key.getKeyID(), apid);
-		KeyLog kl = KeyLog.buildNewKeyLog(klAction, request.ipv4, request.ipv4, keyServerSigningKey);
+		KeyLog kl = KeyLog.buildNewKeyLog(klAction, request.getRealIP(), "", keyServerSigningKey);
 		
 		//send email with token
 		byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
@@ -513,7 +513,7 @@ public class KeyServerMain extends HTTPServer {
 			
 			
 			KeyLogAction keylogAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, keyServerSigningKey, kl.getKeyIDTo(), idd);
-			KeyLog klApprove = KeyLog.buildNewKeyLog(keylogAction, request.ipv4, request.ipv4, keyServerSigningKey); 
+			KeyLog klApprove = KeyLog.buildNewKeyLog(keylogAction, request.getRealIP(), "", keyServerSigningKey); 
 			keystore.addKeyLog(klApprove);
 			openTokens.remove(id);
 			
@@ -635,7 +635,7 @@ public class KeyServerMain extends HTTPServer {
 			return errorMessage("verifcation of keylogaction localproof and signature failed.");	
 		}		
 		
-		KeyLog log = KeyLog.buildNewKeyLog(keylogAction, request.ipv4, request.ipv4, keyServerSigningKey);
+		KeyLog log = KeyLog.buildNewKeyLog(keylogAction, request.getRealIP(), "", keyServerSigningKey);
 		//log.verify();
 		
 		//save
@@ -687,7 +687,7 @@ public class KeyServerMain extends HTTPServer {
 			return errorMessage("verifcation of keylogaction localproof and signature failed.");	
 		}
 	
-		KeyLog log = KeyLog.buildNewKeyLog(keylogAction, request.ipv4, request.ipv4, keyServerSigningKey);
+		KeyLog log = KeyLog.buildNewKeyLog(keylogAction, request.getRealIP(), "", keyServerSigningKey);
 		
 		//save
 		updateCache(null,log);
@@ -797,7 +797,7 @@ public class KeyServerMain extends HTTPServer {
 			
 			//TODO check given approved identitiy fields match the original (same identnum) identity fields  
 
-			KeyLog kl = KeyLog.buildNewKeyLog(log, request.ipv4, request.ipv4, keyServerSigningKey);
+			KeyLog kl = KeyLog.buildNewKeyLog(log, request.getRealIP(), "", keyServerSigningKey);
 			keystore.addKeyLog(kl);
 			updateCache(null,kl);
 

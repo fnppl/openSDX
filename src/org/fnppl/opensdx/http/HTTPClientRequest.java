@@ -114,10 +114,11 @@ public class HTTPClientRequest {
 		return ret.toString();
 	}
 	
-	private static String getHeader(int contentlength, String contentType) {
+	private static String getHeader(int contentlength, String contentType, String hostname) {
 		StringBuffer ret = new StringBuffer();
 		ret.append("Content-Type: "+contentType+"\r\n");
 		ret.append("Content-Length: "+contentlength+"\r\n");
+		ret.append("Host: "+hostname+"\r\n");
 //		ret.append("\r\n");
 		return ret.toString();
 	}
@@ -156,7 +157,7 @@ public class HTTPClientRequest {
 				
 				out.write(getCMDLine().getBytes("ASCII"));
 				out.write("\r\n".getBytes("ASCII"));
-				out.write(getHeader(content.length, contentType).getBytes("ASCII"));
+				out.write(getHeader(content.length, contentType, host).getBytes("ASCII"));
 				out.write("\r\n".getBytes("ASCII"));
 				
 				out.flush();
@@ -166,7 +167,7 @@ public class HTTPClientRequest {
 				//content-element==null
 				out.write(getCMDLine().getBytes("ASCII"));
 				out.write("\r\n".getBytes("ASCII"));
-				out.write(getHeader(0, contentType).getBytes("ASCII"));
+				out.write(getHeader(0, contentType, host).getBytes("ASCII"));
 				out.write("\r\n".getBytes("ASCII"));
 			}
 			
@@ -178,7 +179,7 @@ public class HTTPClientRequest {
 			for (String[] h : headers) {
 				out.write((h[0]+": "+h[1]+"\r\n").getBytes("ASCII"));
 			}
-			out.write(getHeader(contentData.length, contentType).getBytes("ASCII"));
+			out.write(getHeader(contentData.length, contentType, host).getBytes("ASCII"));
 			out.write("\r\n".getBytes("ASCII"));
 			out.write(contentData);
 			out.flush();
@@ -292,7 +293,7 @@ public class HTTPClientRequest {
 				
 				out.write(getCMDLineNOT_URL_ENCODED_FOR_TESTING().getBytes("ASCII"));
 				out.write("\r\n".getBytes("ASCII"));
-				out.write(getHeader(content.length, contentType).getBytes("ASCII"));
+				out.write(getHeader(content.length, contentType, host).getBytes("ASCII"));
 				out.write("\r\n".getBytes("ASCII"));
 				
 				out.flush();
@@ -303,7 +304,7 @@ public class HTTPClientRequest {
 				//content-element==null
 				out.write(getCMDLineNOT_URL_ENCODED_FOR_TESTING().getBytes("ASCII"));
 				out.write("\r\n".getBytes("ASCII"));
-				out.write(getHeader(0, contentType).getBytes("ASCII"));
+				out.write(getHeader(0, contentType, host).getBytes("ASCII"));
 				out.write("\r\n".getBytes("ASCII"));
 			}
 			
@@ -315,7 +316,7 @@ public class HTTPClientRequest {
 			for (String[] h : headers) {
 				out.write((h[0]+": "+h[1]+"\r\n").getBytes("ASCII"));
 			}
-			out.write(getHeader(contentData.length, contentType).getBytes("ASCII"));
+			out.write(getHeader(contentData.length, contentType, host).getBytes("ASCII"));
 			out.write("\r\n".getBytes("ASCII"));
 			out.write(contentData);
 			out.flush();

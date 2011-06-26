@@ -64,7 +64,8 @@ public class HTTPServerRequest {
 	public byte[] contentData;
 	public String cmd = null;
 	public String method = null;
-	public String ipv4 = null;
+	private String ipv4_from_socket = null;
+	private String ipv4_from_header = null;
 	public long datetime = -1L;
 	
 	private HTTPServerRequest() {
@@ -73,7 +74,7 @@ public class HTTPServerRequest {
 	
 	public static HTTPServerRequest fromInputStream(BufferedInputStream in, String ipv4) throws Exception {
 		HTTPServerRequest ret = new HTTPServerRequest();
-		ret.ipv4 = ipv4;
+		ret.ipv4_from_socket = ipv4;
 		
 		String zeile = null;
 		zeile = readLineASCII(in, 4096); //cmdline
@@ -85,13 +86,16 @@ public class HTTPServerRequest {
 			ret.cmd = st.nextToken();
 			String proto = st.nextToken();
 		
-			System.out.println((new Date())+" :: "+ret.ipv4+" :: KeyServerRequest | Method: "+ret.method+"\tCmd: "+ret.cmd);
+			
 		
 			if(st.hasMoreTokens()) {
+				System.out.println((new Date())+" :: "+ret.ipv4_from_socket+" :: KeyServerRequest | Method: "+ret.method+"\tCmd: "+ret.cmd);
 				throw new Exception("INVALID HTTP _ MORE TOKEN AS _ "+st.nextToken());
 			}
 		
 			readHeader(in, ret);
+			
+			System.out.println((new Date())+" :: "+ret.getRealIP()+" :: KeyServerRequest | Method: "+ret.method+"\tCmd: "+ret.cmd);
 		
 			//System.out.println("::header end::");
 			
@@ -211,6 +215,14 @@ public class HTTPServerRequest {
 		}
 	}
 	
+	public String getRealIP() {		
+			if(ipv4_from_header!=null) {
+				return ipv4_from_header;
+			}
+		
+		
+		return ipv4_from_socket;
+	}
 	private static void readHeader(BufferedInputStream in, HTTPServerRequest re) throws Exception {
 		String zeile = null;
 
@@ -229,6 +241,10 @@ public class HTTPServerRequest {
 			re.headers.put(n, v);
 			
 			System.out.println("header: "+zeile);
+			
+			if(n.equalsIgnoreCase("X-Real-IP")) {
+				re.ipv4_from_header = v;
+			}
 		}
 	}
 	

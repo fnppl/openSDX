@@ -100,7 +100,7 @@ public abstract class HTTPServer {
 					int remotePort = s.getPort();
 					// check on *too* many requests from one ip
 					int[] rc = ipRequests.get(remoteIP);
-					if (rc==null) {
+					if (rc == null) {
 						ipRequests.put(remoteIP, new int[]{1});
 					} else {
 						rc[0]++;
@@ -118,7 +118,10 @@ public abstract class HTTPServer {
 					try {
 						InputStream _in = s.getInputStream();
 						BufferedInputStream in = new BufferedInputStream(_in);
-						HTTPServerRequest request = HTTPServerRequest.fromInputStream(in, addr.getHostAddress());
+						HTTPServerRequest request = HTTPServerRequest.fromInputStream(
+								in, 
+								addr.getHostAddress()
+							);
 						HTTPServerResponse response = prepareResponse(request);
 						
 						System.out.println("ServerSocket  | ::response ready");
