@@ -442,6 +442,9 @@
 				<displayname></displayname><!-- MUST this is how this should be displayed in pos -->
 				<name></name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
 				<version></version><!-- MUST version if different versions of this bundle exist - can be empty -->
+				<fingerprint>
+					<echoprint></echoprint><!-- see http://echoprint.me | https://github.com/echonest/echoprint-codegen -->
+				</fingerprint><!-- COULD -->
 				<contributors>
 					<contributor1>
 						<name></name><!-- could be artistname -->
