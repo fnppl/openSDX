@@ -115,13 +115,14 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 		setModel(new DefaultTreeModel(root));
 		
 		setCellRenderer(new TreeCellRenderer() {
-			private Dimension label_dimension = new Dimension(120, 18);
+			private Dimension label_dimension = new Dimension(150, 18);
 			private Dimension button_dimension = new Dimension(80, 18);
 			//private Dimension panel_dimension = new Dimension(400, 20);
 			
 			public Component getTreeCellRendererComponent(JTree tree, Object value,	boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				TerritoryTreeNode node = (TerritoryTreeNode)value;
-				final String name = node.xml.getName();
+				final String code = node.xml.getName();
+				final String name = node.xml.getAttribute("name");
 				JPanel p = map.get(value);
 				if (p==null) {
 					p = new JPanel();
@@ -133,11 +134,11 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 					JLabel label = new JLabel(name);
 					label.setPreferredSize(label_dimension);
 					p.add(label);
-					if (!name.equals("territories")) {
+					if (!code.equals("territories")) {
 						JButton buAllow = new JButton("allow");
 						buAllow.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
-								allow.put(name, Boolean.TRUE);
+								allow.put(code, Boolean.TRUE);
 								pan.setBackground(Color.GREEN.darker());
 								notifyChanges();
 							}
@@ -148,7 +149,7 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 						JButton buDisallow = new JButton("disallow");
 						buDisallow.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
-								allow.put(name, Boolean.FALSE);
+								allow.put(code, Boolean.FALSE);
 								pan.setBackground(Color.RED);
 								notifyChanges();
 							}
@@ -159,7 +160,7 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 						JButton buRemove = new JButton("unset");
 						buRemove.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
-								allow.remove(name);
+								allow.remove(code);
 								pan.setBackground(Color.lightGray);
 								notifyChanges();
 							}
@@ -169,8 +170,8 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 					}
 					map.put(value,p);
 				}
-				if (allow.containsKey(name)) {
-					if (allow.get(name).booleanValue()) {
+				if (allow.containsKey(code)) {
+					if (allow.get(code).booleanValue()) {
 						p.setBackground(Color.GREEN.darker());
 					} else {
 						p.setBackground(Color.RED);
@@ -213,7 +214,7 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 			}			
 		});
 		setEditable(true);
-		expandAllRows();
+		//expandAllRows();
 	}
 	
 	public void setTerritories(Territorial t) {

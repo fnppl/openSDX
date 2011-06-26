@@ -48,20 +48,275 @@
  -->
 
 <territories>
-	<ww>
-		<europe>
-			<de></de>
-			<uk></uk>
-		</europe>
-		<america>
-			<north_america>
-				<us></us>
-			</north_america>
-			<south_america>
-				<brasil></brasil>
-			</south_america>
-		</america>
-	</ww>
+<WW name="world wide">
+  <Group_5 name="Group 5">
+    <AR name="Argentina" />
+    <BO name="Bolivia" />
+    <BR name="Brazil" />
+    <CL name="Chile" />
+    <CO name="Colombia" />
+    <EC name="Ecuador" />
+    <FK name="Falkland Islands (Malvinas)" />
+    <GF name="French Guiana" />
+    <GY name="Guyana" />
+    <PY name="Paraguay" />
+    <PE name="Peru" />
+    <SR name="Suriname" />
+    <UY name="Uruguay" />
+    <VE name="Venezuela" />
+  </Group_5>
+  <Group_11 name="Group 11">
+    <BJ name="Benin" />
+    <BF name="Burkina Faso" />
+    <CV name="Cape Verde" />
+    <CI name="Cote d'Ivoire" />
+    <GM name="Gambia" />
+    <GH name="Ghana" />
+    <GN name="Guinea" />
+    <GW name="Guinea-Bissau" />
+    <LR name="Liberia" />
+    <ML name="Mali" />
+    <MR name="Mauritania" />
+    <NE name="Niger" />
+    <NG name="Nigeria" />
+    <SN name="Senegal" />
+    <SL name="Sierra Leone" />
+    <SH name="Saint Helena" />
+    <TG name="Togo" />
+  </Group_11>
+  <Group_13 name="Group 13">
+    <BZ name="Belize" />
+    <CR name="Costa Rica" />
+    <SV name="El Salvador" />
+    <GT name="Guatemala" />
+    <HN name="Honduras" />
+    <MX name="Mexico" />
+    <NI name="Nicaragua" />
+    <PA name="Panama" />
+  </Group_13>
+  <Group_14 name="Group 14">
+    <ZW name="Zimbabwe" />
+    <BI name="Burundi" />
+    <KM name="Comoros" />
+    <DJ name="Djibouti" />
+    <ER name="Eritrea" />
+    <ET name="Ethiopia" />
+    <KE name="Kenya" />
+    <MG name="Madagascar" />
+    <MW name="Malawi" />
+    <MU name="Mauritius" />
+    <YT name="Mayotte" />
+    <MZ name="Mozambique" />
+    <RE name="Réunion" />
+    <RW name="Rwanda" />
+    <SC name="Seychelles" />
+    <SO name="Somalia" />
+    <TZ name="United Republic of Tanzania" />
+    <UG name="Uganda" />
+    <ZM name="Zambia" />
+  </Group_14>
+  <Group_15 name="Group 15">
+    <DZ name="Algeria" />
+    <EG name="Egypt" />
+    <LY name="Libyan Arab Jamahiriya" />
+    <MA name="Morocco" />
+    <SD name="Sudan" />
+    <TN name="Tunisia" />
+    <EH name="Western Sahara" />
+  </Group_15>
+  <Group_17 name="Group 17">
+    <AO name="Angola" />
+    <CM name="Cameroon" />
+    <CF name="Central African Republic" />
+    <TD name="Chad" />
+    <CD name="Democratic Republic of the Congo" />
+    <CG name="Congo" />
+    <GQ name="Equatorial Guinea" />
+    <GA name="Gabon" />
+    <ST name="Sao Tome and Principe" />
+  </Group_17>
+  <Group_18 name="Group 18">
+    <BW name="Botswana" />
+    <LS name="Lesotho" />
+    <NA name="Namibia" />
+    <ZA name="South Africa" />
+    <SZ name="Swaziland" />
+  </Group_18>
+  <Group_21 name="Group 21">
+    <BM name="Bermuda" />
+    <CA name="Canada" />
+    <GL name="Greenland" />
+    <PM name="Saint Pierre and Miquelon" />
+    <US name="United States of America" />
+  </Group_21>
+  <Group_29 name="Group 29">
+    <AI name="Anguilla" />
+    <AG name="Antigua and Barbuda" />
+    <AW name="Aruba" />
+    <BS name="Bahamas" />
+    <BB name="Barbados" />
+    <KY name="Cayman Islands" />
+    <CU name="Cuba" />
+    <DM name="Dominica" />
+    <DO name="Dominican Republic" />
+    <GD name="Grenada" />
+    <GP name="Guadeloupe" />
+    <HT name="Haiti" />
+    <JM name="Jamaica" />
+    <MQ name="Martinique" />
+    <MS name="Montserrat" />
+    <AN name="Netherlands Antilles" />
+    <PR name="Puerto Rico" />
+    <KN name="Saint Kitts and Nevis" />
+    <LC name="Saint Lucia" />
+    <VC name="Saint Vincent and the Grenadines" />
+    <TT name="Trinidad and Tobago" />
+    <TC name="Turks and Caicos Islands" />
+    <VG name="British Virgin Islands" />
+    <VI name="United States Virgin Islands" />
+  </Group_29>
+  <Group_30 name="Group 30">
+    <JP name="Japan" />
+    <CN name="China" />
+    <HK name="Hong Kong Special Administrative Region of China" />
+    <KP name="Democratic People's Republic of Korea" />
+    <KR name="Republic of Korea" />
+    <MO name="Macao Special Administrative Region of China" />
+    <MN name="Mongolia" />
+  </Group_30>
+  <Group_35 name="Group 35">
+    <BN name="Brunei Darussalam" />
+    <KH name="Cambodia" />
+    <ID name="Indonesia" />
+    <LA name="Lao People's Democratic Republic" />
+    <MY name="Malaysia" />
+    <PH name="Philippines" />
+    <SG name="Singapore" />
+    <TH name="Thailand" />
+    <VN name="Viet Nam" />
+  </Group_35>
+  <Group_39 name="Group 39">
+    <ES name="Spain" />
+    <IT name="Italy" />
+    <AL name="Albania" />
+    <AD name="Andorra" />
+    <BA name="Bosnia and Herzegovina" />
+    <HR name="Croatia" />
+    <GI name="Gibraltar" />
+    <GR name="Greece" />
+    <VA name="Holy See" />
+    <MK name="The former Yugoslav Republic of Macedonia" />
+    <MT name="Malta" />
+    <PT name="Portugal" />
+    <SM name="San Marino" />
+    <SI name="Slovenia" />
+  </Group_39>
+  <Group_53 name="Group 53">
+    <AU name="Australia" />
+    <NZ name="New Zealand" />
+    <NF name="Norfolk Island" />
+  </Group_53>
+  <Group_54 name="Group 54">
+    <FJ name="Fiji" />
+    <NC name="New Caledonia" />
+    <PG name="Papua New Guinea" />
+    <SB name="Solomon Islands" />
+    <VU name="Vanuatu" />
+  </Group_54>
+  <Group_57 name="Group 57">
+    <GU name="Guam" />
+    <MH name="Marshall Islands" />
+    <FM name="Micronesia (Federated States of)" />
+    <NR name="Nauru" />
+    <MP name="Northern Mariana Islands" />
+    <PW name="Palau" />
+  </Group_57>
+  <Group_61 name="Group 61">
+    <AS name="American Samoa" />
+    <CK name="Cook Islands" />
+    <PF name="French Polynesia" />
+    <NU name="Niue" />
+    <PN name="Pitcairn" />
+    <TK name="Tokelau" />
+    <TO name="Tonga" />
+    <TV name="Tuvalu" />
+    <WF name="Wallis and Futuna Islands" />
+    <WS name="Samoa" />
+  </Group_61>
+  <Group_62 name="Group 62">
+    <AF name="Afghanistan" />
+    <BD name="Bangladesh" />
+    <BT name="Bhutan" />
+    <IN name="India" />
+    <IR name="Iran (Islamic Republic of)" />
+    <KZ name="Kazakhstan" />
+    <KG name="Kyrgyzstan" />
+    <MV name="Maldives" />
+    <NP name="Nepal" />
+    <PK name="Pakistan" />
+    <LK name="Sri Lanka" />
+    <TJ name="Tajikistan" />
+    <TM name="Turkmenistan" />
+    <UZ name="Uzbekistan" />
+  </Group_62>
+  <Group_145 name="Group 145">
+    <AM name="Armenia" />
+    <AZ name="Azerbaijan" />
+    <BH name="Bahrain" />
+    <CY name="Cyprus" />
+    <GE name="Georgia" />
+    <IQ name="Iraq" />
+    <IL name="Israel" />
+    <JO name="Jordan" />
+    <KW name="Kuwait" />
+    <LB name="Lebanon" />
+    <OM name="Oman" />
+    <QA name="Qatar" />
+    <SA name="Saudi Arabia" />
+    <SY name="Syrian Arab Republic" />
+    <AE name="United Arab Emirates" />
+    <YE name="Yemen" />
+  </Group_145>
+  <Group_151 name="Group 151">
+    <BY name="Belarus" />
+    <BG name="Bulgaria" />
+    <CZ name="Czech Republic" />
+    <HU name="Hungary" />
+    <MD name="Republic of Moldova" />
+    <PL name="Poland" />
+    <RO name="Romania" />
+    <RU name="Russian Federation" />
+    <SK name="Slovakia" />
+    <UA name="Ukraine" />
+  </Group_151>
+  <Group_154 name="Group 154">
+    <DK name="Denmark" />
+    <EE name="Estonia" />
+    <FO name="Faeroe Islands" />
+    <FI name="Finland" />
+    <IS name="Iceland" />
+    <IE name="Ireland" />
+  </Group_154>
+  <Group_155 name="Group 155">
+    <DE name="Germany" />
+    <FR name="France" />
+    <AT name="Austria" />
+    <CH name="Switzerland" />
+    <BE name="Belgium" />
+    <LI name="Liechtenstein" />
+    <LU name="Luxembourg" />
+    <MC name="Monaco" />
+    <NL name="Netherlands" />
+  </Group_155>
+  <Group_833 name="Group 833">
+    <GB name="United Kingdom of Great Britain and Northern Ireland" />
+    <SE name="Sweden" />
+    <LV name="Latvia" />
+    <LT name="Lithuania" />
+    <NO name="Norway" />
+    <SJ name="Svalbard and Jan Mayen Islands" />
+  </Group_833>
+</WW>
 </territories>
 
 
