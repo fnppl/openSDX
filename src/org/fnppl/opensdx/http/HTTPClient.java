@@ -88,7 +88,7 @@ public class HTTPClient {
 		if (log!=null) {
 			try {
 				log.write(("--- REQUEST "+name+" ----------\n").getBytes());
-				req.toOutputNOT_URL_ENCODED_FOR_TESTING(log);
+				req.toOutput(log);
 				log.write(("--- END of REQUEST "+name+" ---\n").getBytes());
 				if (resp == null) {
 					log.write(("-> --- "+ERROR_NO_RESPONSE+" ---\n").getBytes());
@@ -113,13 +113,15 @@ public class HTTPClient {
 	}
 	public HTTPClientResponse send(HTTPClientRequest req) throws Exception {
 		if (!connect()) {
-			throw new RuntimeException("ERROR: Can not connect to server.");
+			RuntimeException l = new RuntimeException("ERROR: Can not connect to server.");
+			l.printStackTrace();
+			throw l;
 		}
-		//System.out.println("OSDXKeyServerClient | start "+req.getURI());
+		System.out.println("OSDXKeyServerClient | start "+req.getURI());
 		
-		//System.out.println("--- sending ---");
-		//req.toOutput(System.out);
-		//System.out.println("\n--- end of sending ---");
+		System.out.println("--- sending ---");
+		req.toOutput(System.out);
+		System.out.println("\n--- end of sending ---");
 		
 		req.send(socket);
 		

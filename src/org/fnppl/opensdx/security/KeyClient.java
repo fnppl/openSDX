@@ -58,7 +58,6 @@ import org.fnppl.opensdx.tsaserver.*;
 import org.fnppl.opensdx.xml.*;
 
 public class KeyClient extends HTTPClient {
-	
 	public static int OSDX_KEYSERVER_DEFAULT_PORT = 8889;
 	public final static String ERROR_WRONG_RESPONE_FORMAT = "ERROR: Wrong format in keyserver's response.";
 	
@@ -69,12 +68,14 @@ public class KeyClient extends HTTPClient {
 		super(host, port);
 		this.prepath = prepath;
 		this.keyverificator = keyverificator;
+		log = System.out;
 	}
 	
 	public KeyClient(KeyServerIdentity keyserver, KeyVerificator keyverificator) {
 		super(keyserver.getHost(), keyserver.getPort());
 		this.prepath = keyserver.getPrepath();
 		this.keyverificator = keyverificator;
+		log = System.out;
 	}
 	
 	public void setKeyVerificator(KeyVerificator keyverificator) {

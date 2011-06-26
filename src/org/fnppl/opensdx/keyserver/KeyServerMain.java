@@ -446,12 +446,16 @@ public class KeyServerMain extends HTTPServer {
 				}
 			}
 			if (wrongIDNum) {
+				System.out.println("WrongIDNum...");
 				//TODO HT 2011-06-26 hier bitte checken, ob noch ein offener approval rumliegt und NICHT in der aktuellen token-hash drin ist -> resend...
 				if(key != null) {
+					System.out.println("WrongIDNum key!=null...");
 					KeyStatus ks = keystore.getKeyStatus(key.getKeyID());
 					//if (ks==null || !(ks.isValid() || ks.isUnapproved())) {
-					if (ks==null || ks.isUnapproved()) {
+					System.out.println("WrongIDNum keystatus: "+ks.getValidityStatusName());
+					if (ks!=null && ks.isUnapproved()) {
 						KeyLog kl = ks.referencedKeyLog;
+						System.out.println("WrongIDNum keylog : "+kl.getAction());
 						sendApprovalTokenMail(kl, idd);
 						//openTokens.containsValue(kl);
 					}
@@ -502,6 +506,7 @@ public class KeyServerMain extends HTTPServer {
 		
 	}
 	private void sendApprovalTokenMail(KeyLog kl, Identity idd) {
+		System.out.println("Sending Approval Token Mail to "+idd.getEmail());
 		byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
 		String token = SecurityHelper.HexDecoder.encode(tokenbytes, '\0',-1);
 		
