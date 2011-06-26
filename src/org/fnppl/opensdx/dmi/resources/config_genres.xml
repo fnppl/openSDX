@@ -48,7 +48,26 @@
  -->
 
 <genres>
-	<genre>genre 1</genre>
-	<genre>genre 2</genre>
-	<genre>genre 3</genre>
+	<genre>
+		<name>genre 1</name>
+		<subgenres>
+			<genre>
+				<name>subgenre 1.1</name>
+			</genre>
+		</subgenres>
+	</genre>
+	<genre>
+		<name>genre 2</name>
+		<subgenres>
+			<genre>
+				<name>subgenre 2.1</name>
+			</genre>
+			<genre>
+				<name>subgenre 2.2</name>
+			</genre>
+		</subgenres>
+	</genre>
+	<genre>
+		<name>genre 3</name>		
+	</genre>
 </genres>
