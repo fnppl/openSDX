@@ -58,12 +58,14 @@ public class Receiver extends BusinessObject {
 
 	public static String KEY_NAME = "receiver";
 	
+	public static String TRANSFER_TYPE_OSDX_FILESERVER = "openSDX fileserver";
 	public static String TRANSFER_TYPE_FTP = "ftp";
 	public static String TRANSFER_TYPE_SFTP = "sftp";	
 	public static String TRANSFER_TYPE_FTPS = "ftps";
 	public static String TRANSFER_TYPE_WEBDAV = "webdav";
 	public static Vector<String> SUPPORTED_TRANSFER_TYPES = new Vector<String>();
 	static {
+		SUPPORTED_TRANSFER_TYPES.add(TRANSFER_TYPE_OSDX_FILESERVER);
 		SUPPORTED_TRANSFER_TYPES.add(TRANSFER_TYPE_FTP);
 		SUPPORTED_TRANSFER_TYPES.add(TRANSFER_TYPE_SFTP);
 		SUPPORTED_TRANSFER_TYPES.add(TRANSFER_TYPE_FTPS);
