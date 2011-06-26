@@ -590,16 +590,24 @@ public class KeyApprovingStore {
 		KeyLog kl = kls.lastElement();
 		String status = kl.getAction();
 		int validity = -1;
-		if (status.equals(KeyLogAction.APPROVAL)) validity =  KeyStatus.STATUS_VALID;
-		else if (status.equals(KeyLogAction.DISAPPROVAL)) validity =  KeyStatus.STATUS_UNAPPROVED;
-		else if (status.equals(KeyLogAction.APPROVAL_PENDING)) validity =  KeyStatus.STATUS_UNAPPROVED;
-		else if (status.equals(KeyLogAction.REVOCATION)) validity =  KeyStatus.STATUS_REVOKED;
+		if (status.equals(KeyLogAction.APPROVAL)) {
+			validity =  KeyStatus.STATUS_VALID;
+		}
+		else if (status.equals(KeyLogAction.DISAPPROVAL)) {
+			validity =  KeyStatus.STATUS_UNAPPROVED;
+		}
+		else if (status.equals(KeyLogAction.APPROVAL_PENDING)) {
+			validity =  KeyStatus.STATUS_UNAPPROVED;
+		}
+		else if (status.equals(KeyLogAction.REVOCATION)) {
+			validity =  KeyStatus.STATUS_REVOKED;
+		}
 		
 		int approvalPoints = 100;
 		int datetimeValidFrom = 0;  //TODO get from key
 		int datetimeValidUntil = 0; //TODO
 		
-		KeyStatus ks = new KeyStatus(validity, approvalPoints, datetimeValidFrom, datetimeValidUntil);
+		KeyStatus ks = new KeyStatus(validity, approvalPoints, datetimeValidFrom, datetimeValidUntil, kl);
 		return ks;
 	}
 

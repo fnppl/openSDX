@@ -446,6 +446,17 @@ public class KeyServerMain extends HTTPServer {
 				}
 			}
 			if (wrongIDNum) {
+				//TODO HT 2011-06-26 hier bitte checken, ob noch ein offener approval rumliegt und NICHT in der aktuellen token-hash drin ist -> resend...
+				if(key != null) {
+					KeyStatus ks = keystore.getKeyStatus(key.getKeyID());
+					//if (ks==null || !(ks.isValid() || ks.isUnapproved())) {
+					if (ks==null || ks.isUnapproved()) {
+						KeyLog kl = ks.referencedKeyLog;
+						sendApprovalTokenMail(kl, idd);
+						//openTokens.containsValue(kl);
+					}
+				}				
+				
 				return errorMessage("IdentNum collision: IdentNum must be > "+maxIDnum+".");
 			}
 			key.addIdentity(idd);
@@ -477,6 +488,20 @@ public class KeyServerMain extends HTTPServer {
 		KeyLog kl = KeyLog.buildNewKeyLog(klAction, request.getRealIP(), "", keyServerSigningKey);
 		
 		//send email with token
+		sendApprovalTokenMail(kl, idd);
+		
+		//save to keystore
+		keystore.addKey(key);
+		keystore.addKeyLog(kl);
+		updateCache(key, kl);
+		saveKeyStore();
+		
+		//send response
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		return resp;
+		
+	}
+	private void sendApprovalTokenMail(KeyLog kl, Identity idd) {
 		byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
 		String token = SecurityHelper.HexDecoder.encode(tokenbytes, '\0',-1);
 		
@@ -491,17 +516,6 @@ public class KeyServerMain extends HTTPServer {
 			System.out.println("ERROR while sendind mail :: "+ex.getMessage());
 			//ex.printStackTrace();
 		}
-		
-		//save to keystore
-		keystore.addKey(key);
-		keystore.addKeyLog(kl);
-		updateCache(key, kl);
-		saveKeyStore();
-		
-		//send response
-		KeyServerResponse resp = new KeyServerResponse(serverid);
-		return resp;
-		
 	}
 	
 	private KeyServerResponse handleVerifyRequest(HTTPServerRequest request) throws Exception {
@@ -509,12 +523,11 @@ public class KeyServerMain extends HTTPServer {
 		String id = request.getParamValue("id");
 		System.out.println("Token ID: "+id);
 		KeyLog kl = openTokens.get(id);
-		if (kl!=null) {
+		if (kl != null) {
 			//derive approval of email keylog from approval pending keylog 
 			Identity idd = Identity.newEmptyIdentity();
 			idd.setIdentNum(kl.getIdentity().getIdentNum());
 			idd.setEmail(kl.getIdentity().getEmail());
-			
 			
 			KeyLogAction keylogAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, keyServerSigningKey, kl.getKeyIDTo(), idd);
 			KeyLog klApprove = KeyLog.buildNewKeyLog(keylogAction, request.getRealIP(), "", keyServerSigningKey); 
