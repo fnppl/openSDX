@@ -56,20 +56,42 @@ public class SubKey extends OSDXKey {
 	}
 	
 	public Result uploadToKeyServer(KeyVerificator keyverificator) {
-		if (!hasPrivateKey()) return Result.error("no private key available");
-		if (!isPrivateKeyUnlocked()) return Result.error("private key is locked");
-		if (authoritativekeyserver.equals("LOCAL")) return Result.error("authoritative keyserver can not be LOCAL");
+		if (!hasPrivateKey()) {
+			System.out.println("uploadToKeyServer::!hasprivatekey");
+			return Result.error("no private key available");
+		}
+		if (!isPrivateKeyUnlocked()) {
+			System.out.println("uploadToKeyServer::!privatekeyunlocked");
+			return Result.error("private key is locked");
+		}
+		if (authoritativekeyserver.equals("LOCAL")) {
+			System.out.println("uploadToKeyServer::authoritativekeyserver==local");
+			return Result.error("authoritative keyserver can not be LOCAL");
+		}
 		//if (authoritativekeyserverPort<=0) return Result.error("authoritative keyserver port not set");
-		if (parentKey==null) return Result.error("missing parent key");
+		if (parentKey==null) {
+			System.out.println("uploadToKeyServer::parentkey==null");
+			return Result.error("missing parent key");
+		}
 		try {
-			KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "", keyverificator);
+			//KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "", keyverificator);
+			KeyClient client =  new KeyClient(
+					authoritativekeyserver,
+					80, //TODO HT 2011-06-26 check me!!!
+					//KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, 
+					"", 
+					keyverificator
+				);
+			System.out.println("Before SubKey.putSubkey...");
 			boolean ok = client.putSubKey(this, parentKey);
+			System.out.println("AFTER SubKey.putSubkey -> "+ok);
 			if (ok) {
 				return Result.succeeded();
 			} else {
 				return Result.error(client.getMessage());
 			}
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			return Result.error(ex);
 		}
 	}

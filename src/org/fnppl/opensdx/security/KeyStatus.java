@@ -52,6 +52,7 @@ import org.fnppl.opensdx.xml.Element;
  */
 
 public class KeyStatus {
+	public KeyLog referencedKeyLog = null;
 	
 	public static int STATUS_UNAPPROVED = 0;
 	public static int STATUS_VALID = 1;
@@ -77,11 +78,12 @@ public class KeyStatus {
 		validUntil = validFrom;
 	}
 	
-	public KeyStatus(int validity, int approvalPoints, long datetimeValidFrom, long datetimeValidUntil) {
+	public KeyStatus(int validity, int approvalPoints, long datetimeValidFrom, long datetimeValidUntil, KeyLog kl) {
 		validityStatus = validity;
 		this.approvalPoints = approvalPoints;
 		validFrom = datetimeValidFrom;
 		validUntil = datetimeValidUntil;
+		this.referencedKeyLog = kl;
 	}
 	
 	public static KeyStatus fromElement(Element e) throws Exception {

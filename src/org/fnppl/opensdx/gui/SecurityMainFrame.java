@@ -2696,6 +2696,8 @@ public class SecurityMainFrame extends JFrame {
 	}
 
 	private boolean uploadRevokeKeyToKeyServer(final RevokeKey key) {
+		System.out.println("UploadingOfRevokeKeyToServer...started...");
+		
 		final JDialog wait = Dialogs.getWaitDialog("Uploading revocation key\n please wait ...");
 		final boolean[] result = new boolean[] {false};
 		Thread t = new Thread() {
@@ -2713,7 +2715,11 @@ public class SecurityMainFrame extends JFrame {
 			}
 		};
 		t.start();
-		wait.setVisible(true);
+		
+		System.out.println("Before wait blocks...");
+		wait.setVisible(true); //blocks...
+		
+		System.out.println("AFTER wait blocks...");
 		return result[0];
 	}
 	
@@ -2727,18 +2733,27 @@ public class SecurityMainFrame extends JFrame {
 			return false;
 		}
 		String keyLevel = "SUB";
-		if (key instanceof RevokeKey) keyLevel = "REVOKE";
+		if (key instanceof RevokeKey) {
+			keyLevel = "REVOKE";
+		}
 		int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to upload the "+keyLevel+" Key:\n"+key.getKeyID()+"\nfor MASTER Key: "+key.getParentKeyID()+"\nto KeyServer: "+key.getAuthoritativekeyserver()+"?");
 		if (confirm==Dialogs.YES) {
-			if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
-			if (!key.getParentKey().isPrivateKeyUnlocked()) key.getParentKey().unlockPrivateKey(messageHandler);
+			if (!key.isPrivateKeyUnlocked()) {
+				key.unlockPrivateKey(messageHandler);
+			}
+			if (!key.getParentKey().isPrivateKeyUnlocked()) {
+				key.getParentKey().unlockPrivateKey(messageHandler);
+			}
 			final Result[] r = new Result[] {Result.succeeded()};
 			final JDialog wait = Dialogs.getWaitDialog("Uploading key "+key.getKeyID()+"\n please wait ...");
 			Thread t = new Thread() {
 				public void run() {
 					try {
+						System.out.println("Before calling key.uploadtoKeyServer...");
 						r[0] = key.uploadToKeyServer(keyverificator);
+						System.out.println("AFTER calling key.uploadtoKeyServer...");
 						releaseUILock();
+						
 						wait.dispose();
 					} catch (Exception ex) {
 						releaseUILock();
@@ -2749,8 +2764,10 @@ public class SecurityMainFrame extends JFrame {
 				}
 			};
 			t.start();
-			wait.setVisible(true);
 
+			System.out.println("Before WAIT2 blocks...");
+			wait.setVisible(true);
+			System.out.println("After WAIT2 blocks...");
 			if (r[0].succeeded) {
 				props.put(key.getKeyID(), "VISIBLE");
 				update();
