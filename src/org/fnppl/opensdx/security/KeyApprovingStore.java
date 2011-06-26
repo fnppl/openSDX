@@ -404,6 +404,20 @@ public class KeyApprovingStore {
 		return skeys;
 	}
 	
+	public Vector<OSDXKey> getAllPrivateSigningKeys() {
+		Vector<OSDXKey> result = new Vector<OSDXKey>();
+		for (OSDXKey key : getAllSigningMasterKeys()) {
+			if (key.hasPrivateKey()) {
+				result.add(key);
+			}
+		}
+		for (OSDXKey key : getAllSigningSubKeys()) {
+			if (key.hasPrivateKey()) {
+				result.add(key);
+			}
+		}
+		return result;
+	}
 	public Vector<MasterKey> getAllMasterKeys() {
 		Vector<MasterKey> skeys = new Vector<MasterKey>();
 		for (OSDXKey k : keys) {

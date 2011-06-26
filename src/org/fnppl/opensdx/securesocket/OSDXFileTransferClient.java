@@ -86,6 +86,10 @@ public class OSDXFileTransferClient extends OSDXSocket {
 		sendEncryptedText("CD "+dir);
 	}
 	
+	public void cd_up() {
+		sendEncryptedText("CDUP");
+	}
+	
 	public void mkdir(String dir) {
 		sendEncryptedText("MKDIR "+dir);
 	}
@@ -112,6 +116,11 @@ public class OSDXFileTransferClient extends OSDXSocket {
 				}
 			}
 		}
+	}
+	
+	public void uploadFile(String filename, byte[] data) {
+		sendEncryptedText("PUT "+filename);
+		sendEncryptedData(data);
 	}
 	
 	public void downloadFile(String filename, File savePath) {
