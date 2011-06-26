@@ -184,10 +184,10 @@ public class KeyServerMain extends HTTPServer {
 		openTokens = new HashMap<String, KeyLog>();
 		
 		if (mailProps!=null) {
-			if (pwMail !=null) {
-				mailProps.setProperty("mail.password", pwMail);	
+			if (pwMail !=null && pwMail.trim() != "") {
+				mailProps.setProperty("mail.password", pwMail);
+				mailAuth = new MailAuthenticator(mailProps.getProperty("mail.user"), mailProps.getProperty("mail.password"));
 			}
-			mailAuth = new MailAuthenticator(mailProps.getProperty("mail.user"), mailProps.getProperty("mail.password"));
 		}
 		openDefaultKeyStore();
 		keystore.setSigningKey(keyServerSigningKey);
@@ -255,14 +255,23 @@ public class KeyServerMain extends HTTPServer {
 			//mail properties
 			Element eMail = ks.getChild("mail");
 			mailProps = new Properties();
-			mailProps.setProperty("mail.user", eMail.getChildText("user"));
+			String mu = eMail.getChildText("user");
+		
+			if(!mu.equals("")) {
+				mailProps.setProperty("mail.user", mu);
+			}
 			String pw = eMail.getChildText("password");
 			if (pw!=null && pw.length()>0) {
 				mailProps.setProperty("mail.password", pw);	
 			}
 			mailProps.setProperty("mail.transport.protocol", "smtp");
 			mailProps.setProperty("mail.smtp.host", eMail.getChildText("smtp_host"));
-			mailProps.setProperty("mail.smtp.auth", "true");
+			if(mailProps.getProperty("mail.user")!=null || mailProps.getProperty("mail.password")!=null) {
+				mailProps.setProperty("mail.smtp.auth", "true");
+			}
+			else {
+				mailProps.setProperty("mail.smtp.auth", "false");
+			}
 			mailProps.setProperty("senderAddress", eMail.getChildText("sender"));
 			
 			//keyServerSigningKey
@@ -458,19 +467,23 @@ public class KeyServerMain extends HTTPServer {
 		Identity idd = Identity.fromElement(content.getChild("identity"));
 		
 		key.addIdentity(idd);
-		key.addDataSourceStep(new DataSourceStep(request.ipv4, request.datetime));
+		key.addDataSourceStep(new DataSourceStep(request.getRealIP(), request.datetime));
 		
 		//generate keylog for approve_pending of email
 		Identity apid = Identity.newEmptyIdentity();
 		apid.setIdentNum(idd.getIdentNum());
 		apid.setEmail(idd.getEmail());
 		KeyLogAction klAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL_PENDING, keyServerSigningKey, key.getKeyID(), apid);
-		KeyLog kl = KeyLog.buildNewKeyLog(klAction, request.ipv4, request.ipv4, keyServerSigningKey);
+		KeyLog kl = KeyLog.buildNewKeyLog(klAction, request.getRealIP(), "", keyServerSigningKey);
 		
 		//send email with token
 		byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
 		String token = SecurityHelper.HexDecoder.encode(tokenbytes, '\0',-1);
-		String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+":"+port+"/approve_mail?id="+token;
+		
+		//TODO HT 2011-06-26 port must also be checked because of http-reverse-proxy...
+		//String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+":"+port+"/approve_mail?id="+token;
+		String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+"/approve_mail?id="+token;
+		
 		openTokens.put(token, kl);
 		try {
 			sendMail(idd.getEmail(), "email address verification", verificationMsg);
@@ -504,7 +517,7 @@ public class KeyServerMain extends HTTPServer {
 			
 			
 			KeyLogAction keylogAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, keyServerSigningKey, kl.getKeyIDTo(), idd);
-			KeyLog klApprove = KeyLog.buildNewKeyLog(keylogAction, request.ipv4, request.ipv4, keyServerSigningKey); 
+			KeyLog klApprove = KeyLog.buildNewKeyLog(keylogAction, request.getRealIP(), "", keyServerSigningKey); 
 			keystore.addKeyLog(klApprove);
 			openTokens.remove(id);
 			
@@ -626,7 +639,7 @@ public class KeyServerMain extends HTTPServer {
 			return errorMessage("verifcation of keylogaction localproof and signature failed.");	
 		}		
 		
-		KeyLog log = KeyLog.buildNewKeyLog(keylogAction, request.ipv4, request.ipv4, keyServerSigningKey);
+		KeyLog log = KeyLog.buildNewKeyLog(keylogAction, request.getRealIP(), "", keyServerSigningKey);
 		//log.verify();
 		
 		//save
@@ -678,7 +691,7 @@ public class KeyServerMain extends HTTPServer {
 			return errorMessage("verifcation of keylogaction localproof and signature failed.");	
 		}
 	
-		KeyLog log = KeyLog.buildNewKeyLog(keylogAction, request.ipv4, request.ipv4, keyServerSigningKey);
+		KeyLog log = KeyLog.buildNewKeyLog(keylogAction, request.getRealIP(), "", keyServerSigningKey);
 		
 		//save
 		updateCache(null,log);
@@ -788,7 +801,7 @@ public class KeyServerMain extends HTTPServer {
 			
 			//TODO check given approved identitiy fields match the original (same identnum) identity fields  
 
-			KeyLog kl = KeyLog.buildNewKeyLog(log, request.ipv4, request.ipv4, keyServerSigningKey);
+			KeyLog kl = KeyLog.buildNewKeyLog(log, request.getRealIP(), "", keyServerSigningKey);
 			keystore.addKeyLog(kl);
 			updateCache(null,kl);
 
@@ -889,8 +902,13 @@ public class KeyServerMain extends HTTPServer {
 	}
 	
 	public void sendMail(String recipient, String subject,String message)  throws Exception {
-		if (mailAuth == null) throw new RuntimeException("ERROR: mail authenticator not found.");
-		if (mailProps == null) throw new RuntimeException("ERROR: mail properties not found.");
+		if (mailAuth == null) {
+			//HT 2011-06-26 - can totally be null, when not authentication needed/wanted...
+			//throw new RuntimeException("ERROR: mail authenticator not found.");
+		}
+		if (mailProps == null) {
+			throw new RuntimeException("ERROR: mail properties not found.");
+		}
 		
 		//generate compressed message
 		MimeBodyPart body = new MimeBodyPart();
