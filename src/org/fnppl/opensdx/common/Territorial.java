@@ -88,16 +88,18 @@ public class Territorial extends BusinessObject {
 		return t;
 	}
 	
-	public void allow(String territory) {
+	public Territorial allow(String territory) {
 		BusinessStringItem item = new BusinessStringItem("territory", territory);
 		item.setAttribute("type", "allow");
 		territories.add(item);
+		return this;
 	}
 	
-	public void disallow(String territory) {
+	public Territorial disallow(String territory) {
 		BusinessStringItem item = new BusinessStringItem("territory", territory);
 		item.setAttribute("type", "disallow");
 		territories.add(item);
+		return this;
 	}
 	
 	public void remove(String territory) {

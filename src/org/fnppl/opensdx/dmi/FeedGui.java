@@ -359,6 +359,10 @@ public class FeedGui extends JFrame implements MyObserver {
 						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)
 						.addFile(ItemFile.make(new File("fnppl_contributor_license.pdf")))
 		);
+		currentFeed.getBundle(0).getLicense_basis().getTerritorial()
+		.allow("de")
+		.allow("uk")
+		.disallow("us");
 		update();
 	}
 	

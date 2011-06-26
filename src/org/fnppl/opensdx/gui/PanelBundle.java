@@ -1,5 +1,6 @@
 package org.fnppl.opensdx.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -8,6 +9,7 @@ import java.lang.reflect.Method;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
@@ -73,16 +75,25 @@ import org.fnppl.opensdx.security.SecurityHelper;
  * Free Documentation License" resp. in the file called "FDL.txt".
  *
  */
-public class PanelBundle extends javax.swing.JPanel implements MyObservable {
+public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyObserver{
 
     private Bundle bundle = null;
     private DocumentChangeListener changeListener;
     private Vector<String[]> bindings;
     private PanelFeedInfo me;
     private Vector<MyObserver> observers = new Vector<MyObserver>();
+    private EditTerritoiresTree tree_territories;
 
     public void addObserver(MyObserver observer) {
         observers.add(observer);
+    }
+
+    public void notifyChange() {
+        LicenseBasis lb = bundle.getLicense_basis();
+        if (lb!=null) {
+            lb.setTerritorial(tree_territories.getTerritorial());
+            updateLicense();
+        }
     }
 
     /** Creates new form PanelBundle */
@@ -90,6 +101,10 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
         initComponents();
         list_allowed_territories.setModel(new DefaultListModel());
         list_disallowed_territories.setModel(new DefaultListModel());
+        panel_territories.setLayout(new BorderLayout());
+        tree_territories = new EditTerritoiresTree();
+        tree_territories.addObserver(this);
+        panel_territories.add(new JScrollPane(tree_territories), BorderLayout.CENTER);
         initChangeListeners();
     }
 
@@ -149,6 +164,50 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
             }
         }
    
+    }
+
+    public void updateLicense() {
+        LicenseBasis lb = bundle.getLicense_basis();
+        if (lb!=null) {
+            text_license_from_datetime.setText(lb.getTimeframeFromText());
+            text_license_to_datetime.setText(lb.getTimeframeToText());
+            if (lb.getPricingPricecode()==null) {
+                select_license_pricing.setSelectedItem(lb.getPricingPricecode());
+                text_license_pricing.setText("");
+                text_license_pricing.setEnabled(false);
+            } else {
+                select_license_pricing.setSelectedIndex(0);
+                text_license_pricing.setText(lb.getPricingWholesale());
+                text_license_pricing.setEnabled(true);
+            }
+            DefaultListModel lmAllow = (DefaultListModel)list_allowed_territories.getModel();
+            DefaultListModel lmDisallow = (DefaultListModel)list_disallowed_territories.getModel();
+            lmAllow.removeAllElements();
+            lmDisallow.removeAllElements();
+            Territorial t = lb.getTerritorial();
+            if (t!=null) {
+                tree_territories.setTerritories(t);
+            	int count = t.getTerritorialCount();
+                for (int i=0;i<count;i++) {
+                    if (t.isTerritoryAllowed(i)) {
+                        lmAllow.addElement(t.getTerritory(i));
+                    } else {
+                        lmDisallow.addElement(t.getTerritory(i));
+                    }
+                }
+            }
+        } else {
+            text_license_from_datetime.setText("");
+            text_license_to_datetime.setText("");
+            select_license_pricing.setSelectedIndex(0);
+            text_license_pricing.setText("");
+            text_license_pricing.setEnabled(true);
+            tree_territories.setTerritories(Territorial.make());
+            DefaultListModel lmAllow = (DefaultListModel)list_allowed_territories.getModel();
+            DefaultListModel lmDisallow = (DefaultListModel)list_disallowed_territories.getModel();
+            lmAllow.removeAllElements();
+            lmDisallow.removeAllElements();
+        }
     }
 
     public void newEmpty() {
@@ -223,45 +282,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
         }
 
         //License
-        LicenseBasis lb = bundle.getLicense_basis();
-        if (lb!=null) {
-            text_license_from_datetime.setText(lb.getTimeframeFromText());
-            text_license_to_datetime.setText(lb.getTimeframeToText());
-            if (lb.getPricingPricecode()==null) {
-                select_license_pricing.setSelectedItem(lb.getPricingPricecode());
-                text_license_pricing.setText("");
-                text_license_pricing.setEnabled(false);
-            } else {
-                select_license_pricing.setSelectedIndex(0);
-                text_license_pricing.setText(lb.getPricingWholesale());
-                text_license_pricing.setEnabled(true);
-            }
-            DefaultListModel lmAllow = (DefaultListModel)list_allowed_territories.getModel();
-            DefaultListModel lmDisallow = (DefaultListModel)list_disallowed_territories.getModel();
-            lmAllow.removeAllElements();
-            lmDisallow.removeAllElements();
-            Territorial t = lb.getTerritorial();
-            if (t!=null) {
-            	int count = t.getTerritorialCount();
-	            for (int i=0;i<count;i++) {
-	                if (t.isTerritoryAllowed(i)) {
-	                    lmAllow.addElement(t.getTerritory(i));
-	                } else {
-	                    lmDisallow.addElement(t.getTerritory(i));
-	                }
-	            }
-            }
-        } else {
-            text_license_from_datetime.setText("");
-            text_license_to_datetime.setText("");
-            select_license_pricing.setSelectedIndex(0);
-            text_license_pricing.setText("");
-            text_license_pricing.setEnabled(true);
-            DefaultListModel lmAllow = (DefaultListModel)list_allowed_territories.getModel();
-            DefaultListModel lmDisallow = (DefaultListModel)list_disallowed_territories.getModel();
-            lmAllow.removeAllElements();
-            lmDisallow.removeAllElements();
-        }
+        updateLicense();
         
         changeListener.saveStates();
     }
@@ -605,13 +626,8 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
         list_disallowed_territories = new javax.swing.JList();
         jScrollPane4 = new javax.swing.JScrollPane();
         list_allowed_territories = new javax.swing.JList();
-        bu_add_allowed_territory = new javax.swing.JButton();
-        bu_remove_allowed_territory = new javax.swing.JButton();
-        bu_remove_disallowed_territory = new javax.swing.JButton();
-        bu_add_disallowed_territory = new javax.swing.JButton();
-        add_new_territory_text = new javax.swing.JTextField();
-        jLabel23 = new javax.swing.JLabel();
         select_license_pricing = new javax.swing.JComboBox();
+        panel_territories = new javax.swing.JPanel();
 
         setPreferredSize(new java.awt.Dimension(760, 989));
 
@@ -785,7 +801,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
             .addGroup(panelIDsBigLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(panelIDs, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(251, Short.MAX_VALUE))
+                .addContainerGap(275, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("IDs", panelIDsBig);
@@ -1044,7 +1060,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
                             .addComponent(jLabel2))
                         .addGap(18, 18, 18)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -1134,7 +1150,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bu_add_promotext)
                     .addComponent(bu_remove_promotext))
-                .addContainerGap(334, Short.MAX_VALUE))
+                .addContainerGap(358, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Information", panelInformation);
@@ -1153,42 +1169,23 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
         list_allowed_territories.setBorder(javax.swing.BorderFactory.createTitledBorder("Allowed Territories"));
         jScrollPane4.setViewportView(list_allowed_territories);
 
-        bu_add_allowed_territory.setText("add allowed");
-        bu_add_allowed_territory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_add_allowed_territoryActionPerformed(evt);
-            }
-        });
-
-        bu_remove_allowed_territory.setText("remove");
-        bu_remove_allowed_territory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_remove_allowed_territoryActionPerformed(evt);
-            }
-        });
-
-        bu_remove_disallowed_territory.setText("remove");
-        bu_remove_disallowed_territory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_remove_disallowed_territoryActionPerformed(evt);
-            }
-        });
-
-        bu_add_disallowed_territory.setText("add disallowed");
-        bu_add_disallowed_territory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_add_disallowed_territoryActionPerformed(evt);
-            }
-        });
-
-        jLabel23.setText("new terrotory");
-
         select_license_pricing.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "[other]", "LOW", "MEDIUM", "HIGH" }));
         select_license_pricing.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 select_license_pricingActionPerformed(evt);
             }
         });
+
+        javax.swing.GroupLayout panel_territoriesLayout = new javax.swing.GroupLayout(panel_territories);
+        panel_territories.setLayout(panel_territoriesLayout);
+        panel_territoriesLayout.setHorizontalGroup(
+            panel_territoriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 570, Short.MAX_VALUE)
+        );
+        panel_territoriesLayout.setVerticalGroup(
+            panel_territoriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 297, Short.MAX_VALUE)
+        );
 
         javax.swing.GroupLayout panelLicenseLayout = new javax.swing.GroupLayout(panelLicense);
         panelLicense.setLayout(panelLicenseLayout);
@@ -1198,37 +1195,28 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
                 .addContainerGap()
                 .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelLicenseLayout.createSequentialGroup()
-                        .addComponent(jLabel23)
-                        .addGap(44, 44, 44)
-                        .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(panelLicenseLayout.createSequentialGroup()
-                                .addComponent(bu_add_allowed_territory)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 161, Short.MAX_VALUE))
-                            .addComponent(add_new_territory_text, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)))
-                    .addGroup(panelLicenseLayout.createSequentialGroup()
-                        .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(bu_remove_allowed_territory))
-                        .addGap(26, 26, 26)
-                        .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(bu_remove_disallowed_territory)
-                            .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(bu_add_disallowed_territory)
-                                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(panelLicenseLayout.createSequentialGroup()
-                        .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel33)
-                            .addComponent(jLabel34)
-                            .addComponent(jLabel32))
-                        .addGap(39, 39, 39)
                         .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(panelLicenseLayout.createSequentialGroup()
-                                .addComponent(select_license_pricing, 0, 98, Short.MAX_VALUE)
-                                .addGap(18, 18, 18)
-                                .addComponent(text_license_pricing, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(text_license_to_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                            .addComponent(text_license_from_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))))
-                .addGap(599, 599, 599))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelLicenseLayout.createSequentialGroup()
+                                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(26, 26, 26)
+                                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelLicenseLayout.createSequentialGroup()
+                                .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel33)
+                                    .addComponent(jLabel34)
+                                    .addComponent(jLabel32))
+                                .addGap(39, 39, 39)
+                                .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(panelLicenseLayout.createSequentialGroup()
+                                        .addComponent(select_license_pricing, 0, 98, Short.MAX_VALUE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(text_license_pricing, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(text_license_to_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                                    .addComponent(text_license_from_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))))
+                        .addGap(393, 393, 393))
+                    .addGroup(panelLicenseLayout.createSequentialGroup()
+                        .addComponent(panel_territories, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(81, Short.MAX_VALUE))))
         );
 
         panelLicenseLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jScrollPane3, jScrollPane4});
@@ -1254,18 +1242,8 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(bu_remove_allowed_territory)
-                    .addComponent(bu_remove_disallowed_territory))
-                .addGap(18, 18, 18)
-                .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(add_new_territory_text, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel23))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(bu_add_allowed_territory)
-                    .addComponent(bu_add_disallowed_territory))
-                .addContainerGap(185, Short.MAX_VALUE))
+                .addComponent(panel_territories, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(24, 24, 24))
         );
 
         jTabbedPane1.addTab("License", panelLicense);
@@ -1291,7 +1269,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
                 .addComponent(panelBasics, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(160, Short.MAX_VALUE))
+                .addContainerGap(136, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1371,39 +1349,6 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
         }
     }//GEN-LAST:event_bu_remove_promotextActionPerformed
 
-    private void bu_add_allowed_territoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_allowed_territoryActionPerformed
-       if (!add_new_territory_text.getText().equals("")) {
-           DefaultListModel lm = (DefaultListModel)list_allowed_territories.getModel();
-           String t = add_new_territory_text.getText();
-           bundle.getLicense_basis().getTerritorial().allow(t);
-           lm.addElement(t);
-           add_new_territory_text.setText("");
-           notifyChanges();
-        }
-    }//GEN-LAST:event_bu_add_allowed_territoryActionPerformed
-
-    private void bu_add_disallowed_territoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_disallowed_territoryActionPerformed
-         if (!add_new_territory_text.getText().equals("")) {
-           DefaultListModel lm = (DefaultListModel)list_disallowed_territories.getModel();
-           String t = add_new_territory_text.getText();
-           bundle.getLicense_basis().getTerritorial().disallow(t);
-           lm.addElement(t);
-           add_new_territory_text.setText("");
-           notifyChanges();
-        }
-    }//GEN-LAST:event_bu_add_disallowed_territoryActionPerformed
-
-    private void bu_remove_allowed_territoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_allowed_territoryActionPerformed
-       int sel = list_allowed_territories.getSelectedIndex();
-       if (sel>=0) {
-           DefaultListModel lm = (DefaultListModel)list_allowed_territories.getModel();
-           String s = (String)lm.getElementAt(sel);
-           bundle.getLicense_basis().getTerritorial().remove(s);
-           lm.remove(sel);
-           notifyChanges();
-       }
-    }//GEN-LAST:event_bu_remove_allowed_territoryActionPerformed
-
     private void select_license_pricingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_license_pricingActionPerformed
         int sel = select_license_pricing.getSelectedIndex();
         if (sel == 0) { //other
@@ -1419,26 +1364,10 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
         notifyChanges();
     }//GEN-LAST:event_select_license_pricingActionPerformed
 
-    private void bu_remove_disallowed_territoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_disallowed_territoryActionPerformed
-      int sel = list_disallowed_territories.getSelectedIndex();
-       if (sel>=0) {
-           DefaultListModel lm = (DefaultListModel)list_disallowed_territories.getModel();
-           String s = (String)lm.getElementAt(sel);
-           bundle.getLicense_basis().getTerritorial().remove(s);
-           lm.remove(sel);
-           notifyChanges();
-       }
-    }//GEN-LAST:event_bu_remove_disallowed_territoryActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField add_new_territory_text;
-    private javax.swing.JButton bu_add_allowed_territory;
-    private javax.swing.JButton bu_add_disallowed_territory;
     private javax.swing.JButton bu_add_promotext;
     private javax.swing.JButton bu_contributor_add;
     private javax.swing.JButton bu_contributor_remove;
-    private javax.swing.JButton bu_remove_allowed_territory;
-    private javax.swing.JButton bu_remove_disallowed_territory;
     private javax.swing.JButton bu_remove_promotext;
     private javax.swing.JCheckBox check_contributor_publish_phone;
     private javax.swing.JLabel jLabel1;
@@ -1456,7 +1385,6 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
-    private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
@@ -1490,6 +1418,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
     private javax.swing.JPanel panelIDsBig;
     private javax.swing.JPanel panelInformation;
     private javax.swing.JPanel panelLicense;
+    private javax.swing.JPanel panel_territories;
     private javax.swing.JScrollPane scroll_table_promotext;
     private javax.swing.JComboBox select_contributor_type;
     private javax.swing.JComboBox select_license_pricing;
@@ -1525,4 +1454,5 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable {
     private javax.swing.JTextField text_version;
     private javax.swing.JTextField text_yourid;
     // End of variables declaration//GEN-END:variables
+
 }
