@@ -55,11 +55,13 @@ import java.util.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
+import javax.print.Doc;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.common.BusinessObject;
 import org.fnppl.opensdx.common.Feed;
@@ -68,16 +70,21 @@ import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.common.ItemFile;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Receiver;
+import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 import org.fnppl.opensdx.gui.Helper;
+import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.gui.MyObserver;
 import org.fnppl.opensdx.gui.PanelBundle;
 import org.fnppl.opensdx.gui.PanelFeedInfo;
 import org.fnppl.opensdx.gui.PanelItems;
 import org.fnppl.opensdx.gui.SecurityMainFrame;
+import org.fnppl.opensdx.securesocket.OSDXFileTransferClient;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
+
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 
 
 
@@ -242,8 +249,7 @@ public class FeedGui extends JFrame implements MyObserver {
 			if (type.equals("openSDX fileserver")) {
 				int ans = Dialogs.showYES_NO_Dialog("Sending Feed", "Do you really want to send the current feed to "+servername+"?");
 				if (ans==Dialogs.YES) {
-					//TODO send via openSDX fileserver
-					
+					sendFeedToOSDXFileserver();
 				}
 			}
 			else {
@@ -252,6 +258,106 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 	}
 	
+	private void sendFeedToOSDXFileserver() {
+		String servername = currentFeed.getFeedinfo().getReceiver().getServername();
+		File f = Dialogs.chooseOpenFile("Open KeyStore", lastDir, "keystore.xml");
+		if (f==null) return;
+		OSDXKey mysigning = null;
+		
+		try {
+			MessageHandler mh = new DefaultMessageHandler() {
+				public boolean requestOverwriteFile(File file) {
+					return false;
+				}
+				public boolean requestIgnoreVerificationFailure() {
+					return false;
+				}
+				public boolean requestIgnoreKeyLogVerificationFailure() {
+					return false;
+				}
+			};
+			KeyApprovingStore store = KeyApprovingStore.fromFile(f, mh); 
+			mysigning = selectPrivateSigningKey(store);
+			mysigning.unlockPrivateKey(mh);
+			
+		} catch (Exception e1) {
+			Dialogs.showMessage("Error opening keystore");
+		}
+		if (mysigning==null) return;
+		if (!mysigning.isPrivateKeyUnlocked()) {
+			Dialogs.showMessage("Sorry, private is is locked.");
+			return;
+		}
+		
+		OSDXFileTransferClient s = new OSDXFileTransferClient(servername, 4221);
+		try {
+			s.connect(mysigning);
+			String dir = "feed_upload_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,20);
+			//some test commands
+			s.mkdir(dir);
+			s.cd(dir);
+			ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+			Document.buildDocument(currentFeed.toElement()).output(bOut);
+			s.uploadFile("feed.xml",bOut.toByteArray());
+			
+			//upload all item files
+			Bundle bundle = currentFeed.getBundle(0);
+			if (bundle!=null) {
+				for (int i=0;i<bundle.getItemsCount();i++) {
+					Item item = bundle.getItem(i);
+					if (item.getFilesCount()>0) {
+						String subdir = "item_"+(i+1)+"_files";
+						s.mkdir(subdir);
+						s.cd(subdir);
+						for (int j=0;j<item.getFilesCount();j++) {
+							try {
+								File nextFile = new File(item.getFile(j).getLocationPath());
+								s.uploadFile(nextFile);
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
+						}
+						s.cd_up();
+					}
+				}
+			}
+			
+			s.closeConnection();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public OSDXKey selectPrivateSigningKey(KeyApprovingStore store) {
+		Vector<OSDXKey> storedPrivateKeys = store.getAllPrivateSigningKeys();
+		if (storedPrivateKeys==null || storedPrivateKeys.size()==0) {
+			Dialogs.showMessage("Sorry, no private key for signing in keystore");
+			return null;
+		}
+		Vector<String> select = new Vector<String>();
+		int[] map = new int[storedPrivateKeys.size()];
+		for (int i=0;i<storedPrivateKeys.size();i++) {
+			OSDXKey k = storedPrivateKeys.get(i);
+			if (k.allowsSigning()) {
+				if (k.isMaster()) {
+					select.add(k.getKeyID()+", "+((MasterKey)k).getIDEmailAndMnemonic());
+				}
+				else if (k.isSub()) {
+					select.add(k.getKeyID()+" subkey of "+((SubKey)k).getParentKey().getIDEmailAndMnemonic());
+				}
+				else {
+					select.add(k.getKeyID());
+				}
+				map[select.size()-1] = i;
+			}
+		}
+		int ans = Dialogs.showSelectDialog("Select private key","Please select a private key for signing", select);
+		if (ans>=0 && ans<select.size()) {
+			return storedPrivateKeys.get(map[ans]);
+		}
+		return null;
+	}
 	
 	public void notifyChange() {
 		if (treePanel!=null) {
@@ -420,9 +526,9 @@ public class FeedGui extends JFrame implements MyObserver {
 						.addFile(ItemFile.make(new File("fnppl_contributor_license.pdf")))
 		);
 		currentFeed.getBundle(0).getLicense_basis().getTerritorial()
-		.allow("de")
-		.allow("uk")
-		.disallow("us");
+		.allow("DE")
+		.allow("GB")
+		.disallow("US");
 		update();
 	}
 	
