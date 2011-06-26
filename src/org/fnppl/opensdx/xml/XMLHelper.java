@@ -64,6 +64,12 @@ public class XMLHelper {
 	
 	public static Element cloneElement(Element e) {
 		Element c = new Element(e.getName());
+		Vector<String[]> atts = e.getAttributes();
+		if (atts!=null) {
+			for (String[] a : atts) {
+				c.setAttribute(a[0], a[1]);
+			}
+		}
 		rekursiveAddContent(e, c);
 		return c;
 	}
@@ -77,7 +83,14 @@ public class XMLHelper {
 				} else {
 					//System.out.println("adding element: "+el.getName());
 					Element sub = new Element(el.getName());
+					Vector<String[]> atts = el.getAttributes();
+					if (atts!=null) {
+						for (String[] a : atts) {
+							sub.setAttribute(a[0], a[1]);
+						}
+					}
 					to.addContent(sub);
+					
 					rekursiveAddContent(el, sub);
 				}
 			}
