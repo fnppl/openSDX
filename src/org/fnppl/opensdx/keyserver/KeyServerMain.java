@@ -184,10 +184,10 @@ public class KeyServerMain extends HTTPServer {
 		openTokens = new HashMap<String, KeyLog>();
 		
 		if (mailProps!=null) {
-			if (pwMail !=null) {
-				mailProps.setProperty("mail.password", pwMail);	
+			if (pwMail !=null && pwMail.trim() != "") {
+				mailProps.setProperty("mail.password", pwMail);
+				mailAuth = new MailAuthenticator(mailProps.getProperty("mail.user"), mailProps.getProperty("mail.password"));
 			}
-			mailAuth = new MailAuthenticator(mailProps.getProperty("mail.user"), mailProps.getProperty("mail.password"));
 		}
 		openDefaultKeyStore();
 		keystore.setSigningKey(keyServerSigningKey);
@@ -255,14 +255,23 @@ public class KeyServerMain extends HTTPServer {
 			//mail properties
 			Element eMail = ks.getChild("mail");
 			mailProps = new Properties();
-			mailProps.setProperty("mail.user", eMail.getChildText("user"));
+			String mu = eMail.getChildText("user");
+		
+			if(!mu.equals("")) {
+				mailProps.setProperty("mail.user", mu);
+			}
 			String pw = eMail.getChildText("password");
 			if (pw!=null && pw.length()>0) {
 				mailProps.setProperty("mail.password", pw);	
 			}
 			mailProps.setProperty("mail.transport.protocol", "smtp");
 			mailProps.setProperty("mail.smtp.host", eMail.getChildText("smtp_host"));
-			mailProps.setProperty("mail.smtp.auth", "true");
+			if(mailProps.getProperty("mail.user")!=null || mailProps.getProperty("mail.password")!=null) {
+				mailProps.setProperty("mail.smtp.auth", "true");
+			}
+			else {
+				mailProps.setProperty("mail.smtp.auth", "false");
+			}
 			mailProps.setProperty("senderAddress", eMail.getChildText("sender"));
 			
 			//keyServerSigningKey
@@ -889,8 +898,13 @@ public class KeyServerMain extends HTTPServer {
 	}
 	
 	public void sendMail(String recipient, String subject,String message)  throws Exception {
-		if (mailAuth == null) throw new RuntimeException("ERROR: mail authenticator not found.");
-		if (mailProps == null) throw new RuntimeException("ERROR: mail properties not found.");
+		if (mailAuth == null) {
+			//HT 2011-06-26 - can totally be null, when not authentication needed/wanted...
+			//throw new RuntimeException("ERROR: mail authenticator not found.");
+		}
+		if (mailProps == null) {
+			throw new RuntimeException("ERROR: mail properties not found.");
+		}
 		
 		//generate compressed message
 		MimeBodyPart body = new MimeBodyPart();

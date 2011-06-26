@@ -63,7 +63,6 @@ import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
 
-
 public class SecurityMainFrame extends JFrame {
 
 	private int maxWidth = 1200;
