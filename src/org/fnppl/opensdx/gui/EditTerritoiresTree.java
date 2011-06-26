@@ -106,6 +106,7 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 	public EditTerritoiresTree() {
 		try {
 			rootElement = Document.fromURL(configTerritories).getRootElement();
+			rootElement = rootElement.getChild("WW");
 		} catch (Exception e) {
 			rootElement = new Element("ww");
 			e.printStackTrace();
