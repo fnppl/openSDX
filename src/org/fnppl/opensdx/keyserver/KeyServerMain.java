@@ -479,7 +479,11 @@ public class KeyServerMain extends HTTPServer {
 		//send email with token
 		byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
 		String token = SecurityHelper.HexDecoder.encode(tokenbytes, '\0',-1);
-		String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+":"+port+"/approve_mail?id="+token;
+		
+		//TODO HT 2011-06-26 port must also be checked because of http-reverse-proxy...
+		//String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+":"+port+"/approve_mail?id="+token;
+		String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+"/approve_mail?id="+token;
+		
 		openTokens.put(token, kl);
 		try {
 			sendMail(idd.getEmail(), "email address verification", verificationMsg);
