@@ -1,7 +1,11 @@
 package org.fnppl.opensdx.common;
 
+import java.lang.reflect.Field;
+import java.util.Vector;
+
 import org.fnppl.opensdx.xml.ChildElementIterator;
 import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLElementable;
 
 /*
  * Software license
@@ -156,6 +160,31 @@ public class Bundle extends BusinessObject {
 		return contributors.size();
 	}
 	
+	public Vector<Contributor> getAllContributors() {
+		Vector<Contributor> all = new Vector<Contributor>();
+		for (int i=0;i<getContributorCount();i++) {
+			all.add(getContributor(i));
+		}
+		for (int j=0;j<getItemsCount();j++) {
+			Item item = getItem(j);
+			for (int i=0;i<item.getContributorCount();i++) {
+				Contributor c = item.getContributor(i);
+				boolean found = false;
+				for (Contributor a : all) {
+					if (a.getName().equals(c.getName()) && a.getType().equals(c.getType())) {
+						found = true;
+						break;
+					}
+					if (!found) {
+						c.on_sublevel_only(true);
+						all.add(c);
+					}
+				}
+			}
+		}
+		return all;
+	}
+	
 	public Bundle addItem(Item item) {
 		if (items==null) {
 			items = new BusinessCollection<Item>() {
@@ -275,4 +304,62 @@ public class Bundle extends BusinessObject {
 	public String getKeyname() {
 		return KEY_NAME;
 	}
+	
+	public Element toElement() {
+		Element resultElement = new Element(getKeyname());
+
+		Field[] fields = getDeclaredFieldsCache.get(this.getClass());
+		if(fields == null) {
+			fields = this.getClass().getDeclaredFields();
+			getDeclaredFieldsCache.put(this.getClass(), fields);
+
+			for(int i=0; i<fields.length; i++) {
+				fields[i].setAccessible(true);
+			}
+		}
+
+		for (Field f : fields) {
+			if (!f.getName().equals("this$0")) { //argg, watch out when directly using BusinessObjects
+				try {	
+					//System.out.println(f.getName());
+					Object thisFieldsObject = f.get(this);
+					if (thisFieldsObject == contributors) {
+						Element e = new Element(contributors.getKeyname());
+						for (int i=0;i<getContributorCount();i++) {
+							Contributor c = getContributor(i);
+							if (!c.getOnSubLevelOnly()) {
+								Element ce = c.toElement();
+								//ce.setAttribute("pos", ""+(i+1));
+								e.addContent(ce);
+							}
+						}
+						if (e!=null) {
+							resultElement.addContent(e);
+						}
+					}
+					else if (thisFieldsObject instanceof XMLElementable) {
+						Element e = ((XMLElementable)thisFieldsObject).toElement();
+						if (e!=null) {
+							resultElement.addContent(e);
+						}
+					}
+					else if (thisFieldsObject instanceof Vector<?>) {
+						Vector<?> vector = (Vector<?>)thisFieldsObject;
+						for (Object vectorsObject : vector) {
+							if (vectorsObject instanceof XMLElementable) {
+								Element e = ((XMLElementable)vectorsObject).toElement();
+								if (e!=null) {
+									resultElement.addContent(e);
+								}
+							}
+						}
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+		return resultElement;
+	}
 }
+

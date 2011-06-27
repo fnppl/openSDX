@@ -297,7 +297,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         if (c != null) {
             select_contributor_type.setSelectedItem(c.getType());
             text_contributor_name.setText(c.getName());
-
+            check_sublevel.setSelected(c.getOnSubLevelOnly());
             IDs cid = c.getIDs();
             if (cid != null) {
                 text_contributor_contentauthid.setText(cid.getContentauthid());
@@ -376,6 +376,29 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                 }
             }
         });
+//        Vector<Contributor> contributors = bundle.getAllContributors();
+//        int anzContributors = contributors.size();
+//        DefaultListModel lm = new DefaultListModel();
+//        for (int i = 0; i < anzContributors; i++) {
+//            String id = contributors.get(i).getName() + " (" + contributors.get(i).getType() + ")";
+//            if (contributors.get(i).getOnSubLevelOnly()) {
+//                id += "  SUB ONLY";
+//            }
+//            lm.addElement(id);
+//        }
+//        list_contributors.setModel(lm);
+//        list_contributors.setSelectedIndex(0);
+//        list_contributors.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//        list_contributors.addListSelectionListener(new ListSelectionListener() {
+//
+//            public void valueChanged(ListSelectionEvent e) {
+//                int sel = e.getFirstIndex();
+//                if (sel >= 0 && sel < bundle.getAllContributors().size()) {
+//                    Contributor c = bundle.getAllContributors().get(sel);
+//                    updateContributor(c);
+//                }
+//            }
+//        });
     }
 
     private void initChangeListeners() {
@@ -1374,7 +1397,12 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     }//GEN-LAST:event_select_license_pricingActionPerformed
 
     private void check_sublevelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_check_sublevelActionPerformed
-        // TODO add your handling code here:
+        if (bundle==null) return;
+        int sel = list_contributors.getSelectedIndex();
+        if (sel>=0 && sel<bundle.getContributorCount()) {
+            bundle.getContributor(sel).on_sublevel_only(check_sublevel.isSelected());
+            //updateContributorList();
+        }
     }//GEN-LAST:event_check_sublevelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

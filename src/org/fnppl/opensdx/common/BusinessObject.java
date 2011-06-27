@@ -72,7 +72,7 @@ public abstract class BusinessObject implements XMLElementable {
 	 * coolest stuff:: even private fields can be read out by this!!!
 	 */
 	
-	private static Hashtable<Class, Field[]> getDeclaredFieldsCache = new Hashtable<Class, Field[]>();
+	protected static Hashtable<Class, Field[]> getDeclaredFieldsCache = new Hashtable<Class, Field[]>();
 	public Element toElement() {
 		Element resultElement = new Element(getKeyname());
 		

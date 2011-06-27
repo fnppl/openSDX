@@ -209,7 +209,11 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 list_items.setSelectedIndex(0);
                 Item item = bundle.getItem(0);
                 updateItem(item);
+            } else {
+                updateItem(null);
             }
+        } else {
+            updateItem(null);
         }
     }
 
@@ -222,9 +226,12 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
 	        }
     	 }
         list_items.setModel(lm);
-        list_items.setSelectedIndex(0);
+        if (lm.size()>0) {
+            list_items.setSelectedIndex(0);
+        }
         list_items.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list_items.addListSelectionListener(new ListSelectionListener() {
+
+        /*list_items.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 int sel = e.getFirstIndex();
                 if (sel >= 0 && sel < bundle.getItemsCount()) {
@@ -232,7 +239,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                     updateItem(item);
                 }
             }
-	 });
+	 });*/
     }
 
      private void updateFileList(final Item item) {
@@ -296,8 +303,11 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     }
 
       private void updateItem(Item item) {
+          //System.out.println("update item");
         if (item != null) {
-
+            panelBasics.setVisible(true);
+            tab_items.setVisible(true);
+            
          //basics
         text_display_artist.setText(item.getDisplay_artist());
         text_displayname.setText(item.getDisplayname());
@@ -343,6 +353,9 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             updateFile(itemfile);
         }
         changeListener.saveStates();
+        } else {
+            panelBasics.setVisible(false);
+            tab_items.setVisible(false);
         }
     }
 
@@ -594,7 +607,16 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         list_allowed_territories.setModel(new DefaultListModel());
         list_disallowed_territories.setModel(new DefaultListModel());
         list_items.setModel(new DefaultListModel());
-
+        list_items.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                int sel = e.getFirstIndex();
+                if (bundle==null) return;
+                if (sel >= 0 && sel < bundle.getItemsCount()) {
+                    Item item = bundle.getItem(sel);
+                    updateItem(item);
+                }
+            }
+	 });
         tree_territories = new EditTerritoiresTree();
         tree_territories.addObserver(this);
 
@@ -632,7 +654,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         select_type = new javax.swing.JComboBox();
         text_display_artist = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
+        tab_items = new javax.swing.JTabbedPane();
         panelIDsBig = new javax.swing.JPanel();
         panelIDs = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
@@ -746,6 +768,11 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         jLabel7.setText("type");
 
         select_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "audio", "video" }));
+        select_type.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                select_typeActionPerformed(evt);
+            }
+        });
 
         text_display_artist.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -832,14 +859,14 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelIDsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelIDsLayout.createSequentialGroup()
                         .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel8)
                             .addComponent(jLabel10)
                             .addComponent(jLabel9))
                         .addGap(95, 95, 95)
-                        .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(text_isrc, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                             .addComponent(text_grid, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                             .addComponent(text_upc, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)))
@@ -853,16 +880,19 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                             .addComponent(jLabel16)
                             .addComponent(jLabel17))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(text_labelordernum, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                            .addComponent(text_contentauthid, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                            .addComponent(text_amazon, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                            .addComponent(text_isbn, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                            .addComponent(text_finetunesid, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                            .addComponent(text_ourid, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                            .addComponent(text_yourid, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))))
+                        .addGroup(panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(text_labelordernum, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(text_contentauthid, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(text_amazon, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(text_isbn, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(text_finetunesid, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(text_ourid, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(text_yourid, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
+
+        panelIDsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {text_amazon, text_contentauthid, text_finetunesid, text_grid, text_isbn, text_isrc, text_labelordernum, text_ourid, text_upc, text_yourid});
+
         panelIDsLayout.setVerticalGroup(
             panelIDsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelIDsLayout.createSequentialGroup()
@@ -930,16 +960,11 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                     .addContainerGap(566, Short.MAX_VALUE)))
         );
 
-        jTabbedPane1.addTab("IDs", panelIDsBig);
+        tab_items.addTab("IDs", panelIDsBig);
 
         jLabel18.setFont(new java.awt.Font("Ubuntu", 1, 15));
         jLabel18.setText("List of contributors for this item");
 
-        list_contributors.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Contributor 1", "Contributor 2", "Contributor 3", "Contributor 4", "Contributor 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         jScrollPane2.setViewportView(list_contributors);
 
         bu_add_contributor.setText("add");
@@ -959,11 +984,6 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         jLabel19.setFont(new java.awt.Font("Ubuntu", 1, 15));
         jLabel19.setText("List of all contributors");
 
-        list_all_contributors.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Contributor 1", "Contributor 2", "Contributor 3", "Contributor 4", "Contributor 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         jScrollPane3.setViewportView(list_all_contributors);
 
         javax.swing.GroupLayout panelContributorsLayout = new javax.swing.GroupLayout(panelContributors);
@@ -1009,7 +1029,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addContainerGap(765, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Contributors", panelContributors);
+        tab_items.addTab("Contributors", panelContributors);
 
         panelInformation.setBorder(javax.swing.BorderFactory.createTitledBorder("Information"));
 
@@ -1098,7 +1118,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addContainerGap(609, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Information", panelInformation);
+        tab_items.addTab("Information", panelInformation);
 
         panelLicense.setBorder(javax.swing.BorderFactory.createTitledBorder("License basis"));
 
@@ -1224,7 +1244,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("License", panelLicense);
+        tab_items.addTab("License", panelLicense);
 
         check_tags_bundle_only.setText("bundle only");
         check_tags_bundle_only.addActionListener(new java.awt.event.ActionListener() {
@@ -1302,7 +1322,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addContainerGap(703, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Tags", jPanel2);
+        tab_items.addTab("Tags", jPanel2);
 
         jScrollPane8.setViewportView(list_files);
 
@@ -1498,9 +1518,9 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addContainerGap(419, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Files", jPanel3);
+        tab_items.addTab("Files", jPanel3);
 
-        jLabel3.setFont(new java.awt.Font("Ubuntu", 1, 15));
+        jLabel3.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
         jLabel3.setText("List of items");
 
         list_items.setModel(new javax.swing.AbstractListModel() {
@@ -1531,7 +1551,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTabbedPane1, 0, 0, Short.MAX_VALUE)
+                    .addComponent(tab_items, 0, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3)
@@ -1559,11 +1579,10 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                         .addComponent(bu_add_item)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(bu_remove_item)))
-                .addGap(18, 18, 18)
+                .addGap(18, 18, Short.MAX_VALUE)
                 .addComponent(panelBasics, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(tab_items, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1572,9 +1591,10 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
            long now = System.currentTimeMillis();
            Item newItem = Item.make(IDs.make(), "new item", "", "", "audio", "", BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null);
            bundle.addItem(newItem);
-           ((DefaultListModel)list_items.getModel()).addElement("Item: "+newItem.getDisplayname());
-           list_items.setSelectedIndex(list_items.getModel().getSize()-1);
+           updateItemList();
            updateItem(newItem);
+           list_items.setSelectedIndex(list_items.getModel().getSize()-1);
+           notifyChanges();
        }
 }//GEN-LAST:event_bu_add_itemActionPerformed
 
@@ -1677,7 +1697,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         int selItem = list_items.getSelectedIndex();
         if (selItem<0) return;
         bundle.removeItem(selItem);
-        list_items.remove(selItem);
+        updateItemList();
         int s = list_items.getModel().getSize();
         if (s>0) {
             if (s>selItem) {
@@ -1685,7 +1705,10 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             } else {
                 list_items.setSelectedIndex(s-1);
             }
+        } else {
+           updateItem(null);
         }
+        notifyChanges();
     }//GEN-LAST:event_bu_remove_itemActionPerformed
 
     private void bu_remove_contributorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_contributorActionPerformed
@@ -1804,6 +1827,14 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
        notifyChanges();
     }//GEN-LAST:event_check_tags_stream_allowedActionPerformed
 
+    private void select_typeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_typeActionPerformed
+        Item item = getSelectedItem();
+        if (item!=null) {
+            item.type((String)select_type.getSelectedItem());
+            notifyChanges();
+        }
+    }//GEN-LAST:event_select_typeActionPerformed
+
     private Item getSelectedItem() {
         if (bundle==null || bundle.getItemsCount()==0) return null;
         int selItem = list_items.getSelectedIndex();
@@ -1879,7 +1910,6 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JList list_all_contributors;
     private javax.swing.JList list_allowed_territories;
     private javax.swing.JList list_contributors;
@@ -1900,6 +1930,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JComboBox select_file_type;
     private javax.swing.JComboBox select_license_pricing;
     private javax.swing.JComboBox select_type;
+    private javax.swing.JTabbedPane tab_items;
     private javax.swing.JTable table_promotext;
     private javax.swing.JTextField text_amazon;
     private javax.swing.JTextField text_contentauthid;

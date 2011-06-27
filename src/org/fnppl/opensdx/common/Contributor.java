@@ -67,7 +67,8 @@ public class Contributor extends BusinessObject {
 	private BusinessStringItem type;	//MUST
 	private IDs ids;					//MUST
 	private InfoWWW www;				//SHOULD
-
+	private boolean on_sublevel_only = false;
+	
 
 	public static Contributor make(String name, String type, IDs ids) {
 		Contributor contributor = new Contributor();
@@ -77,7 +78,15 @@ public class Contributor extends BusinessObject {
 		contributor.www = null;
 		return contributor;
 	}
+	
+	public boolean getOnSubLevelOnly() {
+		return on_sublevel_only;
+	}
 
+	public Contributor on_sublevel_only(boolean value) {
+		on_sublevel_only = value;
+		return this;
+	}
 
 	public static Contributor fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;

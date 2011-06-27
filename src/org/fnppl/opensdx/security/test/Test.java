@@ -57,6 +57,7 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.math.BigInteger;
+import java.util.UUID;
 import java.util.Vector;
 
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
@@ -275,7 +276,10 @@ public class Test {
 		//testGeneratePublicKey();
 		
 		//testHeadEmployeeSigning();
-		makeExampleKeyStore();
+		//makeExampleKeyStore();
+		UUID id = UUID.randomUUID();
+		id = UUID.nameUUIDFromBytes("hallo".getBytes());
+		System.out.println(id);
 	}
 	
 	
