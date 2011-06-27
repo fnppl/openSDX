@@ -211,10 +211,11 @@ public class MasterKey extends OSDXKey {
 	}
 	public String getIDEmailAndMnemonic() {
 		if (identities!=null && identities.size()>0) {
-			String ids = identities.get(0).getEmail()+" ("+identities.get(0).getMnemonic()+")";
-			for (int i=1;i<identities.size();i++) {
-				ids += ", "+identities.get(i).getEmail()+" ("+identities.get(i).getMnemonic()+")";
-			}
+			String ids = getCurrentIdentity().getEmail()+" ("+getCurrentIdentity().getMnemonic()+")";
+//			String ids = identities.get(0).getEmail()+" ("+identities.get(0).getMnemonic()+")";
+//			for (int i=1;i<identities.size();i++) {
+//				ids += ", "+identities.get(i).getEmail()+" ("+identities.get(i).getMnemonic()+")";
+//			}
 			return ids;
 		}
 		return null;

@@ -57,11 +57,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
 import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.security.SecurityHelper;
 
@@ -142,15 +144,40 @@ public class PanelFeedInfo extends javax.swing.JPanel {
             text_receiver_servername.setText(r.getServername());
             text_receiver_serveripv4.setText(r.getServerIPv4());
             select_authtype.setSelectedItem(r.getAuthType());
-            text_receiver_authsha1_bytes.setText(r.getAuthSha1Text());
         } else {
             select_receiver_type.setSelectedIndex(0);
             text_receiver_servername.setText("");
             text_receiver_serveripv4.setText("");
             select_authtype.setSelectedIndex(0);
-            text_receiver_authsha1_bytes.setText("");
         }
+
+        //actions
+        updateActionsTable(fi);
+
         changeListener.saveStates();
+    }
+
+    private void updateActionsTable(FeedInfo fi) {
+        int count = fi.getActionCount();
+        String[] header = new String[] {"Trigger","Type","Description"};
+        String[][] data = new String[count][3];
+        for (int i=0;i<count;i++) {
+            Action a = fi.getAction(i);
+            data[i][0] = TriggeredActions.actionTriggerName[fi.getTrigger(i)];
+            if (a instanceof ActionHttp) {
+                data[i][1] = "HTTP";
+            } else if (a instanceof ActionMailTo) {
+                data[i][1] = "MAIL TO";
+            }
+            data[i][2] = a.getDescription();
+        }
+
+        table_actions.setModel(new DefaultTableModel(data, header) {
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
+        });
+
     }
 
     private void newEmpty() {
@@ -174,7 +201,6 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         text_receiver_servername.setText("");
         text_receiver_serveripv4.setText("");
         select_authtype.setSelectedIndex(0);
-        text_receiver_authsha1_bytes.setText("");
 
     }
 
@@ -186,7 +212,6 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         initComponents();
         text_creation_datetime.setName("datetime");
         text_effictive_datetime.setName("datetime");
-        text_receiver_authsha1_bytes.setName("bytes");
         initChangeListeners();
     }
 
@@ -209,7 +234,6 @@ public class PanelFeedInfo extends javax.swing.JPanel {
 
         texts.add(text_receiver_servername);
         texts.add(text_receiver_serveripv4);
-        texts.add(text_receiver_authsha1_bytes);
         
         changeListener = new DocumentChangeListener(texts);
 
@@ -236,7 +260,6 @@ public class PanelFeedInfo extends javax.swing.JPanel {
 
                             else if(text == text_receiver_servername) feedinfo.getReceiver().servername(t);
                             else if(text == text_receiver_serveripv4) feedinfo.getReceiver().serveripv4(t);
-                            else if(text == text_receiver_authsha1_bytes) feedinfo.getReceiver().authsha1(SecurityHelper.HexDecoder.decode(t));
                             
                             text.setBackground(Color.WHITE);
                             changeListener.saveState(text);
@@ -374,8 +397,13 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         text_receiver_serveripv4 = new javax.swing.JTextField();
         jLabel16 = new javax.swing.JLabel();
         select_authtype = new javax.swing.JComboBox();
+        panel_osdxfileserver_settings = new javax.swing.JPanel();
+        jTextField1 = new javax.swing.JTextField();
         jLabel17 = new javax.swing.JLabel();
-        text_receiver_authsha1_bytes = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+        jLabel18 = new javax.swing.JLabel();
+        jTextField2 = new javax.swing.JTextField();
+        jButton2 = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         check_onlytest = new javax.swing.JCheckBox();
         jLabel2 = new javax.swing.JLabel();
@@ -385,6 +413,13 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         text_feedid = new javax.swing.JTextField();
         text_creation_datetime = new javax.swing.JTextField();
         text_effictive_datetime = new javax.swing.JTextField();
+        jPanel6 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        table_actions = new javax.swing.JTable();
+        bu_action_remove = new javax.swing.JButton();
+        bu_action_add_http = new javax.swing.JButton();
+        bu_action_add_mail = new javax.swing.JButton();
+        bu_action_edit = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder("Feedinfo"));
 
@@ -406,8 +441,8 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jLabel5))
                 .addGap(44, 44, 44)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_creator_email, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
-                    .addComponent(text_creator_userid, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE))
+                    .addComponent(text_creator_email, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                    .addComponent(text_creator_userid, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -451,9 +486,9 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_licensor_email, javax.swing.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
-                    .addComponent(text_licensor_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
-                    .addComponent(text_licensor_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE))
+                    .addComponent(text_licensor_email, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
+                    .addComponent(text_licensor_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
+                    .addComponent(text_licensor_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -500,9 +535,9 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jLabel10))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_sender_email, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
-                    .addComponent(text_sender_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
-                    .addComponent(text_sender_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
+                    .addComponent(text_sender_email, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+                    .addComponent(text_sender_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+                    .addComponent(text_sender_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -547,60 +582,113 @@ public class PanelFeedInfo extends javax.swing.JPanel {
             }
         });
 
-        jLabel17.setText("auth sha1");
+        panel_osdxfileserver_settings.setBorder(javax.swing.BorderFactory.createTitledBorder("openSDX  Fileserver Settings"));
+
+        jTextField1.setEditable(false);
+
+        jLabel17.setText("KeyStore");
+
+        jButton1.setText("select");
+
+        jLabel18.setText("Key ID");
+
+        jTextField2.setEditable(false);
+
+        jButton2.setText("select");
+
+        javax.swing.GroupLayout panel_osdxfileserver_settingsLayout = new javax.swing.GroupLayout(panel_osdxfileserver_settings);
+        panel_osdxfileserver_settings.setLayout(panel_osdxfileserver_settingsLayout);
+        panel_osdxfileserver_settingsLayout.setHorizontalGroup(
+            panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panel_osdxfileserver_settingsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel17)
+                    .addComponent(jLabel18))
+                .addGap(25, 25, 25)
+                .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jTextField2)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton1)
+                    .addComponent(jButton2))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        panel_osdxfileserver_settingsLayout.setVerticalGroup(
+            panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panel_osdxfileserver_settingsLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel17)
+                    .addComponent(jButton2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel18)
+                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1)))
+        );
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel14)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel12)
+                        .addGap(64, 64, 64)
+                        .addComponent(select_receiver_type, 0, 303, Short.MAX_VALUE))
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addComponent(jLabel14)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel15))
                             .addComponent(jLabel13)
-                            .addComponent(jLabel12)
-                            .addComponent(jLabel15)
-                            .addComponent(jLabel16)
-                            .addComponent(jLabel17))
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addGap(0, 0, 0)
+                                .addComponent(jLabel16)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(select_receiver_type, 0, 0, Short.MAX_VALUE)
-                            .addComponent(text_receiver_servername, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
-                            .addComponent(text_receiver_serveripv4, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
-                            .addComponent(select_authtype, javax.swing.GroupLayout.Alignment.TRAILING, 0, 348, Short.MAX_VALUE)
-                            .addComponent(text_receiver_authsha1_bytes, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE))))
-                .addContainerGap())
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(select_authtype, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(text_receiver_serveripv4, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                            .addComponent(text_receiver_servername, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)))
+                    .addComponent(panel_osdxfileserver_settings, javax.swing.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE))
+                .addGap(28, 28, 28))
         );
+
+        jPanel4Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {select_authtype, select_receiver_type, text_receiver_serveripv4, text_receiver_servername});
+
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(24, 24, 24)
-                        .addComponent(jLabel14))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addContainerGap()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(select_receiver_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel12))
+                        .addGap(49, 49, 49)
+                        .addComponent(jLabel14))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(46, 46, 46)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel13)
+                            .addComponent(text_receiver_servername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(text_receiver_servername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel13))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(text_receiver_serveripv4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel15))
-                        .addGap(16, 16, 16)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel16)
-                            .addComponent(select_authtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(jLabel15)
+                            .addComponent(text_receiver_serveripv4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel17)
-                    .addComponent(text_receiver_authsha1_bytes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel16)
+                    .addComponent(select_authtype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(17, 17, 17)
+                .addComponent(panel_osdxfileserver_settings, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         check_onlytest.setText("onlytest");
@@ -646,7 +734,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addComponent(text_feedid, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(check_onlytest, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)))
+                        .addComponent(check_onlytest, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -682,43 +770,137 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder("Actions"));
+
+        table_actions.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null}
+            },
+            new String [] {
+                "Trigger", "Type", "Description"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(table_actions);
+
+        bu_action_remove.setText("remove");
+        bu_action_remove.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_action_removeActionPerformed(evt);
+            }
+        });
+
+        bu_action_add_http.setText("add HTTP Action");
+        bu_action_add_http.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_action_add_httpActionPerformed(evt);
+            }
+        });
+
+        bu_action_add_mail.setText("add Mail Action");
+        bu_action_add_mail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_action_add_mailActionPerformed(evt);
+            }
+        });
+
+        bu_action_edit.setText("edit");
+        bu_action_edit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_action_editActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(bu_action_edit)
+                        .addGap(5, 5, 5)
+                        .addComponent(bu_action_remove)
+                        .addGap(18, 18, 18)
+                        .addComponent(bu_action_add_http)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(bu_action_add_mail)))
+                .addContainerGap())
+        );
+
+        jPanel6Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {bu_action_add_http, bu_action_add_mail});
+
+        jPanel6Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {bu_action_edit, bu_action_remove});
+
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(bu_action_remove)
+                    .addComponent(bu_action_add_http)
+                    .addComponent(bu_action_add_mail)
+                    .addComponent(bu_action_edit))
+                .addContainerGap())
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 441, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 441, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel3, jPanel4, jPanel5});
 
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel1, jPanel2, jPanel6});
+
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(225, 225, 225)))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -744,6 +926,13 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     private void select_receiver_typeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_receiver_typeActionPerformed
         if (feedinfo != null && feedinfo.getReceiver()!=null) {
             feedinfo.getReceiver().type((String)select_receiver_type.getSelectedItem());
+            
+            if (feedinfo.getReceiver().getType().equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
+                    &&  feedinfo.getReceiver().getAuthType().equals(Receiver.AUTH_TYPE_KEYFILE)) {
+                panel_osdxfileserver_settings.setVisible(true);
+            } else {
+                panel_osdxfileserver_settings.setVisible(false);
+            }
             notifyChanges();
         }
     }//GEN-LAST:event_select_receiver_typeActionPerformed
@@ -762,15 +951,122 @@ public class PanelFeedInfo extends javax.swing.JPanel {
 
     private void select_authtypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_authtypeActionPerformed
         if (feedinfo != null && feedinfo.getReceiver()!=null) {
-            feedinfo.getReceiver().type((String)select_receiver_type.getSelectedItem());
+            feedinfo.getReceiver().authtype((String)select_authtype.getSelectedItem());
+            if (feedinfo.getReceiver().getType().equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
+                    &&  feedinfo.getReceiver().getAuthType().equals(Receiver.AUTH_TYPE_KEYFILE)){
+                panel_osdxfileserver_settings.setVisible(true);
+            } else {
+                panel_osdxfileserver_settings.setVisible(false);
+            }
             notifyChanges();
         }
     }//GEN-LAST:event_select_authtypeActionPerformed
 
+    private void bu_action_removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_action_removeActionPerformed
+        if (feedinfo==null) return;
+        int no = table_actions.getSelectedRow();
+        if (no<0 || no>=feedinfo.getActionCount()) return;
+        feedinfo.removeAction(no);
+        updateActionsTable(feedinfo);
+        notifyChanges();
+    }//GEN-LAST:event_bu_action_removeActionPerformed
+
+    private void bu_action_add_httpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_action_add_httpActionPerformed
+        if (feedinfo!=null) {
+            ActionHttp a = ActionHttp.make("", ActionHttp.TYPE_GET);
+            Vector result = editActionHttpDialog(a, TriggeredActions.TRIGGER_ONFULLSUCCESS);
+            if (result!=null)  {
+                ActionHttp newAction = (ActionHttp)result.get(0);
+                int trigger = ((Integer)result.get(1)).intValue();
+                feedinfo.addAction(0, newAction);
+                updateActionsTable(feedinfo);
+                notifyChanges();
+            }
+        }
+    }//GEN-LAST:event_bu_action_add_httpActionPerformed
+
+    private void bu_action_editActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_action_editActionPerformed
+        if (feedinfo==null) return;
+        int no = table_actions.getSelectedRow();
+        if (no<0 || no>=feedinfo.getActionCount()) return;
+        Action a = feedinfo.getAction(no);
+        if (a instanceof ActionHttp) {
+            Vector result = editActionHttpDialog((ActionHttp)a, feedinfo.getTrigger(no));
+            if (result!=null)  {
+                ActionHttp newAction = (ActionHttp)result.get(0);
+                int trigger = ((Integer)result.get(1)).intValue();
+                feedinfo.replaceAction(no, trigger, newAction);
+                updateActionsTable(feedinfo);
+                notifyChanges();
+            }
+        } else if (a instanceof ActionMailTo) {
+            Vector result = editActionMailToDialog((ActionMailTo)a, feedinfo.getTrigger(no));
+            if (result!=null)  {
+                ActionMailTo newAction = (ActionMailTo)result.get(0);
+                int trigger = ((Integer)result.get(1)).intValue();
+                feedinfo.replaceAction(no, trigger, newAction);
+                updateActionsTable(feedinfo);
+                notifyChanges();
+            }
+        } else {
+            System.out.println("unknown action");
+        }
+
+    }//GEN-LAST:event_bu_action_editActionPerformed
+
+    private void bu_action_add_mailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_action_add_mailActionPerformed
+        if (feedinfo!=null) {
+            ActionMailTo a = ActionMailTo.make("", "", "");
+            Vector result = editActionMailToDialog(a, TriggeredActions.TRIGGER_ONFULLSUCCESS);
+            if (result!=null)  {
+                ActionMailTo newAction = (ActionMailTo)result.get(0);
+                int trigger = ((Integer)result.get(1)).intValue();
+                feedinfo.addAction(trigger, newAction);
+                updateActionsTable(feedinfo);
+                notifyChanges();
+            }
+        }
+    }//GEN-LAST:event_bu_action_add_mailActionPerformed
+
+    private Vector editActionHttpDialog(ActionHttp action, int trigger) {
+        PanelActionHTTP p = new PanelActionHTTP();
+        p.setActionHTTP(action);
+        p.setTrigger(trigger);
+        int ans = JOptionPane.showConfirmDialog(null,p,"HTTP Action",JOptionPane.OK_CANCEL_OPTION);
+        if (ans == JOptionPane.OK_OPTION) {
+            Vector result = new Vector();
+            result.add(p.getActionHTTP());
+            result.add(p.getTrigger());
+            return result;
+        } else {
+            return null;
+        }
+    }
+
+    private Vector editActionMailToDialog(ActionMailTo action, int trigger) {
+        PanelActionMailTo p = new PanelActionMailTo();
+        p.setActionMailTo(action);
+        p.setTrigger(trigger);
+        int ans = JOptionPane.showConfirmDialog(null,p,"MailTo Action",JOptionPane.OK_CANCEL_OPTION);
+        if (ans == JOptionPane.OK_OPTION) {
+            Vector result = new Vector();
+            result.add(p.getActionMailTo());
+            result.add(p.getTrigger());
+            return result;
+        } else {
+            return null;
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buNow;
+    private javax.swing.JButton bu_action_add_http;
+    private javax.swing.JButton bu_action_add_mail;
+    private javax.swing.JButton bu_action_edit;
+    private javax.swing.JButton bu_action_remove;
     private javax.swing.JCheckBox check_onlytest;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -780,6 +1076,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -793,8 +1090,14 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField jTextField2;
+    private javax.swing.JPanel panel_osdxfileserver_settings;
     private javax.swing.JComboBox select_authtype;
     private javax.swing.JComboBox select_receiver_type;
+    private javax.swing.JTable table_actions;
     private javax.swing.JTextField text_creation_datetime;
     private javax.swing.JTextField text_creator_email;
     private javax.swing.JTextField text_creator_userid;
@@ -803,7 +1106,6 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     private javax.swing.JTextField text_licensor_contractpartnerid;
     private javax.swing.JTextField text_licensor_email;
     private javax.swing.JTextField text_licensor_ourcontractpartnerid;
-    private javax.swing.JTextField text_receiver_authsha1_bytes;
     private javax.swing.JTextField text_receiver_serveripv4;
     private javax.swing.JTextField text_receiver_servername;
     private javax.swing.JTextField text_sender_contractpartnerid;

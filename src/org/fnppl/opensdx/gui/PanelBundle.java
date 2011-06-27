@@ -81,9 +81,9 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private DocumentChangeListener changeListener;
     private Vector<String[]> bindings;
     private PanelFeedInfo me;
-    private Vector<MyObserver> observers = new Vector<MyObserver>();
     private EditTerritoiresTree tree_territories;
 
+    private Vector<MyObserver> observers = new Vector<MyObserver>();
     public void addObserver(MyObserver observer) {
         observers.add(observer);
     }
@@ -606,6 +606,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         jLabel29 = new javax.swing.JLabel();
         bu_contributor_add = new javax.swing.JButton();
         bu_contributor_remove = new javax.swing.JButton();
+        check_sublevel = new javax.swing.JCheckBox();
         panelInformation = new javax.swing.JPanel();
         text_physical_release_datetime = new javax.swing.JTextField();
         jLabel30 = new javax.swing.JLabel();
@@ -801,7 +802,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
             .addGroup(panelIDsBigLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(panelIDs, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(275, Short.MAX_VALUE))
+                .addContainerGap(346, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("IDs", panelIDsBig);
@@ -821,8 +822,6 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         jScrollPane1.setViewportView(list_contributors);
 
         jLabel1.setText("name");
-
-        text_contributor_name.setText("jTextField1");
 
         jLabel2.setText("type");
 
@@ -872,11 +871,11 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                     .addComponent(jLabel28))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_contributor_contentauthid, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                    .addComponent(text_contributor_yourid, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                    .addComponent(text_contributor_ourid, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                    .addComponent(text_contributor_finetunesid, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                    .addComponent(text_contributor_gvl, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE))
+                    .addComponent(text_contributor_contentauthid, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                    .addComponent(text_contributor_yourid, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                    .addComponent(text_contributor_ourid, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                    .addComponent(text_contributor_finetunesid, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                    .addComponent(text_contributor_gvl, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -948,11 +947,11 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(check_contributor_publish_phone)
-                    .addComponent(text_contributor_facebook, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
-                    .addComponent(text_contributor_myspace, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
-                    .addComponent(text_contributor_homepage, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
-                    .addComponent(text_contributor_twitter, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
-                    .addComponent(text_contributor_phone, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
+                    .addComponent(text_contributor_facebook, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                    .addComponent(text_contributor_myspace, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                    .addComponent(text_contributor_homepage, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                    .addComponent(text_contributor_twitter, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                    .addComponent(text_contributor_phone, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -983,7 +982,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel29.setFont(new java.awt.Font("Ubuntu", 1, 15));
+        jLabel29.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
         jLabel29.setText("Contributor details");
 
         bu_contributor_add.setText("add");
@@ -1000,40 +999,48 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
             }
         });
 
+        check_sublevel.setText("only on sublevel");
+        check_sublevel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                check_sublevelActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panelContributorsLayout = new javax.swing.GroupLayout(panelContributors);
         panelContributors.setLayout(panelContributorsLayout);
         panelContributorsLayout.setHorizontalGroup(
             panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelContributorsLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelContributorsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel3)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(panelContributorsLayout.createSequentialGroup()
                         .addComponent(bu_contributor_add, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(bu_contributor_remove))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(bu_contributor_remove)))
                 .addGap(66, 66, 66)
-                .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel29)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(panelContributorsLayout.createSequentialGroup()
-                        .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel29, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelContributorsLayout.createSequentialGroup()
+                        .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2))
-                        .addGap(18, 18, 18)
+                        .addGap(36, 36, 36)
                         .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(select_contributor_type, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(text_contributor_name, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE))))
+                            .addComponent(text_contributor_name, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                            .addComponent(check_sublevel))))
                 .addGap(376, 376, 376))
         );
 
         panelContributorsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {bu_contributor_add, bu_contributor_remove});
 
-        panelContributorsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel3, jPanel4});
-
         panelContributorsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {select_contributor_type, text_contributor_name});
+
+        panelContributorsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel3, jPanel4});
 
         panelContributorsLayout.setVerticalGroup(
             panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1059,10 +1066,12 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                             .addComponent(select_contributor_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2))
                         .addGap(18, 18, 18)
+                        .addComponent(check_sublevel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(80, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Contributors", panelContributors);
@@ -1150,7 +1159,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bu_add_promotext)
                     .addComponent(bu_remove_promotext))
-                .addContainerGap(358, Short.MAX_VALUE))
+                .addContainerGap(429, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Information", panelInformation);
@@ -1243,7 +1252,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panel_territories, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(24, 24, 24))
+                .addGap(95, 95, 95))
         );
 
         jTabbedPane1.addTab("License", panelLicense);
@@ -1269,7 +1278,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                 .addComponent(panelBasics, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(136, Short.MAX_VALUE))
+                .addContainerGap(65, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1364,12 +1373,17 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         notifyChanges();
     }//GEN-LAST:event_select_license_pricingActionPerformed
 
+    private void check_sublevelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_check_sublevelActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_check_sublevelActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bu_add_promotext;
     private javax.swing.JButton bu_contributor_add;
     private javax.swing.JButton bu_contributor_remove;
     private javax.swing.JButton bu_remove_promotext;
     private javax.swing.JCheckBox check_contributor_publish_phone;
+    private javax.swing.JCheckBox check_sublevel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

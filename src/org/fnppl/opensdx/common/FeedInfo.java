@@ -189,6 +189,34 @@ public class FeedInfo extends BusinessObject {
 		return this;
 	}
 	
+	public FeedInfo replaceAction(int index, int trigger, Action action) {
+		if (actions==null) {
+			actions = new TriggeredActions();
+		}
+		actions.setAction(index,trigger, action);
+		return this;
+	}
+	
+	public Action getAction(int index) {
+		if (actions==null) return null;
+		return actions.getAction(index);
+	}
+	
+	public int getTrigger(int index) {
+		if (actions==null) return 0;
+		return actions.getTrigger(index);
+	}
+	
+	public void removeAction(int index) {
+		if (actions==null) return;
+		actions.removeAction(index);
+	}
+	
+	public int getActionCount() {
+		if (actions==null) return 0;
+		return actions.getCount();
+	}
+	
 	public FeedInfo feedid(String feedid) {
 		this.feedid.setString(feedid);
 		return this;

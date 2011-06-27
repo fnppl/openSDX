@@ -93,7 +93,51 @@ public class ActionMailTo extends BusinessObject implements Action {
 	public void execute() {
 		//TODO implement
 	}
+	
+	public ActionMailTo receiver(String text) {
+		if (text==null) {
+			receiver = null;
+		} else {
+			receiver.setString(text);
+		}
+		return this;
+	}
+	public ActionMailTo subject(String text) {
+		if (text==null) {
+			subject = null;
+		} else {
+			subject.setString(text);
+		}
+		return this;
+	}
+	public ActionMailTo text(String text) {
+		if (text==null) {
+			this.text = null;
+		} else {
+			this.text.setString(text);
+		}
+		return this;
+	}
+	
+	public String getReceiver() {
+		if (receiver==null) return null;
+		return receiver.getString();
+	}
+	
+	public String getSubject() {
+		if (subject==null) return null;
+		return subject.getString();
+	}
+	
+	public String getText() {
+		if (text==null) return null;
+		return text.getString();
+	}
 
+	public String getDescription() {
+		if (receiver==null) return "";
+		return receiver.getString();
+	}
 	
 	public String getKeyname() {
 		return KEY_NAME;

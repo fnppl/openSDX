@@ -82,7 +82,7 @@ public class SecurityMainFrame extends JFrame {
 	private Vector<OSDXKey> storedPublicKeys = new Vector<OSDXKey>();
 	private Vector<OSDXKey> storedTrustedPublicKeys = new Vector<OSDXKey>();
 	private JTabbedPane tab = null;
-	
+	private JTabbedPane tabsKeyGroups = null;
 	private File lastDir = getDefaultDir(); //new File(System.getProperty("user.home"));
 	//	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
 
@@ -130,6 +130,10 @@ public class SecurityMainFrame extends JFrame {
 			KeyServerIdentity ks = null;
 			if (currentKeyStore!=null) {
 				ks = currentKeyStore.getKeyServer(servername);
+				if (ks==null) {
+					Dialogs.showMessage("Unknown keyserver: "+servername+"\nPlease add this keyserver to your config, first.");
+					return null;
+				}
 				keyverificator.addKeyServer(ks);
 				Vector<OSDXKey> knownKeys = ks.getKnownKeys();
 				for (OSDXKey k : knownKeys) {
@@ -138,7 +142,6 @@ public class SecurityMainFrame extends JFrame {
 			}
 			if (ks==null) {
 				ks = KeyServerIdentity.make(servername, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
-				
 			}
 			KeyClient client = new KeyClient(ks, keyverificator);
 			if (ks.getKnownKeys()==null || ks.getKnownKeys().size()==0) { 
@@ -432,6 +435,10 @@ public class SecurityMainFrame extends JFrame {
 		int lastOpenTab = -1;
 		if (tab!=null) lastOpenTab = tab.getSelectedIndex();
 		
+		int lastOpenTabPrivateKeys = -1;
+		if (tabsKeyGroups!=null) lastOpenTabPrivateKeys = tabsKeyGroups.getSelectedIndex();
+		
+		
 		tab = new JTabbedPane();
 		setContentPane(tab);
 
@@ -460,10 +467,16 @@ public class SecurityMainFrame extends JFrame {
 			
 			//keys
 			JPanel p = new JPanel();
-			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
-			JScrollPane scroll = new JScrollPane(p);
+			//p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+			//JScrollPane scroll = new JScrollPane(p);
 			tab.add("My Private Keys", p);
 			
+			tabsKeyGroups = new JTabbedPane();
+			BorderLayout layout = new BorderLayout();
+			p.setLayout(layout);
+			p.add(tabsKeyGroups,BorderLayout.CENTER);
+			
+					
 			Vector<OSDXKey> all = currentKeyStore.getAllKeys();
 			int y = 0;
 			for (int i=0;i<all.size();i++) {
@@ -474,15 +487,22 @@ public class SecurityMainFrame extends JFrame {
 					storedPrivateKeys.add(key);
 					storedPrivateKeys.addAll(subkeys);
 					Component comp = buildComponent((MasterKey)key, revokekeys, subkeys);
-					p.add(comp);
-					y++;
+					String identities = ((MasterKey)key).getIDEmailAndMnemonic();
+					String tabName = "KeyGroup:"+(identities!=null?"   "+identities:"");
+					tabsKeyGroups.add(tabName, new JScrollPane(comp));
+					//p.add(comp);
+					//y++;
 				} else {
 					if (!key.hasPrivateKey()) {
 						storedPublicKeys.add(key);
 					}
 				}
 			}
-
+			if (lastOpenTabPrivateKeys>=0 && lastOpenTabPrivateKeys<tabsKeyGroups.getTabCount()) {
+				tabsKeyGroups.setSelectedIndex(lastOpenTabPrivateKeys);
+			}
+			// end of private keys
+			
 			//divide storedkeys in trusted and unrated
 			for (int i=0;i<storedPublicKeys.size();i++) {
 				OSDXKey key = storedPublicKeys.get(i);
@@ -513,7 +533,7 @@ public class SecurityMainFrame extends JFrame {
 			//known public keys from keystore
 			p = new JPanel();
 			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
-			scroll = new JScrollPane(p);
+			JScrollPane scroll = new JScrollPane(p);
 			tab.add("Known Public Keys", scroll);
 			
 			if (storedTrustedPublicKeys!=null && storedTrustedPublicKeys.size()>0) {
@@ -561,6 +581,7 @@ public class SecurityMainFrame extends JFrame {
 		if (lastOpenTab>=0 && lastOpenTab<tab.getTabCount()) {
 			tab.setSelectedIndex(lastOpenTab);
 		}
+		
 	}
 	
 	private boolean isStoredPrivateKey(String keyid) {
@@ -576,8 +597,9 @@ public class SecurityMainFrame extends JFrame {
 	private Component buildComponent(MasterKey masterkey, Vector<RevokeKey> revokekeys, Vector<SubKey> subkeys) {
 		final JPanel p = new JPanel();
 		String identities = masterkey.getIDEmailAndMnemonic();
-		p.setBorder(new TitledBorder("KeyGroup:"+(identities!=null?"   "+identities:"")));
-		p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
+		//p.setBorder(new TitledBorder("KeyGroup:"+(identities!=null?"   "+identities:"")));
+		
+		p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
 		p.add(buildComponentMasterKey(masterkey));
 		for (RevokeKey key : revokekeys) {
 			p.add(buildComponentRevokeKey(key));
@@ -718,7 +740,7 @@ public class SecurityMainFrame extends JFrame {
 
 
 		final int w = 600;
-		final int h = y*30 + 80;
+		final int h = y*30 + 120;
 
 		JButton head = createHeaderButton("MASTER Key:       "+key.getKeyID(), key.getKeyID(), content, p, w, h);
 
@@ -771,6 +793,15 @@ public class SecurityMainFrame extends JFrame {
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				uploadMasterKeyToKeyServer(key);
+			}
+		});
+		b.add(bu);
+		
+		bu = new JButton("generate keylog");
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				showGenerateKeyLogDialog(key);
 			}
 		});
 		b.add(bu);
@@ -965,7 +996,7 @@ public class SecurityMainFrame extends JFrame {
 
 
 		final int w = 600;
-		final int h = y*30 + 80;
+		final int h = y*30 + 120;
 
 		JButton head = createHeaderButton("REVOKE Key:      "+key.getKeyID(), key.getKeyID(), content, p, w, h);
 
@@ -1123,7 +1154,7 @@ public class SecurityMainFrame extends JFrame {
 
 
 		final int w = 600;
-		final int h = y*30 + 80;
+		final int h = y*30 + 120;
 
 		JButton head = createHeaderButton("SUB Key:      "+key.getKeyID(), key.getKeyID(), content, p, w, h);
 
@@ -1215,7 +1246,7 @@ public class SecurityMainFrame extends JFrame {
 		}
 
 		final int w = 600;
-		final int h = y*30 + 80;
+		final int h = y*30 + 120;
 
 		JButton head = createHeaderButton("KeyServer:      "+host, host+":"+port, content, p, w, h);
 
@@ -1243,7 +1274,8 @@ public class SecurityMainFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				if (!testKeyServerSettings(keyserver)) {
 					Dialogs.showMessage("Sorry, could not connect to keyserver: "+keyserver.getHost()+", port: "+keyserver.getPort()+"\nPlease check keyserver settings.");
-					return;
+				} else {
+					Dialogs.showMessage("Connection to keyserver: "+keyserver.getHost()+", port: "+keyserver.getPort()+"\nsuccessful.");
 				}
 			}
 		});
@@ -1594,7 +1626,7 @@ public class SecurityMainFrame extends JFrame {
 			}
 		}
 		final int w = 600;
-		final int h = y*30 + 80;
+		final int h = y*30 + 120;
 		String buText = "";
 		if(innerPublicKey) {
 			buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" from KeyID: "+keylog.getKeyIDFrom();
@@ -1997,6 +2029,9 @@ public class SecurityMainFrame extends JFrame {
 		}
 		
 		Vector<Identity> ids = requestIdentitiyDetails(to.getKeyID(),null);
+		if (ids==null) {
+			return;
+		}
 		final Identity[] id = new Identity[1];
 		id[0] = null;
 		if (ids!=null && ids.size()>0) {
@@ -2519,6 +2554,9 @@ public class SecurityMainFrame extends JFrame {
 		}
 		String authServer = keyid.substring(keyid.indexOf('@')+1);
 		KeyClient client =  getKeyClient(authServer);
+		if (client == null) {
+			return null;
+		}
 		try {
 			client.close();
 		} catch (Exception ex) {
@@ -2562,7 +2600,7 @@ public class SecurityMainFrame extends JFrame {
 			if (ids!=null) {
 				return ids;
 			}
-		
+		Dialogs.showMessage("No identities found for "+keyid);
 		return null;
 	}
 	
@@ -3175,7 +3213,11 @@ public class SecurityMainFrame extends JFrame {
 		//		10. encrypt arbitrary files (AES)
 		//		11. decrypt arbitrary files (AES)
 		//		12. Modify Keys (in terms of deletion/revokation/submission to server)
-
+		try {
+	       UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+	    } catch(Exception ex){
+	        System.out.println("Nimbus look & feel not available");
+	    }
 		SecurityMainFrame s = SecurityMainFrame.getInstance();
 		s.buildUi();
 		s.openDefauktKeyStore();

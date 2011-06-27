@@ -110,12 +110,28 @@ public class TriggeredActions implements XMLElementable {
 		actions.add(new TriggeredAction(trigger,action));
 	}
 	
+	public void setAction(int index, int trigger, Action action) {
+		if (trigger<0 || trigger>5) throw new RuntimeException("wrong trigger");
+		actions.set(index, new TriggeredAction(trigger,action));
+	}
+	
 	public int getTrigger(int actionNo) {
+		if (actionNo<0 || actionNo>actions.size()) return 0;
 		return actions.get(actionNo).trigger;
 	}
 	
 	public Action getAction(int actionNo) {
+		if (actionNo<0 || actionNo>actions.size()) return null;
 		return actions.get(actionNo).action;
+	}
+	
+	public void removeAction(int actionNo) {
+		if (actionNo<0 || actionNo>actions.size()) return;
+		actions.remove(actionNo);
+	}
+	
+	public int getCount() {
+		return actions.size();
 	}
 
 	public Element toElement() {

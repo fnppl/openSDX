@@ -55,6 +55,8 @@ import org.fnppl.opensdx.xml.XMLElementable;
  */
 public interface Action extends XMLElementable {
 
+	
+	public String getDescription();
 	public void execute();
 	
 	

@@ -65,12 +65,15 @@ public class ActionHttp extends BusinessObject implements Action {
 	private static String KEY_NAME_PARAM_COLLECTION = "addparams";
 	private static String KEY_NAME_PARAM = "param";
 	
+	public static String TYPE_GET = "GET";
+	public static String TYPE_POST = "POST";
+	public static String TYPE_HEAD = "HEAD";
 	
 	
 	private BusinessStringItem url;
 	private BusinessStringItem type;
-	private BusinessCollection<BusinessCollection> header;
-	private BusinessCollection<BusinessCollection> params;
+	private BusinessCollection<NameValuePair> header;
+	private BusinessCollection<NameValuePair> params;
 	
 	private ActionHttp() {
 		
@@ -80,12 +83,12 @@ public class ActionHttp extends BusinessObject implements Action {
 		ActionHttp a = new ActionHttp();
 		a.url = new BusinessStringItem("url", url);
 		a.type = new BusinessStringItem("type", type);
-		a.header = new BusinessCollection<BusinessCollection>() {
+		a.header = new BusinessCollection<NameValuePair>() {
 			public String getKeyname() {
 				return KEY_NAME_HEADER_COLLECTION;
 			}
 		};
-		a.params = new BusinessCollection<BusinessCollection>() {
+		a.params = new BusinessCollection<NameValuePair>() {
 			public String getKeyname() {
 				return KEY_NAME_PARAM_COLLECTION;
 			}
@@ -106,7 +109,7 @@ public class ActionHttp extends BusinessObject implements Action {
 		a.url = a.handleBusinessStringItem("url");
 		a.type = a.handleBusinessStringItem("type");
 		
-		a.header = new BusinessCollection<BusinessCollection>() {
+		a.header = new BusinessCollection<NameValuePair>() {
 			public String getKeyname() {
 				return KEY_NAME_HEADER_COLLECTION;
 			}
@@ -119,7 +122,7 @@ public class ActionHttp extends BusinessObject implements Action {
 				);
 			}
 		};
-		a.params = new BusinessCollection<BusinessCollection>() {
+		a.params = new BusinessCollection<NameValuePair>() {
 			public String getKeyname() {
 				return KEY_NAME_PARAM_COLLECTION;
 			}
@@ -136,30 +139,89 @@ public class ActionHttp extends BusinessObject implements Action {
 		return a;
 	}
 	
+	public String getDescription() {
+		if (url==null) return "";
+		return url.getString();
+	}
+	public ActionHttp url(String url) {
+		if (url==null) {
+			this.url = null;
+		} else {
+			this.url.setString(url);
+		}
+		return this;
+	}
+	
+	public ActionHttp type(String type) {
+		if (type==null) {
+			this.type = null;
+		} else {
+			this.type.setString(type);
+		}
+		return this;
+	}
+	
+	public String getUrl() {
+		if (url==null) return null;
+		return url.getString();
+	}
+	
+	public String getType() {
+		if (type==null) return null;
+		return type.getString();
+	}
 	
 	public ActionHttp addHeader(String name, String value) {
-		BusinessCollection<BusinessStringItem> h = new BusinessCollection<BusinessStringItem>() {
-			public String getKeyname() {
-				return KEY_NAME_HEADER;
-			}
-		};
-		h.add(new BusinessStringItem("name",name));
-		h.add(new BusinessStringItem("value",value));
+		NameValuePair h = NameValuePair.make(name,value,KEY_NAME_HEADER);		
 		header.add(h);
 		return this;
 	}
 	
 	public ActionHttp addParam(String name, String value) {
-		BusinessCollection<BusinessStringItem> p = new BusinessCollection<BusinessStringItem>() {
-			public String getKeyname() {
-				return "param";
-			}
-		};
-		p.add(new BusinessStringItem("name",name));
-		p.add(new BusinessStringItem("value",value));
+		NameValuePair p = NameValuePair.make(name,value,KEY_NAME_PARAM);
 		params.add(p);
 		return this;
 	}
+	
+	public int getHeaderCount() {
+		if (header==null) return 0;
+		return header.size();
+	}
+	
+	public int getParamCount() {
+		if (params==null) return 0;
+		return params.size();
+	}
+	
+	public String getHeaderName(int index) {
+		if (header==null || index<0 || index>=getHeaderCount()) return null;
+		return header.get(index).getName();
+	}
+	
+	public void removeHeader(int index) {
+		if (header==null || index<0 || index>=getHeaderCount()) return;
+		header.remove(index);
+	}
+	
+	public void removeParam(int index) {
+		if (params==null || index<0 || index>=getHeaderCount()) return;
+		params.remove(index);
+	}
+	public String getHeaderValue(int index) {
+		if (header==null || index<0 || index>=getHeaderCount()) return null;
+		return header.get(index).getValue();
+	}
+	
+	public String getParamName(int index) {
+		if (params==null || index<0 || index>=getParamCount()) return null;
+		return params.get(index).getName();
+	}
+	
+	public String getParamValue(int index) {
+		if (params==null || index<0 || index>=getParamCount()) return null;
+		return params.get(index).getValue();
+	}
+	
 	
 	public void execute() {
 		//TODO implement
