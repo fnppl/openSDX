@@ -91,6 +91,9 @@ public class Receiver extends BusinessObject {
 	private BusinessStringItem authtype; 					//MUST
 	private BusinessStringItem authsha1; 					//MUST
 	private BusinessObject crypto;							//COULD
+	private BusinessStringItem file_keystore;
+	private BusinessStringItem keyid;
+	
 	
 	private Receiver()  {
 		
@@ -119,6 +122,8 @@ public class Receiver extends BusinessObject {
 		
 		r.serveripv6 = null;
 		r.crypto = null;
+		r.file_keystore = null;
+		r.keyid = null;
 		return r;
 	}
 	
@@ -139,7 +144,8 @@ public class Receiver extends BusinessObject {
 		
 		r.serveripv6 = BusinessStringItem.fromBusinessObject(bo, "serveripv6");
 		r.crypto = bo.handleBusinessObject("crypto");
-		
+		r.file_keystore = BusinessStringItem.fromBusinessObject(bo, "file_keystore");
+		r.keyid = BusinessStringItem.fromBusinessObject(bo, "keyid");
 		return r;
 	}
 
@@ -173,6 +179,38 @@ public class Receiver extends BusinessObject {
 		return this;
 	}
 	
+	public Receiver file_keystore(String value) {
+		if (value == null) {
+			file_keystore = null;
+		}
+		else if (file_keystore==null) {
+			file_keystore = new BusinessStringItem("file_keystore", value);
+		}
+		else {
+			file_keystore.setString(value);
+		}
+		return this;
+	}
+	public String getFileKeystore() {
+		if (file_keystore==null) return null;
+		return file_keystore.getString();
+	}
+	public Receiver keyid(String value) {
+		if (value == null) {
+			keyid = null;
+		}
+		else if (keyid==null) {
+			keyid = new BusinessStringItem("keyid", value);
+		}
+		else {
+			keyid.setString(value);
+		}
+		return this;
+	}
+	public String getKeyID() {
+		if (keyid==null) return null;
+		return keyid.getString();
+	}
 	public Receiver crypto(BusinessObject crypto) {
 		if (crypto==null) return null;
 		if (crypto.getKeyname().equals("crypto")) {

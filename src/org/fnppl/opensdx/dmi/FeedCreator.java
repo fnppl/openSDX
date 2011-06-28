@@ -113,7 +113,7 @@ public class FeedCreator {
 
 		ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER,"","");
 		ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR,"","");
-		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER, "localhost", "127.0.0.1", Receiver.AUTH_TYPE_LOGIN, new byte[] {0});
+		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER, "localhost", "127.0.0.1", Receiver.AUTH_TYPE_KEYFILE, new byte[] {0});
 		
 		long now = System.currentTimeMillis();
 		FeedInfo feedinfo = FeedInfo.make(true, "", now, now, sender, licensor)
@@ -195,9 +195,9 @@ public class FeedCreator {
 					System.currentTimeMillis()
 				)
 				.playlength(987)
-				.addPromotext("en", "EN promotext")
-				.addPromotext("de", "DE promotetext")
-				.addTeasertext("de", "DE teasertext")
+				.setPromotext("en", "EN promotext")
+				.setPromotext("de", "DE promotetext")
+				.setTeasertext("de", "DE teasertext")
 				.related(BundleRelatedInformation.make()
 						.physical_distributor("published physical distributor")
 						.physical_distributor("secret physical distributor", false)

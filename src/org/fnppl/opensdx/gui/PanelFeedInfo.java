@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.UUID;
@@ -65,7 +66,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.JTextComponent;
 import org.fnppl.opensdx.common.*;
+import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.security.KeyApprovingStore;
+import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
 
 public class PanelFeedInfo extends javax.swing.JPanel {
@@ -73,6 +78,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     private FeedInfo feedinfo = null;
     private DocumentChangeListener changeListener;
     private PanelFeedInfo me;
+    private File lastDir = null;
 
     private Vector<MyObserver> observers = new Vector<MyObserver>();
     public void addObserver(MyObserver observer) {
@@ -145,11 +151,15 @@ public class PanelFeedInfo extends javax.swing.JPanel {
             text_receiver_servername.setText(r.getServername());
             text_receiver_serveripv4.setText(r.getServerIPv4());
             select_authtype.setSelectedItem(r.getAuthType());
+            text_keyid.setText(r.getKeyID());
+            text_keystore.setText(r.getFileKeystore());
         } else {
             select_receiver_type.setSelectedIndex(0);
             text_receiver_servername.setText("");
             text_receiver_serveripv4.setText("");
             select_authtype.setSelectedIndex(0);
+            text_keyid.setText("");
+            text_keystore.setText("");
         }
 
         //actions
@@ -213,11 +223,16 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         initComponents();
         text_creation_datetime.setName("datetime");
         text_effictive_datetime.setName("datetime");
+        lastDir = new File(System.getProperty("user.home"));
+        File f = new File(lastDir,"openSDX");
+        if (f.exists() && f.isDirectory()) {
+            lastDir = f;
+        }
         initChangeListeners();
     }
 
     private void initChangeListeners() {
-        Vector<JTextField> texts = new Vector<JTextField>();
+        Vector<JTextComponent> texts = new Vector<JTextComponent>();
         texts.add(text_feedid);
         texts.add(text_creation_datetime);
         texts.add(text_effictive_datetime);
@@ -242,7 +257,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
             public void keyPressed(KeyEvent e) {
                 if(e.getKeyCode() == KeyEvent.VK_ENTER){
                     if (e.getComponent() instanceof JTextField) {
-                        JTextField text = (JTextField)e.getComponent();
+                        JTextComponent text = (JTextComponent)e.getComponent();
                         String t = text.getText();
                         if (t.equals("")) t = null;
 
@@ -282,7 +297,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         };
 
 
-        for (JTextField text : texts) {
+        for (JTextComponent text : texts) {
             text.getDocument().addDocumentListener(changeListener);
             text.addKeyListener(keyAdapt);
         }
@@ -398,12 +413,14 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         jLabel16 = new javax.swing.JLabel();
         select_authtype = new javax.swing.JComboBox();
         panel_osdxfileserver_settings = new javax.swing.JPanel();
-        jTextField1 = new javax.swing.JTextField();
+        text_keystore = new javax.swing.JTextField();
         jLabel17 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        bu_select_keyid = new javax.swing.JButton();
         jLabel18 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
+        text_keyid = new javax.swing.JTextField();
+        bu_select_keystore = new javax.swing.JButton();
+        bu_remove_keystore = new javax.swing.JButton();
+        bu_remove_keyid = new javax.swing.JButton();
         jLabel15 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         check_onlytest = new javax.swing.JCheckBox();
@@ -426,6 +443,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         setBorder(null);
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Creator"));
+        jPanel1.setMaximumSize(new java.awt.Dimension(440, 32767));
         jPanel1.setPreferredSize(new java.awt.Dimension(375, 113));
 
         jLabel4.setText("email");
@@ -462,6 +480,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Licensor"));
+        jPanel2.setMaximumSize(new java.awt.Dimension(440, 32767));
         jPanel2.setPreferredSize(new java.awt.Dimension(375, 147));
 
         jLabel6.setText("contract partner id");
@@ -512,6 +531,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Sender"));
+        jPanel3.setMaximumSize(new java.awt.Dimension(440, 32767));
 
         jLabel9.setText("contract partner id");
 
@@ -537,9 +557,9 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jLabel10))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_sender_email, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
-                    .addComponent(text_sender_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
-                    .addComponent(text_sender_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))
+                    .addComponent(text_sender_email, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+                    .addComponent(text_sender_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+                    .addComponent(text_sender_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -561,6 +581,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         );
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Receiver"));
+        jPanel4.setMaximumSize(new java.awt.Dimension(440, 32767));
 
         jLabel12.setText("  type");
 
@@ -584,17 +605,41 @@ public class PanelFeedInfo extends javax.swing.JPanel {
 
         panel_osdxfileserver_settings.setBorder(javax.swing.BorderFactory.createTitledBorder("openSDX  Fileserver Settings"));
 
-        jTextField1.setEditable(false);
+        text_keystore.setEditable(false);
 
         jLabel17.setText("KeyStore");
 
-        jButton1.setText("select");
+        bu_select_keyid.setText("select");
+        bu_select_keyid.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_select_keyidActionPerformed(evt);
+            }
+        });
 
         jLabel18.setText("Key ID");
 
-        jTextField2.setEditable(false);
+        text_keyid.setEditable(false);
 
-        jButton2.setText("select");
+        bu_select_keystore.setText("select");
+        bu_select_keystore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_select_keystoreActionPerformed(evt);
+            }
+        });
+
+        bu_remove_keystore.setText("x");
+        bu_remove_keystore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_remove_keystoreActionPerformed(evt);
+            }
+        });
+
+        bu_remove_keyid.setText("x");
+        bu_remove_keyid.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_remove_keyidActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panel_osdxfileserver_settingsLayout = new javax.swing.GroupLayout(panel_osdxfileserver_settings);
         panel_osdxfileserver_settings.setLayout(panel_osdxfileserver_settingsLayout);
@@ -607,27 +652,32 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jLabel18))
                 .addGap(25, 25, 25)
                 .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jTextField2)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
+                    .addComponent(text_keyid)
+                    .addComponent(text_keystore, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(bu_select_keystore, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(bu_select_keyid, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(bu_remove_keystore)
+                    .addComponent(bu_remove_keyid))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
         panel_osdxfileserver_settingsLayout.setVerticalGroup(
             panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panel_osdxfileserver_settingsLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(text_keystore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel17)
-                    .addComponent(jButton2))
+                    .addComponent(bu_select_keystore)
+                    .addComponent(bu_remove_keystore))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel18)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1)))
+                    .addComponent(text_keyid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(bu_select_keyid)
+                    .addComponent(bu_remove_keyid)))
         );
 
         jLabel15.setText("server IPv4");
@@ -636,28 +686,29 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+            .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel12)
-                        .addGap(64, 64, 64)
-                        .addComponent(select_receiver_type, 0, 303, Short.MAX_VALUE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(jLabel14)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel15))
-                            .addComponent(jLabel13)
-                            .addComponent(jLabel16))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(select_authtype, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(text_receiver_serveripv4, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
-                            .addComponent(text_receiver_servername, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)))
-                    .addComponent(panel_osdxfileserver_settings, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE))
-                .addGap(28, 28, 28))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(jPanel4Layout.createSequentialGroup()
+                            .addComponent(jLabel12)
+                            .addGap(64, 64, 64)
+                            .addComponent(select_receiver_type, 0, 303, Short.MAX_VALUE))
+                        .addGroup(jPanel4Layout.createSequentialGroup()
+                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanel4Layout.createSequentialGroup()
+                                    .addComponent(jLabel14)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(jLabel15))
+                                .addComponent(jLabel13)
+                                .addComponent(jLabel16))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(select_authtype, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(text_receiver_serveripv4, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                                .addComponent(text_receiver_servername, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE))))
+                    .addComponent(panel_osdxfileserver_settings, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         jPanel4Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {select_authtype, select_receiver_type, text_receiver_serveripv4, text_receiver_servername});
@@ -690,6 +741,8 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                 .addComponent(panel_osdxfileserver_settings, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
+
+        jPanel5.setMaximumSize(new java.awt.Dimension(440, 32767));
 
         check_onlytest.setText("onlytest");
         check_onlytest.addActionListener(new java.awt.event.ActionListener() {
@@ -733,7 +786,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                                 .addComponent(jLabel3))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(text_feedid, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                                .addComponent(text_feedid, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
                                 .addGroup(jPanel5Layout.createSequentialGroup()
                                     .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                         .addComponent(text_creation_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
@@ -742,7 +795,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                                     .addComponent(buNow)))
                             .addGap(19, 19, 19))
                         .addGroup(jPanel5Layout.createSequentialGroup()
-                            .addComponent(check_onlytest, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                            .addComponent(check_onlytest, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
                             .addGap(153, 153, 153)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                         .addComponent(bu_uuid, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -764,7 +817,6 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(text_creation_datetime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2))
@@ -772,12 +824,11 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(text_effictive_datetime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel3)))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addComponent(buNow))))
+                    .addComponent(buNow)))
         );
 
         jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder("Actions"));
+        jPanel6.setMaximumSize(new java.awt.Dimension(440, 32767));
 
         table_actions.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -859,7 +910,7 @@ public class PanelFeedInfo extends javax.swing.JPanel {
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bu_action_remove)
@@ -875,10 +926,10 @@ public class PanelFeedInfo extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -886,8 +937,6 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))
                 .addContainerGap())
         );
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel3, jPanel4, jPanel5});
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel1, jPanel2, jPanel6});
 
@@ -900,12 +949,12 @@ public class PanelFeedInfo extends javax.swing.JPanel {
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
+                    .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -1041,6 +1090,65 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         notifyChanges();
     }//GEN-LAST:event_bu_uuidActionPerformed
 
+    private void bu_select_keystoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_select_keystoreActionPerformed
+        if (feedinfo==null) return;
+        File f = Dialogs.chooseOpenFile("Open KeyStore", lastDir, "keystore.xml");
+        if (f==null) return;
+        Receiver r = feedinfo.getReceiver();
+        r.file_keystore(f.getAbsolutePath());
+        text_keystore.setText(f.getAbsolutePath());
+        notifyChanges();
+    }//GEN-LAST:event_bu_select_keystoreActionPerformed
+
+    private void bu_select_keyidActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_select_keyidActionPerformed
+            if (feedinfo == null) {
+                return;
+            }
+            Receiver r = feedinfo.getReceiver();
+            String filenameKeystore = r.getFileKeystore();
+            if (filenameKeystore == null) {
+                Dialogs.showMessage("Please select a keystore file first.");
+                return;
+            }
+            File f = new File(filenameKeystore);
+            if (!f.exists()) {
+                Dialogs.showMessage("Sorry. selected keystore file does not exist.");
+                return;
+            }
+            try {
+                KeyApprovingStore keystore = KeyApprovingStore.fromFile(f, new DefaultMessageHandler());
+                OSDXKey key = FeedGui.selectPrivateSigningKey(keystore);
+                if (key!=null) {
+                    r.keyid(key.getKeyID());
+                    text_keyid.setText(key.getKeyID());
+                    notifyChanges();
+                }
+            } catch (Exception ex) {
+                Dialogs.showMessage("Error opening keystore. Please select a valid keytore file.");
+                ex.printStackTrace();
+            }
+    }//GEN-LAST:event_bu_select_keyidActionPerformed
+
+    private void bu_remove_keyidActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_keyidActionPerformed
+        if (feedinfo==null) {
+            return;
+        }
+        feedinfo.getReceiver().keyid(null);
+        text_keyid.setText("");
+        notifyChanges();
+}//GEN-LAST:event_bu_remove_keyidActionPerformed
+
+    private void bu_remove_keystoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_keystoreActionPerformed
+        if (feedinfo==null) {
+            return;
+        }
+        feedinfo.getReceiver().file_keystore(null);
+        feedinfo.getReceiver().keyid(null);
+        text_keystore.setText("");
+        text_keyid.setText("");
+        notifyChanges();
+    }//GEN-LAST:event_bu_remove_keystoreActionPerformed
+
     private Vector editActionHttpDialog(ActionHttp action, int trigger) {
         PanelActionHTTP p = new PanelActionHTTP();
         p.setActionHTTP(action);
@@ -1077,10 +1185,12 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     private javax.swing.JButton bu_action_add_mail;
     private javax.swing.JButton bu_action_edit;
     private javax.swing.JButton bu_action_remove;
+    private javax.swing.JButton bu_remove_keyid;
+    private javax.swing.JButton bu_remove_keystore;
+    private javax.swing.JButton bu_select_keyid;
+    private javax.swing.JButton bu_select_keystore;
     private javax.swing.JButton bu_uuid;
     private javax.swing.JCheckBox check_onlytest;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1106,8 +1216,6 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
     private javax.swing.JPanel panel_osdxfileserver_settings;
     private javax.swing.JComboBox select_authtype;
     private javax.swing.JComboBox select_receiver_type;
@@ -1117,6 +1225,8 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     private javax.swing.JTextField text_creator_userid;
     private javax.swing.JTextField text_effictive_datetime;
     private javax.swing.JTextField text_feedid;
+    private javax.swing.JTextField text_keyid;
+    private javax.swing.JTextField text_keystore;
     private javax.swing.JTextField text_licensor_contractpartnerid;
     private javax.swing.JTextField text_licensor_email;
     private javax.swing.JTextField text_licensor_ourcontractpartnerid;

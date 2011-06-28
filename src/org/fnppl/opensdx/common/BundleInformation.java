@@ -106,7 +106,13 @@ public class BundleInformation extends BusinessObject {
 	}
 
 
-	public BundleInformation addPromotext(String language, String promotext) {
+	public BundleInformation setPromotext(String language, String promotext) {
+		for (int i=0;i<this.promotext.size();i++) {
+			if (this.promotext.get(i).getAttribute("lang").equals(language)) {
+				this.promotext.get(i).setString(promotext);
+				return this;
+			}
+		}
 		BusinessStringItem text = new BusinessStringItem("promotext", promotext);
 		text.setAttribute("lang", language);
 		this.promotext.add(text);
@@ -133,7 +139,13 @@ public class BundleInformation extends BusinessObject {
 		}
 	}
 
-	public BundleInformation addTeasertext(String language, String teasertext) {
+	public BundleInformation setTeasertext(String language, String teasertext) {
+		for (int i=0;i<this.teasertext.size();i++) {
+			if (this.teasertext.get(i).getAttribute("lang").equals(language)) {
+				this.teasertext.get(i).setString(teasertext);
+				return this;
+			}
+		}
 		BusinessStringItem text = new BusinessStringItem("teasertext", teasertext);
 		text.setAttribute("lang", language);
 		this.teasertext.add(text);
@@ -165,6 +177,16 @@ public class BundleInformation extends BusinessObject {
 		return promotext.get(index).getString();
 	}
 	
+	public String getPromotext(String lang) {
+		if (promotext==null) return null;
+		for (int i=0;i<promotext.size();i++) {
+			if (promotext.get(i).getAttribute("lang").equals(lang)) {
+				return promotext.get(i).getString();
+			}
+		}
+		return null;
+	}
+	
 	public String getPromotextLanguage(int index) {
 		if (promotext==null || index<0 || index>=promotext.size()) return null;
 		return promotext.get(index).getAttribute("lang");
@@ -191,6 +213,16 @@ public class BundleInformation extends BusinessObject {
 	public String getTeasertextLanguage(int index) {
 		if (teasertext==null || index<0 || index>=teasertext.size()) return null;
 		return teasertext.get(index).getAttribute("lang");
+	}
+	
+	public String getTeasertext(String lang) {
+		if (teasertext==null) return null;
+		for (int i=0;i<teasertext.size();i++) {
+			if (teasertext.get(i).getAttribute("lang").equals(lang)) {
+				return teasertext.get(i).getString();
+			}
+		}
+		return null;
 	}
 	
 	public void teasertext_language(int index, String language) {

@@ -49,6 +49,8 @@ package org.fnppl.opensdx.dmi;
 
 import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 
@@ -91,7 +93,8 @@ import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
 	private URL configGenres = FeedCreator.class.getResource("resources/config_genres.xml");
-	
+	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
+
 	public static FeedGui getInstance() {
 		if(instance == null) {
 			instance = new FeedGui();
@@ -130,6 +133,62 @@ public class FeedGui extends JFrame implements MyObserver {
 		setSize(1024, 768);
 		makeMenuBar();
 		Helper.centerMe(this, null);
+	}
+	
+	
+	private void initTooltips() {
+		initTooltips(feedinfo_panel);
+		initTooltips(bundle_panel);
+		initTooltips(bundled_items_panel);
+	}
+	
+	private void initTooltips(Object ob) {
+		String configName = "tooltips_"+ob.getClass().getSimpleName()+".txt";
+		File config = new File("src/org/fnppl/opensdx/dmi/resources/"+configName);
+		
+		boolean save = false;
+		
+		Properties tooltips = new Properties();
+		if (config.exists()) {
+			try {
+			FileInputStream in = new FileInputStream(config);
+			tooltips.load(in);
+			in.close();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		
+		Field[] fields = ob.getClass().getDeclaredFields();
+         for (Field f : fields) {
+            f.setAccessible(true);
+            try {
+            	Object obj = f.get(ob);
+            	if (!(obj instanceof JLabel) && !(obj instanceof JPanel) && !(obj instanceof JScrollPane)) {
+	            	Method m = obj.getClass().getMethod("setToolTipText", String.class);
+					//System.out.println("tooltip::"+f.getName());
+					String key = f.getName();
+					if (tooltips.containsKey(key)) {
+						String tip = (String)tooltips.get(key);
+						if (tip.length()>0) {
+							m.invoke(obj, tip);
+						}
+					} else {
+						tooltips.setProperty(key, "");
+					}
+            	}
+            } catch (Exception ex) {
+            } 
+        }
+         if (save) {
+ 	        try {
+ 	        	FileOutputStream out = new FileOutputStream(config);
+ 				tooltips.store(out, null);
+ 				out.close();
+ 			} catch (IOException e) {
+ 				e.printStackTrace();
+ 			}
+         }
 	}
 	
 	public void makeMenuBar() {
@@ -329,7 +388,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 	}
 	
-	public OSDXKey selectPrivateSigningKey(KeyApprovingStore store) {
+	public static OSDXKey selectPrivateSigningKey(KeyApprovingStore store) {
 		Vector<OSDXKey> storedPrivateKeys = store.getAllPrivateSigningKeys();
 		if (storedPrivateKeys==null || storedPrivateKeys.size()==0) {
 			Dialogs.showMessage("Sorry, no private key for signing in keystore");
@@ -374,6 +433,43 @@ public class FeedGui extends JFrame implements MyObserver {
 	public void newEmptyFeed() {
 		currentFeed = FeedCreator.makeEmptyFeedWithBundle();
 		update();
+	}
+	
+	public static String showCountryCodeSelector() {
+		String antw = Dialogs.showInputDialog("Country Code", "Please enter country code");
+		return antw;
+	}
+	
+	
+	private static Vector<String> lang_codes_names = null;
+	private static Vector<String> lang_codes = null;
+	public static String showLanguageCodeSelector() {
+		if (lang_codes==null) {
+	        try {
+	        	lang_codes = new Vector<String>();
+	        	lang_codes_names = new Vector<String>();
+	        	
+	            BufferedReader in = new BufferedReader(new InputStreamReader(configLanguageCodes.openStream()));
+	            String line = in.readLine(); //header
+	            while ((line = in.readLine())!=null) {
+	            	String[] t = line.split(",");
+	            	t[1] = t[1].toUpperCase();
+	            	lang_codes_names.add(t[0]+" :: "+t[1]);
+	            	//lang_codes_names.add(" :: "+t[1]);
+	            	lang_codes.add(t[1]);
+	            }
+	            in.close();
+	        } catch (IOException ioe) { System.err.println(ioe.toString());}
+	        
+		}
+		int sel = Dialogs.showSelectDialog("Language Code", "Please select language code", lang_codes_names);
+		if (sel>=0) {
+			return lang_codes.get(sel);
+		} else {
+			return null;
+		}
+		//String antw = Dialogs.showInputDialog("Language Code", "Please enter language code");
+		//return antw;
 	}
 	
 	protected JComponent makeTextPanel(String text) {
@@ -456,6 +552,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		feedinfo_panel = new PanelFeedInfo();
 		bundle_panel = new PanelBundle();
 		bundled_items_panel = new PanelItems();
+		
 		readAndSetGenres();
 		
 		//observe changes
@@ -485,6 +582,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		StatusBar sb = makeStatusBar(); //also sets. class-variable.
 		jp.add(sb, BorderLayout.SOUTH);
 		
+		initTooltips();
 		newEmptyFeed();
 	}
 	

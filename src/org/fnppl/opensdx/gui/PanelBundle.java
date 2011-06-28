@@ -10,6 +10,7 @@ import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
@@ -19,6 +20,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.common.Contributor;
@@ -28,6 +30,7 @@ import org.fnppl.opensdx.common.InfoWWW;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Territorial;
 import org.fnppl.opensdx.common.Territory;
+import org.fnppl.opensdx.dmi.FeedGui;
 import org.fnppl.opensdx.security.SecurityHelper;
 
 
@@ -105,7 +108,24 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         tree_territories = new EditTerritoiresTree();
         tree_territories.addObserver(this);
         panel_territories.add(new JScrollPane(tree_territories), BorderLayout.CENTER);
+
+
         initChangeListeners();
+        DefaultListModel lm = new DefaultListModel();
+        list_language.setModel(lm);
+        list_language.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list_language.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                //System.out.println("value changed");
+                int sel = list_language.getSelectedIndex();
+                if (sel>=0 && sel<list_language.getModel().getSize()) {
+                    String lang = (String)list_language.getModel().getElementAt(sel);
+                   // System.out.println("   update lang: "+lang);
+                    updatePromoTexts(lang);
+                }
+            }
+        });
+        
     }
 
     public static void main(String[] args) {
@@ -278,7 +298,12 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         if (info != null) {
             text_physical_release_datetime.setText(info.getPhysicalReleaseDatetimeText());
             text_digital_release_date.setText(info.getDigitalReleaseDatetimeText());
-            table_promotext.setModel(new PromotextTableModel(info,this));
+            //table_promotext.setModel(new PromotextTableModel(info,this));
+            updateLanguageList();
+            updatePromoTexts(null);
+        } else {
+            updateLanguageList();
+            updatePromoTexts(null);
         }
 
         //License
@@ -357,6 +382,43 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
 
     }
 
+    private void  updateLanguageList() {
+        DefaultListModel lm = (DefaultListModel)list_language.getModel();
+        lm.removeAllElements();
+        if (bundle !=null) {
+            BundleInformation info = bundle.getInformation();
+            int anzP = info.getPromotextCount();
+            int anzT = info.getPromotextCount();
+            Vector<String> lang = new Vector<String>();
+            for (int i=0;i<anzP;i++) {
+                lang.add(info.getPromotextLanguage(i));
+            }
+            for (int i=0;i<anzT;i++) {
+                String l = info.getTeasertextLanguage(i);
+                if (!lang.contains(l)) {
+                    lang.add(l);
+                }
+            }
+            for (String s : lang) {
+                if (s!=null && s.length()>0) {
+                    lm.addElement(s);
+                }
+            }
+        }
+    }
+
+    private void updatePromoTexts(String lang) {
+        if (lang==null) {
+           text_promotext.setText("");
+           text_teasertext.setText("");
+        } else {
+           text_promotext.setText(bundle.getInformation().getPromotext(lang));
+           text_teasertext.setText(bundle.getInformation().getTeasertext(lang));
+        }
+        changeListener.saveState(text_promotext);
+        changeListener.saveState(text_teasertext);
+    }
+
     private void updateContributorList() {
         int anzContributors = bundle.getContributorCount();
         DefaultListModel lm = new DefaultListModel();
@@ -402,7 +464,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     }
 
     private void initChangeListeners() {
-        Vector<JTextField> texts = new Vector<JTextField>();
+        Vector<JTextComponent> texts = new Vector<JTextComponent>();
         texts.add(text_amazon);
         texts.add(text_contentauthid);
         texts.add(text_contributor_contentauthid);
@@ -433,8 +495,10 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         texts.add(text_version);
         texts.add(text_yourid);
         texts.add(text_license_pricing);
+        texts.add(text_promotext);
+        texts.add(text_teasertext);
         changeListener = new DocumentChangeListener(texts);
-        for (JTextField text : texts) {
+        for (JTextComponent text : texts) {
             text.getDocument().addDocumentListener(changeListener);
         }
 
@@ -442,7 +506,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
             public void keyPressed(KeyEvent e) {
                 if(e.getKeyCode() == KeyEvent.VK_ENTER){
                     if (e.getComponent() instanceof JTextField) {
-                        JTextField text = (JTextField)e.getComponent();
+                        JTextComponent text = (JTextComponent)e.getComponent();
                         String t = text.getText();
                         if (t.equals("")) t = null;
                         int selCon = list_contributors.getSelectedIndex();
@@ -508,37 +572,12 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                 }
             }
         };
-        text_amazon.addKeyListener(keyAdapt);
-        text_contentauthid.addKeyListener(keyAdapt);
-        text_contributor_contentauthid.addKeyListener(keyAdapt);
-        text_contributor_facebook.addKeyListener(keyAdapt);
-        text_contributor_finetunesid.addKeyListener(keyAdapt);
-        text_contributor_gvl.addKeyListener(keyAdapt);
-        text_contributor_homepage.addKeyListener(keyAdapt);
-        text_contributor_myspace.addKeyListener(keyAdapt);
-        text_contributor_name.addKeyListener(keyAdapt);
-        text_contributor_ourid.addKeyListener(keyAdapt);
-        text_contributor_phone.addKeyListener(keyAdapt);
-        text_contributor_twitter.addKeyListener(keyAdapt);
-        text_contributor_yourid.addKeyListener(keyAdapt);
-        text_digital_release_date.addKeyListener(keyAdapt);
-        text_display_artist.addKeyListener(keyAdapt);
-        text_displayname.addKeyListener(keyAdapt);
-        text_finetunesid.addKeyListener(keyAdapt);
-        text_grid.addKeyListener(keyAdapt);
-        text_isbn.addKeyListener(keyAdapt);
-        text_isrc.addKeyListener(keyAdapt);
-        text_labelordernum.addKeyListener(keyAdapt);
-        text_license_from_datetime.addKeyListener(keyAdapt);
-        text_license_to_datetime.addKeyListener(keyAdapt);
-        text_name.addKeyListener(keyAdapt);
-        text_ourid.addKeyListener(keyAdapt);
-        text_physical_release_datetime.addKeyListener(keyAdapt);
-        text_upc.addKeyListener(keyAdapt);
-        text_version.addKeyListener(keyAdapt);
-        text_yourid.addKeyListener(keyAdapt);
-        text_license_pricing.addKeyListener(keyAdapt);
 
+        for (JTextComponent t: texts) {
+            if (!(t instanceof JTextArea)) {
+                t.addKeyListener(keyAdapt);
+            }
+        }
         /*
 
 
@@ -635,10 +674,18 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         jLabel30 = new javax.swing.JLabel();
         text_digital_release_date = new javax.swing.JTextField();
         jLabel31 = new javax.swing.JLabel();
-        scroll_table_promotext = new javax.swing.JScrollPane();
-        table_promotext = new javax.swing.JTable();
-        bu_add_promotext = new javax.swing.JButton();
-        bu_remove_promotext = new javax.swing.JButton();
+        bu_add_language = new javax.swing.JButton();
+        bu_remove_language = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        list_language = new javax.swing.JList();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        text_promotext = new javax.swing.JTextArea();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        text_teasertext = new javax.swing.JTextArea();
+        bu_promotext_update = new javax.swing.JButton();
+        bu_promotext_reset = new javax.swing.JButton();
+        bu_teasertext_update = new javax.swing.JButton();
+        bu_teasertext_reset = new javax.swing.JButton();
         panelLicense = new javax.swing.JPanel();
         jLabel32 = new javax.swing.JLabel();
         jLabel33 = new javax.swing.JLabel();
@@ -825,7 +872,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
             .addGroup(panelIDsBigLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(panelIDs, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(346, Short.MAX_VALUE))
+                .addContainerGap(256, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("IDs", panelIDsBig);
@@ -1005,7 +1052,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel29.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
+        jLabel29.setFont(new java.awt.Font("Ubuntu", 1, 15));
         jLabel29.setText("Contributor details");
 
         bu_contributor_add.setText("add");
@@ -1094,12 +1141,12 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(80, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Contributors", panelContributors);
 
-        panelInformation.setBorder(javax.swing.BorderFactory.createTitledBorder("Information"));
+        panelInformation.setBorder(null);
 
         text_physical_release_datetime.setText("jTextField26");
 
@@ -1109,38 +1156,63 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
 
         jLabel31.setText("digital release date");
 
-        table_promotext.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {"", null, null}
-            },
-            new String [] {
-                "Language", "Promotext", "Teasertext"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Object.class, java.lang.String.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
-        scroll_table_promotext.setViewportView(table_promotext);
-        table_promotext.getColumnModel().getColumn(0).setResizable(false);
-        table_promotext.getColumnModel().getColumn(1).setResizable(false);
-        table_promotext.getColumnModel().getColumn(2).setResizable(false);
-
-        bu_add_promotext.setText("add");
-        bu_add_promotext.addActionListener(new java.awt.event.ActionListener() {
+        bu_add_language.setText("add");
+        bu_add_language.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_add_promotextActionPerformed(evt);
+                bu_add_languageActionPerformed(evt);
             }
         });
 
-        bu_remove_promotext.setText("remove");
-        bu_remove_promotext.addActionListener(new java.awt.event.ActionListener() {
+        bu_remove_language.setText("remove");
+        bu_remove_language.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_remove_promotextActionPerformed(evt);
+                bu_remove_languageActionPerformed(evt);
+            }
+        });
+
+        list_language.setBorder(javax.swing.BorderFactory.createTitledBorder("Language"));
+        list_language.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane2.setViewportView(list_language);
+
+        text_promotext.setColumns(20);
+        text_promotext.setRows(5);
+        text_promotext.setBorder(javax.swing.BorderFactory.createTitledBorder("Promotion Text"));
+        jScrollPane5.setViewportView(text_promotext);
+
+        text_teasertext.setColumns(20);
+        text_teasertext.setRows(5);
+        text_teasertext.setBorder(javax.swing.BorderFactory.createTitledBorder("Teaser Text"));
+        jScrollPane6.setViewportView(text_teasertext);
+
+        bu_promotext_update.setText("update");
+        bu_promotext_update.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_promotext_updateActionPerformed(evt);
+            }
+        });
+
+        bu_promotext_reset.setText("reset");
+        bu_promotext_reset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_promotext_resetActionPerformed(evt);
+            }
+        });
+
+        bu_teasertext_update.setText("update");
+        bu_teasertext_update.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_teasertext_updateActionPerformed(evt);
+            }
+        });
+
+        bu_teasertext_reset.setText("reset");
+        bu_teasertext_reset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_teasertext_resetActionPerformed(evt);
             }
         });
 
@@ -1151,39 +1223,75 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
             .addGroup(panelInformationLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(scroll_table_promotext, javax.swing.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(panelInformationLayout.createSequentialGroup()
-                        .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel30)
-                            .addComponent(jLabel31))
-                        .addGap(18, 18, 18)
-                        .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(text_physical_release_datetime)
-                            .addComponent(text_digital_release_date, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)))
-                    .addGroup(panelInformationLayout.createSequentialGroup()
-                        .addComponent(bu_add_promotext, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(bu_add_language)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(bu_remove_promotext)))
+                        .addComponent(bu_remove_language))
+                    .addComponent(jLabel31)
+                    .addComponent(jLabel30))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelInformationLayout.createSequentialGroup()
+                        .addComponent(bu_teasertext_update)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(bu_teasertext_reset))
+                    .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(text_digital_release_date)
+                        .addComponent(text_physical_release_datetime, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(panelInformationLayout.createSequentialGroup()
+                        .addComponent(bu_promotext_update)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(bu_promotext_reset)))
                 .addContainerGap())
         );
+
+        panelInformationLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {text_digital_release_date, text_physical_release_datetime});
+
+        panelInformationLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jScrollPane5, jScrollPane6});
+
+        panelInformationLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {bu_promotext_reset, bu_promotext_update});
+
+        panelInformationLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {bu_teasertext_reset, bu_teasertext_update});
+
         panelInformationLayout.setVerticalGroup(
             panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelInformationLayout.createSequentialGroup()
+                .addGap(34, 34, 34)
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel30)
                     .addComponent(text_physical_release_datetime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel31)
+                    .addComponent(text_digital_release_date, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(49, 49, 49)
+                .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelInformationLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(bu_promotext_update)
+                            .addComponent(bu_promotext_reset))
+                        .addGap(19, 19, 19)
+                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(panelInformationLayout.createSequentialGroup()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(bu_add_language)
+                            .addComponent(bu_remove_language))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(text_digital_release_date, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel31))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scroll_table_promotext, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(bu_add_promotext)
-                    .addComponent(bu_remove_promotext))
-                .addContainerGap(429, Short.MAX_VALUE))
+                    .addComponent(bu_teasertext_update)
+                    .addComponent(bu_teasertext_reset))
+                .addContainerGap(103, Short.MAX_VALUE))
         );
+
+        panelInformationLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jScrollPane5, jScrollPane6});
 
         jTabbedPane1.addTab("Information", panelInformation);
 
@@ -1216,7 +1324,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         );
         panel_territoriesLayout.setVerticalGroup(
             panel_territoriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 297, Short.MAX_VALUE)
+            .addGap(0, 290, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout panelLicenseLayout = new javax.swing.GroupLayout(panelLicense);
@@ -1226,6 +1334,9 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
             .addGroup(panelLicenseLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelLicenseLayout.createSequentialGroup()
+                        .addComponent(panel_territories, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
                     .addGroup(panelLicenseLayout.createSequentialGroup()
                         .addGroup(panelLicenseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelLicenseLayout.createSequentialGroup()
@@ -1245,10 +1356,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                                         .addComponent(text_license_pricing, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(text_license_to_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
                                     .addComponent(text_license_from_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))))
-                        .addGap(393, 393, 393))
-                    .addGroup(panelLicenseLayout.createSequentialGroup()
-                        .addComponent(panel_territories, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(81, Short.MAX_VALUE))))
+                        .addGap(393, 393, 393))))
         );
 
         panelLicenseLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jScrollPane3, jScrollPane4});
@@ -1275,7 +1383,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panel_territories, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(95, 95, 95))
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("License", panelLicense);
@@ -1300,8 +1408,8 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                 .addContainerGap()
                 .addComponent(panelBasics, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(65, Short.MAX_VALUE))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 691, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(74, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1331,13 +1439,23 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         }
     }//GEN-LAST:event_bu_contributor_addActionPerformed
 
-    private void bu_add_promotextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_promotextActionPerformed
+    private void bu_add_languageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_languageActionPerformed
         if (bundle != null && bundle.getInformation() != null) {
-            bundle.getInformation().addPromotext("NEW_LANG", "");
-            table_promotext.setModel(new PromotextTableModel(bundle.getInformation(),this));
-            notifyChanges();
+            String lang = FeedGui.showLanguageCodeSelector();
+            if (lang!=null) {
+                String p = bundle.getInformation().getPromotext(lang);
+                String t = bundle.getInformation().getTeasertext(lang);
+                if (t!=null || p !=null) {
+                    Dialogs.showMessage("Selected language \""+lang+"\" is already in list.");
+                    return;
+                }
+                bundle.getInformation().setPromotext(lang, "");
+                updateLanguageList();
+                list_language.setSelectedIndex(list_language.getModel().getSize()-1);
+                notifyChanges();
+            }
         }
-    }//GEN-LAST:event_bu_add_promotextActionPerformed
+    }//GEN-LAST:event_bu_add_languageActionPerformed
 
     private void bu_contributor_removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_contributor_removeActionPerformed
         if (bundle != null) {
@@ -1370,16 +1488,17 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         }
     }//GEN-LAST:event_select_contributor_typeActionPerformed
 
-    private void bu_remove_promotextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_promotextActionPerformed
-        int sel = table_promotext.getSelectedRow();
+    private void bu_remove_languageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_languageActionPerformed
+        int sel = list_language.getSelectedIndex();
         if (sel>=0) {
-            String lang = (String)table_promotext.getValueAt(sel, 0);
+            String lang = (String)list_language.getModel().getElementAt(sel);
             bundle.getInformation().removePromotext(lang);
             bundle.getInformation().removeTeasertext(lang);
-            table_promotext.setModel(new PromotextTableModel(bundle.getInformation(),this));
+            updateLanguageList();
+            updatePromoTexts(null);
             notifyChanges();
         }
-    }//GEN-LAST:event_bu_remove_promotextActionPerformed
+    }//GEN-LAST:event_bu_remove_languageActionPerformed
 
     private void select_license_pricingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_license_pricingActionPerformed
         int sel = select_license_pricing.getSelectedIndex();
@@ -1405,11 +1524,47 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         }
     }//GEN-LAST:event_check_sublevelActionPerformed
 
+    private void bu_promotext_updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_promotext_updateActionPerformed
+        if (bundle==null) return;
+        String lang = (String)list_language.getSelectedValue();
+        if (lang!=null) {
+            bundle.getInformation().setPromotext(lang, text_promotext.getText());
+            text_promotext.setBackground(Color.WHITE);
+            changeListener.saveState(text_promotext);
+            notifyChanges();
+        }
+    }//GEN-LAST:event_bu_promotext_updateActionPerformed
+
+    private void bu_promotext_resetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_promotext_resetActionPerformed
+       text_promotext.setText(changeListener.getSavedText(text_promotext));
+       text_promotext.setBackground(Color.WHITE);
+    }//GEN-LAST:event_bu_promotext_resetActionPerformed
+
+    private void bu_teasertext_updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_teasertext_updateActionPerformed
+        if (bundle==null) return;
+        String lang = (String)list_language.getSelectedValue();
+        if (lang!=null) {
+            bundle.getInformation().setTeasertext(lang, text_teasertext.getText());
+            text_teasertext.setBackground(Color.WHITE);
+            changeListener.saveState(text_teasertext);
+            notifyChanges();
+        }
+    }//GEN-LAST:event_bu_teasertext_updateActionPerformed
+
+    private void bu_teasertext_resetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_teasertext_resetActionPerformed
+       text_teasertext.setText(changeListener.getSavedText(text_teasertext));
+       text_teasertext.setBackground(Color.WHITE);
+    }//GEN-LAST:event_bu_teasertext_resetActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton bu_add_promotext;
+    private javax.swing.JButton bu_add_language;
     private javax.swing.JButton bu_contributor_add;
     private javax.swing.JButton bu_contributor_remove;
-    private javax.swing.JButton bu_remove_promotext;
+    private javax.swing.JButton bu_promotext_reset;
+    private javax.swing.JButton bu_promotext_update;
+    private javax.swing.JButton bu_remove_language;
+    private javax.swing.JButton bu_teasertext_reset;
+    private javax.swing.JButton bu_teasertext_update;
     private javax.swing.JCheckBox check_contributor_publish_phone;
     private javax.swing.JCheckBox check_sublevel;
     private javax.swing.JLabel jLabel1;
@@ -1448,12 +1603,16 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JList list_allowed_territories;
     private javax.swing.JList list_contributors;
     private javax.swing.JList list_disallowed_territories;
+    private javax.swing.JList list_language;
     private javax.swing.JPanel panelBasics;
     private javax.swing.JPanel panelContributors;
     private javax.swing.JPanel panelIDs;
@@ -1461,10 +1620,8 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JPanel panelInformation;
     private javax.swing.JPanel panelLicense;
     private javax.swing.JPanel panel_territories;
-    private javax.swing.JScrollPane scroll_table_promotext;
     private javax.swing.JComboBox select_contributor_type;
     private javax.swing.JComboBox select_license_pricing;
-    private javax.swing.JTable table_promotext;
     private javax.swing.JTextField text_amazon;
     private javax.swing.JTextField text_contentauthid;
     private javax.swing.JTextField text_contributor_contentauthid;
@@ -1492,6 +1649,8 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JTextField text_name;
     private javax.swing.JTextField text_ourid;
     private javax.swing.JTextField text_physical_release_datetime;
+    private javax.swing.JTextArea text_promotext;
+    private javax.swing.JTextArea text_teasertext;
     private javax.swing.JTextField text_upc;
     private javax.swing.JTextField text_version;
     private javax.swing.JTextField text_yourid;

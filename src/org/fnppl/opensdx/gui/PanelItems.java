@@ -68,6 +68,7 @@ import javax.swing.UIManager;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.JTextComponent;
 import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.common.Contributor;
@@ -77,6 +78,7 @@ import org.fnppl.opensdx.common.ItemFile;
 import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Territorial;
+import org.fnppl.opensdx.dmi.FeedGui;
 import org.fnppl.opensdx.security.SecurityHelper;
 
 /**
@@ -337,7 +339,8 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         if (info != null) {
             text_physical_realease_datetime.setText(info.getPhysicalReleaseDatetimeText());
             text_digital_release_datetime.setText(info.getDigitalReleaseDatetimeText());
-            table_promotext.setModel(new PromotextTableModel(info,this));
+            updateLanguageList();
+            //updateLicense(null);
         }
 
         //License
@@ -458,7 +461,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     }
 
      private void initChangeListeners() {
-        Vector<JTextField> texts = new Vector<JTextField>();
+        Vector<JTextComponent> texts = new Vector<JTextComponent>();
         //basics
         texts.add(text_displayname);
         texts.add(text_name);
@@ -481,18 +484,21 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         texts.add(text_digital_release_datetime);
         texts.add(text_physical_realease_datetime);
         texts.add(text_playlength);
-
+        texts.add(text_promotext);
+        texts.add(text_teasertext);
+        
         //license
         texts.add(text_license_from_datetime);
         texts.add(text_license_pricing);
         texts.add(text_license_to_datetime);
 
         //tags
-        texts.add(text_tags_main_language);
-        texts.add(text_tags_origin_country);
+        //texts.add(text_tags_main_language);
+        //texts.add(text_tags_origin_country);
 
         //files
         texts.add(text_file_format);
+
 
         changeListener = new DocumentChangeListener(texts);
 
@@ -500,7 +506,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             public void keyPressed(KeyEvent e) {
                 if(e.getKeyCode() == KeyEvent.VK_ENTER){
                     if (e.getComponent() instanceof JTextField) {
-                        JTextField text = (JTextField)e.getComponent();
+                        JTextComponent text = (JTextComponent)e.getComponent();
                         String t = text.getText();
                         if (t.equals("")) t = null;
                         int sel = list_items.getSelectedIndex();
@@ -582,9 +588,11 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         };
 
 
-        for (JTextField text : texts) {
+        for (JTextComponent text : texts) {
             text.getDocument().addDocumentListener(changeListener);
-            text.addKeyListener(keyAdapt);
+            if (text instanceof JTextField) {
+              text.addKeyListener(keyAdapt);
+            }
         }
 
     }
@@ -629,7 +637,22 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         availableGenres.add("genre 2");
         availableGenres.add("genre 3");
        // setAvailableGenres(availableGenres);
-        
+
+        DefaultListModel lm = new DefaultListModel();
+        list_language.setModel(lm);
+        list_language.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list_language.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                //System.out.println("value changed");
+                int sel = list_language.getSelectedIndex();
+                if (sel>=0 && sel<list_language.getModel().getSize()) {
+                    String lang = (String)list_language.getModel().getElementAt(sel);
+                   // System.out.println("   update lang: "+lang);
+                    updatePromoTexts(lang);
+                }
+            }
+        });
+
         initChangeListeners();
 
     }
@@ -691,12 +714,20 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         jLabel30 = new javax.swing.JLabel();
         text_digital_release_datetime = new javax.swing.JTextField();
         jLabel31 = new javax.swing.JLabel();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        table_promotext = new javax.swing.JTable();
-        bu_add_promotext = new javax.swing.JButton();
-        bu_remove_promotext = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         text_playlength = new javax.swing.JTextField();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        list_language = new javax.swing.JList();
+        jScrollPane9 = new javax.swing.JScrollPane();
+        text_promotext = new javax.swing.JTextArea();
+        bu_promotext_update = new javax.swing.JButton();
+        bu_promotext_reset = new javax.swing.JButton();
+        jScrollPane10 = new javax.swing.JScrollPane();
+        text_teasertext = new javax.swing.JTextArea();
+        bu_teasertext_update = new javax.swing.JButton();
+        bu_teasertext_reset = new javax.swing.JButton();
+        bu_remove_language = new javax.swing.JButton();
+        bu_add_language = new javax.swing.JButton();
         panelLicense = new javax.swing.JPanel();
         checkLicenseAsOnBundle = new javax.swing.JCheckBox();
         panelLicense1 = new javax.swing.JPanel();
@@ -722,6 +753,8 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         text_tags_main_language = new javax.swing.JTextField();
         text_tags_origin_country = new javax.swing.JTextField();
         jLabel22 = new javax.swing.JLabel();
+        bu_main_language = new javax.swing.JButton();
+        bu_select_country = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane8 = new javax.swing.JScrollPane();
@@ -952,12 +985,12 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         );
         panelIDsBigLayout.setVerticalGroup(
             panelIDsBigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 970, Short.MAX_VALUE)
+            .addGap(0, 999, Short.MAX_VALUE)
             .addGroup(panelIDsBigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panelIDsBigLayout.createSequentialGroup()
                     .addGap(19, 19, 19)
                     .addComponent(panelIDs, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(566, Short.MAX_VALUE)))
+                    .addContainerGap(595, Short.MAX_VALUE)))
         );
 
         tab_items.addTab("IDs", panelIDsBig);
@@ -1026,7 +1059,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelContributorsLayout.createSequentialGroup()
                         .addGap(2, 2, 2)
                         .addComponent(bu_add_contributor)))
-                .addContainerGap(765, Short.MAX_VALUE))
+                .addContainerGap(794, Short.MAX_VALUE))
         );
 
         tab_items.addTab("Contributors", panelContributors);
@@ -1037,39 +1070,67 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
 
         jLabel31.setText("digital release date");
 
-        table_promotext.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {"", null, null}
-            },
-            new String [] {
-                "Language", "Promotext", "Teasertext"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Object.class, java.lang.String.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
-        jScrollPane4.setViewportView(table_promotext);
-
-        bu_add_promotext.setText("add");
-        bu_add_promotext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_add_promotextActionPerformed(evt);
-            }
-        });
-
-        bu_remove_promotext.setText("remove");
-        bu_remove_promotext.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_remove_promotextActionPerformed(evt);
-            }
-        });
-
         jLabel1.setText("playlength in seconds");
+
+        list_language.setBorder(javax.swing.BorderFactory.createTitledBorder("Language"));
+        list_language.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane4.setViewportView(list_language);
+
+        text_promotext.setColumns(20);
+        text_promotext.setRows(5);
+        text_promotext.setBorder(javax.swing.BorderFactory.createTitledBorder("Promotion Text"));
+        jScrollPane9.setViewportView(text_promotext);
+
+        bu_promotext_update.setText("update");
+        bu_promotext_update.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_promotext_updateActionPerformed(evt);
+            }
+        });
+
+        bu_promotext_reset.setText("reset");
+        bu_promotext_reset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_promotext_resetActionPerformed(evt);
+            }
+        });
+
+        text_teasertext.setColumns(20);
+        text_teasertext.setRows(5);
+        text_teasertext.setBorder(javax.swing.BorderFactory.createTitledBorder("Teaser Text"));
+        jScrollPane10.setViewportView(text_teasertext);
+
+        bu_teasertext_update.setText("update");
+        bu_teasertext_update.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_teasertext_updateActionPerformed(evt);
+            }
+        });
+
+        bu_teasertext_reset.setText("reset");
+        bu_teasertext_reset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_teasertext_resetActionPerformed(evt);
+            }
+        });
+
+        bu_remove_language.setText("remove");
+        bu_remove_language.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_remove_languageActionPerformed(evt);
+            }
+        });
+
+        bu_add_language.setText("add");
+        bu_add_language.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_add_languageActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelInformationLayout = new javax.swing.GroupLayout(panelInformation);
         panelInformation.setLayout(panelInformationLayout);
@@ -1079,11 +1140,6 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addContainerGap()
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelInformationLayout.createSequentialGroup()
-                        .addComponent(bu_add_promotext, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(bu_remove_promotext))
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE)
-                    .addGroup(panelInformationLayout.createSequentialGroup()
                         .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel30)
                             .addComponent(jLabel31)
@@ -1092,9 +1148,31 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                         .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(text_playlength)
                             .addComponent(text_physical_realease_datetime)
-                            .addComponent(text_digital_release_datetime, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE))))
+                            .addComponent(text_digital_release_datetime, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)))
+                    .addGroup(panelInformationLayout.createSequentialGroup()
+                        .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(panelInformationLayout.createSequentialGroup()
+                                .addComponent(bu_add_language)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(bu_remove_language))
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(panelInformationLayout.createSequentialGroup()
+                                .addComponent(bu_teasertext_update)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(bu_teasertext_reset))
+                            .addComponent(jScrollPane10, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
+                            .addGroup(panelInformationLayout.createSequentialGroup()
+                                .addComponent(bu_promotext_update)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(bu_promotext_reset))
+                            .addComponent(jScrollPane9, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE))))
                 .addContainerGap())
         );
+
+        panelInformationLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jScrollPane10, jScrollPane9});
+
         panelInformationLayout.setVerticalGroup(
             panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelInformationLayout.createSequentialGroup()
@@ -1109,14 +1187,30 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(text_playlength, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
-                .addGap(19, 19, 19)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(34, 34, 34)
+                .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelInformationLayout.createSequentialGroup()
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(bu_add_language)
+                            .addComponent(bu_remove_language)))
+                    .addGroup(panelInformationLayout.createSequentialGroup()
+                        .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(bu_promotext_update)
+                            .addComponent(bu_promotext_reset))
+                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(bu_add_promotext)
-                    .addComponent(bu_remove_promotext))
-                .addContainerGap(609, Short.MAX_VALUE))
+                    .addComponent(bu_teasertext_update)
+                    .addComponent(bu_teasertext_reset))
+                .addContainerGap(456, Short.MAX_VALUE))
         );
+
+        panelInformationLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jScrollPane10, jScrollPane9});
 
         tab_items.addTab("Information", panelInformation);
 
@@ -1164,7 +1258,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         );
         panel_territoriesLayout.setVerticalGroup(
             panel_territoriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 527, Short.MAX_VALUE)
+            .addGap(0, 556, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout panelLicense1Layout = new javax.swing.GroupLayout(panelLicense1);
@@ -1267,12 +1361,30 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         });
         jScrollPane7.setViewportView(list_genres);
 
-        jLabel20.setFont(new java.awt.Font("Ubuntu", 1, 15));
+        jLabel20.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
         jLabel20.setText("List of genres for this item");
 
         jLabel21.setText("main language");
 
+        text_tags_main_language.setEditable(false);
+
+        text_tags_origin_country.setEditable(false);
+
         jLabel22.setText("origin country");
+
+        bu_main_language.setText("select");
+        bu_main_language.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_main_languageActionPerformed(evt);
+            }
+        });
+
+        bu_select_country.setText("select");
+        bu_select_country.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_select_countryActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -1290,12 +1402,16 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                         .addGap(38, 38, 38)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(text_tags_origin_country)
-                            .addComponent(text_tags_main_language, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))))
-                .addGap(18, 18, 18)
+                            .addComponent(text_tags_main_language, javax.swing.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(bu_main_language, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(bu_select_country, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(47, 47, 47)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jScrollPane7)
-                    .addComponent(jLabel20, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(136, Short.MAX_VALUE))
+                    .addComponent(jLabel20))
+                .addContainerGap(131, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1309,17 +1425,19 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                         .addGap(18, 18, 18)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel21)
-                            .addComponent(text_tags_main_language, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(text_tags_main_language, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(bu_main_language))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(text_tags_origin_country, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel22)))
+                            .addComponent(jLabel22)
+                            .addComponent(bu_select_country)))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(26, 26, 26)
                         .addComponent(jLabel20)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(703, Short.MAX_VALUE))
+                .addContainerGap(732, Short.MAX_VALUE))
         );
 
         tab_items.addTab("Tags", jPanel2);
@@ -1515,12 +1633,12 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(419, Short.MAX_VALUE))
+                .addContainerGap(448, Short.MAX_VALUE))
         );
 
         tab_items.addTab("Files", jPanel3);
 
-        jLabel3.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
+        jLabel3.setFont(new java.awt.Font("Ubuntu", 1, 15));
         jLabel3.setText("List of items");
 
         list_items.setModel(new javax.swing.AbstractListModel() {
@@ -1613,18 +1731,6 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         notifyChanges();
 }//GEN-LAST:event_bu_add_contributorActionPerformed
 
-    private void bu_add_promotextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_promotextActionPerformed
-        if (bundle==null || bundle.getItemsCount()==0) return;
-        int sel = list_items.getSelectedIndex();
-        if (sel<0) return;
-        
-        Item item = bundle.getItem(sel);
-        item.getInformation().addPromotext("NEW_LANG", "");
-        table_promotext.setModel(new PromotextTableModel(item.getInformation(),this));
-        notifyChanges();
-
-}//GEN-LAST:event_bu_add_promotextActionPerformed
-
     private void checkLicenseAsOnBundleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkLicenseAsOnBundleActionPerformed
         if (bundle==null || bundle.getItemsCount()==0) return;
         int sel = list_items.getSelectedIndex();
@@ -1672,21 +1778,6 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         }
         notifyChanges();
 }//GEN-LAST:event_select_license_pricingActionPerformed
-
-    private void bu_remove_promotextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_promotextActionPerformed
-        if (bundle==null || bundle.getItemsCount()==0) return;
-        int selItem = list_items.getSelectedIndex();
-        if (selItem<0) return;
-        Item item = bundle.getItem(selItem);
-        int sel = table_promotext.getSelectedRow();
-        if (sel>=0) {
-            String lang = (String)table_promotext.getValueAt(sel, 0);
-            item.getInformation().removePromotext(lang);
-            item.getInformation().removeTeasertext(lang);
-            table_promotext.setModel(new PromotextTableModel(bundle.getInformation(),this));
-            notifyChanges();
-        }
-    }//GEN-LAST:event_bu_remove_promotextActionPerformed
 
     private void text_displaynameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_text_displaynameActionPerformed
 
@@ -1835,6 +1926,139 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         }
     }//GEN-LAST:event_select_typeActionPerformed
 
+    private void bu_promotext_updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_promotext_updateActionPerformed
+        Item item = getSelectedItem();
+        if (item==null) return;
+        String lang = (String)list_language.getSelectedValue();
+        if (lang!=null) {
+            item.getInformation().setPromotext(lang, text_promotext.getText());
+            text_promotext.setBackground(Color.WHITE);
+            changeListener.saveState(text_promotext);
+            notifyChanges();
+        }
+}//GEN-LAST:event_bu_promotext_updateActionPerformed
+
+    private void bu_promotext_resetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_promotext_resetActionPerformed
+        text_promotext.setText(changeListener.getSavedText(text_promotext));
+        text_promotext.setBackground(Color.WHITE);
+}//GEN-LAST:event_bu_promotext_resetActionPerformed
+
+    private void bu_teasertext_updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_teasertext_updateActionPerformed
+        if (bundle==null) return;
+        Item item = getSelectedItem();
+        if (item==null) return;
+        String lang = (String)list_language.getSelectedValue();
+        if (lang!=null) {
+            item.getInformation().setTeasertext(lang, text_teasertext.getText());
+            text_teasertext.setBackground(Color.WHITE);
+            changeListener.saveState(text_teasertext);
+            notifyChanges();
+        }
+}//GEN-LAST:event_bu_teasertext_updateActionPerformed
+
+    private void bu_remove_languageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_languageActionPerformed
+        int sel = list_language.getSelectedIndex();
+        Item item = getSelectedItem();
+        if (item==null) return;
+        if (sel>=0) {
+            String lang = (String)list_language.getModel().getElementAt(sel);
+            item.getInformation().removePromotext(lang);
+            item.getInformation().removeTeasertext(lang);
+            updateLanguageList();
+            updatePromoTexts(null);
+            notifyChanges();
+        }
+}//GEN-LAST:event_bu_remove_languageActionPerformed
+private void  updateLanguageList() {
+        DefaultListModel lm = (DefaultListModel)list_language.getModel();
+        lm.removeAllElements();
+        Item item = getSelectedItem();
+        if (item !=null) {
+            BundleInformation info = item.getInformation();
+            int anzP = info.getPromotextCount();
+            int anzT = info.getPromotextCount();
+            Vector<String> lang = new Vector<String>();
+            for (int i=0;i<anzP;i++) {
+                lang.add(info.getPromotextLanguage(i));
+            }
+            for (int i=0;i<anzT;i++) {
+                String l = info.getTeasertextLanguage(i);
+                if (!lang.contains(l)) {
+                    lang.add(l);
+                }
+            }
+            for (String s : lang) {
+                if (s!=null && s.length()>0) {
+                    lm.addElement(s);
+                }
+            }
+        }
+    }
+
+    private void updatePromoTexts(String lang) {
+        Item item = getSelectedItem();
+        if (lang==null || item==null) {
+           text_promotext.setText("");
+           text_teasertext.setText("");
+        } else {
+           text_promotext.setText(item.getInformation().getPromotext(lang));
+           text_teasertext.setText(item.getInformation().getTeasertext(lang));
+        }
+        changeListener.saveState(text_promotext);
+        changeListener.saveState(text_teasertext);
+    }
+    private void bu_add_languageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_languageActionPerformed
+        Item item = getSelectedItem();
+        if (item != null) {
+            String lang = FeedGui.showLanguageCodeSelector();
+            if (lang!=null) {
+                String p = item.getInformation().getPromotext(lang);
+                String t = item.getInformation().getTeasertext(lang);
+                if (t!=null || p !=null) {
+                    Dialogs.showMessage("Selected language \""+lang+"\" is already in list.");
+                    return;
+                }
+                item.getInformation().setPromotext(lang, "");
+                updateLanguageList();
+                list_language.setSelectedIndex(list_language.getModel().getSize()-1);
+                notifyChanges();
+            }
+        }
+}//GEN-LAST:event_bu_add_languageActionPerformed
+
+    private void bu_teasertext_resetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_teasertext_resetActionPerformed
+       text_teasertext.setText(changeListener.getSavedText(text_teasertext));
+       text_teasertext.setBackground(Color.WHITE);
+    }//GEN-LAST:event_bu_teasertext_resetActionPerformed
+
+    private void bu_main_languageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_main_languageActionPerformed
+       Item item = getSelectedItem();
+       if (item==null) return;
+       String lang = FeedGui.showLanguageCodeSelector();
+       if (lang!=null) {
+           if (item.getTags()==null) {
+               item.tags(ItemTags.make());
+           }
+           item.getTags().main_language(lang);
+           text_tags_main_language.setText(lang);
+           notifyChanges();
+       }
+    }//GEN-LAST:event_bu_main_languageActionPerformed
+
+    private void bu_select_countryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_select_countryActionPerformed
+       Item item = getSelectedItem();
+       if (item==null) return;
+       String country = FeedGui.showCountryCodeSelector();
+       if (country!=null) {
+           if (item.getTags()==null) {
+               item.tags(ItemTags.make());
+           }
+           item.getTags().origin_country(country);
+           text_tags_origin_country.setText(country);
+           notifyChanges();
+       }
+    }//GEN-LAST:event_bu_select_countryActionPerformed
+
     private Item getSelectedItem() {
         if (bundle==null || bundle.getItemsCount()==0) return null;
         int selItem = list_items.getSelectedIndex();
@@ -1855,12 +2079,18 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JButton bu_add_contributor;
     private javax.swing.JButton bu_add_file;
     private javax.swing.JButton bu_add_item;
-    private javax.swing.JButton bu_add_promotext;
+    private javax.swing.JButton bu_add_language;
     private javax.swing.JButton bu_change_file;
+    private javax.swing.JButton bu_main_language;
+    private javax.swing.JButton bu_promotext_reset;
+    private javax.swing.JButton bu_promotext_update;
     private javax.swing.JButton bu_remove_contributor;
     private javax.swing.JButton bu_remove_file;
     private javax.swing.JButton bu_remove_item;
-    private javax.swing.JButton bu_remove_promotext;
+    private javax.swing.JButton bu_remove_language;
+    private javax.swing.JButton bu_select_country;
+    private javax.swing.JButton bu_teasertext_reset;
+    private javax.swing.JButton bu_teasertext_update;
     private javax.swing.JCheckBox checkLicenseAsOnBundle;
     private javax.swing.JCheckBox check_tags_bundle_only;
     private javax.swing.JCheckBox check_tags_stream_allowed;
@@ -1903,6 +2133,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane10;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
@@ -1910,6 +2141,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
+    private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JList list_all_contributors;
     private javax.swing.JList list_allowed_territories;
     private javax.swing.JList list_contributors;
@@ -1917,6 +2149,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JList list_files;
     private javax.swing.JList list_genres;
     private javax.swing.JList list_items;
+    private javax.swing.JList list_language;
     private javax.swing.JPanel panelBasics;
     private javax.swing.JPanel panelBasics1;
     private javax.swing.JPanel panelContributors;
@@ -1931,7 +2164,6 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JComboBox select_license_pricing;
     private javax.swing.JComboBox select_type;
     private javax.swing.JTabbedPane tab_items;
-    private javax.swing.JTable table_promotext;
     private javax.swing.JTextField text_amazon;
     private javax.swing.JTextField text_contentauthid;
     private javax.swing.JTextField text_digital_release_datetime;
@@ -1954,8 +2186,10 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     private javax.swing.JTextField text_ourid;
     private javax.swing.JTextField text_physical_realease_datetime;
     private javax.swing.JTextField text_playlength;
+    private javax.swing.JTextArea text_promotext;
     private javax.swing.JTextField text_tags_main_language;
     private javax.swing.JTextField text_tags_origin_country;
+    private javax.swing.JTextArea text_teasertext;
     private javax.swing.JTextField text_upc;
     private javax.swing.JTextField text_version;
     private javax.swing.JTextField text_yourid;

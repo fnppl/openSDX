@@ -49,35 +49,36 @@ import java.util.Vector;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 
 import org.fnppl.opensdx.security.SecurityHelper;
 
 public class DocumentChangeListener implements DocumentListener {
 
-    private Vector<JTextField> texts;
+    private Vector<JTextComponent> texts;
     private Vector<String> saves;
 
-    public DocumentChangeListener(Vector<JTextField> texts) {
+    public DocumentChangeListener(Vector<JTextComponent> texts) {
         this.texts = texts;
 
     }
 
     public void saveStates() {
         saves = new Vector<String>();
-        for (JTextField text : texts) {
+        for (JTextComponent text : texts) {
             saves.add(text.getText());
             text.setBackground(Color.WHITE);
         }
     }
 
-    public void saveState(JTextField t) {
+    public void saveState(JTextComponent t) {
         int ind = texts.indexOf(t);
         if (ind<0 || saves == null) return;
         saves.set(ind, t.getText());
         t.setBackground(Color.WHITE);
     }
 
-    public String getSavedText(JTextField t) {
+    public String getSavedText(JTextComponent t) {
         int ind = texts.indexOf(t);
         if (ind<0 || saves == null) return "";
         return saves.get(ind);
@@ -97,12 +98,12 @@ public class DocumentChangeListener implements DocumentListener {
 
     private void action(DocumentEvent e) {
         if (saves == null) {
-            for (JTextField text : texts) {
+            for (JTextComponent text : texts) {
                 text.setBackground(Color.WHITE);
             }
         } else {
             for (int i = 0; i < texts.size(); i++) {
-            	JTextField t = texts.get(i);
+            	JTextComponent t = texts.get(i);
             	boolean formatOK = true;
             	String name = t.getName();
             	if (name!=null) {
