@@ -372,7 +372,7 @@ public class PanelActionHTTP extends javax.swing.JPanel implements MyObservable 
     }
     public void notifyChanges() {
         for (MyObserver ob : observers) {
-            ob.notifyChange();
+            ob.notifyChange(this);
         }
     }
 }

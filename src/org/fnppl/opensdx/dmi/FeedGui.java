@@ -56,6 +56,8 @@ import java.util.*;
 
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.print.Doc;
 import javax.swing.*;
@@ -70,6 +72,7 @@ import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.common.ItemFile;
+import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
@@ -77,11 +80,13 @@ import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.MessageHandler;
+import org.fnppl.opensdx.gui.MyObservable;
 import org.fnppl.opensdx.gui.MyObserver;
 import org.fnppl.opensdx.gui.PanelBundle;
 import org.fnppl.opensdx.gui.PanelFeedInfo;
 import org.fnppl.opensdx.gui.PanelItems;
 import org.fnppl.opensdx.gui.SecurityMainFrame;
+import org.fnppl.opensdx.gui.SelectTerritoiresTree;
 import org.fnppl.opensdx.securesocket.OSDXFileTransferClient;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
@@ -319,30 +324,49 @@ public class FeedGui extends JFrame implements MyObserver {
 	
 	private void sendFeedToOSDXFileserver() {
 		String servername = currentFeed.getFeedinfo().getReceiver().getServername();
-		File f = Dialogs.chooseOpenFile("Open KeyStore", lastDir, "keystore.xml");
-		if (f==null) return;
-		OSDXKey mysigning = null;
+		String keystore = currentFeed.getFeedinfo().getReceiver().getFileKeystore();
+		String keyid = currentFeed.getFeedinfo().getReceiver().getKeyID();
 		
+		File f = null;
+		if (keystore!=null) {
+			f = new File(keystore);
+		} else {
+			f = Dialogs.chooseOpenFile("Open KeyStore", lastDir, "keystore.xml");
+		}
+		if (f==null) return;
+		
+		OSDXKey mysigning = null;
+		MessageHandler mh = new DefaultMessageHandler() {
+			public boolean requestOverwriteFile(File file) {
+				return false;
+			}
+			public boolean requestIgnoreVerificationFailure() {
+				return false;
+			}
+			public boolean requestIgnoreKeyLogVerificationFailure() {
+				return false;
+			}
+		};
 		try {
-			MessageHandler mh = new DefaultMessageHandler() {
-				public boolean requestOverwriteFile(File file) {
-					return false;
-				}
-				public boolean requestIgnoreVerificationFailure() {
-					return false;
-				}
-				public boolean requestIgnoreKeyLogVerificationFailure() {
-					return false;
-				}
-			};
 			KeyApprovingStore store = KeyApprovingStore.fromFile(f, mh); 
-			mysigning = selectPrivateSigningKey(store);
-			mysigning.unlockPrivateKey(mh);
+			
+			if (keyid!=null) {
+				mysigning = store.getKey(keyid);
+				if (mysigning==null) {
+					Dialogs.showMessage("You given key id \""+keyid+"\"\nfor authentification could not be found in selected keystore.\nPlease select a valid key.");
+					return;
+				}
+			}
+			if (mysigning==null) {
+				mysigning = selectPrivateSigningKey(store);	
+			}
 			
 		} catch (Exception e1) {
-			Dialogs.showMessage("Error opening keystore");
+			Dialogs.showMessage("Error opening keystore:\n"+f.getAbsolutePath());
 		}
 		if (mysigning==null) return;
+		mysigning.unlockPrivateKey(mh);
+		
 		if (!mysigning.isPrivateKeyUnlocked()) {
 			Dialogs.showMessage("Sorry, private is is locked.");
 			return;
@@ -352,7 +376,8 @@ public class FeedGui extends JFrame implements MyObserver {
 		try {
 			s.connect(mysigning);
 			String dir = "feed_upload_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,20);
-			//some test commands
+			
+			//build file structure, SOMEONE might want to change this
 			s.mkdir(dir);
 			s.cd(dir);
 			ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -382,9 +407,10 @@ public class FeedGui extends JFrame implements MyObserver {
 			}
 			
 			s.closeConnection();
-			
+			Dialogs.showMessage("Upload of Feed successful.");
 		} catch (Exception e) {
 			e.printStackTrace();
+			Dialogs.showMessage("ERROR: Upload of Feed failed.");
 		}
 	}
 	
@@ -418,7 +444,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		return null;
 	}
 	
-	public void notifyChange() {
+	public void notifyChange(MyObservable changesIn) {
 		if (treePanel!=null) {
 			if (currentFeed != null) {
 				EditBusinessObjectTree tree = new EditBusinessObjectTree(currentFeed);
@@ -436,10 +462,54 @@ public class FeedGui extends JFrame implements MyObserver {
 	}
 	
 	public static String showCountryCodeSelector() {
-		String antw = Dialogs.showInputDialog("Country Code", "Please enter country code");
-		return antw;
+		
+
+		String message = "Please select a country";
+		String head = "Country Code";
+		
+		JPanel p = new JPanel();
+		p.setBorder(new TitledBorder(message));
+		p.setLayout(new BorderLayout());
+		
+		final SelectTerritoiresTree tree = new SelectTerritoiresTree();
+		p.add(new JScrollPane(tree), BorderLayout.CENTER);
+		final String[] code = new String[] {null};
+		
+
+		final JDialog dialog = new JDialog((JFrame)null, head, true);
+		dialog.setContentPane(p);
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		dialog.setSize(400, 600);
+		
+		MyObserver observer = new MyObserver() {
+			public void notifyChange(MyObservable changedIn) {
+				code[0] = tree.getSelectedCode();
+				dialog.setVisible(false);
+			}
+		};
+		tree.addObserver(observer);
+		dialog.setVisible(true);
+		
+		//System.out.println("selected code: "+code[0]);
+		return code[0];
+		
+		//String antw = Dialogs.showInputDialog("Country Code", "Please enter country code");
+		//return antw;
 	}
 	
+	
+	private static Element genres = null;
+	public static Element getGenres() {
+		if (genres==null) {
+			URL configGenres = FeedCreator.class.getResource("resources/config_genres.xml");
+			try {
+				genres = Document.fromURL(configGenres).getRootElement();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return genres;
+	}
 	
 	private static Vector<String> lang_codes_names = null;
 	private static Vector<String> lang_codes = null;
@@ -498,26 +568,26 @@ public class FeedGui extends JFrame implements MyObserver {
     	return status;
     }
     
-    private void readAndSetGenres() {
-    	try {
-			Element root = Document.fromURL(configGenres).getRootElement();
-			Vector<String> genres = new Vector<String>();
-			for (Element e : root.getChildren("genre")) {
-				String name = e.getChildTextNN("name");
-				genres.add(name);
-				Element e2 = e.getChild("subgenres");
-				if (e2!=null) {
-					for (Element e3 : e2.getChildren()) {
-						String subname = e3.getChildText("name");
-						genres.add(name+" :: "+subname);
-					}
-				}
-			}
-			bundled_items_panel.setAvailableGenres(genres);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-    }
+//    private void readAndSetGenres() {
+//    	try {
+//			Element root = Document.fromURL(configGenres).getRootElement();
+//			Vector<String> genres = new Vector<String>();
+//			for (Element e : root.getChildren("genre")) {
+//				String name = e.getChildTextNN("name");
+//				genres.add(name);
+//				Element e2 = e.getChild("subgenres");
+//				if (e2!=null) {
+//					for (Element e3 : e2.getChildren()) {
+//						String subname = e3.getChildText("name");
+//						genres.add(name+" :: "+subname);
+//					}
+//				}
+//			}
+//			bundled_items_panel.setAvailableGenres(genres);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//    }
     
 	private void buildUi() {
 		BorderLayout bl = new BorderLayout();
@@ -553,7 +623,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		bundle_panel = new PanelBundle();
 		bundled_items_panel = new PanelItems();
 		
-		readAndSetGenres();
+		//readAndSetGenres();
 		
 		//observe changes
 		feedinfo_panel.addObserver(this);
@@ -616,12 +686,19 @@ public class FeedGui extends JFrame implements MyObserver {
 	public void init_example_feed() {
 		currentFeed = FeedCreator.makeExampleFeed();
 		long now = System.currentTimeMillis();
-		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER, "localhost", "127.0.0.1", Receiver.AUTH_TYPE_KEYFILE, new byte[] {0});
+		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
+			.servername("localhost")
+			.serveripv4("127.0.0.1")
+			.authtype(Receiver.AUTH_TYPE_KEYFILE);
 		currentFeed.getFeedinfo().receiver(receiver);
 		currentFeed.getBundle(0).addItem(
 				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
 						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)
 						.addFile(ItemFile.make(new File("fnppl_contributor_license.pdf")))
+					.tags(ItemTags.make()
+						.addGenre("Rock")
+					)
+						
 		);
 		currentFeed.getBundle(0).getLicense_basis().getTerritorial()
 		.allow("DE")

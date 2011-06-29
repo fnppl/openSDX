@@ -177,7 +177,7 @@ public class PanelActionMailTo extends javax.swing.JPanel implements MyObservabl
     }
     public void notifyChanges() {
         for (MyObserver ob : observers) {
-            ob.notifyChange();
+            ob.notifyChange(this);
         }
     }
 }

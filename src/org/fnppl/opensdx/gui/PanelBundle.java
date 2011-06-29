@@ -2,6 +2,7 @@ package org.fnppl.opensdx.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.Field;
@@ -27,6 +28,7 @@ import org.fnppl.opensdx.common.Contributor;
 import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.InfoWWW;
+import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Territorial;
 import org.fnppl.opensdx.common.Territory;
@@ -91,12 +93,30 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         observers.add(observer);
     }
 
-    public void notifyChange() {
-        LicenseBasis lb = bundle.getLicense_basis();
-        if (lb!=null) {
-            lb.setTerritorial(tree_territories.getTerritorial());
-            updateLicense();
+     public void notifyChange(MyObservable changedIn) {
+       if (changedIn == tree_genres) {
+          updateGenresToGui();
+       } else {
+            LicenseBasis lb = bundle.getLicense_basis();
+            if (lb!=null) {
+                lb.setTerritorial(tree_territories.getTerritorial());
+                updateLicense();
+            }
+       }
+    }
+
+      private void updateGenresToGui() {
+        ItemTags tags = bundle.getTags();
+        if (tags==null) {
+            tags = ItemTags.make();
+            bundle.tags(tags);
         }
+        tags.removeAllGenres();
+        Vector<String> selectedGenres = tree_genres.getSelectedNodes();
+        for (String g : selectedGenres) {
+            tags.addGenre(g);
+        }
+        notifyChanges( );
     }
 
     /** Creates new form PanelBundle */
@@ -109,7 +129,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         tree_territories.addObserver(this);
         panel_territories.add(new JScrollPane(tree_territories), BorderLayout.CENTER);
 
-
+        initGenres();
         initChangeListeners();
         DefaultListModel lm = new DefaultListModel();
         list_language.setModel(lm);
@@ -308,13 +328,16 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
 
         //License
         updateLicense();
-        
+
+        //tags
+        updateTags(bundle.getTags());
+
         changeListener.saveStates();
     }
 
     public void notifyChanges() {
         for (MyObserver ob : observers) {
-            ob.notifyChange();
+            ob.notifyChange(this);
         }
     }
 
@@ -431,7 +454,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         list_contributors.addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent e) {
-                int sel = e.getFirstIndex();
+                int sel = list_contributors.getSelectedIndex();
                 if (sel >= 0 && sel < bundle.getContributorCount()) {
                     Contributor c = bundle.getContributor(sel);
                     updateContributor(c);
@@ -461,6 +484,42 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
 //                }
 //            }
 //        });
+    }
+    
+    private EditCheckBoxTree tree_genres = null;
+    public void initGenres() {
+        tree_genres = new EditCheckBoxTree(FeedGui.getGenres());
+        panel_genres.setLayout(new BorderLayout());
+        panel_genres.add(new JScrollPane(tree_genres), BorderLayout.CENTER);
+        Dimension dim = new Dimension(300, 400);
+        panel_genres.setPreferredSize(dim);
+        panel_genres.setMinimumSize(dim);
+        panel_genres.setMaximumSize(dim);
+        tree_genres.addObserver(this);
+    }
+
+     private void updateTags(ItemTags tags) {
+        if (tags!=null) {
+            text_tags_main_language.setText(tags.getMain_language());
+            text_tags_origin_country.setText(tags.getOrigin_country());
+            check_tags_bundle_only.setSelected(tags.isBundle_only());
+            check_tags_stream_allowed.setSelected(tags.isStreaming_allowed());
+
+            Vector<String> genres = new Vector<String>();
+            for (int i=0;i<tags.getGenresCount();i++) {
+                String genre = tags.getGenre(i);
+                genres.add(genre);
+            }
+            tree_genres.setSelectedNodes(genres);
+        } else {
+            text_tags_main_language.setText("");
+            text_tags_origin_country.setText("");
+            check_tags_bundle_only.setSelected(false);
+            check_tags_stream_allowed.setSelected(false);
+
+            Vector<String> genres = new Vector<String>();
+            tree_genres.setSelectedNodes(genres);
+        }
     }
 
     private void initChangeListeners() {
@@ -699,6 +758,17 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         list_allowed_territories = new javax.swing.JList();
         select_license_pricing = new javax.swing.JComboBox();
         panel_territories = new javax.swing.JPanel();
+        panelTags = new javax.swing.JPanel();
+        check_tags_bundle_only = new javax.swing.JCheckBox();
+        check_tags_stream_allowed = new javax.swing.JCheckBox();
+        jLabel23 = new javax.swing.JLabel();
+        jLabel35 = new javax.swing.JLabel();
+        text_tags_main_language = new javax.swing.JTextField();
+        text_tags_origin_country = new javax.swing.JTextField();
+        jLabel36 = new javax.swing.JLabel();
+        bu_main_language = new javax.swing.JButton();
+        bu_select_country = new javax.swing.JButton();
+        panel_genres = new javax.swing.JPanel();
 
         setPreferredSize(new java.awt.Dimension(760, 989));
 
@@ -1223,13 +1293,14 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
             .addGroup(panelInformationLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(panelInformationLayout.createSequentialGroup()
-                        .addComponent(bu_add_language)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(bu_remove_language))
-                    .addComponent(jLabel31)
-                    .addComponent(jLabel30))
+                    .addComponent(jLabel30)
+                    .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelInformationLayout.createSequentialGroup()
+                            .addComponent(bu_add_language)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(bu_remove_language))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel31, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelInformationLayout.createSequentialGroup()
@@ -1388,6 +1459,112 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
 
         jTabbedPane1.addTab("License", panelLicense);
 
+        check_tags_bundle_only.setText("bundle only");
+        check_tags_bundle_only.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                check_tags_bundle_onlyActionPerformed(evt);
+            }
+        });
+
+        check_tags_stream_allowed.setText("streaming allowed");
+        check_tags_stream_allowed.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                check_tags_stream_allowedActionPerformed(evt);
+            }
+        });
+
+        jLabel23.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
+        jLabel23.setText("Genres for this item");
+
+        jLabel35.setText("main language");
+
+        text_tags_main_language.setEditable(false);
+
+        text_tags_origin_country.setEditable(false);
+
+        jLabel36.setText("origin country");
+
+        bu_main_language.setText("select");
+        bu_main_language.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_main_languageActionPerformed(evt);
+            }
+        });
+
+        bu_select_country.setText("select");
+        bu_select_country.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_select_countryActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panel_genresLayout = new javax.swing.GroupLayout(panel_genres);
+        panel_genres.setLayout(panel_genresLayout);
+        panel_genresLayout.setHorizontalGroup(
+            panel_genresLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 278, Short.MAX_VALUE)
+        );
+        panel_genresLayout.setVerticalGroup(
+            panel_genresLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 379, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout panelTagsLayout = new javax.swing.GroupLayout(panelTags);
+        panelTags.setLayout(panelTagsLayout);
+        panelTagsLayout.setHorizontalGroup(
+            panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelTagsLayout.createSequentialGroup()
+                .addGap(33, 33, 33)
+                .addGroup(panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(check_tags_stream_allowed)
+                    .addComponent(check_tags_bundle_only)
+                    .addGroup(panelTagsLayout.createSequentialGroup()
+                        .addGroup(panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel35)
+                            .addComponent(jLabel36))
+                        .addGap(38, 38, 38)
+                        .addGroup(panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(text_tags_origin_country)
+                            .addComponent(text_tags_main_language, javax.swing.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(bu_main_language, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(bu_select_country, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(47, 47, 47)
+                .addGroup(panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel23)
+                    .addComponent(panel_genres, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(28, Short.MAX_VALUE))
+        );
+        panelTagsLayout.setVerticalGroup(
+            panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelTagsLayout.createSequentialGroup()
+                .addGroup(panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelTagsLayout.createSequentialGroup()
+                        .addGap(49, 49, 49)
+                        .addComponent(check_tags_bundle_only)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(check_tags_stream_allowed)
+                        .addGap(18, 18, 18)
+                        .addGroup(panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel35)
+                            .addComponent(text_tags_main_language, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(bu_main_language))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(text_tags_origin_country, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel36)
+                            .addComponent(bu_select_country)))
+                    .addGroup(panelTagsLayout.createSequentialGroup()
+                        .addGap(26, 26, 26)
+                        .addComponent(jLabel23)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(panel_genres, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(218, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Tags", panelTags);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -1409,7 +1586,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                 .addComponent(panelBasics, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 691, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(74, Short.MAX_VALUE))
+                .addContainerGap(155, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1556,17 +1733,66 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
        text_teasertext.setBackground(Color.WHITE);
     }//GEN-LAST:event_bu_teasertext_resetActionPerformed
 
+    private void check_tags_bundle_onlyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_check_tags_bundle_onlyActionPerformed
+        ItemTags tags = bundle.getTags();
+        if (tags==null) {
+            tags = ItemTags.make();
+            bundle.tags(tags);
+        }
+        tags.bundle_only(check_tags_bundle_only.isSelected());
+        notifyChanges();
+}//GEN-LAST:event_check_tags_bundle_onlyActionPerformed
+
+    private void check_tags_stream_allowedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_check_tags_stream_allowedActionPerformed
+        ItemTags tags = bundle.getTags();
+        if (tags==null) {
+            tags = ItemTags.make();
+            bundle.tags(tags);
+        }
+        tags.streaming_allowed(check_tags_stream_allowed.isSelected());
+        notifyChanges();
+}//GEN-LAST:event_check_tags_stream_allowedActionPerformed
+
+    private void bu_main_languageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_main_languageActionPerformed
+       
+        String lang = FeedGui.showLanguageCodeSelector();
+        if (lang!=null) {
+            if (bundle.getTags()==null) {
+                bundle.tags(ItemTags.make());
+            }
+            bundle.getTags().main_language(lang);
+            text_tags_main_language.setText(lang);
+            notifyChanges();
+        }
+}//GEN-LAST:event_bu_main_languageActionPerformed
+
+    private void bu_select_countryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_select_countryActionPerformed
+        String country = FeedGui.showCountryCodeSelector();
+        if (country!=null) {
+            if (bundle.getTags()==null) {
+                bundle.tags(ItemTags.make());
+            }
+            bundle.getTags().origin_country(country);
+            text_tags_origin_country.setText(country);
+            notifyChanges();
+        }
+}//GEN-LAST:event_bu_select_countryActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bu_add_language;
     private javax.swing.JButton bu_contributor_add;
     private javax.swing.JButton bu_contributor_remove;
+    private javax.swing.JButton bu_main_language;
     private javax.swing.JButton bu_promotext_reset;
     private javax.swing.JButton bu_promotext_update;
     private javax.swing.JButton bu_remove_language;
+    private javax.swing.JButton bu_select_country;
     private javax.swing.JButton bu_teasertext_reset;
     private javax.swing.JButton bu_teasertext_update;
     private javax.swing.JCheckBox check_contributor_publish_phone;
     private javax.swing.JCheckBox check_sublevel;
+    private javax.swing.JCheckBox check_tags_bundle_only;
+    private javax.swing.JCheckBox check_tags_stream_allowed;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1582,6 +1808,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
@@ -1594,6 +1821,8 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
     private javax.swing.JLabel jLabel34;
+    private javax.swing.JLabel jLabel35;
+    private javax.swing.JLabel jLabel36;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -1619,6 +1848,8 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JPanel panelIDsBig;
     private javax.swing.JPanel panelInformation;
     private javax.swing.JPanel panelLicense;
+    private javax.swing.JPanel panelTags;
+    private javax.swing.JPanel panel_genres;
     private javax.swing.JPanel panel_territories;
     private javax.swing.JComboBox select_contributor_type;
     private javax.swing.JComboBox select_license_pricing;
@@ -1650,6 +1881,8 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JTextField text_ourid;
     private javax.swing.JTextField text_physical_release_datetime;
     private javax.swing.JTextArea text_promotext;
+    private javax.swing.JTextField text_tags_main_language;
+    private javax.swing.JTextField text_tags_origin_country;
     private javax.swing.JTextArea text_teasertext;
     private javax.swing.JTextField text_upc;
     private javax.swing.JTextField text_version;

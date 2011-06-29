@@ -113,7 +113,11 @@ public class FeedCreator {
 
 		ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER,"","");
 		ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR,"","");
-		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER, "localhost", "127.0.0.1", Receiver.AUTH_TYPE_KEYFILE, new byte[] {0});
+		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
+//								.servername("localhost")
+//								.serveripv4("127.0.0.1")
+//								.authtype(Receiver.AUTH_TYPE_KEYFILE)
+								;
 		
 		long now = System.currentTimeMillis();
 		FeedInfo feedinfo = FeedInfo.make(true, "", now, now, sender, licensor)
@@ -149,12 +153,10 @@ public class FeedCreator {
 			)
 			.creator(creator_email, creator_userid)
 			.receiver(
-				Receiver.make(
-					Receiver.TRANSFER_TYPE_FTP,
-					"it-is-awesome.de",
-					"127.0.0.1",
-					Receiver.AUTH_TYPE_LOGIN,
-					SecurityHelper.getSHA1("LOGIN".getBytes()))
+				Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
+						.servername("localhost")
+						.serveripv4("127.0.0.1")
+						.authtype(Receiver.AUTH_TYPE_KEYFILE)
 			 	)
 			.addAction(
 				TriggeredActions.TRIGGER_ONINITIALRECEIVE,

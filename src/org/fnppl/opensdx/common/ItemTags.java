@@ -98,8 +98,10 @@ public class ItemTags extends BusinessObject {
 			}
 		};
 		new ChildElementIterator(bo, "genres","genre") {
-			public void processBusinessObject(BusinessObject bo) {
-				tags.addGenre(BusinessStringItem.fromBusinessObject(bo, "genre").getString());
+			public void processBusinessStringItem(BusinessStringItem item) {
+				//System.out.println("adding genre::"+item.getString());
+				tags.genres.add(item);
+				//tags.addGenre(BusinessStringItem.fromBusinessObject(bo, "genre").getString());
 			}
 		};
 		tags.origin_country = BusinessStringItem.fromBusinessObject(bo, "origin_country");

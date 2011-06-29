@@ -48,6 +48,7 @@
  -->
 
 <genres>
+  <name>Genres</name>
   <genre>
     <name>Rock</name>
     <subgenres>

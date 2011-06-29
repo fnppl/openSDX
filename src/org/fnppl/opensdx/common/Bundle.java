@@ -63,6 +63,7 @@ public class Bundle extends BusinessObject {
 	private BundleInformation information;					//MUST
 	private LicenseBasis license_basis;						//MUST
 	private LicenseSpecifics license_specifics;				//MUST
+	private ItemTags tags;									//COULD
 	private BusinessCollection<Item> items;					//SHOULD
 	
 
@@ -81,6 +82,7 @@ public class Bundle extends BusinessObject {
 		bundle.information = information;
 		bundle.license_basis = license_basis;
 		bundle.license_specifics = license_specifics;
+		bundle.tags = null;
 		bundle.items = new BusinessCollection<Item>() {
 			public String getKeyname() {
 				return "items";
@@ -119,7 +121,7 @@ public class Bundle extends BusinessObject {
 		bundle.information = BundleInformation.fromBusinessObject(bo);
 		bundle.license_basis = LicenseBasis.fromBusinessObject(bo);
 		bundle.license_specifics = LicenseSpecifics.fromBusinessObject(bo);
-		
+		bundle.tags = ItemTags.fromBusinessObject(bo);
 		bundle.items =  null;
 		new ChildElementIterator(bo, "items","item") {
 			public void processBusinessObject(BusinessObject bo) {
@@ -210,6 +212,15 @@ public class Bundle extends BusinessObject {
 	public Item getItem(int index) {
 		if (items==null) return null;
 		return items.get(index);
+	}
+	
+	public Bundle tags(ItemTags tags) {
+		this.tags = tags;
+		return this;
+	}
+	
+	public ItemTags getTags() {
+		return tags;
 	}
 	
 //	public BusinessCollection<Item> getItems() {

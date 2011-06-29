@@ -89,7 +89,7 @@ public class Receiver extends BusinessObject {
 	private BusinessStringItem serveripv4; 					//MUST
 	private BusinessStringItem serveripv6; 					//COULD
 	private BusinessStringItem authtype; 					//MUST
-	private BusinessStringItem authsha1; 					//MUST
+	private BusinessBytesItem authsha1; 					//MUST
 	private BusinessObject crypto;							//COULD
 	private BusinessStringItem file_keystore;
 	private BusinessStringItem keyid;
@@ -112,13 +112,18 @@ public class Receiver extends BusinessObject {
 	 * 	COULD:  serveripv6 :: see serveripv6(String ipv6)
 	 * 	COULD: 	crypto:: see crypto(BusinessObject crypto)
 	 */
-	public static Receiver make(String type, String servername, String serveripv4, String authtype, byte[] authsha1) {
+	public static Receiver make(String type) {
 		Receiver r = new Receiver();
 		r.type = new BusinessStringItem("type", type);
-		r.servername = new BusinessStringItem("servername", servername);
-		r.serveripv4 = new BusinessStringItem("serveripv4", serveripv4);
-		r.authtype = new BusinessStringItem("authtype", authtype);
-		r.authsha1 = new BusinessStringItem("authsha1", SecurityHelper.HexDecoder.encode(authsha1, ':', -1));
+//		r.servername = new BusinessStringItem("servername", servername);
+//		r.serveripv4 = new BusinessStringItem("serveripv4", serveripv4);
+//		r.authtype = new BusinessStringItem("authtype", authtype);
+//		r.authsha1 = new BusinessStringItem("authsha1", SecurityHelper.HexDecoder.encode(authsha1, ':', -1));
+		
+		r.servername = null;
+		r.serveripv4 = null;
+		r.authtype = null;
+		r.authsha1 = null;
 		
 		r.serveripv6 = null;
 		r.crypto = null;
@@ -140,7 +145,7 @@ public class Receiver extends BusinessObject {
 		r.servername = BusinessStringItem.fromBusinessObject(bo, "servername");
 		r.serveripv4 = BusinessStringItem.fromBusinessObject(bo, "serveripv4");
 		r.authtype = BusinessStringItem.fromBusinessObject(bo, "authtype");
-		r.authsha1 = BusinessStringItem.fromBusinessObject(bo, "authsha1");
+		r.authsha1 = BusinessBytesItem.fromBusinessObject(bo, "authsha1");
 		
 		r.serveripv6 = BusinessStringItem.fromBusinessObject(bo, "serveripv6");
 		r.crypto = bo.handleBusinessObject("crypto");
@@ -150,32 +155,64 @@ public class Receiver extends BusinessObject {
 	}
 
 	public Receiver type(String value) {
-		type.setString(value);
+		if (value == null) {
+			type = null;
+		} else if (type == null) {
+			type = new BusinessStringItem("type", value);
+		} else {
+			type.setString(value);
+		}
 		return this;
 	}
 	public Receiver servername(String value) {
-		servername.setString(value);
+		if (value == null) {
+			servername = null;
+		} else if (servername == null) {
+			servername = new BusinessStringItem("servername", value);
+		} else {
+			servername.setString(value);
+		}
 		return this;
 	}
 	public Receiver serveripv4(String value) {
-		serveripv4.setString(value);
+		if (value == null) {
+			serveripv4 = null;
+		} else if (serveripv4 == null) {
+			serveripv4 = new BusinessStringItem("serveripv4", value);
+		} else {
+			serveripv4.setString(value);
+		}
 		return this;
 	}
 	public Receiver authtype(String value) {
-		authtype.setString(value);
+		if (value == null) {
+			authtype = null;
+		} else if (authtype == null) {
+			authtype = new BusinessStringItem("authtype", value);
+		} else {
+			authtype.setString(value);
+		}
 		return this;
 	}
 	public Receiver authsha1(byte[] authsha1) {
 		if (authsha1 == null) {
-			this.authtype.setString(null);
+			this.authsha1 = null;
+		} else if (this.authsha1 == null) {
+			 this.authsha1 = new BusinessBytesItem("authsha1", authsha1);
 		} else {
-			this.authsha1.setString(SecurityHelper.HexDecoder.encode(authsha1, ':', -1));
+			this.authsha1.setBytes(authsha1);
 		}
 		return this;
 	}
 	
-	public Receiver serveripv6(String serveripv6) {
-		this.serveripv6 = new BusinessStringItem("serveripv6", serveripv6);
+	public Receiver serveripv6(String value) {
+		if (value == null) {
+			serveripv6 = null;
+		} else if (serveripv6 == null) {
+			serveripv6 = new BusinessStringItem("serveripv6", value);
+		} else {
+			serveripv6.setString(value);
+		}
 		return this;
 	}
 	

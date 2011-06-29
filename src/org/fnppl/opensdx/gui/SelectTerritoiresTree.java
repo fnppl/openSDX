@@ -55,6 +55,7 @@ import org.fnppl.opensdx.common.BusinessCollection;
 import org.fnppl.opensdx.common.BusinessObject;
 import org.fnppl.opensdx.common.Territorial;
 import org.fnppl.opensdx.dmi.FeedCreator;
+import org.fnppl.opensdx.dmi.FeedGui;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
@@ -84,26 +85,37 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.UIManager;
 
-public class EditTerritoiresTree extends JTree implements MyObservable {
+public class SelectTerritoiresTree extends JTree implements MyObservable {
 
 	
 	private URL configTerritories = FeedCreator.class.getResource("resources/config_territories.xml");
 	private Element rootElement = null;
 	private HashMap<Object,JPanel> map = new HashMap<Object, JPanel>();
-	private HashMap<String,Boolean> allow = new HashMap<String, Boolean>();
-	
+	private String selectedCode = null;
 	
 	private Vector<MyObserver> observers = new Vector<MyObserver>();
     public void addObserver(MyObserver observer) {
         observers.add(observer);
     }
+    
+    
+    public String getSelectedCode() {
+    	return selectedCode;
+    }
+    public void select(String code) {
+    	selectedCode = code;
+        for (MyObserver ob : observers) {
+            ob.notifyChange(this);
+        }
+    }
+    
     public void notifyChanges() {
         for (MyObserver ob : observers) {
             ob.notifyChange(this);
         }
     }
-
-	public EditTerritoiresTree() {
+    
+	public SelectTerritoiresTree() {
 		try {
 			rootElement = Document.fromURL(configTerritories).getRootElement();
 			rootElement = rootElement.getChild("WW");
@@ -117,7 +129,8 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 		
 		setCellRenderer(new TreeCellRenderer() {
 			private Dimension label_dimension = new Dimension(150, 18);
-			private Dimension button_dimension = new Dimension(80, 18);
+			private Dimension labelCode_dimension = new Dimension(40, 18);
+			private Dimension button_dimension = new Dimension(50, 18);
 			//private Dimension panel_dimension = new Dimension(400, 20);
 			
 			public Component getTreeCellRendererComponent(JTree tree, Object value,	boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
@@ -127,58 +140,25 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 				JPanel p = map.get(value);
 				if (p==null) {
 					p = new JPanel();
-					//p.setMaximumSize(panel_dimension);
-					//p.setPreferredSize(panel_dimension);
-					//p.setMinimumSize(panel_dimension);
 					p.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 1));
 					final JPanel pan = p;
 					JLabel label = new JLabel(name);
 					label.setPreferredSize(label_dimension);
 					p.add(label);
-					if (!code.equals("territories")) {
-						JButton buAllow = new JButton("allow");
+					if (!code.equals("territories") && node.getChildCount()==0) {
+						JLabel lc = new JLabel(code);
+						lc.setPreferredSize(labelCode_dimension);
+						p.add(lc);
+						JButton buAllow = new JButton("OK");
 						buAllow.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
-								allow.put(code, Boolean.TRUE);
-								pan.setBackground(Color.GREEN.darker());
-								notifyChanges();
+								select(code);
 							}
 						});
 						buAllow.setPreferredSize(button_dimension);
 						p.add(buAllow);
-					
-						JButton buDisallow = new JButton("disallow");
-						buDisallow.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-								allow.put(code, Boolean.FALSE);
-								pan.setBackground(Color.RED);
-								notifyChanges();
-							}
-						});
-						buDisallow.setPreferredSize(button_dimension);
-						p.add(buDisallow);
-						
-						JButton buRemove = new JButton("unset");
-						buRemove.addActionListener(new ActionListener() {
-							public void actionPerformed(ActionEvent e) {
-								allow.remove(code);
-								pan.setBackground(Color.lightGray);
-								notifyChanges();
-							}
-						});
-						buRemove.setPreferredSize(button_dimension);
-						p.add(buRemove);
 					}
 					map.put(value,p);
-				}
-				if (allow.containsKey(code)) {
-					if (allow.get(code).booleanValue()) {
-						p.setBackground(Color.GREEN.darker());
-					} else {
-						p.setBackground(Color.RED);
-					}
-				} else {
-					p.setBackground(Color.lightGray);
 				}
 				return p;
 			}
@@ -217,28 +197,6 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 		setEditable(true);
 		//expandAllRows();
 	}
-	
-	public void setTerritories(Territorial t) {
-		allow.clear();
-		int count = t.getTerritorialCount();
-		for (int i=0;i<count;i++) {
-			String s = t.getTerritory(i);
-			allow.put(s, t.isTerritoryAllowed(i));
-		}
-		repaint();
-	}
-	
-	public Territorial getTerritorial() {
-		Territorial t = Territorial.make();
-		for (String s : allow.keySet()) {
-			if (allow.get(s).booleanValue()) {
-				t.allow(s);
-			} else {
-				t.disallow(s);
-			}
-		}
-		return t;
-	}
 
 	public void expandAllRows() {
 		for (int i=0;i<this.getRowCount();i++) {
@@ -252,11 +210,12 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 	    } catch(Exception ex){
 	        System.out.println("Nimbus look & feel not available");
 	    }
-		JFrame f = new JFrame("test territories tree");
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.setSize(600, 800);
-		f.setContentPane(new JScrollPane(new EditTerritoiresTree()));
-		f.setVisible(true);
+//		JFrame f = new JFrame("test territories tree");
+//		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		f.setSize(600, 800);
+//		f.setContentPane(new JScrollPane(new SelectTerritoiresTree()));
+//		f.setVisible(true);
+	    FeedGui.showCountryCodeSelector();
 	}
 	
 	
@@ -265,11 +224,11 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 		
 		public Element xml;
 		public TerritoryTreeNode parent;
-		public EditTerritoiresTree tree;
+		public SelectTerritoiresTree tree;
 		private TerritoryTreeNode me;
 		
 		
-		public TerritoryTreeNode(TerritoryTreeNode parent, EditTerritoiresTree tree, Element xml) {
+		public TerritoryTreeNode(TerritoryTreeNode parent, SelectTerritoiresTree tree, Element xml) {
 			this.parent = parent;
 			this.tree = tree;
 			this.xml = xml;

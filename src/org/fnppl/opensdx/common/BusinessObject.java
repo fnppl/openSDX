@@ -235,6 +235,7 @@ public abstract class BusinessObject implements XMLElementable {
 					otherObjects.remove(b);
 					return (BusinessObject)b;
 				}
+				otherObjects.remove(b);
 				return null;
 			}
 		}

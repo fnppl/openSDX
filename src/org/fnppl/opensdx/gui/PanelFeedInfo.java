@@ -46,6 +46,7 @@ package org.fnppl.opensdx.gui;
  *
  */
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -73,7 +74,7 @@ import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
 
-public class PanelFeedInfo extends javax.swing.JPanel {
+public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
 
     private FeedInfo feedinfo = null;
     private DocumentChangeListener changeListener;
@@ -166,6 +167,15 @@ public class PanelFeedInfo extends javax.swing.JPanel {
         updateActionsTable(fi);
 
         changeListener.saveStates();
+
+        Dimension maxSize= new Dimension(440, 32767);
+        jPanel1.setMaximumSize(maxSize);
+        jPanel2.setMaximumSize(maxSize);
+        jPanel3.setMaximumSize(maxSize);
+        jPanel4.setMaximumSize(maxSize);
+        jPanel5.setMaximumSize(maxSize);
+        jPanel6.setMaximumSize(maxSize);
+        
     }
 
     private void updateActionsTable(FeedInfo fi) {
@@ -304,9 +314,9 @@ public class PanelFeedInfo extends javax.swing.JPanel {
 
     }
 
-     private void notifyChanges() {
+     public void notifyChanges() {
         for (MyObserver ob : observers) {
-            ob.notifyChange();
+            ob.notifyChange(this);
         }
     }
 
@@ -980,9 +990,11 @@ public class PanelFeedInfo extends javax.swing.JPanel {
     private void select_receiver_typeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_receiver_typeActionPerformed
         if (feedinfo != null && feedinfo.getReceiver()!=null) {
             feedinfo.getReceiver().type((String)select_receiver_type.getSelectedItem());
-            
-            if (feedinfo.getReceiver().getType().equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
-                    &&  feedinfo.getReceiver().getAuthType().equals(Receiver.AUTH_TYPE_KEYFILE)) {
+
+            String type = feedinfo.getReceiver().getType();
+            String authType = feedinfo.getReceiver().getAuthType();
+            if (type!=null && authType!=null && type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
+                    &&  authType.equals(Receiver.AUTH_TYPE_KEYFILE)) {
                 panel_osdxfileserver_settings.setVisible(true);
             } else {
                 panel_osdxfileserver_settings.setVisible(false);
@@ -1005,9 +1017,13 @@ public class PanelFeedInfo extends javax.swing.JPanel {
 
     private void select_authtypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_authtypeActionPerformed
         if (feedinfo != null && feedinfo.getReceiver()!=null) {
-            feedinfo.getReceiver().authtype((String)select_authtype.getSelectedItem());
-            if (feedinfo.getReceiver().getType().equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
-                    &&  feedinfo.getReceiver().getAuthType().equals(Receiver.AUTH_TYPE_KEYFILE)){
+            String type = feedinfo.getReceiver().getType();
+            String authType = (String)select_authtype.getSelectedItem();
+            
+            feedinfo.getReceiver().authtype(authType);
+            
+            if (type!=null && authType!=null && type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
+                    &&  authType.equals(Receiver.AUTH_TYPE_KEYFILE)) {
                 panel_osdxfileserver_settings.setVisible(true);
             } else {
                 panel_osdxfileserver_settings.setVisible(false);
