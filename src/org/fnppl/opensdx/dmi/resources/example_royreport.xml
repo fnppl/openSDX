@@ -248,22 +248,35 @@
 			
 			<customer>
 				<customerid></customerid><!-- unique on pos-side -->
-				<country></country>
-				<city></city>
-				<postcode></postcode>
-				<gender></gender>
-				<age></age>
-				<birthday></birthday>
-				<email></email>
+				<country></country><!-- SHOULD -->
+				<region></region><!-- SHOULD -->
+				<city></city><!-- SHOULD -->
+				<postcode></postcode><!-- SHOULD -->
+				<gender></gender><!-- SHOULD -->
+				<age></age><!-- COULD -->
+				<birthday></birthday><!-- COULD -->
+				<email></email><!-- COULD, but much appreciated, when privacy-rules allow these... -->
 			</customer>
 			
-			<country></country><!-- MUST; this is/could be distinct from customers main-country -->
-			<city></city><!-- SHOULD ; this is/could be distinct from customers main-city -->
-			<postcode></postcode><!-- SHOULD ; this is/could be distinct from customers main-postcode -->
+			<location>
+				<country></country><!-- MUST; this is/could be distinct from customers main-country -->
+				<city></city><!-- SHOULD ; this is/could be distinct from customers main-city -->
+				<postcode></postcode><!-- SHOULD ; this is/could be distinct from customers main-postcode -->
+				<geopos>40.715794,-74.01231</geopos><!-- SHOULD - but please make it "blurred enough" to not be able to identify single person[s] if not allowed by privacy-rules!!! -->
 			
-			<isp></isp><!-- SHOULD -->
-			<ipv4></ipv4><!-- SHOULD -->
-			<ipv6></ipv6><!-- SHOULD -->
+				<isp></isp><!-- SHOULD -->
+				<ipv4></ipv4><!-- SHOULD -->
+				<ipv6></ipv6><!-- SHOULD -->
+				
+				<device>
+					<type>mobile</type><!-- mobile, pc, settop, console, openpandora -->
+					<system>Android 2.2</system><!-- SHOULD -->
+					<language>en</language><!-- SHOULD -->
+					<locale>US</locale><!-- SHOULD -->
+					<localtime>2010-10-01 00:00:00 PST+00:00</localtime><!-- SHOULD notice: THIS IS NOT NECCESSARILY THE GMT-timezone! its the device's timezone! -->
+					<display>browser</display><!-- SHOULD browser, in-app, whitelabel, app -->
+				</device><!-- SHOULD -->
+			</location><!-- SHOULD -->
 			
 			<paytype>VOUCHER</paytype><!-- MUST voucher, direct debit, creditcard(VISA,MASTER etc.), deposit, flat -->
 			<paidmoney>EUR 0.04</paidmoney>
@@ -291,9 +304,6 @@
 			<playlength>400</playlength><!-- in s. -->
 			<playedlength>20</playedlength><!-- in s. usually: playlength ; e.g.: where the customer stopped listening -->
 			
-			<returndatetimefrom>2011-01-10 00:00:00 GMT+00:00</returndatetimefrom>
-			<returndatetimeto>2011-01-11 23:59:59 GMT+00:00</returndatetimeto>
-			
 			<usagedatetimefrom>2011-01-10 00:00:00 GMT+00:00</usagedatetimefrom>
 			<usagedatetimeto>2011-01-11 23:59:59 GMT+00:00</usagedatetimeto>
 			
@@ -312,22 +322,35 @@
 			
 			<customer>
 				<customerid></customerid><!-- unique on pos-side -->
-				<country></country>
-				<city></city>
-				<postcode></postcode>
-				<gender></gender>
-				<age></age>
-				<birthday></birthday>
-				<email></email>
+				<country></country><!-- SHOULD -->
+				<region></region><!-- SHOULD -->
+				<city></city><!-- SHOULD -->
+				<postcode></postcode><!-- SHOULD -->
+				<gender></gender><!-- SHOULD -->
+				<age></age><!-- COULD -->
+				<birthday></birthday><!-- COULD -->
+				<email></email><!-- COULD, but much appreciated, when privacy-rules allow these... -->
 			</customer>
 			
-			<country></country><!-- MUST; this is/could be distinct from customers main-country -->
-			<city></city><!-- SHOULD ; this is/could be distinct from customers main-city -->
-			<postcode></postcode><!-- SHOULD ; this is/could be distinct from customers main-postcode -->
+			<location>
+				<country></country><!-- MUST; this is/could be distinct from customers main-country -->
+				<city></city><!-- SHOULD ; this is/could be distinct from customers main-city -->
+				<postcode></postcode><!-- SHOULD ; this is/could be distinct from customers main-postcode -->
+				<geopos>40.715794,-74.01231</geopos><!-- SHOULD - but please make it "blurred enough" to not be able to identify single person[s] if not allowed by privacy-rules!!! -->
 			
-			<isp></isp><!-- SHOULD -->
-			<ipv4></ipv4><!-- SHOULD -->
-			<ipv6></ipv6><!-- SHOULD -->
+				<isp></isp><!-- SHOULD -->
+				<ipv4></ipv4><!-- SHOULD -->
+				<ipv6></ipv6><!-- SHOULD -->
+				
+				<device>
+					<type>mobile</type><!-- mobile, pc, settop, console, openpandora -->
+					<system>Android 2.2</system><!-- SHOULD -->
+					<language>en</language><!-- SHOULD -->
+					<locale>US</locale><!-- SHOULD -->
+					<localtime>2010-10-01 00:00:00 PST+00:00</localtime><!-- SHOULD notice: THIS IS NOT NECCESSARILY THE GMT-timezone! its the device's timezone! -->
+					<display>browser</display><!-- SHOULD browser, in-app, whitelabel, app -->
+				</device><!-- SHOULD -->
+			</location><!-- SHOULD -->
 			
 			<paytype>VOUCHER</paytype><!-- MUST voucher, direct debit, creditcard(VISA,MASTER etc.), deposit, flat -->
 			<paidmoney>EUR 0.04</paidmoney>
