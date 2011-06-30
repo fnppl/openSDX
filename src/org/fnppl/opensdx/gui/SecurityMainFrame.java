@@ -746,7 +746,9 @@ public class SecurityMainFrame extends JFrame {
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
-		int buWidth = 200;
+		int buWidth = 190;
+		int buWidth2 = 150;
+		
 		JButton bu;
 		
 		if (key.getIdentities().size()==0) {
@@ -798,10 +800,19 @@ public class SecurityMainFrame extends JFrame {
 		b.add(bu);
 		
 		bu = new JButton("generate keylog");
-		bu.setPreferredSize(new Dimension(buWidth,25));
+		bu.setPreferredSize(new Dimension(buWidth2,25));
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				showGenerateKeyLogDialog(key);
+			}
+		});
+		b.add(bu);
+
+		bu = new JButton("request keylogs");
+		bu.setPreferredSize(new Dimension(buWidth2,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				requestKeyLogs(key);
 			}
 		});
 		b.add(bu);
@@ -1626,7 +1637,7 @@ public class SecurityMainFrame extends JFrame {
 			}
 		}
 		final int w = 600;
-		final int h = y*30 + 120;
+		final int h = y*32 + 120;
 		String buText = "";
 		if(innerPublicKey) {
 			buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" from KeyID: "+keylog.getKeyIDFrom();
@@ -1650,6 +1661,18 @@ public class SecurityMainFrame extends JFrame {
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				currentKeyStore.removeKeyLog(keylog);
+				update();
+			}
+		});
+		b.add(bu);
+		
+		bu = new JButton("remove all keylogs with same key id");
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Vector<KeyLog> logs = currentKeyStore.getKeyLogs(keylog.getKeyIDTo());
+				for (KeyLog log : logs) {
+					currentKeyStore.removeKeyLog(log);
+				}
 				update();
 			}
 		});
@@ -2787,8 +2810,9 @@ public class SecurityMainFrame extends JFrame {
 			Thread t = new Thread() {
 				public void run() {
 					try {
+						KeyClient client = getKeyClient(key.getAuthoritativekeyserver());
 						System.out.println("Before calling key.uploadtoKeyServer...");
-						r[0] = key.uploadToKeyServer(keyverificator);
+						r[0] = key.uploadToKeyServer(client);
 						System.out.println("AFTER calling key.uploadtoKeyServer...");
 						releaseUILock();
 						

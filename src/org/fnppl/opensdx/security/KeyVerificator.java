@@ -225,7 +225,9 @@ public class KeyVerificator {
 		if (keyservers==null) {
 			keyservers = new Vector<KeyServerIdentity>();
 		}
-		keyservers.add(keyserver);
+		if (!keyservers.contains(keyserver)) {
+			keyservers.add(keyserver);
+		}
 		
 	}
 	

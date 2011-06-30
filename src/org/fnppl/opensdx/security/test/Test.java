@@ -351,7 +351,7 @@ public class Test {
 				
 				//and upload to server
 				master.uploadToKeyServer(client);
-				sub.uploadToKeyServer(keyverificator);
+				sub.uploadToKeyServer(client);
 				
 				ksEmployee.toFile(ksEmployee.getFile());
 			}
@@ -381,7 +381,7 @@ public class Test {
 				
 				//and upload to server
 				master.uploadToKeyServer(client);
-				sub.uploadToKeyServer(keyverificator);
+				sub.uploadToKeyServer(client);
 				
 				ksHead.toFile(ksHead.getFile());
 			}

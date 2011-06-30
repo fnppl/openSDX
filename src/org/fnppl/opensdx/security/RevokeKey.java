@@ -52,7 +52,7 @@ public class RevokeKey extends SubKey {
 		super.setLevel(LEVEL_REVOKE);
 	}
 	
-	public Result uploadToKeyServer(KeyVerificator keyverificator) {
+	public Result uploadToKeyServer(KeyClient client) {
 //		if (!hasPrivateKey()) {
 //			return Result.error("no private key available");
 //		}
@@ -92,6 +92,14 @@ public class RevokeKey extends SubKey {
 			System.out.println("uploadToKeyServer::authoritativekeyserver==local");
 			return Result.error("authoritative keyserver can not be LOCAL");
 		}
+		if (client == null) {
+			System.out.println("uploadToKeyServer::client==null");
+			return Result.error("keyserver not set.");
+		}
+		if (!client.getHost().equalsIgnoreCase(authoritativekeyserver)) {
+			System.out.println("uploadToKeyServer::client.host != authoritativekeyserver");
+			return Result.error("keyserver not authoritative.");
+		}
 		//if (authoritativekeyserverPort<=0) return Result.error("authoritative keyserver port not set");
 		if (parentKey==null) {
 			System.out.println("uploadToKeyServer::parentkey==null");
@@ -99,13 +107,13 @@ public class RevokeKey extends SubKey {
 		}
 		try {
 			//KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "", keyverificator);
-			KeyClient client =  new KeyClient(
-					authoritativekeyserver,
-					80, //TODO HT 2011-06-26 check me!!!
-					//KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, 
-					"", 
-					keyverificator
-				);
+//			KeyClient client =  new KeyClient(
+//					authoritativekeyserver,
+//					80, //TODO HT 2011-06-26 check me!!!
+//					//KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, 
+//					"", 
+//					keyverificator
+//				);
 			System.out.println("Before RevokeKey.putSubkey...");
 			boolean ok = client.putRevokeKey(this, parentKey);
 			System.out.println("AFTER RevokeKey.putSubkey -> "+ok);

@@ -55,7 +55,8 @@ public class SubKey extends OSDXKey {
 		super.setLevel(LEVEL_SUB);
 	}
 	
-	public Result uploadToKeyServer(KeyVerificator keyverificator) {
+	//public Result uploadToKeyServer(KeyVerificator keyverificator) {
+	public Result uploadToKeyServer(KeyClient client) {
 		if (!hasPrivateKey()) {
 			System.out.println("uploadToKeyServer::!hasprivatekey");
 			return Result.error("no private key available");
@@ -75,13 +76,13 @@ public class SubKey extends OSDXKey {
 		}
 		try {
 			//KeyClient client =  new KeyClient(authoritativekeyserver, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "", keyverificator);
-			KeyClient client =  new KeyClient(
-					authoritativekeyserver,
-					80, //TODO HT 2011-06-26 check me!!!
-					//KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, 
-					"", 
-					keyverificator
-				);
+//			KeyClient client =  new KeyClient(
+//					authoritativekeyserver,
+//					80, //TODO HT 2011-06-26 check me!!!
+//					//KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, 
+//					"", 
+//					keyverificator
+//				);
 			System.out.println("Before SubKey.putSubkey...");
 			boolean ok = client.putSubKey(this, parentKey);
 			System.out.println("AFTER SubKey.putSubkey -> "+ok);
