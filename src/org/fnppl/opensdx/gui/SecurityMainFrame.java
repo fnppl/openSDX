@@ -59,6 +59,7 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+import org.fnppl.opensdx.gui.helper.PanelKeyLogs;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 
@@ -550,6 +551,16 @@ public class SecurityMainFrame extends JFrame {
 			if (pKeyLogs!=null) {
 				p.add(pKeyLogs);
 			}
+			
+			//keylogs new
+			p = new JPanel();
+			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+			scroll = new JScrollPane(p);
+			tab.add("KeyLogs (sorted)", scroll);
+			PanelKeyLogs kl = new PanelKeyLogs();
+			kl.updateKeyLogs(currentKeyStore.getKeyLogs());
+			p.add(kl);
+			
 			
 			//keyserver
 			p = new JPanel();
