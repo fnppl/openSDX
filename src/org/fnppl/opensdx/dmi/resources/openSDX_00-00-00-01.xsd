@@ -1,5 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/openSDX_00-00-00-01" xmlns:tns="http://www.example.org/openSDX_00-00-00-01" elementFormDefault="qualified">
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://fnppl.org/openSDX_00-00-00-01"
+    xmlns:tns="http://fnppl.org/openSDX_00-00-00-01" elementFormDefault="unqualified">
 
-    <complexType name="feedinfo"/>
+    <complexType name="feedinfo">
+        <sequence>
+            <element name="onlytest" type="boolean"/>
+            <element name="feedid" type="string"/>
+        </sequence>
+    </complexType>
+    <complexType name="feed"/>
+
+    <complexType name="creator"/>
+    <complexType name="receiver"/>
+    <complexType name="crypto"/>
+    <complexType name="sender"/>
+    <complexType name="licensor"/>
+
+    <complexType name="actions"/>
+    <complexType name="oninitialreceive"/>
+    <complexType name="onprocesstart"/>
+    <complexType name="onprocessend"/>
+    <complexType name="onfullsuccess"/>
+    <complexType name="onerror"/>
+    <complexType name="mailto"/>
+    <complexType name="http"/>
+
+    <complexType name="addheader"/>
+    <complexType name="addparams"/>
+
+    <complexType name="fax"/>
+    <complexType name="letter"/>
+    <complexType name="to"/>
+    <complexType name="costcoveredby"/>
+
+    <complexType name="bundle"/>
+    <complexType name="ids"/>
+
+    <complexType name="contributors"/>
+    <complexType name="contributor"/>
+
+    <complexType name="www"/>
+
+    <complexType name="information"/>
+    <complexType name="related"/>
+    <complexType name="purchase"/>
+
+    <complexType name="license_basis"/>
+
+    <complexType name="territorial"/>
+    <complexType name="timeframe"/>
+    <complexType name="pricing"/>
+
+    <complexType name="license_specifics"/>
+    <complexType name="rule"/>
+    <complexType name="if"/>
+    <complexType name="then"/>
+    <complexType name="else"/>
+    <complexType name="proclaim"/>
+
+    <complexType name="reporting"/>
+    <complexType name="realtime"/>
+    <complexType name="postponed"/>
+
+    <complexType name="tags"/>
+    <complexType name="genres"/>
+    <complexType name="genre"/>
+
+    <complexType name="items"/>
+    <complexType name="item"/>
+
+    <complexType name="files"/>
+    <complexType name="file"/>
+    <complexType name="location"/>
+    <complexType name="ftp"/>
+
+    <complexType name="checksums"/>
+    <complexType name="decryptinfo"/>
+
+    <simpleType name="datetime">
+        <restriction base="string">
+            <pattern value="[a-zA-Z0-9\s]+"/>
+        </restriction>
+    </simpleType>
 </schema>
