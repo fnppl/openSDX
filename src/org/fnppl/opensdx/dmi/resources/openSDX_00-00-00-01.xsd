@@ -53,6 +53,9 @@
     xmlns:tns="http://fnppl.org/openSDX_00-00-00-01" elementFormDefault="unqualified">
 
     <complexType name="feedinfo">
+        <annotation>
+            <documentation xml:lang="en">explain me!</documentation>
+        </annotation>
         <sequence>
             <element name="onlytest" type="boolean"/>
             <element name="feedid" type="string"/>
