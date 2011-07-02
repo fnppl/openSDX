@@ -50,6 +50,7 @@
         <xsd:annotation>
             <xsd:documentation xml:lang="en">explain me!</xsd:documentation>
         </xsd:annotation>
+        
         <xsd:sequence>
             <xsd:element name="onlytest" type="xsd:boolean"/>
             <xsd:element name="feedid" type="xsd:string"/>
