@@ -100,11 +100,27 @@
         </xsd:complexContent>
     </xsd:complexType>
 
-    <xsd:complexType name="addheader"/>
-    <xsd:complexType name="addparams"/>
+    <xsd:complexType name="addheader">
+        <xsd:complexContent>
+            <xsd:extension base="action_instruction"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="addparams">
+        <xsd:complexContent>
+            <xsd:extension base="action_instruction"/>
+        </xsd:complexContent>
+    </xsd:complexType>
 
-    <xsd:complexType name="fax"/>
-    <xsd:complexType name="letter"/>
+    <xsd:complexType name="fax">
+        <xsd:complexContent>
+            <xsd:extension base="action"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="letter">
+        <xsd:complexContent>
+            <xsd:extension base="action"/>
+        </xsd:complexContent>
+    </xsd:complexType>
     <xsd:complexType name="to"/>
     <xsd:complexType name="costcoveredby"/>
 
@@ -159,4 +175,5 @@
     </xsd:simpleType>
     <xsd:complexType name="event"/>
     <xsd:complexType name="action"/>
+    <xsd:complexType name="action_instruction"/>
 </xsd:schema>
