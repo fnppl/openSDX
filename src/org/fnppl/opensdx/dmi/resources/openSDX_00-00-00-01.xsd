@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
 <!-- 
 /*
  * Copyright (C) 2010-2011 
@@ -47,92 +45,88 @@
  */
  -->
 
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:complexType name="feedinfo">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">explain me!</xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="onlytest" type="xsd:boolean"/>
+            <xsd:element name="feedid" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="feed"/>
 
-<schema xmlns="http://www.w3.org/2001/XMLSchema"
-    targetNamespace="http://fnppl.org/openSDX_00-00-00-01"
-    xmlns:tns="http://fnppl.org/openSDX_00-00-00-01" elementFormDefault="unqualified">
+    <xsd:complexType name="creator"/>
+    <xsd:complexType name="receiver"/>
+    <xsd:complexType name="crypto"/>
+    <xsd:complexType name="sender"/>
+    <xsd:complexType name="licensor"/>
 
-    <complexType name="feedinfo">
-        <annotation>
-            <documentation xml:lang="en">explain me!</documentation>
-        </annotation>
-        <sequence>
-            <element name="onlytest" type="boolean"/>
-            <element name="feedid" type="string"/>
-        </sequence>
-    </complexType>
-    <complexType name="feed"/>
+    <xsd:complexType name="actions"/>
+    <xsd:complexType name="oninitialreceive"/>
+    <xsd:complexType name="onprocesstart"/>
+    <xsd:complexType name="onprocessend"/>
+    <xsd:complexType name="onfullsuccess"/>
+    <xsd:complexType name="onerror"/>
+    <xsd:complexType name="mailto"/>
+    <xsd:complexType name="http"/>
 
-    <complexType name="creator"/>
-    <complexType name="receiver"/>
-    <complexType name="crypto"/>
-    <complexType name="sender"/>
-    <complexType name="licensor"/>
+    <xsd:complexType name="addheader"/>
+    <xsd:complexType name="addparams"/>
 
-    <complexType name="actions"/>
-    <complexType name="oninitialreceive"/>
-    <complexType name="onprocesstart"/>
-    <complexType name="onprocessend"/>
-    <complexType name="onfullsuccess"/>
-    <complexType name="onerror"/>
-    <complexType name="mailto"/>
-    <complexType name="http"/>
+    <xsd:complexType name="fax"/>
+    <xsd:complexType name="letter"/>
+    <xsd:complexType name="to"/>
+    <xsd:complexType name="costcoveredby"/>
 
-    <complexType name="addheader"/>
-    <complexType name="addparams"/>
+    <xsd:complexType name="bundle"/>
+    <xsd:complexType name="ids"/>
 
-    <complexType name="fax"/>
-    <complexType name="letter"/>
-    <complexType name="to"/>
-    <complexType name="costcoveredby"/>
+    <xsd:complexType name="contributors"/>
+    <xsd:complexType name="contributor"/>
 
-    <complexType name="bundle"/>
-    <complexType name="ids"/>
+    <xsd:complexType name="www"/>
 
-    <complexType name="contributors"/>
-    <complexType name="contributor"/>
+    <xsd:complexType name="information"/>
+    <xsd:complexType name="related"/>
+    <xsd:complexType name="purchase"/>
 
-    <complexType name="www"/>
+    <xsd:complexType name="license_basis"/>
 
-    <complexType name="information"/>
-    <complexType name="related"/>
-    <complexType name="purchase"/>
+    <xsd:complexType name="territorial"/>
+    <xsd:complexType name="timeframe"/>
+    <xsd:complexType name="pricing"/>
 
-    <complexType name="license_basis"/>
+    <xsd:complexType name="license_specifics"/>
+    <xsd:complexType name="rule"/>
+    <xsd:complexType name="if"/>
+    <xsd:complexType name="then"/>
+    <xsd:complexType name="else"/>
+    <xsd:complexType name="proclaim"/>
 
-    <complexType name="territorial"/>
-    <complexType name="timeframe"/>
-    <complexType name="pricing"/>
+    <xsd:complexType name="reporting"/>
+    <xsd:complexType name="realtime"/>
+    <xsd:complexType name="postponed"/>
 
-    <complexType name="license_specifics"/>
-    <complexType name="rule"/>
-    <complexType name="if"/>
-    <complexType name="then"/>
-    <complexType name="else"/>
-    <complexType name="proclaim"/>
+    <xsd:complexType name="tags"/>
+    <xsd:complexType name="genres"/>
+    <xsd:complexType name="genre"/>
 
-    <complexType name="reporting"/>
-    <complexType name="realtime"/>
-    <complexType name="postponed"/>
+    <xsd:complexType name="items"/>
+    <xsd:complexType name="item"/>
 
-    <complexType name="tags"/>
-    <complexType name="genres"/>
-    <complexType name="genre"/>
+    <xsd:complexType name="files"/>
+    <xsd:complexType name="file"/>
+    <xsd:complexType name="location"/>
+    <xsd:complexType name="ftp"/>
 
-    <complexType name="items"/>
-    <complexType name="item"/>
+    <xsd:complexType name="checksums"/>
+    <xsd:complexType name="decryptinfo"/>
 
-    <complexType name="files"/>
-    <complexType name="file"/>
-    <complexType name="location"/>
-    <complexType name="ftp"/>
-
-    <complexType name="checksums"/>
-    <complexType name="decryptinfo"/>
-
-    <simpleType name="datetime">
-        <restriction base="string">
-            <pattern value="[a-zA-Z0-9\s]+"/>
-        </restriction>
-    </simpleType>
-</schema>
+    <xsd:simpleType name="datetime">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[a-zA-Z0-9\s]+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>
