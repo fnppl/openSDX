@@ -64,13 +64,41 @@
     <xsd:complexType name="licensor"/>
 
     <xsd:complexType name="actions"/>
-    <xsd:complexType name="oninitialreceive"/>
-    <xsd:complexType name="onprocesstart"/>
-    <xsd:complexType name="onprocessend"/>
-    <xsd:complexType name="onfullsuccess"/>
-    <xsd:complexType name="onerror"/>
-    <xsd:complexType name="mailto"/>
-    <xsd:complexType name="http"/>
+    <xsd:complexType name="oninitialreceive">
+        <xsd:complexContent>
+            <xsd:extension base="event"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="onprocesstart">
+        <xsd:complexContent>
+            <xsd:extension base="event"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="onprocessend">
+        <xsd:complexContent>
+            <xsd:extension base="event"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="onfullsuccess">
+        <xsd:complexContent>
+            <xsd:extension base="event"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="onerror">
+        <xsd:complexContent>
+            <xsd:extension base="event"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="mailto">
+        <xsd:complexContent>
+            <xsd:extension base="action"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="http">
+        <xsd:complexContent>
+            <xsd:extension base="action"/>
+        </xsd:complexContent>
+    </xsd:complexType>
 
     <xsd:complexType name="addheader"/>
     <xsd:complexType name="addparams"/>
@@ -129,4 +157,6 @@
             <xsd:pattern value="[a-zA-Z0-9\s]+"/>
         </xsd:restriction>
     </xsd:simpleType>
+    <xsd:complexType name="event"/>
+    <xsd:complexType name="action"/>
 </xsd:schema>
