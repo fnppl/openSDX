@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <!-- 
 /*
  * Copyright (C) 2010-2011 
@@ -50,21 +52,82 @@
         <xsd:annotation>
             <xsd:documentation xml:lang="en">explain me!</xsd:documentation>
         </xsd:annotation>
-        
+
         <xsd:sequence>
             <xsd:element name="onlytest" type="xsd:boolean"/>
             <xsd:element name="feedid" type="xsd:string"/>
+            <xsd:element name="creationdatetime" type="datetimeGMT"/>
+            <xsd:element name="effectivedatetime" type="datetimeGMT"/>
+            <xsd:element name="creator" type="creator"/>
+            <xsd:element name="receiver" type="receiver"/>
+            <xsd:element name="sender" type="sender"/>
+            <xsd:element name="licensor" type="licensor"/>
+            <xsd:element name="actions" type="actions"/>
+        </xsd:sequence>
+
+    </xsd:complexType>
+
+    <xsd:element name="feed">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">explain me!</xsd:documentation>
+        </xsd:annotation>
+
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="feedinfo" type="feedinfo"/>
+                <xsd:element name="bundle" type="bundle" maxOccurs="unbounded" minOccurs="0"/>
+                <xsd:element name="item" type="item" maxOccurs="unbounded" minOccurs="0"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:complexType name="creator">
+        <xsd:sequence>
+            <xsd:element name="email" type="email"/>
+            <xsd:element name="userid" type="userid"/>
         </xsd:sequence>
     </xsd:complexType>
-    <xsd:complexType name="feed"/>
+    <xsd:complexType name="receiver">
+        <xsd:sequence>
+            <xsd:element name="type" type="receivertypes"/>
+            <xsd:element name="servername" type="iporhostname"/>
+            <xsd:element name="serveripv4" type="ipv4"/>
+            <xsd:element name="serveripv6" type="ipv6"/>
+            <xsd:element name="authtype" type="authtype"/>
+            <xsd:element name="crypto" type="crypto"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="crypto">
+        <xsd:sequence>
+            <xsd:element name="relatedemail" type="email"/>
+            <xsd:element name="usedkeyid" type="keyid"/>
+            <xsd:element name="usedpubkey" type="xsd:base64Binary"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="sender">
+        <xsd:sequence>
+            <xsd:element name="contractpartnerid" type="xsd:string"/>
+            <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
+            <xsd:element name="email" type="email"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="licensor">
+        <xsd:sequence>
+            <xsd:element name="contractpartnerid" type="xsd:string"/>
+            <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
+            <xsd:element name="email" type="email"/>
+        </xsd:sequence>
+    </xsd:complexType>
 
-    <xsd:complexType name="creator"/>
-    <xsd:complexType name="receiver"/>
-    <xsd:complexType name="crypto"/>
-    <xsd:complexType name="sender"/>
-    <xsd:complexType name="licensor"/>
-
-    <xsd:complexType name="actions"/>
+    <xsd:complexType name="actions">
+        <xsd:sequence>
+            <xsd:element name="oninitialreceive" type="event"/>
+            <xsd:element name="onprocesstart" type="event"/>
+            <xsd:element name="onprocesend" type="event"/>
+            <xsd:element name="onfullsuccess" type="event"/>
+            <xsd:element name="onerror" type="event"/>
+        </xsd:sequence>
+    </xsd:complexType>
     <xsd:complexType name="oninitialreceive">
         <xsd:complexContent>
             <xsd:extension base="event"/>
@@ -92,34 +155,64 @@
     </xsd:complexType>
     <xsd:complexType name="mailto">
         <xsd:complexContent>
-            <xsd:extension base="action"/>
+            <xsd:extension base="action">
+                <xsd:sequence>
+                    <xsd:element name="receiver" type="emaillist"/>
+                    <xsd:element name="subject" type="xsd:string"/>
+                    <xsd:element name="text" type="xsd:string"/>
+                </xsd:sequence>
+
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="http">
         <xsd:complexContent>
-            <xsd:extension base="action"/>
+            <xsd:extension base="action">
+                <xsd:sequence>
+                    <xsd:element name="url" type="url"/>
+                    <xsd:element name="type" type="httpmethods"/>
+                    <xsd:element name="addheader" type="http_addheader"/>
+                    <xsd:element name="addparams" type="http_addparams"/>
+                </xsd:sequence>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
 
-    <xsd:complexType name="addheader">
-        <xsd:complexContent>
-            <xsd:extension base="action_instruction"/>
+    <xsd:complexType name="http_addheader">
+        <xsd:complexContent mixed="false">
+            <xsd:extension base="action_instruction">
+                <xsd:sequence>
+                    <xsd:any processContents="lax" maxOccurs="unbounded"/>    
+                </xsd:sequence>                
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
-    <xsd:complexType name="addparams">
+    <xsd:complexType name="http_addparams">
         <xsd:complexContent>
-            <xsd:extension base="action_instruction"/>
+            <xsd:extension base="action_instruction">
+                <xsd:sequence>
+                    <xsd:any processContents="lax" maxOccurs="unbounded"/>    
+                </xsd:sequence>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
 
     <xsd:complexType name="fax">
         <xsd:complexContent>
-            <xsd:extension base="action"/>
+            <xsd:extension base="action">
+                <xsd:sequence>
+                    <xsd:any processContents="lax" maxOccurs="unbounded"/>    
+                </xsd:sequence>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="letter">
         <xsd:complexContent>
-            <xsd:extension base="action"/>
+            <xsd:extension base="action">
+                <xsd:sequence>
+                    <xsd:any processContents="lax" maxOccurs="unbounded"/>    
+                </xsd:sequence>
+            </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="to"/>
@@ -168,13 +261,80 @@
 
     <xsd:complexType name="checksums"/>
     <xsd:complexType name="decryptinfo"/>
+    <xsd:simpleType name="email">
+        <xsd:restriction base="xsd:string"/>
+    </xsd:simpleType>
+    <xsd:simpleType name="emaillist">
+        <xsd:restriction base="xsd:string"/>
+        <!-- make to NMTOKENS or such... -->
+    </xsd:simpleType>
+    <xsd:simpleType name="userid">
+        <xsd:restriction base="xsd:string"/>
+    </xsd:simpleType>
 
-    <xsd:simpleType name="datetime">
+    <xsd:simpleType name="datetimeGMT">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern value="[a-zA-Z0-9\s]+"/>
+            <xsd:pattern value="\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} GMT\+\d{2}:\d{2}"/>
+            <!-- "2010-01-31 00:00:00 GMT+00:00" - should be altered to some NMTOKENS or such ... -->
         </xsd:restriction>
     </xsd:simpleType>
-    <xsd:complexType name="event"/>
+    <xsd:complexType name="event">
+        <xsd:sequence>
+            <xsd:element name="mailto" type="mailto" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="http" type="http" minOccurs="0" maxOccurs="unbounded"/>            
+            <xsd:element name="fax" type="fax" minOccurs="0" maxOccurs="unbounded"/>            
+            <xsd:element name="letter" type="letter" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
     <xsd:complexType name="action"/>
     <xsd:complexType name="action_instruction"/>
+
+    <xsd:simpleType name="receivertypes">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ftp"/>
+            <xsd:enumeration value="ftps"/>
+            <xsd:enumeration value="sftp"/>
+            <xsd:enumeration value="openSDX-Beam"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="httpmethods">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="GET"/>
+            <xsd:enumeration value="POST"/>
+            <xsd:enumeration value="HEAD"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="iporhostname">
+        <xsd:restriction base="xsd:string"> </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="keyid">
+        <xsd:restriction base="xsd:string"> </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="ipv4">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="\d{3}\.\d{3}\.\d{3}\.\d{3}"/>
+            <!-- should be checked for 0-255 etc. -->
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="ipv6">
+        <xsd:restriction base="xsd:string">
+            <!-- not pattern defined yet... --> </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="url">
+        <xsd:restriction base="xsd:string">
+            <!-- not pattern defined yet... --> </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="authtype">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="login"/>
+            <xsd:enumeration value="keyfile"/>
+            <xsd:enumeration value="kerberos"/>
+            <xsd:enumeration value="keyfile+login"/>
+            <xsd:enumeration value="keyfile+username"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+
 </xsd:schema>
