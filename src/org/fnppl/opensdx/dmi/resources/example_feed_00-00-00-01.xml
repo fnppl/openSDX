@@ -624,13 +624,21 @@
 			</file>
 		</files><!-- mainly/only used for cover or pdf-boklet -->
 	</bundle>
+	
+	
 	<!--  could have X more bundles -->
+	<!--
 	<bundle>
+		...
 	</bundle>
-
-	<!-- it is also possible to only send "an item" - aka track although this is quite inconvenient... -->	
+	-->
+	
+	<!-- it is also possible to only send "an item" - aka track although this is quite inconvenient... -->
+	<!--	
 	<item>
+		...
 	</item>
+	-->
 	<!--  could have Z more items -->
 </feed>
 
