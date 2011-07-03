@@ -1,5 +1,13 @@
 package org.fnppl.opensdx.common;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+
+import org.fnppl.opensdx.gui.Dialogs;
+import org.fnppl.opensdx.securesocket.OSDXFileTransferClient;
+import org.fnppl.opensdx.security.OSDXKey;
+import org.fnppl.opensdx.security.Result;
+import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.ChildElementIterator;
 /*
  * Copyright (C) 2010-2011 
@@ -8,6 +16,7 @@ import org.fnppl.opensdx.xml.ChildElementIterator;
  * 
  * 							http://fnppl.org
 */
+import org.fnppl.opensdx.xml.Document;
 
 /*
  * Software license
@@ -112,6 +121,64 @@ public class Feed extends BusinessObject {
 			ex.printStackTrace();
 		}
 		return null;
+	}
+	
+	
+	public Result upload(OSDXFileTransferClient s, OSDXKey mysigning) {
+		try {
+			boolean ok = s.connect(mysigning);
+			if (!ok) {
+				return Result.error("ERROR: Connection to server could not be established.");
+			}
+			String feedid = getFeedinfo().getFeedID();
+
+			String normFeedid = feedid.toLowerCase();
+			//TODO only valid characters in normFeedid
+			
+			
+			String dir = "feed_upload_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,20);
+			
+			//build file structure, SOMEONE might want to change this
+			s.mkdir(dir);
+			s.cd(dir);
+			ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+			Document.buildDocument(this.toElement()).output(bOut);
+			s.uploadFile("feed_"+normFeedid+".xml",bOut.toByteArray());
+			
+			//upload all item files
+			Bundle bundle = this.getBundle(0);
+			if (bundle!=null) {
+				for (int i=0;i<bundle.getItemsCount();i++) {
+					Item item = bundle.getItem(i);
+					if (item.getFilesCount()>0) {
+						//String subdir = "item_"+(i+1)+"_files";
+						//s.mkdir(subdir);
+						//s.cd(subdir);
+						for (int j=0;j<item.getFilesCount();j++) {
+							try {
+								ItemFile nextItemFile = item.getFile(j);
+								File nextFile = new File(nextItemFile.getLocationPath());
+								String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+								String filename = normFeedid+"_item_"+(i+1)+"_file_"+(j+1)+"_"+md5;
+								s.uploadFile(nextFile, filename);
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
+						}
+						//s.cd_up();
+					}
+				}
+			}
+			
+			s.closeConnection();
+			
+			//Dialogs.showMessage("Upload of Feed successful.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			Result.error("ERROR: Upload of Feed failed.");
+			//Dialogs.showMessage("ERROR: Upload of Feed failed.");
+		}
+		return Result.succeeded();
 	}
 	
 	public Feed addBundle(Bundle bundle) {

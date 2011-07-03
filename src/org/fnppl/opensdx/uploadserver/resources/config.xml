@@ -57,6 +57,15 @@
       	<ipv6>127.0.0.1</ipv6>
       	<path_uploaded_files>uploadserver/uploads</path_uploaded_files>
 	</uploadserver>
+	<clients>
+		<client>
+			<id>USER 1</id> <!-- COULD -->
+			<keyid>AF:08:7F:7E:92:D8:48:98:24:7B:56:00:71:F8:47:65:62:8A:46:EA@localhost</keyid> <!-- keyid of a clients signing key -->
+			<local_path>/home/neo/openSDX/file_transfer_server/user_1</local_path> <!-- mapping of a client to a local directory -->
+			<auth_type>keyfile</auth_type>  <!--  keyfile|login|token|... -->
+			<!--  if auth_type is keyfile no further steps are needed, because authentication is already done via the keyid --> 
+		</client>
+	</clients>
 	<rootsigningkey>
 		 <keypair>
 	      <identities>

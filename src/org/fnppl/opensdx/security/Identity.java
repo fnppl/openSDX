@@ -636,6 +636,12 @@ public class Identity {
 		}
 	}
 	
+	public boolean isActualPhotoRestricted() {
+		if (photo!=null && photo.equals(RESTRICTED)) {
+			return true;
+		}
+		return false;
+	}
 	public BufferedImage getPhoto() {
 		if (photo==null || photo.equals("")) {
 			photoImage = null;

@@ -1,12 +1,11 @@
 package org.fnppl.opensdx.securesocket;
-
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
  * 							http://fnppl.org
-*/
+ */
 
 /*
  * Software license
@@ -44,8 +43,30 @@ package org.fnppl.opensdx.securesocket;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
-public interface OSDXSocketDataHandler {
+import java.io.File;
+
+public class ClientSettings {
 	
-	public void handleNewText(String text, OSDXSocketSender sender);
-	public void handleNewData(byte[] data, OSDXSocketSender sender);
+	private String keyid;
+	private File local_root;
+	private String auth_type = null;
+	 
+	private ClientSettings() {
+		
+	}
+	public static ClientSettings makeKeyFileAuthType(String keyid, File local_root) {
+		ClientSettings s = new ClientSettings();
+		s.keyid = keyid;
+		s.local_root = local_root;
+		s.auth_type = "keyfile";
+		return s;
+	}
+	
+	public String getKeyID() {
+		return keyid;
+	}
+	
+	public File getLocalRoot() {
+		return local_root;
+	}
 }

@@ -373,45 +373,13 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 		
 		OSDXFileTransferClient s = new OSDXFileTransferClient(servername, 4221);
-		try {
-			s.connect(mysigning);
-			String dir = "feed_upload_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,20);
-			
-			//build file structure, SOMEONE might want to change this
-			s.mkdir(dir);
-			s.cd(dir);
-			ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-			Document.buildDocument(currentFeed.toElement()).output(bOut);
-			s.uploadFile("feed.xml",bOut.toByteArray());
-			
-			//upload all item files
-			Bundle bundle = currentFeed.getBundle(0);
-			if (bundle!=null) {
-				for (int i=0;i<bundle.getItemsCount();i++) {
-					Item item = bundle.getItem(i);
-					if (item.getFilesCount()>0) {
-						String subdir = "item_"+(i+1)+"_files";
-						s.mkdir(subdir);
-						s.cd(subdir);
-						for (int j=0;j<item.getFilesCount();j++) {
-							try {
-								File nextFile = new File(item.getFile(j).getLocationPath());
-								s.uploadFile(nextFile);
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							}
-						}
-						s.cd_up();
-					}
-				}
-			}
-			
-			s.closeConnection();
+		Result r = currentFeed.upload(s, mysigning);
+		if (r.succeeded) {
 			Dialogs.showMessage("Upload of Feed successful.");
-		} catch (Exception e) {
-			e.printStackTrace();
-			Dialogs.showMessage("ERROR: Upload of Feed failed.");
+		} else {
+			Dialogs.showMessage(r.errorMessage);
 		}
+		
 	}
 	
 	public static OSDXKey selectPrivateSigningKey(KeyApprovingStore store) {

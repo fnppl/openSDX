@@ -864,6 +864,28 @@ public class SecurityMainFrame extends JFrame {
 		return t;
 	}
 	
+	private JTextArea addLabelTextAreaPart(String textLabel, String textValue, JPanel a, GridBagConstraints c, int y, boolean edit) {
+		JLabel l = new JLabel(textLabel);
+		l.setPreferredSize(new Dimension(200,20));
+		c.weightx = 0;
+		c.weighty = 0.1;
+		c.fill = GridBagConstraints.NONE;
+		c.gridx = 0;
+		c.gridy = y;
+		a.add(l, c);
+
+		JTextArea t = new JTextArea(textValue);
+		t.setEditable(edit);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.gridx = 1;
+		c.gridy = y;
+		c.gridwidth = 5;
+		c.gridheight = 1;
+		a.add(t,c);
+		return t;
+	}
+	
 	private JComboBox addLabelComboBoxPart(String textLabel, Vector<String> textItems, int selected, JPanel a, GridBagConstraints c, int y, boolean edit) {
 		JLabel l = new JLabel(textLabel);
 		l.setPreferredSize(new Dimension(200,20));
@@ -1634,7 +1656,14 @@ public class SecurityMainFrame extends JFrame {
 				for (Element e : idsFields) {
 					if (e.getText()!=null) {
 						y++;
-						addLabelTextFieldPart("  "+e.getName()+":", e.getText(), a, c, y);
+						String name = e.getName();
+						if (name.equals("photo") && !e.getText().equals(Identity.RESTRICTED)) {
+							addLabelTextFieldPart("  "+name+":", "[available]", a, c, y);
+						} else if (name.equals("note")) {
+							addLabelTextAreaPart("  "+name+":", e.getText(), a, c, y, false);
+						} else {
+							addLabelTextFieldPart("  "+e.getName()+":", e.getText(), a, c, y);
+						}
 					}
 				}
 			}

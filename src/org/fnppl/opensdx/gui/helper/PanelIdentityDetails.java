@@ -63,7 +63,7 @@ public class PanelIdentityDetails extends JPanel {
 	private JLabel label_fax;
 	private JTextField text_fax;
 	private JLabel label_note;
-	private JTextField text_note;
+	private JTextArea text_note;
 
 
 	public PanelIdentityDetails() {
@@ -121,7 +121,11 @@ public class PanelIdentityDetails extends JPanel {
 			text_note.setText(id.getNote());
 			BufferedImage photo = id.getPhoto();
 			if (photo==null) {
-				photo = noPhoto;
+				if (id.isActualPhotoRestricted()) {
+					photo = restrictedPhoto;
+				} else {
+					photo = noPhoto;
+				}
 			}
 			bu_photo.setIcon(new ImageIcon(photo));
 		}
@@ -137,6 +141,16 @@ public class PanelIdentityDetails extends JPanel {
 		g.setColor(Color.GRAY);
 		g.setFont(new Font("arial", Font.BOLD, 12));
 		g.drawString("no photo", photoW/2-25 ,photoH/2);
+	}
+	
+	private static BufferedImage restrictedPhoto = new BufferedImage(photoW, photoH, BufferedImage.TYPE_INT_RGB);
+	static {
+		Graphics g = restrictedPhoto.getGraphics();
+		g.setColor(Color.WHITE);
+		g.fillRect(0,0,photoW,photoH);
+		g.setColor(Color.GRAY);
+		g.setFont(new Font("arial", Font.BOLD, 12));
+		g.drawString("[RESTRICTED]", photoW/2-39 ,photoH/2);
 	}
 
 	private void initComponents() {
@@ -266,19 +280,17 @@ public class PanelIdentityDetails extends JPanel {
 		label_fax = new JLabel("fax");
 
 		text_fax = new JTextField("");
-
 		text_fax.setName("text_fax");
 		texts.add(text_fax);
-
+		
 		label_note = new JLabel("note");
 
-		text_note = new JTextField("");
-
+		text_note = new JTextArea("");
 		text_note.setName("text_note");
 		texts.add(text_note);
 
 		for (JTextComponent text : texts) {
-			if (text instanceof JTextField) text.setEditable(false);
+			text.setEditable(false);
 		}
 	}
 
@@ -864,7 +876,7 @@ public class PanelIdentityDetails extends JPanel {
 		gbc.gridx = 1;
 		gbc.gridy = 18;
 		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
+		gbc.gridheight = 2;
 		gbc.weightx = 50.0;
 		gbc.weighty = 0.0;
 		gbc.anchor = GridBagConstraints.CENTER;

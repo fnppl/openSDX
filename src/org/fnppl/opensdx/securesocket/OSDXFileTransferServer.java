@@ -53,6 +53,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import org.bouncycastle.crypto.engines.ISAACEngine;
 import org.fnppl.opensdx.security.MasterKey;
@@ -76,8 +77,9 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 
 	private OSDXKey mySigningKey = null;
 	private OSDXKey myEncryptionKey = null;
-	private File path_uploaded_files = null;
+	//private File path_uploaded_files = null;
 	private HashMap<OSDXSocketSender, FileTransferState> states = null;
+	private HashMap<String, ClientSettings> clients = null;
 	
 	
 	public OSDXFileTransferServer(String pwSigning, String pwEncryption) {
@@ -85,7 +87,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		try {
 			mySigningKey.unlockPrivateKey(pwSigning);
 			myEncryptionKey.unlockPrivateKey(pwEncryption);
-			serverSocket = new OSDXSocketServer(port, prepath, serverid, mySigningKey, myEncryptionKey);
+			serverSocket = new OSDXSocketServer(port, prepath, serverid, mySigningKey, myEncryptionKey, clients);
 			serverSocket.setDataHandler(this);
 			states = new HashMap<OSDXSocketSender, FileTransferState>();
 		} catch (Exception e) {
@@ -122,7 +124,13 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		FileTransferState s = states.get(sender);
 		if (s==null) {
 			s = new FileTransferState();
-			s.setRootPath(new File(path_uploaded_files,sender.getID()));
+			System.out.println("looking for client key id: "+sender.getID());
+			ClientSettings settings = clients.get(sender.getID());
+			if (settings == null) {
+				return null;
+			}
+			s.setRootPath(settings.getLocalRoot());
+			//s.setRootPath(new File(path_uploaded_files,sender.getID()));
 			states.put(sender,s);
 		}
 		return s;
@@ -151,7 +159,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	public void startService() {
 		System.out.println("Starting Server at "+address.getHostAddress()+" on port " + port +"  at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
-		System.out.println("directory for uploaded files : "+path_uploaded_files.getAbsolutePath());
+		//System.out.println("directory for uploaded files : "+path_uploaded_files.getAbsolutePath());
 		try {
 			serverSocket.startService();
 		} catch (Exception e) {
@@ -190,9 +198,31 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 				System.out.println("CAUTION: error while parsing ip adress");
 				ex.printStackTrace();
 			}
-			path_uploaded_files = new File(ks.getChildText("path_uploaded_files"));
+			//path_uploaded_files = new File(ks.getChildText("path_uploaded_files"));
 //			System.out.println("path for uploaded files: "+pathUploadedFiles.getAbsolutePath());
 			
+			///Clients
+			clients = new HashMap<String, ClientSettings>();
+			//System.out.println("init clients");
+			Element eClients = root.getChild("clients");
+			Vector<Element> ecClients = eClients.getChildren("client");
+			for (Element e : ecClients) {
+			//	System.out.println("processing client");
+				try {
+					String keyid = e.getChildText("keyid");
+					String local_root = e.getChildText("local_path");
+					if (keyid!=null && local_root!=null) {
+						File f = new File(local_root);
+						ClientSettings cs = ClientSettings.makeKeyFileAuthType(keyid, f);
+						clients.put(keyid,cs);
+						System.out.println("adding client: "+keyid+" -> "+f.getAbsolutePath());
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+				
+	
 			//SigningKey
 			try {
 				OSDXKey k = OSDXKey.fromElement(root.getChild("rootsigningkey").getChild("keypair"));

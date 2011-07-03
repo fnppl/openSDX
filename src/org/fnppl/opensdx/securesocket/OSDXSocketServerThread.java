@@ -53,6 +53,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.HashMap;
 
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.OSDXMessage;
@@ -66,6 +67,7 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 
 	public final static String ERROR_NO_RESPONSE = "ERROR: server does not respond.";
 	public final static String ERROR_WRONG_RESPONE_FORMAT = "ERROR: Wrong format in uploadserver's response.";
+	public final static String ERROR_UNKNOWN_KEY = "ERROR: unknown signature key.";
 	
 	private long timeout = 10000;
 	
@@ -80,12 +82,14 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	private OSDXSocketDataHandler dataHandler = null;
 	private OSDXSocketReceiver receiver = null;
 	private long nextTimeOut = Long.MAX_VALUE;
+	private HashMap<String, ClientSettings> clients;
 	
-	public OSDXSocketServerThread(Socket socket, OSDXKey mySigningKey, OSDXKey myEncryptionKey, OSDXSocketDataHandler dataHandler) {
+	public OSDXSocketServerThread(Socket socket, OSDXKey mySigningKey, OSDXKey myEncryptionKey, OSDXSocketDataHandler dataHandler, HashMap<String, ClientSettings> clients) {
 		this.socket = socket;
 		this.mySigningKey = mySigningKey;
 		this.myEncryptionKey = myEncryptionKey;
 		this.dataHandler = dataHandler;
+		this.clients = clients;
 	}
 	
 	public void handleNewText(String text, OSDXSocketSender sender) {
@@ -108,6 +112,10 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 				secure_connection_established = initSymEncKey(text);
 				if (secure_connection_established) {
 					sendEncryptedText("Secure Connection Established!");
+				} else {
+					//ERROR
+					System.out.println("init secure_connection ERROR: "+message);
+					sendPlainText(message);
 				}
 			}
 		}
@@ -171,8 +179,10 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	private boolean initSymEncKey(String symkeymsg) {
 		try {
 			if (symkeymsg!=null) {
+				System.out.println("init sysmetric key");
 				//get serves encryption key out of message
 				OSDXMessage msg = OSDXMessage.fromElement(Document.fromString(symkeymsg).getRootElement());
+				
 				//TODO check with Key
 				Result ok = msg.verifySignaturesWithoutKeyVerification();
 				if (!ok.succeeded) {
@@ -180,8 +190,19 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 					return false;
 				}
 				String id =msg.getSignatures().get(0).getKey().getKeyID();
-				userID = id.replace(':', '-');
-				
+				System.out.println("clients key id: "+id);
+				//userID = id.replace(':', '-');
+				ClientSettings cs = null;
+				if (dataHandler!=null) {
+					cs = clients.get(id);
+				}
+				if (cs==null) {
+					System.out.println("Client NOT FOUND!");
+					message = ERROR_UNKNOWN_KEY;
+					return false;
+				}
+				userID = id;
+				System.out.println("clients local path: "+cs.getLocalRoot().getAbsolutePath());
 				Element responseElement = msg.getDecryptedContent(myEncryptionKey);
 				//Document.buildDocument(responseElement).output(System.out);
 				if (responseElement==null || !responseElement.getName().equals("session_encryption_key")) {
@@ -199,6 +220,7 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
+		message = "Unknown Error.";
 		return false;
 	}
 	

@@ -97,11 +97,18 @@ public class OSDXFileTransferClient extends OSDXSocket {
 	public void pwd() {
 		sendEncryptedText("PWD");
 	}
-	
 	public void uploadFile(File f) {
+		uploadFile(f, null);
+	}
+	
+	public void uploadFile(File f, String new_filename) {
 		if (f.exists()) {
 			if (!f.isDirectory()) {
-				sendEncryptedText("PUT "+f.getName());
+				if (new_filename==null) {
+					sendEncryptedText("PUT "+f.getName());
+				} else {
+					sendEncryptedText("PUT "+new_filename);
+				}
 				try {
 					ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 					FileInputStream fin = new FileInputStream(f);

@@ -52,12 +52,14 @@ import java.io.FileWriter;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Vector;
 
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.http.HTTPServer;
 import org.fnppl.opensdx.http.HTTPServerRequest;
 import org.fnppl.opensdx.http.HTTPServerResponse;
+import org.fnppl.opensdx.securesocket.ClientSettings;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.KeyVerificator;
 import org.fnppl.opensdx.security.MasterKey;
@@ -83,8 +85,10 @@ public class UploadServer extends HTTPServer {
 	private KeyApprovingStore keystore = null;
 	protected MasterKey signingKey = null;
 	
-	protected File pathUploadedFiles = null;
-	private HashMap<String, FileUpload> uploads = new HashMap<String,FileUpload>();
+	//protected File pathUploadedFiles = null;
+	private HashMap<String, FileUpload> connections = new HashMap<String,FileUpload>();
+	private HashMap<String, ClientSettings> clients = new HashMap<String, ClientSettings>(); 
+	
 	
 	private MessageHandler messageHandler = new DefaultMessageHandler() {
 		public boolean requestOverwriteFile(File file) {//dont ask, just overwrite
@@ -154,8 +158,8 @@ public class UploadServer extends HTTPServer {
 				System.out.println("CAUTION: error while parsing ip adress");
 				ex.printStackTrace();
 			}
-			pathUploadedFiles = new File(ks.getChildText("path_uploaded_files"));
-			System.out.println("path for uploaded files: "+pathUploadedFiles.getAbsolutePath());
+			//pathUploadedFiles = new File(ks.getChildText("path_uploaded_files"));
+			//System.out.println("path for uploaded files: "+pathUploadedFiles.getAbsolutePath());
 			
 			//SigningKey
 			try {
@@ -170,6 +174,23 @@ public class UploadServer extends HTTPServer {
 			}
 			//TODO check localproofs and signatures 
 
+			//Clients
+			Element eClients = root.getChild("clients");
+			clients = new HashMap<String, ClientSettings>();
+			Vector<Element> ecClients = eClients.getChildren("client");
+			for (Element e : ecClients) {
+				try {
+					String keyid = e.getChildText("keyid");
+					String local_root = e.getChildText("local_root");
+					if (keyid!=null && local_root!=null) {
+						File f = new File(local_root);
+						ClientSettings cs = ClientSettings.makeKeyFileAuthType(keyid, f);
+						clients.put(keyid,cs);
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -246,24 +267,34 @@ public class UploadServer extends HTTPServer {
 		
 		Signature s = Signature.fromElement(e.getChild("signature"));
 		String filename = e.getChildText("filename");
-		File path = new File(pathUploadedFiles, s.getKey().getKeyID()+"/"+SecurityHelper.getFormattedDate(s.getSignDatetime()).substring(0,19));
 		
 		OSDXKey clientEncrypt = OSDXKey.fromPubKeyElement(e.getChild("encrypt_with_key").getChild("pubkey"));
 		
+		//extract keyid from signature for authentication
+		String keyid = s.getKey().getKeyID();
+		ClientSettings clientSettings = clients.get(keyid);
+		if (clientSettings == null) {
+			return HTTPServerResponse.errorMessage(filename, "unknow signature key.");
+		}
+		
+		File path = clientSettings.getLocalRoot();
+		
+		//File path = new File(pathUploadedFiles, s.getKey().getKeyID()+"/"+SecurityHelper.getFormattedDate(s.getSignDatetime()).substring(0,19));
+		
 		SymmetricKey symcrypt = SymmetricKey.getRandomKey();
 		
+		//build connection via tokenid
 		String token = SecurityHelper.HexDecoder.encode(SecurityHelper.getRandomBytes(20), '\0', -1);
-		while (uploads.containsKey(token)) {
+		while (connections.containsKey(token)) {
 			//if the token already exists -> generate new one (should never really happen, but remember Murphy's law)
 			token = SecurityHelper.HexDecoder.encode(SecurityHelper.getRandomBytes(20), '\0', -1);
 		}
-		
 		e.addContent("token_id", token);
 		path.mkdirs();
 		Document.buildDocument(e).writeToFile(new File(path,"request.xml"));
 		
 		FileUpload upload = new FileUpload(filename, path, s.getMD5(),s.getSHA1(), s.getSHA256(), symcrypt);
-		uploads.put(token, upload);
+		connections.put(token, upload);
 		
 		HTTPServerResponse resp = new HTTPServerResponse(serverid);
 		Element er = new Element("upload_file_encryption_key");
@@ -279,7 +310,7 @@ public class UploadServer extends HTTPServer {
 	
 	private HTTPServerResponse handleUploadFileData(HTTPServerRequest request) throws Exception {
 		String token_id = request.getHeaderValue("token_id");
-		FileUpload upload = uploads.get(token_id);
+		FileUpload upload = connections.get(token_id);
 		if (upload==null) {
 			return errorMessage("Wrong or missing token_id!");
 		}
@@ -289,7 +320,7 @@ public class UploadServer extends HTTPServer {
 		if (!upload.verifyChecksums()) return errorMessage("checksum could not be verified.");
 		if (!upload.saveToFile()) return errorMessage("error saving file");
 		
-		uploads.remove(token_id);
+		connections.remove(token_id);
 		
 		HTTPServerResponse resp = new HTTPServerResponse(serverid);
 		return resp;
