@@ -89,10 +89,12 @@ public class Receiver extends BusinessObject {
 	private BusinessStringItem serveripv4; 					//MUST
 	private BusinessStringItem serveripv6; 					//COULD
 	private BusinessStringItem authtype; 					//MUST
+	private BusinessStringItem username;					//MUST for OSDXFileTransferServer
 	private BusinessBytesItem authsha1; 					//MUST
 	private BusinessObject crypto;							//COULD
 	private BusinessStringItem file_keystore;
 	private BusinessStringItem keyid;
+	
 	
 	
 	private Receiver()  {
@@ -129,6 +131,7 @@ public class Receiver extends BusinessObject {
 		r.crypto = null;
 		r.file_keystore = null;
 		r.keyid = null;
+		r.username = null;
 		return r;
 	}
 	
@@ -151,6 +154,7 @@ public class Receiver extends BusinessObject {
 		r.crypto = bo.handleBusinessObject("crypto");
 		r.file_keystore = BusinessStringItem.fromBusinessObject(bo, "file_keystore");
 		r.keyid = BusinessStringItem.fromBusinessObject(bo, "keyid");
+		r.username = BusinessStringItem.fromBusinessObject(bo, "username");
 		return r;
 	}
 
@@ -161,6 +165,17 @@ public class Receiver extends BusinessObject {
 			type = new BusinessStringItem("type", value);
 		} else {
 			type.setString(value);
+		}
+		return this;
+	}
+	
+	public Receiver username(String value) {
+		if (value == null) {
+			username = null;
+		} else if (username == null) {
+			username = new BusinessStringItem("username", value);
+		} else {
+			username.setString(value);
 		}
 		return this;
 	}
@@ -244,6 +259,12 @@ public class Receiver extends BusinessObject {
 		}
 		return this;
 	}
+	
+	public String getUsername() {
+		if (username==null) return null;
+		return username.getString();
+	}
+	
 	public String getKeyID() {
 		if (keyid==null) return null;
 		return keyid.getString();

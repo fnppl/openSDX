@@ -58,11 +58,26 @@
       	<path_uploaded_files>/home/neo/openSDX/file_transfer_server</path_uploaded_files>
 	</osdxfiletransferserver>
 	<clients>
+		<client> <!--  testkey in OSDXFielTransferClient main() -->
+			<username>testuser</username> <!-- COULD -->
+			<keyid>27:61:62:78:C1:29:F3:C6:A9:03:44:D2:18:36:37:22:E2:9F:63:BF@localhost</keyid> <!-- keyid of a clients signing key -->
+			<local_path>/home/neo/openSDX/file_transfer_server/test_user</local_path> <!-- mapping of a client to a local directory -->
+			<auth_type>keyfile</auth_type>  <!--  keyfile|login|token|... -->
+<!-- 			<login>
+				<sha256></sha256>
+				<initv></initv>
+			</login> -->
+			<!--  if auth_type is keyfile no further steps are needed, because authentication is already done via the keyid --> 
+		</client>
 		<client>
-			<id>USER 1</id> <!-- COULD -->
+			<username>user_1</username> <!-- COULD -->
 			<keyid>AF:08:7F:7E:92:D8:48:98:24:7B:56:00:71:F8:47:65:62:8A:46:EA@localhost</keyid> <!-- keyid of a clients signing key -->
 			<local_path>/home/neo/openSDX/file_transfer_server/user_1</local_path> <!-- mapping of a client to a local directory -->
 			<auth_type>keyfile</auth_type>  <!--  keyfile|login|token|... -->
+			<login> <!--  only if password required -->
+				<sha256></sha256>
+				<initv></initv>
+			</login>
 			<!--  if auth_type is keyfile no further steps are needed, because authentication is already done via the keyid --> 
 		</client>
 	</clients>

@@ -68,7 +68,7 @@ import org.fnppl.opensdx.xml.Element;
 public class OSDXSocketServer {
 
 	protected int port = -1;
-	protected String prepath = "";
+	protected String prepath = "/";
 	private String serverid = "serverid";
 	
 	//protected InetAddress address = null;
@@ -79,7 +79,7 @@ public class OSDXSocketServer {
 	private OSDXSocketDataHandler dataHandler = null;
 	private HashMap<String, ClientSettings> clients = null;
 
-	public OSDXSocketServer(int port, String prepath, String serverid, OSDXKey mySigningKey, OSDXKey myEncryptionKey,HashMap<String, ClientSettings> clients) throws Exception {
+	public OSDXSocketServer(int port, String prepath, String serverid, OSDXKey mySigningKey, OSDXKey myEncryptionKey, HashMap<String, ClientSettings> clients) throws Exception {
 		this.port = port;
 		this.prepath = prepath;
 		this.serverid = serverid;

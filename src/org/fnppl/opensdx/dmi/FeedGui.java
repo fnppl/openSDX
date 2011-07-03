@@ -326,7 +326,12 @@ public class FeedGui extends JFrame implements MyObserver {
 		String servername = currentFeed.getFeedinfo().getReceiver().getServername();
 		String keystore = currentFeed.getFeedinfo().getReceiver().getFileKeystore();
 		String keyid = currentFeed.getFeedinfo().getReceiver().getKeyID();
+		String username = currentFeed.getFeedinfo().getReceiver().getUsername();
 		
+		if (username==null) {
+			Dialogs.showMessage("Missing parameter: username");
+			return;
+		}
 		File f = null;
 		if (keystore!=null) {
 			f = new File(keystore);
@@ -372,8 +377,8 @@ public class FeedGui extends JFrame implements MyObserver {
 			return;
 		}
 		
-		OSDXFileTransferClient s = new OSDXFileTransferClient(servername, 4221);
-		Result r = currentFeed.upload(s, mysigning);
+		OSDXFileTransferClient s = new OSDXFileTransferClient(servername, 4221, "/");
+		Result r = currentFeed.upload(s, username, mysigning);
 		if (r.succeeded) {
 			Dialogs.showMessage("Upload of Feed successful.");
 		} else {

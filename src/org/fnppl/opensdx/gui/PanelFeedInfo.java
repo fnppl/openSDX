@@ -154,6 +154,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
             select_authtype.setSelectedItem(r.getAuthType());
             text_keyid.setText(r.getKeyID());
             text_keystore.setText(r.getFileKeystore());
+            text_receiver_username.setText(r.getUsername());
         } else {
             select_receiver_type.setSelectedIndex(0);
             text_receiver_servername.setText("");
@@ -161,6 +162,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
             select_authtype.setSelectedIndex(0);
             text_keyid.setText("");
             text_keystore.setText("");
+            text_receiver_username.setText("");
         }
 
         //actions
@@ -260,6 +262,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
 
         texts.add(text_receiver_servername);
         texts.add(text_receiver_serveripv4);
+        texts.add(text_receiver_username);
         
         changeListener = new DocumentChangeListener(texts);
 
@@ -286,6 +289,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
 
                             else if(text == text_receiver_servername) feedinfo.getReceiver().servername(t);
                             else if(text == text_receiver_serveripv4) feedinfo.getReceiver().serveripv4(t);
+                            else if(text == text_receiver_username) feedinfo.getReceiver().username(t);
                             
                             text.setBackground(Color.WHITE);
                             changeListener.saveState(text);
@@ -431,6 +435,8 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
         bu_select_keystore = new javax.swing.JButton();
         bu_remove_keystore = new javax.swing.JButton();
         bu_remove_keyid = new javax.swing.JButton();
+        text_receiver_username = new javax.swing.JTextField();
+        jLabel19 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         check_onlytest = new javax.swing.JCheckBox();
@@ -567,9 +573,9 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
                     .addComponent(jLabel10))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_sender_email, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
-                    .addComponent(text_sender_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
-                    .addComponent(text_sender_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE))
+                    .addComponent(text_sender_email, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                    .addComponent(text_sender_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                    .addComponent(text_sender_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -616,6 +622,8 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
         panel_osdxfileserver_settings.setBorder(javax.swing.BorderFactory.createTitledBorder("openSDX  Fileserver Settings"));
 
         text_keystore.setEditable(false);
+        text_keystore.setMaximumSize(new java.awt.Dimension(150, 2147483647));
+        text_keystore.setPreferredSize(new java.awt.Dimension(150, 28));
 
         jLabel17.setText("KeyStore");
 
@@ -629,6 +637,8 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
         jLabel18.setText("Key ID");
 
         text_keyid.setEditable(false);
+        text_keyid.setMaximumSize(new java.awt.Dimension(150, 2147483647));
+        text_keyid.setPreferredSize(new java.awt.Dimension(150, 28));
 
         bu_select_keystore.setText("select");
         bu_select_keystore.addActionListener(new java.awt.event.ActionListener() {
@@ -651,6 +661,11 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
             }
         });
 
+        text_receiver_username.setMaximumSize(new java.awt.Dimension(150, 2147483647));
+        text_receiver_username.setPreferredSize(new java.awt.Dimension(150, 28));
+
+        jLabel19.setText("username");
+
         javax.swing.GroupLayout panel_osdxfileserver_settingsLayout = new javax.swing.GroupLayout(panel_osdxfileserver_settings);
         panel_osdxfileserver_settings.setLayout(panel_osdxfileserver_settingsLayout);
         panel_osdxfileserver_settingsLayout.setHorizontalGroup(
@@ -659,11 +674,13 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
                 .addContainerGap()
                 .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel17)
-                    .addComponent(jLabel18))
+                    .addComponent(jLabel18)
+                    .addComponent(jLabel19))
                 .addGap(25, 25, 25)
-                .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(text_keyid)
-                    .addComponent(text_keystore, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE))
+                .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(text_receiver_username, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(text_keyid, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(text_keystore, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(bu_select_keystore, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -674,6 +691,9 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
                     .addComponent(bu_remove_keyid))
                 .addContainerGap(18, Short.MAX_VALUE))
         );
+
+        panel_osdxfileserver_settingsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {text_keyid, text_keystore, text_receiver_username});
+
         panel_osdxfileserver_settingsLayout.setVerticalGroup(
             panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panel_osdxfileserver_settingsLayout.createSequentialGroup()
@@ -687,7 +707,12 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
                     .addComponent(jLabel18)
                     .addComponent(text_keyid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(bu_select_keyid)
-                    .addComponent(bu_remove_keyid)))
+                    .addComponent(bu_remove_keyid))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panel_osdxfileserver_settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(text_receiver_username, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel19))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel15.setText("server IPv4");
@@ -696,10 +721,11 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(panel_osdxfileserver_settings, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addGroup(jPanel4Layout.createSequentialGroup()
                             .addComponent(jLabel12)
                             .addGap(64, 64, 64)
@@ -716,8 +742,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
                             .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(select_authtype, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(text_receiver_serveripv4, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
-                                .addComponent(text_receiver_servername, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE))))
-                    .addComponent(panel_osdxfileserver_settings, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(text_receiver_servername, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
 
@@ -749,7 +774,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
                     .addComponent(jLabel16))
                 .addGap(17, 17, 17)
                 .addComponent(panel_osdxfileserver_settings, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGap(47, 47, 47))
         );
 
         jPanel5.setMaximumSize(new java.awt.Dimension(440, 32767));
@@ -796,7 +821,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
                                 .addComponent(jLabel3))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(text_feedid, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                                .addComponent(text_feedid, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
                                 .addGroup(jPanel5Layout.createSequentialGroup()
                                     .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                         .addComponent(text_creation_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
@@ -805,7 +830,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
                                     .addComponent(buNow)))
                             .addGap(19, 19, 19))
                         .addGroup(jPanel5Layout.createSequentialGroup()
-                            .addComponent(check_onlytest, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                            .addComponent(check_onlytest, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
                             .addGap(153, 153, 153)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                         .addComponent(bu_uuid, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -920,7 +945,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bu_action_remove)
@@ -963,8 +988,8 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
-                    .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -1217,6 +1242,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1248,6 +1274,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable {
     private javax.swing.JTextField text_licensor_ourcontractpartnerid;
     private javax.swing.JTextField text_receiver_serveripv4;
     private javax.swing.JTextField text_receiver_servername;
+    private javax.swing.JTextField text_receiver_username;
     private javax.swing.JTextField text_sender_contractpartnerid;
     private javax.swing.JTextField text_sender_email;
     private javax.swing.JTextField text_sender_ourcontractpartnerid;

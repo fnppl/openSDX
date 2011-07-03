@@ -45,28 +45,52 @@ package org.fnppl.opensdx.securesocket;
  */
 import java.io.File;
 
+import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.xml.Element;
+
 public class ClientSettings {
 	
+	private String username;
 	private String keyid;
-	private File local_root;
 	private String auth_type = null;
+	private byte[] login_sha256 = null;
+	private byte[] login_initv = null;
+	
+	private File local_path;
+	
 	 
 	private ClientSettings() {
 		
 	}
-	public static ClientSettings makeKeyFileAuthType(String keyid, File local_root) {
+	
+	public static ClientSettings fromElement(Element e) {
 		ClientSettings s = new ClientSettings();
-		s.keyid = keyid;
-		s.local_root = local_root;
-		s.auth_type = "keyfile";
+		s.username = e.getChildText("username");
+		s.keyid = e.getChildText("keyid");
+		s.local_path = new File(e.getChildText("local_path"));
+		s.auth_type = e.getChildText("auth_type");
+		if (s.username==null || s.keyid==null || s.local_path==null || s.auth_type==null) {
+			throw new RuntimeException("Format ERROR in client settings");
+		}
+		if (e.getChild("login")!=null) {
+			s.login_sha256 = SecurityHelper.HexDecoder.decode(e.getChild("login").getChildText("sha256"));
+			s.login_initv = SecurityHelper.HexDecoder.decode(e.getChild("login").getChildText("initv"));
+			if (s.login_initv==null || s.login_sha256==null) {
+				throw new RuntimeException("Format ERROR in client settings");
+			}
+		}
 		return s;
+	}
+	
+	public String getSettingsID() {
+		return username+"::"+keyid;
 	}
 	
 	public String getKeyID() {
 		return keyid;
 	}
 	
-	public File getLocalRoot() {
-		return local_root;
+	public File getLocalRootPath() {
+		return local_path;
 	}
 }

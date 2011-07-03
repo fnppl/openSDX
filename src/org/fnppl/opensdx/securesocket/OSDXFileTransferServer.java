@@ -58,6 +58,7 @@ import java.util.Vector;
 import org.bouncycastle.crypto.engines.ISAACEngine;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
+import org.fnppl.opensdx.security.OSDXMessage;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
@@ -129,7 +130,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			if (settings == null) {
 				return null;
 			}
-			s.setRootPath(settings.getLocalRoot());
+			s.setRootPath(settings.getLocalRootPath());
 			//s.setRootPath(new File(path_uploaded_files,sender.getID()));
 			states.put(sender,s);
 		}
@@ -207,16 +208,10 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			Element eClients = root.getChild("clients");
 			Vector<Element> ecClients = eClients.getChildren("client");
 			for (Element e : ecClients) {
-			//	System.out.println("processing client");
 				try {
-					String keyid = e.getChildText("keyid");
-					String local_root = e.getChildText("local_path");
-					if (keyid!=null && local_root!=null) {
-						File f = new File(local_root);
-						ClientSettings cs = ClientSettings.makeKeyFileAuthType(keyid, f);
-						clients.put(keyid,cs);
-						System.out.println("adding client: "+keyid+" -> "+f.getAbsolutePath());
-					}
+					ClientSettings cs = ClientSettings.fromElement(e);
+					clients.put(cs.getSettingsID(),cs);
+					System.out.println("adding client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath());
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
@@ -317,6 +312,26 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	
 	// -- implementation of commands starts here --------------------------------------------
+	
+
+	//first message from client: HOST [prepath] e.g HOST /
+	public void handle_host(String param, OSDXSocketSender sender) {
+		if (param!=null) {
+			//TODO handle prepath routing here
+			
+			//sendHello
+			try {
+				Element e = new Element("hello_client");
+				e.addContent("message","please choose a symmetric key and send it encrypted with my following public key");
+				e.addContent(myEncryptionKey.getSimplePubKeyElement());
+				OSDXMessage msg = OSDXMessage.buildMessage(e, mySigningKey);
+				sender.sendPlainText(Document.buildDocument(msg.toElement()).toString());
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+	
 	
 	//echo command for testing
 	public void handle_echo(String param, OSDXSocketSender sender) {

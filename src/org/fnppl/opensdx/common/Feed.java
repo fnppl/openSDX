@@ -124,9 +124,10 @@ public class Feed extends BusinessObject {
 	}
 	
 	
-	public Result upload(OSDXFileTransferClient s, OSDXKey mysigning) {
+	public Result upload(OSDXFileTransferClient s, String username, OSDXKey mysigning) {
 		try {
-			boolean ok = s.connect(mysigning);
+			
+			boolean ok = s.connect(mysigning,username);
 			if (!ok) {
 				return Result.error("ERROR: Connection to server could not be established.");
 			}

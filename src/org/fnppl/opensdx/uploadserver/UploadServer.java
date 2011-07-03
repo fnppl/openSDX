@@ -180,13 +180,8 @@ public class UploadServer extends HTTPServer {
 			Vector<Element> ecClients = eClients.getChildren("client");
 			for (Element e : ecClients) {
 				try {
-					String keyid = e.getChildText("keyid");
-					String local_root = e.getChildText("local_root");
-					if (keyid!=null && local_root!=null) {
-						File f = new File(local_root);
-						ClientSettings cs = ClientSettings.makeKeyFileAuthType(keyid, f);
-						clients.put(keyid,cs);
-					}
+					ClientSettings cs = ClientSettings.fromElement(e);
+					clients.put(cs.getSettingsID(),cs);
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
@@ -277,7 +272,7 @@ public class UploadServer extends HTTPServer {
 			return HTTPServerResponse.errorMessage(filename, "unknow signature key.");
 		}
 		
-		File path = clientSettings.getLocalRoot();
+		File path = clientSettings.getLocalRootPath();
 		
 		//File path = new File(pathUploadedFiles, s.getKey().getKeyID()+"/"+SecurityHelper.getFormattedDate(s.getSignDatetime()).substring(0,19));
 		

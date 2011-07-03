@@ -67,8 +67,8 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 
 	public final static String ERROR_NO_RESPONSE = "ERROR: server does not respond.";
 	public final static String ERROR_WRONG_RESPONE_FORMAT = "ERROR: Wrong format in uploadserver's response.";
-	public final static String ERROR_UNKNOWN_KEY = "ERROR: unknown signature key.";
-	
+	public final static String ERROR_UNKNOWN_KEY_OR_USER = "ERROR: login failed: unknown signature key or wrong username.";
+	public final static String ERROR_MISSING_ENCRYTION_KEY = "ERROR: missing encryption key";
 	private long timeout = 10000;
 	
 	private Socket socket;
@@ -109,13 +109,22 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 			}
 		} else {
 			if (!secure_connection_established) {
-				secure_connection_established = initSymEncKey(text);
-				if (secure_connection_established) {
-					sendEncryptedText("Secure Connection Established!");
+				if (text.startsWith("HOST")) { //should be first client message
+					if (dataHandler!=null) {
+						dataHandler.handleNewText(text, this);
+					} else {
+						System.out.println("no datahandler");
+						return;
+					}
 				} else {
-					//ERROR
-					System.out.println("init secure_connection ERROR: "+message);
-					sendPlainText(message);
+					secure_connection_established = initConnection(text);
+					if (secure_connection_established) {
+						sendEncryptedText("Secure Connection Established!");
+					} else {
+						//ERROR
+						System.out.println("init secure_connection ERROR: "+message);
+						sendPlainText(message);
+					}
 				}
 			}
 		}
@@ -142,7 +151,6 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 			receiver = new OSDXSocketReceiver(socket.getInputStream(),this);
 			receiver.addEventListener(this);
 			
-			sendHello();
 			nextTimeOut = System.currentTimeMillis()+timeout;
 			while (System.currentTimeMillis()<nextTimeOut) {
 				sleep(100);
@@ -151,18 +159,6 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 			
 		} catch(Exception ex) {
 			ex.printStackTrace();
-		}
-	}
-	
-	private void sendHello() {
-		try {
-			Element e = new Element("hello_client");
-			e.addContent("message","please choose a symmetric key and send it encrypted with my following public key");
-			e.addContent(myEncryptionKey.getSimplePubKeyElement());
-			OSDXMessage msg = OSDXMessage.buildMessage(e, mySigningKey);
-			sendPlainText(Document.buildDocument(msg.toElement()).toString());
-		} catch (Exception e1) {
-			e1.printStackTrace();
 		}
 	}
 	
@@ -176,12 +172,12 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 		System.out.println("Connection closed.");
 	}
 	
-	private boolean initSymEncKey(String symkeymsg) {
+	private boolean initConnection(String initMsg) {
 		try {
-			if (symkeymsg!=null) {
-				System.out.println("init sysmetric key");
+			if (initMsg!=null) {
+				System.out.println("init message username and symmetric key");
 				//get serves encryption key out of message
-				OSDXMessage msg = OSDXMessage.fromElement(Document.fromString(symkeymsg).getRootElement());
+				OSDXMessage msg = OSDXMessage.fromElement(Document.fromString(initMsg).getRootElement());
 				
 				//TODO check with Key
 				Result ok = msg.verifySignaturesWithoutKeyVerification();
@@ -189,29 +185,37 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 					message = ok.errorMessage;
 					return false;
 				}
-				String id =msg.getSignatures().get(0).getKey().getKeyID();
-				System.out.println("clients key id: "+id);
-				//userID = id.replace(':', '-');
-				ClientSettings cs = null;
-				if (dataHandler!=null) {
-					cs = clients.get(id);
-				}
-				if (cs==null) {
-					System.out.println("Client NOT FOUND!");
-					message = ERROR_UNKNOWN_KEY;
-					return false;
-				}
-				userID = id;
-				System.out.println("clients local path: "+cs.getLocalRoot().getAbsolutePath());
+				String keyid = msg.getSignatures().get(0).getKey().getKeyID();
+				
 				Element responseElement = msg.getDecryptedContent(myEncryptionKey);
-				//Document.buildDocument(responseElement).output(System.out);
-				if (responseElement==null || !responseElement.getName().equals("session_encryption_key")) {
+				Document.buildDocument(responseElement).output(System.out);
+				if (responseElement==null || !responseElement.getName().equals("init_connection")) {
 					message = ERROR_WRONG_RESPONE_FORMAT;
 					return false;
 				}
+				ClientSettings cs = null;
+				try {
+					String username = responseElement.getChild("login").getChildText("username");
+					userID = username+"::"+keyid;
+					cs = clients.get(username+"::"+keyid);
+				} catch (Exception ex) {
+				}
+				if (cs==null) {
+					System.out.println("Client NOT FOUND!");
+					message = ERROR_UNKNOWN_KEY_OR_USER;
+					return false;
+				}
 				
-				byte[] iv = SecurityHelper.HexDecoder.decode(responseElement.getChildText("init_vector"));
-				byte[] key_bytes = SecurityHelper.HexDecoder.decode(responseElement.getChildText("key_bytes"));
+				System.out.println("client: "+userID+" ->  local path: "+cs.getLocalRootPath().getAbsolutePath());
+				Element eEnc = responseElement.getChild("session_encryption_key");
+				if (eEnc==null || eEnc.getChildren("init_vector")==null || eEnc.getChildren("key_bytes")==null) {
+					message = ERROR_MISSING_ENCRYTION_KEY;
+					return false;
+				}
+				
+				byte[] iv = SecurityHelper.HexDecoder.decode(eEnc.getChildText("init_vector"));
+				byte[] key_bytes = SecurityHelper.HexDecoder.decode(eEnc.getChildText("key_bytes"));
+				
 				agreedEncryptionKey = new SymmetricKey(key_bytes, iv);
 				receiver.setEncryptionKey(agreedEncryptionKey);
 				//System.out.println("symmetric key init OK");
