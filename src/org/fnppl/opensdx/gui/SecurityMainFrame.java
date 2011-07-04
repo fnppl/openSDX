@@ -639,6 +639,8 @@ public class SecurityMainFrame extends JFrame {
 
 		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
 		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
+		//final JTextField tUsageRestriction = addLabelTextFieldPart("usage restriction", key.getUsageRestriction(), a, c, y, true); y++;
+		//final JTextField tUsageNote = addLabelTextFieldPart("usage note", key.getUsageNote(), a, c, y, true); y++;
 		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
 		final JTextField tValid = addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y,true); y++;
 		final JTextField tAuth = addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y, true);
@@ -701,6 +703,65 @@ public class SecurityMainFrame extends JFrame {
 		};
 		tAuth.getDocument().addDocumentListener(chAuthListen);
 		
+//		tUsageRestriction.addKeyListener(new KeyListener() {
+//			public void keyPressed(KeyEvent e) {
+//				if (e.getKeyCode()==10) {//enter pressed
+//					String v = tUsageRestriction.getText();
+//					if (v.length()==0) {
+//						v = null;
+//					}
+//					key.setUsageRestricton(v);
+//					tUsageRestriction.setBackground(Color.WHITE);
+//				}
+//			}
+//			public void keyReleased(KeyEvent e) {}
+//			public void keyTyped(KeyEvent e) {}
+//		});
+//		chListen = new DocumentListener() {
+//			public void removeUpdate(DocumentEvent e) {action();}
+//			public void insertUpdate(DocumentEvent e) {action();}
+//			public void changedUpdate(DocumentEvent e) {action();}
+//			private void action() {
+//				String value = key.getUsageRestriction();
+//				if (value==null) value = "";
+//				if (value.equals(tUsageRestriction.getText())) {
+//					tUsageRestriction.setBackground(Color.WHITE);
+//				} else {
+//					tUsageRestriction.setBackground(Color.YELLOW);
+//				}
+//			}
+//		};
+//		tUsageRestriction.getDocument().addDocumentListener(chListen);
+//		
+//		tUsageNote.addKeyListener(new KeyListener() {
+//			public void keyPressed(KeyEvent e) {
+//				if (e.getKeyCode()==10) {//enter pressed
+//					String v = tUsageNote.getText();
+//					if (v.length()==0) {
+//						v = null;
+//					}
+//					key.setUsageNote(v);
+//					tUsageNote.setBackground(Color.WHITE);
+//				}
+//			}
+//			public void keyReleased(KeyEvent e) {}
+//			public void keyTyped(KeyEvent e) {}
+//		});
+//		chListen = new DocumentListener() {
+//			public void removeUpdate(DocumentEvent e) {action();}
+//			public void insertUpdate(DocumentEvent e) {action();}
+//			public void changedUpdate(DocumentEvent e) {action();}
+//			private void action() {
+//				String value = key.getUsageNote();
+//				if (value==null) value = "";
+//				if (value.equals(tUsageNote.getText())) {
+//					tUsageNote.setBackground(Color.WHITE);
+//				} else {
+//					tUsageNote.setBackground(Color.YELLOW);
+//				}
+//			}
+//		};
+//		tUsageNote.getDocument().addDocumentListener(chListen);
 		
 		final Vector<Identity> ids = key.getIdentities();
 		if (ids.size()>0) {
@@ -1455,8 +1516,15 @@ public class SecurityMainFrame extends JFrame {
 		
 		final int w = 800;
 		final int h = y*30 + 80;
+		
 		String title = "known public key:      "+key.getKeyID();
-		JButton head = createHeaderButton(title, title, content, p, w, h);
+		String email = currentKeyStore.getEmail(key);
+		if (email!=null) {
+			title += " :: "+email;
+		} else {
+			title += " :: [unknown]";
+		}
+		JButton head = createHeaderButton(title, "known public key:      "+key.getKeyID(), content, p, w, h);
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -1571,7 +1639,13 @@ public class SecurityMainFrame extends JFrame {
 		final int w = 800;
 		final int h = y*30 + 80;
 		String title = "known public key:      "+key.getKeyID();
-		JButton head = createHeaderButton(title, title, content, p, w, h);
+		String email = currentKeyStore.getEmail(key);
+		if (email!=null) {
+			title += " :: "+email;
+		} else {
+			title += " :: [unknown]";
+		}
+		JButton head = createHeaderButton(title, "known public key:      "+key.getKeyID(), content, p, w, h);
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
