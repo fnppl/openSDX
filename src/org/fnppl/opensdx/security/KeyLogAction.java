@@ -79,11 +79,11 @@ public class KeyLogAction {
 		
 	}
 	
-	public static KeyLogAction buildKeyLogAction(String action, OSDXKey from, String toKeyID, Identity id) throws Exception {
+	public static KeyLogAction buildKeyLogAction(String action, OSDXKey from, String toKeyID, Identity id, String message) throws Exception {
 		KeyLogAction a  = new KeyLogAction();
 		a.action = action;
 		a.id = id;
-		a.message = null;
+		a.message = message;
 		a.fromKey = from;
 		a.fromKeyid = from.getKeyID();
 		a.toKeyid = toKeyID;

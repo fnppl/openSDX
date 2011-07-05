@@ -639,8 +639,8 @@ public class SecurityMainFrame extends JFrame {
 
 		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
 		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
-		//final JTextField tUsageRestriction = addLabelTextFieldPart("usage restriction", key.getUsageRestriction(), a, c, y, true); y++;
-		//final JTextField tUsageNote = addLabelTextFieldPart("usage note", key.getUsageNote(), a, c, y, true); y++;
+		addLabelTextFieldPart("usage restriction", key.getUsageRestriction(), a, c, y, false); y++;
+		addLabelTextFieldPart("usage note", key.getUsageNote(), a, c, y, false); y++;
 		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
 		final JTextField tValid = addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y,true); y++;
 		final JTextField tAuth = addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y, true);
@@ -703,66 +703,6 @@ public class SecurityMainFrame extends JFrame {
 		};
 		tAuth.getDocument().addDocumentListener(chAuthListen);
 		
-//		tUsageRestriction.addKeyListener(new KeyListener() {
-//			public void keyPressed(KeyEvent e) {
-//				if (e.getKeyCode()==10) {//enter pressed
-//					String v = tUsageRestriction.getText();
-//					if (v.length()==0) {
-//						v = null;
-//					}
-//					key.setUsageRestricton(v);
-//					tUsageRestriction.setBackground(Color.WHITE);
-//				}
-//			}
-//			public void keyReleased(KeyEvent e) {}
-//			public void keyTyped(KeyEvent e) {}
-//		});
-//		chListen = new DocumentListener() {
-//			public void removeUpdate(DocumentEvent e) {action();}
-//			public void insertUpdate(DocumentEvent e) {action();}
-//			public void changedUpdate(DocumentEvent e) {action();}
-//			private void action() {
-//				String value = key.getUsageRestriction();
-//				if (value==null) value = "";
-//				if (value.equals(tUsageRestriction.getText())) {
-//					tUsageRestriction.setBackground(Color.WHITE);
-//				} else {
-//					tUsageRestriction.setBackground(Color.YELLOW);
-//				}
-//			}
-//		};
-//		tUsageRestriction.getDocument().addDocumentListener(chListen);
-//		
-//		tUsageNote.addKeyListener(new KeyListener() {
-//			public void keyPressed(KeyEvent e) {
-//				if (e.getKeyCode()==10) {//enter pressed
-//					String v = tUsageNote.getText();
-//					if (v.length()==0) {
-//						v = null;
-//					}
-//					key.setUsageNote(v);
-//					tUsageNote.setBackground(Color.WHITE);
-//				}
-//			}
-//			public void keyReleased(KeyEvent e) {}
-//			public void keyTyped(KeyEvent e) {}
-//		});
-//		chListen = new DocumentListener() {
-//			public void removeUpdate(DocumentEvent e) {action();}
-//			public void insertUpdate(DocumentEvent e) {action();}
-//			public void changedUpdate(DocumentEvent e) {action();}
-//			private void action() {
-//				String value = key.getUsageNote();
-//				if (value==null) value = "";
-//				if (value.equals(tUsageNote.getText())) {
-//					tUsageNote.setBackground(Color.WHITE);
-//				} else {
-//					tUsageNote.setBackground(Color.YELLOW);
-//				}
-//			}
-//		};
-//		tUsageNote.getDocument().addDocumentListener(chListen);
-		
 		final Vector<Identity> ids = key.getIdentities();
 		if (ids.size()>0) {
 			ActionListener editRemoveListener = new ActionListener() {
@@ -812,14 +752,16 @@ public class SecurityMainFrame extends JFrame {
 
 
 		final int w = 600;
-		final int h = y*30 + 120;
+		final int h = y*30 + 120+40;
 
 		JButton head = createHeaderButton("MASTER Key:       "+key.getKeyID(), key.getKeyID(), content, p, w, h);
 
 		JPanel b = new JPanel();
-		b.setLayout(new FlowLayout(FlowLayout.LEFT));
-		int buWidth = 190;
-		int buWidth2 = 150;
+//		b.setLayout(new FlowLayout(FlowLayout.LEFT));
+		b.setLayout(new GridLayout(2, 4));
+		
+		int buWidth = 150;
+		int buWidth2 = 130;
 		
 		JButton bu;
 		
@@ -871,6 +813,15 @@ public class SecurityMainFrame extends JFrame {
 		});
 		b.add(bu);
 		
+		bu = new JButton("remove");
+		bu.setPreferredSize(new Dimension(buWidth2,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				removeKey(key);
+			}
+		});
+		b.add(bu);
+		
 		bu = new JButton("generate keylog");
 		bu.setPreferredSize(new Dimension(buWidth2,25));
 		bu.addActionListener(new ActionListener() {
@@ -885,6 +836,15 @@ public class SecurityMainFrame extends JFrame {
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				requestKeyLogs(key);
+			}
+		});
+		b.add(bu);
+		
+		bu = new JButton("request subkeys");
+		bu.setPreferredSize(new Dimension(buWidth2,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				requestSubKeys(key);
 			}
 		});
 		b.add(bu);
@@ -1134,6 +1094,14 @@ public class SecurityMainFrame extends JFrame {
 		});
 		b.add(bu);
 		
+		bu = new JButton("remove");
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				removeKey(key);
+			}
+		});
+		b.add(bu);
+		
 		
 		content.add(b,BorderLayout.SOUTH);
 
@@ -1284,6 +1252,13 @@ public class SecurityMainFrame extends JFrame {
 		});
 		b.add(bu);
 		
+		bu = new JButton("remove");
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				removeKey(key);
+			}
+		});
+		b.add(bu);
 		
 		content.add(b,BorderLayout.SOUTH);
 
@@ -1522,12 +1497,18 @@ public class SecurityMainFrame extends JFrame {
 		if (email!=null) {
 			title += " :: "+email;
 		} else {
-			title += " :: [unknown]";
+			String ks = currentKeyStore.getKeyServerNameForKey(key);
+			if (ks!=null) {
+				title += " :: KeyServer: "+ks;
+			} else {
+				title += " :: [unknown]";
+			}
 		}
 		JButton head = createHeaderButton(title, "known public key:      "+key.getKeyID(), content, p, w, h);
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
 //		JButton bu = new JButton("update status");
 //		bu.addActionListener(new ActionListener() {
 //			public void actionPerformed(ActionEvent e) {
@@ -1722,7 +1703,11 @@ public class SecurityMainFrame extends JFrame {
 		addLabelTextFieldPart("action date :", keylog.getActionDatetimeString(), a, c, y);y++;
 		addLabelTextFieldPart("IPv4 :", keylog.getIPv4(), a, c, y);y++;
 		addLabelTextFieldPart("IPv6 :", keylog.getIPv6(), a, c, y);y++;
-		addLabelTextFieldPart("action :", keylog.getAction(), a, c, y);
+		addLabelTextFieldPart("action :", keylog.getAction(), a, c, y);y++;
+		String message = keylog.getMessage();
+		if (message!=null && message.length()>0) {
+			addLabelTextFieldPart("message :", message, a, c, y);y++;	
+		}
 		Identity id = keylog.getIdentity();
 		if (id !=null) {
 			Vector<Element> idsFields = id.getContentElements(true);
@@ -1916,6 +1901,52 @@ public class SecurityMainFrame extends JFrame {
 					
 				} catch (Exception ex) {
 					ex.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	private void removeKey(OSDXKey key) {
+		int ans = Dialogs.showYES_NO_Dialog("Remove Key", "Are you sure you want to remove the following key from keystore.\n"+key.getKeyID());
+		if (ans==Dialogs.YES) {
+			if (key.isRevoke()) {
+				int ans2 = Dialogs.showYES_NO_Dialog("Really remove Key", "The selected key is a revokekey.\nIf you remove this key, you will not be able to revoke its parent masterkey with this key.\nAre you really sure you want to remove it?");
+				if (ans2==Dialogs.YES) {
+					currentKeyStore.removeKey(key);
+					update();		
+				}
+			} else if (key.isSub()) {
+				int ans2 = Dialogs.showYES_NO_Dialog("Really remove Key", "The selected key is a subkey.\nIf you remove this key there is no way of ever getting it back.\nAre you really sure you want to remove it?");
+				if (ans2==Dialogs.YES) {
+					currentKeyStore.removeKey(key);
+					update();		
+				}
+			} else if (key.isMaster()) {
+				Vector<SubKey> subkeys = currentKeyStore.getSubKeys(key.getKeyID());
+				Vector<RevokeKey> revokekeys = currentKeyStore.getRevokeKeys(key.getKeyID());
+				String msg = "The selected key is a masterkey.\nIf you remove this key there is absolutely no way of getting it back\nAre you really sure you want to remove it?";
+				
+				if ((subkeys!=null && subkeys.size()>0) || (revokekeys!=null && revokekeys.size()>0)) {
+					msg = "The selected key is a masterkey.\nIf you remove this key the following subkeys / revokekeys will also be removed:\n";
+					for (SubKey s : subkeys) {
+						msg += " -> "+s.getKeyID()+"\n";
+					}
+					for (RevokeKey s : revokekeys) {
+						msg += " -> "+s.getKeyID()+"\n";
+					}
+					msg += "\nThere is absolutely no way of getting these keys back\nAre you really sure you want to remove them?";
+				}
+				
+				
+				int ans2 = Dialogs.showYES_NO_Dialog("Really remove Key", msg);
+				if (ans2==Dialogs.YES) {
+					if (subkeys!=null && subkeys.size()>0) {
+						for (SubKey s : subkeys) {
+							currentKeyStore.removeKey(s);
+						}
+					}
+					currentKeyStore.removeKey(key);
+					update();		
 				}
 			}
 		}
@@ -2115,7 +2146,7 @@ public class SecurityMainFrame extends JFrame {
 		try {
 			KeyLogAction action;
 			if (trust) {
-				action = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, from, to.getKeyID(), id);
+				action = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, from, to.getKeyID(), id, null);
 			} else {
 				action = KeyLogAction.buildRevocationKeyLogAction(from, to.getKeyID(), "revoked by user");
 			}
@@ -2346,6 +2377,25 @@ public class SecurityMainFrame extends JFrame {
 				id[0] = idd;		
 			}
 		});
+		y++;
+		l = new JLabel("Message:");
+		c.weightx = 0;
+		c.weighty = 0.1;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridx = 0;
+		c.gridy = y;
+		c.gridwidth = 2;
+		p.add(l, c);
+		y++;
+		JTextArea text_message = new JTextArea("");
+		c.weightx = 0;
+		c.weighty = 0.1;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridx = 0;
+		c.gridy = y;
+		c.gridwidth = 2;
+		p.add(text_message, c);
+		
 		
 		y++;
 		l = new JLabel("Please select fields for status update:");
@@ -2358,7 +2408,7 @@ public class SecurityMainFrame extends JFrame {
 		p.add(l, c);
 	
 		
-		Dimension d = new Dimension(700,4*40);
+		Dimension d = new Dimension(700,4*40+80);
 		p.setPreferredSize(d);
 		p.setMinimumSize(d);
 		p.setMaximumSize(d);
@@ -2367,7 +2417,7 @@ public class SecurityMainFrame extends JFrame {
 		pDialog.add(p, BorderLayout.NORTH);
 		pSouth[0] = buildIDElement(id[0], checks, texts);
 		pDialog.add(pSouth[0], BorderLayout.CENTER);
-
+		
 	    int ans = JOptionPane.showConfirmDialog(null,pDialog,head,JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 	    if (ans == JOptionPane.OK_OPTION) {
 	    	//delete all unchecked from id;
@@ -2403,7 +2453,7 @@ public class SecurityMainFrame extends JFrame {
 			if (!from.isPrivateKeyUnlocked()) from.unlockPrivateKey(messageHandler);
 	    	try {
 	    		String status = (String)selectStatus.getSelectedItem();
-	    		uploadKeyLogActionToKeyServer(status, from, to.getKeyID(), id[0]);
+	    		uploadKeyLogActionToKeyServer(status, from, to.getKeyID(), id[0], text_message.getText());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -2649,6 +2699,9 @@ public class SecurityMainFrame extends JFrame {
 									if (subkeys!=null && subkeys.size()>0) {
 										for (String subkey : subkeys) {
 											OSDXKey skey = client.requestPublicKey(subkey);
+											if (skey.isSub() && mkey.isMaster()) {
+												((SubKey)skey).setParentKey((MasterKey)mkey);
+											}
 											//remove old key
 											newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(skey.getKeyID());
 											for (OSDXKey k : storedPublicKeys) {
@@ -2681,6 +2734,43 @@ public class SecurityMainFrame extends JFrame {
 				t.start();
 				wait.setVisible(true);
 			}
+		}
+	}
+	
+	private void requestSubKeys(MasterKey masterkey) {
+		try {
+			KeyClient client =  getKeyClient(masterkey.getAuthoritativekeyserver());
+			if (client==null) {
+				return;
+			}
+			Vector<String> subkeys = client.requestSubKeys(masterkey.getKeyID());
+			if (subkeys!=null && subkeys.size()>0) {
+				String kt = "Subkeys from MASTER: "+masterkey.getKeyID()+":";
+				for (String subkey : subkeys) {
+					OSDXKey skey = client.requestPublicKey(subkey);
+					if (skey.isSub()) {
+						((SubKey)skey).setParentKey(masterkey);
+					}
+					//remove old key
+					String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(skey.getKeyID());
+					for (OSDXKey k : storedPublicKeys) {
+						if (newkeyid.equals(OSDXKey.getFormattedKeyIDModulusOnly(k.getKeyID()))) {
+							currentKeyStore.removeKey(k);
+							break;
+						}
+					}
+					currentKeyStore.addKey(skey);
+					kt += "\n  -> "+subkey;	
+				}
+				update();
+				releaseUILock();
+				Dialogs.showMessage(kt);
+			} else {
+				releaseUILock();
+				Dialogs.showMessage("No Subkeys for MASTER "+masterkey.getKeyID()+" found.");
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 
@@ -2828,7 +2918,7 @@ public class SecurityMainFrame extends JFrame {
 						
 						//self approval keylog 
 						try {
-							final KeyLogAction klaction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, key, key.getKeyID(), key.getCurrentIdentity());
+							final KeyLogAction klaction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, key, key.getKeyID(), key.getCurrentIdentity(), "self approval");
 							final JDialog wait2 = Dialogs.getWaitDialog("Uploading self approval\n please wait ...");
 							t = new Thread() {
 								public void run() {
@@ -2959,7 +3049,7 @@ public class SecurityMainFrame extends JFrame {
 	}
 	//System.out.println("selected status: "+status);
 	
-	private boolean uploadKeyLogActionToKeyServer(final String status, final OSDXKey from, final String tokeyid, final Identity id) {
+	private boolean uploadKeyLogActionToKeyServer(final String status, final OSDXKey from, final String tokeyid, final Identity id, final String message) {
 		try {
 			String authserver = tokeyid.substring(tokeyid.indexOf('@')+1);
 			int confirm = Dialogs.showYES_NO_Dialog("Confirm upload", "Are you sure you want to generate a KeyLog of key:\n"+tokeyid+"\non KeyServer: "+authserver+"?");
@@ -2970,7 +3060,11 @@ public class SecurityMainFrame extends JFrame {
 				Thread t = new Thread() {
 					public void run() {
 						try {
-							KeyLogAction klaction = KeyLogAction.buildKeyLogAction(status, from, tokeyid, id);
+							String msg = message;
+							if (msg !=null && msg.length()==0) {
+								msg = null;
+							}
+							KeyLogAction klaction = KeyLogAction.buildKeyLogAction(status, from, tokeyid, id, msg);
 							upload[0] = klaction.uploadToKeyServer(client, from);
 							releaseUILock();
 							wait.dispose();

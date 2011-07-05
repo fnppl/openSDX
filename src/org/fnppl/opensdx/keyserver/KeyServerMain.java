@@ -488,7 +488,7 @@ public class KeyServerMain extends HTTPServer {
 		Identity apid = Identity.newEmptyIdentity();
 		apid.setIdentNum(idd.getIdentNum());
 		apid.setEmail(idd.getEmail());
-		KeyLogAction klAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL_PENDING, keyServerSigningKey, key.getKeyID(), apid);
+		KeyLogAction klAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL_PENDING, keyServerSigningKey, key.getKeyID(), apid, "waiting for email address verification");
 		KeyLog kl = KeyLog.buildNewKeyLog(klAction, request.getRealIP(), "", keyServerSigningKey);
 		
 		//send email with token
@@ -534,7 +534,7 @@ public class KeyServerMain extends HTTPServer {
 			idd.setIdentNum(kl.getIdentity().getIdentNum());
 			idd.setEmail(kl.getIdentity().getEmail());
 			
-			KeyLogAction keylogAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, keyServerSigningKey, kl.getKeyIDTo(), idd);
+			KeyLogAction keylogAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, keyServerSigningKey, kl.getKeyIDTo(), idd, "email address verfied by a token mail");
 			KeyLog klApprove = KeyLog.buildNewKeyLog(keylogAction, request.getRealIP(), "", keyServerSigningKey); 
 			keystore.addKeyLog(klApprove);
 			openTokens.remove(id);

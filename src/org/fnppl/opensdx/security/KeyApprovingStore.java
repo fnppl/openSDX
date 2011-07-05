@@ -302,6 +302,14 @@ public class KeyApprovingStore {
 		return kas;
 	}
 	
+	public String getKeyServerNameForKey(OSDXKey key) {
+		for (KeyServerIdentity ks : keyservers) {
+			if (ks.hasKnownKey(key.getKeyID())) {
+				return ks.getHost();
+			}
+		}
+		return null;
+	}
 	
 	public String getEmail(OSDXKey key) {
 		if (key.isMaster()) {
@@ -309,6 +317,10 @@ public class KeyApprovingStore {
 			if (id!=null)  {
 				return id.getEmail();
 			}
+		} else if (key.isSub()) {
+			MasterKey mkey = ((SubKey)key).getParentKey();
+			if (mkey==null) return null;
+			return getEmail(mkey);
 		}
 		//get from KeyLogs
 		String akeyid = key.getKeyID();
@@ -316,7 +328,6 @@ public class KeyApprovingStore {
 		long date = Long.MIN_VALUE;
 		for (KeyLog kl : keylogs) {
 			String keyidto = kl.getKeyIDTo();
-			System.out.println("keyid to : "+keyidto);
 			if (keyidto.equals(akeyid)) {
 				if (kl.getAction().equals(KeyLogAction.APPROVAL)) {
 					Identity id = kl.getIdentity();
