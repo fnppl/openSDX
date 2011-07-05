@@ -1,6 +1,10 @@
 package org.fnppl.opensdx.dmi.wayin;
 
 import java.io.*;
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.Vector;
+
 import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.xml.*;
 
@@ -49,26 +53,51 @@ import org.fnppl.opensdx.xml.*;
  * 
  */
 
-public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
-
-	public SimfyToOpenSDXImporter(ImportType type, File impFile, File savFile) {
+public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
+	
+	public FinetunesToOpenSDXImporter(ImportType type, File impFile, File savFile) {
 		super(type, impFile, savFile);
 	}
 	
 	public ImportResult formatToOpenSDX() {
-		ImportResult ir = ImportResult.succeeded();		
+		ImportResult ir = null;		
 		// do the import
 		try {			
 			// (1) get XML-Data from import document
             Document impDoc = Document.fromFile(this.importFile);
             Element root = impDoc.getRootElement();
+                       
+            // (2) get FeedInfo from import and set create new FeedInfo for openSDX
+            boolean onlytest = true;
+            String feedid = root.getAttribute("feedid");
+            Calendar cal = Calendar.getInstance();
+            long creationdatetime = cal.getTimeInMillis();
+            long effectivedatetime = cal.getTimeInMillis();
+            ContractPartner sender = ContractPartner.make(0, root.getAttribute("partner"), "");
+            ContractPartner licensor = ContractPartner.make(1, "", "");
+            
+            FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor);
+            
+            // (3) create new feed with feedinfo
+            Feed feed = Feed.make(feedinfo);              
 
-            // ToDo: Awesome Import Magic!
+            // (4) formating stuff -> put importdata (bundles/items) in OSDX format
+            // -> releases to bundles/items
+            Vector<Element> releases = root.getChildren("release");
+            for (Iterator<Element> it = releases.iterator(); it.hasNext();) {
+            	Element e = it.next();
+            	
+            }
+            
+            // ToDo: some format-magic here
+            
+            // (5) write file
+			Document doc = Document.buildDocument(feed.toElement());
+			doc.writeToFile(this.saveFile);
+			ir = ImportResult.succeeded();
 			
 		} catch (Exception e) {
-			ir.succeeded = false;
-			ir.errorMessage = e.getMessage();			
-			ir.exception = e;
+			ir = ImportResult.error(e.getMessage(), e);
 		}		
 		
 		return ir;			
