@@ -97,7 +97,7 @@ public class KeyServerClientTest {
 		
 		client.requestKeyLogs(masterkey.getKeyID(),null);out.write("\n\n\n\n\n".getBytes());
 		//self approval keylog
-		KeyLogAction keylogSelfApproval = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, masterkey, masterkey.getKeyID(), masterkey.getCurrentIdentity());
+		KeyLogAction keylogSelfApproval = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, masterkey, masterkey.getKeyID(), masterkey.getCurrentIdentity(),null);
 		keylogSelfApproval.uploadToKeyServer(client, masterkey);out.write("\n\n\n\n\n".getBytes());
 		
 		client.requestKeyLogs(masterkey.getKeyID(),masterkey);out.write("\n\n\n\n\n".getBytes());

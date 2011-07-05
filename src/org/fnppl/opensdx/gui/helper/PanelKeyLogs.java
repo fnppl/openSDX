@@ -39,8 +39,8 @@ public class PanelKeyLogs extends JPanel {
 	private JList list_keyid_to;
 	private DefaultListModel listmodel_keyid_to;
 	private JTable table;
-	private String[] columnNames = new String[] {"Key id from", "Key id to","date","action"};
-	private String[][] tableData = new String[0][4];
+	private String[] columnNames = new String[] {"Key id from", "Key id to","date","action", "email"};
+	private String[][] tableData = new String[0][5];
 	private Vector<KeyLog> selectedData = new Vector<KeyLog>();
 	
 	private DefaultTableModel tablemodel;
@@ -52,21 +52,26 @@ public class PanelKeyLogs extends JPanel {
 		initLayout();
 	}
 
-	public void list_keyid_selection_changed(String keyid_from, String keyid_to) {
+	public void list_keyid_selection_changed(Vector<String> keyid_from,Vector<String> keyid_to) {
 		selectedData.removeAllElements();
 		for (KeyLog k : keylogs) {
-			if (    (keyid_from==null || keyid_from.equals("[ALL]") || k.getKeyIDFrom().equals(keyid_from))
-				&&	(keyid_to==null   || keyid_to.equals("[ALL]")   || k.getKeyIDTo().equals(keyid_to))) {
+			if (    (keyid_from==null || keyid_from.contains("[ALL]") || keyid_from.contains(k.getKeyIDFrom()))
+				&&	(keyid_to==null   || keyid_to.contains("[ALL]")   || keyid_to.contains(k.getKeyIDTo()))) {
 				selectedData.add(k);
 			}
 		}
-		tableData = new String[selectedData.size()][4];
+		tableData = new String[selectedData.size()][5];
 		for (int i=0;i<selectedData.size();i++) {
 			KeyLog k = selectedData.get(i);
 			tableData[i][0] = k.getKeyIDFrom();
 			tableData[i][1] = k.getKeyIDTo();
 			tableData[i][2] = k.getActionDatetimeString();
 			tableData[i][3] = k.getAction();
+			if (k.getIdentity()!=null) {
+				tableData[i][4] = k.getIdentity().getEmail();
+			} else {
+				tableData[i][4] = "[unknown]";
+			}
 		}
 		tablemodel = new DefaultTableModel(tableData,columnNames);
 		table.setModel(tablemodel);
@@ -130,7 +135,19 @@ public class PanelKeyLogs extends JPanel {
 		list_keyid_from.setModel(listmodel_keyid_from);
 		list_keyid_from.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
-				list_keyid_selection_changed((String)list_keyid_from.getSelectedValue(),(String)list_keyid_to.getSelectedValue());
+				Vector<String> selFrom = new Vector<String>();
+				int[] selF = list_keyid_from.getSelectedIndices();
+				for (int i=0;i<selF.length;i++) {
+					//System.out.println("from "+i+" :: "+(String)listmodel_keyid_from.get(selF[i]));
+					selFrom.add((String)listmodel_keyid_from.get(selF[i]));
+				}
+				Vector<String> selTo = new Vector<String>();
+				int[] selT = list_keyid_to.getSelectedIndices();
+				for (int i=0;i<selT.length;i++) {
+					//System.out.println("to "+i+" :: "+(String)listmodel_keyid_to.get(selT[i]));
+					selTo.add((String)listmodel_keyid_to.get(selT[i]));
+				}
+				list_keyid_selection_changed(selFrom, selTo);
 			}
 		});
 		
@@ -139,7 +156,17 @@ public class PanelKeyLogs extends JPanel {
 		list_keyid_to.setModel(listmodel_keyid_to);
 		list_keyid_to.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
-				list_keyid_selection_changed((String)list_keyid_from.getSelectedValue(),(String)list_keyid_to.getSelectedValue());
+				Vector<String> selFrom = new Vector<String>();
+				int[] selF = list_keyid_from.getSelectedIndices();
+				for (int i=0;i<selF.length;i++) {
+					selFrom.add((String)listmodel_keyid_from.get(selF[i]));
+				}
+				Vector<String> selTo = new Vector<String>();
+				int[] selT = list_keyid_to.getSelectedIndices();
+				for (int i=0;i<selT.length;i++) {
+					selTo.add((String)listmodel_keyid_to.get(selT[i]));
+				}
+				list_keyid_selection_changed(selFrom, selTo);
 			}
 		});
 

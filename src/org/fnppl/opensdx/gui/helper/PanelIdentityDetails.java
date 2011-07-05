@@ -25,6 +25,8 @@ import java.awt.image.BufferedImage;
 public class PanelIdentityDetails extends JPanel {
 
 	//init fields
+	private JLabel label_message;
+	private JTextArea text_message;
 	private JLabel label_identnum;
 	private JTextField text_identnum;
 	private JLabel label_email;
@@ -76,8 +78,10 @@ public class PanelIdentityDetails extends JPanel {
 		if (keylog != null) {
 			id = keylog.getIdentity();
 		}
+		
 		if (id == null) {
 			this.setVisible(false);
+			text_message.setText("");
 			text_identnum.setText("");
 			text_email.setText("");
 			text_mnemonic.setText("");
@@ -100,6 +104,7 @@ public class PanelIdentityDetails extends JPanel {
 			bu_photo.setIcon(new ImageIcon(noPhoto));
 		} else {
 			this.setVisible(true);
+			text_message.setText(keylog.getMessage());
 			text_identnum.setText(id.getIdentNumString());
 			text_email.setText(id.getEmail());
 			text_mnemonic.setText(id.getMnemonic());
@@ -156,6 +161,10 @@ public class PanelIdentityDetails extends JPanel {
 	private void initComponents() {
 		Vector<JTextComponent> texts = new Vector<JTextComponent>();
 
+		label_message = new JLabel("message");
+		text_message = new JTextArea("");
+		texts.add(text_message);
+		
 		label_identnum = new JLabel("identnum");
 
 		text_identnum = new JTextField("");
@@ -300,11 +309,39 @@ public class PanelIdentityDetails extends JPanel {
 		setLayout(gbl);
 		GridBagConstraints gbc = new GridBagConstraints();
 
+		// Component: label_message
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_message,gbc);
+		add(label_message);
 
+		// Component: text_message
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 50.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_message,gbc);
+		add(text_message);
 
 		// Component: label_identnum
 		gbc.gridx = 0;
-		gbc.gridy = 0;
+		gbc.gridy = 1;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -319,7 +356,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_identnum
 		gbc.gridx = 1;
-		gbc.gridy = 0;
+		gbc.gridy = 1;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -334,7 +371,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_email
 		gbc.gridx = 0;
-		gbc.gridy = 1;
+		gbc.gridy = 2;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -349,7 +386,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_email
 		gbc.gridx = 1;
-		gbc.gridy = 1;
+		gbc.gridy = 2;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -364,7 +401,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: bu_photo
 		gbc.gridx = 2;
-		gbc.gridy = 1;
+		gbc.gridy = 2;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 5;
 		gbc.weightx = 0.0;
@@ -379,7 +416,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_mnemonic
 		gbc.gridx = 0;
-		gbc.gridy = 2;
+		gbc.gridy = 3;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -394,7 +431,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_mnemonic
 		gbc.gridx = 1;
-		gbc.gridy = 2;
+		gbc.gridy = 3;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -409,7 +446,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_company
 		gbc.gridx = 0;
-		gbc.gridy = 3;
+		gbc.gridy = 4;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -424,7 +461,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_companyl
 		gbc.gridx = 1;
-		gbc.gridy = 3;
+		gbc.gridy = 4;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -439,7 +476,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_unit
 		gbc.gridx = 0;
-		gbc.gridy = 4;
+		gbc.gridy = 5;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -454,7 +491,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_unit
 		gbc.gridx = 1;
-		gbc.gridy = 4;
+		gbc.gridy = 5;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -469,7 +506,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_subunit
 		gbc.gridx = 0;
-		gbc.gridy = 5;
+		gbc.gridy = 6;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -484,7 +521,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_subunit
 		gbc.gridx = 1;
-		gbc.gridy = 5;
+		gbc.gridy = 6;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -499,7 +536,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_function
 		gbc.gridx = 0;
-		gbc.gridy = 6;
+		gbc.gridy = 7;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -514,7 +551,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_function
 		gbc.gridx = 1;
-		gbc.gridy = 6;
+		gbc.gridy = 7;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -529,7 +566,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_surname
 		gbc.gridx = 0;
-		gbc.gridy = 7;
+		gbc.gridy = 8;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -544,7 +581,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_surname
 		gbc.gridx = 1;
-		gbc.gridy = 7;
+		gbc.gridy = 8;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -559,7 +596,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_firstnames
 		gbc.gridx = 0;
-		gbc.gridy = 8;
+		gbc.gridy = 9;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -574,7 +611,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_firstnamest
 		gbc.gridx = 1;
-		gbc.gridy = 8;
+		gbc.gridy = 9;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -589,7 +626,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_middlename
 		gbc.gridx = 0;
-		gbc.gridy = 9;
+		gbc.gridy = 10;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -604,7 +641,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_middlename
 		gbc.gridx = 1;
-		gbc.gridy = 9;
+		gbc.gridy = 10;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -619,7 +656,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_birthyday
 		gbc.gridx = 0;
-		gbc.gridy = 10;
+		gbc.gridy = 11;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -634,7 +671,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_birthday_date
 		gbc.gridx = 1;
-		gbc.gridy = 10;
+		gbc.gridy = 11;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -649,7 +686,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_place_of_birth
 		gbc.gridx = 0;
-		gbc.gridy = 11;
+		gbc.gridy = 12;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -662,9 +699,9 @@ public class PanelIdentityDetails extends JPanel {
 		gbl.setConstraints(label_place_of_birth,gbc);
 		add(label_place_of_birth);
 
-		// Component: text_label_place_of_birth
+		// Component: text_place_of_birth
 		gbc.gridx = 1;
-		gbc.gridy = 11;
+		gbc.gridy = 12;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -679,7 +716,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_city
 		gbc.gridx = 0;
-		gbc.gridy = 12;
+		gbc.gridy = 13;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -694,7 +731,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_city
 		gbc.gridx = 1;
-		gbc.gridy = 12;
+		gbc.gridy = 13;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -709,7 +746,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_postcode
 		gbc.gridx = 0;
-		gbc.gridy = 13;
+		gbc.gridy = 14;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -724,7 +761,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_postcode
 		gbc.gridx = 1;
-		gbc.gridy = 13;
+		gbc.gridy = 14;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -739,7 +776,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_region
 		gbc.gridx = 0;
-		gbc.gridy = 14;
+		gbc.gridy = 15;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -754,7 +791,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_region
 		gbc.gridx = 1;
-		gbc.gridy = 14;
+		gbc.gridy = 15;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -769,7 +806,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_country
 		gbc.gridx = 0;
-		gbc.gridy = 15;
+		gbc.gridy = 16;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -784,7 +821,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_country
 		gbc.gridx = 1;
-		gbc.gridy = 15;
+		gbc.gridy = 16;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -799,7 +836,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_phone
 		gbc.gridx = 0;
-		gbc.gridy = 16;
+		gbc.gridy = 17;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -814,7 +851,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_phone
 		gbc.gridx = 1;
-		gbc.gridy = 16;
+		gbc.gridy = 17;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -829,7 +866,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_fax
 		gbc.gridx = 0;
-		gbc.gridy = 17;
+		gbc.gridy = 18;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -844,7 +881,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_fax
 		gbc.gridx = 1;
-		gbc.gridy = 17;
+		gbc.gridy = 18;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -859,7 +896,7 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: label_note
 		gbc.gridx = 0;
-		gbc.gridy = 18;
+		gbc.gridy = 19;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -874,9 +911,9 @@ public class PanelIdentityDetails extends JPanel {
 
 		// Component: text_note
 		gbc.gridx = 1;
-		gbc.gridy = 18;
+		gbc.gridy = 19;
 		gbc.gridwidth = 1;
-		gbc.gridheight = 2;
+		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
 		gbc.weighty = 0.0;
 		gbc.anchor = GridBagConstraints.CENTER;
@@ -886,5 +923,591 @@ public class PanelIdentityDetails extends JPanel {
 		gbc.insets = new Insets(2,2,2,2);
 		gbl.setConstraints(text_note,gbc);
 		add(text_note);
+
+
+//		// Component: label_identnum
+//		gbc.gridx = 0;
+//		gbc.gridy = 0;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_identnum,gbc);
+//		add(label_identnum);
+//
+//		// Component: text_identnum
+//		gbc.gridx = 1;
+//		gbc.gridy = 0;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_identnum,gbc);
+//		add(text_identnum);
+//
+//		// Component: label_email
+//		gbc.gridx = 0;
+//		gbc.gridy = 1;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_email,gbc);
+//		add(label_email);
+//
+//		// Component: text_email
+//		gbc.gridx = 1;
+//		gbc.gridy = 1;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_email,gbc);
+//		add(text_email);
+//
+//		// Component: bu_photo
+//		gbc.gridx = 2;
+//		gbc.gridy = 1;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 5;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.NONE;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(5,5,5,5);
+//		gbl.setConstraints(bu_photo,gbc);
+//		add(bu_photo);
+//
+//		// Component: label_mnemonic
+//		gbc.gridx = 0;
+//		gbc.gridy = 2;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_mnemonic,gbc);
+//		add(label_mnemonic);
+//
+//		// Component: text_mnemonic
+//		gbc.gridx = 1;
+//		gbc.gridy = 2;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_mnemonic,gbc);
+//		add(text_mnemonic);
+//
+//		// Component: label_company
+//		gbc.gridx = 0;
+//		gbc.gridy = 3;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_company,gbc);
+//		add(label_company);
+//
+//		// Component: text_companyl
+//		gbc.gridx = 1;
+//		gbc.gridy = 3;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_company,gbc);
+//		add(text_company);
+//
+//		// Component: label_unit
+//		gbc.gridx = 0;
+//		gbc.gridy = 4;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_unit,gbc);
+//		add(label_unit);
+//
+//		// Component: text_unit
+//		gbc.gridx = 1;
+//		gbc.gridy = 4;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_unit,gbc);
+//		add(text_unit);
+//
+//		// Component: label_subunit
+//		gbc.gridx = 0;
+//		gbc.gridy = 5;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_subunit,gbc);
+//		add(label_subunit);
+//
+//		// Component: text_subunit
+//		gbc.gridx = 1;
+//		gbc.gridy = 5;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_subunit,gbc);
+//		add(text_subunit);
+//
+//		// Component: label_function
+//		gbc.gridx = 0;
+//		gbc.gridy = 6;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_function,gbc);
+//		add(label_function);
+//
+//		// Component: text_function
+//		gbc.gridx = 1;
+//		gbc.gridy = 6;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_function,gbc);
+//		add(text_function);
+//
+//		// Component: label_surname
+//		gbc.gridx = 0;
+//		gbc.gridy = 7;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_surname,gbc);
+//		add(label_surname);
+//
+//		// Component: text_surname
+//		gbc.gridx = 1;
+//		gbc.gridy = 7;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_surname,gbc);
+//		add(text_surname);
+//
+//		// Component: label_firstnames
+//		gbc.gridx = 0;
+//		gbc.gridy = 8;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_firstnames,gbc);
+//		add(label_firstnames);
+//
+//		// Component: text_firstnamest
+//		gbc.gridx = 1;
+//		gbc.gridy = 8;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_firstnames,gbc);
+//		add(text_firstnames);
+//
+//		// Component: label_middlename
+//		gbc.gridx = 0;
+//		gbc.gridy = 9;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_middlename,gbc);
+//		add(label_middlename);
+//
+//		// Component: text_middlename
+//		gbc.gridx = 1;
+//		gbc.gridy = 9;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_middlename,gbc);
+//		add(text_middlename);
+//
+//		// Component: label_birthyday
+//		gbc.gridx = 0;
+//		gbc.gridy = 10;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_birthyday,gbc);
+//		add(label_birthyday);
+//
+//		// Component: text_birthday_date
+//		gbc.gridx = 1;
+//		gbc.gridy = 10;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_birthday_date,gbc);
+//		add(text_birthday_date);
+//
+//		// Component: label_place_of_birth
+//		gbc.gridx = 0;
+//		gbc.gridy = 11;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_place_of_birth,gbc);
+//		add(label_place_of_birth);
+//
+//		// Component: text_label_place_of_birth
+//		gbc.gridx = 1;
+//		gbc.gridy = 11;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_place_of_birth,gbc);
+//		add(text_place_of_birth);
+//
+//		// Component: label_city
+//		gbc.gridx = 0;
+//		gbc.gridy = 12;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_city,gbc);
+//		add(label_city);
+//
+//		// Component: text_city
+//		gbc.gridx = 1;
+//		gbc.gridy = 12;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_city,gbc);
+//		add(text_city);
+//
+//		// Component: label_postcode
+//		gbc.gridx = 0;
+//		gbc.gridy = 13;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_postcode,gbc);
+//		add(label_postcode);
+//
+//		// Component: text_postcode
+//		gbc.gridx = 1;
+//		gbc.gridy = 13;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_postcode,gbc);
+//		add(text_postcode);
+//
+//		// Component: label_region
+//		gbc.gridx = 0;
+//		gbc.gridy = 14;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_region,gbc);
+//		add(label_region);
+//
+//		// Component: text_region
+//		gbc.gridx = 1;
+//		gbc.gridy = 14;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_region,gbc);
+//		add(text_region);
+//
+//		// Component: label_country
+//		gbc.gridx = 0;
+//		gbc.gridy = 15;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_country,gbc);
+//		add(label_country);
+//
+//		// Component: text_country
+//		gbc.gridx = 1;
+//		gbc.gridy = 15;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_country,gbc);
+//		add(text_country);
+//
+//		// Component: label_phone
+//		gbc.gridx = 0;
+//		gbc.gridy = 16;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_phone,gbc);
+//		add(label_phone);
+//
+//		// Component: text_phone
+//		gbc.gridx = 1;
+//		gbc.gridy = 16;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_phone,gbc);
+//		add(text_phone);
+//
+//		// Component: label_fax
+//		gbc.gridx = 0;
+//		gbc.gridy = 17;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_fax,gbc);
+//		add(label_fax);
+//
+//		// Component: text_fax
+//		gbc.gridx = 1;
+//		gbc.gridy = 17;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_fax,gbc);
+//		add(text_fax);
+//
+//		// Component: label_note
+//		gbc.gridx = 0;
+//		gbc.gridy = 18;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(label_note,gbc);
+//		add(label_note);
+//
+//		// Component: text_note
+//		gbc.gridx = 1;
+//		gbc.gridy = 18;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 2;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(text_note,gbc);
+//		add(text_note);
 	}
 }

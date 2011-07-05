@@ -166,7 +166,7 @@ public class Test {
 			approveId.setEmail(id.getEmail());
 			approveId.setMnemonic(id.getMnemonic());
 			
-			KeyLogAction kla = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, sub, master.getKeyID(), approveId);
+			KeyLogAction kla = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, sub, master.getKeyID(), approveId,null);
 			KeyLog kl = KeyLog.buildNewKeyLog(kla, "127.0.0.1", "127.0.0.1", sub);
 			
 			//add keylog to keystore
@@ -420,7 +420,7 @@ public class Test {
 			//System.out.println("approval: "+approval);
 			if (!approval) {
 				//no approval -> build it!
-	 			KeyLogAction kl = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, contractKey, masterEmployee.getKeyID(), masterEmployee.getCurrentIdentity());
+	 			KeyLogAction kl = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, contractKey, masterEmployee.getKeyID(), masterEmployee.getCurrentIdentity(),null);
 //				Result ok = kl.verifySignature();
 //				if (ok.succeeded) {
 //					System.out.println("ok");
