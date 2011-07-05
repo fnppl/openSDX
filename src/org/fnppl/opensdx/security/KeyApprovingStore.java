@@ -302,6 +302,36 @@ public class KeyApprovingStore {
 		return kas;
 	}
 	
+	
+	public String getEmail(OSDXKey key) {
+		if (key.isMaster()) {
+			Identity id = ((MasterKey)key).getCurrentIdentity();
+			if (id!=null)  {
+				return id.getEmail();
+			}
+		}
+		//get from KeyLogs
+		String akeyid = key.getKeyID();
+		String email = null;
+		long date = Long.MIN_VALUE;
+		for (KeyLog kl : keylogs) {
+			String keyidto = kl.getKeyIDTo();
+			System.out.println("keyid to : "+keyidto);
+			if (keyidto.equals(akeyid)) {
+				if (kl.getAction().equals(KeyLogAction.APPROVAL)) {
+					Identity id = kl.getIdentity();
+					if (id!=null) {
+						if (id.getEmail() != null && kl.getActionDatetime()>date) {
+							email = id.getEmail();
+							date = kl.getActionDatetime();
+						}
+					}
+				}
+			}
+		}
+		return email;
+	}
+	
 	public boolean hasUnsavedChanges() {
 		if (unsavedChanges) return true;
 		else {

@@ -98,6 +98,10 @@ public class OSDXKey {
 	protected long validFrom = Long.MIN_VALUE;
 	protected long validUntil = Long.MAX_VALUE;
 	
+	private String usage_restriction = null;
+	private String usage_note = null;
+	
+	
 	protected String authoritativekeyserver = null;
 	//protected int authoritativekeyserverPort = 8889;
 	protected byte[] modulussha1 = null;
@@ -175,7 +179,8 @@ public class OSDXKey {
 			int usage = usage_name.indexOf(usageName);
 			if (usage>=0) ret.usage = usage;
 		}
-		
+		ret.usage_restriction = e.getChildText("usage_restriction");
+		ret.usage_note = e.getChildText("usage_note");
 	
 		String keyid = e.getChildText("keyid");
 		String authServer = e.getChildText("authoritativekeyserver");
@@ -228,6 +233,7 @@ public class OSDXKey {
 			ret = new OSDXKey();
 		}
 		ret.level = level;
+		
 		
 		
 		//System.out.println("adding keyobject");
@@ -302,6 +308,9 @@ public class OSDXKey {
 		String usage = kp.getChildText("usage");
 		ret.usage = usage_name.indexOf(usage);
 		
+		ret.usage_restriction = kp.getChildText("usage_restriction");
+		ret.usage_note = kp.getChildText("usage_note");
+		
 		if (level == LEVEL_SUB || level == LEVEL_REVOKE) {
 			String parentkeyid = kp.getChildText("parentkeyid");
 			int iAt = parentkeyid.indexOf('@');
@@ -349,7 +358,24 @@ public class OSDXKey {
 		
 		return ret;
 	}//fromElement
-		
+	
+	
+	public String getUsageRestriction() {
+		return usage_restriction;
+	}
+	
+	public void setUsageRestricton(String value) {
+		usage_restriction = value;
+	}
+	
+	public String getUsageNote() {
+		return usage_note;
+	}
+	
+	public void setUsageNote(String value) {
+		usage_note = value;
+	}
+	
 	public boolean allowsSigning() {
 		//double check: signing not possible without private key
 		if (akp.hasPrivateKey() || lockedPrivateKey != null) {
@@ -503,6 +529,12 @@ public class OSDXKey {
 		ekp.addContent("valid_from",getValidFromString());
 		ekp.addContent("valid_until",getValidUntilString());
 		ekp.addContent("usage",usage_name.get(usage));
+		if (usage_restriction!=null) {
+			ekp.addContent("usage_restriction",usage_restriction);
+		}
+		if (usage_note!=null) {
+			ekp.addContent("usage_note",usage_note);
+		}
 		ekp.addContent("level",level_name.get(level));
 		if (this instanceof SubKey) {
 			ekp.addContent("parentkeyid", ((SubKey)this).getParentKeyID());
