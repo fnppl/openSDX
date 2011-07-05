@@ -1,7 +1,5 @@
 package org.fnppl.opensdx.dmi.wayin;
 
-import java.io.File;
-
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -47,35 +45,40 @@ import java.io.File;
  * 
  */
 
-public class OpenSDXImporterBase {
-	private String importType;
-	private File importFile;
-	
-	public OpenSDXImporterBase(String type, File file)  {
-		this.importType = type;
-		this.importFile = file;
-	}
-	
-	public ImportResult import() {
-	
-	}
-		
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		try {
-			System.out.println("Testing import for :"+args[0]);
-			System.out.println("File to import :"+args[1]);
-			
-			File file = new File(args[1]);
-			
-			OpenSDXImporterBase imp = new OpenSDXImporterBase(args[0], file);
-			
-			System.out.println("import succed");
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
+public class ImportResult {
 
+	public boolean succeeded = true;
+	public String errorMessage = null;
+	public Exception exception = null;
+	
+	private ImportResult() {
+		
 	}
+	
+	public static ImportResult succeeded() {
+		return new ImportResult();
+	}
+	
+	public static ImportResult error(String message) {
+		ImportResult r = new ImportResult();
+		r.succeeded = false;
+		r.errorMessage = message;
+		return r;
+	}
+	
+	public static ImportResult error(Exception ex) {
+		ImportResult r = new ImportResult();
+		r.succeeded = false;
+		r.exception = ex;
+		return r;
+	}
+	
+	public static ImportResult error(String message, Exception ex) {
+		ImportResult r = new ImportResult();
+		r.succeeded = false;
+		r.errorMessage = message;
+		r.exception = ex;
+		return r;
+	}
+	
 }
