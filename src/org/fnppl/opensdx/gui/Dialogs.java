@@ -53,6 +53,10 @@ package org.fnppl.opensdx.gui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -68,6 +72,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileFilter;
@@ -98,6 +103,97 @@ public class Dialogs {
 	
 	public static String showInputDialog(String title, String message) {
 		return JOptionPane.showInputDialog(null, message, title, JOptionPane.PLAIN_MESSAGE);
+	}
+	
+	public static final String[] showUsageDialog(String head, String message) {
+		JPanel p = new JPanel();
+		GridBagLayout gbl = new GridBagLayout();
+		p.setLayout(gbl);
+		GridBagConstraints gbc = new GridBagConstraints();
+
+		if (message.contains("\n")) {
+			message = "<HTML><BODY>"+message.replace("\n", "<BR>")+"</BODY><HTML>";
+		}		
+		JLabel lmsg = new JLabel(message);
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(lmsg,gbc);
+		p.add(lmsg);
+		
+		JLabel l = new JLabel("usage restriction: ");
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(l,gbc);
+		p.add(l);
+		
+		JTextField tR = new JTextField("");
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 1.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(tR,gbc);
+		p.add(tR);
+		
+		l = new JLabel("usage note: ");
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(l,gbc);
+		p.add(l);
+		
+		JTextArea tN = new JTextArea("");
+		gbc.gridx = 1;
+		gbc.gridy = 2;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 1.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(tN,gbc);
+		p.add(tN);
+		
+	    int ans = JOptionPane.showConfirmDialog(null,p,head,JOptionPane.OK_CANCEL_OPTION);
+	    if (ans == JOptionPane.OK_OPTION) {
+	    	return new String[] {tR.getText(), tN.getText()};
+	    }
+	    return null;
 	}
 	
 	public static final String showPasswordDialog(String head, String message) {

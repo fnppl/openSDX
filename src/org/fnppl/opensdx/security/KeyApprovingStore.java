@@ -63,6 +63,7 @@ public class KeyApprovingStore {
 	private Vector<KeyServerIdentity> keyservers;
 	private boolean unsavedChanges = false;
 	private OSDXKey keystoreSigningKey = null;
+	private byte[] keystore_sha256_proof = null;
 	
 	private KeyApprovingStore() {
 	}
@@ -92,6 +93,7 @@ public class KeyApprovingStore {
 				keyservers = new Vector<KeyServerIdentity>();
 				Vector<Element> v = root.getChild("defaultkeyservers").getChildren("keyserver");
 				for (Element e : v) {
+					unsavedChanges = true;
 					keyservers.add(KeyServerIdentity.fromElement(e));
 					Element eKnownKeys = e.getChild("knownkeys");
 					if (eKnownKeys!=null) {
@@ -107,6 +109,7 @@ public class KeyApprovingStore {
 			if (root.getChild("knownapprovedkeys")!=null) {
 				Vector<Element> v = root.getChild("knownapprovedkeys").getChildren("pubkey");
 				for (Element e : v) {
+					unsavedChanges = true;
 					keys.add(OSDXKey.fromPubKeyElement(e));
 				}
 			}
@@ -163,9 +166,9 @@ public class KeyApprovingStore {
 		ves.remove(eSig);
 		ves.remove(eProof);
 		
-		
+		byte[] givenProof = null;
 		if (!ignore) {
-			byte[] givenProof = SecurityHelper.HexDecoder.decode(eProof.getText());
+			givenProof = SecurityHelper.HexDecoder.decode(eProof.getText());
 			byte[] bsha256 = SecurityHelper.getSHA256LocalProof(ves);
 			
 			if (!Arrays.equals(bsha256, givenProof)) {
@@ -194,6 +197,7 @@ public class KeyApprovingStore {
 		kas.messageHandler = mh;
 		kas.keys = new Vector<OSDXKey>();
 		kas.keylogs = new Vector<KeyLog>();
+		kas.keystore_sha256_proof = givenProof;
 		
 		Element keys = e.getChild("keys");
 		
@@ -254,12 +258,15 @@ public class KeyApprovingStore {
 							} else {
 								mk.addSubKey(sk);
 							}
+							sk.setUnsavedChanges(false);
+							mk.setUnsavedChanges(false);
 							break;
 						}
 					}
 				}
 			}
 		}
+		
 		
 		
 		//add keylog (includes verify localproof and signoff)
@@ -349,7 +356,7 @@ public class KeyApprovingStore {
 			for (OSDXKey k : keys) {
 				if (k.hasUnsavedChanges()) {
 					System.out.println("unsaved changes in key: "+k.getKeyID());
-					return true;
+					//return true;
 				}
 			}
 		}
@@ -565,18 +572,16 @@ public class KeyApprovingStore {
 		
 		//complete signoff
 		byte[] proof = SecurityHelper.getSHA256LocalProof(root.getChildren());
-		Signature sign = Signature.createSignatureFromLocalProof(proof, "signature of complete keystore", keystoreSigningKey);
-		
 		root.addContent("keystore_sha256_proof",SecurityHelper.HexDecoder.encode(proof,':',-1));
+		
+		Signature sign = Signature.createSignatureFromLocalProof(proof, "signature of complete keystore", keystoreSigningKey);
 		root.addContent(sign.toElement());
 		return root;
 	}
 	
 	
 	
-	
 	public void addKey(OSDXKey key) {
-		unsavedChanges = true;
 		if (keys==null) {
 			keys = new Vector<OSDXKey>();
 		}
@@ -589,11 +594,11 @@ public class KeyApprovingStore {
 				return;
 			}
 		}
+		unsavedChanges = true;
 		keys.add(key);
 	}
 	
 	public void addKeyLog(KeyLog kl) {
-		unsavedChanges = true;
 		if (keylogs==null) keylogs = new Vector<KeyLog>();
 		//check if keystore already contains keylog
 		boolean add = true;
@@ -606,6 +611,7 @@ public class KeyApprovingStore {
 				//look if log has restricted fields that are unrestricted in log
 				if (log.hasRestrictedFields() && !kl.hasRestrictedFields()) {
 					//replace
+					unsavedChanges = true;
 					keylogs.remove(i);
 					keylogs.add(i,kl);
 				}
@@ -613,6 +619,7 @@ public class KeyApprovingStore {
 			}
 		}
 		if (add) {
+			unsavedChanges = true;
 			keylogs.add(kl);
 		}
 	}

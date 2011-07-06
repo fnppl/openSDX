@@ -355,7 +355,7 @@ public class OSDXKey {
 		//go on
 		
 		ret.gpgkeyserverid = kp.getChildText("gpgkeyserverid");
-		
+		ret.unsavedChanges = false;
 		return ret;
 	}//fromElement
 	
@@ -365,6 +365,7 @@ public class OSDXKey {
 	}
 	
 	public void setUsageRestricton(String value) {
+		unsavedChanges = true;
 		usage_restriction = value;
 	}
 	
@@ -373,6 +374,7 @@ public class OSDXKey {
 	}
 	
 	public void setUsageNote(String value) {
+		unsavedChanges = true;
 		usage_note = value;
 	}
 	
@@ -402,6 +404,12 @@ public class OSDXKey {
 			ret.addContent("keyid",getKeyID());
 			ret.addContent("level",getLevelName());
 			ret.addContent("usage",getUsageName());
+			if (getUsageRestriction()!=null) {
+				ret.addContent("usage_restriction",getUsageRestriction());
+			}
+			if (getUsageNote()!=null) {
+				ret.addContent("usage_note",getUsageNote());
+			}
 			//ret.addContent("authoritativekeyserver",authoritativekeyserver);
 			//ret.addContent("authoritativekeyserver_port",""+authoritativekeyserverPort);
 			ret.addContent("valid_from",getValidFromString());
@@ -654,6 +662,10 @@ public class OSDXKey {
 //		authoritativekeyserver = aks;
 //		unsavedChanges = true;
 //	}
+	
+	public void setUnsavedChanges(boolean b) {
+		unsavedChanges = b;
+	}
 	
 	public boolean hasUnsavedChanges() {
 		if (unsavedChanges) return true;

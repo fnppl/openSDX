@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -19,12 +20,17 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.JTextComponent;
 
+import org.fnppl.opensdx.gui.Dialogs;
+import org.fnppl.opensdx.gui.SecurityMainFrame;
+import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.KeyLog;
 
 import java.util.HashMap;
 import java.util.Vector;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -42,12 +48,16 @@ public class PanelKeyLogs extends JPanel {
 	private String[] columnNames = new String[] {"Key id from", "Key id to","date","action", "email"};
 	private String[][] tableData = new String[0][5];
 	private Vector<KeyLog> selectedData = new Vector<KeyLog>();
+	private JButton bu_remove;
 	
 	private DefaultTableModel tablemodel;
 	private PanelIdentityDetails details;
 	private Vector<KeyLog> keylogs = new Vector<KeyLog>();
-
-	public PanelKeyLogs() {
+	private KeyApprovingStore currentKeyStore = null;
+	private SecurityMainFrame main_gui = null;
+	
+	public PanelKeyLogs(SecurityMainFrame main_gui) {
+		this.main_gui = main_gui;
 		initComponents();
 		initLayout();
 	}
@@ -82,9 +92,23 @@ public class PanelKeyLogs extends JPanel {
 		updateDetails(keylog);
 	}
 	
+	public void removeSelectedKeylogs() {
+		int[] sel = table.getSelectedRows();
+		if (sel==null) return;
+		int ans = Dialogs.showYES_NO_Dialog("Remove Keylogs", "Are you sure you want to remove the selected keylogs?");
+		if (ans != Dialogs.YES) return;
+		
+		for (int i=0;i<sel.length;i++) {
+			KeyLog log = selectedData.get(sel[i]);
+			currentKeyStore.removeKeyLog(log);
+		}
+		main_gui.update();
+	}
+	
 
-	public void updateKeyLogs(Vector<KeyLog> keylogs) {
-		this.keylogs = keylogs;
+	public void updateKeyLogs(KeyApprovingStore currentKeyStore) {
+		this.currentKeyStore = currentKeyStore;
+		this.keylogs = currentKeyStore.getKeyLogs();
 		listmodel_keyid_from.removeAllElements();
 		listmodel_keyid_from.addElement("[ALL]");
 		listmodel_keyid_to.removeAllElements();
@@ -129,7 +153,13 @@ public class PanelKeyLogs extends JPanel {
 				table_selection_changed(selected);
 			}
 		});
-	
+		bu_remove = new JButton("remove selected keylogs");
+		bu_remove.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				removeSelectedKeylogs();
+			}
+		});
+		
 		list_keyid_from = new JList();
 		listmodel_keyid_from = new DefaultListModel();
 		list_keyid_from.setModel(listmodel_keyid_from);
@@ -175,31 +205,41 @@ public class PanelKeyLogs extends JPanel {
 	}
 	
 	public void initLayout() {
-		JPanel p1 = new JPanel();
+		final JPanel p1 = new JPanel();
 		p1.setLayout(new BorderLayout());
 		p1.add(label_keyid_from,BorderLayout.NORTH);
 		p1.add(new JScrollPane(list_keyid_from),BorderLayout.CENTER);
 		
-		JPanel p2 = new JPanel();
+		final JPanel p2 = new JPanel();
 		p2.setLayout(new BorderLayout());
 		p2.add(label_keyid_to,BorderLayout.NORTH);
 		p2.add(new JScrollPane(list_keyid_to), BorderLayout.CENTER);
 		
-		JSplitPane pList = new JSplitPane(JSplitPane.VERTICAL_SPLIT, p1, p2);
-		pList.setDividerLocation(0.5);
+		final JSplitPane pList = new JSplitPane(JSplitPane.VERTICAL_SPLIT, p1, p2);
+		Dimension minimumSize = new Dimension(120, 50);
+	    p1.setMinimumSize(minimumSize);
+	    p2.setMinimumSize(minimumSize);
 		
 		JPanel p3 = new JPanel();
 		p3.setLayout(new BorderLayout());
 		p3.add(label_table,BorderLayout.NORTH);
 		p3.add(new JScrollPane(table),BorderLayout.CENTER);
+		JPanel pButtons = new JPanel();
+		FlowLayout lf = new FlowLayout();
+		lf.setAlignment(FlowLayout.LEFT);
+		pButtons.setLayout(lf);
+		pButtons.add(bu_remove);
+		p3.add(pButtons, BorderLayout.SOUTH);
+		p3.setMinimumSize(minimumSize);
 		
-		JSplitPane pRight = new JSplitPane(JSplitPane.VERTICAL_SPLIT, p3, new JScrollPane(details));
-		pRight.setDividerLocation(0.5);
-		pRight.doLayout();
-		
+		JPanel pDetails = new JPanel();
+		pDetails.setMinimumSize(minimumSize);
+		pDetails.setLayout(new BorderLayout());
+		pDetails.add(new JScrollPane(details), BorderLayout.CENTER);
+		JSplitPane pRight = new JSplitPane(JSplitPane.VERTICAL_SPLIT, p3, pDetails);
+		pRight.setDividerLocation(300);
 		JSplitPane all = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pList, pRight);
-		all.setDividerLocation(0.3);
-		all.doLayout();
+		
 		
 		this.setLayout(new BorderLayout());
 		this.add(all,BorderLayout.CENTER);
@@ -324,7 +364,7 @@ public class PanelKeyLogs extends JPanel {
 		} catch(Exception ex){
 			System.out.println("Nimbus look & feel not available");
 	}
-		PanelKeyLogs p = new PanelKeyLogs();
+		PanelKeyLogs p = new PanelKeyLogs(null);
 		JFrame f = new JFrame("PanelKeyLogs");
 		f.setContentPane(p);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

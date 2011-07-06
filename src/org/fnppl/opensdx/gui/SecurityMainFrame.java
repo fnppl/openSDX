@@ -88,11 +88,11 @@ public class SecurityMainFrame extends JFrame {
 	//	private File lastDir = new File("src/org/fnppl/opensdx/security/resources");
 
 	//menu items
-
 	private JMenuItem jmiCloseKeyStore;
 	private JMenuItem jmiWriteKeyStoreToFile;
 	private JMenuItem jmiGenerateMaster;
 	private JMenuItem jmiGenerateSet;
+	private JMenuItem jmiRequestKeys;
 	private JMenuItem jmiAddKeyServer;
 	
 		
@@ -290,6 +290,9 @@ public class SecurityMainFrame extends JFrame {
 				else if(cmd.equalsIgnoreCase("generatemasterkey")) {
 					generateMasterKeyPair();
 				}
+				else if(cmd.equalsIgnoreCase("request keys from server")) {
+					requestKeysFromServer();
+				}
 				else if(cmd.equalsIgnoreCase("encryptfile")) {
 					encryptFile();
 				}
@@ -349,6 +352,14 @@ public class SecurityMainFrame extends JFrame {
 		jmiGenerateMaster.setActionCommand("generatemasterkey");
 		jmiGenerateMaster.addActionListener(ja);
 		jm.add(jmiGenerateMaster);
+		
+		jm.addSeparator();
+		
+		jmiRequestKeys = new JMenuItem("Request Keys from KeyServer");
+		jmiRequestKeys.setActionCommand("request keys from server");
+		jmiRequestKeys.addActionListener(ja);
+		jm.add(jmiRequestKeys);
+		
 
 		jm = new JMenu("KeyServer");
 		jmiAddKeyServer = new JMenuItem("add keyserver");
@@ -395,6 +406,7 @@ public class SecurityMainFrame extends JFrame {
 		jmiWriteKeyStoreToFile.setEnabled(keystoreOpend);
 		jmiGenerateMaster.setEnabled(keystoreOpend);
 		jmiGenerateSet.setEnabled(keystoreOpend);
+		jmiRequestKeys.setEnabled(keystoreOpend);
 		jmiAddKeyServer.setEnabled(keystoreOpend);
 		
 	}
@@ -427,7 +439,7 @@ public class SecurityMainFrame extends JFrame {
 	}
 
 
-	private void update() {
+	public void update() {
 		if (currentKeyStore==null) {
 			setMenuOptionVisible(false);
 		} else {
@@ -511,9 +523,9 @@ public class SecurityMainFrame extends JFrame {
 				boolean approved = false;
 				Vector<KeyLog> klogs = currentKeyStore.getKeyLogs(key.getKeyID());
 				for (KeyLog klog : klogs) {
-					System.out.println("keylog: "+klog.getKeyIDFrom()+"  to "+klog.getKeyIDTo());
+					//System.out.println("keylog: "+klog.getKeyIDFrom()+"  to "+klog.getKeyIDTo());
 					if (isStoredPrivateKey(klog.getKeyIDFrom())) {
-						System.out.println("private from key");
+						//System.out.println("private from key");
 						if (klog.getAction().equals(KeyLogAction.APPROVAL)) {
 							approved = true;
 						}
@@ -521,7 +533,7 @@ public class SecurityMainFrame extends JFrame {
 							approved = false;
 						}
 					} else {
-						System.out.println("NOT private from key");
+						//System.out.println("NOT private from key");
 					}
 				}
 				if (approved) {
@@ -555,10 +567,10 @@ public class SecurityMainFrame extends JFrame {
 			//keylogs new
 			p = new JPanel();
 			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
-			scroll = new JScrollPane(p);
-			tab.add("KeyLogs (sorted)", scroll);
-			PanelKeyLogs kl = new PanelKeyLogs();
-			kl.updateKeyLogs(currentKeyStore.getKeyLogs());
+			//scroll = new JScrollPane(p);
+			tab.add("KeyLogs (sorted)", p);
+			PanelKeyLogs kl = new PanelKeyLogs(this);
+			kl.updateKeyLogs(currentKeyStore);
 			p.add(kl);
 			
 			
@@ -640,7 +652,7 @@ public class SecurityMainFrame extends JFrame {
 		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
 		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
 		addLabelTextFieldPart("usage restriction", key.getUsageRestriction(), a, c, y, false); y++;
-		addLabelTextFieldPart("usage note", key.getUsageNote(), a, c, y, false); y++;
+		addLabelTextAreaPart("usage note", key.getUsageNote(), a, c, y, false); y++;
 		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
 		final JTextField tValid = addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y,true); y++;
 		final JTextField tAuth = addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y, true);
@@ -1177,10 +1189,16 @@ public class SecurityMainFrame extends JFrame {
 		c.anchor = GridBagConstraints.FIRST_LINE_START;
 		c.insets = new Insets(5, 5, 0, 0);
 
+//		boolean usage_editable = false;
+//		if (key.getAuthoritativekeyserver().equalsIgnoreCase("LOCAL") && key.getUsageNote()==null && key.getUsageRestriction()==null) {
+//			usage_editable = true;
+//		}
 		addLabelTextFieldPart("Key ID:", key.getKeyID(), a, c, y); y++;
 		final JComboBox cUsage = addLabelComboBoxPart("usage:", OSDXKey.usage_name, key.getUsage(), a, c, y,false); y++;
-		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
-		final JTextField tValid = addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y,true); y++;
+		addLabelTextFieldPart("usage restriction:", key.getUsageRestriction(), a, c, y,false); y++;
+		addLabelTextAreaPart("usage note:", key.getUsageNote(), a, c, y,false); y++;
+		addLabelTextFieldPart("valid from:", key.getValidFromString(), a, c, y); y++;
+		final JTextField tValid = addLabelTextFieldPart("valid until:", key.getValidUntilString(), a, c, y,true); y++;
 		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
 		tValid.addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent e) {
@@ -1213,6 +1231,60 @@ public class SecurityMainFrame extends JFrame {
 			}
 		};
 		tValid.getDocument().addDocumentListener(chListen);
+//		if (usage_editable) {
+//			tUsageNote.addKeyListener(new KeyListener() {
+//				public void keyPressed(KeyEvent e) {
+//					if (e.getKeyCode()==10) {//enter pressed
+//						key.setUsageNote(tUsageNote.getText());
+//						tUsageNote.setBackground(Color.WHITE);
+//						tUsageNote.setEditable(false);
+//					}
+//				}
+//				public void keyReleased(KeyEvent e) {}
+//				public void keyTyped(KeyEvent e) {}
+//			});
+//			chListen = new DocumentListener() {
+//				public void removeUpdate(DocumentEvent e) {action();}
+//				public void insertUpdate(DocumentEvent e) {action();}
+//				public void changedUpdate(DocumentEvent e) {action();}
+//				private void action() {
+//					String t = tUsageNote.getText();
+//					if ((key.getUsageNote()==null && t.length()==0) || (key.getUsageNote()!=null && key.getUsageNote().equals(t))) {
+//						tUsageNote.setBackground(Color.WHITE);
+//					} else {
+//						tUsageNote.setBackground(Color.YELLOW);
+//					}
+//				}
+//			};
+//			tUsageNote.getDocument().addDocumentListener(chListen);
+//			
+//			tUsageRestriction.addKeyListener(new KeyListener() {
+//				public void keyPressed(KeyEvent e) {
+//					if (e.getKeyCode()==10) {//enter pressed
+//						key.setUsageRestricton(tUsageRestriction.getText());
+//						tUsageRestriction.setBackground(Color.WHITE);
+//						tUsageRestriction.setEditable(false);
+//					}
+//				}
+//				public void keyReleased(KeyEvent e) {}
+//				public void keyTyped(KeyEvent e) {}
+//			});
+//			chListen = new DocumentListener() {
+//				public void removeUpdate(DocumentEvent e) {action();}
+//				public void insertUpdate(DocumentEvent e) {action();}
+//				public void changedUpdate(DocumentEvent e) {action();}
+//				private void action() {
+//					String t = tUsageRestriction.getText();
+//					if ((key.getUsageRestriction()==null && t.length()==0) || (key.getUsageRestriction()!=null && key.getUsageRestriction().equals(t))) {
+//						tUsageRestriction.setBackground(Color.WHITE);
+//					} else {
+//						tUsageRestriction.setBackground(Color.YELLOW);
+//					}
+//				}
+//			};
+//			tUsageRestriction.getDocument().addDocumentListener(chListen);
+//		}
+		
 		Vector<DataSourceStep> dp = key.getDatapath();
 		for (int i=0;i<dp.size();i++) {
 			y++;
@@ -1462,6 +1534,9 @@ public class SecurityMainFrame extends JFrame {
 			String ids = ((MasterKey)key).getIDEmails();
 			if (ids!=null) addLabelTextFieldPart("identities:", ids, a, c, y); y++;
 		}
+		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
+		addLabelTextFieldPart("usage restriction:", key.getUsageRestriction(), a, c, y); y++;
+		addLabelTextAreaPart("usage note:", key.getUsageNote(), a, c, y,false); y++;
 		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
 		addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y); y++;
 		//addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
@@ -1524,6 +1599,24 @@ public class SecurityMainFrame extends JFrame {
 			}
 		});
 		b.add(bu);
+		
+		if (key.isMaster()) {
+			bu = new JButton("request subkeys");
+			bu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					requestSubKeys((MasterKey)key);
+				}
+			});
+			b.add(bu);
+		} else if (key.isSub() && !key.isRevoke()) {
+			bu = new JButton("request parent key");
+			bu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					requestParentKey((SubKey)key);
+				}
+			});
+			b.add(bu);
+		}
 		
 		bu = new JButton("generate keylog");
 		bu.addActionListener(new ActionListener() {
@@ -1590,6 +1683,9 @@ public class SecurityMainFrame extends JFrame {
 			String ids = ((MasterKey)key).getIDEmails();
 			if (ids!=null) addLabelTextFieldPart("identities:", ids, a, c, y); y++;
 		}
+		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
+		addLabelTextFieldPart("usage restriction:", key.getUsageRestriction(), a, c, y); y++;
+		addLabelTextAreaPart("usage note:", key.getUsageNote(), a, c, y,false); y++;
 		addLabelTextFieldPart("valid_from:", key.getValidFromString(), a, c, y); y++;
 		addLabelTextFieldPart("valid_until:", key.getValidUntilString(), a, c, y); y++;
 //		addLabelTextFieldPart("authoritative keyserver:", key.getAuthoritativekeyserver(), a, c, y);
@@ -2106,12 +2202,22 @@ public class SecurityMainFrame extends JFrame {
 	}
 
 	private void generateSubKey(final MasterKey parentKey) {
+		final String[] usage = Dialogs.showUsageDialog("Genrating new SUB Key", "You can set a usage restirction and/or usage note for this subkey.\nThese values cannot be changed afterwards.\nClick cancel to generate a subkey without restrictions and notes.\n");
+		
 		final JDialog d = Dialogs.getWaitDialog("Generating new SUB Key,\nplease wait...");
 		Thread t = new Thread() {
 			public void run() {
 				try {
 					AsymmetricKeyPair kp =  AsymmetricKeyPair.generateAsymmetricKeyPair();
 					SubKey k = parentKey.buildNewSubKeyfromKeyPair(kp); //MasterKey.buildNewMasterKeyfromKeyPair(kp);
+					if (usage!=null) {
+						if (usage[0]!=null && usage[0].length()>0) {
+							k.setUsageRestricton(usage[0]);
+						}
+						if (usage[1]!=null && usage[1].length()>0) {
+							k.setUsageNote(usage[1]);
+						}
+					}
 					currentKeyStore.addKey(k);
 					releaseUILock();
 					update();
@@ -2123,7 +2229,7 @@ public class SecurityMainFrame extends JFrame {
 				d.dispose();
 			}
 		};    
-		t.start() ;
+		t.start();
 		d.show();
 		if (t.isAlive()) {
 			t.stop();
@@ -2768,6 +2874,43 @@ public class SecurityMainFrame extends JFrame {
 			} else {
 				releaseUILock();
 				Dialogs.showMessage("No Subkeys for MASTER "+masterkey.getKeyID()+" found.");
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private void requestParentKey(SubKey key) {
+		try {
+			KeyClient client =  getKeyClient(key.getAuthoritativekeyserver());
+			if (client==null) {
+				return;
+			}
+			MasterKey masterkey = client.requestMasterPubKey(key.getKeyID());
+			if (masterkey!=null) {
+				boolean add = true;
+				//remove old key (not if it has private key)
+				String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(masterkey.getKeyID());
+				for (OSDXKey k : storedPublicKeys) {
+					if (newkeyid.equals(OSDXKey.getFormattedKeyIDModulusOnly(k.getKeyID()))) {
+						if (!k.hasPrivateKey()) {
+							currentKeyStore.removeKey(k);
+							break;
+						} else {
+							add = false;
+						}
+					}
+				}
+				if (add) {
+					currentKeyStore.addKey(masterkey);
+					key.setParentKey(masterkey);
+				}
+				update();
+				releaseUILock();
+				Dialogs.showMessage("Found parent key: "+masterkey.getKeyID()+"\nfor subkey: "+key.getKeyID());
+			} else {
+				releaseUILock();
+				Dialogs.showMessage("No Parent Key for Subkey "+key.getKeyID()+" found.");
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -3446,7 +3589,7 @@ public class SecurityMainFrame extends JFrame {
 		//		11. decrypt arbitrary files (AES)
 		//		12. Modify Keys (in terms of deletion/revokation/submission to server)
 		try {
-	       UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
 	    } catch(Exception ex){
 	        System.out.println("Nimbus look & feel not available");
 	    }

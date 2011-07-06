@@ -295,12 +295,23 @@ public class PanelIdentityDetails extends JPanel {
 		label_note = new JLabel("note");
 
 		text_note = new JTextArea("");
+		text_note.setLineWrap(true);
 		text_note.setName("text_note");
 		texts.add(text_note);
 
+		Dimension min = new Dimension(200, 25);
+		Dimension max = new Dimension(500, 100);
+		Dimension pref = new Dimension(200, 25);
+		
+		
 		for (JTextComponent text : texts) {
 			text.setEditable(false);
+			text.setMaximumSize(max);
+			text.setMinimumSize(min);
+			text.setPreferredSize(pref);
 		}
+		text_note.setPreferredSize(new Dimension(200,75));
+		
 	}
 
 
@@ -309,6 +320,22 @@ public class PanelIdentityDetails extends JPanel {
 		setLayout(gbl);
 		GridBagConstraints gbc = new GridBagConstraints();
 
+		JLabel filler = new JLabel();
+		gbc.gridx = 3;
+		gbc.gridy = 0;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 30.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(filler,gbc);
+		add(filler);
+
+		
 		// Component: label_message
 		gbc.gridx = 0;
 		gbc.gridy = 0;
