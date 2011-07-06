@@ -80,13 +80,13 @@ import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.MessageHandler;
-import org.fnppl.opensdx.gui.MyObservable;
-import org.fnppl.opensdx.gui.MyObserver;
 import org.fnppl.opensdx.gui.PanelBundle;
 import org.fnppl.opensdx.gui.PanelFeedInfo;
 import org.fnppl.opensdx.gui.PanelItems;
 import org.fnppl.opensdx.gui.SecurityMainFrame;
 import org.fnppl.opensdx.gui.SelectTerritoiresTree;
+import org.fnppl.opensdx.gui.helper.MyObservable;
+import org.fnppl.opensdx.gui.helper.MyObserver;
 import org.fnppl.opensdx.securesocket.OSDXFileTransferClient;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
@@ -592,7 +592,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		//bundle_panel = new BundlePanel(this);
 		//bundled_items_panel = new BundledItemsPanel(this);
 		
-		feedinfo_panel = new PanelFeedInfo();
+		feedinfo_panel = new PanelFeedInfo(this);
 		bundle_panel = new PanelBundle();
 		bundled_items_panel = new PanelItems();
 		

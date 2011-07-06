@@ -3,6 +3,7 @@ package org.fnppl.opensdx.common;
 import java.util.Vector;
 
 import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.xml.Element;
 
 /*
  * Copyright (C) 2010-2011 
@@ -319,6 +320,22 @@ public class Receiver extends BusinessObject {
 	}
 	public BusinessObject getCrypto() {
 		return crypto;
+	}
+	
+	public Element toElement() {
+		//remove fields that are useless for selected type and auth_type
+		String type = getType();
+		String authtype = getAuthType();
+		if (!type.equals(TRANSFER_TYPE_OSDX_FILESERVER)) {
+			username(null);
+			file_keystore(null);
+			keyid(null);
+		}
+		if (!authtype.equals(AUTH_TYPE_KEYFILE)) {
+			file_keystore(null);
+			keyid(null);
+		}
+		return super.toElement();
 	}
 
 }

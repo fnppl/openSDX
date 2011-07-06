@@ -4,6 +4,8 @@ import java.util.Vector;
 import javax.swing.DefaultListModel;
 import org.fnppl.opensdx.common.ActionHttp;
 import org.fnppl.opensdx.common.TriggeredActions;
+import org.fnppl.opensdx.gui.helper.MyObservable;
+import org.fnppl.opensdx.gui.helper.MyObserver;
 
 /*
  * Copyright (C) 2010-2011

@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.gui;
+package org.fnppl.opensdx.gui.helper;
 
 public interface MyObserver {
 

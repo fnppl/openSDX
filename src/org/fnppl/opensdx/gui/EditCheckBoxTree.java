@@ -46,6 +46,8 @@ import org.fnppl.opensdx.common.BusinessStringItem;
 import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.dmi.FeedCreator;
+import org.fnppl.opensdx.gui.helper.MyObservable;
+import org.fnppl.opensdx.gui.helper.MyObserver;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;

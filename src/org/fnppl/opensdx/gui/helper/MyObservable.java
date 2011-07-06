@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.gui;
+package org.fnppl.opensdx.gui.helper;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 

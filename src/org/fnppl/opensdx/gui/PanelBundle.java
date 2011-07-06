@@ -33,6 +33,8 @@ import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Territorial;
 import org.fnppl.opensdx.common.Territory;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.gui.helper.MyObservable;
+import org.fnppl.opensdx.gui.helper.MyObserver;
 import org.fnppl.opensdx.security.SecurityHelper;
 
 

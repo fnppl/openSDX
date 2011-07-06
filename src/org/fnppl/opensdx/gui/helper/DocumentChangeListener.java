@@ -93,7 +93,6 @@ public class DocumentChangeListener implements DocumentListener {
         } else {
             for (int i = 0; i < texts.size(); i++) {
             	JTextComponent t = texts.get(i);
-            	boolean formatOK = true;
             	String name = t.getName();
             	if (formatOK(name, t.getText())) {
 	                if (t.getText().equals(saves.get(i))) {
