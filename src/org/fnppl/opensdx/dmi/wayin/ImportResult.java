@@ -1,7 +1,5 @@
 package org.fnppl.opensdx.dmi.wayin;
 
-import java.io.File;
-
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -47,54 +45,40 @@ import java.io.File;
  * 
  */
 
-public class OpenSDXImporterBase {	
-	public ImportType importType;
-	public File importFile;
-	public File saveFile;
-	
-	public OpenSDXImporterBase(ImportType impType, File impFile, File savFile)  {
-		this.importType = impType;
-		this.importFile = impFile;
-		this.saveFile = savFile;
-	}
-		
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws Exception {
-		try {
-			System.out.println("Testing import for: "+args[0]);
-			System.out.println("File to import: "+args[1]);
-			System.out.println("File to save: "+args[2]);
-			
-			if(args.length!=3) {
-				System.out.println("Please provide following arguments: Type / File to import / File to save");
-				System.exit(0);
-			}
-			
-			ImportType impType = ImportType.getImportType(args[0]);
-			File impFile = new File(args[1]);
-			File savFile = new File(args[2]);
-			
-			ImportResult ir = null;
-			switch(impType.getType()) {
-				case ImportType.FINETUNES:
-					FinetunesToOpenSDXImporter impFt = new FinetunesToOpenSDXImporter(impType, impFile, savFile);
-					ir = impFt.formatToOpenSDX();
-					break;
-				case ImportType.SIMFY:
-					SimfyToOpenSDXImporter impSimfy = new SimfyToOpenSDXImporter(impType, impFile, savFile);
-					ir = impSimfy.formatToOpenSDX();		
-					break;
-				default:
-					break;
-			}
-			
-			System.out.println("Import succeeded? "+ir.succeeded);
-		} catch (Exception ex) {
-			System.out.println("Failed! Please provide following arguments: Type / File to import / File to save");
-			ex.printStackTrace();
-		}
+public class ImportResult {
 
+	public boolean succeeded = true;
+	public String errorMessage = null;
+	public Exception exception = null;
+	
+	private ImportResult() {
+		
 	}
+	
+	public static ImportResult succeeded() {
+		return new ImportResult();
+	}
+	
+	public static ImportResult error(String message) {
+		ImportResult r = new ImportResult();
+		r.succeeded = false;
+		r.errorMessage = message;
+		return r;
+	}
+	
+	public static ImportResult error(Exception ex) {
+		ImportResult r = new ImportResult();
+		r.succeeded = false;
+		r.exception = ex;
+		return r;
+	}
+	
+	public static ImportResult error(String message, Exception ex) {
+		ImportResult r = new ImportResult();
+		r.succeeded = false;
+		r.errorMessage = message;
+		r.exception = ex;
+		return r;
+	}
+	
 }

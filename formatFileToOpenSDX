@@ -1,0 +1,2 @@
+# Argumente (MUST) -> ImportType e.g. "finetunes" :: ImportFile e.g. "/fileToImport.xml" :: SaveFile e.g. "/newFile.xml"
+java -cp "./bin:lib/jdom.jar" org.fnppl.opensdx.dmi.wayin.OpenSDXImporterBase "ImportType" "/fileToImport.xml" "/newFile.xml"
