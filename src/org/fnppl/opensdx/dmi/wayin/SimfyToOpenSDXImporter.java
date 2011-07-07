@@ -58,7 +58,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 		super(type, impFile, savFile);
 	}
 	
-	public Result formatToOpenSDX() {
+	public Result formatToOpenSDXFile() {
 		Result ir = Result.succeeded();		
 		// do the import
 		try {			

@@ -90,6 +90,7 @@ import org.fnppl.opensdx.gui.helper.MyObserver;
 import org.fnppl.opensdx.securesocket.OSDXFileTransferClient;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
+import org.fnppl.opensdx.dmi.wayin.*;
 
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 
@@ -219,6 +220,9 @@ public class FeedGui extends JFrame implements MyObserver {
 				else if(cmd.equalsIgnoreCase("init example feed")) {
 					init_example_feed();
 				}
+				else if(cmd.equalsIgnoreCase("import finetunes feed")) {
+					import_feed("finetunes");
+				}				
 			}
 		};
 
@@ -262,6 +266,14 @@ public class FeedGui extends JFrame implements MyObserver {
 		jmi.setActionCommand("quit");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
+		
+		JMenu jm2 = new JMenu("Import");
+		jb.add(jm2);
+
+		jmi = new JMenuItem("Finetunes Feed");
+		jmi.setActionCommand("import finetunes feed");
+		jmi.addActionListener(ja);
+		jm2.add(jmi);		
 		
 		setJMenuBar(jb);
 	}
@@ -679,6 +691,30 @@ public class FeedGui extends JFrame implements MyObserver {
 		.disallow("US");
 		update();
 	}
+	
+	public void import_feed(String type) {
+		File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
+		if (f!=null && f.exists()) {
+			try {
+				Feed feed = null;
+				if(type.equals("finetunes")) {
+					FinetunesToOpenSDXImporter imp = new FinetunesToOpenSDXImporter(f);				
+					feed = imp.getFormatedFeedFromImport();				
+				}
+				else if(type.equals("simfy")) {
+					// ToDo!
+				}
+				
+				if(feed!=null) {
+					currentFeed = feed;
+					update();
+				}
+			} catch (Exception e) {
+				Dialogs.showMessage("ERROR, could not import feed in file\n"+f.getAbsolutePath());
+				e.printStackTrace();
+			}
+		}
+	}	
 	
 	public void quit() {
 		System.exit(0);

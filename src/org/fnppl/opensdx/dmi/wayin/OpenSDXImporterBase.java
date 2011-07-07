@@ -64,9 +64,6 @@ public class OpenSDXImporterBase {
 	 */
 	public static void main(String[] args) throws Exception {
 		try {
-			System.out.println("Testing import for: "+args[0]);
-			System.out.println("File to import: "+args[1]);
-			System.out.println("File to save: "+args[2]);
 			
 			if(args.length!=3) {
 				System.out.println("Please provide following arguments: Type / File to import / File to save");
@@ -81,20 +78,23 @@ public class OpenSDXImporterBase {
 			switch(impType.getType()) {
 				case ImportType.FINETUNES:
 					FinetunesToOpenSDXImporter impFt = new FinetunesToOpenSDXImporter(impType, impFile, savFile);
-					ir = impFt.formatToOpenSDX();
+					ir = impFt.formatToOpenSDXFile();
 					break;
 				case ImportType.SIMFY:
 					SimfyToOpenSDXImporter impSimfy = new SimfyToOpenSDXImporter(impType, impFile, savFile);
-					ir = impSimfy.formatToOpenSDX();		
+					ir = impSimfy.formatToOpenSDXFile();		
 					break;
 				default:
 					break;
 			}
-			
-			System.out.println("Import succeeded? "+ir.succeeded);
+			if(ir.succeeded) {
+				System.out.println("Import succeeded! Nice!");
+			}
+			else {
+				System.out.println("Import NOT succeeded! ERROR: "+ir.errorMessage);
+			}
 		} catch (Exception ex) {
 			System.out.println("Failed! Please provide following arguments: Type / File to import / File to save");
-			ex.printStackTrace();
 		}
 
 	}
