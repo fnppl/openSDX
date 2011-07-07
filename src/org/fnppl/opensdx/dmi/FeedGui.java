@@ -87,6 +87,7 @@ import org.fnppl.opensdx.gui.SecurityMainFrame;
 import org.fnppl.opensdx.gui.SelectTerritoiresTree;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
+import org.fnppl.opensdx.gui.helper.PanelSavedDMI;
 import org.fnppl.opensdx.securesocket.OSDXFileTransferClient;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
@@ -120,6 +121,7 @@ public class FeedGui extends JFrame implements MyObserver {
 	PanelFeedInfo feedinfo_panel = null;
 	PanelBundle bundle_panel = null;
 	PanelItems bundled_items_panel = null;
+	PanelSavedDMI panel_saved_dmi = null;
 	
 	JPanel treePanel = null;
 	
@@ -595,6 +597,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		feedinfo_panel = new PanelFeedInfo(this);
 		bundle_panel = new PanelBundle();
 		bundled_items_panel = new PanelItems();
+		panel_saved_dmi = new PanelSavedDMI(this);
 		
 		//readAndSetGenres();
 		
@@ -619,6 +622,10 @@ public class FeedGui extends JFrame implements MyObserver {
 
 		tabbedPane.addTab("Tree", null, treePanel, "");
 		tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
+		
+		tabbedPane.addTab("Saved DMI Objects", null, panel_saved_dmi, "");
+		tabbedPane.setMnemonicAt(4, KeyEvent.VK_5);
+		
 
 		jp.add(jt, BorderLayout.CENTER);
 		

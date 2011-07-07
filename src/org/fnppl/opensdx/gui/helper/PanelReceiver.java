@@ -1,5 +1,50 @@
 package org.fnppl.opensdx.gui.helper;
 
+/*
+ * Copyright (C) 2010-2011 
+ * 							fine people e.V. <opensdx@fnppl.org> 
+ * 							Henning Thieß <ht@fnppl.org>
+ * 
+ * 							http://fnppl.org
+*/
+
+/*
+ * Software license
+ *
+ * As far as this file or parts of this file is/are software, rather than documentation, this software-license applies / shall be applied.
+ *  
+ * This file is part of openSDX
+ * openSDX is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * openSDX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * and GNU General Public License along with openSDX.
+ * If not, see <http://www.gnu.org/licenses/>.
+ *      
+ */
+
+/*
+ * Documentation license
+ * 
+ * As far as this file or parts of this file is/are documentation, rather than software, this documentation-license applies / shall be applied.
+ * 
+ * This file is part of openSDX.
+ * Permission is granted to copy, distribute and/or modify this document 
+ * under the terms of the GNU Free Documentation License, Version 1.3 
+ * or any later version published by the Free Software Foundation; 
+ * with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. 
+ * A copy of the license is included in the section entitled "GNU 
+ * Free Documentation License" resp. in the file called "FDL.txt".
+ * 
+ */
+
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -51,14 +96,25 @@ public class PanelReceiver extends JPanel implements MyObservable {
 	private JLabel label_username;
 	private JTextField text_username;
 	
-	private FeedGui gui;
-
+	private FeedGui gui = null;
+	private Receiver receiver = null;
+	
 	public PanelReceiver(FeedGui gui) {
 		this.gui = gui;
+		this.receiver = null;
 		initKeyAdapter();
 		initComponents();
 		initLayout();
 		setFieldsVisibility();
+	}
+	
+	public PanelReceiver(Receiver receiver) {
+		this.gui = null;
+		this.receiver = receiver;
+		initKeyAdapter();
+		initComponents();
+		initLayout();
+		update();
 	}
 
 
@@ -542,7 +598,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		} catch(Exception ex){
 			System.out.println("Nimbus look & feel not available");
 		}
-		PanelReceiver p = new PanelReceiver(null);
+		PanelReceiver p = new PanelReceiver((Receiver)null);
 		JFrame f = new JFrame("PanelReceiver");
 		f.setContentPane(p);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -555,12 +611,11 @@ public class PanelReceiver extends JPanel implements MyObservable {
     private File lastDir = null;
 
     
-    public int count = 0;
     public void update() {
-    	count++;
-    	System.out.println("update "+count);
-    	
     	Receiver r = getReceiver();
+    	if (r==null) {
+    		r = receiver;
+    	}
     	if (r==null) {
     		text_servername.setText("");
     		text_serveripv4.setText("");
