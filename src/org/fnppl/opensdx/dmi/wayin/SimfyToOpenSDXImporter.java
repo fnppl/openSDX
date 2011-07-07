@@ -59,7 +59,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	}
 	
 	public Result formatToOpenSDX() {
-		ImportResult ir = ImportResult.succeeded();		
+		Result ir = Result.succeeded();		
 		// do the import
 		try {			
 			// (1) get XML-Data from import document

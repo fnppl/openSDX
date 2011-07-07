@@ -87,8 +87,6 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
             	Element e = it.next();
             	
             	// Bundle b = new Bundle().
-            			
-            	feed.
             	
             }
             
