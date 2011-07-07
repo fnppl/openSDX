@@ -144,7 +144,8 @@ public class PanelKeyLogs extends JPanel {
 		if (ans != Dialogs.YES) return;
 		
 		for (int i=0;i<sel.length;i++) {
-			KeyLog log = selectedData.get(sel[i]);
+			int index = table.getRowSorter().convertRowIndexToModel(sel[i]);
+			KeyLog log = selectedData.get(index);
 			currentKeyStore.removeKeyLog(log);
 		}
 		main_gui.update();

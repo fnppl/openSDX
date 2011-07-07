@@ -6,6 +6,8 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Vector;
@@ -25,17 +27,29 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 
+import org.fnppl.opensdx.common.ActionHttp;
+import org.fnppl.opensdx.common.ActionMailTo;
+import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BusinessObject;
 import org.fnppl.opensdx.common.ContractPartner;
 import org.fnppl.opensdx.common.Contributor;
+import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
+import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.common.Territorial;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.gui.Dialogs;
+import org.fnppl.opensdx.gui.EditCheckBoxTree;
+import org.fnppl.opensdx.gui.EditTerritoiresTree;
+import org.fnppl.opensdx.gui.PanelActionHTTP;
+import org.fnppl.opensdx.gui.PanelActionMailTo;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLElementable;
 
 import sun.awt.DefaultMouseInfoPeer;
 
@@ -103,8 +117,6 @@ public class PanelSavedDMI extends JPanel {
 	private String[] table_header = new String[] {"type","file","description"};
 	private String[][] table_data = new String[0][3];
 	
-	private JButton buAddToFeedInfo;
-	
 	private FeedGui gui;
 	
 	public PanelSavedDMI(FeedGui gui) {
@@ -120,6 +132,9 @@ public class PanelSavedDMI extends JPanel {
 	
 	public void readData() {
 		objects = new Vector<DMIObject>();
+		if (textDataDir!=null) {
+			dataDirectory = new File(textDataDir.getText());
+		}
 		File[] list = dataDirectory.listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
 				if (name.toLowerCase().endsWith(".xml")) {
@@ -235,6 +250,37 @@ public class PanelSavedDMI extends JPanel {
 			o.object = bo;
 			objects.add(o);
 		}
+		else if (name.equals("http")) {
+			ActionHttp v = ActionHttp.fromBusinessObject(bo);
+			if (v!=null) {
+				DMIObject o = new DMIObject();
+				o.type = "HTTP Action";
+				o.description = v.getUrl();
+				o.fromFile = f;
+				o.object = v;
+				objects.add(o);
+			}
+		}
+		else if (name.equals("mailto")) {
+			ActionMailTo v = ActionMailTo.fromBusinessObject(bo);
+			if (v!=null) {
+				DMIObject o = new DMIObject();
+				o.type = "MailTo Action";
+				o.description = v.getReceiver()+" :: "+v.getSubject();
+				o.fromFile = f;
+				o.object = v;
+				objects.add(o);
+			}
+		}
+		else if (name.equals("genres")) {
+			DMIObject o = new DMIObject();
+			o.type = "Genre Set";
+			o.description = "";
+			o.fromFile = f;
+			o.object = bo;
+			objects.add(o);
+		}
+		
 	}
 	
 	private void updateTableModel() {
@@ -248,41 +294,315 @@ public class PanelSavedDMI extends JPanel {
 		}
 		table_model = new DefaultTableModel(table_data, table_header);
 		table.setModel(table_model);
+		table.setRowSorter(new TableRowSorter<DefaultTableModel>(table_model));
+		panelDetails.removeAll();
+		panelButtons.removeAll();
+		this.validate();
+		this.repaint();
+		this.paint(this.getGraphics());
 	}
 	
 	private void table_selection_changed(int index) {
 		if (index<0 || index >= objects.size()) {
 			return;
 		}
-		DMIObject o = objects.get(index);
+		final DMIObject o = objects.get(index);
 		//System.out.println("Selection changed: "+index+" :: "+o.type+", "+o.description+", "+o.fromFile.getName());
 		panelDetails.removeAll();
 		panelButtons.removeAll();
 		
 		if (o.type.equals("Receiver")) {	
-			panelDetails.add(new PanelReceiver((Receiver)o.object));
-			panelButtons.add(buAddToFeedInfo);
+			if (o.panel ==null) {
+				o.panel = new PanelReceiver((Receiver)o.object);
+				JButton bu = new JButton("set as Receiver in FeedInfo");
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try {
+							//clone
+							Receiver r = Receiver.fromBusinessObject(BusinessObject.fromElement(((Receiver)o.object).toElement()));
+							gui.getCurrentFeed().getFeedinfo().receiver(r);
+							gui.update();
+						} catch (Exception ex) {
+							
+						}
+					}
+				});
+				o.buttons.add(bu);
+			}
+			panelDetails.add(o.panel);
+			for (JButton bu : o.buttons) {
+				panelButtons.add(bu);
+			}
 		}
 		else if (o.type.equals("Contract Partner")) {
-			ContractPartner c = (ContractPartner)o.object;
-			String[][] data = new String[][] {
-					{"contract partner id",c.getContractPartnerID()},
-					{"our contract partner id",c.getOurContractPartnerID()},
-					{"email",c.getEmail()}
-			};
-			panelDetails.add(buildPanel("Contract Partner", data));
-			//panelButtons.add(buAddToFeedInfo);
+			if (o.panel ==null) {
+				ContractPartner c = (ContractPartner)o.object;
+				String[][] data = new String[][] {
+						{"contract partner id",c.getContractPartnerID()},
+						{"our contract partner id",c.getOurContractPartnerID()},
+						{"email",c.getEmail()}
+				};
+				o.panel = buildPanel("Contract Partner", data);
+				JButton bu = new JButton("set as Sender in FeedInfo");
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try {
+							//clone
+							ContractPartner c = ContractPartner.fromBusinessObject(BusinessObject.fromElement(((ContractPartner)o.object).toElement()), ContractPartner.ROLE_CONTRACT_PARTNER);
+							gui.getCurrentFeed().getFeedinfo().sender(c);
+							gui.update();
+						} catch (Exception ex) {
+							
+						}
+					}
+				});
+				o.buttons.add(bu);
+				bu = new JButton("set as Licensor in FeedInfo");
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try {
+							//clone
+							ContractPartner c = ContractPartner.fromBusinessObject(BusinessObject.fromElement(((ContractPartner)o.object).toElement()), ContractPartner.ROLE_CONTRACT_PARTNER);
+							gui.getCurrentFeed().getFeedinfo().licensor(c);
+							gui.update();
+						} catch (Exception ex) {
+							
+						}
+					}
+				});
+				o.buttons.add(bu);
+			}
+			panelDetails.add(o.panel);
+			for (JButton bu : o.buttons) {
+				panelButtons.add(bu);
+			}
+		}
+		else if (o.type.equals("IDs")) {
+			if (o.panel ==null) {
+				Vector<Element> eids = ((IDs)o.object).toElement().getChildren();
+				String[][] data = new String[eids.size()][2];
+				for (int i=0;i<eids.size();i++) {
+					Element e = eids.get(i);
+					data[i][0] = e.getName();
+					data[i][1] = e.getText();
+				}
+				o.panel = buildPanel("IDs", data);
+				JButton bu = new JButton("set as Bundle id's");
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try {
+							//clone
+							IDs c = IDs.fromBusinessObject(BusinessObject.fromElement(((IDs)o.object).toElement()));
+							gui.getCurrentFeed().getBundle(0).ids(c);
+							gui.update();
+						} catch (Exception ex) {
+							
+						}
+					}
+				});
+				o.buttons.add(bu);
+			}
+			panelDetails.add(o.panel);
+			for (JButton bu : o.buttons) {
+				panelButtons.add(bu);
+			}
+		}
+		else if (o.type.equals("HTTP Action")) {	
+			if (o.panel ==null) {
+				final PanelActionHTTP p = new PanelActionHTTP();
+				p.setActionHTTP((ActionHttp)o.object);
+				o.panel = new JPanel();
+				o.panel.setLayout(new BorderLayout());
+				o.panel.add(p,BorderLayout.WEST);
+				JButton bu = new JButton("add to Actions in FeedInfo");
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try {
+							gui.getCurrentFeed().getFeedinfo().addAction(p.getTrigger(), p.getActionHTTP());
+							gui.update();
+						} catch (Exception ex) {
+							
+						}
+					}
+				});
+				o.buttons.add(bu);
+			}
+			panelDetails.add(o.panel);
+			for (JButton bu : o.buttons) {
+				panelButtons.add(bu);
+			}
+		}
+		else if (o.type.equals("MailTo Action")) {	
+			if (o.panel ==null) {
+				final PanelActionMailTo p = new PanelActionMailTo();
+				p.setActionMailTo((ActionMailTo)o.object);
+				o.panel = new JPanel();
+				o.panel.setLayout(new BorderLayout());
+				o.panel.add(p,BorderLayout.WEST);
+				JButton bu = new JButton("add to Actions in FeedInfo");
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try {
+							gui.getCurrentFeed().getFeedinfo().addAction(p.getTrigger(), p.getActionMailTo());
+							gui.update();
+						} catch (Exception ex) {
+							
+						}
+					}
+				});
+				o.buttons.add(bu);
+			}
+			panelDetails.add(o.panel);
+			for (JButton bu : o.buttons) {
+				panelButtons.add(bu);
+			}
 		}
 		else if (o.type.equals("Creator")) {
-			String[][] data = new String[][] {
-					{"email",o.object.getStringIfExist("email")},
-					{"user id",o.object.getStringIfExist("userid")}
-			};
-			panelDetails.add(buildPanel("Contract Partner", data));
-			//panelButtons.add(buAddToFeedInfo);
+			if (o.panel ==null) {
+				String[][] data = new String[][] {
+						{"email",o.object.getStringIfExist("email")},
+						{"user id",o.object.getStringIfExist("userid")}
+				};
+				o.panel = buildPanel("Creator", data);
+				JButton bu = new JButton("set as creator");
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try {
+							gui.getCurrentFeed().getFeedinfo().creator_email(o.object.getStringIfExist("email"));
+							gui.getCurrentFeed().getFeedinfo().creator_userid(o.object.getStringIfExist("userid"));
+							gui.update();
+						} catch (Exception ex) {
+							
+						}
+					}
+				});
+				o.buttons.add(bu);
+			}
+			panelDetails.add(o.panel);
+			for (JButton bu : o.buttons) {
+				panelButtons.add(bu);
+			}			
+		}
+		else if (o.type.equals("Contributor")) {
+			if (o.panel ==null) {
+				Contributor c = (Contributor)o.object;
+				String[][] data = new String[][] {
+						{"name",c.getName()},
+						{"type",c.getType()}
+				};
+				o.panel = buildPanel("Contributor", data);
+				JButton bu = new JButton("add to Bundle Contributors");
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try {
+							//clone
+							Contributor c = Contributor.fromBusinessObject(BusinessObject.fromElement(((Contributor)o.object).toElement()));
+							gui.getCurrentFeed().getBundle(0).addContributor(c);
+							gui.update();
+						} catch (Exception ex) {
+							
+						}
+					}
+				});
+				o.buttons.add(bu);
+			}
+			panelDetails.add(o.panel);
+			for (JButton bu : o.buttons) {
+				panelButtons.add(bu);
+			}			
+		}
+		else if (o.type.equals("Genre Set")) {
+			if (o.panel ==null) {
+				
+				JPanel panel_genres = new JPanel();
+				final EditCheckBoxTree tree_genres = new EditCheckBoxTree(FeedGui.getGenres());
+		        panel_genres.setLayout(new BorderLayout());
+		        panel_genres.add(new JScrollPane(tree_genres), BorderLayout.CENTER);
+		        Dimension dim = new Dimension(300, 400);
+		        panel_genres.setPreferredSize(dim);
+		        panel_genres.setMinimumSize(dim);
+		        panel_genres.setMaximumSize(dim);
+		        
+		        Vector<String> select = new Vector<String>();
+		        Vector<Element> genres = o.object.toElement().getChildren("genre");
+		        for (Element g : genres) {
+		        	select.add(g.getText());
+		        }
+		        tree_genres.setSelectedNodes(select);
+				
+				o.panel = panel_genres;
+				JButton bu = new JButton("set as Bundle Genres");
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try {
+							ItemTags tags = gui.getCurrentFeed().getBundle(0).getTags();
+							if (tags == null) {
+								tags = ItemTags.make();
+								gui.getCurrentFeed().getBundle(0).tags(tags);
+							}
+							tags.removeAllGenres();
+							Vector<String> select = tree_genres.getSelectedNodes();
+							for (String g : select) {
+								tags.addGenre(g);
+							}
+							gui.update();
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+				});
+				o.buttons.add(bu);
+			}
+			panelDetails.add(o.panel);
+			for (JButton bu : o.buttons) {
+				panelButtons.add(bu);
+			}			
+		}
+		else if (o.type.equals("Territorial")) {
+			if (o.panel ==null) {
+				final EditTerritoiresTree tree = new EditTerritoiresTree();
+				Territorial t = (Territorial)o.object;
+				Document.buildDocument(t.toElement()).output(System.out);
+				System.out.println("count: "+t.getTerritorialCount());
+				tree.setTerritories(t);
+				
+				
+				JPanel panel_territorial = new JPanel();
+				panel_territorial.setLayout(new BorderLayout());
+		        panel_territorial.add(new JScrollPane(tree), BorderLayout.CENTER);
+		        Dimension dim = new Dimension(300, 400);
+		        panel_territorial.setPreferredSize(dim);
+		        panel_territorial.setMinimumSize(dim);
+		        panel_territorial.setMaximumSize(dim);
+				o.panel = panel_territorial;
+				JButton bu = new JButton("set as Bundle Territories");
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try {
+							LicenseBasis license = gui.getCurrentFeed().getBundle(0).getLicense_basis();
+							if (license == null) {
+								license = LicenseBasis.make(tree.getTerritorial(), System.currentTimeMillis(), System.currentTimeMillis());
+								gui.getCurrentFeed().getBundle(0).license_basis(license);
+							} else {
+								license.setTerritorial(tree.getTerritorial());	
+							}
+							gui.update();
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+				});
+				o.buttons.add(bu);
+			}
+			panelDetails.add(o.panel);
+			for (JButton bu : o.buttons) {
+				panelButtons.add(bu);
+			}			
 		}
 		
 		this.validate();
+		this.repaint();
+		this.paint(this.getGraphics());
 		//panelDetails.repaint();
 		//panelButtons.repaint();
 	}
@@ -355,9 +675,22 @@ public class PanelSavedDMI extends JPanel {
 		labelDataDir = new JLabel("data path");
 		textDataDir = new JTextField(dataDirectory.getAbsolutePath());
 		buSelectDataDir = new JButton("select");
-		buReadData = new JButton("read data");
+		buSelectDataDir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				File f = Dialogs.chooseOpenDirectory("Select directory for data import", dataDirectory.getParentFile(), dataDirectory.getName());
+				if (f!=null) {
+					textDataDir.setText(f.getAbsolutePath());
+				}
+			}
+		});
 		
-		buAddToFeedInfo = new JButton("set in feedinfo");
+		buReadData = new JButton("read data");	
+		buReadData.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				readData();
+				updateTableModel();
+			}
+		});
 		
 		panelDetails = new JPanel();
 		panelDetails.setLayout(new BorderLayout());
@@ -374,7 +707,11 @@ public class PanelSavedDMI extends JPanel {
 		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				if (!e.getValueIsAdjusting()) {
-					table_selection_changed(table.getSelectedRow());
+					int row = table.getSelectedRow();
+					if (row>=0 && row<table_model.getRowCount()) {
+						int index = table.getRowSorter().convertRowIndexToModel(row);
+						table_selection_changed(index);
+					}
 				}
 			}
 		});
@@ -463,5 +800,7 @@ public class PanelSavedDMI extends JPanel {
 		public String description = "";
 		public File fromFile = null;
 		public BusinessObject object;
+		public JPanel panel = null;
+		public Vector<JButton> buttons = new Vector<JButton>();
 	}
 }
