@@ -1,12 +1,11 @@
 package org.fnppl.opensdx.dmi.wayin;
 
 import java.io.*;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.xml.*;
+import org.fnppl.opensdx.security.*;
 
 /*
  * Copyright (C) 2010-2011 
@@ -59,8 +58,8 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		super(type, impFile, savFile);
 	}
 	
-	public ImportResult formatToOpenSDX() {
-		ImportResult ir = null;		
+	public Result formatToOpenSDX() {
+		Result ir = null;		
 		// do the import
 		try {			
 			// (1) get XML-Data from import document
@@ -87,6 +86,10 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
             for (Iterator<Element> it = releases.iterator(); it.hasNext();) {
             	Element e = it.next();
             	
+            	// Bundle b = new Bundle().
+            			
+            	feed.
+            	
             }
             
             // ToDo: some format-magic here
@@ -94,10 +97,10 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
             // (5) write file
 			Document doc = Document.buildDocument(feed.toElement());
 			doc.writeToFile(this.saveFile);
-			ir = ImportResult.succeeded();
+			ir = Result.succeeded();
 			
 		} catch (Exception e) {
-			ir = ImportResult.error(e.getMessage(), e);
+			ir = Result.error(e.getMessage(), e);
 		}		
 		
 		return ir;			

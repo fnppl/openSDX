@@ -1,6 +1,7 @@
 package org.fnppl.opensdx.dmi.wayin;
 
 import java.io.File;
+import org.fnppl.opensdx.security.*;
 
 /*
  * Copyright (C) 2010-2011 
@@ -76,7 +77,7 @@ public class OpenSDXImporterBase {
 			File impFile = new File(args[1]);
 			File savFile = new File(args[2]);
 			
-			ImportResult ir = null;
+			Result ir = null;
 			switch(impType.getType()) {
 				case ImportType.FINETUNES:
 					FinetunesToOpenSDXImporter impFt = new FinetunesToOpenSDXImporter(impType, impFile, savFile);
