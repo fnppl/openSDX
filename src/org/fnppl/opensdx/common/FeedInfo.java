@@ -130,6 +130,17 @@ public class FeedInfo extends BusinessObject {
 		return null;
 	}
 	
+	public FeedInfo sender(ContractPartner partner) {
+		partner.role(ContractPartner.ROLE_SENDER);
+		sender = partner;
+		return this;
+	}
+	
+	public FeedInfo licensor(ContractPartner partner) {
+		partner.role(ContractPartner.ROLE_LICENSOR);
+		licensor = partner;
+		return this;
+	}
 	
 	public boolean getOnlyTest() {
 		return onlytest.getBoolean();

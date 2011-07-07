@@ -58,7 +58,7 @@ import org.fnppl.opensdx.xml.ChildElementIterator;
  */
 public class Territorial extends BusinessObject {
 
-	public static String KEY_NAME = "terrtorial";
+	public static String KEY_NAME = "territorial";
 	public Vector<BusinessStringItem> territories = new Vector<BusinessStringItem>();
 	
 
@@ -81,10 +81,10 @@ public class Territorial extends BusinessObject {
 		final Territorial t = new Territorial();
 		t.initFromBusinessObject(bo);
 		
-		new ChildElementIterator(bo, "promotext") {
+		new ChildElementIterator(bo, "territory") {
 			public void processBusinessStringItem(BusinessStringItem item) {
 				t.territories.add(item);			}
-		};		
+		};
 		return t;
 	}
 	

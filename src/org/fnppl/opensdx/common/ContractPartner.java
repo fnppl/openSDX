@@ -99,6 +99,11 @@ public class ContractPartner extends BusinessObject {
 		return this;
 	}
 	
+	public ContractPartner role(int role) {
+		this.role = role;
+		return this;
+	}
+	
 	public static ContractPartner fromBusinessObject(BusinessObject bo, int role) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(getKeyname(role))) {

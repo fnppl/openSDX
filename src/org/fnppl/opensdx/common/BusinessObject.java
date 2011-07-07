@@ -286,6 +286,12 @@ public abstract class BusinessObject implements XMLElementable {
 		return null;
 	}
 	
+	public String getStringIfExist(String name) {
+		BusinessStringItem bs = getBusinessStringItem(name);
+		if (bs==null) return null;
+		return bs.getString();
+	}
+	
 	public void removeOtherObjects() {
 		otherObjects.removeAllElements();
 	}
