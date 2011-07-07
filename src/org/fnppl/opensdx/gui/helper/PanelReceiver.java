@@ -115,6 +115,14 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		initComponents();
 		initLayout();
 		update();
+		//set editable false
+		select_type.setEnabled(false);
+		text_servername.setEditable(false);
+		text_serveripv4.setEditable(false);
+		select_auth_type.setEnabled(false);
+		text_keystore.setEditable(false);
+		text_keyid.setEditable(false);
+		text_username.setEditable(false);
 	}
 
 

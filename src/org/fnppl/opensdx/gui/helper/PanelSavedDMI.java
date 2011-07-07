@@ -19,6 +19,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -221,6 +222,19 @@ public class PanelSavedDMI extends JPanel {
 				objects.add(o);
 			}
 		}
+		else if (name.equals("creator")) {
+			DMIObject o = new DMIObject();
+			o.type = "Creator";
+			
+			String email = bo.getStringIfExist("email");
+			o.description = "";
+			if (email!=null) {
+				o.description = email;
+			}
+			o.fromFile = f;
+			o.object = bo;
+			objects.add(o);
+		}
 	}
 	
 	private void updateTableModel() {
@@ -241,7 +255,7 @@ public class PanelSavedDMI extends JPanel {
 			return;
 		}
 		DMIObject o = objects.get(index);
-		System.out.println("Selection changed: "+index+" :: "+o.type+", "+o.description+", "+o.fromFile.getName());
+		//System.out.println("Selection changed: "+index+" :: "+o.type+", "+o.description+", "+o.fromFile.getName());
 		panelDetails.removeAll();
 		panelButtons.removeAll();
 		
@@ -249,9 +263,90 @@ public class PanelSavedDMI extends JPanel {
 			panelDetails.add(new PanelReceiver((Receiver)o.object));
 			panelButtons.add(buAddToFeedInfo);
 		}
+		else if (o.type.equals("Contract Partner")) {
+			ContractPartner c = (ContractPartner)o.object;
+			String[][] data = new String[][] {
+					{"contract partner id",c.getContractPartnerID()},
+					{"our contract partner id",c.getOurContractPartnerID()},
+					{"email",c.getEmail()}
+			};
+			panelDetails.add(buildPanel("Contract Partner", data));
+			//panelButtons.add(buAddToFeedInfo);
+		}
+		else if (o.type.equals("Creator")) {
+			String[][] data = new String[][] {
+					{"email",o.object.getStringIfExist("email")},
+					{"user id",o.object.getStringIfExist("userid")}
+			};
+			panelDetails.add(buildPanel("Contract Partner", data));
+			//panelButtons.add(buAddToFeedInfo);
+		}
+		
 		this.validate();
 		//panelDetails.repaint();
 		//panelButtons.repaint();
+	}
+	
+	
+	private JPanel buildPanel(String title, String[][] data) {
+		JPanel p = new JPanel();
+		p.setBorder(new TitledBorder(title));
+		
+		int count = data.length;
+		
+		GridBagLayout gbl = new GridBagLayout();
+		p.setLayout(gbl);
+		GridBagConstraints gbc = new GridBagConstraints();
+
+		for (int i=0;i<count;i++) {
+			// Component: label
+			JLabel l = new JLabel(data[i][0]);
+			gbc.gridx = 0;
+			gbc.gridy = i;
+			gbc.gridwidth = 1;
+			gbc.gridheight = 1;
+			gbc.weightx = 0.0;
+			gbc.weighty = 0.0;
+			gbc.anchor = GridBagConstraints.CENTER;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.ipadx = 0;
+			gbc.ipady = 0;
+			gbc.insets = new Insets(5,5,5,5);
+			gbl.setConstraints(l,gbc);
+			p.add(l);
+			
+			// Component: text
+			JTextField t = new JTextField(data[i][1]);
+			t.setEditable(false);
+			gbc.gridx = 1;
+			gbc.gridy = i;
+			gbc.gridwidth = 1;
+			gbc.gridheight = 1;
+			gbc.weightx = 1.0;
+			gbc.weighty = 0.0;
+			gbc.anchor = GridBagConstraints.CENTER;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.ipadx = 0;
+			gbc.ipady = 0;
+			gbc.insets = new Insets(5,5,5,5);
+			gbl.setConstraints(t,gbc);
+			p.add(t);
+		}
+		JLabel filler =  new JLabel();
+		gbc.gridx = 0;
+		gbc.gridy = count;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 1.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(5,5,5,5);
+		gbl.setConstraints(filler,gbc);
+		p.add(filler);
+		return p;
 	}
 	
 	public void initComponents() {
