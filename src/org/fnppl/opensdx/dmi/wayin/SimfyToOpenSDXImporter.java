@@ -1,8 +1,11 @@
 package org.fnppl.opensdx.dmi.wayin;
 
 import java.io.*;
+import java.util.*;
+
 import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.xml.*;
+import org.fnppl.opensdx.security.*;
 
 /*
  * Copyright (C) 2010-2011 
@@ -55,8 +58,8 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 		super(type, impFile, savFile);
 	}
 	
-	public ImportResult formatToOpenSDX() {
-		ImportResult ir = ImportResult.succeeded();		
+	public Result formatToOpenSDX() {
+		Result ir = Result.succeeded();		
 		// do the import
 		try {			
 			// (1) get XML-Data from import document
