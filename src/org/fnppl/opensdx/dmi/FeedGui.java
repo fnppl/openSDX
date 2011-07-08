@@ -93,9 +93,6 @@ import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 import org.fnppl.opensdx.dmi.wayin.*;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
-
-
 
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
