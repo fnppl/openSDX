@@ -253,7 +253,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	
 
         		/* TODO addItems
-        		  //@Michi:  Hallo Mich, schön, dass Du auch dabei bist.
+        		  //@Michi:  Hallo Michi, schön, dass Du auch dabei bist.
         		  //		folgendes kann einen NullPointer Exception geben:
         		  //        if(release.getChildText("longname").length()==0)
         		  // 		besser getChildTextNN benutzen -> NN steht für NotNull und gibt statt null einen "" zurück
