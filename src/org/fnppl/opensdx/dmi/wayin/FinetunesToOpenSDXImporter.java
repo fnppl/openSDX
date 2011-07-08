@@ -118,10 +118,13 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        // (2) get FeedInfo from import and set create new FeedInfo for openSDX
 	        boolean onlytest = true;
 	        String feedid = root.getAttribute("feedid");
+	        if (feedid == null) feedid = "[NOT SET]";
 	        Calendar cal = Calendar.getInstance();
 	        long creationdatetime = cal.getTimeInMillis();
 	        long effectivedatetime = cal.getTimeInMillis();
-	        ContractPartner sender = ContractPartner.make(0, root.getAttribute("partner"), "");
+	        String partner = root.getAttribute("partner");
+	        if (partner==null) partner = "[NOT SET]";
+	        ContractPartner sender = ContractPartner.make(0, partner , "");
 	        ContractPartner licensor = ContractPartner.make(1, "", "");
 	        
 	        FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor);
@@ -144,7 +147,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	
 	        	// name
 	        	String name = "";
-	        	if(release.getChildText("longname").length()==0) {
+	        	if(release.getChildTextNN("longname").length()==0) {
 	        		name = release.getChildText("title");
 	        	}
 	        	else {
@@ -173,17 +176,21 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	
 	        	BundleInformation info = BundleInformation.make(srd, prd);
 	        	
-	        	Vector<Element> infotexts = release.getChild("infotexts").getChildren();
-	        	for (Iterator<Element> itInfotexts = infotexts.iterator(); itInfotexts.hasNext();) {
-	        		Element infotext = itInfotexts.next();
+	        	try {
+		        	Vector<Element> infotexts = release.getChild("infotexts").getChildren();
+		        	for (Iterator<Element> itInfotexts = infotexts.iterator(); itInfotexts.hasNext();) {
+		        		Element infotext = itInfotexts.next();
+		        		
+		        		if(infotext.getName().equals("promotext")) {
+		        			info.setPromotext(infotext.getAttribute("lang"), infotext.getText());
+		        		}
+		        		else if(infotext.getName().equals("teasertext")) {
+		        			info.setTeasertext(infotext.getAttribute("lang"), infotext.getText());
+		        		}
+		        	}            	
+	        	} catch (Exception ex) {
 	        		
-	        		if(infotext.getName().equals("promotext")) {
-	        			info.setPromotext(infotext.getAttribute("lang"), infotext.getText());
-	        		}
-	        		else if(infotext.getName().equals("teasertext")) {
-	        			info.setTeasertext(infotext.getAttribute("lang"), infotext.getText());
-	        		}
-	        	}            	
+	        	}
 	        	
 	        	// license basis
 	        	String releaseFrom = release.getChild("schedules").getChildText("youmayreleasefrom");
@@ -244,7 +251,9 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	}
         		bundle.tags(tags);	 
 	        	
-	        	/* ToDO !!!
+
+        		/* TODO addItems
+        		  
 	        	// add Items
 	        	Element ressource = release.getChild("resource");
 	        	if(ressource.getAttribute("type").equals("frontcover")) {
@@ -257,7 +266,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        		item.addFile(file);
 	        		bundle.addItem(item);
 	        	}
-
+        		
 	        	Vector<Element> tracks = release.getChild("tracks").getChildren("track");
 	        	for (Iterator<Element> itTracks = tracks.iterator(); itTracks.hasNext();) {
 	        		Element track = itTracks.next();
@@ -271,7 +280,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        	
 		        	// name
 		        	String track_name = "";
-		        	if(track.getChildText("longname").length()==0) {
+		        	if(track.getChildTextNN("longname").length()==0) {
 		        		track_name = track.getChildText("title");
 		        	}
 		        	else {
@@ -299,7 +308,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        		
 		        	bundle.addItem(item);
 	        	}
-	        	*/   	
+	        */
 	        	
 	            feed.addBundle(bundle);
 	        }

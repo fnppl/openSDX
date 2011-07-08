@@ -102,13 +102,15 @@ public class LicenseBasis extends BusinessObject {
 			pricing = null;
 		} else {
 			asOnBundle = null;
-			timeframe = new BusinessCollection<BusinessDatetimeItem>() {
-				public String getKeyname() {
-					return "timeframe";
-				}
-			};
-			timeframe.add(new BusinessDatetimeItem("from", -1L));
-			timeframe.add(new BusinessDatetimeItem("to", -1L));
+			if (timeframe==null) {
+				timeframe = new BusinessCollection<BusinessDatetimeItem>() {
+					public String getKeyname() {
+						return "timeframe";
+					}
+				};
+				timeframe.add(new BusinessDatetimeItem("from", -1L));
+				timeframe.add(new BusinessDatetimeItem("to", -1L));
+			}
 		}
 		return this;
 	}
@@ -154,7 +156,7 @@ public class LicenseBasis extends BusinessObject {
 		final LicenseBasis b = new LicenseBasis();
 		b.initFromBusinessObject(bo);
 		
-		b.territorial = null; //TODO
+		b.territorial =Territorial.fromBusinessObject(bo);
 		b.timeframe = new BusinessCollection<BusinessDatetimeItem>() {
 			public String getKeyname() {
 				return "timeframe";
@@ -163,9 +165,20 @@ public class LicenseBasis extends BusinessObject {
 		BusinessObject boTimeFrame = bo.handleBusinessObject("timeframe");
 		if (boTimeFrame!=null) {
 			BusinessDatetimeItem from = BusinessDatetimeItem.fromBusinessObject(boTimeFrame, "from");
-			if (from!=null) b.timeframe.add(from);
+			if (from!=null) {
+				b.timeframe.add(from);
+			} else {
+				b.timeframe.add(new BusinessDatetimeItem("from", -1L));
+			}
 			BusinessDatetimeItem to = BusinessDatetimeItem.fromBusinessObject(boTimeFrame, "to");
-			if (to!=null) b.timeframe.add(to);
+			if (to!=null) {
+				b.timeframe.add(to);
+			} else {
+				b.timeframe.add(new BusinessDatetimeItem("to", -1L));
+			}
+		} else {
+			b.timeframe.add(new BusinessDatetimeItem("from", -1L));
+			b.timeframe.add(new BusinessDatetimeItem("to", -1L));
 		}
 		b.pricing = bo.handleBusinessObject("pricing");
 		b.asOnBundle = BusinessStringItem.fromBusinessObject(bo, "as_on_bundle");

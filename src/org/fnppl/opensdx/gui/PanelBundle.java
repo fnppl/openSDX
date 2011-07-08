@@ -138,6 +138,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         list_language.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list_language.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
+                 if (e.getValueIsAdjusting()) return;
                 //System.out.println("value changed");
                 int sel = list_language.getSelectedIndex();
                 if (sel>=0 && sel<list_language.getModel().getSize()) {
@@ -147,7 +148,16 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                 }
             }
         });
-        
+        list_contributors.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) return;
+                int sel = list_contributors.getSelectedIndex();
+                if (sel >= 0 && sel < bundle.getContributorCount()) {
+                    Contributor c = bundle.getContributor(sel);
+                    updateContributor(c);
+                }
+            }
+        });
     }
 
     public static void main(String[] args) {
@@ -453,16 +463,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         list_contributors.setModel(lm);
         list_contributors.setSelectedIndex(0);
         list_contributors.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list_contributors.addListSelectionListener(new ListSelectionListener() {
-
-            public void valueChanged(ListSelectionEvent e) {
-                int sel = list_contributors.getSelectedIndex();
-                if (sel >= 0 && sel < bundle.getContributorCount()) {
-                    Contributor c = bundle.getContributor(sel);
-                    updateContributor(c);
-                }
-            }
-        });
+       
 //        Vector<Contributor> contributors = bundle.getAllContributors();
 //        int anzContributors = contributors.size();
 //        DefaultListModel lm = new DefaultListModel();
@@ -967,7 +968,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
 
         jLabel2.setText("type");
 
-        select_contributor_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "label", "composer", "texter", "writer", "conductor" }));
+        select_contributor_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "label", "performer", "composer", "texter", "writer", "conductor" }));
         select_contributor_type.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 select_contributor_typeActionPerformed(evt);
@@ -1251,11 +1252,13 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         jScrollPane2.setViewportView(list_language);
 
         text_promotext.setColumns(20);
+        text_promotext.setLineWrap(true);
         text_promotext.setRows(5);
         text_promotext.setBorder(javax.swing.BorderFactory.createTitledBorder("Promotion Text"));
         jScrollPane5.setViewportView(text_promotext);
 
         text_teasertext.setColumns(20);
+        text_teasertext.setLineWrap(true);
         text_teasertext.setRows(5);
         text_teasertext.setBorder(javax.swing.BorderFactory.createTitledBorder("Teaser Text"));
         jScrollPane6.setViewportView(text_teasertext);
@@ -1475,7 +1478,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
             }
         });
 
-        jLabel23.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
+        jLabel23.setFont(new java.awt.Font("Ubuntu", 1, 15));
         jLabel23.setText("Genres for this item");
 
         jLabel35.setText("main language");

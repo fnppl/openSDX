@@ -394,6 +394,40 @@ public class SecurityHelper {
 		return ret;
 	}
 	
+	public static byte[][] getMD5SHA1(File f) throws Exception {
+		FileInputStream fin_ = new FileInputStream(f);
+		BufferedInputStream fin = new BufferedInputStream(fin_);
+		
+		byte[][] ret =  getMD5SHA1(fin);
+		fin.close();
+		
+		return ret;
+	}
+	
+	public static byte[][] getMD5SHA1(InputStream fin) throws Exception {
+		byte[] md5ret = new byte[16];
+		byte[] sha1ret = new byte[20];
+		
+		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
+		org.bouncycastle.crypto.digests.SHA1Digest sha1 = new org.bouncycastle.crypto.digests.SHA1Digest();
+		
+		int read = -1;
+		byte[] buff = new byte[4096];
+		while((read=fin.read(buff))!=-1) {
+			md5.update(buff, 0, read);
+			sha1.update(buff, 0, read);
+		}
+		
+		sha1.doFinal(sha1ret, 0);
+		md5.doFinal(md5ret, 0);
+		
+		
+		return new byte[][]{
+				md5ret,
+				sha1ret,
+		};
+	}
+	
 	
 	public static byte[][] getMD5SHA1SHA256(InputStream fin) throws Exception {
 		byte[] ret = new byte[16 + 20 + 32]; //160 bit = 20 byte + md5 128bit = 16 + sha256 256bit = 32 byte 

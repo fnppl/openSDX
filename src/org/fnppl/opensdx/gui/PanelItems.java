@@ -240,6 +240,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     }
 
      private void updateItemList() {
+        // System.out.println("update item list");
         DefaultListModel lm = new DefaultListModel();
     	 if (bundle!=null) {
 	        int anz = bundle.getItemsCount();
@@ -275,19 +276,12 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         list_files.setModel(lm);
         list_files.setSelectedIndex(0);
         list_files.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list_files.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                int sel = list_files.getSelectedIndex();
-                if (sel>= 0 && sel < item.getFilesCount()) {
-                    ItemFile file = item.getFile(sel);
-                    updateFile(file);
-                }
-            }
-	 });
     }
 
     private void updateFile(ItemFile file) {
+        //System.out.println("update file");
         if (file != null) {
+            panelBasics1.setVisible(true);
             text_file_path.setText(file.getLocationPath());
             text_file_format.setText(file.getFiletype());
             String channel = file.getChannels();
@@ -299,11 +293,14 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             if (type == null) {
                 type = "[not specified]";
             }
-            select_file_type.setSelectedItem(type);
+           // System.out.println("file: "+file.getLocationPath()+" :: type "+file.getType()+",  filetype "+file.getFiletype());
+            select_file_combobox_type.setSelectedItem(type);
             text_file_length.setText(""+file.getBytes());
             text_file_md5.setText(file.getChecksums().getMd5String());
             text_file_sha1.setText(file.getChecksums().getSha1String());
             changeListener.saveState(text_file_format);
+        } else {
+            panelBasics1.setVisible(false);
         }
     }
 
@@ -332,7 +329,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
     }
 
       private void updateItem(Item item) {
-          //System.out.println("update item");
+        //  System.out.println("update item");
         if (item != null) {
             panelBasics.setVisible(true);
             tab_items.setVisible(true);
@@ -379,9 +376,8 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         //files
         updateFileList(item);
         ItemFile itemfile = getSelectedFile();
-        if (itemfile!=null) {
-            updateFile(itemfile);
-        }
+        updateFile(itemfile);
+        
         changeListener.saveStates();
         } else {
             panelBasics.setVisible(false);
@@ -644,12 +640,20 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         list_items.setModel(new DefaultListModel());
         list_items.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) return;
                 int sel = list_items.getSelectedIndex();
                 if (bundle==null) return;
                 if (sel >= 0 && sel < bundle.getItemsCount()) {
                     Item item = bundle.getItem(sel);
                     updateItem(item);
                 }
+            }
+	 });
+         list_files.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) return;
+                ItemFile file = getSelectedFile();
+                updateFile(file);
             }
 	 });
         tree_territories = new EditTerritoiresTree();
@@ -666,6 +670,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         list_language.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list_language.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) return;
                 //System.out.println("value changed");
                 int sel = list_language.getSelectedIndex();
                 if (sel>=0 && sel<list_language.getModel().getSize()) {
@@ -787,7 +792,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         jLabel26 = new javax.swing.JLabel();
         text_file_path = new javax.swing.JTextField();
         jLabel28 = new javax.swing.JLabel();
-        select_file_type = new javax.swing.JComboBox();
+        select_file_combobox_type = new javax.swing.JComboBox();
         jLabel25 = new javax.swing.JLabel();
         text_file_format = new javax.swing.JTextField();
         jLabel27 = new javax.swing.JLabel();
@@ -821,7 +826,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
 
         jLabel7.setText("type");
 
-        select_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "audio", "video" }));
+        select_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "audio", "video", "image" }));
         select_type.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 select_typeActionPerformed(evt);
@@ -1375,7 +1380,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             }
         });
 
-        jLabel20.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
+        jLabel20.setFont(new java.awt.Font("Ubuntu", 1, 15));
         jLabel20.setText("Genres for this item");
 
         jLabel21.setText("main language");
@@ -1499,10 +1504,10 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
 
         jLabel28.setText("type");
 
-        select_file_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "[not specified]", "full", "pre-listening", "cover" }));
-        select_file_type.addActionListener(new java.awt.event.ActionListener() {
+        select_file_combobox_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "[not specified]", "full", "pre-listening", "cover" }));
+        select_file_combobox_type.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                select_file_typeActionPerformed(evt);
+                select_file_combobox_typeActionPerformed(evt);
             }
         });
 
@@ -1563,7 +1568,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                                     .addGroup(panelBasics1Layout.createSequentialGroup()
                                         .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(text_file_format, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
-                                            .addComponent(select_file_type, javax.swing.GroupLayout.Alignment.LEADING, 0, 202, Short.MAX_VALUE)
+                                            .addComponent(select_file_combobox_type, javax.swing.GroupLayout.Alignment.LEADING, 0, 202, Short.MAX_VALUE)
                                             .addComponent(text_file_length, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE))
                                         .addGap(18, 18, 18)
                                         .addComponent(jLabel27)
@@ -1590,7 +1595,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addGap(14, 14, 14)
                 .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel28)
-                    .addComponent(select_file_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(select_file_combobox_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(40, 40, 40)
                 .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel29)
@@ -1906,18 +1911,19 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
        }
     }//GEN-LAST:event_select_file_channelActionPerformed
 
-    private void select_file_typeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_file_typeActionPerformed
-       ItemFile file = getSelectedFile();
+    private void select_file_combobox_typeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_file_combobox_typeActionPerformed
+
+        ItemFile file = getSelectedFile();
        if (file!=null) {
-           int sel = select_file_type.getSelectedIndex();
+           int sel = select_file_combobox_type.getSelectedIndex();
            if (sel==0) {
                file.type(null);
            } else {
-               file.type((String)select_file_type.getSelectedItem());
+               file.type((String)select_file_combobox_type.getSelectedItem());
            }
            notifyChanges();
        }
-    }//GEN-LAST:event_select_file_typeActionPerformed
+    }//GEN-LAST:event_select_file_combobox_typeActionPerformed
 
     private void check_tags_bundle_onlyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_check_tags_bundle_onlyActionPerformed
        Item item = getSelectedItem();
@@ -2184,7 +2190,7 @@ private void  updateLanguageList() {
     private javax.swing.JPanel panel_genres;
     private javax.swing.JPanel panel_territories;
     private javax.swing.JComboBox select_file_channel;
-    private javax.swing.JComboBox select_file_type;
+    private javax.swing.JComboBox select_file_combobox_type;
     private javax.swing.JComboBox select_license_pricing;
     private javax.swing.JComboBox select_type;
     private javax.swing.JTabbedPane tab_items;

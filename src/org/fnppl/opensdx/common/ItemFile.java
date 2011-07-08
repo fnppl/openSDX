@@ -62,31 +62,10 @@ public class ItemFile extends BusinessObject {
 	private BusinessStringItem channels;		//COULD
 	
 	public static ItemFile make(File f) {
-		ItemFile file = new ItemFile();
-		file.type = null;
-		file.filetype = null;
-		file.channels = null;
-		
-		file.location = null;
-		file.checksums = null;
-		file.bytes = null;
-		if (f.exists() && !f.isDirectory()) {
-			file.location = FileLocation.make(f.getAbsolutePath());
-			int bytes = (int)f.length();
-			file.bytes = new BusinessIntegerItem("bytes", bytes);
-			try {
-				byte[][] checksums = SecurityHelper.getMD5SHA1SHA256(f);
-				file.checksums = Checksums.make(checksums[1],checksums[2],checksums[3]);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			if (f.getName().contains(".")) {
-				file.filetype = new BusinessStringItem("filetype", f.getName().substring(f.getName().lastIndexOf('.')+1).toLowerCase());	
-			}
-		}
+		ItemFile file = make();
+		file.setFile(f);
 		return file;
 	}
-
 
 	public static ItemFile make() {
 		ItemFile file = new ItemFile();
@@ -113,8 +92,8 @@ public class ItemFile extends BusinessObject {
 			int b = (int)f.length();
 			bytes = new BusinessIntegerItem("bytes", b);
 			try {
-				byte[][] sums = SecurityHelper.getMD5SHA1SHA256(f);
-				checksums = Checksums.make(sums[1],sums[2],sums[3]);
+				byte[][] sums = SecurityHelper.getMD5SHA1(f);
+				checksums = Checksums.make(sums[0],sums[1],null);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
