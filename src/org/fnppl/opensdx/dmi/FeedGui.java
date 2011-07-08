@@ -507,7 +507,7 @@ public class FeedGui extends JFrame implements MyObserver {
 	            String line = in.readLine(); //header
 	            while ((line = in.readLine())!=null) {
 	            	String[] t = line.split(",");
-	            	t[1] = t[1].toUpperCase();
+	            	t[1] = t[1].toLowerCase();
 	            	lang_codes_names.add(t[0]+" :: "+t[1]);
 	            	//lang_codes_names.add(" :: "+t[1]);
 	            	lang_codes.add(t[1]);
