@@ -65,7 +65,7 @@ public class Bundle extends BusinessObject {
 	private LicenseSpecifics license_specifics;				//MUST
 	private ItemTags tags;									//COULD
 	private BusinessCollection<Item> items;					//SHOULD
-	
+	private BusinessCollection<ItemFile> files;	 			//COULD
 
 	public static Bundle make(IDs ids, String displayname, String name, String version, String display_artist, BundleInformation information, LicenseBasis license_basis, LicenseSpecifics license_specifics) {
 		Bundle bundle = new Bundle();
@@ -88,6 +88,7 @@ public class Bundle extends BusinessObject {
 				return "items";
 			}
 		};
+		bundle.files = null;
 		return bundle;
 	}
 
@@ -128,7 +129,44 @@ public class Bundle extends BusinessObject {
 				bundle.addItem(Item.fromBusinessObject(bo));
 			}
 		};
+		bundle.files =  new BusinessCollection<ItemFile>() {
+			public String getKeyname() {
+				return "files";
+			}
+		};
+		new ChildElementIterator(bo, "files","file") {
+			public void processBusinessObject(BusinessObject bo) {
+				bundle.addFile(ItemFile.fromBusinessObject(bo));
+			}
+		};
 		return bundle;
+	}
+	
+	public Bundle addFile(ItemFile file) {
+		if (files==null) {
+			files = new BusinessCollection<ItemFile>() {
+				public String getKeyname() {
+					return "files";
+				}
+			};
+		}
+		files.add(file);
+		return this;
+	}
+	
+	public void removeFile(int index) {
+		if (files==null) return;
+		files.remove(index);
+	}
+	
+	public int getFilesCount() {
+		if (files==null) return 0;
+		return files.size();
+	}
+	public ItemFile getFile(int index) {
+		if (files==null) return null;
+		if (index<0 || index>=files.size()) return null;
+		return files.get(index);
 	}
 
 	public Bundle addContributor(Contributor contributor) {

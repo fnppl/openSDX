@@ -781,7 +781,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         bu_main_language = new javax.swing.JButton();
         bu_select_country = new javax.swing.JButton();
         panel_genres = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
+        panelFiles = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane8 = new javax.swing.JScrollPane();
         list_files = new javax.swing.JList();
@@ -1649,24 +1649,24 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addContainerGap(51, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        javax.swing.GroupLayout panelFilesLayout = new javax.swing.GroupLayout(panelFiles);
+        panelFiles.setLayout(panelFilesLayout);
+        panelFilesLayout.setHorizontalGroup(
+            panelFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelFilesLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        panelFilesLayout.setVerticalGroup(
+            panelFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelFilesLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(448, Short.MAX_VALUE))
         );
 
-        tab_items.addTab("Files", jPanel3);
+        tab_items.addTab("Files", panelFiles);
 
         jLabel3.setFont(new java.awt.Font("Ubuntu", 1, 15));
         jLabel3.setText("List of items");
@@ -2161,7 +2161,6 @@ private void  updateLanguageList() {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane10;
     private javax.swing.JScrollPane jScrollPane2;
@@ -2181,6 +2180,7 @@ private void  updateLanguageList() {
     private javax.swing.JPanel panelBasics;
     private javax.swing.JPanel panelBasics1;
     private javax.swing.JPanel panelContributors;
+    private javax.swing.JPanel panelFiles;
     private javax.swing.JPanel panelIDs;
     private javax.swing.JPanel panelIDsBig;
     private javax.swing.JPanel panelInformation;

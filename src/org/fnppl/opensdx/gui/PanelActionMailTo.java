@@ -64,6 +64,7 @@ public class PanelActionMailTo extends javax.swing.JPanel implements MyObservabl
     private ActionMailTo action = null;
 
     public void setActionMailTo(ActionMailTo action) {
+    	 this.action = action;
          text_receiver.setText(action.getReceiver());
          text_subject.setText(action.getSubject());
          text_mailtext.setText(action.getText());

@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Vector;
@@ -28,6 +29,7 @@ import org.fnppl.opensdx.common.Contributor;
 import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.InfoWWW;
+import org.fnppl.opensdx.common.ItemFile;
 import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Territorial;
@@ -158,6 +160,40 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                 }
             }
         });
+    }
+
+     private void updateFile(ItemFile file) {
+        //System.out.println("update file");
+        if (file != null) {
+            panelBasics1.setVisible(true);
+            text_file_path.setText(file.getLocationPath());
+            text_file_format.setText(file.getFiletype());
+            String type = file.getType();
+            if (type == null) {
+                type = "[not specified]";
+            }
+           // System.out.println("file: "+file.getLocationPath()+" :: type "+file.getType()+",  filetype "+file.getFiletype());
+            select_file_combobox_type.setSelectedItem(type);
+            text_file_length.setText(""+file.getBytes());
+            text_file_md5.setText(file.getChecksums().getMd5String());
+            text_file_sha1.setText(file.getChecksums().getSha1String());
+            changeListener.saveState(text_file_format);
+        } else {
+            panelBasics1.setVisible(false);
+        }
+    }
+
+    private void updateFileList(final Bundle bundle) {
+        DefaultListModel lm = new DefaultListModel();
+         if (bundle!=null) {
+                int anz = bundle.getFilesCount();
+                for (int i = 0; i < anz; i++) {
+                    lm.addElement("File: "+bundle.getFile(i).getLocationPath());
+                }
+         }
+        list_files.setModel(lm);
+        list_files.setSelectedIndex(0);
+        list_files.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     public static void main(String[] args) {
@@ -344,6 +380,11 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         //tags
         updateTags(bundle.getTags());
 
+        //files
+        updateFileList(bundle);
+        ItemFile itemfile = getSelectedFile();
+        updateFile(itemfile);
+        
         changeListener.saveStates();
     }
 
@@ -772,6 +813,27 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         bu_main_language = new javax.swing.JButton();
         bu_select_country = new javax.swing.JButton();
         panel_genres = new javax.swing.JPanel();
+        panelFiles = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        list_files = new javax.swing.JList();
+        jLabel37 = new javax.swing.JLabel();
+        bu_add_file = new javax.swing.JButton();
+        bu_remove_file = new javax.swing.JButton();
+        panelBasics1 = new javax.swing.JPanel();
+        jLabel38 = new javax.swing.JLabel();
+        text_file_path = new javax.swing.JTextField();
+        jLabel39 = new javax.swing.JLabel();
+        select_file_combobox_type = new javax.swing.JComboBox();
+        jLabel40 = new javax.swing.JLabel();
+        text_file_format = new javax.swing.JTextField();
+        jLabel42 = new javax.swing.JLabel();
+        text_file_length = new javax.swing.JTextField();
+        jLabel43 = new javax.swing.JLabel();
+        text_file_md5 = new javax.swing.JTextField();
+        jLabel44 = new javax.swing.JLabel();
+        text_file_sha1 = new javax.swing.JTextField();
+        bu_change_file = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(760, 989));
 
@@ -1570,6 +1632,186 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
 
         jTabbedPane1.addTab("Tags", panelTags);
 
+        jScrollPane8.setViewportView(list_files);
+
+        jLabel37.setFont(new java.awt.Font("Ubuntu", 1, 15));
+        jLabel37.setText("List of files");
+
+        bu_add_file.setText("add");
+        bu_add_file.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_add_fileActionPerformed(evt);
+            }
+        });
+
+        bu_remove_file.setText("remove");
+        bu_remove_file.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_remove_fileActionPerformed(evt);
+            }
+        });
+
+        panelBasics1.setBorder(javax.swing.BorderFactory.createTitledBorder("File properties"));
+
+        jLabel38.setText("path");
+
+        text_file_path.setEditable(false);
+        text_file_path.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                text_file_pathActionPerformed(evt);
+            }
+        });
+
+        jLabel39.setText("type");
+
+        select_file_combobox_type.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "[not specified]", "cover", "booklet" }));
+        select_file_combobox_type.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                select_file_combobox_typeActionPerformed(evt);
+            }
+        });
+
+        jLabel40.setText("format");
+
+        jLabel42.setText("length in bytes");
+
+        text_file_length.setEditable(false);
+
+        jLabel43.setText("md5 checksum");
+
+        text_file_md5.setEditable(false);
+
+        jLabel44.setText("sha1 checksum");
+
+        text_file_sha1.setEditable(false);
+
+        bu_change_file.setText("change");
+        bu_change_file.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bu_change_fileActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout panelBasics1Layout = new javax.swing.GroupLayout(panelBasics1);
+        panelBasics1.setLayout(panelBasics1Layout);
+        panelBasics1Layout.setHorizontalGroup(
+            panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelBasics1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel42)
+                    .addGroup(panelBasics1Layout.createSequentialGroup()
+                        .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel38)
+                            .addComponent(jLabel39)
+                            .addComponent(jLabel40)
+                            .addComponent(jLabel43)
+                            .addComponent(jLabel44))
+                        .addGap(51, 51, 51)
+                        .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBasics1Layout.createSequentialGroup()
+                                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(text_file_md5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                                    .addGroup(panelBasics1Layout.createSequentialGroup()
+                                        .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(select_file_combobox_type, javax.swing.GroupLayout.Alignment.LEADING, 0, 187, Short.MAX_VALUE)
+                                            .addComponent(text_file_length, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE))
+                                        .addGap(221, 221, 221))
+                                    .addComponent(text_file_sha1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE))
+                                .addGap(26, 26, 26))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBasics1Layout.createSequentialGroup()
+                                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(text_file_format, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                                    .addComponent(text_file_path, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE))
+                                .addGap(18, 18, 18)
+                                .addComponent(bu_change_file)))))
+                .addContainerGap())
+        );
+        panelBasics1Layout.setVerticalGroup(
+            panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelBasics1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel38)
+                    .addComponent(text_file_path, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(bu_change_file))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(text_file_format, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel40))
+                .addGap(14, 14, 14)
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel39)
+                    .addComponent(select_file_combobox_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(40, 40, 40)
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel42)
+                    .addComponent(text_file_length, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel43)
+                    .addComponent(text_file_md5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(panelBasics1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel44)
+                    .addComponent(text_file_sha1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(panelBasics1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel37)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(bu_remove_file)
+                            .addComponent(bu_add_file, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(8, 8, 8)))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel37)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(bu_add_file)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(bu_remove_file))
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(panelBasics1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(51, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout panelFilesLayout = new javax.swing.GroupLayout(panelFiles);
+        panelFiles.setLayout(panelFilesLayout);
+        panelFilesLayout.setHorizontalGroup(
+            panelFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelFilesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        panelFilesLayout.setVerticalGroup(
+            panelFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelFilesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(102, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Files", panelFiles);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -1783,13 +2025,87 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         }
 }//GEN-LAST:event_bu_select_countryActionPerformed
 
+    private ItemFile getSelectedFile() {
+        int sel = list_files.getSelectedIndex();
+        if (sel<0 || sel>=bundle.getFilesCount()) return null;
+        ItemFile file = bundle.getFile(sel);
+        return file;
+    }
+
+    private void bu_add_fileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_add_fileActionPerformed
+        File path = null;
+        ItemFile selFile = getSelectedFile();
+        if (selFile!=null) {
+            try {
+                path = new File(selFile.getLocationPath()).getParentFile();
+            } catch (Exception ex) {
+            }
+        }
+        File f = Dialogs.chooseOpenFile("Choose file", path, "");
+        if (f==null || !f.exists() || f.isDirectory()) return;
+        ItemFile file = ItemFile.make(f);
+        bundle.addFile(file);
+        updateFileList(bundle);
+        list_files.setSelectedIndex(bundle.getFilesCount()-1);
+        updateFile(file);
+        notifyChanges();
+}//GEN-LAST:event_bu_add_fileActionPerformed
+
+    private void bu_remove_fileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_fileActionPerformed
+
+        int sel = list_files.getSelectedIndex();
+        if (sel>=0 && sel < bundle.getFilesCount()) {
+            bundle.removeFile(sel);
+        }
+        updateFileList(bundle);
+        if (sel<bundle.getFilesCount()) {
+            list_files.setSelectedIndex(sel);
+        } else if (bundle.getFilesCount()>0) {
+            list_files.setSelectedIndex(bundle.getFilesCount()-1);
+        }
+        notifyChanges();
+}//GEN-LAST:event_bu_remove_fileActionPerformed
+
+    private void text_file_pathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_text_file_pathActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_text_file_pathActionPerformed
+
+    private void select_file_combobox_typeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_file_combobox_typeActionPerformed
+
+        ItemFile file = getSelectedFile();
+        if (file!=null) {
+            int sel = select_file_combobox_type.getSelectedIndex();
+            if (sel==0) {
+                file.type(null);
+            } else {
+                file.type((String)select_file_combobox_type.getSelectedItem());
+            }
+            notifyChanges();
+        }
+}//GEN-LAST:event_select_file_combobox_typeActionPerformed
+
+    private void bu_change_fileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_change_fileActionPerformed
+        File lastFile = new File(text_file_path.getText());
+        File f = Dialogs.chooseOpenFile("Choose file", lastFile.getParentFile(), lastFile.getName());
+        if (f==null || !f.exists() || f.isDirectory()) return;
+        ItemFile file = getSelectedFile();
+        if (file!=null) {
+            file.setFile(f);
+            updateFile(file);
+            notifyChanges();
+        }
+}//GEN-LAST:event_bu_change_fileActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton bu_add_file;
     private javax.swing.JButton bu_add_language;
+    private javax.swing.JButton bu_change_file;
     private javax.swing.JButton bu_contributor_add;
     private javax.swing.JButton bu_contributor_remove;
     private javax.swing.JButton bu_main_language;
     private javax.swing.JButton bu_promotext_reset;
     private javax.swing.JButton bu_promotext_update;
+    private javax.swing.JButton bu_remove_file;
     private javax.swing.JButton bu_remove_language;
     private javax.swing.JButton bu_select_country;
     private javax.swing.JButton bu_teasertext_reset;
@@ -1828,12 +2144,20 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JLabel jLabel34;
     private javax.swing.JLabel jLabel35;
     private javax.swing.JLabel jLabel36;
+    private javax.swing.JLabel jLabel37;
+    private javax.swing.JLabel jLabel38;
+    private javax.swing.JLabel jLabel39;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel40;
+    private javax.swing.JLabel jLabel42;
+    private javax.swing.JLabel jLabel43;
+    private javax.swing.JLabel jLabel44;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
@@ -1842,13 +2166,17 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JList list_allowed_territories;
     private javax.swing.JList list_contributors;
     private javax.swing.JList list_disallowed_territories;
+    private javax.swing.JList list_files;
     private javax.swing.JList list_language;
     private javax.swing.JPanel panelBasics;
+    private javax.swing.JPanel panelBasics1;
     private javax.swing.JPanel panelContributors;
+    private javax.swing.JPanel panelFiles;
     private javax.swing.JPanel panelIDs;
     private javax.swing.JPanel panelIDsBig;
     private javax.swing.JPanel panelInformation;
@@ -1857,6 +2185,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JPanel panel_genres;
     private javax.swing.JPanel panel_territories;
     private javax.swing.JComboBox select_contributor_type;
+    private javax.swing.JComboBox select_file_combobox_type;
     private javax.swing.JComboBox select_license_pricing;
     private javax.swing.JTextField text_amazon;
     private javax.swing.JTextField text_contentauthid;
@@ -1874,6 +2203,11 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JTextField text_digital_release_date;
     private javax.swing.JTextField text_display_artist;
     private javax.swing.JTextField text_displayname;
+    private javax.swing.JTextField text_file_format;
+    private javax.swing.JTextField text_file_length;
+    private javax.swing.JTextField text_file_md5;
+    private javax.swing.JTextField text_file_path;
+    private javax.swing.JTextField text_file_sha1;
     private javax.swing.JTextField text_finetunesid;
     private javax.swing.JTextField text_grid;
     private javax.swing.JTextField text_isbn;

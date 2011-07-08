@@ -6,6 +6,7 @@ import org.fnppl.opensdx.common.ActionHttp;
 import org.fnppl.opensdx.common.TriggeredActions;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
+import org.fnppl.opensdx.xml.Document;
 
 /*
  * Copyright (C) 2010-2011
@@ -64,6 +65,7 @@ public class PanelActionHTTP extends javax.swing.JPanel implements MyObservable 
     private ActionHttp action = null;
 
     public void setActionHTTP(ActionHttp action) {
+    	 this.action = action;
          text_url.setText(action.getUrl());
          select_type.setSelectedItem(action.getType());
          updateHeaderList();
@@ -75,7 +77,8 @@ public class PanelActionHTTP extends javax.swing.JPanel implements MyObservable 
     private void updateHeaderList() {
         DefaultListModel lmh = new DefaultListModel();
          for (int i=0;i<action.getHeaderCount();i++) {
-             lmh.addElement(action.getHeaderName(i)+"="+action.getHeaderValue(i));
+        	 String s = action.getHeaderName(i)+"="+action.getHeaderValue(i);
+             lmh.addElement(s);
          }
          list_header.setModel(lmh);
     }
@@ -96,7 +99,7 @@ public class PanelActionHTTP extends javax.swing.JPanel implements MyObservable 
         }
         for (int i=0;i<list_param.getModel().getSize();i++) {
             String[] t = ((String)list_param.getModel().getElementAt(i)).split("=");
-            action.addHeader(t[0],t[1]);
+            action.addParam(t[0],t[1]);
         }
         return action;
     }
@@ -339,10 +342,10 @@ public class PanelActionHTTP extends javax.swing.JPanel implements MyObservable 
 
     private void bu_remove_paramActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_remove_paramActionPerformed
         int no = list_param.getSelectedIndex();
-       if (no<0 || no >= action.getHeaderCount()) return;
+       if (no<0 || no >= action.getParamCount()) return;
        action.removeParam(no);
-       notifyChanges();
        updateParamList();
+       notifyChanges();
     }//GEN-LAST:event_bu_remove_paramActionPerformed
 
 
