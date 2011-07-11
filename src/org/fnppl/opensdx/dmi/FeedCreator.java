@@ -110,7 +110,7 @@ public class FeedCreator {
 	}
 	
 	public static Feed makeEmptyFeedWithBundle() {
-
+		
 		ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER,"","");
 		ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR,"","");
 		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
@@ -121,7 +121,7 @@ public class FeedCreator {
 		
 		long now = System.currentTimeMillis();
 		FeedInfo feedinfo = FeedInfo.make(true, "", now, now, sender, licensor)
-									.creator("","")
+									.creator(Creator.make("", "", null))
 									.receiver(receiver);
 		
 		BundleInformation info = BundleInformation.make(now,now);
@@ -151,7 +151,7 @@ public class FeedCreator {
 				sender,
 				licensor
 			)
-			.creator(creator_email, creator_userid)
+			.creator(Creator.make(creator_email, creator_userid, null))
 			.receiver(
 				Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
 						.servername("localhost")

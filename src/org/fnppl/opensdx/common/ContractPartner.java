@@ -57,6 +57,8 @@ public class ContractPartner extends BusinessObject {
 	public static int ROLE_CONTRACT_PARTNER = -1;  public static String KEY_NAME_CONTRACT_PARTNER = "contract_partner";
 	public static int ROLE_SENDER = 0;             public static String KEY_NAME_SENDER = "sender";
 	public static int ROLE_LICENSOR = 1;           public static String KEY_NAME_LICENSOR = "licensor";
+	public static int ROLE_LICENSEE = 2;           public static String KEY_NAME_LICENSEE = "licensee";
+	
 	
 	private int role = -1;
 
@@ -64,6 +66,8 @@ public class ContractPartner extends BusinessObject {
 	private BusinessStringItem contractpartnerid;		//MUST
 	private BusinessStringItem ourcontractpartnerid; 	//MUST
 	private BusinessStringItem email; 					//SHOULD
+	private BusinessStringItem keyid; 					//SHOULD
+	
 	
 	private ContractPartner() {
 		
@@ -86,6 +90,7 @@ public class ContractPartner extends BusinessObject {
 		p.contractpartnerid = new BusinessStringItem("contractpartnerid", contractpartnerid);
 		p.ourcontractpartnerid = new BusinessStringItem("ourcontractpartnerid", ourcontractpartnerid);
 		p.email = null;
+		p.keyid = null;
 		return p;
 	}
 	
@@ -117,12 +122,26 @@ public class ContractPartner extends BusinessObject {
 		p.contractpartnerid = BusinessStringItem.fromBusinessObject(p,"contractpartnerid");
 		p.ourcontractpartnerid = BusinessStringItem.fromBusinessObject(p,"ourcontractpartnerid");
 		p.email = BusinessStringItem.fromBusinessObject(p,"email");
+		p.keyid = BusinessStringItem.fromBusinessObject(p, "keyid");
 		return p;
 	}
 
 	public ContractPartner email(String email) {
 		this.email = new BusinessStringItem("email", email);
 		return this;
+	}
+	public String getEmail() {
+		if (email==null) return null;
+		return email.getString();
+	}
+	
+	public ContractPartner keyid(String value) {
+		this.keyid = new BusinessStringItem("keyid", value);
+		return this;
+	}
+	public String getKeyid() {
+		if (keyid==null) return null;
+		return keyid.getString();
 	}
 	
 	public int getRole() {
@@ -132,12 +151,14 @@ public class ContractPartner extends BusinessObject {
 	public static String getKeyname(int role) {
 		if (role == ROLE_SENDER) return KEY_NAME_SENDER;
 		if (role == ROLE_LICENSOR) return KEY_NAME_LICENSOR;
+		if (role == ROLE_LICENSEE) return KEY_NAME_LICENSEE;
 		return KEY_NAME_CONTRACT_PARTNER;
 	}
 	
 	public String getKeyname() {
 		if (role == ROLE_SENDER) return KEY_NAME_SENDER;
 		if (role == ROLE_LICENSOR) return KEY_NAME_LICENSOR;
+		if (role == ROLE_LICENSEE) return KEY_NAME_LICENSEE;
 		return KEY_NAME_CONTRACT_PARTNER;
 	}
 	
@@ -151,8 +172,4 @@ public class ContractPartner extends BusinessObject {
 		return ourcontractpartnerid.getString();
 	}
 	
-	public String getEmail() {
-		if (email==null) return null;
-		return email.getString();
-	}
 }

@@ -54,6 +54,8 @@ public class LicenseBasis extends BusinessObject {
 	private Territorial territorial;  							 //MUST
 	private BusinessCollection<BusinessDatetimeItem> timeframe;	 //MUST
 	private BusinessObject pricing;								 //SHOULD
+	private BusinessBooleanItem streaming_allowed;				//COULD
+	
 	private BusinessStringItem asOnBundle;
 	
 	private LicenseBasis() {
@@ -71,6 +73,7 @@ public class LicenseBasis extends BusinessObject {
 		b.timeframe.add(new BusinessDatetimeItem("from", from));
 		b.timeframe.add(new BusinessDatetimeItem("to", to));
 		b.pricing = null;
+		b.streaming_allowed = null;
 		b.asOnBundle = null;
 		return b;
 	}
@@ -80,6 +83,7 @@ public class LicenseBasis extends BusinessObject {
 		b.territorial = null;
 		b.timeframe = null;
 		b.pricing = null;
+		b.streaming_allowed = null;
 		b.asOnBundle = new BusinessStringItem("as_on_bundle", "");
 		return b;
 	}
@@ -100,6 +104,7 @@ public class LicenseBasis extends BusinessObject {
 			territorial = null;
 			timeframe = null;
 			pricing = null;
+			streaming_allowed = null;
 		} else {
 			asOnBundle = null;
 			if (timeframe==null) {
@@ -181,9 +186,20 @@ public class LicenseBasis extends BusinessObject {
 			b.timeframe.add(new BusinessDatetimeItem("to", -1L));
 		}
 		b.pricing = bo.handleBusinessObject("pricing");
-		b.asOnBundle = BusinessStringItem.fromBusinessObject(bo, "as_on_bundle");
+		b.streaming_allowed = BusinessBooleanItem.fromBusinessObject(b, "streaming_allowed");
 		return b;
 	}
+	
+	public LicenseBasis streaming_allowed(boolean streaming_allowed) {
+		this.streaming_allowed = new BusinessBooleanItem("streaming_allowed", streaming_allowed);
+		return this;
+	}
+
+	public boolean isStreaming_allowed() {
+		if (streaming_allowed==null) return false;
+		return streaming_allowed.getBoolean();
+	}
+
 	
 	public LicenseBasis pricing_pricecode(String pricecode) {
 		if (pricing==null) {

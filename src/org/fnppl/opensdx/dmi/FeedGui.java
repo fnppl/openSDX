@@ -428,6 +428,26 @@ public class FeedGui extends JFrame implements MyObserver {
 		return null;
 	}
 	
+	public static OSDXKey selectFromAllKeys(KeyApprovingStore store, String message) {
+		Vector<OSDXKey> allKeys = store.getAllKeys();
+		if (allKeys==null || allKeys.size()==0) {
+			Dialogs.showMessage("Sorry, no keys in keystore");
+			return null;
+		}
+		Vector<String> select = new Vector<String>();
+		for (int i=0;i<allKeys.size();i++) {
+			OSDXKey k = allKeys.get(i);
+			String id = k.getKeyID()+" :: "+store.getEmail(k);
+			select.add(id);
+			
+		}
+		int ans = Dialogs.showSelectDialog("Select private key","Please select a private key for signing", select);
+		if (ans>=0 && ans<select.size()) {
+			return allKeys.get(ans);
+		}
+		return null;
+	}
+	
 	public void notifyChange(MyObservable changesIn) {
 		if (treePanel!=null) {
 			if (currentFeed != null) {
@@ -620,19 +640,19 @@ public class FeedGui extends JFrame implements MyObserver {
 		treePanel = new JPanel();
 		treePanel.setLayout(new BorderLayout());
 		
-		tabbedPane.addTab("FeedInfo", null, new JScrollPane(feedinfo_panel), "");
+		tabbedPane.addTab("FeedInfo", null, new JScrollPane(feedinfo_panel), null);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 
-		tabbedPane.addTab("Bundle", null,new JScrollPane(bundle_panel), "");
+		tabbedPane.addTab("Bundle", null,new JScrollPane(bundle_panel), null);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
-		tabbedPane.addTab("BundledItems", null, new JScrollPane(bundled_items_panel), "");
+		tabbedPane.addTab("BundledItems", null, new JScrollPane(bundled_items_panel), null);
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 
-		tabbedPane.addTab("Tree", null, treePanel, "");
+		tabbedPane.addTab("Tree", null, treePanel, null);
 		tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 		
-		tabbedPane.addTab("Saved DMI Objects", null, panel_saved_dmi, "");
+		tabbedPane.addTab("Saved DMI Objects", null, panel_saved_dmi, null);
 		tabbedPane.setMnemonicAt(4, KeyEvent.VK_5);
 		
 

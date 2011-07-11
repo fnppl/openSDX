@@ -63,6 +63,9 @@ public class BundleInformation extends BusinessObject {
 	private BusinessDatetimeItem physical_release_datetime;				//MUST
 	private BusinessDatetimeItem digital_release_datetime;				//MUST
 	private BusinessIntegerItem playlength;								//MUST for media files
+	private BusinessIntegerItem num;									//SHOULD
+	private BusinessIntegerItem setnum;									//SHOULD
+	
 	private BundleRelatedInformation related;							//SHOULD
 
 	public static BundleInformation make(long physical_release_datetime, long digital_release_datetime) {
@@ -72,6 +75,8 @@ public class BundleInformation extends BusinessObject {
 		information.physical_release_datetime = new BusinessDatetimeItem("physical_release_datetime", physical_release_datetime);
 		information.digital_release_datetime = new BusinessDatetimeItem("digital_release_datetime", digital_release_datetime);
 		information.playlength = null;
+		information.num = null;
+		information.setnum = null;
 		information.related = BundleRelatedInformation.make();
 		return information;
 	}
@@ -101,6 +106,8 @@ public class BundleInformation extends BusinessObject {
 		information.physical_release_datetime = BusinessDatetimeItem.fromBusinessObject(bo, "physical_release_datetime");
 		information.digital_release_datetime = BusinessDatetimeItem.fromBusinessObject(bo, "digital_release_datetime");
 		information.playlength = BusinessIntegerItem.fromBusinessObject(bo, "playlength");
+		information.num = BusinessIntegerItem.fromBusinessObject(bo, "num");
+		information.setnum = BusinessIntegerItem.fromBusinessObject(bo, "setnum");
 		information.related = BundleRelatedInformation.fromBusinessObject(bo);
 		return information;
 	}
@@ -164,6 +171,14 @@ public class BundleInformation extends BusinessObject {
 
 	public BundleInformation playlength(int playlength_in_seconds) {
 		this.playlength = new BusinessIntegerItem("playlength", playlength_in_seconds);
+		return this;
+	}
+	public BundleInformation num(int num) {
+		this.num = new BusinessIntegerItem("num", num);
+		return this;
+	}
+	public BundleInformation setnum(int setnum) {
+		this.setnum = new BusinessIntegerItem("setnum", setnum);
 		return this;
 	}
 	
@@ -260,6 +275,29 @@ public class BundleInformation extends BusinessObject {
 	public int getPlaylength() {
 		if (playlength==null) throw new RuntimeException("value not set");
 		return playlength.getIntValue();
+	}
+	
+	public int getNum() {
+		if (num==null) throw new RuntimeException("value not set");
+		return num.getIntValue();
+	}
+	
+	public int getSetNum() {
+		if (setnum==null) throw new RuntimeException("value not set");
+		return setnum.getIntValue();
+	}
+	
+	public boolean hasPlaylength() {
+		if (playlength==null) return false;
+		return true;
+	}
+	public boolean hasNum() {
+		if (num==null) return false;
+		return true;
+	}
+	public boolean hasSetNum() {
+		if (setnum==null) return false;
+		return true;
 	}
 	
 	public BundleRelatedInformation getRelated() {

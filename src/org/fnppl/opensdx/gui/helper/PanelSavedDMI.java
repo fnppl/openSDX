@@ -35,6 +35,7 @@ import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BusinessObject;
 import org.fnppl.opensdx.common.ContractPartner;
 import org.fnppl.opensdx.common.Contributor;
+import org.fnppl.opensdx.common.Creator;
 import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.ItemTags;
@@ -371,6 +372,20 @@ public class PanelSavedDMI extends JPanel {
 					}
 				});
 				o.buttons.add(bu);
+				bu = new JButton("set as Licensee in FeedInfo");
+				bu.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try {
+							//clone
+							ContractPartner c = ContractPartner.fromBusinessObject(BusinessObject.fromElement(((ContractPartner)o.object).toElement()), ContractPartner.ROLE_CONTRACT_PARTNER);
+							gui.getCurrentFeed().getFeedinfo().licensee(c);
+							gui.update();
+						} catch (Exception ex) {
+							
+						}
+					}
+				});
+				o.buttons.add(bu);
 			}
 			panelDetails.add(o.panel);
 			for (JButton bu : o.buttons) {
@@ -468,8 +483,9 @@ public class PanelSavedDMI extends JPanel {
 				bu.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						try {
-							gui.getCurrentFeed().getFeedinfo().creator_email(o.object.getStringIfExist("email"));
-							gui.getCurrentFeed().getFeedinfo().creator_userid(o.object.getStringIfExist("userid"));
+							//clone
+							Creator c = Creator.fromBusinessObject(BusinessObject.fromElement(((Creator)o.object).toElement()));
+							gui.getCurrentFeed().getFeedinfo().creator(c);
 							gui.update();
 						} catch (Exception ex) {
 							
@@ -608,7 +624,7 @@ public class PanelSavedDMI extends JPanel {
 	}
 	
 	
-	private JPanel buildPanel(String title, String[][] data) {
+	public static JPanel buildPanel(String title, String[][] data) {
 		JPanel p = new JPanel();
 		p.setBorder(new TitledBorder(title));
 		

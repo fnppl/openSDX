@@ -17,7 +17,13 @@ import org.fnppl.opensdx.xml.ChildElementIterator;
  * 							http://fnppl.org
 */
 import org.fnppl.opensdx.xml.Document;
-
+/*
+ * Copyright (C) 2010-2011 
+ * 							fine people e.V. <opensdx@fnppl.org> 
+ * 							Henning Thieß <ht@fnppl.org>
+ * 
+ * 							http://fnppl.org
+*/
 /*
  * Software license
  *
@@ -62,7 +68,7 @@ public class Feed extends BusinessObject {
 	
 	private FeedInfo feedinfo;								//MUST
 	private BusinessCollection<Bundle> bundles;				//SHOULD
-	private BusinessCollection<Item> single_items;			//SHOULD
+	private BusinessCollection<Item> single_items;			//COULD
 	
 	public static Feed make(FeedInfo feedinfo) {
 		Feed f = new Feed();
@@ -73,11 +79,7 @@ public class Feed extends BusinessObject {
 			}
 		};
 		
-		f.single_items = new BusinessCollection<Item>() {
-			public String getKeyname() {
-				return "items";
-			}
-		};
+		f.single_items = null;
 		return f;
 	}
 	
@@ -108,6 +110,7 @@ public class Feed extends BusinessObject {
 					return "items";
 				}
 			};
+			
 			new ChildElementIterator(bo, "items","item") {
 				public void processBusinessObject(BusinessObject bo) {
 					Item item = Item.fromBusinessObject(bo);
@@ -188,8 +191,28 @@ public class Feed extends BusinessObject {
 	}
 	
 	public Feed addSingleItem(Item item) {
+		if (single_items==null) {
+			single_items = new BusinessCollection<Item>() {
+				public String getKeyname() {
+					return "items";
+				}
+			};
+		}
 		single_items.add(item);
 		return this;
+	}
+	
+	public void removeSignleItem(int index) {
+		if (single_items==null) return;
+		single_items.remove(index);
+		if (single_items.size()==0) {
+			single_items = null;
+		}
+	}
+	
+	public int getItemsCount() {
+		if (single_items==null) return 0;
+		return single_items.size();
 	}
 	
 	public Feed setFeedInfo(FeedInfo feedinfo) {

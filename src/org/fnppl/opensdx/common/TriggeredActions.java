@@ -91,14 +91,28 @@ public class TriggeredActions implements XMLElementable {
 			final int triggerNo = i;
 			new ChildElementIterator(bo, actionTriggerName[triggerNo]) {
 				public void processBusinessObject(BusinessObject bo) {
-					if (bo.getKeyname().equals(ActionHttp.KEY_NAME)) {
-						ActionHttp action = ActionHttp.fromBusinessObject(bo);
-						ta.addAction(triggerNo, action);
+					Vector<XMLElementable> trig_actions = bo.handleObjects(ActionHttp.KEY_NAME);
+					if (trig_actions!=null && trig_actions.size()>0) {
+						for (XMLElementable ac : trig_actions) {
+							if (ac instanceof BusinessObject) {
+								BusinessObject boAction = (BusinessObject)ac;
+								//System.out.println("process: "+boAction.getKeyname());
+								ActionHttp action = ActionHttp.fromBusinessObject(boAction);
+								ta.addAction(triggerNo, action);
+							}
+						}
 					}
-					else if (bo.getKeyname().equals(ActionMailTo.KEY_NAME)) {
-						ActionMailTo action = ActionMailTo.fromBusinessObject(bo);
-						ta.addAction(triggerNo, action);
-					}
+					trig_actions = bo.handleObjects(ActionMailTo.KEY_NAME);
+					if (trig_actions!=null && trig_actions.size()>0) {
+						for (XMLElementable ac : trig_actions) {
+							if (ac instanceof BusinessObject) {
+								BusinessObject boAction = (BusinessObject)ac;
+								//System.out.println("process: "+boAction.getKeyname());
+								ActionMailTo action = ActionMailTo.fromBusinessObject(boAction);
+								ta.addAction(triggerNo, action);
+							}
+						}
+					}					
 				}
 			};
 		}

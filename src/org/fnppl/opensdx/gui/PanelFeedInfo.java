@@ -48,6 +48,9 @@ package org.fnppl.opensdx.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -62,6 +65,7 @@ import java.util.logging.Logger;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -76,14 +80,25 @@ import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
+import org.fnppl.opensdx.gui.helper.PanelContractPartner;
+import org.fnppl.opensdx.gui.helper.PanelCreator;
+import org.fnppl.opensdx.gui.helper.PanelFeedInfoBasics;
 import org.fnppl.opensdx.gui.helper.PanelReceiver;
+import org.fnppl.opensdx.gui.helper.PanelSavedDMI;
+import org.fnppl.opensdx.gui.helper.PanelTriggeredActions;
 
 public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable, MyObserver {
 
     private FeedInfo feedinfo = null;
-    private DocumentChangeListener changeListener;
     private PanelFeedInfo me;
     private File lastDir = null;
+    
+    private PanelFeedInfoBasics pBasis;
+    private PanelTriggeredActions pTriggeredActions;
+    private PanelCreator pCreator;
+    private PanelContractPartner pSender;
+    private PanelContractPartner pLicensor;
+    private PanelContractPartner pLicensee;
     private PanelReceiver pReceiver;
     private FeedGui gui;
 
@@ -98,181 +113,36 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable, M
             fi = FeedInfo.make(true, "",now, now, ContractPartner.make(ContractPartner.ROLE_SENDER, "", ""), ContractPartner.make(ContractPartner.ROLE_LICENSOR, "", ""));
         }
         this.feedinfo = fi;
-        check_onlytest.setSelected(fi.getOnlyTest());
-        text_feedid.setText(fi.getFeedID());
-        text_creation_datetime.setText(fi.getCreationDatetimeString());
-        text_effictive_datetime.setText(fi.getEffectiveDatetimeString());
-
-        text_creator_userid.setText(fi.getCreatorUserID());
-        text_creator_email.setText(fi.getCreatorEmail());
-
-        text_sender_contractpartnerid.setText(fi.getSender().getContractPartnerID());
-        text_sender_ourcontractpartnerid.setText(fi.getSender().getOurContractPartnerID());
-        text_sender_email.setText(fi.getSender().getEmail());
-
-        text_licensor_contractpartnerid.setText(fi.getLicensor().getContractPartnerID());
-        text_licensor_ourcontractpartnerid.setText(fi.getLicensor().getOurContractPartnerID());
-        text_licensor_email.setText(fi.getLicensor().getEmail());
-
+        
+        pBasis.update();
+        
+        pSender.update();
+        pCreator.update();
+        
+        pLicensor.update();
+        pLicensee.update();
+        
         pReceiver.update();
-       
-        //actions
-        updateActionsTable(fi);
-
-        changeListener.saveStates();
-
-        Dimension maxSize= new Dimension(440, 32767);
-        jPanel1.setMaximumSize(maxSize);
-        jPanel2.setMaximumSize(maxSize);
-        jPanel3.setMaximumSize(maxSize);
-        panelReceiver.setMaximumSize(maxSize);
-        jPanel5.setMaximumSize(maxSize);
-        jPanel6.setMaximumSize(maxSize);
+        pTriggeredActions.update();
         
     }
 
-    private void updateActionsTable(FeedInfo fi) {
-        int count = fi.getActionCount();
-        String[] header = new String[] {"Trigger","Type","Description"};
-        String[][] data = new String[count][3];
-        for (int i=0;i<count;i++) {
-            Action a = fi.getAction(i);
-            data[i][0] = TriggeredActions.actionTriggerName[fi.getTrigger(i)];
-            if (a instanceof ActionHttp) {
-                data[i][1] = "HTTP";
-            } else if (a instanceof ActionMailTo) {
-                data[i][1] = "MAIL TO";
-            }
-            data[i][2] = a.getDescription();
-        }
-
-        table_actions.setModel(new DefaultTableModel(data, header) {
-            public boolean isCellEditable(int row, int col) {
-                return false;
-            }
-        });
-
-    }
-
-    private void newEmpty() {
-        check_onlytest.setSelected(true);
-        text_feedid.setText("");
-        text_creation_datetime.setText("");
-        text_effictive_datetime.setText("");
-
-        text_creator_userid.setText("");
-        text_creator_email.setText("");
-
-        text_sender_contractpartnerid.setText("");
-        text_sender_ourcontractpartnerid.setText("");
-        text_sender_email.setText("");
-
-        text_licensor_contractpartnerid.setText("");
-        text_licensor_ourcontractpartnerid.setText("");
-        text_licensor_email.setText("");
-
-        pReceiver.update();
-
-    }
-
-
-    /** Creates new form PanelFeedInfo */
     public PanelFeedInfo(FeedGui gui) {
         super();
         this.gui = gui;
         me = this;
-        pReceiver = new PanelReceiver(gui);
-        initComponents();
-
-        panelReceiver.setLayout(new BorderLayout());
-        panelReceiver.add(pReceiver, BorderLayout.CENTER);
-        panelReceiver.setMinimumSize(new Dimension(440,100));
-        panelReceiver.setMaximumSize(new Dimension(440,100));
-        panelReceiver.setPreferredSize(new Dimension(440,300));
         
-        pReceiver.addObserver(this);
-        
-        text_creation_datetime.setName("datetime");
-        text_effictive_datetime.setName("datetime");
-        lastDir = new File(System.getProperty("user.home"));
         File f = new File(lastDir,"openSDX");
         if (f.exists() && f.isDirectory()) {
             lastDir = f;
         }
-        initChangeListeners();
+        initComponents();
+        initLayout();
+        
     }
 
     public void notifyChange(MyObservable changedIn) {
-        if (changedIn == pReceiver) {
-            notifyChanges();
-        }
-    }
-
-    private void initChangeListeners() {
-        Vector<JTextComponent> texts = new Vector<JTextComponent>();
-        texts.add(text_feedid);
-        texts.add(text_creation_datetime);
-        texts.add(text_effictive_datetime);
-
-        texts.add(text_creator_userid);
-        texts.add(text_creator_email);
-
-        texts.add(text_sender_contractpartnerid);
-        texts.add(text_sender_ourcontractpartnerid);
-        texts.add(text_sender_email);
-
-        texts.add(text_licensor_contractpartnerid);
-        texts.add(text_licensor_ourcontractpartnerid);
-        texts.add(text_licensor_email);
-
-        changeListener = new DocumentChangeListener(texts);
-
-         KeyAdapter keyAdapt = new KeyAdapter() {
-            public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_ENTER){
-                    if (e.getComponent() instanceof JTextField) {
-                        JTextComponent text = (JTextComponent)e.getComponent();
-                        String t = text.getText();
-                        if (t.equals("")) t = null;
-
-                        try {
-                            if (text == text_feedid) feedinfo.feedid(t);
-                            else if(text == text_creation_datetime) feedinfo.creation_datetime(SecurityHelper.parseDate(t));
-                            else if(text == text_effictive_datetime) feedinfo.effective_datetime(SecurityHelper.parseDate(t));
-
-                            else if(text == text_sender_contractpartnerid) feedinfo.getSender().contractpartnerid(t);
-                            else if(text == text_sender_ourcontractpartnerid) feedinfo.getSender().ourcontractpartnerid(t);
-                            else if(text == text_sender_email) feedinfo.getSender().email(t);
-
-                            else if(text == text_licensor_contractpartnerid) feedinfo.getLicensor().contractpartnerid(t);
-                            else if(text == text_licensor_ourcontractpartnerid) feedinfo.getLicensor().ourcontractpartnerid(t);
-                            else if(text == text_licensor_email) feedinfo.getLicensor().email(t);
-               
-                            text.setBackground(Color.WHITE);
-                            changeListener.saveState(text);
-                            notifyChanges();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-
-                    }
-                }
-                else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    if (e.getComponent() instanceof JTextField) {
-                        JTextField text = (JTextField)e.getComponent();
-                        text.setText(changeListener.getSavedText(text));
-                        text.setBackground(Color.WHITE);
-                    }
-                }
-            }
-        };
-
-
-        for (JTextComponent text : texts) {
-            text.getDocument().addDocumentListener(changeListener);
-            text.addKeyListener(keyAdapt);
-        }
-
+        notifyChanges();
     }
 
      public void notifyChanges() {
@@ -281,669 +151,126 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable, M
         }
     }
 
-//    private void updateStatusColors() {
-//        if (feed==null) return;
-//            FeedInfo fi = feed.getFeedinfo();
-//            if (fi==null) return;
-//            for (String[] b : bindings) {
-//                try {
-//                    Field field = me.getClass().getDeclaredField(b[0]);
-//                    field.setAccessible(true);
-//                    Object ob = field.get(me);
-//                    Method getter = null;
-//                    Object getOb = null;
-//                    if (b[1].contains(".")) {
-//                      String[] t = b[1].split("[.]");
-//                      getOb = fi;
-//                      for (int i=0;i<t.length;i++) {
-//                          getter = getOb.getClass().getMethod(t[i]);
-//                          getOb = getter.invoke(getOb);
-//                       }
-//                    } else {
-//                        getter = fi.getClass().getMethod(b[1]);
-//                        getOb = getter.invoke(fi);
-//                    }
-//                    String text = null;
-//                    Color color = Color.WHITE;
-//                    if (ob instanceof JTextField) {
-//                        text = ((JTextField)ob).getText();
-//                    } else if (ob instanceof JComboBox) {
-//                        text = ((JComboBox)ob).getSelectedItem().toString();
-//                    } else if (ob instanceof JCheckBox) {
-//                        if (((JCheckBox)ob).isSelected() != ((Boolean)getOb).booleanValue()) {
-//                            color = Color.YELLOW;
-//                        }
-//                    }
-//                    if (text !=null && getOb instanceof String) {
-//                        boolean wrongFormat = false;
-//                        if (field.getName().contains("datetime")) {
-//                          try {
-//                              SecurityHelper.parseDate(text);
-//                          }  catch (Exception ex) {
-//                              wrongFormat = true;
-//                          }
-//                        }
-//                        if (wrongFormat) {
-//                           color = Color.RED;
-//                        } else {
-//                            if (text.equals((String)getOb)) {
-//                               color= Color.WHITE;
-//                            } else {
-//                                color = Color.YELLOW;
-//                            }
-//                        }
-//                    }
-//                    if (ob instanceof JTextField) {
-//                        ((JTextField)ob).setBackground(color);
-//                    } else if (ob instanceof JComboBox) {
-//                        ((JComboBox)ob).setBackground(color);
-//                    } else if (ob instanceof JCheckBox) {
-//                        ((JCheckBox)ob).setBackground(color);
-//                    }
-//                } catch (Exception ex) {
-//                  ex.printStackTrace();
-//                }
-//        }
-//    }
-
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-
-        jPanel1 = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        text_creator_email = new javax.swing.JTextField();
-        text_creator_userid = new javax.swing.JTextField();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        text_licensor_contractpartnerid = new javax.swing.JTextField();
-        text_licensor_ourcontractpartnerid = new javax.swing.JTextField();
-        jLabel8 = new javax.swing.JLabel();
-        text_licensor_email = new javax.swing.JTextField();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        text_sender_contractpartnerid = new javax.swing.JTextField();
-        text_sender_ourcontractpartnerid = new javax.swing.JTextField();
-        jLabel11 = new javax.swing.JLabel();
-        text_sender_email = new javax.swing.JTextField();
-        panelReceiver = new javax.swing.JPanel();
-        jLabel14 = new javax.swing.JLabel();
-        jPanel5 = new javax.swing.JPanel();
-        check_onlytest = new javax.swing.JCheckBox();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        buNow = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        text_feedid = new javax.swing.JTextField();
-        text_creation_datetime = new javax.swing.JTextField();
-        text_effictive_datetime = new javax.swing.JTextField();
-        bu_uuid = new javax.swing.JButton();
-        jPanel6 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        table_actions = new javax.swing.JTable();
-        bu_action_remove = new javax.swing.JButton();
-        bu_action_add_http = new javax.swing.JButton();
-        bu_action_add_mail = new javax.swing.JButton();
-        bu_action_edit = new javax.swing.JButton();
-
-        setBorder(null);
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Creator"));
-        jPanel1.setMaximumSize(new java.awt.Dimension(440, 32767));
-        jPanel1.setPreferredSize(new java.awt.Dimension(375, 113));
-
-        jLabel4.setText("email");
-
-        jLabel5.setText("user id");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel5))
-                .addGap(44, 44, 44)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_creator_email, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
-                    .addComponent(text_creator_userid, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(text_creator_email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel5)
-                    .addComponent(text_creator_userid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Licensor"));
-        jPanel2.setMaximumSize(new java.awt.Dimension(440, 32767));
-        jPanel2.setPreferredSize(new java.awt.Dimension(375, 147));
-
-        jLabel6.setText("contract partner id");
-
-        jLabel7.setText("our contract partner id");
-
-        text_licensor_contractpartnerid.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                text_licensor_contractpartneridActionPerformed(evt);
-            }
-        });
-
-        jLabel8.setText("email");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel8)
-                    .addComponent(jLabel7))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_licensor_email, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
-                    .addComponent(text_licensor_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
-                    .addComponent(text_licensor_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(text_licensor_contractpartnerid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
-                    .addComponent(text_licensor_ourcontractpartnerid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel8)
-                    .addComponent(text_licensor_email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Sender"));
-        jPanel3.setMaximumSize(new java.awt.Dimension(440, 32767));
-
-        jLabel9.setText("contract partner id");
-
-        jLabel10.setText("our contract partner id");
-
-        text_sender_contractpartnerid.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                text_sender_contractpartneridActionPerformed(evt);
-            }
-        });
-
-        jLabel11.setText("email");
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel9)
-                    .addComponent(jLabel11)
-                    .addComponent(jLabel10))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(text_sender_email, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                    .addComponent(text_sender_ourcontractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                    .addComponent(text_sender_contractpartnerid, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
-                    .addComponent(text_sender_contractpartnerid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel10)
-                    .addComponent(text_sender_ourcontractpartnerid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
-                    .addComponent(text_sender_email, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        panelReceiver.setBorder(null);
-        panelReceiver.setMaximumSize(new java.awt.Dimension(440, 32767));
-
-        javax.swing.GroupLayout panelReceiverLayout = new javax.swing.GroupLayout(panelReceiver);
-        panelReceiver.setLayout(panelReceiverLayout);
-        panelReceiverLayout.setHorizontalGroup(
-            panelReceiverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelReceiverLayout.createSequentialGroup()
-                .addContainerGap(41, Short.MAX_VALUE)
-                .addComponent(jLabel14)
-                .addGap(416, 416, 416))
-        );
-        panelReceiverLayout.setVerticalGroup(
-            panelReceiverLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelReceiverLayout.createSequentialGroup()
-                .addGap(89, 89, 89)
-                .addComponent(jLabel14)
-                .addGap(295, 295, 295))
-        );
-
-        jPanel5.setMaximumSize(new java.awt.Dimension(440, 32767));
-
-        check_onlytest.setText("onlytest");
-        check_onlytest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                check_onlytestActionPerformed(evt);
-            }
-        });
-
-        jLabel2.setText("creation datetime");
-
-        jLabel3.setText("effective datetime");
-
-        buNow.setText("now");
-        buNow.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buNowActionPerformed(evt);
-            }
-        });
-
-        jLabel1.setText("feed id");
-
-        bu_uuid.setText("random UUID");
-        bu_uuid.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_uuidActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel5Layout.createSequentialGroup()
-                            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel1)
-                                .addComponent(jLabel2)
-                                .addComponent(jLabel3))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(text_feedid, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
-                                .addGroup(jPanel5Layout.createSequentialGroup()
-                                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(text_creation_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                                        .addComponent(text_effictive_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(buNow)))
-                            .addGap(19, 19, 19))
-                        .addGroup(jPanel5Layout.createSequentialGroup()
-                            .addComponent(check_onlytest, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
-                            .addGap(153, 153, 153)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                        .addComponent(bu_uuid, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(98, 98, 98))))
-        );
-
-        jPanel5Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {text_creation_datetime, text_effictive_datetime});
-
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addComponent(check_onlytest)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(text_feedid, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(bu_uuid, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(text_creation_datetime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(text_effictive_datetime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3)))
-                    .addComponent(buNow)))
-        );
-
-        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder("Actions"));
-        jPanel6.setMaximumSize(new java.awt.Dimension(440, 32767));
-
-        table_actions.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null}
-            },
-            new String [] {
-                "Trigger", "Type", "Description"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, false, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jScrollPane1.setViewportView(table_actions);
-
-        bu_action_remove.setText("remove");
-        bu_action_remove.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_action_removeActionPerformed(evt);
-            }
-        });
-
-        bu_action_add_http.setText("add HTTP Action");
-        bu_action_add_http.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_action_add_httpActionPerformed(evt);
-            }
-        });
-
-        bu_action_add_mail.setText("add Mail Action");
-        bu_action_add_mail.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_action_add_mailActionPerformed(evt);
-            }
-        });
-
-        bu_action_edit.setText("edit");
-        bu_action_edit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bu_action_editActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
-        jPanel6.setLayout(jPanel6Layout);
-        jPanel6Layout.setHorizontalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel6Layout.createSequentialGroup()
-                        .addComponent(bu_action_edit)
-                        .addGap(5, 5, 5)
-                        .addComponent(bu_action_remove)
-                        .addGap(18, 18, 18)
-                        .addComponent(bu_action_add_http)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(bu_action_add_mail)))
-                .addContainerGap())
-        );
-
-        jPanel6Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {bu_action_add_http, bu_action_add_mail});
-
-        jPanel6Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {bu_action_edit, bu_action_remove});
-
-        jPanel6Layout.setVerticalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
-                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(bu_action_remove)
-                    .addComponent(bu_action_add_http)
-                    .addComponent(bu_action_add_mail)
-                    .addComponent(bu_action_edit))
-                .addContainerGap())
-        );
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(panelReceiver, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 488, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jPanel1, jPanel2, jPanel6});
-
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(panelReceiver, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jPanel2, jPanel3});
-
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void check_onlytestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_check_onlytestActionPerformed
-        if (feedinfo != null) {
-            feedinfo.only_test(check_onlytest.isSelected());
-            notifyChanges();
-        }
-    }//GEN-LAST:event_check_onlytestActionPerformed
-
-    private void text_licensor_contractpartneridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_text_licensor_contractpartneridActionPerformed
-       
-    }//GEN-LAST:event_text_licensor_contractpartneridActionPerformed
-
-    private void text_sender_contractpartneridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_text_sender_contractpartneridActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_text_sender_contractpartneridActionPerformed
-
-    private void buNowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buNowActionPerformed
-        long now = System.currentTimeMillis();
-        String s = SecurityHelper.getFormattedDate(now);
-        feedinfo.creation_datetime(now);
-        feedinfo.effective_datetime(now);
-        text_creation_datetime.setText(s);
-        text_effictive_datetime.setText(s);
-        changeListener.saveState(text_creation_datetime);
-        changeListener.saveState(text_effictive_datetime);
-
-    }//GEN-LAST:event_buNowActionPerformed
-
-    private void bu_action_removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_action_removeActionPerformed
-        if (feedinfo==null) return;
-        int no = table_actions.getSelectedRow();
-        if (no<0 || no>=feedinfo.getActionCount()) return;
-        feedinfo.removeAction(no);
-        updateActionsTable(feedinfo);
-        notifyChanges();
-    }//GEN-LAST:event_bu_action_removeActionPerformed
-
-    private void bu_action_add_httpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_action_add_httpActionPerformed
-        if (feedinfo!=null) {
-            ActionHttp a = ActionHttp.make("", ActionHttp.TYPE_GET);
-            Vector result = editActionHttpDialog(a, TriggeredActions.TRIGGER_ONFULLSUCCESS);
-            if (result!=null)  {
-                ActionHttp newAction = (ActionHttp)result.get(0);
-                int trigger = ((Integer)result.get(1)).intValue();
-                feedinfo.addAction(0, newAction);
-                updateActionsTable(feedinfo);
-                notifyChanges();
-            }
-        }
-    }//GEN-LAST:event_bu_action_add_httpActionPerformed
-
-    private void bu_action_editActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_action_editActionPerformed
-        if (feedinfo==null) return;
-        int no = table_actions.getSelectedRow();
-        if (no<0 || no>=feedinfo.getActionCount()) return;
-        Action a = feedinfo.getAction(no);
-        if (a instanceof ActionHttp) {
-            Vector result = editActionHttpDialog((ActionHttp)a, feedinfo.getTrigger(no));
-            if (result!=null)  {
-                ActionHttp newAction = (ActionHttp)result.get(0);
-                int trigger = ((Integer)result.get(1)).intValue();
-                feedinfo.replaceAction(no, trigger, newAction);
-                updateActionsTable(feedinfo);
-                notifyChanges();
-            }
-        } else if (a instanceof ActionMailTo) {
-            Vector result = editActionMailToDialog((ActionMailTo)a, feedinfo.getTrigger(no));
-            if (result!=null)  {
-                ActionMailTo newAction = (ActionMailTo)result.get(0);
-                int trigger = ((Integer)result.get(1)).intValue();
-                feedinfo.replaceAction(no, trigger, newAction);
-                updateActionsTable(feedinfo);
-                notifyChanges();
-            }
-        } else {
-            System.out.println("unknown action");
-        }
-
-    }//GEN-LAST:event_bu_action_editActionPerformed
-
-    private void bu_action_add_mailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_action_add_mailActionPerformed
-        if (feedinfo!=null) {
-            ActionMailTo a = ActionMailTo.make("", "", "");
-            Vector result = editActionMailToDialog(a, TriggeredActions.TRIGGER_ONFULLSUCCESS);
-            if (result!=null)  {
-                ActionMailTo newAction = (ActionMailTo)result.get(0);
-                int trigger = ((Integer)result.get(1)).intValue();
-                feedinfo.addAction(trigger, newAction);
-                updateActionsTable(feedinfo);
-                notifyChanges();
-            }
-        }
-    }//GEN-LAST:event_bu_action_add_mailActionPerformed
-
-    private void bu_uuidActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bu_uuidActionPerformed
-        String uuid = UUID.randomUUID().toString();
-        text_feedid.setText(uuid);
-        changeListener.saveState(text_feedid);
-        feedinfo.feedid(uuid);
-        notifyChanges();
-    }//GEN-LAST:event_bu_uuidActionPerformed
-
-    private Vector editActionHttpDialog(ActionHttp action, int trigger) {
-        PanelActionHTTP p = new PanelActionHTTP();
-        p.setActionHTTP(action);
-        p.setTrigger(trigger);
-        int ans = JOptionPane.showConfirmDialog(null,p,"HTTP Action",JOptionPane.OK_CANCEL_OPTION);
-        if (ans == JOptionPane.OK_OPTION) {
-            Vector result = new Vector();
-            result.add(p.getActionHTTP());
-            result.add(p.getTrigger());
-            return result;
-        } else {
-            return null;
-        }
+    	pBasis = new PanelFeedInfoBasics(gui);
+    	pBasis.addObserver(this);
+    	    
+		pCreator = new PanelCreator(gui);
+		pCreator.addObserver(this);
+		
+		pTriggeredActions = new PanelTriggeredActions(gui);
+        pTriggeredActions.addObserver(this);
+		
+		pSender = new PanelContractPartner(gui, ContractPartner.ROLE_SENDER);
+		pSender.addObserver(this);
+		
+		pLicensor = new PanelContractPartner(gui, ContractPartner.ROLE_LICENSOR);
+		pLicensor.addObserver(this);
+		
+		pLicensee = new PanelContractPartner(gui, ContractPartner.ROLE_LICENSEE);
+		pLicensee.addObserver(this);
+		
+		pReceiver = new PanelReceiver(gui);
+        pReceiver.addObserver(this);
+        
+        Dimension dMin = new Dimension(300,100);
+        Dimension dMax = new Dimension(450,600);
+        Dimension dPref = new Dimension(450, (int)pSender.getPreferredSize().getHeight());
+        
+        pSender.setMinimumSize(dMin);
+        pSender.setMaximumSize(dMax);
+        pSender.setPreferredSize(dPref);
+        
+        pCreator.setMinimumSize(dMin);
+        pCreator.setMaximumSize(dMax);
+        pCreator.setPreferredSize(dPref);
     }
+     
+    private void initLayout() {
+    	GridBagLayout gbl = new GridBagLayout();
+    	setLayout(gbl);
+    	GridBagConstraints gbc = new GridBagConstraints();
 
-    private Vector editActionMailToDialog(ActionMailTo action, int trigger) {
-        PanelActionMailTo p = new PanelActionMailTo();
-        p.setActionMailTo(action);
-        p.setTrigger(trigger);
-        int ans = JOptionPane.showConfirmDialog(null,p,"MailTo Action",JOptionPane.OK_CANCEL_OPTION);
-        if (ans == JOptionPane.OK_OPTION) {
-            Vector result = new Vector();
-            result.add(p.getActionMailTo());
-            result.add(p.getTrigger());
-            return result;
-        } else {
-            return null;
-        }
+    	gbc.gridx = 0;
+    	gbc.gridy = 0;
+    	gbc.gridwidth = 2;
+    	gbc.gridheight = 1;
+    	gbc.weightx = 50.0;
+    	gbc.weighty = 0.0;
+    	gbc.anchor = GridBagConstraints.CENTER;
+    	gbc.fill = GridBagConstraints.BOTH;
+    	gbc.ipadx = 0;
+    	gbc.ipady = 0;
+    	gbc.insets = new Insets(5,5,5,5);
+    	gbl.setConstraints(pBasis,gbc);
+    	add(pBasis);
+    	
+    	gbc.gridx = 0;
+    	gbc.gridy = 1;
+    	gbc.gridwidth = 1;
+    	gbc.gridheight = 1;
+    	gbc.weightx = 50.0;
+    	gbc.weighty = 0.0;
+    	gbc.anchor = GridBagConstraints.CENTER;
+    	gbc.fill = GridBagConstraints.BOTH;
+    	gbl.setConstraints(pSender,gbc);
+    	add(pSender);
+    	
+    	gbc.gridx = 1;
+    	gbc.gridy = 1;
+    	gbc.gridwidth = 1;
+    	gbc.gridheight = 1;
+    	gbc.weightx = 50.0;
+    	gbc.weighty = 0.0;
+    	gbc.anchor = GridBagConstraints.CENTER;
+    	gbc.fill = GridBagConstraints.BOTH;
+    	gbl.setConstraints(pCreator,gbc);
+    	add(pCreator);
+    	
+    	gbc.gridx = 0;
+    	gbc.gridy = 2;
+    	gbc.gridwidth = 1;
+    	gbc.gridheight = 1;
+    	gbc.weightx = 50.0;
+    	gbc.weighty = 0.0;
+    	gbc.anchor = GridBagConstraints.CENTER;
+    	gbc.fill = GridBagConstraints.BOTH;
+    	gbl.setConstraints(pLicensor,gbc);
+    	add(pLicensor);
+    	
+    	gbc.gridx = 1;
+    	gbc.gridy = 2;
+    	gbc.gridwidth = 1;
+    	gbc.gridheight = 1;
+    	gbc.weightx = 50.0;
+    	gbc.weighty = 0.0;
+    	gbc.anchor = GridBagConstraints.CENTER;
+    	gbc.fill = GridBagConstraints.BOTH;
+    	gbl.setConstraints(pLicensee,gbc);
+    	add(pLicensee);
+    	
+    	gbc.gridx = 0;
+    	gbc.gridy = 3;
+    	gbc.gridwidth = 1;
+    	gbc.gridheight = 1;
+    	gbc.weightx = 50.0;
+    	gbc.weighty = 0.0;
+    	gbc.anchor = GridBagConstraints.CENTER;
+    	gbc.fill = GridBagConstraints.BOTH;
+    	gbl.setConstraints(pReceiver,gbc);
+    	add(pReceiver);
+    	
+    	gbc.gridx = 1;
+    	gbc.gridy = 3;
+    	gbc.gridwidth = 1;
+    	gbc.gridheight = 1;
+    	gbc.weightx = 50.0;
+    	gbc.weighty = 0.0;
+    	gbc.anchor = GridBagConstraints.CENTER;
+    	gbc.fill = GridBagConstraints.BOTH;
+    	gbl.setConstraints(pTriggeredActions,gbc);
+    	add(pTriggeredActions);
+
     }
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton buNow;
-    private javax.swing.JButton bu_action_add_http;
-    private javax.swing.JButton bu_action_add_mail;
-    private javax.swing.JButton bu_action_edit;
-    private javax.swing.JButton bu_action_remove;
-    private javax.swing.JButton bu_uuid;
-    private javax.swing.JCheckBox check_onlytest;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JPanel panelReceiver;
-    private javax.swing.JTable table_actions;
-    private javax.swing.JTextField text_creation_datetime;
-    private javax.swing.JTextField text_creator_email;
-    private javax.swing.JTextField text_creator_userid;
-    private javax.swing.JTextField text_effictive_datetime;
-    private javax.swing.JTextField text_feedid;
-    private javax.swing.JTextField text_licensor_contractpartnerid;
-    private javax.swing.JTextField text_licensor_email;
-    private javax.swing.JTextField text_licensor_ourcontractpartnerid;
-    private javax.swing.JTextField text_sender_contractpartnerid;
-    private javax.swing.JTextField text_sender_email;
-    private javax.swing.JTextField text_sender_ourcontractpartnerid;
-    // End of variables declaration//GEN-END:variables
 
 }

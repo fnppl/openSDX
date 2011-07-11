@@ -309,8 +309,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             text_tags_main_language.setText(tags.getMain_language());
             text_tags_origin_country.setText(tags.getOrigin_country());
             check_tags_bundle_only.setSelected(tags.isBundle_only());
-            check_tags_stream_allowed.setSelected(tags.isStreaming_allowed());
-
+            
             Vector<String> genres = new Vector<String>();
             for (int i=0;i<tags.getGenresCount();i++) {
                 String genre = tags.getGenre(i);
@@ -321,7 +320,6 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             text_tags_main_language.setText("");
             text_tags_origin_country.setText("");
             check_tags_bundle_only.setSelected(false);
-            check_tags_stream_allowed.setSelected(false);
 
             Vector<String> genres = new Vector<String>();
             tree_genres.setSelectedNodes(genres);
@@ -398,6 +396,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 select_license_pricing.setSelectedIndex(0);
                 text_license_pricing.setText("");
                 text_license_pricing.setEnabled(true);
+                check_license_stream_allowed.setSelected(lb.isStreaming_allowed());
                 DefaultListModel lmAllow = (DefaultListModel)list_allowed_territories.getModel();
                 DefaultListModel lmDisallow = (DefaultListModel)list_disallowed_territories.getModel();
                 lmAllow.removeAllElements();
@@ -416,6 +415,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                     text_license_pricing.setText(lb.getPricingWholesale());
                     text_license_pricing.setEnabled(true);
                 }
+                check_license_stream_allowed.setSelected(false);
                 DefaultListModel lmAllow = (DefaultListModel)list_allowed_territories.getModel();
                 DefaultListModel lmDisallow = (DefaultListModel)list_disallowed_territories.getModel();
                 lmAllow.removeAllElements();
@@ -770,9 +770,9 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         list_allowed_territories = new javax.swing.JList();
         select_license_pricing = new javax.swing.JComboBox();
         panel_territories = new javax.swing.JPanel();
+        check_license_stream_allowed = new javax.swing.JCheckBox();
         panelTags = new javax.swing.JPanel();
         check_tags_bundle_only = new javax.swing.JCheckBox();
-        check_tags_stream_allowed = new javax.swing.JCheckBox();
         jLabel20 = new javax.swing.JLabel();
         jLabel21 = new javax.swing.JLabel();
         text_tags_main_language = new javax.swing.JTextField();
@@ -1011,12 +1011,12 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         );
         panelIDsBigLayout.setVerticalGroup(
             panelIDsBigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 999, Short.MAX_VALUE)
+            .addGap(0, 1134, Short.MAX_VALUE)
             .addGroup(panelIDsBigLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(panelIDsBigLayout.createSequentialGroup()
                     .addGap(19, 19, 19)
                     .addComponent(panelIDs, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(595, Short.MAX_VALUE)))
+                    .addContainerGap(730, Short.MAX_VALUE)))
         );
 
         tab_items.addTab("IDs", panelIDsBig);
@@ -1085,7 +1085,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelContributorsLayout.createSequentialGroup()
                         .addGap(2, 2, 2)
                         .addComponent(bu_add_contributor)))
-                .addContainerGap(794, Short.MAX_VALUE))
+                .addContainerGap(929, Short.MAX_VALUE))
         );
 
         tab_items.addTab("Contributors", panelContributors);
@@ -1233,7 +1233,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                 .addGroup(panelInformationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bu_teasertext_update)
                     .addComponent(bu_teasertext_reset))
-                .addContainerGap(456, Short.MAX_VALUE))
+                .addContainerGap(591, Short.MAX_VALUE))
         );
 
         panelInformationLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jScrollPane10, jScrollPane9});
@@ -1284,8 +1284,15 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         );
         panel_territoriesLayout.setVerticalGroup(
             panel_territoriesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 556, Short.MAX_VALUE)
+            .addGap(0, 666, Short.MAX_VALUE)
         );
+
+        check_license_stream_allowed.setText("streaming allowed");
+        check_license_stream_allowed.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                check_license_stream_allowedActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelLicense1Layout = new javax.swing.GroupLayout(panelLicense1);
         panelLicense1.setLayout(panelLicense1Layout);
@@ -1301,7 +1308,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                         .addGroup(panelLicense1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(panelLicense1Layout.createSequentialGroup()
                                 .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(26, 26, 26)
+                                .addGap(18, 18, 18)
                                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(panelLicense1Layout.createSequentialGroup()
                                 .addGroup(panelLicense1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1316,7 +1323,10 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                                         .addComponent(text_license_pricing, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(text_license_to_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
                                     .addComponent(text_license_from_datetime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE))))
-                        .addGap(217, 217, 217))))
+                        .addGap(217, 217, 217))
+                    .addGroup(panelLicense1Layout.createSequentialGroup()
+                        .addComponent(check_license_stream_allowed)
+                        .addContainerGap(485, Short.MAX_VALUE))))
         );
         panelLicense1Layout.setVerticalGroup(
             panelLicense1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1334,11 +1344,13 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                     .addComponent(jLabel34)
                     .addComponent(text_license_pricing, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(select_license_pricing, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(30, 30, 30)
-                .addGroup(panelLicense1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(check_license_stream_allowed)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
+                .addGroup(panelLicense1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panel_territories, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -1370,13 +1382,6 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
         check_tags_bundle_only.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 check_tags_bundle_onlyActionPerformed(evt);
-            }
-        });
-
-        check_tags_stream_allowed.setText("streaming allowed");
-        check_tags_stream_allowed.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                check_tags_stream_allowedActionPerformed(evt);
             }
         });
 
@@ -1423,7 +1428,6 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             .addGroup(panelTagsLayout.createSequentialGroup()
                 .addGap(33, 33, 33)
                 .addGroup(panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(check_tags_stream_allowed)
                     .addComponent(check_tags_bundle_only)
                     .addGroup(panelTagsLayout.createSequentialGroup()
                         .addGroup(panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1450,9 +1454,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                     .addGroup(panelTagsLayout.createSequentialGroup()
                         .addGap(49, 49, 49)
                         .addComponent(check_tags_bundle_only)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(check_tags_stream_allowed)
-                        .addGap(18, 18, 18)
+                        .addGap(54, 54, 54)
                         .addGroup(panelTagsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel21)
                             .addComponent(text_tags_main_language, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1467,7 +1469,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
                         .addComponent(jLabel20)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(panel_genres, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(564, Short.MAX_VALUE))
+                .addContainerGap(699, Short.MAX_VALUE))
         );
 
         tab_items.addTab("Tags", panelTags);
@@ -1663,7 +1665,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             .addGroup(panelFilesLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(448, Short.MAX_VALUE))
+                .addContainerGap(583, Short.MAX_VALUE))
         );
 
         tab_items.addTab("Files", panelFiles);
@@ -1937,17 +1939,16 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
        notifyChanges();
     }//GEN-LAST:event_check_tags_bundle_onlyActionPerformed
 
-    private void check_tags_stream_allowedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_check_tags_stream_allowedActionPerformed
+    private void check_license_stream_allowedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_check_license_stream_allowedActionPerformed
        Item item = getSelectedItem();
        if (item==null) return;
-       ItemTags tags = item.getTags();
-       if (tags==null) {
-           tags = ItemTags.make();
-           item.tags(tags);
+       if (item.getLicense_basis()==null) {
+           long now = System.currentTimeMillis();
+           item.license_basis(LicenseBasis.make(Territorial.make(), now,now));
        }
-       tags.streaming_allowed(check_tags_stream_allowed.isSelected());
+       item.getLicense_basis().streaming_allowed(check_license_stream_allowed.isSelected());
        notifyChanges();
-    }//GEN-LAST:event_check_tags_stream_allowedActionPerformed
+    }//GEN-LAST:event_check_license_stream_allowedActionPerformed
 
     private void select_typeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_select_typeActionPerformed
         Item item = getSelectedItem();
@@ -2123,8 +2124,8 @@ private void  updateLanguageList() {
     private javax.swing.JButton bu_teasertext_reset;
     private javax.swing.JButton bu_teasertext_update;
     private javax.swing.JCheckBox checkLicenseAsOnBundle;
+    private javax.swing.JCheckBox check_license_stream_allowed;
     private javax.swing.JCheckBox check_tags_bundle_only;
-    private javax.swing.JCheckBox check_tags_stream_allowed;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

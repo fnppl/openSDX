@@ -52,11 +52,9 @@ public class ItemTags extends BusinessObject {
 	private BusinessCollection<BusinessStringItem> genres;	//COULD
 	private BusinessStringItem origin_country;		//COULD
 	private BusinessStringItem main_language;		//COULD
-	private BusinessBooleanItem bundle_only;			//COULD
-	private BusinessBooleanItem streaming_allowed;	//COULD
+	private BusinessBooleanItem bundle_only;		//COULD
 
-
-	public static ItemTags make(String origin_country, String main_language, boolean bundle_only, boolean streaming_allowed) {
+	public static ItemTags make(String origin_country, String main_language, boolean bundle_only) {
 		ItemTags tags = new ItemTags();
 		tags.genres = new  BusinessCollection<BusinessStringItem>() {
 			public String getKeyname() {
@@ -66,7 +64,6 @@ public class ItemTags extends BusinessObject {
 		tags.origin_country = new BusinessStringItem("origin_country", origin_country);
 		tags.main_language = new BusinessStringItem("main_language", main_language);
 		tags.bundle_only = new BusinessBooleanItem("bundle_only", bundle_only);
-		tags.streaming_allowed = new BusinessBooleanItem("streaming_allowed", streaming_allowed);
 		return tags;
 	}
 
@@ -78,7 +75,6 @@ public class ItemTags extends BusinessObject {
 		tags.origin_country = null;
 		tags.main_language = null;
 		tags.bundle_only = null;
-		tags.streaming_allowed = null;
 		return tags;
 	}
 
@@ -107,7 +103,6 @@ public class ItemTags extends BusinessObject {
 		tags.origin_country = BusinessStringItem.fromBusinessObject(bo, "origin_country");
 		tags.main_language = BusinessStringItem.fromBusinessObject(bo, "main_language");
 		tags.bundle_only = BusinessBooleanItem.fromBusinessObject(bo, "bundle_only");
-		tags.streaming_allowed = BusinessBooleanItem.fromBusinessObject(bo, "streaming_allowed");
 		
 		return tags;
 	}
@@ -162,12 +157,7 @@ public class ItemTags extends BusinessObject {
 		return this;
 	}
 
-	public ItemTags streaming_allowed(boolean streaming_allowed) {
-		this.streaming_allowed = new BusinessBooleanItem("streaming_allowed", streaming_allowed);
-		return this;
-	}
-
-
+	
 	public String getOrigin_country() {
 		if (origin_country==null) return null;
 		return origin_country.getString();
@@ -183,10 +173,6 @@ public class ItemTags extends BusinessObject {
 		return bundle_only.getBoolean();
 	}
 
-	public boolean isStreaming_allowed() {
-		if (streaming_allowed==null) return false;
-		return streaming_allowed.getBoolean();
-	}
 	public String getKeyname() {
 		return KEY_NAME;
 	}

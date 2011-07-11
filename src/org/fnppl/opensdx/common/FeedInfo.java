@@ -63,10 +63,11 @@ public class FeedInfo extends BusinessObject {
 	private BusinessStringItem feedid;						//MUST
 	private BusinessDatetimeItem creationdatetime;			//MUST
 	private BusinessDatetimeItem effectivedatetime; 		//MUST
-	private BusinessObject creator; 						//COULD
+	private Creator creator;		 						//SHOULD
 	private Receiver receiver;								//TODO COULD or what?
 	private ContractPartner sender;							//MUST
 	private ContractPartner licensor;						//MUST
+	private ContractPartner licensee;						//COULD
 	private TriggeredActions actions;						//SHOULD
 		
 	private FeedInfo() { 
@@ -98,6 +99,7 @@ public class FeedInfo extends BusinessObject {
 		f.receiver = null;
 		f.sender = sender;
 		f.licensor = licensor;
+		f.licensee = null;
 		f.actions = null;
 		return f;
 	}
@@ -118,10 +120,11 @@ public class FeedInfo extends BusinessObject {
 			f.creationdatetime =  BusinessDatetimeItem.fromBusinessObject(f,"creationdatetime");
 			f.effectivedatetime = BusinessDatetimeItem.fromBusinessObject(f,"effectivedatetime");
 			
-			f.creator  = f.handleBusinessObject("creator");
+			f.creator  = Creator.fromBusinessObject(f);
 			f.receiver = Receiver.fromBusinessObject(f);
 			f.sender   = ContractPartner.fromBusinessObject(f, ContractPartner.ROLE_SENDER);
 			f.licensor = ContractPartner.fromBusinessObject(f, ContractPartner.ROLE_LICENSOR);
+			f.licensee = ContractPartner.fromBusinessObject(f, ContractPartner.ROLE_LICENSEE);
 			f.actions  = TriggeredActions.fromBusinessObject(f);
 			return f;
 		} catch (Exception ex) {
@@ -139,6 +142,17 @@ public class FeedInfo extends BusinessObject {
 	public FeedInfo licensor(ContractPartner partner) {
 		partner.role(ContractPartner.ROLE_LICENSOR);
 		licensor = partner;
+		return this;
+	}
+	
+	public FeedInfo licensee(ContractPartner partner) {
+		partner.role(ContractPartner.ROLE_LICENSEE);
+		licensee = partner;
+		return this;
+	}
+	
+	public FeedInfo creator(Creator creator) {
+		this.creator = creator;
 		return this;
 	}
 	
@@ -166,19 +180,24 @@ public class FeedInfo extends BusinessObject {
 		return effectivedatetime.getDatetimeStringGMT();
 	}
 	
-	public String getCreatorEmail() {
-		if (creator==null) return null;
-		BusinessStringItem s = creator.getBusinessStringItem("email");
-		if (s==null) return null;
-		return s.getString();
+//	public String getCreatorEmail() {
+//		if (creator==null) return null;
+//		BusinessStringItem s = creator.getBusinessStringItem("email");
+//		if (s==null) return null;
+//		return s.getString();
+//	}
+//	
+//	public String getCreatorUserID() {
+//		if (creator==null) return null;
+//		BusinessStringItem s = creator.getBusinessStringItem("userid");
+//		if (s==null) return null;
+//		return s.getString();
+//	}
+	
+	public Creator getCreator() {
+		return creator;
 	}
 	
-	public String getCreatorUserID() {
-		if (creator==null) return null;
-		BusinessStringItem s = creator.getBusinessStringItem("userid");
-		if (s==null) return null;
-		return s.getString();
-	}
 	
 	public Receiver getReceiver() {
 		return receiver;
@@ -190,6 +209,10 @@ public class FeedInfo extends BusinessObject {
 
 	public ContractPartner getLicensor() {
 		return licensor;
+	}
+	
+	public ContractPartner getLicensee() {
+		return licensee;
 	}
 
 	public FeedInfo addAction(int trigger, Action action) {
@@ -248,50 +271,50 @@ public class FeedInfo extends BusinessObject {
 		return this;
 	}
 	
-	public FeedInfo creator_email(String email) {
-		if (creator==null) {
-			creator = new BusinessObject() {
-				public String getKeyname() {
-					return "creator";
-				}
-			};
-		};
-		if (creator.getBusinessStringItem("email")==null) {
-			creator.setObject(new BusinessStringItem("email", email));
-		} else {
-			creator.getBusinessStringItem("email").setString(email);
-		}
-		return this;
-	}
-	
-	public FeedInfo creator_userid(String userid) {
-		if (creator==null) {
-			creator = new BusinessObject() {
-				public String getKeyname() {
-					return "creator";
-				}
-			};
-		};
-		if (creator.getBusinessStringItem("userid")==null) {
-			creator.setObject(new BusinessStringItem("userid", userid));
-		} else {
-			creator.getBusinessStringItem("userid").setString(userid);
-		}
-		return this;
-	}
-	
-	public FeedInfo creator(String email, String userid) {
-		if (creator==null) {
-			creator = new BusinessObject() {
-				public String getKeyname() {
-					return "creator";
-				}
-			};
-		};
-		creator.setObject(new BusinessStringItem("email", email));
-		creator.setObject(new BusinessStringItem("userid", userid));
-		return this;
-	}
+//	public FeedInfo creator_email(String email) {
+//		if (creator==null) {
+//			creator = new BusinessObject() {
+//				public String getKeyname() {
+//					return "creator";
+//				}
+//			};
+//		};
+//		if (creator.getBusinessStringItem("email")==null) {
+//			creator.setObject(new BusinessStringItem("email", email));
+//		} else {
+//			creator.getBusinessStringItem("email").setString(email);
+//		}
+//		return this;
+//	}
+//	
+//	public FeedInfo creator_userid(String userid) {
+//		if (creator==null) {
+//			creator = new BusinessObject() {
+//				public String getKeyname() {
+//					return "creator";
+//				}
+//			};
+//		};
+//		if (creator.getBusinessStringItem("userid")==null) {
+//			creator.setObject(new BusinessStringItem("userid", userid));
+//		} else {
+//			creator.getBusinessStringItem("userid").setString(userid);
+//		}
+//		return this;
+//	}
+//	
+//	public FeedInfo creator(String email, String userid) {
+//		if (creator==null) {
+//			creator = new BusinessObject() {
+//				public String getKeyname() {
+//					return "creator";
+//				}
+//			};
+//		};
+//		creator.setObject(new BusinessStringItem("email", email));
+//		creator.setObject(new BusinessStringItem("userid", userid));
+//		return this;
+//	}
 	
 	public FeedInfo receiver(Receiver receiver) {
 		this.receiver = receiver;
