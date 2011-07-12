@@ -74,6 +74,11 @@ public class OpenSDXImporterBase {
 			File impFile = new File(args[1]);
 			File savFile = new File(args[2]);
 			
+			if(!impFile.exists()) {
+				System.out.println("ERROR: File to import not exist! Please check and try again.");
+				System.exit(0);
+			}
+			
 			Result ir = null;
 			switch(impType.getType()) {
 				case ImportType.FINETUNES:

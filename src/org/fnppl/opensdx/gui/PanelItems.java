@@ -464,7 +464,7 @@ public class PanelItems extends javax.swing.JPanel implements MyObservable, MyOb
             anzContributors = item.getContributorCount();
             lm = new DefaultListModel();
             for (int i = 0; i < anzContributors; i++) {
-                lm.addElement(item.getContributor(i).getName() + " (" + bundle.getContributor(i).getType() + ")");
+                lm.addElement(item.getContributor(i).getName() + " (" + item.getContributor(i).getType() + ")");
             }
             list_contributors.setModel(lm);
             list_contributors.setSelectedIndex(0);
