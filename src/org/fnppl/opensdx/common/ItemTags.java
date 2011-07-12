@@ -67,8 +67,6 @@ public class ItemTags extends BusinessObject {
 		return tags;
 	}
 
-
-
 	public static ItemTags make() {
 		ItemTags tags = new ItemTags();
 		tags.genres = null;
@@ -156,7 +154,6 @@ public class ItemTags extends BusinessObject {
 		this.bundle_only = new BusinessBooleanItem("bundle_only", bundle_only);
 		return this;
 	}
-
 	
 	public String getOrigin_country() {
 		if (origin_country==null) return null;

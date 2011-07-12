@@ -56,7 +56,9 @@ import org.fnppl.opensdx.security.*;
 public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	DateFormat ymd = new SimpleDateFormat("yyyyMMdd");
 	Result ir = Result.succeeded();
-	
+	// test?
+    boolean onlytest = true;
+    
 	public FinetunesToOpenSDXImporter(ImportType type, File impFile, File savFile) {
 		super(type, impFile, savFile);
 	}
@@ -95,7 +97,6 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        Element root = impDoc.getRootElement();
 	                   
 	        // (2) get FeedInfo from import and create new FeedInfo for openSDX
-	        boolean onlytest = true;
 	        String feedid = root.getAttribute("feedid");
 	        if (feedid == null) feedid = "[NOT SET]";
 	        Calendar cal = Calendar.getInstance();
@@ -107,6 +108,9 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        ContractPartner licensor = ContractPartner.make(1, "", "");
 	        
 	        FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor);
+
+	        // path to importfile
+	        String path = this.importFile.getParent()+File.separator;	        
 	        
 	        // (3) create new feed with feedinfo
 	        feed = Feed.make(feedinfo);              
@@ -154,7 +158,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	long prd = cal.getTimeInMillis();
 	        	
 	        	BundleInformation info = BundleInformation.make(srd, prd);
-	        	
+
 	        	try {
 		        	Vector<Element> infotexts = release.getChild("infotexts").getChildren();
 		        	for (Iterator<Element> itInfotexts = infotexts.iterator(); itInfotexts.hasNext();) {
@@ -189,6 +193,10 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	}
 	        	
 	        	LicenseBasis license_basis = LicenseBasis.make(territorial, rf, rt);
+	        	
+	        	if(root.getChild("streaming")!=null) {
+	        		license_basis.streaming_allowed(Boolean.parseBoolean(root.getChildText("streaming")));
+	        	}
 	        	
 	        	// license specifics -> empty!
 	        	LicenseSpecifics license_specifics = LicenseSpecifics.make();
@@ -229,15 +237,16 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        		
 	        		tags.addGenre(genre.getChildText("name"));
 	        	}
+
         		bundle.tags(tags);	 
         		   
-	        	// add Items -> frontcover: license_basis & license_specifics from bundle, right?
+	        	// add File -> frontcover
 	        	Element ressource = release.getChild("resource");
 	        	if(ressource != null && ressource.getAttribute("type").equals("frontcover")) {
-	        		Item item = Item.make(IDs.make(), "Frontcover", "Frontcover", "", "image", "", BundleInformation.make(srd, prd), LicenseBasis.makeAsOnBundle(), license_specifics);
 	        		ItemFile itemfile = ItemFile.make();
-	        		itemfile.type(ressource.getChildTextNN("datatype"));
-	        		File f = new File(ressource.getChildTextNN("uri"));
+	        		itemfile.type("cover");
+	        		itemfile.filetype(ressource.getChildTextNN("datatype"));
+	        		File f = new File(path+ressource.getChildTextNN("uri"));
 	        		if(f!=null && f.exists()) {
 	        			itemfile.setFile(f);
 	        		}
@@ -248,18 +257,15 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        		if(quality.getAttribute("type").equals("size")) {
 		        			if(quality.getText().length()>0) {	
 		        				itemfile.bytes(Integer.parseInt(quality.getText()));
-		        			}
-		        		}
-		        		
+		        			}	        			
+		        		}		        				        		
 		        	}
-	        		itemfile.filetype("cover");
-        			item.addFile(itemfile);
 	        		
 	        		if(ressource.getChild("checksum")!=null && ressource.getChild("checksum").getAttribute("type").equals("md5")) {
 	        			itemfile.checksums(Checksums.make().md5(ressource.getChildText("checksum").getBytes()));
 	        		}
 	        		
-	        		bundle.addItem(item);
+	        		bundle.addFile(itemfile);
 	        	}
         		
 	        	Vector<Element> tracks = release.getChild("tracks").getChildren("track");
@@ -297,8 +303,21 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        	
 		        	BundleInformation track_info = BundleInformation.make(srd, prd);		        	
 		        	
+		        	// num
+		        	if(track_label.getChildTextNN("position").length()>0) {
+		        		track_info.num(Integer.parseInt(track_label.getChildTextNN("position")));
+		        	}
+		        	
+		        	// setnum
+		        	if(track_label.getChildTextNN("cdsourcenum").length()>0) {
+		        		track_info.setnum(Integer.parseInt(track_label.getChildTextNN("cdsourcenum")));
+		        	}
+		        	
+		        	// license specifics -> empty!
+		        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make(); 
+		        	
 	        		// license_basis of Bundle / license_specifics of Bundle / others (?)
-		        	Item item = Item.make(track_labelids, track_displayname, track_name, track_version, "audio", track_display_artist, track_info, LicenseBasis.makeAsOnBundle(), license_specifics);
+		        	Item item = Item.make(track_labelids, track_displayname, track_name, track_version, "audio", track_display_artist, track_info, LicenseBasis.makeAsOnBundle(), track_license_specifics);
 		        	
 		        	// add IDs
 		        	item.ids(trackids);
@@ -306,8 +325,10 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        	// file
 		        	Element track_ressource = track.getChild("resource");		        	
 		        	ItemFile itemfile = ItemFile.make();
-		        	itemfile.type(track_ressource.getChildTextNN("datatype"));
-	        		File f = new File(track_ressource.getChildTextNN("uri"));
+		        	if(track_ressource.getAttribute("type").equals("audiofile")) itemfile.type("full");
+		        		
+		        	itemfile.filetype(track_ressource.getChildTextNN("datatype"));
+	        		File f = new File(path+track_ressource.getChildTextNN("uri"));
 	        		if(f!=null && f.exists()) {
 	        			itemfile.setFile(f);
 	        		}	
@@ -320,6 +341,16 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        				itemfile.bytes(Integer.parseInt(track_quality.getText()));
 		        			}
 		        		}
+		        		else if(track_quality.getAttribute("type").equals("channelmode")) {
+		        			if(track_quality.getText().length()>0) {	
+		        				itemfile.channels(track_quality.getText());
+		        			}	        			
+		        		}		        		
+		        		else if(track_quality.getAttribute("type").equals("duration")) {
+		        			if(track_quality.getText().length()>0) {	
+		        				item.getInformation().playlength(Integer.parseInt(track_quality.getText()));
+		        			}	        			
+		        		}		        		
 		        		
 		        	}	        		
 	        		
@@ -338,6 +369,16 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        		
 		        		track_tags.addGenre(track_genre.getChildText("name"));
 		        	}
+		        	
+		        	tags.origin_country(track.getChildTextNN("origincountry"));
+		        	String track_bundle_only = track.getChildTextNN("bundled");
+		        	if(track_bundle_only.equals("false")) {
+		        		tags.bundle_only(false);	
+		        	}
+		        	else if(track_bundle_only.equals("true")) {
+		        		tags.bundle_only(true);	
+		        	}
+		        	
 	        		item.tags(tags);	
 		        	
 		        	// add contributor to item

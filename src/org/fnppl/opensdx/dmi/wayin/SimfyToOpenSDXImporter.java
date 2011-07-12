@@ -1,6 +1,8 @@
 package org.fnppl.opensdx.dmi.wayin;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.fnppl.opensdx.common.*;
@@ -53,28 +55,258 @@ import org.fnppl.opensdx.security.*;
  */
 
 public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
-
+	DateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
+	Result ir = Result.succeeded();
+	// test?
+	boolean onlytest = true;
+    
 	public SimfyToOpenSDXImporter(ImportType type, File impFile, File savFile) {
 		super(type, impFile, savFile);
 	}
 	
+	public SimfyToOpenSDXImporter(File impFile) {
+		super(ImportType.getImportType("simfy"), impFile, null);
+	}
+	
 	public Result formatToOpenSDXFile() {
-		Result ir = Result.succeeded();		
-		// do the import
 		try {			
-			// (1) get XML-Data from import document
-            Document impDoc = Document.fromFile(this.importFile);
-            Element root = impDoc.getRootElement();
-
-            // ToDo: Awesome Import Magic!
 			
+			Feed feed = this.getImportFeed();
+            
+			if(feed!=null) {			
+	            // write file
+				Document doc = Document.buildDocument(feed.toElement());
+				doc.writeToFile(this.saveFile);
+				
+			}
 		} catch (Exception e) {
+			e.printStackTrace();			
 			ir.succeeded = false;
 			ir.errorMessage = e.getMessage();			
-			ir.exception = e;
-		}		
+			ir.exception = e;			
+		}	
 		
-		return ir;			
+		return ir;				
+	}
+	
+	private Feed getImportFeed() {
+		// do the import
+		Feed feed = null;
+		
+		try {	        
+			// (1) get XML-Data from import document
+	        Document impDoc = Document.fromFile(this.importFile);
+	        Element root = impDoc.getRootElement();
+	          
+	        // (2) get FeedInfo from import and create new FeedInfo for openSDX
+	        String feedid = root.getChildTextNN("code");
+	        if (feedid.length()==0) feedid = "[NOT SET]";
+	        Calendar cal = Calendar.getInstance();
+	        
+	        if(root.getChild("updated_at")!=null && root.getChildTextNN("updated_at").length()>0) {
+	        	cal.setTime(ymd.parse(root.getChildText("updated_at").substring(0, 9)));
+	        }	        
+	        
+	        long creationdatetime = cal.getTimeInMillis();	        
+	        long effectivedatetime = cal.getTimeInMillis();
+	        
+	        String lic = root.getChildTextNN("licensor");
+	        if (lic==null) lic = "[NOT SET]";
+	        
+	        ContractPartner sender = ContractPartner.make(0, lic , "");
+	        ContractPartner licensor = ContractPartner.make(1, lic, "");
+	        
+	        FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor);
+	        
+	        // path to importfile
+	        String path = this.importFile.getParent()+File.separator;
+	        
+	        // (3) create new feed with feedinfo
+	        feed = Feed.make(feedinfo);              
+	
+	        // Information
+        	String streetReleaseDate = root.getChildTextNN("original_released_on");	        
+	        if(streetReleaseDate.length()>0) {
+	        	cal.setTime(ymd.parse(streetReleaseDate));
+	        }
+	        else {
+	        	// MUST: when not provided then today
+	        	cal.setTime(new Date());
+	        }
+	        
+	        // streetRelease = physicalRelease (?)
+	        long srd = cal.getTimeInMillis();
+        	long prd = cal.getTimeInMillis();
+        	
+        	BundleInformation info = BundleInformation.make(srd, prd);
+        	
+        	// IDs of bundle -> more (?)
+        	IDs bundleids = IDs.make();
+        	if(root.getChild("upc")!=null) bundleids.upc(root.getChildTextNN("upc"));
+        	if(root.getChild("isrc")!=null) bundleids.isrc(root.getChildTextNN("isrc"));
+
+        	// displayname
+        	String displayname = root.getChildTextNN("title");
+        	
+        	// display_artist
+        	String display_artist = root.getChildTextNN("artist_name");
+        	
+        	// license basis
+        	Territorial territorial = Territorial.make();
+        	
+        	// Release
+        	LicenseBasis license_basis = LicenseBasis.make(territorial, srd, prd);
+        	
+        	// license specifics -> empty!
+        	LicenseSpecifics license_specifics = LicenseSpecifics.make();  
+        	
+        	Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artist, info, license_basis, license_specifics);
+        	
+        	// add Tags
+        	ItemTags tags = ItemTags.make();   		
+        	tags.addGenre(root.getChildTextNN("genre"));
+
+    		bundle.tags(tags);        	
+        	
+        	Contributor contributor = Contributor.make(root.getChildTextNN("label"), Contributor.TYPE_LABEL, IDs.make());
+        	bundle.addContributor(contributor);
+        	
+        	contributor = Contributor.make(root.getChildTextNN("artist_name"), Contributor.TYPE_DISPLAY_ARTIST, IDs.make());
+         	bundle.addContributor(contributor);        	
+        	
+        	// cover: license_basis & license_specifics from bundle, right?
+        	Element cover = root.getChild("cover");
+        	if(cover != null) {
+        		ItemFile itemfile = ItemFile.make();
+        		itemfile.type("cover");
+        		// check if file exist at path
+        		File f = new File(path+cover.getChildTextNN("file_name"));
+        		if(f!=null && f.exists()) {
+        			itemfile.setFile(f);
+        		}
+        		
+        		if(cover.getChild("file_size")!=null) {
+        			itemfile.bytes(Integer.parseInt(cover.getChildText("file_size")));
+        		}        		
+        		
+        		// checksum md5 or sha1 (?)
+        		if(cover.getChild("file_checksum")!=null) {
+        			itemfile.checksums(Checksums.make().md5(cover.getChildText("file_checksum").getBytes()));
+        		}
+        		
+        		bundle.addFile(itemfile);
+        	}
+        	
+        	Vector<Element> tracks = root.getChild("tracks").getChildren("track");
+        	for (Iterator<Element> itTracks = tracks.iterator(); itTracks.hasNext();) {
+        		Element track = itTracks.next();
+
+        		IDs trackids = IDs.make();
+            	if(root.getChild("upc")!=null) trackids.upc(track.getChildTextNN("upc"));
+            	if(root.getChild("isrc")!=null) trackids.isrc(track.getChildTextNN("isrc"));
+        		
+	        	// displayname
+	        	String track_displayname = track.getChildTextNN("title");  
+	        	
+	        	// display_artist
+	        	String track_display_artist = track.getChildTextNN("artist_name");
+	        	
+	        	BundleInformation track_info = BundleInformation.make(srd, prd);		        	
+	        	
+	        	// num
+	        	if(track.getChildTextNN("track_number").length()>0) {
+	        		track_info.num(Integer.parseInt(track.getChildText("track_number")));
+	        	}
+	        	
+	        	// setnum
+	        	if(track.getChildTextNN("disk_number").length()>0) {
+	        		track_info.setnum(Integer.parseInt(track.getChildText("disk_number")));
+	        	} 
+	        	
+	        	// tracklength
+        		if(track.getChildTextNN("duration").length()>0) {
+        			track_info.playlength(Integer.parseInt(track.getChildText("duration")));     			
+        		}
+        		
+        		// track license basis
+            	Territorial track_territorial = Territorial.make();
+        		
+            	Vector<Element> tracks_rights = track.getChild("rights").getChildren("right");
+            	for (Iterator<Element> itRights = tracks_rights.iterator(); itRights.hasNext();) {
+            		Element track_right = itRights.next();
+            		
+            		track_territorial.allow(track_right.getChildText("country_code"));
+            	}
+        		
+	        	/*
+	        	 *  ToDo: streaming allowed and dates for every territory and every track (?!)  
+	        	 *  
+	        	
+	        	LicenseBasis track_license_basis = LicenseBasis.make(track_territorial, from, to);
+	        		
+	        	if(track.getChild("streaming")!=null) {
+	        		track_license_basis.streaming_allowed(Boolean.parseBoolean(root.getChildText("streaming")));
+	        	}  
+	        	
+	        	String streamable_from = track.getChildTextNN("streamable_from");	        
+		        if(streetReleaseDate.length()>0) {
+		        	cal.setTime(ymd.parse(streamable_from));
+		        }
+	        	
+	        	*/
+	        	
+            	LicenseBasis track_license_basis = LicenseBasis.makeAsOnBundle();
+            	
+	        	// license specifics -> empty!
+	        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make();         	
+	        	
+        		// license_basis of Bundle / license_specifics of Bundle / others (?)
+	        	Item item = Item.make(trackids, track_displayname, track_displayname, "", "audio", track_display_artist, track_info, track_license_basis, track_license_specifics);
+	        	            	
+        		// add contributor
+        		Contributor track_contributor = Contributor.make(track.getChildTextNN("artist_name"), Contributor.TYPE_DISPLAY_ARTIST, IDs.make());
+             	item.addContributor(track_contributor);  
+             	
+            	// add Tags
+            	ItemTags track_tags = ItemTags.make();   		
+            	track_tags.addGenre(track.getChildTextNN("genre"));
+            	
+            	item.tags(track_tags);	        	
+	        	
+        		ItemFile itemfile = ItemFile.make();
+        		itemfile.type("full");
+        		File f = new File(path+track.getChildTextNN("file_name"));      		
+        		if(f!=null && f.exists()) {
+        			itemfile.setFile(f);
+        		}
+        		
+        		if(track.getChild("file_size")!=null) {
+        			itemfile.bytes(Integer.parseInt(track.getChildText("file_size")));
+        		}        		
+        		
+        		// checksum md5 or sha1 (?)
+        		if(cover.getChild("file_checksum")!=null) {
+        			itemfile.checksums(Checksums.make().md5(cover.getChildText("file_checksum").getBytes()));
+        		}
+	        	
+	        	item.addFile(itemfile);
+	        	
+	        	bundle.addItem(item);
+        	}
+        	
+        	feed.addBundle(bundle);
+	        
+		} catch (Exception e) {
+			e.printStackTrace();
+			ir.succeeded = false;
+			ir.errorMessage = e.getMessage();			
+			ir.exception = e;			
+		}		        
+        return feed;
+	}
+	
+	public Feed getFormatedFeedFromImport() {			
+		return this.getImportFeed();	
 	}
 
 }
