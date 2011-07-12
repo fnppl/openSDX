@@ -230,6 +230,11 @@ public class Feed extends BusinessObject {
 		}
 		return null;
 	}
+	
+	public int getBundleCount() {
+		if (bundles==null) return 0;
+		return bundles.size();
+	}
 
 	public Item getSingleItems(int index) {
 		if (single_items!=null && index<single_items.size()) {

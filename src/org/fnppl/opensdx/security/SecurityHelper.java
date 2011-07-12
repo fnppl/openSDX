@@ -315,6 +315,21 @@ public class SecurityHelper {
 	            throw new RuntimeException(e.getMessage(), e);
 	        }
 	    }
+	    
+	    public static String encode(final byte[] data, int offs, int length, char pad, int wrapat) {
+	    	if(data == null) {
+	    		return null;
+	    	}
+	        try {
+	            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+	            encode(data, offs, length, out, pad, wrapat);
+	            out.close();
+	            return new String(out.toByteArray());
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            throw new RuntimeException(e.getMessage(), e);
+	        }
+	    }
 
 	    /**
 	     * Decodes the HEX input data producing a output stream.

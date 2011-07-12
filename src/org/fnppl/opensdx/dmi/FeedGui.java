@@ -81,6 +81,7 @@ import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.gui.PanelBundle;
+import org.fnppl.opensdx.gui.PanelBundle2;
 import org.fnppl.opensdx.gui.PanelFeedInfo;
 import org.fnppl.opensdx.gui.PanelItems;
 import org.fnppl.opensdx.gui.SecurityMainFrame;
@@ -632,7 +633,9 @@ public class FeedGui extends JFrame implements MyObserver {
 		//bundled_items_panel = new BundledItemsPanel(this);
 		
 		feedinfo_panel = new PanelFeedInfo(this);
+		//bundle_panel = new PanelBundle2(this);
 		bundle_panel = new PanelBundle();
+		
 		bundled_items_panel = new PanelItems();
 		panel_saved_dmi = new PanelSavedDMI(this);
 		
@@ -641,7 +644,8 @@ public class FeedGui extends JFrame implements MyObserver {
 		//observe changes
 		feedinfo_panel.addObserver(this);
 		bundle_panel.addObserver(this);
-		bundle_panel.addObserver(bundled_items_panel); //watch out for changes in contributors
+		//bundle_panel.addObserver(bundled_items_panel); //watch out for changes in contributors
+		
 		bundled_items_panel.addObserver(this);
 		
 		
@@ -684,6 +688,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		if (bundle_panel!=null) {
 			if (currentFeed.getBundle(0)!=null) {
 				bundle_panel.update(currentFeed.getBundle(0));
+				//bundle_panel.update();
 			}
 		}
 		if (bundled_items_panel!=null) {
