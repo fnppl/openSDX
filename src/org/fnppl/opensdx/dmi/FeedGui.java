@@ -753,6 +753,8 @@ public class FeedGui extends JFrame implements MyObserver {
 			}
 		}
 	}	
+	//31:37:34:62:65:30:31:39:34:35:32:37:39:37:39:39:31:32:30:62:31:61:38:32:63:63:62:61:30:39:62:33
+	
 	
 	public void quit() {
 		System.exit(0);

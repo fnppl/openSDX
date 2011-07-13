@@ -90,6 +90,7 @@ public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
 		this.gui = gui;
 		initComponents();
 		initLayout();
+		pLicense.showAsOnBundle(false);
 	}
 
 	private Bundle getBundle() {
@@ -141,9 +142,12 @@ public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
 		
 		tabs = new JTabbedPane();
 		tabs.add(buildEmbeddedPanel(pIDs),"IDs");
-		tabs.add(new JScrollPane(pContributors),"Contributors");
+//		tabs.add(new JScrollPane(pContributors),"Contributors");
+//		tabs.add(new JScrollPane(pInformation),"Information");
+//		tabs.add(new JScrollPane(pLicense),"License");
+		tabs.add(buildEmbeddedPanel(pContributors),"Contributors");
 		tabs.add(new JScrollPane(pInformation),"Information");
-		tabs.add(new JScrollPane(pLicense),"License");
+		tabs.add(buildEmbeddedPanel(pLicense),"License");
 		
 
 	}
@@ -189,15 +193,17 @@ public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
 
 
 	public void initLayout() {
+		pBasics.setPreferredSize(new Dimension(800, (int)pBasics.getPreferredSize().getHeight()));
+		
 		GridBagLayout gbl = new GridBagLayout();
 		setLayout(gbl);
 		GridBagConstraints gbc = new GridBagConstraints();
-
+		
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
+		gbc.weightx = 20.0;
 		gbc.weighty = 0.0;
 		gbc.anchor = GridBagConstraints.CENTER;
 		gbc.fill = GridBagConstraints.BOTH;
@@ -223,11 +229,11 @@ public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
 
 
 		JLabel label_filler = new JLabel();
-		gbc.gridx = 0;
+		gbc.gridx = 1;
 		gbc.gridy = 2;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
+		gbc.weightx = 80.0;
 		gbc.weighty = 100.0;
 		gbc.anchor = GridBagConstraints.CENTER;
 		gbc.fill = GridBagConstraints.BOTH;

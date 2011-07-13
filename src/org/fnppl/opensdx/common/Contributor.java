@@ -1,4 +1,6 @@
 package org.fnppl.opensdx.common;
+
+import java.util.Vector;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -54,14 +56,26 @@ public class Contributor extends BusinessObject {
 	public static String KEY_NAME = "contributor";
 
 	public static String TYPE_LABEL = "label";
+	public static String TYPE_PERFORMER = "performer";
 	public static String TYPE_COMPOSER = "composer";
 	public static String TYPE_TEXTER = "texter";
 	public static String TYPE_WRITER = "writer";
 	public static String TYPE_VOCALS = "vocals";
 	public static String TYPE_CONDUCTOR = "conductor";	
-	public static String TYPE_DISPLAY_ARTIST = "display_artist";
+	public static String TYPE_DISPLAY_ARTIST = "display artist";
 	public static String TYPE_COMPILATOR = "compilator";
-	
+	public static final Vector<String> TYPES = new Vector<String>();
+	static {
+		TYPES.add(TYPE_LABEL);
+		TYPES.add(TYPE_PERFORMER);
+		TYPES.add(TYPE_DISPLAY_ARTIST);
+		TYPES.add(TYPE_COMPOSER);
+		TYPES.add(TYPE_TEXTER);
+		TYPES.add(TYPE_WRITER);
+		TYPES.add(TYPE_VOCALS);
+		TYPES.add(TYPE_CONDUCTOR);
+		TYPES.add(TYPE_COMPILATOR);
+	}
 	
 	private BusinessStringItem name;	//MUST
 	private BusinessStringItem type;	//MUST
