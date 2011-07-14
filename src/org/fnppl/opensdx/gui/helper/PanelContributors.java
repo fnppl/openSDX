@@ -199,10 +199,15 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 			c = bundle.getContributor(selected);
 		}
 		panel_contributor_details.update(c);
+		if (c==null) {
+			panel_contributor_details.setVisible(false);
+		} else {
+			panel_contributor_details.setVisible(true);
+		}
 	}
 	public void bu_add_clicked() {
 		if (bundle != null) {
-			Contributor c = Contributor.make("new contributor", "new type", IDs.make());
+			Contributor c = Contributor.make("new contributor", "[no type]", IDs.make());
 			bundle.addContributor(c);
 			updateContributorsList();
 			list_contributors.setSelectedIndex(list_contributors.getModel().getSize() - 1);

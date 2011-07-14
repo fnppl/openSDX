@@ -218,6 +218,7 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 				}
 			}
 		}
+		setVisibility(!check_as_on_bundle.isSelected());
 		documentListener.saveStates();
 	}
 
@@ -596,12 +597,31 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 		add(label_filler);
 		JLabel filler = new JLabel();
 	}
+	
+	private void setVisibility(boolean visible) {
+		label_timeframe_from.setVisible(visible);
+		label_timeframe_to.setVisible(visible);
+		label_pricing.setVisible(visible);
+		label_channels.setVisible(visible);
+		
+		text_timeframe_from_datetime.setVisible(visible);
+		text_timeframe_to_datetime.setVisible(visible);
+		select_pricing.setVisible(visible);
+		text_pricing.setVisible(visible);
+		text_pricing.setVisible(visible);
+		check_streaming_allowed.setVisible(visible);
+		select_channels.setVisible(visible);
+		select_channels.setVisible(visible);
+		panel_territories.setVisible(visible);
+	}
 
 
 	// ----- action methods --------------------------------
 	public void check_as_on_bundle_changed(boolean selected) {
 		if (lb==null) return;
-		
+		lb.as_on_bundle(selected);
+		setVisibility(!selected);		
+		notifyChanges();
 	}
 	public void init_select_pricing_model() {
 		select_pricing_model.removeAllElements();

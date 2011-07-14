@@ -388,6 +388,7 @@ public void initLayout() {
 // ----- action methods --------------------------------
 	public void init_select_type_model() {
 		select_type_model.removeAllElements();
+		select_type_model.addElement("[no type]");
 		for (String t : Contributor.TYPES) {
 			select_type_model.addElement(t);
 		}

@@ -56,6 +56,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.fnppl.opensdx.common.Bundle;
+import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.dmi.FeedGui;
 
 import java.util.HashMap;
@@ -65,10 +66,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelBundleBasics extends JPanel implements MyObservable {
+public class PanelItemBasics extends JPanel implements MyObservable {
 
 	//init fields
-	private Bundle bundle = null;
+	private Item item = null;
 	private DocumentChangeListener documentListener;
 	private KeyAdapter keyAdapter;
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
@@ -81,27 +82,31 @@ public class PanelBundleBasics extends JPanel implements MyObservable {
 	private JTextField text_name;
 	private JLabel label_displayartist;
 	private JTextField text_displayartist;
+	private JLabel label_type;
+	private JComboBox select_type;
+	private DefaultComboBoxModel select_type_model;
 
-
-	public PanelBundleBasics(Bundle bundle) {
-		this.bundle = bundle;
+	public PanelItemBasics() {
 		initKeyAdapter();
 		initComponents();
 		initLayout();
+		update((Item)null);
 	}
 
-	public void update(Bundle bundle) {
-		this.bundle = bundle;
-		if (bundle == null) {
+	public void update(Item item) {
+		this.item = item;
+		if (item == null) {
 			text_displayname.setText("");
 			text_version.setText("");
 			text_name.setText("");
 			text_displayartist.setText("");
+			select_type.setSelectedItem(0);
 		} else {
-			text_displayname.setText(bundle.getDisplayname());
-			text_version.setText(bundle.getVersion());
-			text_name.setText(bundle.getName());
-			text_displayartist.setText(bundle.getDisplay_artist());
+			text_displayname.setText(item.getDisplayname());
+			text_version.setText(item.getVersion());
+			text_name.setText(item.getName());
+			text_displayartist.setText(item.getDisplay_artist());
+			select_type.setSelectedItem(item.getType());
 		}
 		documentListener.saveStates();
 	}
@@ -138,7 +143,7 @@ public class PanelBundleBasics extends JPanel implements MyObservable {
 
 	private void initComponents() {
 		Vector<JTextComponent> texts = new Vector<JTextComponent>();
-		setBorder(new TitledBorder("Bundle Basics"));
+		setBorder(new TitledBorder("Item Basics"));
 
 		label_displayname = new JLabel("Display Name");
 
@@ -172,6 +177,19 @@ public class PanelBundleBasics extends JPanel implements MyObservable {
 		map.put("text_displayartist", text_displayartist);
 		texts.add(text_displayartist);
 
+		label_type = new JLabel("Type");
+
+		select_type = new JComboBox();
+		select_type_model = new DefaultComboBoxModel();
+		select_type.setModel(select_type_model);
+		init_select_type_model();
+		map.put("select_type", select_type);
+		select_type.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				select_type_changed(select_type.getSelectedIndex());
+			}
+		});
+		
 		documentListener = new DocumentChangeListener(texts);
 		for (JTextComponent text : texts) {
 			text.getDocument().addDocumentListener(documentListener);
@@ -335,27 +353,70 @@ public class PanelBundleBasics extends JPanel implements MyObservable {
 		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(text_displayartist,gbc);
 		add(text_displayartist);
+		
+		
+		// Component: label_type
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(5,5,5,5);
+		gbl.setConstraints(label_type,gbc);
+		add(label_type);
+
+		// Component: select_type
+		gbc.gridx = 1;
+		gbc.gridy = 2;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 50.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(5,5,5,5);
+		gbl.setConstraints(select_type,gbc);
+		add(select_type);
+		
 	}
 
 	// ----- action methods --------------------------------
+	public void init_select_type_model() {
+		select_type_model.removeAllElements();
+		select_type_model.addElement("[not specified]");
+		select_type_model.addElement("audio");
+		select_type_model.addElement("video");
+	}
+	public void select_type_changed(int selected) {
+		if (item==null) return;
+		item.type((String)select_type.getSelectedItem());
+		notifyChanges();
+	}
+	
 	public void text_changed(JTextComponent text) {
-		if (bundle == null) return;
+		if (item == null) return;
 		String t = text.getText();
 		if (text == text_displayname) {
-			bundle.displayname(t);
+			item.displayname(t);
 		}
 		else if (text == text_version) {
-			bundle.version(t);
+			item.version(t);
 		}
 		else if (text == text_name) {
-			bundle.name(t);
+			item.name(t);
 		}
 		else if (text == text_displayartist) {
-			bundle.display_artist(t);
+			item.display_artist(t);
 		}
 		notifyChanges();
 	}
-
 
 
 	//observable
