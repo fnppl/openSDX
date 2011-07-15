@@ -65,7 +65,8 @@ public class BundleInformation extends BusinessObject {
 	private BusinessIntegerItem playlength;								//MUST for media files
 	private BusinessIntegerItem num;									//SHOULD
 	private BusinessIntegerItem setnum;									//SHOULD
-	
+	private BusinessStringItem origin_country;							//COULD
+	private BusinessStringItem main_language;							//COULD
 	private BundleRelatedInformation related;							//SHOULD
 
 	public static BundleInformation make(long physical_release_datetime, long digital_release_datetime) {
@@ -78,6 +79,8 @@ public class BundleInformation extends BusinessObject {
 		information.num = null;
 		information.setnum = null;
 		information.related = BundleRelatedInformation.make();
+		information.origin_country = null;
+		information.main_language = null;
 		return information;
 	}
 
@@ -109,10 +112,41 @@ public class BundleInformation extends BusinessObject {
 		information.num = BusinessIntegerItem.fromBusinessObject(bo, "num");
 		information.setnum = BusinessIntegerItem.fromBusinessObject(bo, "setnum");
 		information.related = BundleRelatedInformation.fromBusinessObject(bo);
+		information.origin_country = BusinessStringItem.fromBusinessObject(bo, "origin_country");
+		information.main_language = BusinessStringItem.fromBusinessObject(bo, "main_language");
 		return information;
 	}
 
 
+	public BundleInformation origin_country(String origin_country) {
+		if (origin_country==null) {
+			this.origin_country = null; 
+		} else {
+			this.origin_country = new BusinessStringItem("origin_country", origin_country);
+		}
+		return this;
+	}
+
+	public BundleInformation main_language(String main_language) {
+		if (main_language==null) {
+			this.main_language = null;
+		} else {
+			this.main_language = new BusinessStringItem("main_language", main_language);
+		}
+		return this;
+	}
+	
+	public String getOrigin_country() {
+		if (origin_country==null) return null;
+		return origin_country.getString();
+	}
+
+	public String getMain_language() {
+		if (main_language==null) return null;
+		return main_language.getString();
+	}
+	
+	
 	public BundleInformation setPromotext(String language, String promotext) {
 		for (int i=0;i<this.promotext.size();i++) {
 			if (this.promotext.get(i).getAttribute("lang").equals(language)) {

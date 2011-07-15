@@ -10,6 +10,7 @@ import java.awt.Color;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -34,13 +35,10 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 	private JCheckBox check_bundle_only;
 	private JPanel panel_genres;
 	private EditCheckBoxTree tree_genres;
-	private JCheckBox check_explicit_lyrics;
-	private JLabel label_main_language;
-	private JTextField text_main_language;
-	private JButton bu_select_lang;
-	private JLabel label_origin_country;
-	private JTextField text_origin_country;
-	private JButton bu_select_country;
+	private JLabel label_explicit_lyrics;
+	private JComboBox select_explicit_lyrics;
+	private DefaultComboBoxModel select_explicit_lyrics_model;
+
 	private JLabel label_filler;
 
 	private ItemTags tags;
@@ -57,19 +55,18 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 
 	public void update(ItemTags tags) {
 		this.tags = tags;
-		if (tags == null) {;
-		check_bundle_only.setSelected(false);
-		check_explicit_lyrics.setSelected(false);
-		text_main_language.setText("");
-		text_origin_country.setText("");
-		Vector<String> genres = new Vector<String>();
-		tree_genres.setSelectedNodes(genres);
-
+		if (tags == null) {
+			check_bundle_only.setSelected(false);
+			select_explicit_lyrics.setSelectedIndex(0);
+			Vector<String> genres = new Vector<String>();
+			tree_genres.setSelectedNodes(genres);
 		} else {
 			check_bundle_only.setSelected(tags.isBundle_only());
-			check_explicit_lyrics.setSelected(tags.isExplicit_lyrics());
-			text_main_language.setText(tags.getMain_language());
-			text_origin_country.setText(tags.getOrigin_country());
+			if (tags.getExplicit_lyrics()==null) {
+				select_explicit_lyrics.setSelectedIndex(0);
+			} else {
+				select_explicit_lyrics.setSelectedItem(tags.getExplicit_lyrics());
+			}
 			Vector<String> genres = new Vector<String>();
 			for (int i=0;i<tags.getGenresCount();i++) {
 				String genre = tags.getGenre(i);
@@ -125,43 +122,15 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 		panel_genres.setBorder(new TitledBorder("Genres"));
 		tree_genres = new EditCheckBoxTree(FeedGui.getGenres());
 
-		check_explicit_lyrics = new JCheckBox("explicit lyrics");
-		map.put("check_explicit_lyrics", check_explicit_lyrics);
-		check_explicit_lyrics.addActionListener(new ActionListener() {
+		label_explicit_lyrics = new JLabel("explicit lyrics");
+		select_explicit_lyrics = new JComboBox();
+		select_explicit_lyrics_model = new DefaultComboBoxModel();
+		init_select_explicit_lyrics_model();
+		select_explicit_lyrics.setModel(select_explicit_lyrics_model);
+		map.put("select_explicit_lyrics", select_explicit_lyrics);
+		select_explicit_lyrics.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				check_explicit_lyrics_changed(check_explicit_lyrics.isSelected());
-			}
-		});
-
-		label_main_language = new JLabel("main language");
-
-		text_main_language = new JTextField("");
-
-		text_main_language.setName("text_main_language");
-		map.put("text_main_language", text_main_language);
-		texts.add(text_main_language);
-
-		bu_select_lang = new JButton("select");
-		map.put("bu_select_lang", bu_select_lang);
-		bu_select_lang.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				bu_select_lang_clicked();
-			}
-		});
-
-		label_origin_country = new JLabel("origin country");
-
-		text_origin_country = new JTextField("");
-
-		text_origin_country.setName("text_origin_country");
-		map.put("text_origin_country", text_origin_country);
-		texts.add(text_origin_country);
-
-		bu_select_country = new JButton("select");
-		map.put("bu_select_country", bu_select_country);
-		bu_select_country.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				bu_select_country_clicked();
+				select_explicit_lyrics_changed(select_explicit_lyrics.getSelectedIndex());
 			}
 		});
 
@@ -260,8 +229,23 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 		gbl.setConstraints(panel_genres,gbc);
 		add(panel_genres);
 
-		// Component: check_explicit_lyrics
+		// Component: label_explicit_lyrics
 		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_explicit_lyrics,gbc);
+		add(label_explicit_lyrics);
+		
+		// Component: check_explicit_lyrics
+		gbc.gridx = 1;
 		gbc.gridy = 1;
 		gbc.gridwidth = 2;
 		gbc.gridheight = 1;
@@ -272,98 +256,10 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
 		gbc.insets = new Insets(2,2,2,2);
-		gbl.setConstraints(check_explicit_lyrics,gbc);
-		add(check_explicit_lyrics);
+		gbl.setConstraints(select_explicit_lyrics,gbc);
+		add(select_explicit_lyrics);
 
-		// Component: label_main_language
-		gbc.gridx = 0;
-		gbc.gridy = 2;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(2,2,2,2);
-		gbl.setConstraints(label_main_language,gbc);
-		add(label_main_language);
-
-		// Component: text_main_language
-		gbc.gridx = 1;
-		gbc.gridy = 2;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 20.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(2,2,2,2);
-		gbl.setConstraints(text_main_language,gbc);
-		add(text_main_language);
-
-		// Component: bu_select_lang
-		gbc.gridx = 2;
-		gbc.gridy = 2;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(2,2,2,2);
-		gbl.setConstraints(bu_select_lang,gbc);
-		add(bu_select_lang);
-
-		// Component: label_origin_country
-		gbc.gridx = 0;
-		gbc.gridy = 3;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(2,2,2,2);
-		gbl.setConstraints(label_origin_country,gbc);
-		add(label_origin_country);
-
-		// Component: text_origin_country
-		gbc.gridx = 1;
-		gbc.gridy = 3;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 20.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(2,2,2,2);
-		gbl.setConstraints(text_origin_country,gbc);
-		add(text_origin_country);
-
-		// Component: bu_select_country
-		gbc.gridx = 2;
-		gbc.gridy = 3;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(2,2,2,2);
-		gbl.setConstraints(bu_select_country,gbc);
-		add(bu_select_country);
+		
 
 		// Component: label_filler
 		gbc.gridx = 4;
@@ -388,43 +284,30 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 		tags.bundle_only(selected);
 		notifyChanges();
 	}
-	public void check_explicit_lyrics_changed(boolean selected) {
+	
+	public void init_select_explicit_lyrics_model() {
+		select_explicit_lyrics_model.removeAllElements();
+		select_explicit_lyrics_model.addElement("[not set]");
+		select_explicit_lyrics_model.addElement(ItemTags.EXPLICIT_LYRICS_TRUE);
+		select_explicit_lyrics_model.addElement(ItemTags.EXPLICIT_LYRICS_FALSE);
+		select_explicit_lyrics_model.addElement(ItemTags.EXPLICIT_LYRICS_CLEANED);
+	}
+	public void select_explicit_lyrics_changed(int selected) {
 		if (tags==null) return;
-		tags.explicit_lyrics(selected);
+		if (selected==0) {
+			tags.explicit_lyrics(null);
+		} else {
+			tags.explicit_lyrics((String)select_explicit_lyrics_model.getElementAt(selected));
+		}
 		notifyChanges();
 	}
-	public void bu_select_lang_clicked() { 
-		if (tags==null) return;
-		String lang = FeedGui.showLanguageCodeSelector();
-		if (lang!=null) {
-			text_main_language.setText(lang);
-			documentListener.saveState(text_main_language);
-			tags.main_language(lang);
-			notifyChanges();
-		}
-	}
+	
 
-	public void bu_select_country_clicked() {
-		if (tags==null) return;
-		String country = FeedGui.showCountryCodeSelector();
-		if (country!=null) {
-			text_origin_country.setText(country);
-			documentListener.saveState(text_origin_country);
-			tags.origin_country(country);
-			notifyChanges();
-		}
-	}
 	
 	public void text_changed(JTextComponent text) {
 		if (tags==null) return;
-		String t = text.getText();
-		if (text == text_main_language) {
-			tags.main_language(t.toLowerCase());
-		}
-		else if (text == text_origin_country) {
-			tags.origin_country(t);
-		}
-		notifyChanges();
+//		
+//		notifyChanges();
 	}
 
 

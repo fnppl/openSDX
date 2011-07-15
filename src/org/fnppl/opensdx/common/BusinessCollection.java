@@ -78,6 +78,19 @@ public abstract class BusinessCollection<E> implements XMLElementable {
 		list.add(object);
 	}
 	
+	public void set(E item) {
+		if (!(item instanceof BusinessItem)) throw new RuntimeException("wrong usage of BusinessCollection.set Method!");
+		String name = ((BusinessItem)item).getKeyname();
+		for (int i=0;i<list.size();i++) {
+			if (list.get(i) instanceof Item) {
+				if (((BusinessItem)list.get(i)).getKeyname().equals(name)) {
+					list.set(i, item);
+				}
+			}
+		}
+		list.add(item);
+	}
+	
 	public void remove(int index) {
 		if (index<0 || index >= list.size()) return;
 		list.remove(index);

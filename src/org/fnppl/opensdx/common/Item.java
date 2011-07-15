@@ -55,15 +55,14 @@ public class Item extends BusinessObject {
 	private BusinessStringItem name;						//MUST
 	private BusinessStringItem version;						//MUST
 	private BusinessStringItem type;						//MUST
-	
 	private BusinessStringItem display_artist;				//SHOULD
-	
 	private IDs ids;										//MUST
 	private BusinessCollection<Contributor> contributors;	//MUST
 	private BundleInformation information;					//MUST
-	private LicenseBasis license_basis;
-	private LicenseSpecifics license_specifics;
-	private ItemTags tags;
+	private LicenseBasis license_basis;						//MUST
+	private LicenseSpecifics license_specifics;				//MUST
+	private ItemTags tags;									//SHOULD
+	private Fingerprint fingerprint;						//COULD
 	private BusinessCollection<ItemFile> files;
 	
 	
@@ -133,6 +132,8 @@ public class Item extends BusinessObject {
 			}
 		};
 		item.tags = ItemTags.fromBusinessObject(bo);
+		item.fingerprint = Fingerprint.fromBusinessObject(bo);
+		
 		return item;
 	}
 	
@@ -279,6 +280,22 @@ public class Item extends BusinessObject {
 		if (files==null) return null;
 		if (index<0 || index>=files.size()) return null;
 		return files.get(index);
+	}
+	
+	
+	public Item setEchoprint(String echoprint) {
+		if (fingerprint==null) {
+			fingerprint = Fingerprint.make();
+		}
+		fingerprint.echoprint(echoprint);
+		return this;
+	}
+	
+	public String getEchoprint() {
+		if (fingerprint==null) {
+			return null;
+		}
+		return fingerprint.getEchoprint();
 	}
 	
 	public String getKeyname() {

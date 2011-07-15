@@ -47,6 +47,7 @@ package org.fnppl.opensdx.common;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.Map.Entry;
 
 //import org.fnppl.opensdx.automatisation.BusinessStringItemGenerator;
 import org.fnppl.opensdx.xml.Element;
@@ -61,8 +62,11 @@ import org.fnppl.opensdx.xml.XMLHelper;
  */
 public abstract class BusinessObject implements XMLElementable {
 	
+	private HashMap<String,String> attribs = null;
 	private Vector<XMLElementable> otherObjects = new Vector<XMLElementable>();
-	private boolean appendOtherObjects = true; 
+	private boolean appendOtherObjects = true;
+	public boolean showOtherObjectsMessage = true;
+	
  	
 	public abstract String getKeyname();
 	
@@ -74,7 +78,13 @@ public abstract class BusinessObject implements XMLElementable {
 	
 	protected static Hashtable<Class, Field[]> getDeclaredFieldsCache = new Hashtable<Class, Field[]>();
 	public Element toElement() {
+		//System.out.println(getKeyname());
 		Element resultElement = new Element(getKeyname());
+		if (attribs!=null) {
+			for (Entry<String,String> a : attribs.entrySet()) {
+				resultElement.setAttribute(a.getKey(), a.getValue());
+			}
+		}
 		
 		Field[] fields = getDeclaredFieldsCache.get(this.getClass());
 		if(fields == null) {
@@ -89,15 +99,16 @@ public abstract class BusinessObject implements XMLElementable {
 		for (Field f : fields) {
 			if (!f.getName().equals("this$0")) { //argg, watch out when directly using BusinessObjects
 				try {	
-					//System.out.println(f.getName());
 					Object thisFieldsObject = f.get(this);
 					if (thisFieldsObject instanceof XMLElementable) {
+						//System.out.println("   "+f.getName());
 						Element e = ((XMLElementable)thisFieldsObject).toElement();
 						if (e!=null) {
 							resultElement.addContent(e);
 						}
 					}
 					else if (thisFieldsObject instanceof Vector<?>) {
+						//System.out.println("   "+f.getName());
 						Vector<?> vector = (Vector<?>)thisFieldsObject;
 						for (Object vectorsObject : vector) {
 							if (vectorsObject instanceof XMLElementable) {
@@ -115,17 +126,45 @@ public abstract class BusinessObject implements XMLElementable {
 		}
 		if (appendOtherObjects) {
 			for (XMLElementable ue : otherObjects) {
-				System.out.println("appending other object:: "+getKeyname()+"::"+ue.getKeyname());
+				if (showOtherObjectsMessage) {
+					System.out.println("appending other object:: "+getKeyname()+"::"+ue.getKeyname());
+				}
+				if (!showOtherObjectsMessage && ue instanceof BusinessObject) { //forward appending behavior
+					//System.out.println("forwarding");
+					BusinessObject tfo = (BusinessObject)ue;
+					tfo.appendOtherObjects = this.appendOtherObjects;
+					tfo.showOtherObjectsMessage = this.showOtherObjectsMessage;
+				}
 				resultElement.addContent(ue.toElement());
 			}
 		} else {
-			for (XMLElementable ue : otherObjects) {
-				System.out.println("unhandled object:: "+getKeyname()+"::"+ue.getKeyname());
+			if (showOtherObjectsMessage) {
+				for (XMLElementable ue : otherObjects) {
+						System.out.println("unhandled object:: "+getKeyname()+"::"+ue.getKeyname());
+				}
 			}
 		}
 		return resultElement;
 	}
 	
+	public void setAttribute(String key, String value) {
+		if (attribs==null) attribs = new HashMap<String, String>();
+		attribs.put(key, value);
+	}
+	
+	public String getAttribute(String key) {
+		if (attribs==null) return null;
+		return attribs.get(key);
+	}
+	
+	public Vector<String[]> getAttributes() {
+		if (attribs==null) return null;
+		Vector<String[]> a = new Vector<String[]>();
+		for (String key : attribs.keySet()) {
+			a.add(new String[] {key,attribs.get(key)});
+		}
+		return a;
+	}
 	
 	public Vector<XMLElementable> getElements() {
 		Vector<XMLElementable> result = new Vector<XMLElementable>();
@@ -183,6 +222,15 @@ public abstract class BusinessObject implements XMLElementable {
 				return keyname;
 			}
 		};
+		Vector<String[]> att = e.getAttributes();
+		if (att!=null && att.size()>0) {
+			b.attribs = new HashMap<String, String>();
+			for (String[] s : att) {
+				b.attribs.put(s[0],s[1]);
+			}
+		} else {
+			b.attribs = null;
+		}
 		b.readElements(e);
 		return b;
 	}
@@ -326,7 +374,8 @@ public abstract class BusinessObject implements XMLElementable {
 		return appendOtherObjects;
 	}
 
-	public void setAppendOtherObjectToOutput(boolean appendOtherObjects) {
+	public BusinessObject setAppendOtherObjectToOutput(boolean appendOtherObjects) {
 		this.appendOtherObjects = appendOtherObjects;
+		return this;
 	}
 }

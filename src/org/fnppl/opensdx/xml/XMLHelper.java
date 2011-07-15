@@ -63,15 +63,29 @@ public class XMLHelper {
 
 	
 	public static Element cloneElement(Element e) {
-		Element c = new Element(e.getName());
-		Vector<String[]> atts = e.getAttributes();
-		if (atts!=null) {
-			for (String[] a : atts) {
-				c.setAttribute(a[0], a[1]);
+		if (e.getChildren()==null || e.getChildren().size()==0) {
+			String n = e.getName();
+			String t = e.getText();
+			//System.out.println("adding value: "+n+" : "+t);
+			Element enew = new Element(n,t);
+			Vector<String[]> atts = e.getAttributes();
+			if (atts!=null) {
+				for (String[] a : atts) {
+					enew.setAttribute(a[0], a[1]);
+				}
 			}
+			return enew;
+		} else {
+			Element c = new Element(e.getName());
+			Vector<String[]> atts = e.getAttributes();
+			if (atts!=null) {
+				for (String[] a : atts) {
+					c.setAttribute(a[0], a[1]);
+				}
+			}
+			rekursiveAddContent(e, c);
+			return c;
 		}
-		rekursiveAddContent(e, c);
-		return c;
 	}
 	
 	private static void rekursiveAddContent(Element from, Element to) {
