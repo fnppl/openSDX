@@ -172,7 +172,22 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	bundle.addContributor(contributor);
         	
         	contributor = Contributor.make(root.getChildTextNN("artist_name"), Contributor.TYPE_DISPLAY_ARTIST, IDs.make());
-         	bundle.addContributor(contributor);        	
+         	bundle.addContributor(contributor);
+         	
+         	String copyright = root.getChildTextNN("c_line");
+         	String production = root.getChildTextNN("p_line");
+         	
+         	if(copyright.length()>0) {
+	         		contributor = Contributor.make(copyright.substring(5), Contributor.TYPE_COPYRIGHT, IDs.make());
+	         		contributor.year(copyright.substring(0, 4));
+	         		bundle.addContributor(contributor);  
+         	}
+         	
+         	if(production.length()>0) {
+	         		contributor = Contributor.make(production.substring(5), Contributor.TYPE_PRODUCTION, IDs.make());
+	         		contributor.year(production.substring(0, 4));
+	         		bundle.addContributor(contributor);  
+         	}         	
         	
         	// cover: license_basis & license_specifics from bundle, right?
         	Element cover = root.getChild("cover");
@@ -234,10 +249,13 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
             	Vector<Element> tracks_rights = track.getChild("rights").getChildren("right");
             	for (Iterator<Element> itRights = tracks_rights.iterator(); itRights.hasNext();) {
             		Element track_right = itRights.next();
-            		
-            		track_territorial.allow(track_right.getChildText("country_code"));
+            		String r = track_right.getChildText("country_code");
+            		if(r.length()>0) {
+            			if(r.equals("**")) r="WW";
+            			track_territorial.allow(r);
+            		}
             	}
-        		
+            	
 	        	/*
 	        	 *  ToDo: streaming allowed and dates for every territory and every track (?!)  
 	        	 *  
@@ -269,7 +287,12 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
              	
             	// add Tags
             	ItemTags track_tags = ItemTags.make();   		
-            	track_tags.addGenre(track.getChildTextNN("genre"));
+            	track_tags.addGenre(track.getChildTextNN("genre"));            	
+            	
+            	// explicit_lyrics
+            	if(track.getChildTextNN("explicit_lyrics").length()>0) {
+            		track_tags.explicit_lyrics(Boolean.parseBoolean(track.getChildTextNN("explicit_lyrics")));            	
+            	}
             	
             	item.tags(track_tags);	        	
 	        	

@@ -75,6 +75,8 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 
 	private JLabel label_name;
 	private JTextField text_name;
+	private JTextField text_year;
+	private JLabel label_year;
 	private JLabel label_type;
 	private JComboBox select_type;
 	private DefaultComboBoxModel select_type_model;
@@ -106,12 +108,14 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 		this.contributor = contributor;
 		if (contributor == null) {;
 			text_name.setText("");
+			text_year.setText("");
 			select_type.setSelectedItem(0);
 			check_sublevel.setSelected(false);
 			panel_ids.update((IDs)null);
 			panel_www.update((InfoWWW)null);
 		} else {
 			text_name.setText(contributor.getName());
+			text_year.setText(contributor.getYear());
 			select_type.setSelectedItem(contributor.getType());
 			check_sublevel.setSelected(contributor.getOnSubLevelOnly());
 			panel_ids.update(contributor.getIDs());
@@ -154,7 +158,7 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 		Vector<JTextComponent> texts = new Vector<JTextComponent>();
 		setBorder(new TitledBorder("Contributor Details"));
 
-		label_name = new JLabel("name");
+		label_name = new JLabel("Name");
 
 		text_name = new JTextField("");
 
@@ -174,6 +178,14 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 				select_type_changed(select_type.getSelectedIndex());
 			}
 		});
+
+		label_year = new JLabel("Year");
+		
+		text_year = new JTextField("");
+
+		text_year.setName("text_year");
+		map.put("text_year", text_year);
+		texts.add(text_year);		
 
 		check_sublevel = new JCheckBox("only on Sublevel");
 		map.put("check_sublevel", check_sublevel);
@@ -308,10 +320,40 @@ public void initLayout() {
 	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(select_type,gbc);
 	add(select_type);
+	
+	// Component: label_year
+	gbc.gridx = 0;
+	gbc.gridy = 2;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(label_year,gbc);
+	add(label_year);
+
+	// Component: text_year
+	gbc.gridx = 1;
+	gbc.gridy = 2;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 50.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(text_year,gbc);
+	add(text_year);	
 
 	// Component: spacer0
 	gbc.gridx = 0;
-	gbc.gridy = 2;
+	gbc.gridy = 3;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
@@ -326,7 +368,7 @@ public void initLayout() {
 
 	// Component: check_sublevel
 	gbc.gridx = 1;
-	gbc.gridy = 2;
+	gbc.gridy = 3;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
@@ -341,7 +383,7 @@ public void initLayout() {
 
 	// Component: panel_ids
 	gbc.gridx = 0;
-	gbc.gridy = 3;
+	gbc.gridy = 4;
 	gbc.gridwidth = 2;
 	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
@@ -356,7 +398,7 @@ public void initLayout() {
 
 	// Component: panel_www
 	gbc.gridx = 0;
-	gbc.gridy = 4;
+	gbc.gridy = 5;
 	gbc.gridwidth = 2;
 	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
@@ -371,7 +413,7 @@ public void initLayout() {
 
 	// Component: label_filler
 	gbc.gridx = 0;
-	gbc.gridy = 5;
+	gbc.gridy = 6;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;

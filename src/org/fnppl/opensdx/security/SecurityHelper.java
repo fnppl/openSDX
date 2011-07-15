@@ -169,7 +169,7 @@ public class SecurityHelper {
 	    /**
 	     * Encodes the input data producing a Hex output stream.
 	     * @param data The input data to be HEX encoded
-	     * @param off Initiak offset
+	     * @param off Initial offset
 	     * @param length Initial length of the input data array
 	     * @param out The {@link OutputStream} instance holding the encoded input data.
 	     * @return the number of bytes produced.

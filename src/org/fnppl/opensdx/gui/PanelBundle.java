@@ -313,6 +313,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         text_contributor_homepage.setText("");
         text_contributor_myspace.setText("");
         text_contributor_name.setText("");
+        text_contributor_year.setText("");
         text_contributor_ourid.setText("");
         text_contributor_phone.setText("");
         text_contributor_twitter.setText("");
@@ -401,6 +402,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         if (c != null) {
             select_contributor_type.setSelectedItem(c.getType());
             text_contributor_name.setText(c.getName());
+            text_contributor_year.setText(c.getYear());
             check_sublevel.setSelected(c.getOnSubLevelOnly());
             IDs cid = c.getIDs();
             if (cid != null) {
@@ -435,6 +437,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         } else {
             select_contributor_type.setSelectedItem(0);
             text_contributor_name.setText("");
+            text_contributor_year.setText("");
             text_contributor_contentauthid.setText("");
             text_contributor_finetunesid.setText("");
             text_contributor_gvl.setText("");
@@ -448,6 +451,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
             check_contributor_publish_phone.setSelected(false);
         }
         changeListener.saveState(text_contributor_name);
+        changeListener.saveState(text_contributor_year);
         changeListener.saveState(text_contributor_contentauthid);
         changeListener.saveState(text_contributor_finetunesid);
         changeListener.saveState(text_contributor_gvl);
@@ -579,6 +583,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         texts.add(text_contributor_homepage);
         texts.add(text_contributor_myspace);
         texts.add(text_contributor_name);
+        texts.add(text_contributor_year);
         texts.add(text_contributor_ourid);
         texts.add(text_contributor_phone);
         texts.add(text_contributor_twitter);
@@ -635,6 +640,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                                 DefaultListModel lm = (DefaultListModel)list_contributors.getModel();
                                 lm.set(selCon, c.getName() + " (" + c.getType() + ")");
                             }
+                            else if(text == text_contributor_year) c.year(t);
                             else if(text == text_contributor_ourid) c.getIDs().ourid(t);
                             else if(text == text_contributor_phone) c.getWww().phone(t);
                             else if(text == text_contributor_twitter) c.getWww().twitter(t);
@@ -744,10 +750,12 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
         list_contributors = new javax.swing.JList();
         jLabel1 = new javax.swing.JLabel();
         text_contributor_name = new javax.swing.JTextField();
+        text_contributor_year = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         select_contributor_type = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
+        jLabel45 = new javax.swing.JLabel();
         text_contributor_gvl = new javax.swing.JTextField();
         text_contributor_finetunesid = new javax.swing.JTextField();
         text_contributor_ourid = new javax.swing.JTextField();
@@ -841,7 +849,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
 
         panelBasics.setBorder(javax.swing.BorderFactory.createTitledBorder("Basics"));
 
-        jLabel4.setText("name");
+        jLabel4.setText("Name");
 
         jLabel5.setText("displayname");
 
@@ -1213,6 +1221,8 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
             }
         });
 
+        jLabel45.setText("Year");
+        
         javax.swing.GroupLayout panelContributorsLayout = new javax.swing.GroupLayout(panelContributors);
         panelContributors.setLayout(panelContributorsLayout);
         panelContributorsLayout.setHorizontalGroup(
@@ -1239,6 +1249,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                         .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(select_contributor_type, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(text_contributor_name, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                            .addComponent(text_contributor_year, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
                             .addComponent(check_sublevel))))
                 .addGap(376, 376, 376))
         );
@@ -1272,6 +1283,9 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
                         .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(select_contributor_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2))
+                        .addGroup(panelContributorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel45)
+                            .addComponent(text_contributor_year, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))                            
                         .addGap(18, 18, 18)
                         .addComponent(check_sublevel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2126,6 +2140,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel45;    
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
@@ -2196,6 +2211,7 @@ public class PanelBundle extends javax.swing.JPanel implements MyObservable, MyO
     private javax.swing.JTextField text_contributor_homepage;
     private javax.swing.JTextField text_contributor_myspace;
     private javax.swing.JTextField text_contributor_name;
+    private javax.swing.JTextField text_contributor_year;
     private javax.swing.JTextField text_contributor_ourid;
     private javax.swing.JTextField text_contributor_phone;
     private javax.swing.JTextField text_contributor_twitter;

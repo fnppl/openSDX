@@ -64,6 +64,8 @@ public class Contributor extends BusinessObject {
 	public static String TYPE_CONDUCTOR = "conductor";	
 	public static String TYPE_DISPLAY_ARTIST = "display artist";
 	public static String TYPE_COMPILATOR = "compilator";
+	public static String TYPE_COPYRIGHT = "copyright";
+	public static String TYPE_PRODUCTION = "production";	
 	public static final Vector<String> TYPES = new Vector<String>();
 	static {
 		TYPES.add(TYPE_LABEL);
@@ -75,10 +77,13 @@ public class Contributor extends BusinessObject {
 		TYPES.add(TYPE_VOCALS);
 		TYPES.add(TYPE_CONDUCTOR);
 		TYPES.add(TYPE_COMPILATOR);
+		TYPES.add(TYPE_COPYRIGHT);
+		TYPES.add(TYPE_PRODUCTION);
 	}
 	
 	private BusinessStringItem name;	//MUST
 	private BusinessStringItem type;	//MUST
+	private BusinessStringItem year;	// SHOULD: if copyright / production	
 	private IDs ids;					//MUST
 	private InfoWWW www;				//SHOULD
 	private boolean on_sublevel_only = false;
@@ -88,6 +93,7 @@ public class Contributor extends BusinessObject {
 		Contributor contributor = new Contributor();
 		contributor.name = new BusinessStringItem("name", name);
 		contributor.type = new BusinessStringItem("type", type);
+		contributor.year = null;		
 		contributor.ids = ids;
 		contributor.www = null;
 		return contributor;
@@ -114,6 +120,7 @@ public class Contributor extends BusinessObject {
 		
 		contributor.name = BusinessStringItem.fromBusinessObject(bo, "name");
 		contributor.type = BusinessStringItem.fromBusinessObject(bo, "type");
+		contributor.year = BusinessStringItem.fromBusinessObject(bo, "year");
 		contributor.ids = IDs.fromBusinessObject(bo);
 		contributor.www = InfoWWW.fromBusinessObject(bo);
 		
@@ -141,7 +148,11 @@ public class Contributor extends BusinessObject {
 		return this;
 	}
 
-
+	public Contributor year(String year) {
+		this.year = new BusinessStringItem("year", year);
+		return this;
+	}
+	
 	public String getName() {
 		if (name==null) return null;
 		return name.getString();
@@ -159,6 +170,11 @@ public class Contributor extends BusinessObject {
 	public InfoWWW getWww() {
 		return www;
 	}
+	
+	public String getYear() {
+		if (year==null) return null;
+		return year.getString();
+	}	
 	
 	public String getKeyname() {
 		return KEY_NAME;
