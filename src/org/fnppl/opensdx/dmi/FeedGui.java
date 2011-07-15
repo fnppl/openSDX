@@ -84,6 +84,7 @@ import org.fnppl.opensdx.gui.PanelBundle;
 import org.fnppl.opensdx.gui.PanelBundle2;
 import org.fnppl.opensdx.gui.PanelFeedInfo;
 import org.fnppl.opensdx.gui.PanelItems;
+import org.fnppl.opensdx.gui.PanelItems2;
 import org.fnppl.opensdx.gui.SecurityMainFrame;
 import org.fnppl.opensdx.gui.SelectTerritoiresTree;
 import org.fnppl.opensdx.gui.helper.MyObservable;
@@ -118,8 +119,8 @@ public class FeedGui extends JFrame implements MyObserver {
 //	BundledItemsPanel bundled_items_panel = null;
 	
 	PanelFeedInfo feedinfo_panel = null;
-	PanelBundle bundle_panel = null;
-	PanelItems bundled_items_panel = null;
+	PanelBundle2 bundle_panel = null;
+	PanelItems2 bundled_items_panel = null;
 	PanelSavedDMI panel_saved_dmi = null;
 	
 	JPanel treePanel = null;
@@ -633,10 +634,10 @@ public class FeedGui extends JFrame implements MyObserver {
 		//bundled_items_panel = new BundledItemsPanel(this);
 		
 		feedinfo_panel = new PanelFeedInfo(this);
-		//bundle_panel = new PanelBundle2(this);
-		bundle_panel = new PanelBundle();
+		bundle_panel = new PanelBundle2(this);
+		//bundle_panel = new PanelBundle();
 		
-		bundled_items_panel = new PanelItems();
+		bundled_items_panel = new PanelItems2();
 		panel_saved_dmi = new PanelSavedDMI(this);
 		
 		//readAndSetGenres();
@@ -687,8 +688,8 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 		if (bundle_panel!=null) {
 			if (currentFeed.getBundle(0)!=null) {
-				bundle_panel.update(currentFeed.getBundle(0));
-				//bundle_panel.update();
+				//bundle_panel.update(currentFeed.getBundle(0));
+				bundle_panel.update();
 			}
 		}
 		if (bundled_items_panel!=null) {
@@ -753,6 +754,8 @@ public class FeedGui extends JFrame implements MyObserver {
 			}
 		}
 	}	
+	//31:37:34:62:65:30:31:39:34:35:32:37:39:37:39:39:31:32:30:62:31:61:38:32:63:63:62:61:30:39:62:33
+	
 	
 	public void quit() {
 		System.exit(0);

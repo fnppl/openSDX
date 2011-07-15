@@ -43,8 +43,10 @@ package org.fnppl.opensdx.gui.helper;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -57,7 +59,10 @@ import javax.swing.event.ListSelectionListener;
 
 import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.gui.Dialogs;
+import org.fnppl.opensdx.security.SecurityHelper;
 
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Vector;
 import java.awt.event.ActionListener;
@@ -127,13 +132,40 @@ public class PanelInformation extends JPanel implements MyObservable {
 	}
 	
 	private void updateLanguageList() {
-		text_promotion.setText("");
-		text_teaser.setText("");
+        list_language_model.removeAllElements();
+        if (info !=null) {
+            int anzP = info.getPromotextCount();
+            int anzT = info.getTeasertextCount();
+            Vector<String> lang = new Vector<String>();
+            for (int i=0;i<anzP;i++) {
+                lang.add(info.getPromotextLanguage(i));
+            }
+            for (int i=0;i<anzT;i++) {
+                String l = info.getTeasertextLanguage(i);
+                if (!lang.contains(l)) {
+                    lang.add(l);
+                }
+            }
+            for (String s : lang) {
+                if (s!=null && s.length()>0) {
+                    list_language_model.addElement(s);
+                }
+            }
+            list_language.setModel(list_language_model);
+        }
 	}
 	
 	private void updatePromoAndTeaserText() {
-		text_promotion.setText("");
-		text_teaser.setText("");
+		String lang = (String)list_language.getSelectedValue();
+		if (lang==null) {
+           text_promotion.setText("");
+           text_teaser.setText("");
+        } else {
+           text_promotion.setText(info.getPromotext(lang));
+           text_teaser.setText(info.getTeasertext(lang));
+        }
+        documentListener.saveState(text_promotion);
+        documentListener.saveState(text_teaser);
 	}
 		
 
@@ -196,7 +228,7 @@ public class PanelInformation extends JPanel implements MyObservable {
 		texts.add(text_playlength_integer);
 
 		list_language = new JList();
-		list_language.setBorder(new TitledBorder("Languages"));
+
 		list_language_model = new DefaultListModel();
 		list_language.setModel(list_language_model);
 		init_list_language_model();
@@ -208,7 +240,6 @@ public class PanelInformation extends JPanel implements MyObservable {
 		});
 
 		text_promotion = new JTextArea("");
-		text_promotion.setBorder(new TitledBorder("Teaser Text"));
 		
 		text_promotion.setName("text_promotion");
 		map.put("text_promotion", text_promotion);
@@ -254,7 +285,6 @@ public class PanelInformation extends JPanel implements MyObservable {
 		});
 
 		text_teaser = new JTextArea("");
-		text_teaser.setBorder(new TitledBorder("Teaser Text"));
 		
 		text_teaser.setName("text_teaser");
 		map.put("text_teaser", text_teaser);
@@ -316,20 +346,72 @@ public class PanelInformation extends JPanel implements MyObservable {
 
 
 public void initLayout() {
+	
+	JPanel pLang = new JPanel();
+	pLang.setLayout(new BorderLayout());
+	
+	Dimension d = new Dimension(180,400);
+	
+	JScrollPane sLang = new JScrollPane(list_language);
+	pLang.setPreferredSize(d);
+	pLang.setMinimumSize(d);
+	pLang.setMaximumSize(d);
+	pLang.add(sLang, BorderLayout.CENTER);
+	
+	JPanel pLangButtons = new JPanel();
+	pLangButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+	pLangButtons.add(bu_lang_add);
+	pLangButtons.add(bu_lan_remove);
+	pLang.setBorder(new TitledBorder("Languages"));
+	pLang.add(pLangButtons, BorderLayout.SOUTH);
+	this.add(pLang, BorderLayout.WEST);
+	
+	JPanel pPromo = new JPanel();
+	pPromo.setBorder(new TitledBorder("Promotion Text"));
+	pPromo.setLayout(new BorderLayout());
+	
+	JScrollPane sPromo = new JScrollPane(text_promotion);
+	pPromo.add(sPromo, BorderLayout.CENTER);
+
+	JPanel pPromoButtons = new JPanel();
+	pPromoButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+	pPromoButtons.add(bu_promotion_update);
+	pPromoButtons.add(bu_promotion_reset);
+	pPromo.add(pPromoButtons, BorderLayout.SOUTH);
+	
+	JPanel pTeaser = new JPanel();
+	pTeaser.setBorder(new TitledBorder("Teaser Text"));
+	pTeaser.setLayout(new BorderLayout());
+	
+	JScrollPane sTeaser = new JScrollPane(text_teaser);
+	pTeaser.add(sTeaser, BorderLayout.CENTER);
+
+	JPanel pTeaserButtons = new JPanel();
+	pTeaserButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+	pTeaserButtons.add(bu_teaser_update);
+	pTeaserButtons.add(bu_teaser_reset);
+	pTeaser.add(pTeaserButtons, BorderLayout.SOUTH);
+	
+	
+	JPanel pRest = new JPanel();
+	pRest.setLayout(new BorderLayout());
+	JPanel pRest2 = new JPanel();
+	pRest2.setLayout(new BoxLayout(pRest2, BoxLayout.PAGE_AXIS));
+	pRest2.add(pPromo);
+	pRest2.add(pTeaser);
+	
+	pRest.add(pLang,BorderLayout.WEST);
+	pRest.add(pRest2,BorderLayout.CENTER);
+	
+	
 	GridBagLayout gbl = new GridBagLayout();
 	setLayout(gbl);
 	GridBagConstraints gbc = new GridBagConstraints();
 
-	Container spacer0 = new Container();
-	Container spacer1 = new Container();
-	Container spacer2 = new Container();
-	Container spacer3 = new Container();
-
-
 	// Component: label_physical_release_datetime
 	gbc.gridx = 0;
 	gbc.gridy = 0;
-	gbc.gridwidth = 2;
+	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
 	gbc.weighty = 0.0;
@@ -342,9 +424,9 @@ public void initLayout() {
 	add(label_physical_release_datetime);
 
 	// Component: text_physical_release_datetime
-	gbc.gridx = 2;
+	gbc.gridx = 1;
 	gbc.gridy = 0;
-	gbc.gridwidth = 3;
+	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 30.0;
 	gbc.weighty = 0.0;
@@ -359,7 +441,7 @@ public void initLayout() {
 	// Component: label_digital_release_datetime
 	gbc.gridx = 0;
 	gbc.gridy = 1;
-	gbc.gridwidth = 2;
+	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
 	gbc.weighty = 0.0;
@@ -372,9 +454,9 @@ public void initLayout() {
 	add(label_digital_release_datetime);
 
 	// Component: text_digital_release_datetime
-	gbc.gridx = 2;
+	gbc.gridx = 1;
 	gbc.gridy = 1;
-	gbc.gridwidth = 3;
+	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 30.0;
 	gbc.weighty = 0.0;
@@ -389,7 +471,7 @@ public void initLayout() {
 	// Component: label_playlength_integer
 	gbc.gridx = 0;
 	gbc.gridy = 2;
-	gbc.gridwidth = 2;
+	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
 	gbc.weighty = 0.0;
@@ -402,9 +484,9 @@ public void initLayout() {
 	add(label_playlength_integer);
 
 	// Component: text_playlength_integer
-	gbc.gridx = 2;
+	gbc.gridx = 1;
 	gbc.gridy = 2;
-	gbc.gridwidth = 3;
+	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 30.0;
 	gbc.weighty = 0.0;
@@ -416,11 +498,11 @@ public void initLayout() {
 	gbl.setConstraints(text_playlength_integer,gbc);
 	add(text_playlength_integer);
 
-	// Component: list_language
+	// pRest
 	gbc.gridx = 0;
 	gbc.gridy = 3;
-	gbc.gridwidth = 2;
-	gbc.gridheight = 3;
+	gbc.gridwidth = 3;
+	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
 	gbc.weighty = 0.0;
 	gbc.anchor = GridBagConstraints.CENTER;
@@ -428,72 +510,14 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(list_language,gbc);
-	add(list_language);
-
-	// Component: text_promotion
+	gbl.setConstraints(pRest,gbc);
+	add(pRest);
+	
+	
+	// Component: filler
+	Container filler = new Container();
 	gbc.gridx = 2;
-	gbc.gridy = 3;
-	gbc.gridwidth = 5;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_promotion,gbc);
-	add(text_promotion);
-
-	// Component: bu_promotion_update
-	gbc.gridx = 2;
-	gbc.gridy = 4;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(bu_promotion_update,gbc);
-	add(bu_promotion_update);
-
-	// Component: bu_promotion_reset
-	gbc.gridx = 3;
-	gbc.gridy = 4;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(bu_promotion_reset,gbc);
-	add(bu_promotion_reset);
-
-	// Component: label_filler1
-	gbc.gridx = 4;
-	gbc.gridy = 4;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 30.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_filler1,gbc);
-	add(label_filler1);
-
-	// Component: label_filler2
-	gbc.gridx = 5;
-	gbc.gridy = 4;
+	gbc.gridy = 0;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 70.0;
@@ -503,174 +527,27 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_filler2,gbc);
-	add(label_filler2);
-
-	// Component: spacer0
-	gbc.gridx = 2;
-	gbc.gridy = 5;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(spacer0,gbc);
-	add(spacer0);
-
-	// Component: spacer1
-	gbc.gridx = 3;
-	gbc.gridy = 5;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(spacer1,gbc);
-	add(spacer1);
-
-	// Component: label_h_spacer
-	gbc.gridx = 4;
-	gbc.gridy = 5;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_h_spacer,gbc);
-	add(label_h_spacer);
-
-	// Component: bu_lang_add
+	gbl.setConstraints(filler,gbc);
+	add(filler);
+	
+	
+	// Component: filler2
+	filler = new Container();
 	gbc.gridx = 0;
-	gbc.gridy = 6;
-	gbc.gridwidth = 1;
+	gbc.gridy = 4;
+	gbc.gridwidth = 3;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.NORTH;
-	gbc.fill = GridBagConstraints.NONE;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(bu_lang_add,gbc);
-	add(bu_lang_add);
-
-	// Component: bu_lan_remove
-	gbc.gridx = 1;
-	gbc.gridy = 6;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.NORTH;
-	gbc.fill = GridBagConstraints.NONE;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(bu_lan_remove,gbc);
-	add(bu_lan_remove);
-
-	// Component: text_teaser
-	gbc.gridx = 2;
-	gbc.gridy = 6;
-	gbc.gridwidth = 5;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
+	gbc.weighty = 100.0;
 	gbc.anchor = GridBagConstraints.CENTER;
 	gbc.fill = GridBagConstraints.BOTH;
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_teaser,gbc);
-	add(text_teaser);
+	gbl.setConstraints(filler,gbc);
+	add(filler);
+	
 
-	// Component: spacer2
-	gbc.gridx = 0;
-	gbc.gridy = 7;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(spacer2,gbc);
-	add(spacer2);
-
-	// Component: spacer3
-	gbc.gridx = 1;
-	gbc.gridy = 7;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(spacer3,gbc);
-	add(spacer3);
-
-	// Component: bu_teaser_update
-	gbc.gridx = 2;
-	gbc.gridy = 7;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(bu_teaser_update,gbc);
-	add(bu_teaser_update);
-
-	// Component: bu_teaser_reset
-	gbc.gridx = 3;
-	gbc.gridy = 7;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(bu_teaser_reset,gbc);
-	add(bu_teaser_reset);
-
-	// Component: label_filler
-	gbc.gridx = 0;
-	gbc.gridy = 8;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 50.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_filler,gbc);
-	add(label_filler);
-		JLabel filler = new JLabel();
 }
 
 
@@ -681,36 +558,88 @@ public void initLayout() {
 	public void list_language_changed(int selected) {
 		updatePromoAndTeaserText();
 	}
+	
 	public void bu_lang_add_clicked() {
-		//TODO
+		if (info != null) {
+            String lang = FeedGui.showLanguageCodeSelector();
+            if (lang!=null) {
+                String p = info.getPromotext(lang);
+                String t = info.getTeasertext(lang);
+                if (t!=null || p !=null) {
+                    Dialogs.showMessage("Selected language \""+lang+"\" is already in list.");
+                    return;
+                }
+                info.setPromotext(lang, "");
+                updateLanguageList();
+                list_language.setSelectedIndex(list_language.getModel().getSize()-1);
+                notifyChanges();
+            }
+        }
 	}
+	
 	public void bu_lan_remove_clicked() {
-		//TODO
+		int sel = list_language.getSelectedIndex();
+        if (sel>=0) {
+            String lang = (String)list_language.getModel().getElementAt(sel);
+            info.removePromotext(lang);
+            info.removeTeasertext(lang);
+            updateLanguageList();
+            updatePromoAndTeaserText();
+            notifyChanges();
+        }
 	}
 	public void bu_promotion_update_clicked() {
-		//TODO
+		if (info==null) return;
+        String lang = (String)list_language.getSelectedValue();
+        if (lang!=null) {
+        	info.setPromotext(lang, text_promotion.getText());
+            text_promotion.setBackground(Color.WHITE);
+            documentListener.saveState(text_promotion);
+            notifyChanges();
+        }
 	}
 	public void bu_promotion_reset_clicked() {
-		//TODO
+		text_promotion.setText(documentListener.getSavedText(text_promotion));
+		text_promotion.setBackground(Color.WHITE);
 	}
 	public void bu_teaser_update_clicked() {
-		//TODO
+		if (info==null) return;
+        String lang = (String)list_language.getSelectedValue();
+        if (lang!=null) {
+        	info.setTeasertext(lang, text_teaser.getText());
+            text_teaser.setBackground(Color.WHITE);
+            documentListener.saveState(text_teaser);
+            notifyChanges();
+        }
 	}
 	public void bu_teaser_reset_clicked() {
-		//TODO
+		text_teaser.setText(documentListener.getSavedText(text_teaser));
+	    text_teaser.setBackground(Color.WHITE);
 	}
 	
 	public void text_changed(JTextComponent text) {
-		//TODO
+		if (info==null) return;
 		String t = text.getText();
 		if (text == text_physical_release_datetime) {
-			
+			try {
+				info.physical_release_datetime(SecurityHelper.parseDate(t));
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 		else if (text == text_digital_release_datetime) {
-			
+			try {
+				info.digital_release_datetime(SecurityHelper.parseDate(t));
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 		else if (text == text_playlength_integer) {
-			
+			if (t.equals("")) {
+				info.playlength(-1);
+			} else {
+				info.playlength(Integer.parseInt(t));
+			}
 		}
 		notifyChanges();
 	}

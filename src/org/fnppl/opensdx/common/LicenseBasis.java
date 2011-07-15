@@ -55,6 +55,7 @@ public class LicenseBasis extends BusinessObject {
 	private BusinessCollection<BusinessDatetimeItem> timeframe;	 //MUST
 	private BusinessObject pricing;								 //SHOULD
 	private BusinessBooleanItem streaming_allowed;				//COULD
+	private BusinessStringItem channels;						//COULD
 	
 	private BusinessStringItem asOnBundle;
 	
@@ -74,6 +75,7 @@ public class LicenseBasis extends BusinessObject {
 		b.timeframe.add(new BusinessDatetimeItem("to", to));
 		b.pricing = null;
 		b.streaming_allowed = null;
+		b.channels = null;
 		b.asOnBundle = null;
 		return b;
 	}
@@ -84,6 +86,7 @@ public class LicenseBasis extends BusinessObject {
 		b.timeframe = null;
 		b.pricing = null;
 		b.streaming_allowed = null;
+		b.channels = null;
 		b.asOnBundle = new BusinessStringItem("as_on_bundle", "");
 		return b;
 	}
@@ -105,6 +108,7 @@ public class LicenseBasis extends BusinessObject {
 			timeframe = null;
 			pricing = null;
 			streaming_allowed = null;
+			channels = null;
 		} else {
 			asOnBundle = null;
 			if (timeframe==null) {
@@ -187,11 +191,28 @@ public class LicenseBasis extends BusinessObject {
 		}
 		b.pricing = bo.handleBusinessObject("pricing");
 		b.streaming_allowed = BusinessBooleanItem.fromBusinessObject(b, "streaming_allowed");
+		b.channels = BusinessStringItem.fromBusinessObject(b, "channels");
 		return b;
 	}
 	
 	public LicenseBasis streaming_allowed(boolean streaming_allowed) {
 		this.streaming_allowed = new BusinessBooleanItem("streaming_allowed", streaming_allowed);
+		if (streaming_allowed) {
+			if (channels == null) {
+				channels("all");
+			}
+		} else {
+			channels = null;
+		}
+		return this;
+	}
+	
+	public LicenseBasis channels(String c) {
+		if (c==null) {
+			channels = null;
+		} else {
+			channels = new BusinessStringItem("channels", c);
+		}
 		return this;
 	}
 
@@ -253,6 +274,11 @@ public class LicenseBasis extends BusinessObject {
 	
 	public void setTerritorial(Territorial t) {
 		territorial = t;
+	}
+	
+	public String getChannels() {
+		if (channels==null) return null;
+		return channels.getString();
 	}
 	
 	

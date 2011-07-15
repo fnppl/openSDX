@@ -57,6 +57,7 @@ import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
+import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.dmi.FeedGui;
@@ -67,6 +68,7 @@ import org.fnppl.opensdx.gui.helper.PanelContributors;
 import org.fnppl.opensdx.gui.helper.PanelFiles;
 import org.fnppl.opensdx.gui.helper.PanelIDs;
 import org.fnppl.opensdx.gui.helper.PanelInformation;
+import org.fnppl.opensdx.gui.helper.PanelItemBasics;
 import org.fnppl.opensdx.gui.helper.PanelLicense;
 import org.fnppl.opensdx.gui.helper.PanelTags;
 
@@ -77,11 +79,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
+public class PanelItem extends JPanel implements MyObservable, MyObserver {
 
 	//init fields
-	private FeedGui gui = null;
-	private PanelBundleBasics pBasics;
+	private Item item;
+	private PanelItemBasics pBasics;
 	private PanelIDs pIDs;
 	private PanelContributors pContributors;
 	private PanelInformation pInformation;
@@ -93,25 +95,17 @@ public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
 
 	private JTabbedPane tabs;
 
-	public PanelBundle2(FeedGui gui) {
-		this.gui = gui;
+	public PanelItem() {
 		initComponents();
 		initLayout();
-		pLicense.showAsOnBundle(false);
+		update((Item)null);
 	}
 
-	private Bundle getBundle() {
-		if (gui==null) return null;
-		Feed feed = gui.getCurrentFeed();
-		if (feed==null || feed.getBundleCount()==0) return null;
-		return feed.getBundle(0);
-	}
-
-	public void update() {
-		Bundle bundle = getBundle();
-		if (bundle ==null) {
+	public void update(Item item) {
+		this.item = item;
+		if (item ==null) {
 			//update empty
-			pBasics.update((Bundle)null);
+			pBasics.update((Item)null);
 			pIDs.update((IDs)null);
 			pContributors.update((Bundle)null);
 			pInformation.update((BundleInformation)null);
@@ -119,21 +113,21 @@ public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
 			pTags.update((ItemTags)null);
 			pFiles.update((Bundle)null);
 		} else {
-			IDs ids = bundle.getIds();
-			BundleInformation info = bundle.getInformation();
-			LicenseBasis lb = bundle.getLicense_basis();
-			ItemTags tags = bundle.getTags();
+			IDs ids = item.getIds();
+			BundleInformation info = item.getInformation();
+			LicenseBasis lb = item.getLicense_basis();
+			ItemTags tags = item.getTags();
 			if (tags==null) {
 				tags = ItemTags.make();
-				bundle.tags(tags);
+				item.tags(tags);
 			}
-			pBasics.update((Bundle)bundle);
+			pBasics.update(item);
 			pIDs.update((IDs)ids);
-			pContributors.update((Bundle)bundle);
+			pContributors.update((Bundle)null);
 			pInformation.update((BundleInformation)info);
 			pLicense.update((LicenseBasis)lb);
 			pTags.update(tags);
-			pFiles.update((Bundle)bundle);
+			pFiles.update(item);
 		}
 	}
 
@@ -142,7 +136,7 @@ public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
 		IDs ids = null;
 		BundleInformation info = null;
 		LicenseBasis lb = null;
-		pBasics = new PanelBundleBasics(bundle);
+		pBasics = new PanelItemBasics();
 		pBasics.addObserver(this);
 		
 		pIDs = new PanelIDs(ids);
@@ -269,24 +263,9 @@ public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
 		add(label_filler);
 
 	}
-
-	public static void main(String[] args) {
-		try {
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-		} catch(Exception ex){
-			System.out.println("Nimbus look & feel not available");
-		}
-		PanelBundle2 p = new PanelBundle2(null);
-		JFrame f = new JFrame("PanelBundle");
-		f.setContentPane(p);
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.setSize(1024,768);
-		f.setVisible(true);
-	}
-
-
+	
+	
 	// ----- action methods --------------------------------
-
 
 	//observable
 	private Vector<MyObserver> observers = new Vector<MyObserver>();

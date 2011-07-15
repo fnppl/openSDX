@@ -43,8 +43,10 @@ package org.fnppl.opensdx.gui.helper;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -56,7 +58,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.fnppl.opensdx.common.LicenseBasis;
+import org.fnppl.opensdx.common.Territorial;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.gui.EditTerritoiresTree;
+import org.fnppl.opensdx.security.SecurityHelper;
 
 import java.util.HashMap;
 import java.util.Vector;
@@ -65,7 +70,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelLicense extends JPanel implements MyObservable {
+public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 
 	//init fields
 	private LicenseBasis lb = null;
@@ -90,31 +95,132 @@ public class PanelLicense extends JPanel implements MyObservable {
 	private JPanel panel_territories;
 	private JLabel label_filler;
 
+	private EditTerritoiresTree tree_territories;
+	private JList listAllow;
+	private JList listDisallow;
 
 	public PanelLicense(LicenseBasis lb) {
 		this.lb = lb;
 		initKeyAdapter();
 		initComponents();
 		initLayout();
+
+
+		tree_territories = new EditTerritoiresTree();
+		tree_territories.addObserver(this);
+		panel_territories.setLayout(new BorderLayout());
+		JPanel pNorth = new JPanel();
+		pNorth.setLayout(new FlowLayout(FlowLayout.LEFT));
+		Dimension d = new Dimension(250,200);
+
+		listAllow = new JList();
+		listAllow.setModel(new DefaultListModel());
+		//		listAllow.setBorder(new TitledBorder("Allowed"));
+
+		listDisallow = new JList();
+		listDisallow.setModel(new DefaultListModel());
+
+
+		JScrollPane sAllow = new JScrollPane(listAllow);
+		sAllow.setBorder(new TitledBorder("Allow"));
+		sAllow.setPreferredSize(d);
+		sAllow.setMinimumSize(d);
+		sAllow.setMaximumSize(d);
+
+		JScrollPane sDisallow = new JScrollPane(listDisallow);
+		sDisallow.setBorder(new TitledBorder("Disallow"));
+		sDisallow.setPreferredSize(d);
+		sDisallow.setMinimumSize(d);
+		sDisallow.setMaximumSize(d);
+
+
+		pNorth.add(sAllow);
+		pNorth.add(sDisallow);
+		panel_territories.add(pNorth,BorderLayout.NORTH);
+		panel_territories.add(new JScrollPane(tree_territories),BorderLayout.CENTER);
 	}
 
+	public void notifyChange(MyObservable changedIn) {
+		if (lb!=null) {
+			lb.setTerritorial(tree_territories.getTerritorial());
+			update(lb,false);
+		}
+	}
 
+	public void showAsOnBundle(boolean b) {
+		check_as_on_bundle.setVisible(b);
+		if(!b) {
+			check_as_on_bundle.setSelected(false);
+		}
+	}
 
 	public void update(LicenseBasis lb) {
+		update(lb, true);
+	}
+	private void update(LicenseBasis lb, boolean withTree) {
 		this.lb = lb;
-		
 		if (lb == null) {;
 			check_as_on_bundle.setSelected(false);
 			text_timeframe_from_datetime.setText("");
 			text_timeframe_to_datetime.setText("");
-			select_pricing.setSelectedItem(0);
+			select_pricing.setSelectedIndex(0);
 			text_pricing.setText("");
+			text_pricing.setEnabled(true);
 			check_streaming_allowed.setSelected(false);
-			select_channels.setSelectedItem(0);
-			//panel_territories.update());
+			select_channels.setSelectedIndex(0);
+			select_channels.setEnabled(false);
+			DefaultListModel lmAllow = (DefaultListModel)listAllow.getModel();
+			DefaultListModel lmDisallow = (DefaultListModel)listDisallow.getModel();
+			lmAllow.removeAllElements();
+			lmDisallow.removeAllElements();
+			if (withTree) {
+				tree_territories.setTerritories(Territorial.make());
+			}
+		} else {
+			check_as_on_bundle.setSelected(lb.isAsOnBundle());
+			text_timeframe_from_datetime.setText(lb.getTimeframeFromText());
+			text_timeframe_to_datetime.setText(lb.getTimeframeToText());
+			if (lb.getPricingPricecode()==null) {
+				select_pricing.setSelectedItem(lb.getPricingPricecode());
+				text_pricing.setText("");
+				text_pricing.setEnabled(false);
+			} else {
+				select_pricing.setSelectedIndex(0);
+				text_pricing.setText(lb.getPricingWholesale());
+				text_pricing.setEnabled(true);
+			}
+			boolean sa = lb.isStreaming_allowed();
+			check_streaming_allowed.setSelected(sa);
+			if (sa) {
+				select_channels.setSelectedItem(lb.getChannels());
+				select_channels.setEnabled(true);
+			} else {
+				select_channels.setEnabled(false);
+			}
+			
+			//panel territories
+			DefaultListModel lmAllow = (DefaultListModel)listAllow.getModel();
+			DefaultListModel lmDisallow = (DefaultListModel)listDisallow.getModel();
+			lmAllow.removeAllElements();
+			lmDisallow.removeAllElements();
+			Territorial t = lb.getTerritorial();
+			if (t!=null) {
+				if (withTree) {
+					tree_territories.setTerritories(t);
+				}
+				int count = t.getTerritorialCount();
+				for (int i=0;i<count;i++) {
+					if (t.isTerritoryAllowed(i)) {
+						lmAllow.addElement(t.getTerritory(i));
+					} else {
+						lmDisallow.addElement(t.getTerritory(i));
+					}
+				}
+			}
 		}
+		setVisibility(!check_as_on_bundle.isSelected());
+		documentListener.saveStates();
 	}
-
 
 	private void initKeyAdapter() {
 		keyAdapter = new KeyAdapter() {
@@ -147,7 +253,7 @@ public class PanelLicense extends JPanel implements MyObservable {
 
 	private void initComponents() {
 		Vector<JTextComponent> texts = new Vector<JTextComponent>();
-		setBorder(new TitledBorder("Information"));
+		setBorder(new TitledBorder("License"));
 
 		check_as_on_bundle = new JCheckBox("as on bundle");
 		map.put("check_as_on_bundle", check_as_on_bundle);
@@ -216,7 +322,7 @@ public class PanelLicense extends JPanel implements MyObservable {
 		});
 
 		panel_territories = new JPanel();
-		panel_territories.setBorder(new TitledBorder("panel_territories")); //TODO dummy
+		panel_territories.setBorder(new TitledBorder("Territorial"));
 
 		label_filler = new JLabel("");
 
@@ -226,7 +332,7 @@ public class PanelLicense extends JPanel implements MyObservable {
 			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
 		}
 		documentListener.saveStates();
-		
+
 	}
 
 
@@ -236,7 +342,7 @@ public class PanelLicense extends JPanel implements MyObservable {
 	}
 
 	public void updateDocumentListener(JTextComponent t) {
-	documentListener.saveState(t);
+		documentListener.saveState(t);
 	}
 	public JComponent getComponent(String name) {
 		return map.get(name);
@@ -249,7 +355,7 @@ public class PanelLicense extends JPanel implements MyObservable {
 	}
 
 	public String getText(String name) {
-	JComponent c = map.get(name);
+		JComponent c = map.get(name);
 		if (c!=null && c instanceof JTextComponent) {
 			return ((JTextComponent)c).getText();
 		}
@@ -265,7 +371,7 @@ public class PanelLicense extends JPanel implements MyObservable {
 	}
 
 	public boolean getCheck(String name) {
-	JComponent c = map.get(name);
+		JComponent c = map.get(name);
 		if (c!=null && c instanceof JCheckBox) {
 			return ((JCheckBox)c).isSelected();
 		}
@@ -273,256 +379,322 @@ public class PanelLicense extends JPanel implements MyObservable {
 	}
 
 
-public void initLayout() {
-	GridBagLayout gbl = new GridBagLayout();
-	setLayout(gbl);
-	GridBagConstraints gbc = new GridBagConstraints();
+	public void initLayout() {
+		GridBagLayout gbl = new GridBagLayout();
+		setLayout(gbl);
+		GridBagConstraints gbc = new GridBagConstraints();
 
 
 
-	// Component: check_as_on_bundle
-	gbc.gridx = 0;
-	gbc.gridy = 0;
-	gbc.gridwidth = 2;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(check_as_on_bundle,gbc);
-	add(check_as_on_bundle);
+		// Component: check_as_on_bundle
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(check_as_on_bundle,gbc);
+		add(check_as_on_bundle);
 
-	// Component: label_timeframe_from
-	gbc.gridx = 0;
-	gbc.gridy = 1;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_timeframe_from,gbc);
-	add(label_timeframe_from);
+		// Component: label_timeframe_from
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_timeframe_from,gbc);
+		add(label_timeframe_from);
 
-	// Component: text_timeframe_from_datetime
-	gbc.gridx = 1;
-	gbc.gridy = 1;
-	gbc.gridwidth = 2;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_timeframe_from_datetime,gbc);
-	add(text_timeframe_from_datetime);
+		// Component: text_timeframe_from_datetime
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_timeframe_from_datetime,gbc);
+		add(text_timeframe_from_datetime);
 
-	// Component: label_timeframe_to
-	gbc.gridx = 0;
-	gbc.gridy = 2;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_timeframe_to,gbc);
-	add(label_timeframe_to);
+		// Component: label_timeframe_to
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_timeframe_to,gbc);
+		add(label_timeframe_to);
 
-	// Component: text_timeframe_to_datetime
-	gbc.gridx = 1;
-	gbc.gridy = 2;
-	gbc.gridwidth = 2;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_timeframe_to_datetime,gbc);
-	add(text_timeframe_to_datetime);
+		// Component: text_timeframe_to_datetime
+		gbc.gridx = 1;
+		gbc.gridy = 2;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_timeframe_to_datetime,gbc);
+		add(text_timeframe_to_datetime);
 
-	// Component: label_pricing
-	gbc.gridx = 0;
-	gbc.gridy = 3;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_pricing,gbc);
-	add(label_pricing);
+		// Component: label_pricing
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_pricing,gbc);
+		add(label_pricing);
 
-	// Component: select_pricing
-	gbc.gridx = 1;
-	gbc.gridy = 3;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 40.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(select_pricing,gbc);
-	add(select_pricing);
+		// Component: select_pricing
+		gbc.gridx = 1;
+		gbc.gridy = 3;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 40.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(select_pricing,gbc);
+		add(select_pricing);
 
-	// Component: text_pricing
-	gbc.gridx = 2;
-	gbc.gridy = 3;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 40.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_pricing,gbc);
-	add(text_pricing);
+		// Component: text_pricing
+		gbc.gridx = 2;
+		gbc.gridy = 3;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 40.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_pricing,gbc);
+		add(text_pricing);
 
-	// Component: label_h_filler
-	gbc.gridx = 3;
-	gbc.gridy = 3;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 20.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_h_filler,gbc);
-	add(label_h_filler);
+		// Component: label_h_filler
+		gbc.gridx = 3;
+		gbc.gridy = 3;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 20.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_h_filler,gbc);
+		add(label_h_filler);
 
-	// Component: check_streaming_allowed
-	gbc.gridx = 0;
-	gbc.gridy = 4;
-	gbc.gridwidth = 2;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(check_streaming_allowed,gbc);
-	add(check_streaming_allowed);
+		// Component: check_streaming_allowed
+		gbc.gridx = 0;
+		gbc.gridy = 4;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(check_streaming_allowed,gbc);
+		add(check_streaming_allowed);
 
-	// Component: label_channels
-	gbc.gridx = 0;
-	gbc.gridy = 5;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_channels,gbc);
-	add(label_channels);
+		// Component: label_channels
+		gbc.gridx = 0;
+		gbc.gridy = 5;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_channels,gbc);
+		add(label_channels);
 
-	// Component: select_channels
-	gbc.gridx = 1;
-	gbc.gridy = 5;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(select_channels,gbc);
-	add(select_channels);
+		// Component: select_channels
+		gbc.gridx = 1;
+		gbc.gridy = 5;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(select_channels,gbc);
+		add(select_channels);
 
-	// Component: panel_territories
-	gbc.gridx = 0;
-	gbc.gridy = 6;
-	gbc.gridwidth = 3;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(panel_territories,gbc);
-	add(panel_territories);
+		// Component: panel_territories
+		gbc.gridx = 0;
+		gbc.gridy = 6;
+		gbc.gridwidth = 3;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(panel_territories,gbc);
+		add(panel_territories);
 
-	// Component: label_filler
-	gbc.gridx = 0;
-	gbc.gridy = 7;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 50.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_filler,gbc);
-	add(label_filler);
+		// Component: label_filler
+		gbc.gridx = 0;
+		gbc.gridy = 7;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 50.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_filler,gbc);
+		add(label_filler);
 		JLabel filler = new JLabel();
-}
+	}
+	
+	private void setVisibility(boolean visible) {
+		label_timeframe_from.setVisible(visible);
+		label_timeframe_to.setVisible(visible);
+		label_pricing.setVisible(visible);
+		label_channels.setVisible(visible);
+		
+		text_timeframe_from_datetime.setVisible(visible);
+		text_timeframe_to_datetime.setVisible(visible);
+		select_pricing.setVisible(visible);
+		text_pricing.setVisible(visible);
+		text_pricing.setVisible(visible);
+		check_streaming_allowed.setVisible(visible);
+		select_channels.setVisible(visible);
+		select_channels.setVisible(visible);
+		panel_territories.setVisible(visible);
+	}
 
 
-// ----- action methods --------------------------------
+	// ----- action methods --------------------------------
 	public void check_as_on_bundle_changed(boolean selected) {
-		//TODO
+		if (lb==null) return;
+		lb.as_on_bundle(selected);
+		setVisibility(!selected);		
+		notifyChanges();
 	}
 	public void init_select_pricing_model() {
-		//TODO
+		select_pricing_model.removeAllElements();
+		select_pricing_model.addElement("[other]");
+		select_pricing_model.addElement("LOW");
+		select_pricing_model.addElement("MEDIUM");
+		select_pricing_model.addElement("HIGH");
 	}
+	
 	public void select_pricing_changed(int selected) {
-		//TODO
+		 int sel = select_pricing.getSelectedIndex();
+        if (sel == 0) { //other
+            if (lb!=null) {
+	        	lb.pricing_pricecode(null);
+	            lb.pricing_wholesale(text_pricing.getText());
+	            notifyChanges();
+            }
+            text_pricing.setEnabled(true);
+        } else {
+        	if (lb!=null) {
+	            lb.pricing_pricecode((String)select_pricing.getSelectedItem());
+	            lb.pricing_wholesale(null);
+	            notifyChanges();
+        	}
+            text_pricing.setText("");
+            text_pricing.setEnabled(false);
+        }	
 	}
 	public void check_streaming_allowed_changed(boolean selected) {
-		//TODO
+		boolean sa = check_streaming_allowed.isSelected();
+		if (sa) {
+			select_channels.setEnabled(true);
+		} else {
+			select_channels.setEnabled(false);
+		}
+		if (lb==null) return;
+		lb.streaming_allowed(sa);
+		if (sa) {
+			select_channels.setSelectedItem(lb.getChannels());
+		}
+		notifyChanges();
 	}
 	public void init_select_channels_model() {
-		//TODO
+		select_channels_model.removeAllElements();
+		//select_channels_model.addElement("none");
+		select_channels_model.addElement("all");
+		select_channels_model.addElement("ad supported");
+		select_channels_model.addElement("premium");
 	}
 	public void select_channels_changed(int selected) {
-		//TODO
+		if (lb==null) return;
+		lb.channels((String)select_channels.getSelectedItem());
+		notifyChanges();
 	}
 	public void text_changed(JTextComponent text) {
-		//TODO
+		if (lb==null) return;
 		String t = text.getText();
 		if (text == text_timeframe_from_datetime) {
-			
+			try {
+				lb.timeframe_from_datetime(SecurityHelper.parseDate(t));
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 		else if (text == text_timeframe_to_datetime) {
-			
+			try {
+				lb.timeframe_to_datetime(SecurityHelper.parseDate(t));
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 		else if (text == text_pricing) {
-			
+			lb.pricing_wholesale(t);
 		}
 		notifyChanges();
 	}

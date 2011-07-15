@@ -165,7 +165,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	// add Tags
         	ItemTags tags = ItemTags.make();   		
         	tags.addGenre(root.getChildTextNN("genre"));
-
+        	
     		bundle.tags(tags);        	
         	
         	Contributor contributor = Contributor.make(root.getChildTextNN("label"), Contributor.TYPE_LABEL, IDs.make());

@@ -65,7 +65,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelContributorDetails extends JPanel implements MyObservable {
+public class PanelContributorDetails extends JPanel implements MyObservable, MyObserver {
 
 	//init fields
 	private Contributor contributor = null;
@@ -89,8 +89,17 @@ public class PanelContributorDetails extends JPanel implements MyObservable {
 		initKeyAdapter();
 		initComponents();
 		initLayout();
+		Vector<String> show = new Vector<String>();
+		show.add("gvl");
+		show.add("finetunesid");
+		show.add("ourid");
+		show.add("yourid");
+		show.add("contentauthid");
+		
+		panel_ids.onlyShowFields(show);
+		panel_ids.addObserver(this);
+		panel_www.addObserver(this);
 	}
-
 
 
 	public void update(Contributor contributor) {
@@ -101,7 +110,14 @@ public class PanelContributorDetails extends JPanel implements MyObservable {
 			check_sublevel.setSelected(false);
 			panel_ids.update((IDs)null);
 			panel_www.update((InfoWWW)null);
+		} else {
+			text_name.setText(contributor.getName());
+			select_type.setSelectedItem(contributor.getType());
+			check_sublevel.setSelected(contributor.getOnSubLevelOnly());
+			panel_ids.update(contributor.getIDs());
+			panel_www.update(contributor.getWww());
 		}
+		documentListener.saveStates();
 	}
 
 
@@ -371,19 +387,29 @@ public void initLayout() {
 }
 // ----- action methods --------------------------------
 	public void init_select_type_model() {
-		//TODO
+		select_type_model.removeAllElements();
+		select_type_model.addElement("[no type]");
+		for (String t : Contributor.TYPES) {
+			select_type_model.addElement(t);
+		}
 	}
 	public void select_type_changed(int selected) {
-		//TODO
+		if (contributor==null) return;
+	    contributor.type((String)select_type_model.getSelectedItem());
+	    notifyChanges();
 	}
+	
 	public void check_sublevel_changed(boolean selected) {
-		//TODO
+		if (contributor==null) return;
+	    contributor.on_sublevel_only(check_sublevel.isSelected());
+	    notifyChanges();
 	}
+	
 	public void text_changed(JTextComponent text) {
-		//TODO
+		if (contributor==null) return;
 		String t = text.getText();
 		if (text == text_name) {
-			
+			contributor.name(t);
 		}
 		notifyChanges();
 	}
@@ -399,5 +425,10 @@ public void initLayout() {
 		for (MyObserver ob : observers) {
 			ob.notifyChange(this);
 		}
+	}
+
+
+	public void notifyChange(MyObservable changedIn) {
+		notifyChanges();
 	}
 }

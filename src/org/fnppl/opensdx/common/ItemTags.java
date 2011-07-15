@@ -8,6 +8,7 @@ import org.fnppl.opensdx.xml.ChildElementIterator;
  * 
  * 							http://fnppl.org
 */
+import org.fnppl.opensdx.xml.Element;
 
 /*
  * Software license
@@ -53,6 +54,7 @@ public class ItemTags extends BusinessObject {
 	private BusinessStringItem origin_country;		//COULD
 	private BusinessStringItem main_language;		//COULD
 	private BusinessBooleanItem bundle_only;		//COULD
+	private BusinessBooleanItem explicit_lyrics;	//COULD
 
 	public static ItemTags make(String origin_country, String main_language, boolean bundle_only) {
 		ItemTags tags = new ItemTags();
@@ -64,6 +66,8 @@ public class ItemTags extends BusinessObject {
 		tags.origin_country = new BusinessStringItem("origin_country", origin_country);
 		tags.main_language = new BusinessStringItem("main_language", main_language);
 		tags.bundle_only = new BusinessBooleanItem("bundle_only", bundle_only);
+		tags.explicit_lyrics = null;
+		
 		return tags;
 	}
 
@@ -73,6 +77,7 @@ public class ItemTags extends BusinessObject {
 		tags.origin_country = null;
 		tags.main_language = null;
 		tags.bundle_only = null;
+		tags.explicit_lyrics = null;
 		return tags;
 	}
 
@@ -101,7 +106,7 @@ public class ItemTags extends BusinessObject {
 		tags.origin_country = BusinessStringItem.fromBusinessObject(bo, "origin_country");
 		tags.main_language = BusinessStringItem.fromBusinessObject(bo, "main_language");
 		tags.bundle_only = BusinessBooleanItem.fromBusinessObject(bo, "bundle_only");
-		
+		tags.explicit_lyrics = BusinessBooleanItem.fromBusinessObject(bo, "explicit_lyrics");
 		return tags;
 	}
 	
@@ -155,6 +160,11 @@ public class ItemTags extends BusinessObject {
 		return this;
 	}
 	
+	public ItemTags explicit_lyrics(boolean explicit_lyrics) {
+		this.explicit_lyrics = new BusinessBooleanItem("explicit_lyrics", explicit_lyrics);
+		return this;
+	}
+	
 	public String getOrigin_country() {
 		if (origin_country==null) return null;
 		return origin_country.getString();
@@ -169,8 +179,23 @@ public class ItemTags extends BusinessObject {
 		if (bundle_only==null) return false;
 		return bundle_only.getBoolean();
 	}
+	public boolean isExplicit_lyrics() {
+		if (explicit_lyrics==null) return false;
+		return explicit_lyrics.getBoolean();
+	}
 
 	public String getKeyname() {
 		return KEY_NAME;
+	}
+	
+	public Element toElement() {
+		if (genres == null
+		   && origin_country == null
+		   && main_language == null
+		   && bundle_only == null
+		   && explicit_lyrics == null) {
+			return null;
+		}
+		return super.toElement();
 	}
 }

@@ -95,7 +95,8 @@ public class PanelIDs extends JPanel implements MyObservable {
 	private JLabel label_yourid;
 	private JTextField text_yourid;
 	private JLabel label_filler;
-
+	private Vector<JTextComponent> texts = new Vector<JTextComponent>();
+	private Vector<JLabel> labels = new Vector<JLabel>();
 
 	public PanelIDs(IDs ids) {
 		this.ids = ids;
@@ -106,6 +107,22 @@ public class PanelIDs extends JPanel implements MyObservable {
 	}
 
 
+	public void onlyShowFields(Vector<String> show) {
+		for (JTextComponent t : texts) {
+			if (show.contains(t.getName().substring(5))) {
+				t.setVisible(true);
+			} else {
+				t.setVisible(false);
+			}
+		}
+		for (JLabel l : labels) {
+			if (show.contains(l.getName().substring(6))) {
+				l.setVisible(true);
+			} else {
+				l.setVisible(false);
+			}
+		}
+	}
 
 	public void update(IDs ids) {
 		this.ids = ids;
@@ -168,27 +185,31 @@ public class PanelIDs extends JPanel implements MyObservable {
 	}
 
 	private void initComponents() {
-		Vector<JTextComponent> texts = new Vector<JTextComponent>();
+		
 		setBorder(new TitledBorder("IDs"));
 
 		label_gvl = new JLabel("GVL");
-
+		label_gvl.setName("label_gvl");
+		labels.add(label_gvl);
+		
+		
 		text_gvl = new JTextField("");
-
 		text_gvl.setName("text_gvl");
 		map.put("text_gvl", text_gvl);
 		texts.add(text_gvl);
 
 		label_grid = new JLabel("GRID");
-
+		label_grid.setName("label_grid");
+		labels.add(label_grid);
+		
 		text_grid = new JTextField("");
-
 		text_grid.setName("text_grid");
 		map.put("text_grid", text_grid);
 		texts.add(text_grid);
 
 		label_upc = new JLabel("UPC");
-
+		label_upc.setName("label_upc");
+		labels.add(label_upc);
 		text_upc = new JTextField("");
 
 		text_upc.setName("text_upc");
@@ -196,7 +217,8 @@ public class PanelIDs extends JPanel implements MyObservable {
 		texts.add(text_upc);
 
 		label_isrc = new JLabel("ISRC");
-
+		label_isrc.setName("label_isrc");
+		labels.add(label_isrc);
 		text_isrc = new JTextField("");
 
 		text_isrc.setName("text_isrc");
@@ -204,7 +226,8 @@ public class PanelIDs extends JPanel implements MyObservable {
 		texts.add(text_isrc);
 
 		label_contentauthid = new JLabel("Content Auth ID");
-
+		label_contentauthid.setName("label_contentauthid");
+		labels.add(label_contentauthid);
 		text_contentauthid = new JTextField("");
 
 		text_contentauthid.setName("text_contentauthid");
@@ -212,7 +235,8 @@ public class PanelIDs extends JPanel implements MyObservable {
 		texts.add(text_contentauthid);
 
 		label_labelordernum = new JLabel("Label Order Num");
-
+		label_labelordernum.setName("label_labelordernum");
+		labels.add(label_labelordernum);
 		text_labelordernum = new JTextField("");
 
 		text_labelordernum.setName("text_labelordernum");
@@ -220,7 +244,8 @@ public class PanelIDs extends JPanel implements MyObservable {
 		texts.add(text_labelordernum);
 
 		label_amazon = new JLabel("Amazon");
-
+		label_amazon.setName("label_amazon");
+		labels.add(label_amazon);
 		text_amazon = new JTextField("");
 
 		text_amazon.setName("text_amazon");
@@ -228,7 +253,9 @@ public class PanelIDs extends JPanel implements MyObservable {
 		texts.add(text_amazon);
 
 		label_isbn = new JLabel("ISBN");
-
+		label_isbn.setName("label_isbn");
+		labels.add(label_isbn);
+		
 		text_isbn = new JTextField("");
 
 		text_isbn.setName("text_isbn");
@@ -236,7 +263,8 @@ public class PanelIDs extends JPanel implements MyObservable {
 		texts.add(text_isbn);
 
 		label_finetunesid = new JLabel("finetunes ID");
-
+		label_finetunesid.setName("label_finetunesid");
+		labels.add(label_finetunesid);
 		text_finetunesid = new JTextField("");
 
 		text_finetunesid.setName("text_finetunesid");
@@ -244,7 +272,8 @@ public class PanelIDs extends JPanel implements MyObservable {
 		texts.add(text_finetunesid);
 
 		label_ourid = new JLabel("Our ID");
-
+		label_ourid.setName("label_ourid");
+		labels.add(label_ourid);
 		text_ourid = new JTextField("");
 
 		text_ourid.setName("text_ourid");
@@ -252,7 +281,8 @@ public class PanelIDs extends JPanel implements MyObservable {
 		texts.add(text_ourid);
 
 		label_yourid = new JLabel("Your ID");
-
+		label_yourid.setName("label_yourid");
+		labels.add(label_yourid);
 		text_yourid = new JTextField("");
 
 		text_yourid.setName("text_yourid");
