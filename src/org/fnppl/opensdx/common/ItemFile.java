@@ -3,6 +3,7 @@ package org.fnppl.opensdx.common;
 import java.io.File;
 
 import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.xml.XMLElementable;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -54,12 +55,13 @@ public class ItemFile extends BusinessObject {
 
 	public static String KEY_NAME = "file";
 
-	private FileLocation location;				//MUST
-	private BusinessStringItem type;			//COULD
-	private BusinessIntegerItem bytes;			//COULD
-	private Checksums checksums;				//COULD
-	private BusinessStringItem filetype;		//COULD
-	private BusinessStringItem channels;		//COULD
+	private FileLocation location;								//MUST
+	private BusinessStringItem filetype;						//COULD
+	private BusinessStringItem type;							//COULD
+	private BusinessIntegerItem bytes;							//COULD
+	private Checksums checksums;								//COULD
+	private BusinessStringItem channels;						//COULD
+	private BusinessCollection<BusinessIntegerItem> dimension; 	//COULD
 	
 	public static ItemFile make(File f) {
 		ItemFile file = make();
@@ -75,6 +77,7 @@ public class ItemFile extends BusinessObject {
 		file.bytes = null;
 		file.location = null;
 		file.checksums = null;
+		file.dimension = null;
 		return file;
 	}
 	
@@ -117,8 +120,61 @@ public class ItemFile extends BusinessObject {
 		
 		file.checksums = Checksums.fromBusinessObject(bo);
 		file.location = FileLocation.fromBusinessObject(bo);
-		
+		BusinessObject dim = file.handleBusinessObject("dimension");
+		if (dim==null) {
+			file.dimension = null;
+		} else {
+			try {
+				file.dimension = new BusinessCollection<BusinessIntegerItem>() {
+					public String getKeyname() {
+						return "dimension";
+					}
+				};
+				BusinessStringItem w = dim.handleBusinessStringItem("width");
+				BusinessStringItem h = dim.handleBusinessStringItem("height");
+				if (w!=null) file.dimension.add(new BusinessIntegerItem("width", Integer.parseInt(w.getString())));
+				if (h!=null) file.dimension.add(new BusinessIntegerItem("height", Integer.parseInt(h.getString())));
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
 		return file;
+	}
+	
+	public ItemFile dimension(int width, int height) {
+		dimension = new BusinessCollection<BusinessIntegerItem>() {
+			public String getKeyname() {
+				return "dimension";
+			}
+		};
+		dimension.add(new BusinessIntegerItem("width", width));
+		dimension.add(new BusinessIntegerItem("height", height));
+		return this;
+	}
+	
+	public ItemFile remove_dimension() {
+		dimension = null;
+		return this;
+	}
+		
+	public Integer getDimensionWidth() {
+		if (dimension==null) return null;
+		for (int i=0;i<dimension.size();i++) {
+			if (dimension.get(i).getKeyname().equals("width")) {
+				return new Integer(dimension.get(i).getIntValue());
+			}
+		}
+		return null;
+	}
+	
+	public Integer getDimensionHeight() {
+		if (dimension==null) return null;
+		for (int i=0;i<dimension.size();i++) {
+			if (dimension.get(i).getKeyname().equals("height")) {
+				return new Integer(dimension.get(i).getIntValue());
+			}
+		}
+		return null;
 	}
 	
 	public ItemFile md5(byte[] bytes) {

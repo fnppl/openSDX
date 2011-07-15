@@ -2,7 +2,9 @@ package org.fnppl.opensdx.common;
 
 import java.util.Vector;
 
+import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.ChildElementIterator;
+import org.fnppl.opensdx.xml.XMLElementable;
 
 /*
  * Software license
@@ -54,9 +56,8 @@ public class LicenseBasis extends BusinessObject {
 	private Territorial territorial;  							 //MUST
 	private BusinessCollection<BusinessDatetimeItem> timeframe;	 //MUST
 	private BusinessObject pricing;								 //SHOULD
-	private BusinessBooleanItem streaming_allowed;				//COULD
-	private BusinessStringItem channels;						//COULD
-	
+	private BusinessBooleanItem streaming_allowed;				 //COULD
+	private BusinessCollection<BusinessStringItem> channels;	 //COULD
 	private BusinessStringItem asOnBundle;
 	
 	private LicenseBasis() {
@@ -91,13 +92,82 @@ public class LicenseBasis extends BusinessObject {
 		return b;
 	}
 	
+	public static LicenseBasis fromBusinessObject(BusinessObject bo) {
+		if (bo==null) return null;
+		if (!bo.getKeyname().equals(KEY_NAME)) {
+			bo = bo.handleBusinessObject(KEY_NAME);
+		}
+		if (bo==null) return null;
+		final LicenseBasis b = new LicenseBasis();
+		b.initFromBusinessObject(bo);
+		
+		b.territorial = Territorial.fromBusinessObject(bo);
+		b.timeframe = null;
+		
+		BusinessObject boTimeFrame = b.handleBusinessObject("timeframe");
+		if (boTimeFrame!=null) {
+			b.timeframe = new BusinessCollection<BusinessDatetimeItem>() {
+				public String getKeyname() {
+					return "timeframe";
+				}
+			};
+			BusinessDatetimeItem from = BusinessDatetimeItem.fromBusinessObject(boTimeFrame, "from");
+			if (from!=null) {
+				b.timeframe.add(from);
+			} else {
+				b.timeframe.add(new BusinessDatetimeItem("from", -1L));
+			}
+			BusinessDatetimeItem to = BusinessDatetimeItem.fromBusinessObject(boTimeFrame, "to");
+			if (to!=null) {
+				b.timeframe.add(to);
+			} else {
+				b.timeframe.add(new BusinessDatetimeItem("to", -1L));
+			}
+		}
+		
+		b.pricing = bo.handleBusinessObject("pricing");
+		b.streaming_allowed = BusinessBooleanItem.fromBusinessObject(b, "streaming_allowed");
+		
+		b.channels = null;
+		XMLElementable xChannels = bo.getOtherObject("channels");
+		if (xChannels!=null && xChannels instanceof BusinessObject) {
+			b.channels = new BusinessCollection<BusinessStringItem>() {
+				public String getKeyname() {
+					return "channels";
+				}
+			};
+			new ChildElementIterator(b, "channels","channel") {
+				public void processBusinessStringItem(BusinessStringItem item) {
+					b.channels.add(item);
+				}
+			};
+		}
+		b.asOnBundle = BusinessStringItem.fromBusinessObject(b, "as_on_bundle");
+		return b;
+	}
+	
+	
 	public LicenseBasis timeframe_from_datetime(long timeframe_from_datetime) {
-		timeframe.get(0).setDatetime(timeframe_from_datetime);
+		if (timeframe==null) {
+			timeframe = new BusinessCollection<BusinessDatetimeItem>() {
+				public String getKeyname() {
+					return "timeframe";
+				}
+			};
+		}
+		timeframe.set(new BusinessDatetimeItem("from", timeframe_from_datetime));
 		return this;
 	}
 	
 	public LicenseBasis timeframe_to_datetime(long timeframe_to_datetime) {
-		timeframe.get(1).setDatetime(timeframe_to_datetime);
+		if (timeframe==null) {
+			timeframe = new BusinessCollection<BusinessDatetimeItem>() {
+				public String getKeyname() {
+					return "timeframe";
+				}
+			};
+		}
+		timeframe.set(new BusinessDatetimeItem("to", timeframe_to_datetime));
 		return this;
 	}
 	
@@ -129,89 +199,54 @@ public class LicenseBasis extends BusinessObject {
 		else return true;
 	}
 	
-	public long getTimeframeFrom() {
-		if (timeframe==null || timeframe.size()<2) throw new RuntimeException("value not set");
-		BusinessDatetimeItem d = timeframe.get(0);
-		return d.getDatetime();
+	public Long getTimeframeFrom() {
+		if (timeframe==null) return null;
+		for (int i=0;i<timeframe.size();i++) {
+			if (timeframe.get(i).getKeyname().equals("from")) return new Long(timeframe.get(i).getDatetime());  
+		}
+		return null;
 	}
 	
 	public String getTimeframeFromText() {
-		//if (timeframe==null) throw new RuntimeException("value not set");
-		if (timeframe==null || timeframe.size()<2) return null;
-		BusinessDatetimeItem d = timeframe.get(0);
-		return d.getDatetimeStringGMT();
+		Long l = getTimeframeFrom();
+		if (l==null) return null;
+		return SecurityHelper.getFormattedDate(l.longValue());
 	}
 	
-	public long getTimeframeTo() {
-		if (timeframe==null || timeframe.size()<2) throw new RuntimeException("value not set");
-		BusinessDatetimeItem d = timeframe.get(1);
-		return d.getDatetime();
+	public Long getTimeframeTo() {
+		if (timeframe==null) return null;
+		for (int i=0;i<timeframe.size();i++) {
+			if (timeframe.get(i).getKeyname().equals("to")) return new Long(timeframe.get(i).getDatetime());  
+		}
+		return null;
 	}
 	
 	public String getTimeframeToText() {
-		//if (timeframe==null) throw new RuntimeException("value not set");
-		if (timeframe==null || timeframe.size()<2) return null;
-		BusinessDatetimeItem d = timeframe.get(1);
-		return d.getDatetimeStringGMT();
+		Long l = getTimeframeTo();
+		if (l==null) return null;
+		return SecurityHelper.getFormattedDate(l.longValue());
 	}
 	
-	
-	public static LicenseBasis fromBusinessObject(BusinessObject bo) {
-		if (bo==null) return null;
-		if (!bo.getKeyname().equals(KEY_NAME)) {
-			bo = bo.handleBusinessObject(KEY_NAME);
-		}
-		if (bo==null) return null;
-		final LicenseBasis b = new LicenseBasis();
-		b.initFromBusinessObject(bo);
-		
-		b.territorial =Territorial.fromBusinessObject(bo);
-		b.timeframe = new BusinessCollection<BusinessDatetimeItem>() {
-			public String getKeyname() {
-				return "timeframe";
-			}
-		};
-		BusinessObject boTimeFrame = bo.handleBusinessObject("timeframe");
-		if (boTimeFrame!=null) {
-			BusinessDatetimeItem from = BusinessDatetimeItem.fromBusinessObject(boTimeFrame, "from");
-			if (from!=null) {
-				b.timeframe.add(from);
-			} else {
-				b.timeframe.add(new BusinessDatetimeItem("from", -1L));
-			}
-			BusinessDatetimeItem to = BusinessDatetimeItem.fromBusinessObject(boTimeFrame, "to");
-			if (to!=null) {
-				b.timeframe.add(to);
-			} else {
-				b.timeframe.add(new BusinessDatetimeItem("to", -1L));
-			}
-		} else {
-			b.timeframe.add(new BusinessDatetimeItem("from", -1L));
-			b.timeframe.add(new BusinessDatetimeItem("to", -1L));
-		}
-		b.pricing = bo.handleBusinessObject("pricing");
-		b.streaming_allowed = BusinessBooleanItem.fromBusinessObject(b, "streaming_allowed");
-		b.channels = BusinessStringItem.fromBusinessObject(b, "channels");
-		return b;
-	}
 	
 	public LicenseBasis streaming_allowed(boolean streaming_allowed) {
 		this.streaming_allowed = new BusinessBooleanItem("streaming_allowed", streaming_allowed);
-		if (streaming_allowed) {
-			if (channels == null) {
-				channels("all");
-			}
-		} else {
+		if (!streaming_allowed) {
 			channels = null;
 		}
 		return this;
 	}
 	
-	public LicenseBasis channels(String c) {
-		if (c==null) {
-			channels = null;
+	public LicenseBasis addChannel(String name, boolean allow) {
+		if (channels == null) {
+			channels = new BusinessCollection<BusinessStringItem>() {
+				public String getKeyname() {
+					return "channels";
+				}
+			}; 
 		} else {
-			channels = new BusinessStringItem("channels", c);
+			BusinessStringItem item = new BusinessStringItem("channels", name);
+			item.setAttribute("type", (allow?"allow":"disallow"));
+			channels.add(item);
 		}
 		return this;
 	}
@@ -276,10 +311,33 @@ public class LicenseBasis extends BusinessObject {
 		territorial = t;
 	}
 	
-	public String getChannels() {
-		if (channels==null) return null;
-		return channels.getString();
+	public int getChannelsCount() {
+		if (channels==null) return 0;
+		return channels.size();
 	}
 	
+	public String getChannelName(int index) {
+		if (channels==null) return null;
+		return channels.get(index).getString();
+	}
+	
+	public boolean getChannelAllowed(int index) {
+		if (channels==null) return false;
+		String type = channels.get(index).getAttribute("type");
+		if (type.equalsIgnoreCase("allow")) return true;
+		return false;
+	}
+	
+	public void removeChannel(int index) {
+		if (channels==null) return;
+		channels.remove(index);
+	}
+	public void removeAllChannels() {
+		if (channels==null) return;
+		channels.removeAll();
+	}
+	public void removeChannels() {
+		channels = null;
+	}
 	
 }

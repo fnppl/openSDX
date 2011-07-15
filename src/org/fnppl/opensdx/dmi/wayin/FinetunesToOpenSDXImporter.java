@@ -313,6 +313,9 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        		track_info.setnum(Integer.parseInt(track_label.getChildTextNN("cdsourcenum")));
 		        	}
 		        	
+		        	//origin_country
+		        	track_info.origin_country(track.getChildText("origincountry"));
+		        	
 		        	// license specifics -> empty!
 		        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make(); 
 		        	
@@ -370,7 +373,6 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        		track_tags.addGenre(track_genre.getChildText("name"));
 		        	}
 		        	
-		        	tags.origin_country(track.getChildTextNN("origincountry"));
 		        	String track_bundle_only = track.getChildTextNN("bundled");
 		        	if(track_bundle_only.equals("false")) {
 		        		tags.bundle_only(false);	

@@ -84,6 +84,15 @@ public class PanelInformation extends JPanel implements MyObservable {
 	private JTextField text_digital_release_datetime;
 	private JLabel label_playlength_integer;
 	private JTextField text_playlength_integer;
+	
+	private JLabel label_main_language;
+	private JTextField text_main_language;
+	private JButton bu_select_lang;
+	private JLabel label_origin_country;
+	private JTextField text_origin_country;
+	private JButton bu_select_country;
+	
+	
 	private JList list_language;
 	private DefaultListModel list_language_model;
 	private JTextArea text_promotion;
@@ -115,6 +124,8 @@ public class PanelInformation extends JPanel implements MyObservable {
 			text_physical_release_datetime.setText("");
 			text_digital_release_datetime.setText("");
 			text_playlength_integer.setText("");
+			text_main_language.setText("");
+			text_origin_country.setText("");
 			updateLanguageList();
 			updatePromoAndTeaserText();
 		} else {
@@ -125,6 +136,8 @@ public class PanelInformation extends JPanel implements MyObservable {
 			} else {
 				text_playlength_integer.setText("");
 			}
+			text_main_language.setText(info.getMain_language());
+			text_origin_country.setText(info.getOrigin_country());
 			updateLanguageList();
 			updatePromoAndTeaserText();
 		}
@@ -227,6 +240,38 @@ public class PanelInformation extends JPanel implements MyObservable {
 		map.put("text_playlength_integer", text_playlength_integer);
 		texts.add(text_playlength_integer);
 
+		label_main_language = new JLabel("main language");
+
+		text_main_language = new JTextField("");
+
+		text_main_language.setName("text_main_language");
+		map.put("text_main_language", text_main_language);
+		texts.add(text_main_language);
+
+		bu_select_lang = new JButton("select");
+		map.put("bu_select_lang", bu_select_lang);
+		bu_select_lang.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				bu_select_lang_clicked();
+			}
+		});
+
+		label_origin_country = new JLabel("origin country");
+
+		text_origin_country = new JTextField("");
+
+		text_origin_country.setName("text_origin_country");
+		map.put("text_origin_country", text_origin_country);
+		texts.add(text_origin_country);
+
+		bu_select_country = new JButton("select");
+		map.put("bu_select_country", bu_select_country);
+		bu_select_country.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				bu_select_country_clicked();
+			}
+		});
+		
 		list_language = new JList();
 
 		list_language_model = new DefaultListModel();
@@ -426,9 +471,9 @@ public void initLayout() {
 	// Component: text_physical_release_datetime
 	gbc.gridx = 1;
 	gbc.gridy = 0;
-	gbc.gridwidth = 1;
+	gbc.gridwidth = 3;
 	gbc.gridheight = 1;
-	gbc.weightx = 30.0;
+	gbc.weightx = 0.0;
 	gbc.weighty = 0.0;
 	gbc.anchor = GridBagConstraints.CENTER;
 	gbc.fill = GridBagConstraints.BOTH;
@@ -438,6 +483,21 @@ public void initLayout() {
 	gbl.setConstraints(text_physical_release_datetime,gbc);
 	add(text_physical_release_datetime);
 
+	JLabel hfill = new JLabel();
+	gbc.gridx = 3;
+	gbc.gridy = 0;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 30.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(hfill,gbc);
+	add(hfill);
+	
 	// Component: label_digital_release_datetime
 	gbc.gridx = 0;
 	gbc.gridy = 1;
@@ -456,9 +516,9 @@ public void initLayout() {
 	// Component: text_digital_release_datetime
 	gbc.gridx = 1;
 	gbc.gridy = 1;
-	gbc.gridwidth = 1;
+	gbc.gridwidth = 3;
 	gbc.gridheight = 1;
-	gbc.weightx = 30.0;
+	gbc.weightx = 0.0;
 	gbc.weighty = 0.0;
 	gbc.anchor = GridBagConstraints.CENTER;
 	gbc.fill = GridBagConstraints.BOTH;
@@ -488,7 +548,7 @@ public void initLayout() {
 	gbc.gridy = 2;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
-	gbc.weightx = 30.0;
+	gbc.weightx = 0.0;
 	gbc.weighty = 0.0;
 	gbc.anchor = GridBagConstraints.CENTER;
 	gbc.fill = GridBagConstraints.BOTH;
@@ -498,10 +558,104 @@ public void initLayout() {
 	gbl.setConstraints(text_playlength_integer,gbc);
 	add(text_playlength_integer);
 
+	int y = 3;
+	// Component: label_main_language
+	gbc.gridx = 0;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(label_main_language,gbc);
+	add(label_main_language);
+
+	// Component: text_main_language
+	gbc.gridx = 1;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 20.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(text_main_language,gbc);
+	add(text_main_language);
+
+	// Component: bu_select_lang
+	gbc.gridx = 2;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(bu_select_lang,gbc);
+	add(bu_select_lang);
+
+	y++;
+	// Component: label_origin_country
+	gbc.gridx = 0;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(label_origin_country,gbc);
+	add(label_origin_country);
+
+	// Component: text_origin_country
+	gbc.gridx = 1;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 10.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(text_origin_country,gbc);
+	add(text_origin_country);
+
+	// Component: bu_select_country
+	gbc.gridx = 2;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(bu_select_country,gbc);
+	add(bu_select_country);
+	
+	
+	y++;
 	// pRest
 	gbc.gridx = 0;
-	gbc.gridy = 3;
-	gbc.gridwidth = 3;
+	gbc.gridy = y;
+	gbc.gridwidth = 5;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
 	gbc.weighty = 0.0;
@@ -516,7 +670,7 @@ public void initLayout() {
 	
 	// Component: filler
 	Container filler = new Container();
-	gbc.gridx = 2;
+	gbc.gridx = 4;
 	gbc.gridy = 0;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
@@ -534,7 +688,7 @@ public void initLayout() {
 	// Component: filler2
 	filler = new Container();
 	gbc.gridx = 0;
-	gbc.gridy = 4;
+	gbc.gridy = 6;
 	gbc.gridwidth = 3;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
@@ -552,6 +706,29 @@ public void initLayout() {
 
 
 // ----- action methods --------------------------------
+
+	public void bu_select_lang_clicked() { 
+		if (info==null) return;
+		String lang = FeedGui.showLanguageCodeSelector();
+		if (lang!=null) {
+			text_main_language.setText(lang);
+			documentListener.saveState(text_main_language);
+			info.main_language(lang);
+			notifyChanges();
+		}
+	}
+	
+	public void bu_select_country_clicked() {
+		if (info==null) return;
+		String country = FeedGui.showCountryCodeSelector();
+		if (country!=null) {
+			text_origin_country.setText(country);
+			documentListener.saveState(text_origin_country);
+			info.origin_country(country);
+			notifyChanges();
+		}
+	}
+
 	public void init_list_language_model() {
 		list_language_model = new DefaultListModel();
 	}
@@ -640,6 +817,12 @@ public void initLayout() {
 			} else {
 				info.playlength(Integer.parseInt(t));
 			}
+		}
+		else if (text == text_main_language) {
+			info.main_language(t.toLowerCase());
+		}
+		else if (text == text_origin_country) {
+			info.origin_country(t);
 		}
 		notifyChanges();
 	}

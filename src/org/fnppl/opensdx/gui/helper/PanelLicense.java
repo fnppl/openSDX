@@ -60,6 +60,7 @@ import javax.swing.event.ListSelectionListener;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Territorial;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.EditTerritoiresTree;
 import org.fnppl.opensdx.security.SecurityHelper;
 
@@ -192,7 +193,7 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 			boolean sa = lb.isStreaming_allowed();
 			check_streaming_allowed.setSelected(sa);
 			if (sa) {
-				select_channels.setSelectedItem(lb.getChannels());
+				setSelectChannels(lb);
 				select_channels.setEnabled(true);
 			} else {
 				select_channels.setEnabled(false);
@@ -220,6 +221,21 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 		}
 		setVisibility(!check_as_on_bundle.isSelected());
 		documentListener.saveStates();
+	}
+	
+	private void setSelectChannels(LicenseBasis lb) {
+		if (lb==null || lb.getChannelsCount()==0) {
+			select_channels.setSelectedIndex(0);
+		} else {
+			String name = lb.getChannelName(0);
+			if (lb.getChannelsCount()>1 || lb.getChannelAllowed(0)==false || !(name.equals("[not set]") || name.equals("all") || name.equals("ad supported") || name.equals("premium"))) {
+				select_channels.setSelectedIndex(0);	
+				Dialogs.showMessage("Caution: Channels not visualizable by this GUI.");
+			} else {
+				select_channels.setSelectedItem(name);
+			}
+			
+		}
 	}
 
 	private void initKeyAdapter() {
@@ -660,20 +676,26 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 		if (lb==null) return;
 		lb.streaming_allowed(sa);
 		if (sa) {
-			select_channels.setSelectedItem(lb.getChannels());
+			setSelectChannels(lb);
 		}
 		notifyChanges();
 	}
+	
 	public void init_select_channels_model() {
 		select_channels_model.removeAllElements();
-		//select_channels_model.addElement("none");
+		select_channels_model.addElement("[not set]");
 		select_channels_model.addElement("all");
 		select_channels_model.addElement("ad supported");
 		select_channels_model.addElement("premium");
 	}
 	public void select_channels_changed(int selected) {
 		if (lb==null) return;
-		lb.channels((String)select_channels.getSelectedItem());
+		if (selected==0) {
+			lb.removeChannels();
+		} else {
+			lb.removeAllChannels();
+			lb.addChannel((String)select_channels.getSelectedItem(), true);	
+		}
 		notifyChanges();
 	}
 	public void text_changed(JTextComponent text) {

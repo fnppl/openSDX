@@ -49,33 +49,18 @@ import org.fnppl.opensdx.xml.Element;
 public class ItemTags extends BusinessObject {
 
 	public static String KEY_NAME = "tags";
-
+	public static String EXPLICIT_LYRICS_TRUE = "true";
+	public static String EXPLICIT_LYRICS_FALSE = "false";
+	public static String EXPLICIT_LYRICS_CLEANED = "cleaned";
+	
 	private BusinessCollection<BusinessStringItem> genres;	//COULD
-	private BusinessStringItem origin_country;		//COULD
-	private BusinessStringItem main_language;		//COULD
 	private BusinessBooleanItem bundle_only;		//COULD
-	private BusinessBooleanItem explicit_lyrics;	//COULD
+	private BusinessStringItem explicit_lyrics;		//COULD
 
-	public static ItemTags make(String origin_country, String main_language, boolean bundle_only) {
-		ItemTags tags = new ItemTags();
-		tags.genres = new  BusinessCollection<BusinessStringItem>() {
-			public String getKeyname() {
-				return "genres";
-			}
-		};
-		tags.origin_country = new BusinessStringItem("origin_country", origin_country);
-		tags.main_language = new BusinessStringItem("main_language", main_language);
-		tags.bundle_only = new BusinessBooleanItem("bundle_only", bundle_only);
-		tags.explicit_lyrics = null;
-		
-		return tags;
-	}
 
 	public static ItemTags make() {
 		ItemTags tags = new ItemTags();
 		tags.genres = null;
-		tags.origin_country = null;
-		tags.main_language = null;
 		tags.bundle_only = null;
 		tags.explicit_lyrics = null;
 		return tags;
@@ -103,10 +88,9 @@ public class ItemTags extends BusinessObject {
 				//tags.addGenre(BusinessStringItem.fromBusinessObject(bo, "genre").getString());
 			}
 		};
-		tags.origin_country = BusinessStringItem.fromBusinessObject(bo, "origin_country");
-		tags.main_language = BusinessStringItem.fromBusinessObject(bo, "main_language");
+		
 		tags.bundle_only = BusinessBooleanItem.fromBusinessObject(bo, "bundle_only");
-		tags.explicit_lyrics = BusinessBooleanItem.fromBusinessObject(bo, "explicit_lyrics");
+		tags.explicit_lyrics = BusinessStringItem.fromBusinessObject(bo, "explicit_lyrics");
 		return tags;
 	}
 	
@@ -143,46 +127,40 @@ public class ItemTags extends BusinessObject {
 	}
 
 
-	public ItemTags origin_country(String origin_country) {
-		if (origin_country==null) this.origin_country = null;
-		this.origin_country = new BusinessStringItem("origin_country", origin_country);
-		return this;
-	}
-
-	public ItemTags main_language(String main_language) {
-		if (main_language==null) this.main_language = null;
-		this.main_language = new BusinessStringItem("main_language", main_language);
-		return this;
-	}
-
 	public ItemTags bundle_only(boolean bundle_only) {
 		this.bundle_only = new BusinessBooleanItem("bundle_only", bundle_only);
 		return this;
 	}
-	
-	public ItemTags explicit_lyrics(boolean explicit_lyrics) {
-		this.explicit_lyrics = new BusinessBooleanItem("explicit_lyrics", explicit_lyrics);
+	public ItemTags explicit_lyrics(String explicit_lyrics) {
+		if (explicit_lyrics==null) {
+			this.explicit_lyrics = null;
+		} else {
+			this.explicit_lyrics = new BusinessStringItem("explicit_lyrics", explicit_lyrics);
+		}
 		return this;
 	}
-	
-	public String getOrigin_country() {
-		if (origin_country==null) return null;
-		return origin_country.getString();
-	}
-
-	public String getMain_language() {
-		if (main_language==null) return null;
-		return main_language.getString();
+	public ItemTags explicit_lyrics(boolean explicit_lyrics) {
+		this.explicit_lyrics = new BusinessStringItem("explicit_lyrics", (explicit_lyrics?"true":"false"));
+		return this;
 	}
 
 	public boolean isBundle_only() {
 		if (bundle_only==null) return false;
 		return bundle_only.getBoolean();
 	}
+	
 	public boolean isExplicit_lyrics() {
 		if (explicit_lyrics==null) return false;
-		return explicit_lyrics.getBoolean();
+		String e = explicit_lyrics.getString();
+		if (e.equalsIgnoreCase("true")) return true;
+		return false;
 	}
+	
+	public String getExplicit_lyrics() {
+		if (explicit_lyrics==null) return null;
+		return explicit_lyrics.getString();
+	}
+	
 
 	public String getKeyname() {
 		return KEY_NAME;
@@ -190,8 +168,6 @@ public class ItemTags extends BusinessObject {
 	
 	public Element toElement() {
 		if (genres == null
-		   && origin_country == null
-		   && main_language == null
 		   && bundle_only == null
 		   && explicit_lyrics == null) {
 			return null;
