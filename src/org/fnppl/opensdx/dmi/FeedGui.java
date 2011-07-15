@@ -581,7 +581,7 @@ public class FeedGui extends JFrame implements MyObserver {
     	status.setStatus("Init.");
     	return status;
     }
-    
+       
 //    private void readAndSetGenres() {
 //    	try {
 //			Element root = Document.fromURL(configGenres).getRootElement();
@@ -736,7 +736,7 @@ public class FeedGui extends JFrame implements MyObserver {
 			try {
 				Feed feed = null;
 				if(type.equals("finetunes")) {
-					FinetunesToOpenSDXImporter imp = new FinetunesToOpenSDXImporter(f);				
+					FinetunesToOpenSDXImporter imp = new FinetunesToOpenSDXImporter(f);	
 					feed = imp.getFormatedFeedFromImport();				
 				}
 				else if(type.equals("simfy")) {
