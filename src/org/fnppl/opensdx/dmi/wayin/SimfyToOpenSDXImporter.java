@@ -291,7 +291,12 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
             	
             	// explicit_lyrics
             	if(track.getChildTextNN("explicit_lyrics").length()>0) {
-            		track_tags.explicit_lyrics(Boolean.parseBoolean(track.getChildTextNN("explicit_lyrics")));            	
+            		if(track.getChildTextNN("explicit_lyrics").toLowerCase().equals("false")) {
+            			track_tags.explicit_lyrics(ItemTags.EXPLICIT_LYRICS_FALSE);  
+            		}
+            		else if(track.getChildTextNN("explicit_lyrics").toLowerCase().equals("true")) {
+            			track_tags.explicit_lyrics(ItemTags.EXPLICIT_LYRICS_TRUE);  
+            		}            		
             	}
             	
             	item.tags(track_tags);	        	
