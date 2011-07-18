@@ -353,8 +353,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        			if(track_quality.getText().length()>0) {	
 		        				item.getInformation().playlength(Integer.parseInt(track_quality.getText()));
 		        			}	        			
-		        		}		        		
-		        		
+		        		}
 		        	}	        		
 	        		
         			item.addFile(itemfile);

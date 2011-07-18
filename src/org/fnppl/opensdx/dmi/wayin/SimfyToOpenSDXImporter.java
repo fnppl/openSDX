@@ -244,7 +244,9 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         		}
         		
         		// track license basis
-            	Territorial track_territorial = Territorial.make();
+        		LicenseBasis track_license_basis = LicenseBasis.make();
+        		
+        		Territorial track_territorial = Territorial.make();
         		
             	Vector<Element> tracks_rights = track.getChild("rights").getChildren("right");
             	for (Iterator<Element> itRights = tracks_rights.iterator(); itRights.hasNext();) {
@@ -254,26 +256,30 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
             			if(r.equals("**")) r="WW";
             			track_territorial.allow(r);
             		}
-            	}
-            	
-	        	/*
-	        	 *  ToDo: streaming allowed and dates for every territory and every track (?!)  
-	        	 *  
+            	} 
 	        	
-	        	LicenseBasis track_license_basis = LicenseBasis.make(track_territorial, from, to);
-	        		
+            	track_license_basis.setTerritorial(track_territorial);
+            	
+            	/*
+            	 * ToDo: save rights (streamable, from, to etc.) for every territory -> add fields to Territorial (?) 
+            	 * 
+            
+	        	String streamable_from = track.getChildTextNN("streamable_from");	        
+		        if(streamable_from.length()>0) {
+		        	cal.setTime(ymd.parse(streamable_from));
+		        	track_license_basis.timeframe_from_datetime(cal.getTimeInMillis());
+		        }
+		        
+	        	String streamable_to = track.getChildTextNN("streamable_to");	        
+		        if(streamable_to.length()>0) {
+		        	cal.setTime(ymd.parse(streamable_to));
+		        	track_license_basis.timeframe_to_datetime(cal.getTimeInMillis());
+		        }		        
+		        
 	        	if(track.getChild("streaming")!=null) {
 	        		track_license_basis.streaming_allowed(Boolean.parseBoolean(root.getChildText("streaming")));
-	        	}  
-	        	
-	        	String streamable_from = track.getChildTextNN("streamable_from");	        
-		        if(streetReleaseDate.length()>0) {
-		        	cal.setTime(ymd.parse(streamable_from));
-		        }
-	        	
-	        	*/
-	        	
-            	LicenseBasis track_license_basis = LicenseBasis.makeAsOnBundle();
+	        	} 		        
+            	**/
             	
 	        	// license specifics -> empty!
 	        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make();         	
