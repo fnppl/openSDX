@@ -80,7 +80,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 				
 			}
 		} catch (Exception e) {
-			e.printStackTrace();			
+			// e.printStackTrace();			
 			ir.succeeded = false;
 			ir.errorMessage = e.getMessage();			
 			ir.exception = e;			
@@ -312,7 +312,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         			itemfile.bytes(Integer.parseInt(track.getChildText("file_size")));
         		}        		
         		
-        		// checksum md5 or sha1 (?)
+        		// checksum md5
         		if(cover.getChild("file_checksum")!=null) {
         			itemfile.checksums(Checksums.make().md5(cover.getChildText("file_checksum").getBytes()));
         		}
@@ -325,7 +325,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	feed.addBundle(bundle);
 	        
 		} catch (Exception e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			ir.succeeded = false;
 			ir.errorMessage = e.getMessage();			
 			ir.exception = e;			
