@@ -130,8 +130,8 @@ public class OSDXFileTransferClient extends OSDXSocket {
 		sendEncryptedData(data);
 	}
 	
-	public void downloadFile(String filename, File savePath) {
-		nextDownloadFile = new File(savePath, filename);
+	public void downloadFile(String filename, File localFile) {
+		nextDownloadFile = localFile;
 		sendEncryptedText("GET "+filename);
 	}
 	

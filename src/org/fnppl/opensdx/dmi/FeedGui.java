@@ -331,15 +331,45 @@ public class FeedGui extends JFrame implements MyObserver {
 			}
 			String type = receiver.getType();
 			String servername = receiver.getServername();
-			if (type.equals("openSDX fileserver")) {
+			if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
 				int ans = Dialogs.showYES_NO_Dialog("Sending Feed", "Do you really want to send the current feed to "+servername+"?");
 				if (ans==Dialogs.YES) {
-					sendFeedToOSDXFileserver();
+					sendFeedToFTPServer();
+				}
+			}
+			else if (type.equals(Receiver.TRANSFER_TYPE_FTP)) {
+				int ans = Dialogs.showYES_NO_Dialog("Sending Feed", "Do you really want to send the current feed to "+servername+"?");
+				if (ans==Dialogs.YES) {
+					sendFeedToFTPServer();
 				}
 			}
 			else {
 				Dialogs.showMessage("Sorry, sending type \""+type+"\" not implemented.");
 			}
+		}
+	}
+	
+	private void sendFeedToFTPServer() {
+		String servername = currentFeed.getFeedinfo().getReceiver().getServername();
+		if (servername==null || servername.length()==0) {
+			Dialogs.showMessage("Missing parameter: servername");
+			return;
+		}
+		String username = currentFeed.getFeedinfo().getReceiver().getUsername();
+		
+		if (username==null || username.length()==0) {
+			Dialogs.showMessage("Missing parameter: username");
+			return;
+		}
+		
+		String password = Dialogs.showPasswordDialog("Enter Password", "Please enter Password for\nFTP Server: "+servername+"\nUser: "+username);
+		if (password==null) return;
+		
+		Result r = currentFeed.uploadFTP(servername, username, password);
+		if (r.succeeded) {
+			Dialogs.showMessage("Upload of Feed successful.");
+		} else {
+			Dialogs.showMessage(r.errorMessage);
 		}
 	}
 	
@@ -349,7 +379,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		String keyid = currentFeed.getFeedinfo().getReceiver().getKeyID();
 		String username = currentFeed.getFeedinfo().getReceiver().getUsername();
 		
-		if (username==null) {
+		if (username==null || username.length()==0) {
 			Dialogs.showMessage("Missing parameter: username");
 			return;
 		}

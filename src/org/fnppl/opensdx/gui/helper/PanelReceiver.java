@@ -682,24 +682,64 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		r.authtype((String)select_auth_type_model.getElementAt(selected));
 		notifyChanges();
 	}
+	
 	private void setFieldsVisibility() {
-		boolean visible = false;
-		String authType = (String)select_auth_type.getSelectedItem();
 		String type = (String)select_type.getSelectedItem();
-		if (authType==null || type == null) return; 
-		if (authType.equals(Receiver.AUTH_TYPE_KEYFILE) && type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
-			visible = true;	
+		if (type==null) return;
+		if (type.equals(Receiver.TRANSFER_TYPE_FTP)||type.equals(Receiver.TRANSFER_TYPE_SFTP)||type.equals(Receiver.TRANSFER_TYPE_FTPS)||type.equals(Receiver.TRANSFER_TYPE_WEBDAV)) {
+			label_servername.setVisible(true);
+			text_servername.setVisible(true);
+			label_serveripv4.setVisible(true);
+			text_serveripv4.setVisible(true);
+			label_auth_type.setVisible(true);
+			select_auth_type.setVisible(true);
+			select_auth_type.setEnabled(false);
+			select_auth_type.setSelectedItem(Receiver.AUTH_TYPE_LOGIN);
+			label_username.setVisible(true);
+			text_username.setVisible(true);
+			
+			boolean visible = false;
+			label_keystore.setVisible(visible);
+			text_keystore.setVisible(visible);
+			bu_keystore_select.setVisible(visible);
+			bu_keystore_remove.setVisible(visible);
+			
+			label_keyid.setVisible(visible);
+			text_keyid.setVisible(visible);
+			bu_keyid_select.setVisible(visible);
+			bu_keyid_remove.setVisible(visible);
 		}
-		label_keystore.setVisible(visible);
-		label_keyid.setVisible(visible);
-		label_username.setVisible(visible);
-		text_keystore.setVisible(visible);
-		bu_keystore_select.setVisible(visible);
-		bu_keystore_remove.setVisible(visible);
-		text_keyid.setVisible(visible);
-		bu_keyid_select.setVisible(visible);
-		bu_keyid_remove.setVisible(visible);
-		text_username.setVisible(visible);
+		else if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
+			label_servername.setVisible(true);
+			text_servername.setVisible(true);
+			label_serveripv4.setVisible(true);
+			text_serveripv4.setVisible(true);
+			label_auth_type.setVisible(true);
+			select_auth_type.setVisible(true);
+			select_auth_type.setEnabled(false);
+			select_auth_type.setSelectedItem(Receiver.AUTH_TYPE_KEYFILE);
+			
+			boolean visible = true;
+			label_username.setVisible(visible);
+			text_username.setVisible(visible);
+			
+			label_keystore.setVisible(visible);
+			text_keystore.setVisible(visible);
+			bu_keystore_select.setVisible(visible);
+			bu_keystore_remove.setVisible(visible);
+			
+			label_keyid.setVisible(visible);
+			text_keyid.setVisible(visible);
+			bu_keyid_select.setVisible(visible);
+			bu_keyid_remove.setVisible(visible);
+
+		}
+		
+		//String authType = (String)select_auth_type.getSelectedItem();
+		//if (authType==null) return;
+		
+		
+		
 	}
 	public void bu_keystore_select_clicked() {
 		Receiver r = getReceiver();
