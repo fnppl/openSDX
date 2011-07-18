@@ -1,7 +1,11 @@
 package org.fnppl.opensdx.dmi.wayout;
 
+import java.io.*;
+import java.text.*;
+import java.util.*;
 
-import java.io.File;
+import org.fnppl.opensdx.common.*;
+import org.fnppl.opensdx.xml.*;
 import org.fnppl.opensdx.security.*;
 
 /*
@@ -49,59 +53,61 @@ import org.fnppl.opensdx.security.*;
  * 
  */
 
-public class OpenSDXExporterBase {
-	public ExportType exportType;
-	public File exportFile;
-	public File saveFile;
+public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
+	DateFormat ymd = new SimpleDateFormat("yyyyMMdd");
+	Result ir = Result.succeeded();
+	// test?
+    boolean onlytest = true;
+    
+	public OpenSDXToFinetunesExporter(ExportType type, File impFile, File savFile) {
+		super(type, impFile, savFile);
+	}
 	
-	public OpenSDXExporterBase(ExportType expType, File expFile, File savFile)  {
-		this.exportType = expType;
-		this.exportFile = expFile;
-		this.saveFile = savFile;
+	public OpenSDXToFinetunesExporter(File expFile) {
+		super(ExportType.getExportType("finetunes"), expFile, null);
+	}	
+	
+	public Result formatToExternalFile() {	
+		try {			
+			
+			Feed feed = this.getExportFeed();
+            
+			if(feed!=null) {			
+	            // write file
+				Document doc = Document.buildDocument(feed.toElement());
+				doc.writeToFile(this.saveFile);
+			}
+		} catch (Exception e) {
+			// e.printStackTrace();			
+			ir.succeeded = false;
+			ir.errorMessage = e.getMessage();			
+			ir.exception = e;			
+		}	
+		
+		return ir;			
 	}
 		
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws Exception {
+	private Feed getExportFeed() {
+		// do the import
+		Feed feed = null;
+		
 		try {
-			
-			if(args.length!=3) {
-				System.out.println("Please provide following arguments: Type / File to export / File to save");
-				System.exit(0);
-			}
-			
-			ExportType expType = ExportType.getExportType(args[0]);
-			File expFile = new File(args[1]);
-			File savFile = new File(args[2]);
-			
-			if(!expFile.exists()) {
-				System.out.println("ERROR: File to export not exist! Please check and try again.");
-				System.exit(0);
-			}
-			
-			Result ir = null;
-			switch(expType.getType()) {
-				case ExportType.FINETUNES:
-					OpenSDXToFinetunesExporter expFt = new OpenSDXToFinetunesExporter(expType, expFile, savFile);
-					ir = expFt.formatToExternalFile();
-					break;
-				case ExportType.SIMFY:
-					//OpenSDXToSimfyExporter expSimfy = new OpenSDXToSimfyExporter(expType, expFile, savFile);
-					//ir = expSimfy.formatToExternalFile();		
-					break;
-				default:
-					break;
-			}
-			if(ir.succeeded) {
-				System.out.println("Export succeeded! Nice!");
-			}
-			else {
-				System.out.println("Export NOT succeeded! ERROR: "+ir.errorMessage);
-			}
-		} catch (Exception ex) {
-			System.out.println("Failed! Please provide following arguments: Type / File to export / File to save");
-		}
+			// (1) get XML-Data from import document
+	        Document impDoc = Document.fromFile(this.exportFile);
+	        Element root = impDoc.getRootElement();
 
+		} catch (Exception e) {
+			// e.printStackTrace();
+			ir.succeeded = false;
+			ir.errorMessage = e.getMessage();			
+			ir.exception = e;			
+		}		        
+        return feed;
 	}
+	
+	public Feed getFormatedFeedFromExport() {			
+		return this.getExportFeed();
+	
+	}
+
 }
