@@ -314,6 +314,9 @@ public class FeedGui extends JFrame implements MyObserver {
 				Document doc = Document.fromFile(f);
 				Feed feed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
 				currentFeed = feed;
+				if (feed.getFeedinfo().getReceiver()==null) {
+					feed.getFeedinfo().receiver(Receiver.make(Receiver.TRANSFER_TYPE_FTP));
+				}
 				update();
 			} catch (Exception e) {
 				Dialogs.showMessage("ERROR, could not open feed in file\n"+f.getAbsolutePath());
@@ -354,7 +357,7 @@ public class FeedGui extends JFrame implements MyObserver {
 			if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
 				int ans = Dialogs.showYES_NO_Dialog("Sending Feed", "Do you really want to send the current feed to "+servername+"?");
 				if (ans==Dialogs.YES) {
-					sendFeedToFTPServer();
+					sendFeedToOSDXFileserver();
 				}
 			}
 			else if (type.equals(Receiver.TRANSFER_TYPE_FTP)) {

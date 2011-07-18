@@ -141,6 +141,11 @@ public class ItemFile extends BusinessObject {
 		return file;
 	}
 	
+	public ItemFile setLocation(FileLocation loc) {
+		location = loc;
+		return this;
+	}
+	
 	public ItemFile dimension(int width, int height) {
 		dimension = new BusinessCollection<BusinessIntegerItem>() {
 			public String getKeyname() {
