@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 import org.fnppl.opensdx.ftp.FTPClient;
+import org.fnppl.opensdx.ftp.FileTransferClient;
 import org.fnppl.opensdx.securesocket.OSDXFileTransferClient;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.Result;
@@ -135,71 +136,8 @@ public class Feed extends BusinessObject {
 			if (!ok) {
 				return Result.error("ERROR: Connection to server could not be established.");
 			}
-			String feedid = getFeedinfo().getFeedID();
-
-			String normFeedid = Util.filterCharactersFile(feedid.toLowerCase());
-			if (normFeedid.length()==0) {
-				normFeedid = "unnamed_feed";
-			}
-			System.out.println("norm feedid: "+normFeedid);
-			String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,20);
-			dir = Util.filterCharactersFile(dir);
 			
-			//build file structure, SOMEONE might want to change this
-			client.mkdir(dir);
-			client.cd(dir);
-			ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-			Document.buildDocument(this.toElement()).output(bOut);
-			client.uploadFile(normFeedid+".xml",bOut.toByteArray());
-			
-			//upload all item files
-			Bundle bundle = this.getBundle(0);
-			if (bundle!=null) {
-				//bundle files
-				for (int j=0;j<bundle.getFilesCount();j++) {
-					try {
-						ItemFile nextItemFile = bundle.getFile(j);
-						File nextFile = new File(nextItemFile.getLocationPath());
-						String ending = nextFile.getName();
-						if (ending.contains(".")) {
-							ending = ending.substring(ending.lastIndexOf('.'));
-						} else {
-							ending = "";
-						}
-						String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-						String filename = normFeedid+"_0_"+j+"_"+md5+ending;
-						client.uploadFile(nextFile, filename);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				
-				//item files
-				for (int i=0;i<bundle.getItemsCount();i++) {
-					Item item = bundle.getItem(i);
-					if (item.getFilesCount()>0) {
-						boolean subIndex = (item.getFilesCount()>1);
-						for (int j=0;j<item.getFilesCount();j++) {
-							try {
-								ItemFile nextItemFile = item.getFile(j);
-								File nextFile = new File(nextItemFile.getLocationPath());
-								String ending = nextFile.getName();
-								if (ending.contains(".")) {
-									ending = ending.substring(ending.lastIndexOf('.'));
-								} else {
-									ending = "";
-								}
-								String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-								String filename = normFeedid+"_"+(i+1)+(subIndex?"_"+(j+1):"")+"_"+md5+ending;
-								client.uploadFile(nextFile, filename);
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							}
-						}
-					}
-				}
-			}
-			
+			uploadFeed(client);
 			client.closeConnection();
 			
 			//Dialogs.showMessage("Upload of Feed successful.");
@@ -220,74 +158,10 @@ public class Feed extends BusinessObject {
 				ex.printStackTrace();
 				return Result.error("ERROR: Connection to server could not be established.");
 			}
-			
-			String feedid = getFeedinfo().getFeedID();
-			String normFeedid = Util.filterCharactersFile(feedid.toLowerCase());
-			System.out.println("norm feedid: "+normFeedid);
-			if (normFeedid.length()==0) {
-				normFeedid = "unnamed_feed";
+			if (client==null) {
+				return Result.error("ERROR: Connection to server could not be established.");
 			}
-			
-			String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,20);
-			dir = Util.filterCharactersFile(dir);
-			
-			//build file structure, SOMEONE might want to change this
-			client.mkdir(dir);
-			client.cd(dir);
-			ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-			//Document.buildDocument(this.toElement()).output(System.out);
-			Document.buildDocument(this.toElement()).output(bOut);
-			
-			client.uploadFile(normFeedid+".xml",bOut.toByteArray());
-			
-			//upload all item files
-			Bundle bundle = this.getBundle(0);
-			if (bundle!=null) {
-				//bundle files (cover, booklet, ..)
-				for (int j=0;j<bundle.getFilesCount();j++) {
-					try {
-						ItemFile nextItemFile = bundle.getFile(j);
-						File nextFile = new File(nextItemFile.getLocationPath());
-						String ending = nextFile.getName();
-						if (ending.contains(".")) {
-							ending = ending.substring(ending.lastIndexOf('.'));
-						} else {
-							ending = "";
-						}
-						String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-						String filename = normFeedid+"_0_"+j+"_"+md5+ending;
-						client.uploadFile(nextFile, filename);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				
-				//item files
-				for (int i=0;i<bundle.getItemsCount();i++) {
-					Item item = bundle.getItem(i);
-					if (item.getFilesCount()>0) {
-						boolean subIndex = (item.getFilesCount()>1);
-						for (int j=0;j<item.getFilesCount();j++) {
-							try {
-								ItemFile nextItemFile = item.getFile(j);
-								File nextFile = new File(nextItemFile.getLocationPath());
-								String ending = nextFile.getName();
-								if (ending.contains(".")) {
-									ending = ending.substring(ending.lastIndexOf('.'));
-								} else {
-									ending = "";
-								}
-								String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-								String filename = normFeedid+"_"+(i+1)+(subIndex?"_"+(j+1):"")+"_"+md5+ending;
-								client.uploadFile(nextFile, filename);
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							}
-						}
-					}
-				}
-			}
-			
+			uploadFeed(client);			
 			client.closeConnection();
 			
 			//Dialogs.showMessage("Upload of Feed successful.");
@@ -297,6 +171,88 @@ public class Feed extends BusinessObject {
 			//Dialogs.showMessage("ERROR: Upload of Feed failed.");
 		}
 		return Result.succeeded();
+	}
+	
+	private void uploadFeed(FileTransferClient client) throws Exception {
+		String feedid = getFeedinfo().getFeedID();
+		String normFeedid = Util.filterCharactersFile(feedid.toLowerCase());
+		System.out.println("norm feedid: "+normFeedid);
+		if (normFeedid.length()==0) {
+			normFeedid = "unnamed_feed";
+		}
+		
+		//make a copy to remove private information and change to relative file paths  
+		Feed copyOfFeed = Feed.fromBusinessObject(BusinessObject.fromElement(this.toElement()));
+		
+		//remove private info
+		try {
+			copyOfFeed.getFeedinfo().getReceiver().file_keystore(null);
+		} catch (Exception ex) {}
+		
+		//norm feedid
+		String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,20);
+		dir = Util.filterCharactersFile(dir);
+		
+		//build file structure, SOMEONE might want to change this
+		client.mkdir(dir);
+		client.cd(dir);
+		
+		//upload all bundle and  item files
+		Bundle bundle = copyOfFeed.getBundle(0);
+		if (bundle!=null) {
+			//bundle files (cover, booklet, ..)
+			for (int j=0;j<bundle.getFilesCount();j++) {
+				try {
+					ItemFile nextItemFile = bundle.getFile(j);
+					File nextFile = new File(nextItemFile.getLocationPath());
+					String ending = nextFile.getName();
+					if (ending.contains(".")) {
+						ending = ending.substring(ending.lastIndexOf('.'));
+					} else {
+						ending = "";
+					}
+					String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+					String filename = normFeedid+"_0_"+j+"_"+md5+ending;
+					nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
+					client.uploadFile(nextFile, filename);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			
+			//item files
+			for (int i=0;i<bundle.getItemsCount();i++) {
+				Item item = bundle.getItem(i);
+				if (item.getFilesCount()>0) {
+					boolean subIndex = (item.getFilesCount()>1);
+					for (int j=0;j<item.getFilesCount();j++) {
+						try {
+							ItemFile nextItemFile = item.getFile(j);
+							File nextFile = new File(nextItemFile.getLocationPath());
+							String ending = nextFile.getName();
+							if (ending.contains(".")) {
+								ending = ending.substring(ending.lastIndexOf('.'));
+							} else {
+								ending = "";
+							}
+							String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+							String filename = normFeedid+"_"+(i+1)+(subIndex?"_"+(j+1):"")+"_"+md5+ending;
+							nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
+							client.uploadFile(nextFile, filename);
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+		
+		//upload feed
+		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+		//Document.buildDocument(this.toElement()).output(System.out);
+		Document.buildDocument(copyOfFeed.toElement()).output(bOut);
+		client.uploadFile(normFeedid+".xml",bOut.toByteArray());
+		
 	}
 	
 	public Feed addBundle(Bundle bundle) {

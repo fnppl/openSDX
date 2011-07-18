@@ -52,7 +52,7 @@ import java.io.InputStream;
 import java.util.Vector;
 
 
-public class FTPClient {
+public class FTPClient implements FileTransferClient{
 	
 	private it.sauronsoftware.ftp4j.FTPClient client = null;
 	
@@ -106,7 +106,7 @@ public class FTPClient {
 		client.changeDirectoryUp();
 	}
 	
-	public void remane(String oldname, String newname) throws Exception {
+	public void rename(String oldname, String newname) throws Exception {
 		client.rename(oldname, newname);
 	}
 	
@@ -127,15 +127,33 @@ public class FTPClient {
 	}
 	
 	public void uploadFile(File f, String new_filename) throws Exception {
+		System.out.println("uploading file to: "+new_filename+"  length = "+f.length());
 		FileInputStream fileIn = new FileInputStream(f);
-		client.upload(new_filename, fileIn, 0, f.length(), null);
+		FTPDataTransferListener transferListener = new FTPDataTransferListener() {
+			public void transferred(int len) {
+				System.out.println("transfered: "+len);
+			}
+			public void started() {
+				System.out.println("transfer started");
+			}
+			public void failed() {
+				System.out.println("transfer failed");
+			}
+			public void completed() {
+				System.out.println("transfer completed");
+			}
+			public void aborted() {
+				System.out.println("transfer aborted");
+			}
+		};
+		client.upload(new_filename, fileIn, 0, 0, transferListener);
 	}
 	
 	public void uploadFile(String new_filename, byte[] data) throws Exception {
 		if (data.length>0) {
-			//System.out.println("uploading file data to: "+new_filename+"  length = "+data.length);
+			System.out.println("uploading file data to: "+new_filename+"  length = "+data.length);
 			InputStream in = new ByteArrayInputStream(data);
-			final boolean[] ready = new boolean[] {false};
+			
 			FTPDataTransferListener transferListener = new FTPDataTransferListener() {
 				public void transferred(int len) {
 					System.out.println("transfered: "+len);
@@ -145,23 +163,17 @@ public class FTPClient {
 				}
 				public void failed() {
 					System.out.println("transfer failed");
-					ready[0] = true;
 				}
 				public void completed() {
 					System.out.println("transfer completed");
-					ready[0] = true;
 				}
 				public void aborted() {
 					System.out.println("transfer aborted");
-					ready[0] = true;
 				}
 			};
 			
 			client.upload(new_filename, in, 0, 0, transferListener);
-//			while (!ready[0]) {
-//				System.out.println("transfer is progress");
-//				Thread.sleep(100);
-//			}
+
 		}
 	}
 	

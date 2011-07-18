@@ -49,10 +49,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
+import org.fnppl.opensdx.ftp.FileTransferClient;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.xml.Document;
 
-public class OSDXFileTransferClient extends OSDXSocket {
+public class OSDXFileTransferClient extends OSDXSocket implements FileTransferClient {
 
 	private File nextDownloadFile = null;
 	
