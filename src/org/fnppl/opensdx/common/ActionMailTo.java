@@ -1,5 +1,7 @@
 package org.fnppl.opensdx.common;
 
+import java.util.Vector;
+
 import org.fnppl.opensdx.xml.Element;
 
 /*
@@ -58,7 +60,7 @@ public class ActionMailTo extends BusinessObject implements Action {
 
 	public static String KEY_NAME = "mailto";
 	
-	private BusinessStringItem receiver;
+	private Vector<BusinessStringItem> receiver;
 	private BusinessStringItem subject;
 	private BusinessStringItem text;
 	
@@ -68,7 +70,8 @@ public class ActionMailTo extends BusinessObject implements Action {
 	
 	public static ActionMailTo make(String receiver, String subject, String text) {
 		ActionMailTo a = new ActionMailTo();
-		a.receiver = new BusinessStringItem("receiver", receiver);
+		a.receiver = new Vector<BusinessStringItem>();
+		a.receiver(receiver);
 		a.subject = new BusinessStringItem("subject", subject);
 		a.text = new BusinessStringItem("text", text);
 		return a;
@@ -83,7 +86,12 @@ public class ActionMailTo extends BusinessObject implements Action {
 		
 		ActionMailTo a = new ActionMailTo();
 		a.initFromBusinessObject(bo);
-		a.receiver = a.handleBusinessStringItem("receiver");
+		a.receiver = new Vector<BusinessStringItem>();
+		BusinessStringItem rec = a.handleBusinessStringItem("receiver");
+		while (rec!=null) {
+			a.receiver.add(rec);
+			rec = a.handleBusinessStringItem("receiver");
+		}
 		a.subject  = a.handleBusinessStringItem("subject");
 		a.text     = a.handleBusinessStringItem("text");
 		a.removeOtherObjects();
@@ -96,12 +104,43 @@ public class ActionMailTo extends BusinessObject implements Action {
 	
 	public ActionMailTo receiver(String text) {
 		if (text==null) {
-			receiver = null;
+			receiver.removeAllElements();
 		} else {
-			receiver.setString(text);
+			//System.out.println("receiver::"+text);
+			String[] rec = text.trim().split("[,; ]");
+			for (String r : rec) {
+				if (r.length()>1) {
+					//System.out.println("receiver: "+r);
+					receiver.add(new BusinessStringItem("receiver", r));
+				}
+			}
 		}
 		return this;
 	}
+	
+	public ActionMailTo addReceiver(String text) {
+		if (text!=null) {
+			String[] rec = text.trim().split("[,; ]");
+			for (String r : rec) {
+				if (r.length()>1) {
+					receiver.add(new BusinessStringItem("receiver", r));
+				}
+			}
+		}
+		return this;
+	}
+	
+	public String getReceiver(int no) {
+		if (no>=0 && no<receiver.size()) {
+			return receiver.get(no).getString();
+		}
+		return null;
+	}
+	
+	public int getReceiverCount() {
+		return receiver.size();
+	}
+	
 	public ActionMailTo subject(String text) {
 		if (text==null) {
 			subject = null;
@@ -120,8 +159,12 @@ public class ActionMailTo extends BusinessObject implements Action {
 	}
 	
 	public String getReceiver() {
-		if (receiver==null) return null;
-		return receiver.getString();
+		if (receiver==null || receiver.size()==0) return null;
+		String rec = receiver.get(0).getString();
+		for (int i=1;i<receiver.size();i++) {
+			rec += "; "+receiver.get(i).getString();
+		}
+		return rec;
 	}
 	
 	public String getSubject() {
@@ -135,8 +178,7 @@ public class ActionMailTo extends BusinessObject implements Action {
 	}
 
 	public String getDescription() {
-		if (receiver==null) return "";
-		return receiver.getString();
+		return getReceiver();
 	}
 	
 	public String getKeyname() {

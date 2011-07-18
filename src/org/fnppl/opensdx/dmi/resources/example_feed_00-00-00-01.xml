@@ -200,7 +200,6 @@
 		</actions><!-- SHOULD - hopefully the receiving party also respects this ; this would ease a lot in the chain... -->
 	</feedinfo>
 	
-	
 	<bundle>
 		<ids>
 			<grid></grid><!-- COULD grid -->

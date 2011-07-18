@@ -341,7 +341,8 @@ public class PanelSavedDMI extends JPanel {
 				String[][] data = new String[][] {
 						{"contract partner id",c.getContractPartnerID()},
 						{"our contract partner id",c.getOurContractPartnerID()},
-						{"email",c.getEmail()}
+						{"email",c.getEmail()},
+						{"key id",c.getKeyid()}
 				};
 				o.panel = buildPanel("Contract Partner", data);
 				JButton bu = new JButton("set as Sender in FeedInfo");

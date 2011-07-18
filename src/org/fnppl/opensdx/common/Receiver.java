@@ -164,6 +164,11 @@ public class Receiver extends BusinessObject {
 			type = null;
 		} else if (type == null) {
 			type = new BusinessStringItem("type", value);
+			if (!value.equals(TRANSFER_TYPE_OSDX_FILESERVER)) {
+				authtype(AUTH_TYPE_LOGIN);
+			} else {
+				authtype(AUTH_TYPE_KEYFILE);
+			}
 		} else {
 			type.setString(value);
 		}
@@ -326,12 +331,11 @@ public class Receiver extends BusinessObject {
 		//remove fields that are useless for selected type and auth_type
 		String type = getType();
 		String authtype = getAuthType();
-		if (!type.equals(TRANSFER_TYPE_OSDX_FILESERVER)) {
-			username(null);
-			file_keystore(null);
-			keyid(null);
-		}
-		if (!authtype.equals(AUTH_TYPE_KEYFILE)) {
+//		if (type==null || !type.equals(TRANSFER_TYPE_OSDX_FILESERVER)) {
+//			file_keystore(null);
+//			keyid(null);
+//		}
+		if (authtype==null || !authtype.equals(AUTH_TYPE_KEYFILE)) {
 			file_keystore(null);
 			keyid(null);
 		}

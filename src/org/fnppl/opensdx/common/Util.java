@@ -57,6 +57,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -69,6 +70,47 @@ import java.util.zip.ZipOutputStream;
  */
 public class Util {
 	
+	private static char[] goodChars = null;
+	public static String filterCharacters(String s) {
+		if (goodChars==null) {
+			String good = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-_!?%&/() $=<>ßÄÖÜäöü*<>|0123456789{[]}\\;:@\"'";
+			goodChars = new char[good.length()];
+			for (int i=0;i<goodChars.length;i++) {
+				goodChars[i] = good.charAt(i);
+			}
+			Arrays.sort(goodChars);
+		}
+		String f = "";
+		for (int i=0;i<s.length();i++) {
+			if (Arrays.binarySearch(goodChars,s.charAt(i))>=0) {
+				f += s.charAt(i);
+			} else {
+				//System.out.println("wrong char: "+s.charAt(i));
+			}
+		}
+		return f;
+	}
+	
+	private static char[] goodCharsFile = null;
+	public static String filterCharactersFile(String s) {
+		if (goodCharsFile==null) {
+			String good = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-_ ßÄÖÜäöü0123456789";
+			goodCharsFile = new char[good.length()];
+			for (int i=0;i<goodCharsFile.length;i++) {
+				goodCharsFile[i] = good.charAt(i);
+			}
+			Arrays.sort(goodCharsFile);
+		}
+		String f = "";
+		for (int i=0;i<s.length();i++) {
+			if (Arrays.binarySearch(goodCharsFile,s.charAt(i))>=0) {
+				f += s.charAt(i);
+			} else {
+			//	System.out.println("wrong char: "+s.charAt(i));
+			}
+		}
+		return f;
+	}
 	 public static void saveObjectToFile(File datei, Object obj) {
 	    	//System.out.println("Saving Object to file: "+datei.getAbsolutePath());
 	        try {
