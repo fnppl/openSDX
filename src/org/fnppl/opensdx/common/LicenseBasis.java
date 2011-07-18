@@ -81,6 +81,17 @@ public class LicenseBasis extends BusinessObject {
 		return b;
 	}
 	
+	public static LicenseBasis make() {
+		LicenseBasis b = new LicenseBasis();
+		b.territorial = null;
+		b.timeframe = null;
+		b.pricing = null;
+		b.streaming_allowed = null;
+		b.channels = null;
+		b.asOnBundle = null;
+		return b;
+	}	
+	
 	public static LicenseBasis makeAsOnBundle() {
 		LicenseBasis b = new LicenseBasis();
 		b.territorial = null;
