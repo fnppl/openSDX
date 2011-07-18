@@ -95,6 +95,11 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 	        
 	        // (2) create XML-Data for export document
 	        expDoc = Document.buildDocument(new Element("album"));
+	        Element expDocRoot = expDoc.getRootElement();
+	        
+	        expDocRoot.addContent("code", osdxFeed.getFeedinfo().getFeedID());
+	        
+	        // ToDo: export magic here!
 	        
 		} catch (Exception e) {
 			// e.printStackTrace();

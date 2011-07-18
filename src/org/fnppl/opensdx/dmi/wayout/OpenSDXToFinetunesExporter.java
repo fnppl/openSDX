@@ -95,7 +95,7 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 			Feed osdxFeed = this.exportFeed;
 	        
 	        // (2) create XML-Data for export document
-	        expDoc = Document.buildDocument(new Element("XXX"));
+	        expDoc = Document.buildDocument(new Element("coming soon"));
 	        
 	        // ToDo: write export!
 
