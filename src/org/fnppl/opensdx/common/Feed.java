@@ -9,15 +9,8 @@ import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.Result;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.ChildElementIterator;
-
-/*
- * Copyright (C) 2010-2011 
- * 							fine people e.V. <opensdx@fnppl.org> 
- * 							Henning Thieß <ht@fnppl.org>
- * 
- * 							http://fnppl.org
-*/
 import org.fnppl.opensdx.xml.Document;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 

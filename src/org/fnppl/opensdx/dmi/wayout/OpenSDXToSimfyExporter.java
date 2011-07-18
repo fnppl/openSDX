@@ -56,25 +56,23 @@ import org.fnppl.opensdx.security.*;
 public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 	DateFormat ymd = new SimpleDateFormat("yyyyMMdd");
 	Result ir = Result.succeeded();
-	// test?
-    boolean onlytest = true;
     
-	public OpenSDXToSimfyExporter(ExportType type, File impFile, File savFile) {
-		super(type, impFile, savFile);
+	
+	public OpenSDXToSimfyExporter(ExportType type, Feed expFeed, File savFile) {
+		super(type, expFeed, savFile);
 	}
 	
-	public OpenSDXToSimfyExporter(File expFile) {
-		super(ExportType.getExportType("simfy"), expFile, null);
+	public OpenSDXToSimfyExporter(Feed expFeed) {
+		super(ExportType.getExportType("simfy"), expFeed, null);
 	}	
 	
 	public Result formatToExternalFile() {	
 		try {			
 			
-			Feed feed = this.getExportFeed();
+			Document doc = this.getExportDocument();
             
-			if(feed!=null) {			
+			if(doc!=null) {			
 	            // write file
-				Document doc = Document.buildDocument(feed.toElement());
 				doc.writeToFile(this.saveFile);
 			}
 		} catch (Exception e) {
@@ -87,27 +85,28 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 		return ir;			
 	}
 		
-	private Feed getExportFeed() {
-		// do the import
-		Feed feed = null;
+	private Document getExportDocument() {
+		// do the export
+		Document expDoc = null;
 		
 		try {
-			// (1) get XML-Data from import document
-	        Document impDoc = Document.fromFile(this.exportFile);
-	        Element root = impDoc.getRootElement();
-
+			// (1) get XML-Data from export document
+			Feed osdxFeed = this.exportFeed;
+	        
+	        // (2) create XML-Data for export document
+	        expDoc = Document.buildDocument(new Element("album"));
+	        
 		} catch (Exception e) {
 			// e.printStackTrace();
 			ir.succeeded = false;
 			ir.errorMessage = e.getMessage();			
 			ir.exception = e;			
 		}		        
-        return feed;
+        return expDoc;
 	}
 	
-	public Feed getFormatedFeedFromExport() {			
-		return this.getExportFeed();
-	
+	public Document getFormatedDocumentFromExport() {			
+		return this.getExportDocument();	
 	}
 
 }

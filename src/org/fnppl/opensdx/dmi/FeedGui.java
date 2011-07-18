@@ -94,6 +94,7 @@ import org.fnppl.opensdx.securesocket.OSDXFileTransferClient;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 import org.fnppl.opensdx.dmi.wayin.*;
+import org.fnppl.opensdx.dmi.wayout.*;
 
 
 public class FeedGui extends JFrame implements MyObserver {
@@ -226,6 +227,12 @@ public class FeedGui extends JFrame implements MyObserver {
 				}
 				else if(cmd.equalsIgnoreCase("import simfy feed")) {
 					import_feed("simfy");
+				}
+				else if(cmd.equalsIgnoreCase("export finetunes feed")) {
+					export_feed("finetunes");
+				}				
+				else if(cmd.equalsIgnoreCase("export simfy feed")) {
+					export_feed("simfy");
 				}				
 			}
 		};
@@ -282,7 +289,20 @@ public class FeedGui extends JFrame implements MyObserver {
 		jmi = new JMenuItem("Simfy Feed");
 		jmi.setActionCommand("import simfy feed");
 		jmi.addActionListener(ja);
-		jm2.add(jmi);			
+		jm2.add(jmi);
+		
+		JMenu jm3 = new JMenu("Export");
+		jb.add(jm3);
+
+		jmi = new JMenuItem("Finetunes Feed");
+		jmi.setActionCommand("export finetunes feed");
+		jmi.addActionListener(ja);
+		jm3.add(jmi);
+		
+		jmi = new JMenuItem("Simfy Feed");
+		jmi.setActionCommand("export simfy feed");
+		jmi.addActionListener(ja);
+		jm3.add(jmi);		
 		
 		setJMenuBar(jb);
 	}
@@ -783,6 +803,62 @@ public class FeedGui extends JFrame implements MyObserver {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public void export_feed(String type) {
+		Feed feed = null;
+		if(currentFeed != null) { 
+			feed = currentFeed;
+
+		}
+		else {
+			File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
+			Document doc = null;
+			try {
+				doc = Document.fromFile(f);
+			} catch (Exception e) {
+				Dialogs.showMessage("ERROR, could not read file.");
+				e.printStackTrace();
+			}
+			feed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
+			currentFeed = feed;
+			update();			
+		}
+		
+		if (feed!=null) {
+			try {
+				Document doc = null;
+				if(type.equals("finetunes")) {
+					OpenSDXToFinetunesExporter exp = new OpenSDXToFinetunesExporter(feed);	
+					doc = exp.getFormatedDocumentFromExport();				
+				}
+				else if(type.equals("simfy")) {
+					OpenSDXToSimfyExporter exp = new OpenSDXToSimfyExporter(feed);				
+					doc = exp.getFormatedDocumentFromExport();	
+				}
+				
+				if(doc!=null) {
+					File f = Dialogs.chooseSaveFile("Select filename for saving feed", lastDir, "newFeed.xml");
+					if (f!=null) {
+						doc.writeToFile(f);
+					}
+					else {
+						Dialogs.showMessage("ERROR, could not write file.");
+					}
+				}
+				else {
+					Dialogs.showMessage("ERROR, could not convert initial file.");
+				}
+
+			} catch (Exception e) {
+				Dialogs.showMessage("ERROR, could not export current feed!");
+				e.printStackTrace();
+			}
+		}
+		else {
+			Dialogs.showMessage("ERROR, no data in current feed!");
+		}
+		
 	}	
 	//31:37:34:62:65:30:31:39:34:35:32:37:39:37:39:39:31:32:30:62:31:61:38:32:63:63:62:61:30:39:62:33
 	

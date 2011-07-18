@@ -2,7 +2,11 @@ package org.fnppl.opensdx.dmi.wayout;
 
 
 import java.io.File;
+
+import org.fnppl.opensdx.common.BusinessObject;
+import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.security.*;
+import org.fnppl.opensdx.xml.Document;
 
 /*
  * Copyright (C) 2010-2011 
@@ -51,12 +55,12 @@ import org.fnppl.opensdx.security.*;
 
 public class OpenSDXExporterBase {
 	public ExportType exportType;
-	public File exportFile;
+	public Feed exportFeed;
 	public File saveFile;
 	
-	public OpenSDXExporterBase(ExportType expType, File expFile, File savFile)  {
+	public OpenSDXExporterBase(ExportType expType, Feed expFeed, File savFile)  {
 		this.exportType = expType;
-		this.exportFile = expFile;
+		this.exportFeed = expFeed;
 		this.saveFile = savFile;
 	}
 		
@@ -80,15 +84,18 @@ public class OpenSDXExporterBase {
 				System.exit(0);
 			}
 			
+			Document osdxDoc = Document.fromFile(expFile);
+			Feed osdxFeed = Feed.fromBusinessObject(BusinessObject.fromElement(osdxDoc.getRootElement()));
+			
 			Result ir = null;
 			switch(expType.getType()) {
 				case ExportType.FINETUNES:
-					OpenSDXToFinetunesExporter expFt = new OpenSDXToFinetunesExporter(expType, expFile, savFile);
+					OpenSDXToFinetunesExporter expFt = new OpenSDXToFinetunesExporter(expType, osdxFeed, savFile);
 					ir = expFt.formatToExternalFile();
 					break;
 				case ExportType.SIMFY:
-					//OpenSDXToSimfyExporter expSimfy = new OpenSDXToSimfyExporter(expType, expFile, savFile);
-					//ir = expSimfy.formatToExternalFile();		
+					OpenSDXToSimfyExporter expSimfy = new OpenSDXToSimfyExporter(expType, osdxFeed, savFile);
+					ir = expSimfy.formatToExternalFile();		
 					break;
 				default:
 					break;

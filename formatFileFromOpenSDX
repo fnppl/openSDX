@@ -1,0 +1,2 @@
+# Arguments (MUST) -> ExportType e.g. "finetunes" :: ExportFile e.g. "/fileToExport.xml" :: SaveFile e.g. "/newFile.xml"
+java -cp "./bin:lib/jdom.jar:lib/bcprov-jdk16-145.jar" org.fnppl.opensdx.dmi.wayin.OpenSDXExporterBase "ExportType" "/fileToExport.xml" "/newFile.xml"
