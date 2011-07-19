@@ -61,6 +61,7 @@ import javax.swing.event.ListSelectionListener;
 import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.Contributor;
 import org.fnppl.opensdx.common.IDs;
+import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.dmi.FeedGui;
 
 import java.util.HashMap;
@@ -70,43 +71,52 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelContributors extends JPanel implements MyObservable, MyObserver {
+public class PanelContributorsInItems extends JPanel implements MyObservable {
 
 	//init fields
 	private Bundle bundle = null;
-	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
+	private Item item = null;
 
 	private JList list_contributors;
 	private DefaultListModel list_contributors_model;
-	private PanelContributorDetails panel_contributor_details;
+	
+	private JList list_contributors_bundle;
+	private DefaultListModel list_contributors_bundle_model;
+	
 	private JButton bu_add;
 	private JButton bu_remove;
+	
 
-
-	public PanelContributors(Bundle bundle) {
-		this.bundle = bundle;
+	public PanelContributorsInItems() {
 		initComponents();
 		initLayout();
+		update(null,null);
 	}
 
-	public void update(Bundle bundle) {
+	public void update(Bundle bundle, Item item) {
 		this.bundle = bundle;
-		Contributor c = (Contributor)list_contributors.getSelectedValue();
+		this.item = item;
+		int sel = list_contributors_bundle.getSelectedIndex();
 		updateContributorsList();
-		panel_contributor_details.update(c);
-		if (c==null) {
-			panel_contributor_details.setVisible(false);
-		} else {
-			panel_contributor_details.setVisible(true);
-			list_contributors.setSelectedValue(c, true);
+		if (bundle!=null && sel>=0 && sel < bundle.getContributorCount()) {
+			list_contributors_bundle.setSelectedIndex(sel);
 		}
 	}
 
 	private void updateContributorsList() {
 		list_contributors_model.removeAllElements();
+		list_contributors_bundle_model.removeAllElements();
+		
 		if (bundle==null) return;
 		Vector<Contributor> contribs = bundle.getAllContributors();
+		
 		for (Contributor c : contribs) {
+			list_contributors_bundle_model.addElement(c);
+		}
+		if (item==null) return;
+		//System.out.println("item contrib count: "+item.getContributorCount());
+		for (int i=0;i<item.getContributorCount();i++) {
+			Contributor c = item.getContributor(i);
 			list_contributors_model.addElement(c);
 		}
 	}
@@ -116,22 +126,16 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 		setBorder(new TitledBorder("Contributors"));
 
 		list_contributors = new JList();
-		
 		list_contributors_model = new DefaultListModel();
 		list_contributors.setModel(list_contributors_model);
-		init_list_contributors_model();
-		map.put("list_contributors", list_contributors);
-		list_contributors.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				list_contributors_changed(list_contributors.getSelectedIndex());
-			}
-		});
 
-		panel_contributor_details = new PanelContributorDetails(null);
-		panel_contributor_details.addObserver(this);
+		
+		list_contributors_bundle = new JList();
+		list_contributors_bundle_model = new DefaultListModel();
+		list_contributors_bundle.setModel(list_contributors_bundle_model);
+
 
 		bu_add = new JButton("add");
-		map.put("bu_add", bu_add);
 		bu_add.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				bu_add_clicked();
@@ -139,79 +143,109 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 		});
 
 		bu_remove = new JButton("remove");
-		map.put("bu_remove", bu_remove);
 		bu_remove.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				bu_remove_clicked();
 			}
 		});
-
 	}
 
-
-	public JComponent getComponent(String name) {
-		return map.get(name);
-	}
-	
 	public void initLayout() {
-
 		Dimension d = new Dimension(250,360);
-		JScrollPane sList = new JScrollPane(list_contributors);
 		
+		//contributors for item
+		JScrollPane sList = new JScrollPane(list_contributors);
 		sList.setPreferredSize(d);
 		sList.setMinimumSize(d);
 		sList.setMaximumSize(d);
 	
+		JPanel pForItem = new JPanel();
+		pForItem.setLayout(new BorderLayout());
+		pForItem.add(sList, BorderLayout.NORTH);
+		JPanel pb2 = new JPanel();
+		pb2.setLayout(new FlowLayout(FlowLayout.LEFT));
+		//pb2.add(bu_add);
+		pb2.add(bu_remove);
+		pForItem.setBorder(new TitledBorder("List of Contributors"));
+		pForItem.add(pb2, BorderLayout.CENTER);
 		
-		this.setLayout(new BorderLayout());
-		JPanel west = new JPanel();
-		west.setLayout(new BorderLayout());
-		west.add(sList, BorderLayout.NORTH);
+		
+		//contributors in bundle
+		JScrollPane sListBundle = new JScrollPane(list_contributors_bundle);
+		sListBundle.setPreferredSize(d);
+		sListBundle.setMinimumSize(d);
+		sListBundle.setMaximumSize(d);
+	
+		JPanel pInBundle = new JPanel();
+		pInBundle.setLayout(new BorderLayout());
+		pInBundle.add(sListBundle, BorderLayout.NORTH);
 		JPanel pb = new JPanel();
 		pb.setLayout(new FlowLayout(FlowLayout.LEFT));
 		pb.add(bu_add);
-		pb.add(bu_remove);
-		west.setBorder(new TitledBorder("List of Contributors"));
-		west.add(pb, BorderLayout.CENTER);
+		//pb.add(bu_remove);
+		pInBundle.setBorder(new TitledBorder("List of all Contributors"));
+		pInBundle.add(pb, BorderLayout.CENTER);
 		
-		this.add(west, BorderLayout.WEST);
-		int h = (int)panel_contributor_details.getPreferredSize().getHeight()+1;
-		panel_contributor_details.setPreferredSize(new Dimension(400,h));
-		panel_contributor_details.setMinimumSize(new Dimension(200,h));
-		panel_contributor_details.setMaximumSize(new Dimension(500,h));
-		this.add(panel_contributor_details,BorderLayout.CENTER);
+		
+		//main layout
+		GridBagLayout gbl = new GridBagLayout();
+		setLayout(gbl);
+		GridBagConstraints gbc = new GridBagConstraints();
+		
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(5,5,5,5);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbl.setConstraints(pForItem,gbc);
+		add(pForItem);
+		
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbl.setConstraints(pInBundle,gbc);
+		add(pInBundle);
+		
+		JLabel filler = new JLabel();
+		gbc.gridx = 2;
+		gbc.gridy = 1;
+		gbc.weightx = 100.0;
+		gbc.weighty = 100.0;
+		gbl.setConstraints(filler,gbc);
+		add(filler);
 		
 
 	}
 
 	// ----- action methods --------------------------------
-	public void init_list_contributors_model() {
-
-	}
-	public void list_contributors_changed(int selected) {
-		if (bundle==null) return;
-		Contributor c = (Contributor)list_contributors.getSelectedValue();
-		panel_contributor_details.update(c);
-		if (c==null) {
-			panel_contributor_details.setVisible(false);
-		} else {
-			panel_contributor_details.setVisible(true);
-		}
-	}
+		
 	public void bu_add_clicked() {
-		if (bundle != null) {
-			Contributor c = Contributor.make("new contributor", "[no type]", IDs.make());
-			bundle.addContributor(c);
-			updateContributorsList();
-			list_contributors.setSelectedValue(c, true);
-			notifyChanges();
+		if (bundle != null && item !=null) {
+			Object[] sel = list_contributors_bundle.getSelectedValues();
+			if (sel.length>0) {
+				for (Object s : sel) {
+					Contributor c = (Contributor)s;
+					item.addContributor(c);
+				}
+				updateContributorsList();
+				notifyChanges();
+			}
 		}
 	}
 	public void bu_remove_clicked() {
-		if (bundle != null) {
-			Contributor c = (Contributor)list_contributors.getSelectedValue();
-			if (c!=null) {
-				bundle.removeContributor(c);
+		if (item != null) {
+			Object[] sel = list_contributors.getSelectedValues();
+			if (sel.length>0) {
+				for (Object s : sel) {
+					Contributor c = (Contributor)s;
+					item.removeContributor(c);
+				}
 				updateContributorsList();
 				notifyChanges();
 			}
@@ -229,13 +263,4 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 		}
 	}
 
-	
-	public void notifyChange(MyObservable changedIn) {
-		int sel = list_contributors.getSelectedIndex();
-		updateContributorsList();
-		if (sel>=0) {
-			list_contributors.setSelectedIndex(sel);
-		}
-		notifyChanges();
-	}
 }

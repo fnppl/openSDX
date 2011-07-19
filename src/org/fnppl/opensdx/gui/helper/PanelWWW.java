@@ -451,30 +451,40 @@ public void initLayout() {
 	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_filler,gbc);
 	add(label_filler);
-		JLabel filler = new JLabel();
 }
 	
 // ----- action methods --------------------------------
 	public void check_phone_publishable_changed(boolean selected) {
-		//TODO
+		if (www==null) return;
+		if (www.getPhone()!=null) {
+			www.phone(www.getPhone(), check_phone_publishable.isSelected());
+		}
+		notifyChanges();
 	}
+	
+	public InfoWWW getWWW() {
+		return www;
+	}
+	
 	public void text_changed(JTextComponent text) {
-		//TODO
+		if (www==null) {
+			www = InfoWWW.make();
+		}
 		String t = text.getText();
 		if (text == text_facebook) {
-			
+			www.facebook(t);
 		}
 		else if (text == text_myspace) {
-			
+			www.myspace(t);
 		}
 		else if (text == text_homepage) {
-			
+			www.homepage(t);
 		}
 		else if (text == text_twitter) {
-			
+			www.twitter(t);
 		}
 		else if (text == text_phone) {
-			
+			www.phone(t, check_phone_publishable.isSelected());	
 		}
 		notifyChanges();
 	}

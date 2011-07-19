@@ -254,11 +254,10 @@ public class LicenseBasis extends BusinessObject {
 					return "channels";
 				}
 			}; 
-		} else {
-			BusinessStringItem item = new BusinessStringItem("channels", name);
-			item.setAttribute("type", (allow?"allow":"disallow"));
-			channels.add(item);
 		}
+		BusinessStringItem item = new BusinessStringItem("channels", name);
+		item.setAttribute("type", (allow?"allow":"disallow"));
+		channels.add(item);
 		return this;
 	}
 

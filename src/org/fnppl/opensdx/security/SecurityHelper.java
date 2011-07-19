@@ -92,6 +92,9 @@ public class SecurityHelper {
 	}
 	public static long parseDate(String date) throws Exception {
 		//return 50923486509234860L;
+		if (!date.toLowerCase().contains(" gmt")) {
+			date += " GMT+00:00";
+		}
 		return datemeGMT.parse(date).getTime();
 	}
 	

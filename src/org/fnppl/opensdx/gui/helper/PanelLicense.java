@@ -181,7 +181,7 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 			check_as_on_bundle.setSelected(lb.isAsOnBundle());
 			text_timeframe_from_datetime.setText(lb.getTimeframeFromText());
 			text_timeframe_to_datetime.setText(lb.getTimeframeToText());
-			if (lb.getPricingPricecode()==null) {
+			if (lb.getPricingPricecode()!=null) {
 				select_pricing.setSelectedItem(lb.getPricingPricecode());
 				text_pricing.setText("");
 				text_pricing.setEnabled(false);
@@ -228,13 +228,13 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 			select_channels.setSelectedIndex(0);
 		} else {
 			String name = lb.getChannelName(0);
+			System.out.println("channelname :: "+name);
 			if (lb.getChannelsCount()>1 || lb.getChannelAllowed(0)==false || !(name.equals("[not set]") || name.equals("all") || name.equals("ad supported") || name.equals("premium"))) {
 				select_channels.setSelectedIndex(0);	
 				Dialogs.showMessage("Caution: Channels not visualizable by this GUI.");
 			} else {
 				select_channels.setSelectedItem(name);
 			}
-			
 		}
 	}
 

@@ -97,7 +97,7 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 		show.add("ourid");
 		show.add("yourid");
 		show.add("contentauthid");
-		
+
 		panel_ids.onlyShowFields(show);
 		panel_ids.addObserver(this);
 		panel_www.addObserver(this);
@@ -107,12 +107,12 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 	public void update(Contributor contributor) {
 		this.contributor = contributor;
 		if (contributor == null) {;
-			text_name.setText("");
-			text_year.setText("");
-			select_type.setSelectedItem(0);
-			check_sublevel.setSelected(false);
-			panel_ids.update((IDs)null);
-			panel_www.update((InfoWWW)null);
+		text_name.setText("");
+		text_year.setText("");
+		select_type.setSelectedItem(0);
+		check_sublevel.setSelected(false);
+		panel_ids.update((IDs)null);
+		panel_www.update((InfoWWW)null);
 		} else {
 			text_name.setText(contributor.getName());
 			text_year.setText(contributor.getYear());
@@ -180,7 +180,7 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 		});
 
 		label_year = new JLabel("Year");
-		
+
 		text_year = new JTextField("");
 
 		text_year.setName("text_year");
@@ -206,7 +206,7 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
 		}
 		documentListener.saveStates();
-		
+
 	}
 
 
@@ -216,7 +216,7 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 	}
 
 	public void updateDocumentListener(JTextComponent t) {
-	documentListener.saveState(t);
+		documentListener.saveState(t);
 	}
 	public JComponent getComponent(String name) {
 		return map.get(name);
@@ -229,7 +229,7 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 	}
 
 	public String getText(String name) {
-	JComponent c = map.get(name);
+		JComponent c = map.get(name);
 		if (c!=null && c instanceof JTextComponent) {
 			return ((JTextComponent)c).getText();
 		}
@@ -245,7 +245,7 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 	}
 
 	public boolean getCheck(String name) {
-	JComponent c = map.get(name);
+		JComponent c = map.get(name);
 		if (c!=null && c instanceof JCheckBox) {
 			return ((JCheckBox)c).isSelected();
 		}
@@ -253,181 +253,180 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 	}
 
 
-public void initLayout() {
-	GridBagLayout gbl = new GridBagLayout();
-	setLayout(gbl);
-	GridBagConstraints gbc = new GridBagConstraints();
+	public void initLayout() {
+		GridBagLayout gbl = new GridBagLayout();
+		setLayout(gbl);
+		GridBagConstraints gbc = new GridBagConstraints();
 
-	Container spacer0 = new Container();
+		Container spacer0 = new Container();
 
 
-	// Component: label_name
-	gbc.gridx = 0;
-	gbc.gridy = 0;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_name,gbc);
-	add(label_name);
+		// Component: label_name
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_name,gbc);
+		add(label_name);
 
-	// Component: text_name
-	gbc.gridx = 1;
-	gbc.gridy = 0;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_name,gbc);
-	add(text_name);
+		// Component: text_name
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 50.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_name,gbc);
+		add(text_name);
 
-	// Component: label_type
-	gbc.gridx = 0;
-	gbc.gridy = 1;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_type,gbc);
-	add(label_type);
+		// Component: label_type
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_type,gbc);
+		add(label_type);
 
-	// Component: select_type
-	gbc.gridx = 1;
-	gbc.gridy = 1;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(select_type,gbc);
-	add(select_type);
-	
-	// Component: label_year
-	gbc.gridx = 0;
-	gbc.gridy = 2;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_year,gbc);
-	add(label_year);
+		// Component: select_type
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 50.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(select_type,gbc);
+		add(select_type);
 
-	// Component: text_year
-	gbc.gridx = 1;
-	gbc.gridy = 2;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_year,gbc);
-	add(text_year);	
+		// Component: label_year
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_year,gbc);
+		add(label_year);
 
-	// Component: spacer0
-	gbc.gridx = 0;
-	gbc.gridy = 3;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(spacer0,gbc);
-	add(spacer0);
+		// Component: text_year
+		gbc.gridx = 1;
+		gbc.gridy = 2;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 50.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_year,gbc);
+		add(text_year);	
 
-	// Component: check_sublevel
-	gbc.gridx = 1;
-	gbc.gridy = 3;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(check_sublevel,gbc);
-	add(check_sublevel);
+		// Component: spacer0
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(spacer0,gbc);
+		add(spacer0);
 
-	// Component: panel_ids
-	gbc.gridx = 0;
-	gbc.gridy = 4;
-	gbc.gridwidth = 2;
-	gbc.gridheight = 1;
-	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(panel_ids,gbc);
-	add(panel_ids);
+		// Component: check_sublevel
+		gbc.gridx = 1;
+		gbc.gridy = 3;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 50.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(check_sublevel,gbc);
+		add(check_sublevel);
 
-	// Component: panel_www
-	gbc.gridx = 0;
-	gbc.gridy = 5;
-	gbc.gridwidth = 2;
-	gbc.gridheight = 1;
-	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(panel_www,gbc);
-	add(panel_www);
+		// Component: panel_ids
+		gbc.gridx = 0;
+		gbc.gridy = 4;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 50.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(panel_ids,gbc);
+		add(panel_ids);
 
-	// Component: label_filler
-	gbc.gridx = 0;
-	gbc.gridy = 6;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
-	gbc.weightx = 0.0;
-	gbc.weighty = 100.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_filler,gbc);
-	add(label_filler);
-		JLabel filler = new JLabel();
-}
-// ----- action methods --------------------------------
+		// Component: panel_www
+		gbc.gridx = 0;
+		gbc.gridy = 5;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 50.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(panel_www,gbc);
+		add(panel_www);
+
+		// Component: label_filler
+		gbc.gridx = 0;
+		gbc.gridy = 6;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 100.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_filler,gbc);
+		add(label_filler);
+	}
+	// ----- action methods --------------------------------
 	public void init_select_type_model() {
 		select_type_model.removeAllElements();
 		select_type_model.addElement("[no type]");
@@ -437,22 +436,25 @@ public void initLayout() {
 	}
 	public void select_type_changed(int selected) {
 		if (contributor==null) return;
-	    contributor.type((String)select_type_model.getSelectedItem());
-	    notifyChanges();
+		contributor.type((String)select_type_model.getSelectedItem());
+		notifyChanges();
 	}
-	
+
 	public void check_sublevel_changed(boolean selected) {
 		if (contributor==null) return;
-	    contributor.on_sublevel_only(check_sublevel.isSelected());
-	    notifyChanges();
+		contributor.on_sublevel_only(check_sublevel.isSelected());
+		notifyChanges();
 	}
-	
+
 	public void text_changed(JTextComponent text) {
 		if (contributor==null) return;
 		String t = text.getText();
 		if (text == text_name) {
 			contributor.name(t);
 		}
+		else if (text == text_year) {
+			contributor.year(t);
+		} 
 		notifyChanges();
 	}
 
@@ -471,6 +473,11 @@ public void initLayout() {
 
 
 	public void notifyChange(MyObservable changedIn) {
+		if (changedIn == panel_www) {
+			if (contributor!=null && contributor.getWww()==null) {
+				contributor.www(panel_www.getWWW());
+			}
+		}
 		notifyChanges();
 	}
 }

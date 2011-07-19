@@ -197,7 +197,7 @@ public class PanelTriggeredActions extends JPanel implements MyObservable {
 			if (result!=null)  {
 				ActionHttp newAction = (ActionHttp)result.get(0);
 				int trigger = ((Integer)result.get(1)).intValue();
-				feedinfo.addAction(0, newAction);
+				feedinfo.addAction(trigger, newAction);
 				updateActionsTable(feedinfo);
 				notifyChanges();
 			}

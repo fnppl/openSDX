@@ -145,9 +145,9 @@ public class FeedGui extends JFrame implements MyObserver {
 	
 	
 	private void initTooltips() {
-		initTooltips(feedinfo_panel);
-		initTooltips(bundle_panel);
-		initTooltips(bundled_items_panel);
+//		initTooltips(feedinfo_panel);
+//		initTooltips(bundle_panel);
+//		initTooltips(bundled_items_panel);
 	}
 	
 	private void initTooltips(Object ob) {
@@ -680,6 +680,8 @@ public class FeedGui extends JFrame implements MyObserver {
 
 		jt = new JTabbedPane();
 		JTabbedPane tabbedPane = jt; //ref.
+		
+		
 //		ImageIcon icon = createImageIcon("images/middle.gif");
 
 		//feedinfo_panel = new FeedInfoPanel(this);
@@ -693,7 +695,6 @@ public class FeedGui extends JFrame implements MyObserver {
 		bundled_items_panel = new PanelItems2();
 		panel_saved_dmi = new PanelSavedDMI(this);
 		
-		//readAndSetGenres();
 		
 		//observe changes
 		feedinfo_panel.addObserver(this);
@@ -701,6 +702,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		//bundle_panel.addObserver(bundled_items_panel); //watch out for changes in contributors
 		
 		bundled_items_panel.addObserver(this);
+		
 		
 		
 		treePanel = new JPanel();
@@ -712,7 +714,8 @@ public class FeedGui extends JFrame implements MyObserver {
 		tabbedPane.addTab("Bundle", null,new JScrollPane(bundle_panel), null);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
-		tabbedPane.addTab("BundledItems", null, new JScrollPane(bundled_items_panel), null);
+		final JScrollPane scrollBIP = new JScrollPane(bundled_items_panel);
+		tabbedPane.addTab("BundledItems", null, scrollBIP, null);
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 
 		tabbedPane.addTab("Tree", null, treePanel, null);
@@ -721,7 +724,16 @@ public class FeedGui extends JFrame implements MyObserver {
 		tabbedPane.addTab("Saved DMI Objects", null, panel_saved_dmi, null);
 		tabbedPane.setMnemonicAt(4, KeyEvent.VK_5);
 		
-
+		jt.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if (jt.getSelectedComponent()==scrollBIP) {
+					if (currentFeed!=null) {
+						bundled_items_panel.update(currentFeed.getBundle(0));
+					}
+				}
+			}
+		});
+		
 		jp.add(jt, BorderLayout.CENTER);
 		
 		StatusBar sb = makeStatusBar(); //also sets. class-variable.

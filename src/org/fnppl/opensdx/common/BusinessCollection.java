@@ -96,6 +96,10 @@ public abstract class BusinessCollection<E> implements XMLElementable {
 		list.remove(index);
 	}
 	
+	public int indexOf(E object) {
+		return list.indexOf(object);
+	}
+	
 	public void removeAll() {
 		list.removeAllElements();
 	}

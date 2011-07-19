@@ -57,6 +57,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.bouncycastle.util.test.Test;
 import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.dmi.FeedGui;
 import org.fnppl.opensdx.gui.Dialogs;
@@ -803,6 +804,7 @@ public void initLayout() {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
+			text_physical_release_datetime.setText(info.getPhysicalReleaseDatetimeText());
 		}
 		else if (text == text_digital_release_datetime) {
 			try {
@@ -810,12 +812,14 @@ public void initLayout() {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
+			text_digital_release_datetime.setText(info.getDigitalReleaseDatetimeText());
 		}
 		else if (text == text_playlength_integer) {
 			if (t.equals("")) {
 				info.playlength(-1);
 			} else {
 				info.playlength(Integer.parseInt(t));
+				text_playlength_integer.setText(""+info.getPlaylength());
 			}
 		}
 		else if (text == text_main_language) {

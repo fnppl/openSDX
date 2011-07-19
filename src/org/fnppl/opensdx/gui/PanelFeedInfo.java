@@ -64,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -270,6 +271,19 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable, M
     	gbc.fill = GridBagConstraints.BOTH;
     	gbl.setConstraints(pTriggeredActions,gbc);
     	add(pTriggeredActions);
+    	
+    	JLabel filler = new JLabel();
+    	gbc.gridx = 0;
+    	gbc.gridy = 4;
+    	gbc.gridwidth = 2;
+    	gbc.gridheight = 1;
+    	gbc.weightx = 0.0;
+    	gbc.weighty = 100.0;
+    	gbc.anchor = GridBagConstraints.CENTER;
+    	gbc.fill = GridBagConstraints.BOTH;
+    	gbl.setConstraints(filler,gbc);
+    	add(filler);
+    	
 
     }
 

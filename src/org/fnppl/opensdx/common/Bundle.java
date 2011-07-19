@@ -139,6 +139,7 @@ public class Bundle extends BusinessObject {
 				bundle.addFile(ItemFile.fromBusinessObject(bo));
 			}
 		};
+		
 		return bundle;
 	}
 	
@@ -195,6 +196,28 @@ public class Bundle extends BusinessObject {
 		}
 	}
 	
+	public void removeContributor(Contributor c) {
+		if (contributors==null) return;
+		if (c!=null) {
+			int index = contributors.indexOf(c);
+			if (index>0) contributors.remove(index);
+			
+			//also remove this contributor in all items in this bundle
+			for (int i=0;i<getItemsCount();i++) {
+				Item item = items.get(i);
+				for (int j=0;j<item.getContributorCount();j++) {
+					Contributor ic = item.getContributor(j);
+					if (	ic.getName().equals(c.getName())
+							&& ic.getType().equals(c.getType())
+						) {
+						item.removeContributor(j);
+						j--;
+					}
+				}
+			}
+		}
+	}
+	
 	public int getContributorCount() {
 		if (contributors==null) return 0;
 		return contributors.size();
@@ -210,15 +233,16 @@ public class Bundle extends BusinessObject {
 			for (int i=0;i<item.getContributorCount();i++) {
 				Contributor c = item.getContributor(i);
 				boolean found = false;
-				for (Contributor a : all) {
+				for (int noC = 0; noC<all.size();noC++) {
+					Contributor a = all.get(noC);
 					if (a.getName().equals(c.getName()) && a.getType().equals(c.getType())) {
 						found = true;
 						break;
 					}
-					if (!found) {
-						c.on_sublevel_only(true);
-						all.add(c);
-					}
+				}
+				if (!found) {
+					c.on_sublevel_only(true);
+					all.add(c);
 				}
 			}
 		}

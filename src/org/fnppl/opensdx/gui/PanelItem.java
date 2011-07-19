@@ -65,6 +65,7 @@ import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
 import org.fnppl.opensdx.gui.helper.PanelBundleBasics;
 import org.fnppl.opensdx.gui.helper.PanelContributors;
+import org.fnppl.opensdx.gui.helper.PanelContributorsInItems;
 import org.fnppl.opensdx.gui.helper.PanelFiles;
 import org.fnppl.opensdx.gui.helper.PanelIDs;
 import org.fnppl.opensdx.gui.helper.PanelInformation;
@@ -82,10 +83,12 @@ import java.awt.event.KeyEvent;
 public class PanelItem extends JPanel implements MyObservable, MyObserver {
 
 	//init fields
-	private Item item;
+	private Item item = null;
+	private Bundle bundle = null;
 	private PanelItemBasics pBasics;
 	private PanelIDs pIDs;
-	private PanelContributors pContributors;
+	//private PanelContributors pContributors;
+	private PanelContributorsInItems pContributors;
 	private PanelInformation pInformation;
 	private PanelLicense pLicense;
 	private PanelTags pTags;
@@ -98,16 +101,17 @@ public class PanelItem extends JPanel implements MyObservable, MyObserver {
 	public PanelItem() {
 		initComponents();
 		initLayout();
-		update((Item)null);
+		update((Item)null,null);
 	}
 
-	public void update(Item item) {
+	public void update(Item item, Bundle bundle) {
 		this.item = item;
+		this.bundle = bundle;
 		if (item ==null) {
 			//update empty
 			pBasics.update((Item)null);
 			pIDs.update((IDs)null);
-			pContributors.update((Bundle)null);
+			pContributors.update(bundle,item);
 			pInformation.update((BundleInformation)null);
 			pLicense.update((LicenseBasis)null);
 			pTags.update((ItemTags)null);
@@ -123,7 +127,7 @@ public class PanelItem extends JPanel implements MyObservable, MyObserver {
 			}
 			pBasics.update(item);
 			pIDs.update((IDs)ids);
-			pContributors.update((Bundle)null);
+			pContributors.update(bundle,item);
 			pInformation.update((BundleInformation)info);
 			pLicense.update((LicenseBasis)lb);
 			pTags.update(tags);
@@ -142,7 +146,7 @@ public class PanelItem extends JPanel implements MyObservable, MyObserver {
 		pIDs = new PanelIDs(ids);
 		pIDs.addObserver(this);
 		
-		pContributors = new PanelContributors(bundle);
+		pContributors = new PanelContributorsInItems();
 		pContributors.addObserver(this);
 		
 		pInformation = new PanelInformation(info);
@@ -155,7 +159,7 @@ public class PanelItem extends JPanel implements MyObservable, MyObserver {
 		pTags.addObserver(this);
 		
 		pFiles = new PanelFiles();
-		pFiles.setTypeBundle();
+		pFiles.setTypeItem();
 		pFiles.addObserver(this);
 		
 		tabs = new JTabbedPane();

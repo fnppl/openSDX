@@ -147,6 +147,14 @@ public class Item extends BusinessObject {
 		contributors.remove(index);
 	}
 	
+	public void removeContributor(Contributor c) {
+		if (contributors==null) return;
+		if (c!=null) {
+			int index = contributors.indexOf(c);
+			if (index>0) contributors.remove(index);
+		}
+	}
+	
 	public int getContributorCount() {
 		if (contributors==null) return 0;
 		return contributors.size();

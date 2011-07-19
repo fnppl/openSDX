@@ -73,10 +73,19 @@ public class PanelItems2 extends JPanel implements MyObservable, MyObserver {
 		list_items.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 	}
+	
+	private void checkItemList() {
+		if (bundle!=null) {
+			int anz = Math.min(bundle.getItemsCount(), list_items_model.getSize());
+			for (int i = 0; i < anz; i++) {
+				list_items_model.set(i, "Item: "+bundle.getItem(i).getDisplayname());
+			}
+		}
+	}
 
 	private void updateItem() {
 		Item item = getSelectedItem();
-		panel_item.update(item);
+		panel_item.update(item,bundle);
 		if (item==null) {
 			panel_item.setVisible(false);
 		} else {
@@ -95,8 +104,6 @@ public class PanelItems2 extends JPanel implements MyObservable, MyObserver {
 	}
 
 	private void initComponents() {
-		Vector<JTextComponent> texts = new Vector<JTextComponent>();
-
 		list_items = new JList();
 		list_items_model = new DefaultListModel();
 		list_items.setModel(list_items_model);
@@ -280,6 +287,9 @@ public class PanelItems2 extends JPanel implements MyObservable, MyObserver {
 
 	//observer
 	public void notifyChange(MyObservable changedIn) {
+		if (changedIn == panel_item) {
+			checkItemList();
+		}
 		notifyChanges();
 	}
 }

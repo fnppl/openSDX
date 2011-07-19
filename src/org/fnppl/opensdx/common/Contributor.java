@@ -127,6 +127,9 @@ public class Contributor extends BusinessObject {
 		return contributor;
 	}
 
+	public String toString() {
+		return getName()+" ("+getType()+")";
+	}
 
 	public Contributor name(String name) {
 		this.name = new BusinessStringItem("name", name);
