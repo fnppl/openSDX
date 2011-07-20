@@ -84,13 +84,11 @@ import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.EditBusinessObjectTree;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.MessageHandler;
-import org.fnppl.opensdx.gui.PanelBundle_old;
-import org.fnppl.opensdx.gui.PanelBundle2;
+import org.fnppl.opensdx.gui.PanelBundle;
 import org.fnppl.opensdx.gui.PanelFeedInfo;
-import org.fnppl.opensdx.gui.PanelItems_old;
-import org.fnppl.opensdx.gui.PanelItems2;
-import org.fnppl.opensdx.gui.SecurityMainFrame;
+import org.fnppl.opensdx.gui.PanelItems;
 import org.fnppl.opensdx.gui.SelectTerritoiresTree;
+import org.fnppl.opensdx.gui.XMLTree;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
 import org.fnppl.opensdx.gui.helper.PanelSavedDMI;
@@ -105,7 +103,8 @@ public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
 	private URL configGenres = FeedCreator.class.getResource("resources/config_genres.xml");
 	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
-
+	private XMLTree tree;
+	
 	public static FeedGui getInstance() {
 		if(instance == null) {
 			instance = new FeedGui();
@@ -124,8 +123,8 @@ public class FeedGui extends JFrame implements MyObserver {
 //	BundledItemsPanel bundled_items_panel = null;
 	
 	PanelFeedInfo feedinfo_panel = null;
-	PanelBundle2 bundle_panel = null;
-	PanelItems2 bundled_items_panel = null;
+	PanelBundle bundle_panel = null;
+	PanelItems bundled_items_panel = null;
 	PanelSavedDMI panel_saved_dmi = null;
 	
 	JPanel treePanel = null;
@@ -546,13 +545,13 @@ public class FeedGui extends JFrame implements MyObserver {
 	
 	public void notifyChange(MyObservable changesIn) {
 		if (treePanel!=null) {
-			if (currentFeed != null) {
-				EditBusinessObjectTree tree = new EditBusinessObjectTree(currentFeed);
-				treePanel.removeAll();
-				treePanel.add(new JScrollPane(tree),BorderLayout.CENTER);
-			} else {
-				treePanel.removeAll();
-			}
+//			if (currentFeed != null) {
+//				EditBusinessObjectTree tree = new EditBusinessObjectTree(currentFeed);
+//				treePanel.removeAll();
+//				treePanel.add(new JScrollPane(tree),BorderLayout.CENTER);
+//			} else {
+//				treePanel.removeAll();
+//			}
 		}
 	}
 	
@@ -722,10 +721,10 @@ public class FeedGui extends JFrame implements MyObserver {
 		//bundled_items_panel = new BundledItemsPanel(this);
 		
 		feedinfo_panel = new PanelFeedInfo(this);
-		bundle_panel = new PanelBundle2(this);
+		bundle_panel = new PanelBundle(this);
 		//bundle_panel = new PanelBundle();
 		
-		bundled_items_panel = new PanelItems2();
+		bundled_items_panel = new PanelItems();
 		panel_saved_dmi = new PanelSavedDMI(this);
 		
 		
@@ -762,6 +761,22 @@ public class FeedGui extends JFrame implements MyObserver {
 				if (jt.getSelectedComponent()==scrollBIP) {
 					if (currentFeed!=null) {
 						bundled_items_panel.update(currentFeed.getBundle(0));
+					}
+				}
+				else if (jt.getSelectedComponent()==treePanel) {
+					treePanel.removeAll();
+					if (currentFeed != null) {
+						//EditBusinessObjectTree tree = new EditBusinessObjectTree(currentFeed);
+						if (tree!=null) {
+							Vector<Integer> exp = tree.getExpandStates();
+							tree = new XMLTree(currentFeed.toElement());
+							treePanel.add(new JScrollPane(tree),BorderLayout.CENTER);
+							tree.setExpanded(exp);
+						} else {
+							tree = new XMLTree(currentFeed.toElement());
+							treePanel.add(new JScrollPane(tree),BorderLayout.CENTER);
+						}
+						
 					}
 				}
 			}

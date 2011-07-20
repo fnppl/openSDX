@@ -77,7 +77,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
+public class PanelBundle extends JPanel implements MyObservable, MyObserver {
 
 	//init fields
 	private FeedGui gui = null;
@@ -93,7 +93,7 @@ public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
 
 	private JTabbedPane tabs;
 
-	public PanelBundle2(FeedGui gui) {
+	public PanelBundle(FeedGui gui) {
 		this.gui = gui;
 		initComponents();
 		initLayout();
@@ -152,6 +152,7 @@ public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
 		pContributors.addObserver(this);
 		
 		pInformation = new PanelInformation(info);
+		pInformation.setTypeBundle();
 		pInformation.addObserver(this);
 		
 		pLicense = new PanelLicense(lb);
@@ -276,7 +277,7 @@ public class PanelBundle2 extends JPanel implements MyObservable, MyObserver {
 		} catch(Exception ex){
 			System.out.println("Nimbus look & feel not available");
 		}
-		PanelBundle2 p = new PanelBundle2(null);
+		PanelBundle p = new PanelBundle(null);
 		JFrame f = new JFrame("PanelBundle");
 		f.setContentPane(p);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -231,8 +231,8 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         		Element track = itTracks.next();
 
         		IDs trackids = IDs.make();
-            	if(root.getChild("upc")!=null) trackids.upc(track.getChildTextNN("upc"));
-            	if(root.getChild("isrc")!=null) trackids.isrc(track.getChildTextNN("isrc"));
+            	if(track.getChild("upc")!=null) trackids.upc(track.getChildTextNN("upc"));
+            	if(track.getChild("isrc")!=null) trackids.isrc(track.getChildTextNN("isrc"));
         		
 	        	// displayname
 	        	String track_displayname = track.getChildTextNN("title");  

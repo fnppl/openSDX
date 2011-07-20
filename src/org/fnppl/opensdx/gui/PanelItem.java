@@ -150,6 +150,7 @@ public class PanelItem extends JPanel implements MyObservable, MyObserver {
 		pContributors.addObserver(this);
 		
 		pInformation = new PanelInformation(info);
+		pInformation.setTypeItem();
 		pInformation.addObserver(this);
 		
 		pLicense = new PanelLicense(lb);
