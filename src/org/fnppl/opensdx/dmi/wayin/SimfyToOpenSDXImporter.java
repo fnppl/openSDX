@@ -324,7 +324,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         		ItemFile itemfile = ItemFile.make();
         		itemfile.type("full");
         		// check if file exist at path
-        		String filename = cover.getChildTextNN("file_name");
+        		String filename = track.getChildTextNN("file_name");
         		File f = new File(path+filename);      		
         		if(f!=null && f.exists()) {
         			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
