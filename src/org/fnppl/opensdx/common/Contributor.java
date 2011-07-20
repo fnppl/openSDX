@@ -83,7 +83,7 @@ public class Contributor extends BusinessObject {
 	
 	private BusinessStringItem name;	//MUST
 	private BusinessStringItem type;	//MUST
-	private BusinessStringItem year;	// SHOULD: if copyright / production	
+	private BusinessStringItem year;	//SHOULD: for copyright & production	
 	private IDs ids;					//MUST
 	private InfoWWW www;				//SHOULD
 	private boolean on_sublevel_only = false;
@@ -140,6 +140,11 @@ public class Contributor extends BusinessObject {
 		this.type = new BusinessStringItem("type", type);
 		return this;
 	}
+	
+	public Contributor year(String year) {
+		this.year = new BusinessStringItem("year", year);
+		return this;
+	}	
 
 	public Contributor ids(IDs ids) {
 		this.ids = ids;
@@ -148,11 +153,6 @@ public class Contributor extends BusinessObject {
 
 	public Contributor www(InfoWWW www) {
 		this.www = www;
-		return this;
-	}
-
-	public Contributor year(String year) {
-		this.year = new BusinessStringItem("year", year);
 		return this;
 	}
 	

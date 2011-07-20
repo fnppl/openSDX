@@ -54,7 +54,7 @@ import org.fnppl.opensdx.security.*;
  */
 
 public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
-	DateFormat ymd = new SimpleDateFormat("yyyyMMdd");
+	DateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
 	Result ir = Result.succeeded();
     
 	
@@ -94,15 +94,79 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 			Feed osdxFeed = this.exportFeed;
 	        
 	        // (2) create XML-Data for export document
-	        expDoc = Document.buildDocument(new Element("album"));
-	        Element expDocRoot = expDoc.getRootElement();
-	        
-	        expDocRoot.addContent("code", osdxFeed.getFeedinfo().getFeedID());
-	        
-	        // ToDo: export magic here!
-	        
+			int bundleCount = osdxFeed.getBundleCount();
+			
+			// create root node "albums"  
+			expDoc = Document.buildDocument(new Element("albums"));
+			Element expDocRoot = expDoc.getRootElement();
+			
+        	for (int i=0;i<bundleCount;i++) {
+        		Bundle bundle = osdxFeed.getBundle(i);
+		        
+        		// create node "album" for each bundle
+        		expDocRoot.addContent(new Element("album"));
+        		Element expDocAlbum = expDocRoot.getChild("album");
+		        
+		        // feedid
+		        String upc = bundle.getIds().getUpc();
+		        if (upc==null || upc.length()==0) upc = "[NOT SET]";
+		        expDocAlbum.addContent("code", upc);
+		        
+		        Calendar cal = Calendar.getInstance();
+		        
+		        long creationdatetime = osdxFeed.getFeedinfo().getCreationDatetime();
+	        	cal.setTimeInMillis(creationdatetime);
+	        	expDocAlbum.addContent("updated_at", ymd.format(cal.getTime()));
+	
+		        // licensor
+		        String lic = osdxFeed.getFeedinfo().getLicensor().getContractPartnerID();
+		        if (lic==null) lic = "";		        
+		        expDocAlbum.addContent("licensor", lic);
+		        
+	        	// add label / artistname / copyright / production
+		        String label = "";
+		        String artist_name = "";
+	         	String copyright = "";
+	         	String production = "";
+	        	Vector<Contributor> contributors = bundle.getAllContributors();
+	        	for (Iterator<Contributor> itContributor = contributors.iterator(); itContributor.hasNext();) {
+	        		Contributor contributor = itContributor.next();
+	        		if(contributor.getType()==Contributor.TYPE_LABEL) {
+	        			label = contributor.getName();
+	        		}
+	        		else if(contributor.getType()==Contributor.TYPE_DISPLAY_ARTIST) {
+	        			artist_name = contributor.getName();
+	        		}
+	        		else if(contributor.getType()==Contributor.TYPE_COPYRIGHT) {
+	        			copyright = contributor.getName();
+	        			if(contributor.getYear().length()>0) copyright = contributor.getYear()+" "+copyright;
+	        		}
+	        		else if(contributor.getType()==Contributor.TYPE_PRODUCTION) {
+	        			production = contributor.getName();
+	        			if(contributor.getYear().length()>0) production = contributor.getYear()+" "+production;
+	        		}	        		
+	        	}
+	        	
+	        	expDocAlbum.addContent("label", label);
+	        	expDocAlbum.addContent("c_line", copyright);
+	        	expDocAlbum.addContent("p_line", production);
+	        	expDocAlbum.addContent("artist_name", artist_name);
+		        
+	        	long releaseDate = bundle.getInformation().getPhysicalReleaseDatetime();
+	        	String original_released_on = "";
+	        	if (original_released_on!=null) cal.setTimeInMillis(releaseDate); original_released_on = ymd.format(cal.getTime());
+	        	expDocAlbum.addContent("original_released_on", original_released_on);
+	        	
+		        // title
+		        String title = bundle.getDisplayname();
+		        if (title==null) title = "";
+		        expDocAlbum.addContent("title", title);		        
+		        
+		        // ToDo: export magic here!
+        	}
+		        
 		} catch (Exception e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 			ir.succeeded = false;
 			ir.errorMessage = e.getMessage();			
 			ir.exception = e;			

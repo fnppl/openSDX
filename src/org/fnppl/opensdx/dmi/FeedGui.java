@@ -855,24 +855,44 @@ public class FeedGui extends JFrame implements MyObserver {
 	
 	public void export_feed(String type) {
 		Feed feed = null;
-		if(currentFeed != null) { 
+
+		boolean rdyForExport = currentFeed != null && currentFeed.getFeedinfo()!=null && currentFeed.getFeedinfo().getFeedID().length()>0;
+		boolean doExport = true;
+		if(rdyForExport) { 
 			feed = currentFeed;
 		}
 		else {
-			File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
-			Document doc = null;
-			try {
-				doc = Document.fromFile(f);
-			} catch (Exception e) {
-				Dialogs.showMessage("ERROR, could not read file.");
-				e.printStackTrace();
+			int i = Dialogs.showYES_NO_Dialog("No current Feed", "Please insert feedid and data or import an openSDX feed for export. Do you want to import a file now?");
+			if(i==Dialogs.YES) {
+				File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
+				Document doc = null;
+				if(f!=null) {
+					try {
+						doc = Document.fromFile(f);
+					} catch (Exception e) {
+						Dialogs.showMessage("ERROR, could not read file.");
+						//e.printStackTrace();
+					}
+					feed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
+					currentFeed = feed;
+					update();
+					
+					if(currentFeed==null || currentFeed.getFeedinfo()==null || currentFeed.getFeedinfo().getFeedID().length()==0) {
+						Dialogs.showMessage("ERROR, could not read file and/or missing feedid. Proper openSDX feed?");	
+					}
+					else {
+						i = Dialogs.showYES_NO_Dialog("Ready for export", "Do you want to export to file now?");
+						rdyForExport = true;
+						if(i==Dialogs.NO) doExport=false;
+					}
+				}
+				else {
+					doExport=false;	
+				}
 			}
-			feed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
-			currentFeed = feed;
-			update();			
 		}
 		
-		if (feed!=null) {
+		if (rdyForExport && doExport) {
 			try {
 				Document doc = null;
 				if(type.equals("finetunes")) {
@@ -898,11 +918,7 @@ public class FeedGui extends JFrame implements MyObserver {
 				Dialogs.showMessage("ERROR, could not export current feed!");
 				e.printStackTrace();
 			}
-		}
-		else {
-			Dialogs.showMessage("ERROR, no data in current feed!");
-		}
-		
+		}		
 	}	
 	
 	public void quit() {

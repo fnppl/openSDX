@@ -98,9 +98,8 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	        Document impDoc = Document.fromFile(this.importFile);
 	        Element root = impDoc.getRootElement();
 	          
-	        // (2) get FeedInfo from import and create new FeedInfo for openSDX
-	        String feedid = root.getChildTextNN("code");
-	        if (feedid.length()==0) feedid = "[NOT SET]";
+	        // (2) get FeedInfo from import and create feedid and new FeedInfo for openSDX
+	        String feedid = UUID.randomUUID().toString();
 	        Calendar cal = Calendar.getInstance();
 	        
 	        if(root.getChild("updated_at")!=null && root.getChildTextNN("updated_at").length()>0) {
@@ -111,7 +110,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	        long effectivedatetime = cal.getTimeInMillis();
 	        
 	        String lic = root.getChildTextNN("licensor");
-	        if (lic==null) lic = "[NOT SET]";
+	        if (lic.length()==0) lic = "[NOT SET]";
 	        
 	        ContractPartner sender = ContractPartner.make(0, lic , "");
 	        ContractPartner licensor = ContractPartner.make(1, lic, "");

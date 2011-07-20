@@ -49,8 +49,6 @@ import org.fnppl.opensdx.xml.ChildElementIterator;
  */
 
 
-
-
 /**
  * 
  * @author Bertram Boedeker <bboedeker@gmx.de>
@@ -110,8 +108,6 @@ public class Territorial extends BusinessObject {
 			}
 		}
 	}
-	
-	
 
 	public int getTerritorialCount() {
 		return territories.size();
