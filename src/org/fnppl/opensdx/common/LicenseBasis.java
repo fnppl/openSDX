@@ -137,6 +137,9 @@ public class LicenseBasis extends BusinessObject {
 		}
 		
 		b.pricing = bo.handleBusinessObject("pricing");
+		if (b.pricing!=null) {
+			b.pricing.showOtherObjectsMessage = false;
+		}
 		b.streaming_allowed = BusinessBooleanItem.fromBusinessObject(b, "streaming_allowed");
 		
 		b.channels = null;
@@ -268,12 +271,14 @@ public class LicenseBasis extends BusinessObject {
 
 	
 	public LicenseBasis pricing_pricecode(String pricecode) {
+		//System.out.println("setting pricing pricecode "+pricecode);
 		if (pricing==null) {
 			pricing = new BusinessObject() {
 				public String getKeyname() {
 					return "pricing";
 				}
 			};
+			pricing.showOtherObjectsMessage = false;
 		}
 		if (pricecode==null) {
 			pricing.removeObject("pricecode");
@@ -284,12 +289,14 @@ public class LicenseBasis extends BusinessObject {
 	}
 
 	public LicenseBasis pricing_wholesale(String wholesale) {
+		//System.out.println("setting pricing wholesale "+wholesale);
 		if (pricing==null) {
 			pricing = new BusinessObject() {
 				public String getKeyname() {
 					return "pricing";
 				}
 			};
+			pricing.showOtherObjectsMessage = false;
 		}
 		if (wholesale==null) {
 			pricing.removeObject("wholesale");

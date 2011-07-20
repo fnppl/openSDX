@@ -100,6 +100,8 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 	private JList listAllow;
 	private JList listDisallow;
 
+	private boolean doUpdate = true;
+	
 	public PanelLicense(LicenseBasis lb) {
 		this.lb = lb;
 		initKeyAdapter();
@@ -160,6 +162,7 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 	}
 	private void update(LicenseBasis lb, boolean withTree) {
 		this.lb = lb;
+		doUpdate = false;
 		if (lb == null) {;
 			check_as_on_bundle.setSelected(false);
 			text_timeframe_from_datetime.setText("");
@@ -219,7 +222,9 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 				}
 			}
 		}
+		
 		setVisibility(!check_as_on_bundle.isSelected());
+		doUpdate = true;
 		documentListener.saveStates();
 	}
 	
@@ -634,9 +639,11 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 
 	// ----- action methods --------------------------------
 	public void check_as_on_bundle_changed(boolean selected) {
+		if (!doUpdate) return;
 		if (lb==null) return;
 		lb.as_on_bundle(selected);
-		setVisibility(!selected);		
+		update(lb);
+		//setVisibility(!selected);		
 		notifyChanges();
 	}
 	public void init_select_pricing_model() {
@@ -648,7 +655,8 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 	}
 	
 	public void select_pricing_changed(int selected) {
-		 int sel = select_pricing.getSelectedIndex();
+		if (!doUpdate) return;
+		int sel = select_pricing.getSelectedIndex();
         if (sel == 0) { //other
             if (lb!=null) {
 	        	lb.pricing_pricecode(null);
@@ -667,6 +675,7 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
         }	
 	}
 	public void check_streaming_allowed_changed(boolean selected) {
+		if (!doUpdate) return;
 		boolean sa = check_streaming_allowed.isSelected();
 		if (sa) {
 			select_channels.setEnabled(true);
@@ -689,6 +698,7 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 		select_channels_model.addElement("premium");
 	}
 	public void select_channels_changed(int selected) {
+		if (!doUpdate) return;
 		if (lb==null) return;
 		if (selected==0) {
 			lb.removeChannels();
@@ -699,6 +709,7 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 		notifyChanges();
 	}
 	public void text_changed(JTextComponent text) {
+		if (!doUpdate) return;
 		if (lb==null) return;
 		String t = text.getText();
 		if (text == text_timeframe_from_datetime) {

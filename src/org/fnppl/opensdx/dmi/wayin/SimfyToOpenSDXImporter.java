@@ -195,20 +195,34 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         		ItemFile itemfile = ItemFile.make();
         		itemfile.type("cover");
         		// check if file exist at path
+        		String filename = cover.getChildTextNN("file_name");
         		File f = new File(path+cover.getChildTextNN("file_name"));
         		if(f!=null && f.exists()) {
         			itemfile.setFile(f);
+        		} else {
+        			//file does not exist -> so we have to set the values "manually"
+        			
+        			//-> use filename as location
+        			itemfile.setLocation(FileLocation.make(filename));
+        		
+        			//file size
+        			if(cover.getChild("file_size")!=null) {
+            			itemfile.bytes(Integer.parseInt(cover.getChildText("file_size")));
+            		}        		
+            		
+            		// checksum md5
+            		if(cover.getChild("file_checksum")!=null) {
+            			String sMd5 =  cover.getChildText("file_checksum");
+            			if (sMd5!=null) {
+            				byte[] md5 = SecurityHelper.HexDecoder.decode(sMd5);
+            				itemfile.checksums(Checksums.make().md5(md5));
+            			}
+            		}
+        			
+        			//if files doesnot exist -> use filename as location
+        			itemfile.setLocation(FileLocation.make(filename));
         		}
-        		
-        		if(cover.getChild("file_size")!=null) {
-        			itemfile.bytes(Integer.parseInt(cover.getChildText("file_size")));
-        		}        		
-        		
-        		// checksum md5 or sha1 (?)
-        		if(cover.getChild("file_checksum")!=null) {
-        			itemfile.checksums(Checksums.make().md5(cover.getChildText("file_checksum").getBytes()));
-        		}
-        		
+       
         		bundle.addFile(itemfile);
         	}
         	
@@ -309,19 +323,32 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	        	
         		ItemFile itemfile = ItemFile.make();
         		itemfile.type("full");
-        		File f = new File(path+track.getChildTextNN("file_name"));      		
+        		// check if file exist at path
+        		String filename = cover.getChildTextNN("file_name");
+        		File f = new File(path+filename);      		
         		if(f!=null && f.exists()) {
-        			itemfile.setFile(f);
+        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
+        		} else {
+        			//file does not exist -> so we have to set the values "manually"
+        			
+        			//-> use filename as location
+        			itemfile.setLocation(FileLocation.make(filename));
+        		
+        			//file size
+        			if(track.getChild("file_size")!=null) {
+            			itemfile.bytes(Integer.parseInt(track.getChildText("file_size")));
+            		}        		
+            		
+            		// checksum md5
+            		if(track.getChild("file_checksum")!=null) {
+            			String sMd5 =  track.getChildText("file_checksum");
+            			if (sMd5!=null) {
+            				byte[] md5 = SecurityHelper.HexDecoder.decode(sMd5);
+            				itemfile.checksums(Checksums.make().md5(md5));
+            			}
+            		}
         		}
         		
-        		if(track.getChild("file_size")!=null) {
-        			itemfile.bytes(Integer.parseInt(track.getChildText("file_size")));
-        		}        		
-        		
-        		// checksum md5
-        		if(cover.getChild("file_checksum")!=null) {
-        			itemfile.checksums(Checksums.make().md5(cover.getChildText("file_checksum").getBytes()));
-        		}
 	        	
 	        	item.addFile(itemfile);
 	        	

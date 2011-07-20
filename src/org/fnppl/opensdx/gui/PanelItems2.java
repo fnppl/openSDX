@@ -253,6 +253,7 @@ public class PanelItems2 extends JPanel implements MyObservable, MyObserver {
 		bundle.addItem(newItem);
 		updateItemList();
 		list_items.setSelectedIndex(list_items.getModel().getSize()-1);
+		//panel_item.update(newItem, bundle);
 		notifyChanges();
 	}
 	public void bu_remove_clicked() {

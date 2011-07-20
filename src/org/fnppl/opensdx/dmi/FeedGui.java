@@ -68,13 +68,17 @@ import javax.swing.table.*;
 import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.common.BusinessObject;
+import org.fnppl.opensdx.common.ContractPartner;
 import org.fnppl.opensdx.common.Feed;
+import org.fnppl.opensdx.common.FeedInfo;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.common.ItemFile;
 import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
+import org.fnppl.opensdx.common.LicenseSpecifics;
 import org.fnppl.opensdx.common.Receiver;
+import org.fnppl.opensdx.common.Territorial;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.EditBusinessObjectTree;
@@ -313,16 +317,45 @@ public class FeedGui extends JFrame implements MyObserver {
 			try {
 				Document doc = Document.fromFile(f);
 				Feed feed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
+				makeSureFeedHasMinimalFeedRequirementsForGui(feed);
 				currentFeed = feed;
-				if (feed.getFeedinfo().getReceiver()==null) {
-					feed.getFeedinfo().receiver(Receiver.make(Receiver.TRANSFER_TYPE_FTP));
-				}
+				
 				update();
 			} catch (Exception e) {
 				Dialogs.showMessage("ERROR, could not open feed in file\n"+f.getAbsolutePath());
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	private void makeSureFeedHasMinimalFeedRequirementsForGui(Feed feed) {
+		if (feed==null) return;
+		long now = System.currentTimeMillis();
+		if (feed.getFeedinfo()==null) {
+			ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER, "","");
+			ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR, "","");
+			feed.setFeedInfo(FeedInfo.make(true, "", now, now, sender, licensor));
+		}
+		if (feed.getFeedinfo().getSender()==null) {
+			feed.getFeedinfo().sender(ContractPartner.make(ContractPartner.ROLE_SENDER, "",""));
+		}
+		if (feed.getFeedinfo().getLicensor()==null) {
+			feed.getFeedinfo().licensor(ContractPartner.make(ContractPartner.ROLE_LICENSOR, "",""));
+		}
+		if (feed.getFeedinfo().getLicensee()==null) {
+			feed.getFeedinfo().licensee(ContractPartner.make(ContractPartner.ROLE_LICENSEE, "",""));
+		}
+		if (feed.getFeedinfo().getReceiver()==null) {
+			feed.getFeedinfo().receiver(Receiver.make(Receiver.TRANSFER_TYPE_FTP));
+		}
+		if (feed.getBundleCount()==0) {
+			BundleInformation info = BundleInformation.make(now,now);
+			LicenseBasis license_basis = LicenseBasis.make(Territorial.make(), now, now);
+			LicenseSpecifics license_specifics = null;
+			Bundle bundle = Bundle.make(IDs.make(), "","", "", "", info, license_basis, license_specifics);
+			feed.addBundle(bundle);
+		}
+		return;
 	}
 	
 	public void saveFeed() {
