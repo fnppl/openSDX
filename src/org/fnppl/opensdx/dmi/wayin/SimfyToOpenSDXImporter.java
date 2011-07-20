@@ -196,7 +196,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         		itemfile.type("cover");
         		// check if file exist at path
         		String filename = cover.getChildTextNN("file_name");
-        		File f = new File(path+cover.getChildTextNN("file_name"));
+        		File f = new File(path+filename);
         		if(f!=null && f.exists()) {
         			itemfile.setFile(f);
         		} else {
@@ -218,10 +218,12 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
             				itemfile.checksums(Checksums.make().md5(md5));
             			}
             		}
-        			
-        			//if files doesnot exist -> use filename as location
-        			itemfile.setLocation(FileLocation.make(filename));
         		}
+        		
+        		// set dimension of cover
+        		String width = cover.getChildTextNN("width");
+        		String height = cover.getChildTextNN("height");
+        		if(width.length()>0 && height.length()>0) itemfile.dimension(Integer.parseInt(width), Integer.parseInt(height));
        
         		bundle.addFile(itemfile);
         	}
@@ -347,9 +349,8 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
             				itemfile.checksums(Checksums.make().md5(md5));
             			}
             		}
-        		}
+        		}        		
         		
-	        	
 	        	item.addFile(itemfile);
 	        	
 	        	bundle.addItem(item);

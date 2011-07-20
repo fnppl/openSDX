@@ -245,25 +245,74 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	if(ressource != null && ressource.getAttribute("type").equals("frontcover")) {
 	        		ItemFile itemfile = ItemFile.make();
 	        		itemfile.type("cover");
-	        		itemfile.filetype(ressource.getChildTextNN("datatype"));
-	        		File f = new File(path+ressource.getChildTextNN("uri"));
+	        		String width = "";
+	        		String height = "";	        		
+
+	        		String filename = ressource.getChildTextNN("uri");
+	        		File f = new File(path+filename);
 	        		if(f!=null && f.exists()) {
-	        			itemfile.setFile(f);
+	        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
+	        				        		
+		        		Vector<Element> qualities = ressource.getChildren("quality");
+			        	for (Iterator<Element> itQualities = qualities.iterator(); itQualities.hasNext();) {
+			        		Element quality = itQualities.next();
+			        		if(quality.getAttribute("type").equals("width")) {
+			        			if(quality.getText().length()>0) {	
+			        				width = quality.getText();
+			        			}	        			
+			        		}
+			        		else if(quality.getAttribute("type").equals("height")) {
+			        			if(quality.getText().length()>0) {	
+			        				height = quality.getText();
+			        			}	        			
+			        		}			        		
+			        	}
+			        	
+	        		} else {
+	        			//file does not exist -> so we have to set the values "manually"
+	        			
+	        			//-> use filename as location
+	        			itemfile.setLocation(FileLocation.make(filename));	        		
+	        		
+		        		if(ressource.getChild("checksum")!=null && ressource.getChild("checksum").getAttribute("type").equals("md5")) {	        			
+	            			String sMd5 =  ressource.getChildText("checksum");
+	            			if (sMd5!=null) {
+	            				byte[] md5 = SecurityHelper.HexDecoder.decode(sMd5);
+	            				itemfile.checksums(Checksums.make().md5(md5));
+	            			}
+		        		}	
+		        				        		
+		        		Vector<Element> qualities = ressource.getChildren("quality");
+			        	for (Iterator<Element> itQualities = qualities.iterator(); itQualities.hasNext();) {
+			        		Element quality = itQualities.next();
+			        		if(quality.getAttribute("type").equals("size")) {
+			        			if(quality.getText().length()>0) {	
+			        				itemfile.bytes(Integer.parseInt(quality.getText()));
+			        			}	        			
+			        		}
+			        		else if(quality.getAttribute("type").equals("width")) {
+			        			if(quality.getText().length()>0) {	
+			        				width = quality.getText();
+			        			}	        			
+			        		}
+			        		else if(quality.getAttribute("type").equals("height")) {
+			        			if(quality.getText().length()>0) {	
+			        				height = quality.getText();
+			        			}	        			
+			        		}
+			        		else if(quality.getAttribute("type").equals("datatype")) {
+			        			if(quality.getText().length()>0) {	
+			        				itemfile.filetype(quality.getText());
+			        			}	        			
+			        		}			        		
+			        	}
+			        	
+		        		itemfile.filetype(ressource.getChildTextNN("datatype"));
+			        				        	
 	        		}
 	        		
-	        		Vector<Element> qualities = ressource.getChildren("quality");
-		        	for (Iterator<Element> itQualities = qualities.iterator(); itQualities.hasNext();) {
-		        		Element quality = itQualities.next();
-		        		if(quality.getAttribute("type").equals("size")) {
-		        			if(quality.getText().length()>0) {	
-		        				itemfile.bytes(Integer.parseInt(quality.getText()));
-		        			}	        			
-		        		}		        				        		
-		        	}
-	        		
-	        		if(ressource.getChild("checksum")!=null && ressource.getChild("checksum").getAttribute("type").equals("md5")) {
-	        			itemfile.checksums(Checksums.make().md5(ressource.getChildText("checksum").getBytes()));
-	        		}
+	        		// set dimension of cover
+	        		if(width.length()>0 && height.length()>0) itemfile.dimension(Integer.parseInt(width), Integer.parseInt(height));	        		
 	        		
 	        		bundle.addFile(itemfile);
 	        	}
@@ -331,36 +380,63 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        	if(track_ressource.getAttribute("type").equals("audiofile")) itemfile.type("full");
 		        		
 		        	itemfile.filetype(track_ressource.getChildTextNN("datatype"));
-	        		File f = new File(path+track_ressource.getChildTextNN("uri"));
+	        		
+	        		String track_filename = track_ressource.getChildTextNN("uri");
+	        		File f = new File(path+track_filename);
 	        		if(f!=null && f.exists()) {
-	        			itemfile.setFile(f);
-	        		}	
+	        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
+	        			
+		        		Vector<Element> track_qualities = track.getChildren("quality");
+			        	for (Iterator<Element> track_itQualities = track_qualities.iterator(); track_itQualities.hasNext();) {
+			        		Element track_quality = track_itQualities.next();
+			        		if(track_quality.getAttribute("type").equals("channelmode")) {
+			        			if(track_quality.getText().length()>0) {	
+			        				itemfile.channels(track_quality.getText());
+			        			}	        			
+			        		}		        		
+			        		else if(track_quality.getAttribute("type").equals("duration")) {
+			        			if(track_quality.getText().length()>0) {	
+			        				item.getInformation().playlength(Integer.parseInt(track_quality.getText()));
+			        			}	        			
+			        		}
+			        	}
+			        	
+	        		} else {
+	        			//file does not exist -> so we have to set the values "manually"
+	        			
+	        			//-> use filename as location
+	        			itemfile.setLocation(FileLocation.make(track_filename));	        		
 	        		
-	        		Vector<Element> track_qualities = track.getChildren("quality");
-		        	for (Iterator<Element> track_itQualities = track_qualities.iterator(); track_itQualities.hasNext();) {
-		        		Element track_quality = track_itQualities.next();
-		        		if(track_quality.getAttribute("type").equals("size")) {
-		        			if(track_quality.getText().length()>0) {	
-		        				itemfile.bytes(Integer.parseInt(track_quality.getText()));
-		        			}
-		        		}
-		        		else if(track_quality.getAttribute("type").equals("channelmode")) {
-		        			if(track_quality.getText().length()>0) {	
-		        				itemfile.channels(track_quality.getText());
-		        			}	        			
-		        		}		        		
-		        		else if(track_quality.getAttribute("type").equals("duration")) {
-		        			if(track_quality.getText().length()>0) {	
-		        				item.getInformation().playlength(Integer.parseInt(track_quality.getText()));
-		        			}	        			
-		        		}
-		        	}	        		
+		        		if(track_ressource.getChild("checksum")!=null && track_ressource.getChild("checksum").getAttribute("type").equals("md5")) {	        			
+	            			String sMd5 =  track_ressource.getChildText("checksum");
+	            			if (sMd5!=null) {
+	            				byte[] md5 = SecurityHelper.HexDecoder.decode(sMd5);
+	            				itemfile.checksums(Checksums.make().md5(md5));
+	            			}
+		        		}	
+		        					        	
+		        		Vector<Element> track_qualities = track.getChildren("quality");
+			        	for (Iterator<Element> track_itQualities = track_qualities.iterator(); track_itQualities.hasNext();) {
+			        		Element track_quality = track_itQualities.next();
+			        		if(track_quality.getAttribute("type").equals("size")) {
+			        			if(track_quality.getText().length()>0) {	
+			        				itemfile.bytes(Integer.parseInt(track_quality.getText()));
+			        			}
+			        		}
+			        		else if(track_quality.getAttribute("type").equals("channelmode")) {
+			        			if(track_quality.getText().length()>0) {	
+			        				itemfile.channels(track_quality.getText());
+			        			}	        			
+			        		}			        				        		
+			        		else if(track_quality.getAttribute("type").equals("duration")) {
+			        			if(track_quality.getText().length()>0) {	
+			        				item.getInformation().playlength(Integer.parseInt(track_quality.getText()));
+			        			}	        			
+			        		}
+			        	}			        	
+	        		}
 	        		
-        			item.addFile(itemfile);
-	        		
-	        		if(track_ressource.getChild("checksum")!=null && track_ressource.getChild("checksum").getAttribute("type").equals("md5")) {
-	        			itemfile.checksums(Checksums.make().md5(track_ressource.getChildText("checksum").getBytes()));
-	        		}	
+        			item.addFile(itemfile);	
 	        		
 		        	// add Tags
 		        	ItemTags track_tags = ItemTags.make();
