@@ -194,6 +194,18 @@ public class PanelSavedDMI extends JPanel {
 				objects.add(o);
 			}
 		}
+		else if (name.equals("licensee")) {
+			ContractPartner v = ContractPartner.fromBusinessObject(bo, ContractPartner.ROLE_LICENSEE);
+			if (v!=null) {			
+				v.role(ContractPartner.ROLE_CONTRACT_PARTNER);
+				DMIObject o = new DMIObject();
+				o.type = "Contract Partner";
+				o.description = v.getEmail();
+				o.fromFile = f;
+				o.object = v;
+				objects.add(o);
+			}
+		}
 		else if (name.equals("receiver")) {
 			Receiver v = Receiver.fromBusinessObject(bo);
 			if (v!=null) {
@@ -239,17 +251,18 @@ public class PanelSavedDMI extends JPanel {
 			}
 		}
 		else if (name.equals("creator")) {
-			DMIObject o = new DMIObject();
-			o.type = "Creator";
-			
-			String email = bo.getStringIfExist("email");
-			o.description = "";
-			if (email!=null) {
-				o.description = email;
+			Creator c = Creator.fromBusinessObject(bo);
+			if (c!=null) {
+				DMIObject o = new DMIObject();
+				o.type = "Creator";
+				o.description = "";
+				if (c.getEmail()!=null) {
+					o.description = c.getEmail();
+				}
+				o.fromFile = f;
+				o.object = c;
+				objects.add(o);
 			}
-			o.fromFile = f;
-			o.object = bo;
-			objects.add(o);
 		}
 		else if (name.equals("http")) {
 			ActionHttp v = ActionHttp.fromBusinessObject(bo);
@@ -475,9 +488,11 @@ public class PanelSavedDMI extends JPanel {
 		}
 		else if (o.type.equals("Creator")) {
 			if (o.panel ==null) {
+				Creator c = (Creator)o.object;
 				String[][] data = new String[][] {
-						{"email",o.object.getStringIfExist("email")},
-						{"user id",o.object.getStringIfExist("userid")}
+						{"email",c.getEmail()},
+						{"user id",c.getUserid()},
+						{"key id",c.getKeyid()},
 				};
 				o.panel = buildPanel("Creator", data);
 				JButton bu = new JButton("set as creator");
@@ -489,7 +504,7 @@ public class PanelSavedDMI extends JPanel {
 							gui.getCurrentFeed().getFeedinfo().creator(c);
 							gui.update();
 						} catch (Exception ex) {
-							
+							ex.printStackTrace();
 						}
 					}
 				});

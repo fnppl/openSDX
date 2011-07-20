@@ -203,16 +203,28 @@ public class BundleInformation extends BusinessObject {
 		return this;
 	}
 
-	public BundleInformation playlength(int playlength_in_seconds) {
-		this.playlength = new BusinessIntegerItem("playlength", playlength_in_seconds);
+	public BundleInformation playlength(Integer playlength_in_seconds) {
+		if (playlength_in_seconds==null) {
+			this.playlength = null;
+		} else {
+			this.playlength = new BusinessIntegerItem("playlength", playlength_in_seconds.intValue());
+		}
 		return this;
 	}
-	public BundleInformation num(int num) {
-		this.num = new BusinessIntegerItem("num", num);
+	public BundleInformation num(Integer num) {
+		if (num==null) {
+			this.num = null;
+		} else {
+			this.num = new BusinessIntegerItem("num", num.intValue());
+		}
 		return this;
 	}
-	public BundleInformation setnum(int setnum) {
-		this.setnum = new BusinessIntegerItem("setnum", setnum);
+	public BundleInformation setnum(Integer setnum) {
+		if (setnum==null) {
+			this.setnum = null;
+		} else {
+			this.setnum = new BusinessIntegerItem("setnum", setnum.intValue());
+		}
 		return this;
 	}
 	

@@ -86,6 +86,12 @@ public class PanelInformation extends JPanel implements MyObservable {
 	private JLabel label_playlength_integer;
 	private JTextField text_playlength_integer;
 	
+	private JLabel label_num_integer;
+	private JTextField text_num_integer;
+	
+	private JLabel label_setnum_integer;
+	private JTextField text_setnum_integer;
+	
 	private JLabel label_main_language;
 	private JTextField text_main_language;
 	private JButton bu_select_lang;
@@ -117,7 +123,19 @@ public class PanelInformation extends JPanel implements MyObservable {
 		initLayout();
 	}
 
+	public void setTypeBundle() {
+		label_num_integer.setVisible(false);
+		text_num_integer.setVisible(false);
+		label_setnum_integer.setVisible(false);
+		text_setnum_integer.setVisible(false);
+	}
 
+	public void setTypeItem() {
+		label_num_integer.setVisible(true);
+		text_num_integer.setVisible(true);
+		label_setnum_integer.setVisible(true);
+		text_setnum_integer.setVisible(true);
+	}
 
 	public void update(BundleInformation info) {
 		this.info = info;
@@ -125,6 +143,8 @@ public class PanelInformation extends JPanel implements MyObservable {
 			text_physical_release_datetime.setText("");
 			text_digital_release_datetime.setText("");
 			text_playlength_integer.setText("");
+			text_num_integer.setText("");
+			text_setnum_integer.setText("");
 			text_main_language.setText("");
 			text_origin_country.setText("");
 			updateLanguageList();
@@ -136,6 +156,16 @@ public class PanelInformation extends JPanel implements MyObservable {
 				text_playlength_integer.setText(""+info.getPlaylength());
 			} else {
 				text_playlength_integer.setText("");
+			}
+			if (info.hasNum()) {
+				text_num_integer.setText(""+info.getNum());
+			} else {
+				text_num_integer.setText("");
+			}
+			if (info.hasSetNum()) {
+				text_setnum_integer.setText(""+info.getSetNum());
+			} else {
+				text_setnum_integer.setText("");
 			}
 			text_main_language.setText(info.getMain_language());
 			text_origin_country.setText(info.getOrigin_country());
@@ -234,12 +264,22 @@ public class PanelInformation extends JPanel implements MyObservable {
 		texts.add(text_digital_release_datetime);
 
 		label_playlength_integer = new JLabel("playlength in seconds");
-
 		text_playlength_integer = new JTextField("");
-
 		text_playlength_integer.setName("text_playlength_integer");
 		map.put("text_playlength_integer", text_playlength_integer);
 		texts.add(text_playlength_integer);
+		
+		label_num_integer = new JLabel("Number");
+		text_num_integer = new JTextField("");
+		text_num_integer.setName("text_num_integer");
+		map.put("text_num_integer", text_num_integer);
+		texts.add(text_num_integer);
+		
+		label_setnum_integer = new JLabel("Set Number");
+		text_setnum_integer = new JTextField("");
+		text_setnum_integer.setName("text_setnum_integer");
+		map.put("text_setnum_integer", text_setnum_integer);
+		texts.add(text_setnum_integer);
 
 		label_main_language = new JLabel("main language");
 
@@ -529,9 +569,10 @@ public void initLayout() {
 	gbl.setConstraints(text_digital_release_datetime,gbc);
 	add(text_digital_release_datetime);
 
+	int y = 2;
 	// Component: label_playlength_integer
 	gbc.gridx = 0;
-	gbc.gridy = 2;
+	gbc.gridy = y;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
@@ -546,7 +587,7 @@ public void initLayout() {
 
 	// Component: text_playlength_integer
 	gbc.gridx = 1;
-	gbc.gridy = 2;
+	gbc.gridy = y;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
@@ -559,7 +600,69 @@ public void initLayout() {
 	gbl.setConstraints(text_playlength_integer,gbc);
 	add(text_playlength_integer);
 
-	int y = 3;
+	y++;
+	// Component: label_num_integer
+	gbc.gridx = 0;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(label_num_integer,gbc);
+	add(label_num_integer);
+
+	// Component: text_num_integer
+	gbc.gridx = 1;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(text_num_integer,gbc);
+	add(text_num_integer);
+	
+	y++;
+	// Component: label_setnum_integer
+	gbc.gridx = 0;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(label_setnum_integer,gbc);
+	add(label_setnum_integer);
+
+	// Component: text_setnum_integer
+	gbc.gridx = 1;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(text_setnum_integer,gbc);
+	add(text_setnum_integer);
+	
+	y++;
 	// Component: label_main_language
 	gbc.gridx = 0;
 	gbc.gridy = y;
@@ -685,11 +788,11 @@ public void initLayout() {
 	gbl.setConstraints(filler,gbc);
 	add(filler);
 	
-	
+	y++;
 	// Component: filler2
 	filler = new Container();
 	gbc.gridx = 0;
-	gbc.gridy = 6;
+	gbc.gridy = y;
 	gbc.gridwidth = 3;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
@@ -816,10 +919,38 @@ public void initLayout() {
 		}
 		else if (text == text_playlength_integer) {
 			if (t.equals("")) {
-				info.playlength(-1);
+				info.playlength(null);
 			} else {
 				info.playlength(Integer.parseInt(t));
-				text_playlength_integer.setText(""+info.getPlaylength());
+				if (info.hasPlaylength()) {
+					text_playlength_integer.setText(""+info.getPlaylength());
+				} else {
+					text_playlength_integer.setText("");
+				}
+			}
+		}
+		else if (text == text_num_integer) {
+			if (t.equals("")) {
+				info.num(null);
+			} else {
+				info.num(Integer.parseInt(t));
+				if (info.hasNum()) {
+					text_num_integer.setText(""+info.getNum());
+				} else {
+					text_num_integer.setText("");
+				}
+			}
+		}
+		else if (text == text_setnum_integer) {
+			if (t.equals("")) {
+				info.setnum(null);
+			} else {
+				info.setnum(Integer.parseInt(t));
+				if (info.hasSetNum()) {
+					text_setnum_integer.setText(""+info.getSetNum());
+				} else {
+					text_setnum_integer.setText("");
+				}
 			}
 		}
 		else if (text == text_main_language) {
@@ -838,6 +969,7 @@ public void initLayout() {
 	public void addObserver(MyObserver observer) {
 		observers.add(observer);
 	}
+	
 	public void notifyChanges() {
 		for (MyObserver ob : observers) {
 			ob.notifyChange(this);

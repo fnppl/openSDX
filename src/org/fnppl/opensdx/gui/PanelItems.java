@@ -27,7 +27,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 
-public class PanelItems2 extends JPanel implements MyObservable, MyObserver {
+public class PanelItems extends JPanel implements MyObservable, MyObserver {
 
 	//init fields
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
@@ -39,7 +39,7 @@ public class PanelItems2 extends JPanel implements MyObservable, MyObserver {
 	private JButton bu_remove;
 	private PanelItem panel_item;
 
-	public PanelItems2() {
+	public PanelItems() {
 		initComponents();
 		initLayout();
 		update((Bundle)null);

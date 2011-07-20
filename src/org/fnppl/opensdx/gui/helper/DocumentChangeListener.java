@@ -125,6 +125,12 @@ public class DocumentChangeListener implements DocumentListener {
 	    		} catch (Exception ex) {
 	    			formatOK = false;
 	    		}
+	    	} else if (name.contains("integer") && text.length()>0) {
+	    		try {
+	    			Integer.parseInt(text);
+	    		} catch (Exception ex) {
+	    			formatOK = false;
+	    		}
 	    	}
     	}
     	return formatOK;
