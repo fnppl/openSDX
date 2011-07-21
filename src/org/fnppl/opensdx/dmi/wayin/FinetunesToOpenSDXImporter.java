@@ -386,7 +386,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        		if(f!=null && f.exists()) {
 	        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
 	        			
-		        		Vector<Element> track_qualities = track.getChildren("quality");
+		        		Vector<Element> track_qualities = track_ressource.getChildren("quality");
 			        	for (Iterator<Element> track_itQualities = track_qualities.iterator(); track_itQualities.hasNext();) {
 			        		Element track_quality = track_itQualities.next();
 			        		if(track_quality.getAttribute("type").equals("channelmode")) {
@@ -415,7 +415,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	            			}
 		        		}	
 		        					        	
-		        		Vector<Element> track_qualities = track.getChildren("quality");
+		        		Vector<Element> track_qualities = track_ressource.getChildren("quality");
 			        	for (Iterator<Element> track_itQualities = track_qualities.iterator(); track_itQualities.hasNext();) {
 			        		Element track_quality = track_itQualities.next();
 			        		if(track_quality.getAttribute("type").equals("size")) {

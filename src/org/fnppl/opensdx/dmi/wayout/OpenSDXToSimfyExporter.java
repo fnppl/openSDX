@@ -105,8 +105,9 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
         		Bundle bundle = osdxFeed.getBundle(i);
 		        
         		// create node "album" for each bundle
-        		expDocRoot.addContent(new Element("album"));
-        		Element expDocAlbum = expDocRoot.getChild("album");
+        		Element expDocAlbum = new Element("album");
+        		expDocRoot.addContent(expDocAlbum);
+        		
 		        
 		        // feedid
 		        String upc = bundle.getIds().getUpc();
@@ -170,8 +171,9 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 	        	int fileCount = bundle.getFilesCount();
 	        	for (int j=0;j<fileCount;j++) {
 	        		if(bundle.getFile(j).getType().equals("cover")) {
-	        			expDocAlbum.addContent(new Element("cover"));
-	        			Element cover = expDocAlbum.getChild("cover");
+	        			Element cover = new Element("cover");
+	        			expDocAlbum.addContent(cover);
+	        				        			
 	        			cover.addContent("height", ""+bundle.getFile(j).getDimensionHeight());
 	        			cover.addContent("width", ""+bundle.getFile(j).getDimensionHeight());
 	        			
@@ -185,14 +187,89 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 	            			cover.addContent("file_checksum", Checksums.make(sums[0],sums[1],null).getMd5String());
 	            		} else {
 	            			//file does not exist -> so we have to set the values "manually"
-	            			// checksum md5
+	            			// checksum md5 -> ToDo: decode!
 	            			if(bundle.getFile(j).getChecksums().getMd5String()!=null)
 	            				cover.addContent("file_checksum", bundle.getFile(j).getChecksums().getMd5String());
 	            		}	        			
 	        		}
-	        	}	        	
+	        	}
 	        	
-	        	bundle.getFilesCount()
+	        	Element expDocTracks = new Element("tracks");
+        		expDocAlbum.addContent(expDocTracks);
+	        	
+	        	int itemCount = bundle.getItemsCount();
+	        	int trackCount = 0;
+	        	int discCount = 0;
+	        	for (int j=0;j<itemCount;j++) {
+	        		// fulltracks holen
+	        		if(bundle.getItem(j).getType().equals("audio")) {	        					
+	        			// add track 
+	        			Element track = new Element("track");
+	        			expDocTracks.addContent(track);
+		        		
+	        			trackCount++;
+	        			discCount = bundle.getItem(j).getInformation().getSetNum();	        			
+	        			
+	        			String ext = ""+bundle.getItem(j).getInformation().getNum();
+	        			if(ext.length()<2) ext="0"+ext;
+	        			String trackCode = upc+"_"+ext;
+	        			track.addContent("track_code", trackCode);
+	        			
+	        			IDs ids = bundle.getItem(j).getIds();
+	        			if(ids.getIsrc()!=null && ids.getIsrc().length()>0)
+	        				track.addContent("isrc", ids.getIsrc());
+	        			
+	        			if(ids.getUpc()!=null && ids.getUpc().length()>0)
+	        				track.addContent("upc", ids.getUpc());
+	        			
+	        			// title
+	        			track.addContent("title", bundle.getItem(j).getDisplayname());
+
+	    	        	// display_artist
+	        			track.addContent("artist_name", bundle.getItem(j).getDisplay_artist());
+	        			
+	    	        	// duration
+	        			track.addContent("duration", ""+bundle.getItem(j).getInformation().getPlaylength());
+	        			
+	        			// explicit_lyrics	    	        	
+	                	String explicit_lyrics = bundle.getItem(j).getTags().getExplicit_lyrics();
+	                	if(explicit_lyrics!=null)
+	                		track.addContent("explicit_lyrics", explicit_lyrics);
+	                	
+	    	        	int trackFileCount = bundle.getFilesCount();
+	    	        	for (int k=0;k<trackFileCount;k++) {
+	    	        		if(bundle.getItem(j).getFile(k).getType().equals("full")) {
+	    	        			
+	    	        			String track_filename = bundle.getItem(j).getFile(k).getLocationPath();
+	                			track.addContent("file_name", track_filename);
+	                			track.addContent("file_size", ""+bundle.getItem(j).getFile(k).getBytes());
+	                			
+	    	            		File f = new File(track_filename);
+	    	            		if(f!=null && f.exists()) {
+	    	            			byte[][] sums = SecurityHelper.getMD5SHA1(f);
+	    	            			track.addContent("file_checksum", Checksums.make(sums[0],sums[1],null).getMd5String());
+	    	            		} else {
+	    	            			// file does not exist -> so we have to set the values "manually"
+	    	            			// checksum md5 -> ToDo: decode! 
+	    	            			if(bundle.getItem(j).getFile(k).getChecksums().getMd5()!=null)
+	    	            				track.addContent("file_checksum", bundle.getItem(j).getFile(k).getChecksums().getMd5String());
+	    	            		}	    	        			
+	    	        			
+	    	        		
+	    	                	/*
+	    	                	 * ToDo: <rights/> (streamable, from, to etc.) for every track and territory / not yet available in openSDX! 
+	    	                	 *  
+	    	                	 */
+	    	        		}
+	    	        	}
+	        		}
+	        	}	        	
+
+	        	expDocAlbum.addContent("tracks_count", ""+trackCount);
+	        	if(discCount>0) {
+	        		expDocAlbum.addContent("disks_count", ""+discCount);
+	        	}
+	        	
 		        // ToDo: export magic here!
         	}
 		        
