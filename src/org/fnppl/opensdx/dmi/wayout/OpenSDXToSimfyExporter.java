@@ -88,6 +88,7 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 	private Document getExportDocument() {
 		// do the export
 		Document expDoc = null;
+		Calendar cal = Calendar.getInstance();
 		
 		try {
 			// (1) get XML-Data from export document
@@ -112,12 +113,6 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 		        if (upc==null || upc.length()==0) upc = "[NOT SET]";
 		        expDocAlbum.addContent("code", upc);
 		        
-		        Calendar cal = Calendar.getInstance();
-		        
-		        long creationdatetime = osdxFeed.getFeedinfo().getCreationDatetime();
-	        	cal.setTimeInMillis(creationdatetime);
-	        	expDocAlbum.addContent("updated_at", ymd.format(cal.getTime()));
-	
 		        // licensor
 		        String lic = osdxFeed.getFeedinfo().getLicensor().getContractPartnerID();
 		        if (lic==null) lic = "";		        
@@ -147,21 +142,57 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 	        		}	        		
 	        	}
 	        	
-	        	expDocAlbum.addContent("label", label);
 	        	expDocAlbum.addContent("c_line", copyright);
 	        	expDocAlbum.addContent("p_line", production);
+		        expDocAlbum.addContent("upc", upc);
+	        	expDocAlbum.addContent("label", label);	        	
 	        	expDocAlbum.addContent("artist_name", artist_name);
 		        
+		        // title
+		        String title = bundle.getDisplayname();
+		        if (title==null) title = "";
+		        expDocAlbum.addContent("title", title);		        	
+	        	
 	        	long releaseDate = bundle.getInformation().getPhysicalReleaseDatetime();
 	        	String original_released_on = "";
 	        	if (original_released_on!=null) cal.setTimeInMillis(releaseDate); original_released_on = ymd.format(cal.getTime());
 	        	expDocAlbum.addContent("original_released_on", original_released_on);
 	        	
-		        // title
-		        String title = bundle.getDisplayname();
-		        if (title==null) title = "";
-		        expDocAlbum.addContent("title", title);		        
+		        long creationdatetime = osdxFeed.getFeedinfo().getCreationDatetime();
+	        	cal.setTimeInMillis(creationdatetime);
+	        	expDocAlbum.addContent("updated_at", ymd.format(cal.getTime()));	        	
 		        
+	        	int genreCount = bundle.getTags().getGenresCount();
+	        	for (int j=0;j<genreCount;j++) {
+	        		if(bundle.getTags().getGenre(j).length()>0) expDocAlbum.addContent("genre", bundle.getTags().getGenre(j));
+	        	}
+	        	
+	        	int fileCount = bundle.getFilesCount();
+	        	for (int j=0;j<fileCount;j++) {
+	        		if(bundle.getFile(j).getType().equals("cover")) {
+	        			expDocAlbum.addContent(new Element("cover"));
+	        			Element cover = expDocAlbum.getChild("cover");
+	        			cover.addContent("height", ""+bundle.getFile(j).getDimensionHeight());
+	        			cover.addContent("width", ""+bundle.getFile(j).getDimensionHeight());
+	        			
+	        			String filename = bundle.getFile(j).getLocationPath();
+            			cover.addContent("file_name", filename);
+            			cover.addContent("file_size", ""+bundle.getFile(j).getBytes());
+            			
+	            		File f = new File(filename);
+	            		if(f!=null && f.exists()) {
+	            			byte[][] sums = SecurityHelper.getMD5SHA1(f);
+	            			cover.addContent("file_checksum", Checksums.make(sums[0],sums[1],null).getMd5String());
+	            		} else {
+	            			//file does not exist -> so we have to set the values "manually"
+	            			// checksum md5
+	            			if(bundle.getFile(j).getChecksums().getMd5String()!=null)
+	            				cover.addContent("file_checksum", bundle.getFile(j).getChecksums().getMd5String());
+	            		}	        			
+	        		}
+	        	}	        	
+	        	
+	        	bundle.getFilesCount()
 		        // ToDo: export magic here!
         	}
 		        
