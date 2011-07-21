@@ -62,6 +62,7 @@ import javax.swing.table.*;
 import org.fnppl.opensdx.gui.helper.PanelKeyLogs;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
+import org.w3c.dom.ranges.RangeException;
 
 
 public class SecurityMainFrame extends JFrame {
@@ -296,6 +297,12 @@ public class SecurityMainFrame extends JFrame {
 				else if(cmd.equalsIgnoreCase("encryptfile")) {
 					encryptFile();
 				}
+				else if(cmd.equalsIgnoreCase("arsencryptfile")) {
+					asymmetricEncryptedRandomSymmetricKeyEncryptionOfFile();
+				}
+				else if(cmd.equalsIgnoreCase("aencryptfile")) {
+					asymmetricEncryptionOfFile();
+				}
 				else if(cmd.equalsIgnoreCase("decryptfile")) {
 					decryptFile();
 				}
@@ -393,10 +400,21 @@ public class SecurityMainFrame extends JFrame {
 		jmi.addActionListener(ja);
 		jm.add(jmi);
 
-		jmi = new JMenuItem("DecryptFile (symmetric)");
+		jmi = new JMenuItem("EncryptFile (random symm. key encrypted with asymm. encryption)");
+		jmi.setActionCommand("arsencryptfile");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+		
+		jmi = new JMenuItem("EncryptFile (asymmetric)");
+		jmi.setActionCommand("aencryptfile");
+		jmi.addActionListener(ja);
+		jm.add(jmi);
+
+		jmi = new JMenuItem("DecryptFile");
 		jmi.setActionCommand("decryptfile");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
+
 
 		setJMenuBar(jb);
 	}
@@ -1900,7 +1918,9 @@ public class SecurityMainFrame extends JFrame {
 					String z = null;
 					boolean terminationFound = false;
 					while (!terminationFound && (z=readLine(in))!=null) {
-						if (z.equals("#### openSDX symmetrical encrypted file ####")) terminationFound = true;
+						if (z.equals("#### openSDX symmetrical encrypted file ####") || z.equals("#### openSDX asymmetrical encrypted file ####")) {
+							terminationFound = true;
+						}
 						else b.append(z);
 					}
 					if (terminationFound) {
@@ -1911,29 +1931,111 @@ public class SecurityMainFrame extends JFrame {
 						return;
 					}
 				}
-				String mantra = e.getChildText("mantraname");
-				String p = Dialogs.showPasswordDialog("Enter password", "Please enter password for mantra:\n"+mantra);
-				if (p != null) {
-					if (!Arrays.equals(
-							SecurityHelper.getSHA256(p.getBytes()),
-							SecurityHelper.HexDecoder.decode(e.getChildText("pass_sha256"))
-					)) {
-						Dialogs.showMessage("Sorry, wrong password.");
+				if (e == null || !(e.getName().equals("symmetric_encryption") || e.getName().equals("asymmetric_encryption"))) {
+					Dialogs.showMessage("Error, wrong or missing metadata");
+					return;
+				}
+				
+				if (e.getName().equals("symmetric_encryption")) {
+					SymmetricKey symkey = null;
+					
+					if (e.getChild("pubkey")==null) {
+						String mantra = e.getChildText("mantraname");
+						String p = Dialogs.showPasswordDialog("Enter password", "Please enter password for mantra:\n"+mantra);
+						if (p != null) {
+							if (!Arrays.equals(
+									SecurityHelper.getSHA256(p.getBytes()),
+									SecurityHelper.HexDecoder.decode(e.getChildText("pass_sha256"))
+							)) {
+								Dialogs.showMessage("Sorry, wrong password.");
+								return;
+							}
+		
+							byte[] initv = SecurityHelper.HexDecoder.decode(e.getChildText("initvector"));
+							symkey = SymmetricKey.getKeyFromPass(p.toCharArray(), initv);
+						}
+					} else {
+						OSDXKey akey = OSDXKey.fromPubKeyElement(e.getChild("pubkey"));
+						OSDXKey private_akey = currentKeyStore.getKey(akey.getKeyID());
+						if (private_akey==null || !private_akey.hasPrivateKey()) {
+							Dialogs.showMessage("Decryption failed, no private key with keyid:\n"+akey.getKeyID()+"\nfound in current keystore.");
+							return;
+						}
+						if (!private_akey.isPrivateKeyUnlocked()) {
+							private_akey.unlockPrivateKey(messageHandler);
+						}
+						if (!private_akey.isPrivateKeyUnlocked()) {
+							return;
+						}
+						//extract sym key
+	
+						byte[] initv = private_akey.decrypt(SecurityHelper.HexDecoder.decode(e.getChildText("enc_initvector")));
+						byte[] keybytes = private_akey.decrypt(SecurityHelper.HexDecoder.decode(e.getChildText("enc_keybytes")));
+						
+						symkey = new SymmetricKey(keybytes, initv);
+					}
+					
+					if (symkey!=null) {
+						File fdec = new File(f.getParent(),"decrypt_"+e.getChildText("dataname"));
+						
+						if (detached) {
+							File fenc = new File(f.getAbsolutePath().substring(0, f.getAbsolutePath().lastIndexOf('.')));
+							in = new FileInputStream(fenc);
+						}
+
+						FileOutputStream out = new FileOutputStream(fdec);
+						symkey.decrypt(in, out);
+						in.close();
+						out.close();
+
+						Dialogs.showMessage("Decryption succeeded.\nfilename: "+fdec.getName());
+					}
+				} else {
+					//asymmetric decryption
+					if (e.getChild("pubkey")==null) {
+						Dialogs.showMessage("Decryption failed, missing pubkey element.");
 						return;
 					}
-
-					byte[] initv = SecurityHelper.HexDecoder.decode(e.getChildText("initvector"));
-					SymmetricKey key = SymmetricKey.getKeyFromPass(p.toCharArray(), initv);
-
+					if (e.getChildText("block_size")==null) {
+						Dialogs.showMessage("Decryption failed, missing block_size element.");
+						return;
+					}
+					OSDXKey akey = OSDXKey.fromPubKeyElement(e.getChild("pubkey"));
+					OSDXKey private_akey = currentKeyStore.getKey(akey.getKeyID());
+					if (private_akey==null || !private_akey.hasPrivateKey()) {
+						Dialogs.showMessage("Decryption failed, no private key with keyid:\n"+akey.getKeyID()+"\nfound in current keystore.");
+						return;
+					}
+					if (!private_akey.isPrivateKeyUnlocked()) {
+						private_akey.unlockPrivateKey(messageHandler);
+					}
+					if (!private_akey.isPrivateKeyUnlocked()) {
+						return;
+					}
+					int blockSize = Integer.parseInt(e.getChildText("block_size"));
+				
+			
 					File fdec = new File(f.getParent(),"decrypt_"+e.getChildText("dataname"));
-
+					
 					if (detached) {
 						File fenc = new File(f.getAbsolutePath().substring(0, f.getAbsolutePath().lastIndexOf('.')));
 						in = new FileInputStream(fenc);
 					}
 
 					FileOutputStream out = new FileOutputStream(fdec);
-					key.decrypt(in, out);
+					byte[] buffer = new byte[blockSize];
+					int read = -1;
+					byte[] decrypt = null;
+					while ((read = in.read(buffer))>0) {
+						if (read==blockSize) {
+							decrypt = private_akey.decrypt(buffer);
+						} else {
+							decrypt = private_akey.decrypt(Arrays.copyOf(buffer, read));
+						}
+						if (decrypt!=null) {
+							out.write(decrypt);
+						}
+					}
 					in.close();
 					out.close();
 
@@ -1976,7 +2078,7 @@ public class SecurityMainFrame extends JFrame {
 					byte[] initv = SecurityHelper.getRandomBytes(16);
 					SymmetricKey key = SymmetricKey.getKeyFromPass(p[1].toCharArray(), initv);
 
-					Element e = new Element("symmetric_encrytion");
+					Element e = new Element("symmetric_encryption");
 					e.addContent("dataname", f.getName());
 					e.addContent("origlength", ""+f.length());
 					e.addContent("lastmodified", SecurityHelper.getFormattedDate(f.lastModified()));
@@ -2114,6 +2216,146 @@ public class SecurityMainFrame extends JFrame {
 			}
 		}
 	}
+	
+	private void asymmetricEncryptedRandomSymmetricKeyEncryptionOfFile() {
+		if (currentKeyStore!=null) {
+			OSDXKey key = selectEncryptionKey();
+			if (key==null) {
+				return;
+			}
+			File f = Dialogs.chooseOpenFile("Please select file for encryption", lastDir, "");
+			if (f!=null) {
+				lastDir = f.getParentFile();
+				int detached = Dialogs.showYES_NO_Dialog("Create detached metadata", "Do you want to create a detached metadata file?");
+				
+				try {
+					SymmetricKey symkey = SymmetricKey.getRandomKey();
+
+					Element e = new Element("symmetric_encryption");
+					e.addContent("dataname", f.getName());
+					e.addContent("origlength", ""+f.length());
+					e.addContent("lastmodified", SecurityHelper.getFormattedDate(f.lastModified()));
+					e.addContent("asymmetric_encryption_algo","RSA");
+					e.addContent(key.getSimplePubKeyElement());
+					byte[] enc_initv = key.encrypt(symkey.getInitVector());
+					byte[] enc_keybytes = key.encrypt(symkey.getKeyBytes());
+					e.addContent("enc_initvector", SecurityHelper.HexDecoder.encode(enc_initv, ':', -1));
+					e.addContent("enc_keybytes", SecurityHelper.HexDecoder.encode(enc_keybytes, ':', -1));
+					e.addContent("symmetric_encryption_algo","AES@256");
+					e.addContent("padding", "CBC/PKCS#7");
+					Document d = Document.buildDocument(e);
+					
+					if (detached == Dialogs.YES) {
+						File[] saveEnc = encryptFileDetached(f, symkey, d);
+						Dialogs.showMessage("Detached encryption succeeded.\nencrypt file: "+saveEnc[0].getName()+"\nsignature filename: "+saveEnc[1].getName());
+					} else {
+						File saveEnc = encryptFileInline(f, symkey, d);
+						Dialogs.showMessage("Inline encryption succeeded.\nfilename: "+saveEnc.getName());
+					}
+					
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	private void asymmetricEncryptionOfFile() {
+		if (currentKeyStore!=null) {
+			OSDXKey key = selectEncryptionKey();
+			if (key==null) {
+				return;
+			}
+			File f = Dialogs.chooseOpenFile("Please select file for encryption", lastDir, "");
+			if (f!=null) {
+				lastDir = f.getParentFile();
+				int detached = Dialogs.showYES_NO_Dialog("Create detached metadata", "Do you want to create a detached metadata file?");
+				
+				try {
+					int blockSize = 256;
+					Element e = new Element("asymmetric_encryption");
+					e.addContent("dataname", f.getName());
+					e.addContent("origlength", ""+f.length());
+					e.addContent("lastmodified", SecurityHelper.getFormattedDate(f.lastModified()));
+					e.addContent("asymmetric_encryption_algo","RSA");
+					e.addContent("block_size",""+blockSize);
+					e.addContent(key.getSimplePubKeyElement());
+					Document d = Document.buildDocument(e);
+					
+					if (detached == Dialogs.YES) {
+						File[] saveEnc = asymmetricEncryptFileDetached(f, key, d, blockSize);
+						Dialogs.showMessage("Detached encryption succeeded.\nencrypt file: "+saveEnc[0].getName()+"\nsignature filename: "+saveEnc[1].getName());
+					} else {
+						File saveEnc = asymmetricEncryptFileInline(f, key, d, blockSize);
+						Dialogs.showMessage("Inline encryption succeeded.\nfilename: "+saveEnc.getName());
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	
+	private File[] asymmetricEncryptFileDetached(File f, OSDXKey key, Document d, int blockSize) throws Exception {
+		if (blockSize>342) {
+			//max 342 bytes can be encrypted with asymmeric encryption -> use block sizes <= 342
+			throw new RuntimeException("max blocksize is 342");
+		}
+		 
+		File fenc = new File(f.getAbsolutePath()+".osdx.aenc");
+		FileInputStream in = new FileInputStream(f);
+		FileOutputStream out = new FileOutputStream(fenc);
+		
+		byte[] buffer = new byte[blockSize];
+		int read = -1;
+		while ((read = in.read(buffer))>0) {
+			byte[] crypt;
+			if (read==blockSize) {
+				crypt = key.encrypt(buffer);
+			} else {
+				crypt = key.encrypt(Arrays.copyOf(buffer, read));
+			}
+			out.write(crypt);	
+		}
+		in.close();
+		out.close();
+
+		File fxml = new File(f.getAbsolutePath()+".osdx.aenc.xml");
+		d.writeToFile(fxml);
+		return new File[] {fenc,fxml};
+	}
+
+	private File asymmetricEncryptFileInline(File f, OSDXKey key, Document d, int blockSize) throws Exception {
+		if (blockSize>342) {
+			//max 342 bytes can be encrypted with asymmeric encryption -> use block sizes <= 342
+			throw new RuntimeException("max blocksize is 342");
+		}
+		
+		File fenc = new File(f.getAbsolutePath()+".aenc.osdx");
+		FileOutputStream out = new FileOutputStream(fenc);
+		out.write("#### openSDX asymmetrical encrypted file ####\n".getBytes("UTF-8"));
+		d.output(out);
+		//		out.write("\n".getBytes("UTF-8"));
+		out.write("#### openSDX asymmetrical encrypted file ####\n".getBytes("UTF-8"));
+		
+		FileInputStream in = new FileInputStream(f);
+		byte[] buffer = new byte[blockSize];
+		int read = -1;
+		while ((read = in.read(buffer))>0) {
+			byte[] crypt;
+			if (read==blockSize) {
+				crypt = key.encrypt(buffer);
+			} else {
+				crypt = key.encrypt(Arrays.copyOf(buffer, read));
+			}
+			out.write(crypt);	
+		}
+		in.close();
+		out.close();
+		return fenc;
+	}
+	
 
 	private void signFile() {
 		if (currentKeyStore!=null) {
@@ -2123,6 +2365,7 @@ public class SecurityMainFrame extends JFrame {
 			}
 			File f = Dialogs.chooseOpenFile("Please select file for signing", lastDir, "");
 			if (f!=null) {
+				lastDir = f.getParentFile();
 				signFile(key,f);
 			}
 			
@@ -2292,6 +2535,35 @@ public class SecurityMainFrame extends JFrame {
 		int ans = Dialogs.showSelectDialog("Select private key","Please select a private key for signing", select);
 		if (ans>=0 && ans<select.size()) {
 			return storedPrivateKeys.get(map[ans]);
+		}
+		return null;
+	}
+	
+	public OSDXKey selectEncryptionKey() {
+		
+		Vector<SubKey> keys = currentKeyStore.getAllEncyrptionSubKeys();
+		if (keys.size()==0) {
+			Dialogs.showMessage("Sorry, no keys for encryption in keystore");
+			return null;
+		}
+		Vector<String> select = new Vector<String>();
+		int[] map = new int[keys.size()];
+		for (int i=0;i<keys.size();i++) {
+			OSDXKey k = keys.get(i);
+			if (k.isMaster()) {
+				select.add(k.getKeyID()+", "+((MasterKey)k).getIDEmailAndMnemonic());
+			}
+			else if (k.isSub() && ((SubKey)k).getParentKey()!=null) {
+				select.add(k.getKeyID()+" subkey of "+((SubKey)k).getParentKey().getIDEmailAndMnemonic());
+			}
+			else {
+				select.add(k.getKeyID());
+			}
+			map[select.size()-1] = i;
+		}
+		int ans = Dialogs.showSelectDialog("Select encryption key","Please select a key for encryption", select);
+		if (ans>=0 && ans<select.size()) {
+			return keys.get(map[ans]);
 		}
 		return null;
 	}
