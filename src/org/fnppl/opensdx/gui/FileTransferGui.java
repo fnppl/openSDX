@@ -71,23 +71,17 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
-import org.fnppl.opensdx.ftp.FTPClient;
 import org.fnppl.opensdx.ftp.RemoteFile;
 import org.fnppl.opensdx.ftp.RemoteFileSystem;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
-import org.fnppl.opensdx.gui.helper.TreeAndTableNode;
 import org.fnppl.opensdx.gui.helper.TreeAndTablePanel;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
-
-import sun.swing.BakedArrayList;
 
 public class FileTransferGui extends JFrame implements MyObserver {
 
@@ -150,8 +144,19 @@ public class FileTransferGui extends JFrame implements MyObserver {
 					if (a.type.equals(a.TYPE_FTP)) {
 						a.username = e.getChildText("username");
 						a.host = e.getChildText("host");
+						accounts.add(a);
+					} else if (a.type.equals(a.TYPE_OSDXFILESERVER)) {
+						a.username = e.getChildText("username");
+						a.host = e.getChildText("host");
+						a.port = Integer.parseInt(e.getChildTextNN("port"));
+						a.prepath = e.getChildTextNN("prepath");
+						a.keyid = e.getChildText("keyid");
+						a.keystore_filename = e.getChildTextNN("keystore");
+						accounts.add(a);
+					} else {
+						a.type += "[NOT SUPPORTED]";
+						accounts.add(a);
 					}
-					accounts.add(a);
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
@@ -175,8 +180,8 @@ public class FileTransferGui extends JFrame implements MyObserver {
 			if (a.type.equals(a.TYPE_FTP)) {
 				selectAccount_model.addElement(a.type+" :: "+a.username+"@"+a.host);
 			} 
-			else if (a.type==a.TYPE_OSDXFILESERVER) {
-				String name = a.type+" :: "+a.username+"::"+a.keyid+"@"+a.host;
+			else if (a.type.equals(a.TYPE_OSDXFILESERVER)) {
+				String name = a.type+" :: "+a.username+", "+a.keyid+", "+a.host;
 				selectAccount_model.addElement(name);	
 			}
 			else {
@@ -395,10 +400,62 @@ public class FileTransferGui extends JFrame implements MyObserver {
 					
 					panelRemote.removeAll();
 					panelRemote.add(ttpanelRemote, BorderLayout.CENTER);
+					buConnect.setText("disconnect");
 					this.validate();
 					this.repaint();
 				}
-				buConnect.setText("disconnect");
+				else if (a.type.equals(a.TYPE_OSDXFILESERVER)) {
+					
+					//get osdx key out of keystore
+					OSDXKey key = null;
+					File fKeyStore = new File(a.keystore_filename);
+					if (fKeyStore==null || !fKeyStore.exists()) {
+						Dialogs.showMessage("Could not open KeyStore:\n"+a.keystore_filename);
+						return;
+					}
+					try {
+						MessageHandler mh = new DefaultMessageHandler();
+						KeyApprovingStore keystore = KeyApprovingStore.fromFile(fKeyStore, mh);
+						key = keystore.getKey(a.keyid);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						Dialogs.showMessage("Error while opening KeyStore");
+						return;
+					}
+					if (key==null) {
+						Dialogs.showMessage("Given keyid not found.");
+						return;
+					}
+					
+					fsRemote = RemoteFileSystem.initOSDXFileServerConnection(a.host, a.port, a.prepath, a.username, key);
+					if (!fsRemote.isConnected()) {
+						try {
+							fsRemote.connect();
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+					if (!fsRemote.isConnected()) {
+						addStatus("ERROR, could not connect to "+a.username+"@"+a.host+" established.");
+						Dialogs.showMessage("Sorry, could not connect to given account.");
+						return;
+					} else {
+						addStatus("Connection to "+a.username+"@"+a.host+" established.");
+					}
+					ttpanelRemote = new TreeAndTablePanel(fsRemote,false);
+					ttpanelRemote.addObserver(this);
+					ttpanelRemote.setPreferredColumnWidth(1, 20);
+					ttpanelRemote.setPreferredColumnWidth(2, 30);
+					ttpanelRemote.setColumnRenderer(0, leftRenderer);
+					ttpanelRemote.setColumnRenderer(1, centerRenderer);		
+					ttpanelRemote.setColumnRenderer(2, rightRenderer);
+					
+					panelRemote.removeAll();
+					panelRemote.add(ttpanelRemote, BorderLayout.CENTER);
+					buConnect.setText("disconnect");
+					this.validate();
+					this.repaint();
+				} 
 			}
 		} else {
 			//System.out.println("disconnect");
@@ -473,6 +530,8 @@ public class FileTransferGui extends JFrame implements MyObserver {
 		
 		public String type = null;
 		public String host = null;
+		public int port = 80;
+		public String prepath = null;
 		public String username = null;
 		public String keystore_filename = null;
 		public String keyid = null;

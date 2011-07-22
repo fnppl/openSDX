@@ -48,14 +48,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.Vector;
 
 import org.fnppl.opensdx.ftp.FileTransferClient;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.ftp.RemoteFile;
 
 public class OSDXFileTransferClient extends OSDXSocket implements FileTransferClient {
 
-	private File nextDownloadFile = null;
+	private Vector<File> nextDownloadFile = new Vector<File>();
+	private Vector<String> textQueue = new Vector<String>();
 	
 	public OSDXFileTransferClient(String host, int port, String prepath) {
 		super(host, port, prepath);
@@ -63,15 +66,20 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 		this.setDataHandler(new OSDXSocketDataHandler() {
 			public void handleNewText(String text, OSDXSocketSender sender) {
 				System.out.println("RECEIVED TEXT: "+text);
+				textQueue.add(text);
+				while (textQueue.size()>1000) {
+					textQueue.remove(0);
+				}
 			}
 
 			public void handleNewData(byte[] data, OSDXSocketSender sender) {
 				//if data arrives, it must be a file
-				if (nextDownloadFile!=null) {
+				if (nextDownloadFile!=null && nextDownloadFile.size()>0) {
 					//only process if requested
 					try {
-						System.out.println("Saving to file: "+nextDownloadFile.getAbsolutePath());
-						FileOutputStream fout = new FileOutputStream(nextDownloadFile);
+						File f = nextDownloadFile.remove(0);
+						System.out.println("Saving to file: "+f.getAbsolutePath());
+						FileOutputStream fout = new FileOutputStream(f);
 						fout.write(data);
 						nextDownloadFile = null;
 					} catch (Exception e) {
@@ -95,11 +103,29 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 		sendEncryptedText("MKDIR "+dir);
 	}
 	
-	public void pwd() {
+	public String pwd() {
 		sendEncryptedText("PWD");
+		String pwd = null;
+		long timeout = System.currentTimeMillis()+2000;
+		while (pwd==null && System.currentTimeMillis()<timeout) {
+			for (int i=0;i<textQueue.size();i++) {
+				if (textQueue.get(i).startsWith("ACK PWD :: ")) {
+					pwd = textQueue.remove(i);
+					return pwd.substring(11);
+				}
+			}
+		}
+		return null;
 	}
+	
 	public void uploadFile(File f) {
 		uploadFile(f, null);
+	}
+	
+	public Vector<RemoteFile> list() {
+		Vector<RemoteFile> list = null;
+		
+		return null;
 	}
 	
 	public void uploadFile(File f, String new_filename) {
@@ -132,7 +158,7 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 	}
 	
 	public void downloadFile(String filename, File localFile) {
-		nextDownloadFile = localFile;
+		nextDownloadFile.add(localFile);
 		sendEncryptedText("GET "+filename);
 	}
 	

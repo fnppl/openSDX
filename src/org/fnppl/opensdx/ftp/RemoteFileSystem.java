@@ -5,6 +5,10 @@ import java.util.Vector;
 
 import javax.swing.table.DefaultTableModel;
 
+import org.fnppl.opensdx.gui.Dialogs;
+import org.fnppl.opensdx.securesocket.OSDXFileTransferClient;
+import org.fnppl.opensdx.security.OSDXKey;
+
 /*
  * Copyright (C) 2010-2011
  * 							fine people e.V. <opensdx@fnppl.org>
@@ -194,6 +198,97 @@ public abstract class  RemoteFileSystem {
 				try {
 					System.out.println("download file: "+remote.getFilnameWithPath()+" -> "+local.getAbsolutePath());
 					ftp.downloadFile(remote.getFilnameWithPath(), local);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			
+		};
+		fs.root = new RemoteFile("", "/", 0, 0, true);
+		return fs;
+	}
+	
+	public static RemoteFileSystem initOSDXFileServerConnection(final String host, final int port, final String prepath, final String username, final OSDXKey key) {
+		final RemoteFileSystem fs = new RemoteFileSystem() {
+			private OSDXFileTransferClient client;
+			private boolean connected = false;
+			public void connect() throws Exception{
+				client = new OSDXFileTransferClient(host, port, prepath);
+				connected = client.connect(key, username);
+			};
+			public void disconnect() {
+				if (client!=null) {
+					try {
+						client.closeConnection();
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			};
+			public boolean isConnected() {
+				if (client==null) return false;
+				return connected;
+			}
+			
+			public Vector<RemoteFile> list(RemoteFile file) {
+				try {
+					String dir = file.getFilnameWithPath();
+					System.out.println("cd "+dir);
+					client.cd(dir);
+					Vector<RemoteFile> list = client.list();
+					return list;
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				return null;
+			}
+			public void mkdir(RemoteFile dir) {
+				try {
+					String f = dir.getFilnameWithPath();
+					System.out.println("mkdir "+dir);
+					client.mkdir(f);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			public void remove(RemoteFile file) {
+				Dialogs.showMessage("not implemented");
+				try {
+					String f = file.getFilnameWithPath();
+//					System.out.println("remove "+f);
+//					if (file.isDirectory()) {
+//						client.deleteDirectory(f);
+//					} else {
+//						client.deleteFile(f);
+//					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			public void rename(RemoteFile from, RemoteFile to) {
+				Dialogs.showMessage("not implemented");
+				try {
+					String oldname = from.getFilnameWithPath();
+					String newname = to.getFilnameWithPath();
+//					client.rename(oldname, newname);
+//					System.out.println("rename: "+oldname+" -> "+newname);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				
+			}
+			public void upload(File local, RemoteFile remote) {
+				try {
+					System.out.println("upload file: "+local.getAbsolutePath()+" -> "+remote.getFilnameWithPath());
+					client.uploadFile(local, remote.getFilnameWithPath());
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+			public void download(File local, RemoteFile remote) {
+				try {
+					System.out.println("download file: "+remote.getFilnameWithPath()+" -> "+local.getAbsolutePath());
+					client.downloadFile(remote.getFilnameWithPath(), local);
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}

@@ -388,10 +388,30 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		sender.sendEncryptedText("ACK PWD :: "+state.getRelativPath());
 	}
 
-	public void handle_dir(String param, OSDXSocketSender sender) {
+	public void handle_list(String param, OSDXSocketSender sender) {
 		FileTransferState state = getState(sender);
-		
-		//TODO
+		File f = null;
+		if (param!=null) {
+			if (param.startsWith("/")) {
+				f = new File(state.getRootPath()+param);
+			} else {
+				f = new File(state.getCurrentPath(),param);
+			}
+			
+		} else {
+			f = state.getCurrentPath();
+		}
+		if (!f.exists() || !f.isDirectory()) {
+			sender.sendEncryptedText("ERROR IN LIST :: DIRECTORY \""+param+"\" DOES NOT EXIST.");
+		} else {
+			File[] list = f.listFiles();
+			String files = "";
+			for (int i=0;i<list.length;i++) {
+				if (i>0) files += ";";
+				files += list[i].getParent()+","+list[i].getName()+","+list[i].length()+","+list[i].lastModified()+","+list[i].isDirectory();
+			}
+			sender.sendEncryptedText("ACK LIST :: "+files);
+		}
 	}
 	
 	public void handle_put(String param, OSDXSocketSender sender) {
