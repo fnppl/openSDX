@@ -2012,7 +2012,7 @@ public class SecurityMainFrame extends JFrame {
 					if (!private_akey.isPrivateKeyUnlocked()) {
 						return;
 					}
-					int blockSize = Integer.parseInt(e.getChildText("block_size"));
+					//int blockSize = Integer.parseInt(e.getChildText("block_size"));
 				
 			
 					File fdec = new File(f.getParent(),"decrypt_"+e.getChildText("dataname"));
@@ -2023,15 +2023,16 @@ public class SecurityMainFrame extends JFrame {
 					}
 
 					FileOutputStream out = new FileOutputStream(fdec);
-					byte[] buffer = new byte[blockSize];
+					byte[] buffer = new byte[384];
 					int read = -1;
 					byte[] decrypt = null;
 					while ((read = in.read(buffer))>0) {
-						if (read==blockSize) {
+						if (read==384) {
 							decrypt = private_akey.decrypt(buffer);
 						} else {
 							decrypt = private_akey.decrypt(Arrays.copyOf(buffer, read));
 						}
+						//System.out.println("decrypt len="+decrypt.length+"\tread="+read);
 						if (decrypt!=null) {
 							out.write(decrypt);
 						}
@@ -2272,7 +2273,7 @@ public class SecurityMainFrame extends JFrame {
 				int detached = Dialogs.showYES_NO_Dialog("Create detached metadata", "Do you want to create a detached metadata file?");
 				
 				try {
-					int blockSize = 256;
+					int blockSize = 342;
 					Element e = new Element("asymmetric_encryption");
 					e.addContent("dataname", f.getName());
 					e.addContent("origlength", ""+f.length());
@@ -2331,7 +2332,6 @@ public class SecurityMainFrame extends JFrame {
 			//max 342 bytes can be encrypted with asymmeric encryption -> use block sizes <= 342
 			throw new RuntimeException("max blocksize is 342");
 		}
-		
 		File fenc = new File(f.getAbsolutePath()+".aenc.osdx");
 		FileOutputStream out = new FileOutputStream(fenc);
 		out.write("#### openSDX asymmetrical encrypted file ####\n".getBytes("UTF-8"));
@@ -2349,6 +2349,7 @@ public class SecurityMainFrame extends JFrame {
 			} else {
 				crypt = key.encrypt(Arrays.copyOf(buffer, read));
 			}
+			//System.out.println("crpyt len="+crypt.length+"\tread = "+read);
 			out.write(crypt);	
 		}
 		in.close();

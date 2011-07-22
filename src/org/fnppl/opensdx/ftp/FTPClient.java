@@ -191,13 +191,14 @@ public class FTPClient implements FileTransferClient{
 			list = client.list();
 		} else {
 			list = client.list(filter); 
-		 }
+		}
+		String path = pwd();
 		for (it.sauronsoftware.ftp4j.FTPFile f : list) {
 			String name = f.getName();
 			long length = f.getSize();
 			long lastModified = f.getModifiedDate().getTime();
 			boolean dir = (f.getType()==it.sauronsoftware.ftp4j.FTPFile.TYPE_DIRECTORY);
-			RemoteFile ftpf = new RemoteFile(name, length, lastModified, dir);
+			RemoteFile ftpf = new RemoteFile(path,name, length, lastModified, dir);
 			files.add(ftpf);
 		}
 		return files;

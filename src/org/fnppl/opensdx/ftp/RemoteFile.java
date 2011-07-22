@@ -48,20 +48,38 @@ import org.fnppl.opensdx.security.SecurityHelper;
  */
 public class RemoteFile {
 
+	private String path;
 	private String name;
 	private long length;
 	private long lastModified;
 	private boolean directory;
 	
 	
-	public RemoteFile(String name, long length, long lastModified, boolean directory) {
+	public RemoteFile(String path, String name, long length, long lastModified, boolean directory) {
+		this.path = path;
 		this.name = name;
 		this.length = length;
 		this.lastModified = lastModified;
 		this.directory = directory;
 	}
 
+	public String getFilnameWithPath() {
+		String filename = ""+path;
+		if (!filename.endsWith("/")) filename += "/";
+		if (!name.equals("/")) {
+			filename += name;
+		}
+		return filename;
+	}
+	
+	public String getPath() {
+		return path;
+	}
 
+	public void setPath(String path) {
+		this.path = path;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -85,7 +103,10 @@ public class RemoteFile {
 	public void setLastModified(long lastModified) {
 		this.lastModified = lastModified;
 	}
-	
+
+	public boolean isDirectory() {
+		return directory;
+	}
 
 	public String toString() {
 		return String.format("%-20s | %8dkB  %-6s  %s",name,(length/1000),(directory?"[DIR]":"[FILE]"),SecurityHelper.getFormattedDate(lastModified));

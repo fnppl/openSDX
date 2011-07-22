@@ -105,6 +105,11 @@ public class Dialogs {
 		return JOptionPane.showInputDialog(null, message, title, JOptionPane.PLAIN_MESSAGE);
 	}
 	
+	public static String showInputDialog(String title, String message, String value) {
+		return JOptionPane.showInputDialog(null, message, value);
+		//return JOptionPane.showInputDialog(null, message, title, value);
+	}
+	
 	public static final String[] showUsageDialog(String head, String message) {
 		JPanel p = new JPanel();
 		GridBagLayout gbl = new GridBagLayout();

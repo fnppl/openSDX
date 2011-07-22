@@ -46,8 +46,12 @@ package org.fnppl.opensdx.gui.helper;
  */
 
 import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
+
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -63,24 +67,69 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-public class TreeAndTablePanel extends JPanel {
+import org.fnppl.opensdx.ftp.RemoteFile;
+import org.fnppl.opensdx.ftp.RemoteFileSystem;
+import org.fnppl.opensdx.gui.Dialogs;
+
+public class TreeAndTablePanel extends JPanel implements MyObservable {
 
 	private JSplitPane split;
 	private JTree tree;
 	private DefaultTreeModel tree_model;
 	private JTable table;
 	private DefaultTableModel table_model;
-	private TreeAndTableBackend backend;
+	private Vector<RemoteFile> currentFiles = null;
 	
-	public TreeAndTablePanel(TreeAndTableBackend backend) {
-		this.backend = backend;
+	private RemoteFileSystem fs = null;
+	
+	private JPanel buttons;
+	private JButton buTransfer;
+	private JButton buMkdir;
+	private JButton buRemove;
+	private JButton buRename;
+	
+	private boolean canUpload = true;
+	
+	public TreeAndTablePanel(RemoteFileSystem fs, boolean canUpload) {
+		this.canUpload = canUpload;
+		this.fs = fs;
+		if (!fs.isConnected()) {
+			try {
+				fs.connect();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
 		initComponents();
 		initLayout();
 	}
 	
+	public void closeConnection() {
+		fs.disconnect();
+	}
 	
 	public Vector<TreeAndTableNode> getChildren(TreeAndTableNode node) {
-		return backend.getChildren(node, this);
+		Vector<TreeAndTableNode> children = new Vector<TreeAndTableNode>();
+		RemoteFile file = (RemoteFile) node.getUserObject();
+		try {
+			Vector<RemoteFile> list = fs.list(file);
+			if (list == null)
+				return children;
+			for (RemoteFile f : list) {
+				String name = f.getName();
+				try {
+					if (f.isDirectory()) {
+						TreeAndTableNode n = new TreeAndTableNode(this, name, true, f);
+						children.add(n);
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return children;
 	}
 	
 	public void setPreferredColumnWidth(int colNo, int width) {
@@ -97,7 +146,8 @@ public class TreeAndTablePanel extends JPanel {
 	
 	private void initComponents() {
 		tree = new JTree();
-		TreeAndTableNode root = backend.getRootNode(this);
+		RemoteFile f = fs.getRoot();
+		TreeAndTableNode root = new TreeAndTableNode(this, f.getName(), true, f);
 		root.populate();
 		tree_model = new DefaultTreeModel(root);
 		tree.setModel(tree_model);
@@ -131,7 +181,7 @@ public class TreeAndTablePanel extends JPanel {
 					width[i] = colModel.getColumn(i).getWidth();
 					render[i] = colModel.getColumn(i).getCellRenderer();
 				}
-				table_model = backend.updateTableModel(node);
+				table_model = updateTableModel(node);
 				table.setModel(table_model);
 				for (int i=0;i<colCount;i++) {
 					colModel.getColumn(i).setPreferredWidth(width[i]);
@@ -141,16 +191,194 @@ public class TreeAndTablePanel extends JPanel {
 		});
 		
 		table = new JTable();
-		table_model = backend.updateTableModel(null);
+		table_model = updateTableModel(null);
 		table.setModel(table_model);
 		
 		split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(tree), new JScrollPane(table));
 		split.setDividerLocation(230);
-		
+		buttons = new JPanel();
+		if (canUpload) {
+			buTransfer = new JButton("upload");
+		} else {
+			buTransfer = new JButton("download");
+		}
+		buTransfer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				notifyChanges();
+			}
+		});
+		buMkdir = new JButton("mkdir");
+		buMkdir.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				RemoteFile dir = getSelectedDir();
+				if (dir == null) {
+					Dialogs.showMessage("Please choose a parent directory first");
+				} else {
+					String name = Dialogs.showInputDialog("Make Directory", "Make a new Directory in:\n"+dir.getFilnameWithPath()+"\n\nEnter new directory name:");
+					if (name!=null) {
+						RemoteFile f = new RemoteFile(dir.getFilnameWithPath(), name, 0, System.currentTimeMillis(), true);
+						fs.mkdir(f);
+					}
+				}
+			}
+		});
+		buRemove = new JButton("remove");
+		buRemove.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Vector<RemoteFile> files = getSelectedFiles();
+				if (files!=null && files.size()>0) {
+					//remove files
+					String msg = "Are you sure you want to remove the following files?";
+					for (RemoteFile f : files) {
+						msg += "\n"+f.getName();
+					}
+					int q = Dialogs.showYES_NO_Dialog("Remove Files", msg);
+					if (q == Dialogs.YES) {
+						for (RemoteFile f : files) {
+							fs.remove(f);
+						}
+						try {
+							table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
+							table.setModel(table_model);
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+				} else {
+					RemoteFile dir = getSelectedDir();
+					if (dir !=null) {
+						//remove dir
+						String msg = "Are you sure you want to remove the following directory?";
+						msg += "\n"+dir.getName();
+						int q = Dialogs.showYES_NO_Dialog("Remove Directory", msg);
+						if (q == Dialogs.YES) {
+							TreePath path = tree.getSelectionPath();
+							fs.remove(dir);
+							try {
+								tree.collapsePath(path.getParentPath());
+								tree.expandPath(path.getParentPath());
+								tree.setSelectionPath(path.getParentPath());
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
+						}
+					}
+				}
+			}
+		});
+		buRename = new JButton("rename");
+		buRename.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Vector<RemoteFile> files = getSelectedFiles();
+				if (files==null || files.size()!=1) {
+					Dialogs.showMessage("Please select one file");
+					return;
+				}
+				
+				RemoteFile from = files.get(0);
+				String name = Dialogs.showInputDialog("Rename file", "Please enter new filename for file\n"+from.getName()+"\n",from.getName());
+				if (name!=null) {
+					RemoteFile to = new RemoteFile(from.getPath(), name, from.getLength(), from.getLastModified(), false);
+					fs.rename(from, to);
+					table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
+					table.setModel(table_model);
+				}
+				
+			}
+		});	
+	}
+	
+	private String[] header = new String[] { "name", "type","size"};
+	private DefaultTableModel updateTableModel(TreeAndTableNode node) {
+		if (node == null) {
+			return new DefaultTableModel(new String[0][header.length],header);
+		}
+		try {
+			RemoteFile file = (RemoteFile) node.getUserObject();
+			Vector<RemoteFile> list = fs.list(file);
+			currentFiles = new Vector<RemoteFile>();
+			Vector<String[]> data = new Vector<String[]>();
+
+			for (int i = 0; i < list.size(); i++) {
+				RemoteFile f = list.get(i);
+				String[] d  = new String[header.length];
+				d[0] = f.getName();
+				if (f.isDirectory()) {
+//					d[2] = "";
+//					d[1] = "[DIR]";
+//					data.add(d);
+				} else {
+					d[2] = (f.getLength() / 1000) + " kB";
+					d[1] = "";
+					int ind = d[0].lastIndexOf('.');
+					if (ind > 0 && ind + 1 < d[0].length()) {
+						d[1] = d[0].substring(ind + 1);
+					}
+					data.add(d);
+					currentFiles.add(f);
+				}
+			}
+			String[][] tdata = new String[data.size()][header.length];
+			for (int i=0;i<data.size();i++) {
+				tdata[i] = data.get(i);
+			}
+			DefaultTableModel model = new DefaultTableModel(tdata, header);
+			return model;
+		} catch (Exception ex) {
+			return new DefaultTableModel(new String[0][header.length],header);
+		}
+	}
+	
+	public RemoteFile getSelectedDir() {
+		try {
+			RemoteFile f = (RemoteFile)((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent()).getUserObject();
+			return f;
+		} catch (Exception ex)	{
+			ex.printStackTrace();
+		}
+		return null;
+	}
+	
+	public Vector<RemoteFile> getSelectedFiles() {
+		Vector<RemoteFile> sel = new Vector<RemoteFile>();
+		int[] select = table.getSelectedRows();
+		if (select!=null && select.length>0) {
+			for (int i=0;i<select.length;i++) {
+				//sel.add(currentFiles.get(table.getRowSorter().convertRowIndexToModel(select[i])));
+				sel.add(currentFiles.get(select[i]));
+			}
+		}
+		return sel;
 	}
 	
 	private void initLayout() {
 		this.setLayout(new BorderLayout());
 		this.add(split, BorderLayout.CENTER);
+		
+		if (canUpload) {
+			buttons.setLayout(new FlowLayout(FlowLayout.RIGHT));
+			buttons.add(buMkdir);
+			buttons.add(buRename);
+			buttons.add(buRemove);
+			buttons.add(buTransfer);
+		} else {
+			buttons.setLayout(new FlowLayout(FlowLayout.LEFT));
+			buttons.add(buTransfer);
+			buttons.add(buMkdir);
+			buttons.add(buRename);
+			buttons.add(buRemove);
+		}
+		this.add(buttons, BorderLayout.SOUTH);
+	}
+	
+	//observable
+	private Vector<MyObserver> observers = new Vector<MyObserver>();
+	public void addObserver(MyObserver observer) {
+		observers.add(observer);
+	}
+	public void notifyChanges() {
+		for (MyObserver ob : observers) {
+			ob.notifyChange(this);
+		}
 	}
 }
