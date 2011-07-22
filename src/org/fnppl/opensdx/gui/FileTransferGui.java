@@ -80,7 +80,6 @@ import org.fnppl.opensdx.ftp.RemoteFile;
 import org.fnppl.opensdx.ftp.RemoteFileSystem;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
-import org.fnppl.opensdx.gui.helper.TreeAndTableBackend;
 import org.fnppl.opensdx.gui.helper.TreeAndTableNode;
 import org.fnppl.opensdx.gui.helper.TreeAndTablePanel;
 import org.fnppl.opensdx.security.KeyApprovingStore;
