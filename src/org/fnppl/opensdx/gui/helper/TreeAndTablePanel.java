@@ -217,7 +217,9 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 					String name = Dialogs.showInputDialog("Make Directory", "Make a new Directory in:\n"+dir.getFilnameWithPath()+"\n\nEnter new directory name:");
 					if (name!=null) {
 						RemoteFile f = new RemoteFile(dir.getFilnameWithPath(), name, 0, System.currentTimeMillis(), true);
+						TreePath path = tree.getSelectionPath();
 						fs.mkdir(f);
+						refreshView(path);
 					}
 				}
 			}
@@ -254,13 +256,7 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 						if (q == Dialogs.YES) {
 							TreePath path = tree.getSelectionPath();
 							fs.remove(dir);
-							try {
-								tree.collapsePath(path.getParentPath());
-								tree.expandPath(path.getParentPath());
-								tree.setSelectionPath(path.getParentPath());
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							}
+							refreshView(path.getParentPath());
 						}
 					}
 				}
@@ -286,6 +282,26 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 				
 			}
 		});	
+	}
+	
+	public void refreshView(TreePath path) {
+		if (path!=null) {
+			try {
+				TreeAndTableNode node = (TreeAndTableNode)path.getLastPathComponent();
+				node.populateAgain();
+				tree.collapsePath(path);
+				tree.expandPath(path);
+				//tree.setSelectionPath(path);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			try {
+				table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
+				table.setModel(table_model);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
 	}
 	
 	private String[] header = new String[] { "name", "type","size"};

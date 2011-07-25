@@ -147,7 +147,11 @@ public class OSDXMessage {
 	
 	public Element getDecryptedContent(OSDXKey decryptionKey) {
 		try {
-			byte[] encrypt = new BASE64Decoder().decodeBuffer(content.getChildText("encrypted_content"));
+			if (!content.getName().equals("encrypted_content")) {
+				return content;
+			}
+			byte[] encrypt = new BASE64Decoder().decodeBuffer(content.getText());
+			
 			byte[] decrypt = decryptionKey.decrypt(encrypt);
 			String s = new String(decrypt, "UTF-8");
 			//System.out.println(s);

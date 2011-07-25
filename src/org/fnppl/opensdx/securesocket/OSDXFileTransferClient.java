@@ -51,6 +51,7 @@ import java.io.FileOutputStream;
 import java.util.Vector;
 
 import org.fnppl.opensdx.ftp.FileTransferClient;
+import org.fnppl.opensdx.ftp.RemoteFileSystem;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.ftp.RemoteFile;
@@ -103,6 +104,10 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 		sendEncryptedText("MKDIR "+dir);
 	}
 	
+	public void delete(String file) {
+		sendEncryptedText("DELETE "+file);
+	}
+	
 	public String pwd() {
 		sendEncryptedText("PWD");
 		String pwd = null;
@@ -110,21 +115,53 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 		while (pwd==null && System.currentTimeMillis()<timeout) {
 			for (int i=0;i<textQueue.size();i++) {
 				if (textQueue.get(i).startsWith("ACK PWD :: ")) {
-					pwd = textQueue.remove(i);
-					return pwd.substring(11);
+					pwd = textQueue.remove(i).substring(11);
+					System.out.println("PWD: "+pwd);
+					return pwd;
 				}
 			}
 		}
 		return null;
 	}
 	
+	public void noop() {
+		sendEncryptedText("NOOP");
+	}
+	
+	
 	public void uploadFile(File f) {
 		uploadFile(f, null);
 	}
 	
 	public Vector<RemoteFile> list() {
-		Vector<RemoteFile> list = null;
-		
+		sendEncryptedText("LIST");
+		String list = null;
+		long timeout = System.currentTimeMillis()+2000;
+		while (list==null && System.currentTimeMillis()<timeout) {
+			for (int i=0;i<textQueue.size();i++) {
+				if (textQueue.get(i).startsWith("ACK LIST :: ")) {
+					list = textQueue.remove(i).substring(12);
+					System.out.println("list :: "+list);					
+					//parse list
+					Vector<RemoteFile> fl = new Vector<RemoteFile>();
+					if (!list.contains(",,")) { //empty dir
+						return fl;
+					}
+					String[] parts = list.split(";;");
+					for (String p : parts) {
+						try {
+							String[] att = p.split(",,");
+							RemoteFile f = new RemoteFile(RemoteFileSystem.resolveEscapeChars(att[0]), RemoteFileSystem.resolveEscapeChars(att[1]), Long.parseLong(att[2]), Long.parseLong(att[3]), Boolean.parseBoolean(att[4]));
+							System.out.println(f.toString());
+							fl.add(f);
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+					return fl;
+				}
+			}
+		}
 		return null;
 	}
 	
@@ -174,7 +211,8 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 			
 			s.connect(mysigning, username);
 			
-			//s.sendPlainText("ECHO hallo");
+			s.sendPlainText("ECHO hallo");
+			
 			//some test commands
 //			s.mkdir("test-dir");
 //			s.cd("test-dir");

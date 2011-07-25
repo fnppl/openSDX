@@ -94,7 +94,7 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketDataHandler {
 	public OSDXSocket(String host, int port, String prepath) {
 		this.host = host;
 		this.port = port;
-		if (prepath==null) {
+		if (prepath==null || prepath.length()==0) {
 			this.prepath = "/";
 		} else {
 			this.prepath = prepath;
@@ -128,6 +128,9 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketDataHandler {
 			if (agreedEncryptionKey==null) {
 				//generate symmetric key and send it to server
 				try {
+					if (!(text.startsWith("<?xml") || text.startsWith("<?XML"))) {
+						return;
+					}
 					//get servers encryption key out of message
 					OSDXMessage msg = OSDXMessage.fromElement(Document.fromString(text).getRootElement());
 					

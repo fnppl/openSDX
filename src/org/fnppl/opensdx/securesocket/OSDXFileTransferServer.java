@@ -56,6 +56,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.bouncycastle.crypto.engines.ISAACEngine;
+import org.fnppl.opensdx.ftp.RemoteFileSystem;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.OSDXMessage;
@@ -345,7 +346,12 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	public void handle_cd(String param, OSDXSocketSender sender) {
 		if (param!=null) {
 			FileTransferState state = getState(sender);
-			File path = new File(state.getCurrentPath(),param);
+			File path = null; 
+			if (param.startsWith("/")) {
+				path = new File(state.getRootPath(),param.substring(1));
+			} else {
+				path = new File(state.getCurrentPath(),param);
+			}
 			if (path.exists()) {
 				state.setCurrentPath(path);
 				sender.sendEncryptedText("ACK CD :: "+state.getRelativPath());
@@ -358,7 +364,12 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	public void handle_mkdir(String param, OSDXSocketSender sender) {
 		if (param!=null) {
 			FileTransferState state = getState(sender);
-			File path = new File(state.getCurrentPath(),param);
+			File path = null;
+			if (param.startsWith("/")) {
+				path = new File(state.getRootPath(),param.substring(1));
+			} else {
+				path = new File(state.getCurrentPath(),param);
+			}
 			if (!state.isAllowed(path)) {
 				sender.sendEncryptedText("ERROR IN MKDIR :: RESTRICTED PATH");
 			}
@@ -385,8 +396,10 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	public void handle_pwd(String param, OSDXSocketSender sender) {
 		FileTransferState state = getState(sender);
+		System.out.println("ACK PWD :: "+state.getRelativPath());
 		sender.sendEncryptedText("ACK PWD :: "+state.getRelativPath());
 	}
+	
 
 	public void handle_list(String param, OSDXSocketSender sender) {
 		FileTransferState state = getState(sender);
@@ -407,11 +420,61 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			File[] list = f.listFiles();
 			String files = "";
 			for (int i=0;i<list.length;i++) {
-				if (i>0) files += ";";
-				files += list[i].getParent()+","+list[i].getName()+","+list[i].length()+","+list[i].lastModified()+","+list[i].isDirectory();
+				if (i>0) files += ";;";
+				String path = RemoteFileSystem.makeEscapeChars(state.getRelativPath(list[i].getParentFile()));
+				String name = RemoteFileSystem.makeEscapeChars(list[i].getName());
+				files += path+",,"+name+",,"+list[i].length()+",,"+list[i].lastModified()+",,"+list[i].isDirectory();
 			}
+			//System.out.println("ACK LIST :: "+files);
 			sender.sendEncryptedText("ACK LIST :: "+files);
 		}
+	}
+	
+	public void handle_delete(String param, OSDXSocketSender sender) {
+		FileTransferState state = getState(sender);
+		File f = null;
+		if (param!=null) {
+			if (param.startsWith("/")) {
+				f = new File(state.getRootPath()+param);
+			} else {
+				f = new File(state.getCurrentPath(),param);
+			}
+		}
+		System.out.println("deleting "+f.getAbsolutePath());
+		if (f==null || !f.exists() || !state.isAllowed(f)) {
+			sender.sendEncryptedText("ERROR IN DELETE :: FILE \""+param+"\" DOES NOT EXIST.");
+		} else {
+			if (f.isDirectory()) {
+				boolean ok = deleteDirectory(f);
+				if (ok) {
+					sender.sendEncryptedText("ACK DELETE :: "+param);
+				} else {
+					sender.sendEncryptedText("ERROR IN DELETE :: DIRECTORY \""+param+"\" COULD NOT BE DELETED.");
+				}
+			} else {
+				boolean ok = f.delete();
+				if (ok) {
+					sender.sendEncryptedText("ACK DELETE :: "+param);
+				} else {
+					sender.sendEncryptedText("ERROR IN DELETE :: FILE \""+param+"\" COULD NOT BE DELETED.");
+				}
+			}
+		}
+	}
+	
+	public static boolean deleteDirectory(File path) {
+		if( path.exists() ) {
+			File[] list = path.listFiles();
+			for(int i=0; i<list.length; i++) {
+				if(list[i].isDirectory()) {
+					deleteDirectory(list[i]);
+				}
+				else {
+					list[i].delete();
+				}
+			}
+		}
+		return(path.delete());
 	}
 	
 	public void handle_put(String param, OSDXSocketSender sender) {
@@ -430,6 +493,10 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 				sender.sendEncryptedText("ACK GET :: WAITING FOR DATA");
 			}
 		}
+	}
+	
+	public void handle_noop(String param, OSDXSocketSender sender) {
+		//DO NO OPERATION
 	}
 	
 	public void handle_get(String param, OSDXSocketSender sender) {

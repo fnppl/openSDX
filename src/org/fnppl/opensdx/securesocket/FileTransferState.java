@@ -89,9 +89,14 @@ public class FileTransferState {
 	}
 	
 	public boolean isAllowed(File f) {
-		if (f.getAbsolutePath().startsWith(rootPath.getAbsolutePath())) {
-			return true;
-		} else {
+		try {
+			if (f.getCanonicalPath().startsWith(rootPath.getAbsolutePath())) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
 			return false;
 		}
 	}
@@ -103,6 +108,7 @@ public class FileTransferState {
 	public String getRelativPath(File f) {
 		String rp = f.getAbsolutePath().substring(rootPath.getAbsolutePath().length());
 		if (rp.length()==0) rp = "/";
+		if (rp.startsWith("//")) rp = rp.substring(1);
 		return rp;
 	}
 	

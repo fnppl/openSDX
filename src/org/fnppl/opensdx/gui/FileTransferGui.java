@@ -417,6 +417,15 @@ public class FileTransferGui extends JFrame implements MyObserver {
 						MessageHandler mh = new DefaultMessageHandler();
 						KeyApprovingStore keystore = KeyApprovingStore.fromFile(fKeyStore, mh);
 						key = keystore.getKey(a.keyid);
+						if (!key.hasPrivateKey()) {
+							Dialogs.showMessage("Sorry, no private key information for key id:\n"+a.keyid+" found in keystore");
+							return;
+						}
+						key.unlockPrivateKey(mh);
+						if (!key.isPrivateKeyUnlocked()) {
+							Dialogs.showMessage("Connection failed: private key is locked!");
+							return;
+						}
 					} catch (Exception ex) {
 						ex.printStackTrace();
 						Dialogs.showMessage("Error while opening KeyStore");
@@ -427,7 +436,9 @@ public class FileTransferGui extends JFrame implements MyObserver {
 						return;
 					}
 					
+					
 					fsRemote = RemoteFileSystem.initOSDXFileServerConnection(a.host, a.port, a.prepath, a.username, key);
+					
 					if (!fsRemote.isConnected()) {
 						try {
 							fsRemote.connect();
@@ -441,6 +452,17 @@ public class FileTransferGui extends JFrame implements MyObserver {
 						return;
 					} else {
 						addStatus("Connection to "+a.username+"@"+a.host+" established.");
+						Thread t = new Thread() {
+							public void run() {
+								while (fsRemote.isConnected()) {
+									try {
+										sleep(8000);
+									} catch (Exception ex) {}
+									fsRemote.noop();
+								}
+							}
+						};
+						t.start();
 					}
 					ttpanelRemote = new TreeAndTablePanel(fsRemote,false);
 					ttpanelRemote.addObserver(this);

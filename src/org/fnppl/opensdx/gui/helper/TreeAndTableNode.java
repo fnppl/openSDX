@@ -75,6 +75,12 @@ public class TreeAndTableNode extends DefaultMutableTreeNode {
 		return name;
 	}
 	
+	public boolean populateAgain() {
+		populated = false;
+		interim = true;
+		return populate();
+	}
+	
 	public boolean populate() {
 		boolean addedNodes = false;
 		if (!populated) {
