@@ -62,7 +62,7 @@ public class OpenSDXExporterBase {
 		this.exportType = expType;
 		this.exportFeed = expFeed;
 		this.saveFile = savFile;
-	}
+	}	
 		
 	/**
 	 * @param args
@@ -90,6 +90,10 @@ public class OpenSDXExporterBase {
 			Result ir = null;
 			switch(expType.getType()) {
 				case ExportType.FINETUNES:
+					if(osdxFeed.getBundleCount()>1) {
+						System.out.println("ERROR: File to export contains "+osdxFeed.getBundleCount()+" bundles! Finetunes only accept one release per feed.");
+						System.exit(0);	
+					}					
 					OpenSDXToFinetunesExporter expFt = new OpenSDXToFinetunesExporter(expType, osdxFeed, savFile);
 					ir = expFt.formatToExternalFile();
 					break;
