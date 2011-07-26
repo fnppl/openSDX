@@ -55,9 +55,8 @@ import org.fnppl.opensdx.security.*;
 
 public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 	DateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
-	Result ir = Result.succeeded();
-    
-	
+	private Result ir = Result.succeeded();
+
 	public OpenSDXToSimfyExporter(ExportType type, Feed expFeed, File savFile) {
 		super(type, expFeed, savFile);
 	}
@@ -94,187 +93,191 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 			// (1) get XML-Data from export document
 			Feed osdxFeed = this.exportFeed;
 	        
-	        // (2) create XML-Data for export document
-			int bundleCount = osdxFeed.getBundleCount();
+	        // (2) create XML-Data for export document		
+			// create root node "album"  
+			expDoc = Document.buildDocument(new Element("album"));
+			Element expDocAlbum = expDoc.getRootElement();
 			
-			// create root node "albums"  
-			expDoc = Document.buildDocument(new Element("albums"));
-			Element expDocRoot = expDoc.getRootElement();
-			
-        	for (int i=0;i<bundleCount;i++) {
-        		Bundle bundle = osdxFeed.getBundle(i);
-		        
-        		// create node "album" for each bundle
-        		Element expDocAlbum = new Element("album");
-        		expDocRoot.addContent(expDocAlbum);
-        		
-		        
-		        // feedid
-		        String upc = bundle.getIds().getUpc();
-		        if (upc==null || upc.length()==0) upc = "[NOT SET]";
-		        expDocAlbum.addContent("code", upc);
-		        
-		        // licensor
-		        String lic = osdxFeed.getFeedinfo().getLicensor().getContractPartnerID();
-		        if (lic==null) lic = "";		        
-		        expDocAlbum.addContent("licensor", lic);
-		        
-	        	// add label / artistname / copyright / production
-		        String label = "";
-		        String artist_name = "";
-	         	String copyright = "";
-	         	String production = "";
-	        	Vector<Contributor> contributors = bundle.getAllContributors();
-	        	for (Iterator<Contributor> itContributor = contributors.iterator(); itContributor.hasNext();) {
-	        		Contributor contributor = itContributor.next();
-	        		if(contributor.getType()==Contributor.TYPE_LABEL) {
-	        			label = contributor.getName();
-	        		}
-	        		else if(contributor.getType()==Contributor.TYPE_DISPLAY_ARTIST) {
-	        			artist_name = contributor.getName();
-	        		}
-	        		else if(contributor.getType()==Contributor.TYPE_COPYRIGHT) {
-	        			copyright = contributor.getName();
-	        			if(contributor.getYear().length()>0) copyright = contributor.getYear()+" "+copyright;
-	        		}
-	        		else if(contributor.getType()==Contributor.TYPE_PRODUCTION) {
-	        			production = contributor.getName();
-	        			if(contributor.getYear().length()>0) production = contributor.getYear()+" "+production;
-	        		}	        		
-	        	}
-	        	
-	        	expDocAlbum.addContent("c_line", copyright);
-	        	expDocAlbum.addContent("p_line", production);
-		        expDocAlbum.addContent("upc", upc);
-	        	expDocAlbum.addContent("label", label);	        	
-	        	expDocAlbum.addContent("artist_name", artist_name);
-		        
-		        // title
-		        String title = bundle.getDisplayname();
-		        if (title==null) title = "";
-		        expDocAlbum.addContent("title", title);		        	
-	        	
-	        	long releaseDate = bundle.getInformation().getPhysicalReleaseDatetime();
-	        	String original_released_on = "";
-	        	if (original_released_on!=null) cal.setTimeInMillis(releaseDate); original_released_on = ymd.format(cal.getTime());
-	        	expDocAlbum.addContent("original_released_on", original_released_on);
-	        	
-		        long creationdatetime = osdxFeed.getFeedinfo().getCreationDatetime();
-	        	cal.setTimeInMillis(creationdatetime);
-	        	expDocAlbum.addContent("updated_at", ymd.format(cal.getTime()));	        	
-		        
-	        	int genreCount = bundle.getTags().getGenresCount();
-	        	for (int j=0;j<genreCount;j++) {
-	        		if(bundle.getTags().getGenre(j).length()>0) expDocAlbum.addContent("genre", bundle.getTags().getGenre(j));
-	        	}
-	        	
-	        	int fileCount = bundle.getFilesCount();
-	        	for (int j=0;j<fileCount;j++) {
-	        		if(bundle.getFile(j).getType().equals("cover")) {
-	        			Element cover = new Element("cover");
-	        			expDocAlbum.addContent(cover);
-	        				        			
-	        			cover.addContent("height", ""+bundle.getFile(j).getDimensionHeight());
-	        			cover.addContent("width", ""+bundle.getFile(j).getDimensionHeight());
-	        			
-	        			String filename = bundle.getFile(j).getLocationPath();
-            			cover.addContent("file_name", filename);
-            			cover.addContent("file_size", ""+bundle.getFile(j).getBytes());
-            			
-	            		File f = new File(filename);
-	            		if(f!=null && f.exists()) {
-	            			byte[][] sums = SecurityHelper.getMD5SHA1(f);
-	            			cover.addContent("file_checksum", Checksums.make(sums[0],sums[1],null).getMd5String());
-	            		} else {
-	            			//file does not exist -> so we have to set the values "manually"
-	            			// checksum md5 -> ToDo: decode!
-	            			if(bundle.getFile(j).getChecksums().getMd5String()!=null)
-	            				cover.addContent("file_checksum", bundle.getFile(j).getChecksums().getMd5String());
-	            		}	        			
-	        		}
-	        	}
-	        	
-	        	Element expDocTracks = new Element("tracks");
-        		expDocAlbum.addContent(expDocTracks);
-	        	
-	        	int itemCount = bundle.getItemsCount();
-	        	int trackCount = 0;
-	        	int discCount = 0;
-	        	for (int j=0;j<itemCount;j++) {
-	        		// fulltracks holen
-	        		if(bundle.getItem(j).getType().equals("audio")) {	        					
-	        			// add track 
-	        			Element track = new Element("track");
-	        			expDocTracks.addContent(track);
-		        		
-	        			trackCount++;
-	        			discCount = bundle.getItem(j).getInformation().getSetNum();	        			
-	        			
-	        			String ext = ""+bundle.getItem(j).getInformation().getNum();
-	        			if(ext.length()<2) ext="0"+ext;
-	        			String trackCode = upc+"_"+ext;
-	        			track.addContent("track_code", trackCode);
-	        			
-	        			IDs ids = bundle.getItem(j).getIds();
-	        			if(ids.getIsrc()!=null && ids.getIsrc().length()>0)
-	        				track.addContent("isrc", ids.getIsrc());
-	        			
-	        			if(ids.getUpc()!=null && ids.getUpc().length()>0)
-	        				track.addContent("upc", ids.getUpc());
-	        			
-	        			// title
-	        			track.addContent("title", bundle.getItem(j).getDisplayname());
-
-	    	        	// display_artist
-	        			track.addContent("artist_name", bundle.getItem(j).getDisplay_artist());
-	        			
-	    	        	// duration
-	        			track.addContent("duration", ""+bundle.getItem(j).getInformation().getPlaylength());
-	        			
-	        			// explicit_lyrics	    	        	
-	                	String explicit_lyrics = bundle.getItem(j).getTags().getExplicit_lyrics();
-	                	if(explicit_lyrics!=null)
-	                		track.addContent("explicit_lyrics", explicit_lyrics);
-	                	
-	    	        	int trackFileCount = bundle.getFilesCount();
-	    	        	for (int k=0;k<trackFileCount;k++) {
-	    	        		if(bundle.getItem(j).getFile(k).getType().equals("full")) {
-	    	        			
-	    	        			String track_filename = bundle.getItem(j).getFile(k).getLocationPath();
-	                			track.addContent("file_name", track_filename);
-	                			track.addContent("file_size", ""+bundle.getItem(j).getFile(k).getBytes());
-	                			
-	    	            		File f = new File(track_filename);
-	    	            		if(f!=null && f.exists()) {
-	    	            			byte[][] sums = SecurityHelper.getMD5SHA1(f);
-	    	            			track.addContent("file_checksum", Checksums.make(sums[0],sums[1],null).getMd5String());
-	    	            		} else {
-	    	            			// file does not exist -> so we have to set the values "manually"
-	    	            			// checksum md5 -> ToDo: decode! 
-	    	            			if(bundle.getItem(j).getFile(k).getChecksums().getMd5()!=null)
-	    	            				track.addContent("file_checksum", bundle.getItem(j).getFile(k).getChecksums().getMd5String());
-	    	            		}	    	        			
-	    	        			
-	    	        		
-	    	                	/*
-	    	                	 * ToDo: <rights/> (streamable, from, to etc.) for every track and territory / not yet available in openSDX! 
-	    	                	 *  
-	    	                	 */
-	    	        		}
-	    	        	}
-	        		}
-	        	}	        	
-
-	        	expDocAlbum.addContent("tracks_count", ""+trackCount);
-	        	if(discCount>0) {
-	        		expDocAlbum.addContent("disks_count", ""+discCount);
-	        	}
-	        	
-		        // ToDo: export magic here!
+			// bundleCount max = 1 -> simfy spec
+        	int i=0;
+        	
+    		Bundle bundle = osdxFeed.getBundle(i);
+	        
+	        // feedid
+	        String upc = bundle.getIds().getUpc();
+	        if (upc==null || upc.length()==0) upc = "[NOT SET]";
+	        expDocAlbum.addContent("code", upc);
+	        
+	        // licensor
+	        String lic = osdxFeed.getFeedinfo().getLicensor().getContractPartnerID();
+	        if (lic==null) lic = "";		        
+	        expDocAlbum.addContent("licensor", lic);
+	        
+        	// add label / artistname / copyright / production
+	        String label = "";
+	        String artist_name = "";
+         	String copyright = "";
+         	String production = "";
+        	Vector<Contributor> contributors = bundle.getAllContributors();
+        	for (Iterator<Contributor> itContributor = contributors.iterator(); itContributor.hasNext();) {
+        		Contributor contributor = itContributor.next();
+        		if(contributor.getType()==Contributor.TYPE_LABEL) {
+        			label = contributor.getName();
+        		}
+        		else if(contributor.getType()==Contributor.TYPE_DISPLAY_ARTIST) {
+        			artist_name = contributor.getName();
+        		}
+        		else if(contributor.getType()==Contributor.TYPE_COPYRIGHT) {
+        			copyright = contributor.getName();
+        			if(contributor.getYear().length()>0) copyright = contributor.getYear()+" "+copyright;
+        		}
+        		else if(contributor.getType()==Contributor.TYPE_PRODUCTION) {
+        			production = contributor.getName();
+        			if(contributor.getYear().length()>0) production = contributor.getYear()+" "+production;
+        		}	        		
         	}
+        	
+        	expDocAlbum.addContent("c_line", copyright);
+        	expDocAlbum.addContent("p_line", production);
+	        expDocAlbum.addContent("upc", upc);
+        	expDocAlbum.addContent("label", label);	        	
+        	expDocAlbum.addContent("artist_name", artist_name);
+	        
+	        // title
+	        String title = bundle.getDisplayname();
+	        if (title==null) title = "";
+	        expDocAlbum.addContent("title", title);		        	
+        	
+        	long releaseDate = bundle.getInformation().getPhysicalReleaseDatetime();
+        	String original_released_on = "";
+        	if (original_released_on!=null) cal.setTimeInMillis(releaseDate); original_released_on = ymd.format(cal.getTime());
+        	expDocAlbum.addContent("original_released_on", original_released_on);
+        	
+	        long creationdatetime = osdxFeed.getFeedinfo().getCreationDatetime();
+        	cal.setTimeInMillis(creationdatetime);
+        	expDocAlbum.addContent("updated_at", ymd.format(cal.getTime()));	        	
+	        
+        	int genreCount = bundle.getTags().getGenresCount();
+        	for (int j=0;j<genreCount;j++) {
+        		if(bundle.getTags().getGenre(j).length()>0) expDocAlbum.addContent("genre", bundle.getTags().getGenre(j));
+        	}
+        	
+        	int fileCount = bundle.getFilesCount();
+        	for (int j=0;j<fileCount;j++) {
+        		if(bundle.getFile(j).getType().equals("cover")) {
+        			Element cover = new Element("cover");
+        			expDocAlbum.addContent(cover);
+        				        			
+        			cover.addContent("height", ""+bundle.getFile(j).getDimensionHeight());
+        			cover.addContent("width", ""+bundle.getFile(j).getDimensionHeight());
+        			
+        			String filename = bundle.getFile(j).getLocationPath();
+        			cover.addContent("file_name", filename);
+        			cover.addContent("file_size", ""+bundle.getFile(j).getBytes());
+        			
+            		File f = new File(filename);
+            		if(f!=null && f.exists()) {
+            			byte[][] sums = SecurityHelper.getMD5SHA1(f);
+            			cover.addContent("file_checksum", Checksums.make(sums[0],sums[1],null).getMd5String());
+            		} else {
+            			//file does not exist -> so we have to set the values "manually"
+            			// checksum md5
+            			if(bundle.getFile(j).getChecksums().getMd5String()!=null)
+            				cover.addContent("file_checksum", SecurityHelper.HexDecoder.encode(bundle.getFile(j).getChecksums().getMd5(),'\0',-1).toLowerCase());
+            		}	        			
+        		}
+        	}
+        	
+        	Element expDocTracks = new Element("tracks");
+    		expDocAlbum.addContent(expDocTracks);
+        	
+        	int itemCount = bundle.getItemsCount();
+        	int trackCount = 0;
+        	int trackNum = 0;
+        	int discCount = 0;
+        	for (int j=0;j<itemCount;j++) {
+        		// fulltracks holen
+        		if(bundle.getItem(j).getType().equals("audio")) {	        					
+        			// add track 
+        			Element track = new Element("track");
+        			expDocTracks.addContent(track);
+	        		
+        			trackCount++;
+        			// get max disc number
+        			if(bundle.getItem(j).getInformation().getSetNum()>discCount) discCount = bundle.getItem(j).getInformation().getSetNum();	
+        			trackNum = bundle.getItem(j).getInformation().getNum();
+        			
+        			String ext = ""+trackNum;
+        			
+        			if(ext.length()<2) ext="0"+ext;
+        			String trackCode = upc+"_"+ext;
+        			track.addContent("track_code", trackCode);
+        			
+        			// add track number / disc number
+        			track.addContent("track_number", ""+trackNum);
+        			track.addContent("disk_number", ""+bundle.getItem(j).getInformation().getSetNum());        			
+        			
+        			IDs ids = bundle.getItem(j).getIds();
+        			if(ids.getIsrc()!=null && ids.getIsrc().length()>0)
+        				track.addContent("isrc", ids.getIsrc());
+        			
+        			if(ids.getUpc()!=null && ids.getUpc().length()>0)
+        				track.addContent("upc", ids.getUpc());
+        			
+        			// title
+        			if(bundle.getItem(j).getDisplayname()!=null)
+        				track.addContent("title", bundle.getItem(j).getDisplayname());
+
+    	        	// display_artist
+        			if(bundle.getItem(j).getDisplay_artist()!=null)
+        				track.addContent("artist_name", bundle.getItem(j).getDisplay_artist());
+        			
+    	        	// duration
+       				track.addContent("duration", ""+bundle.getItem(j).getInformation().getPlaylength());
+        			
+        			// explicit_lyrics	    	        	
+                	String explicit_lyrics = bundle.getItem(j).getTags().getExplicit_lyrics();
+                	if(explicit_lyrics!=null)
+                		track.addContent("explicit_lyrics", explicit_lyrics);
+                	
+    	        	int trackFileCount = bundle.getFilesCount();
+    	        	for (int k=0;k<trackFileCount;k++) {
+    	        		if(bundle.getItem(j).getFile(k).getType().equals("full")) {
+    	        			
+    	        			String track_filename = bundle.getItem(j).getFile(k).getLocationPath();
+                			track.addContent("file_name", track_filename);
+                			track.addContent("file_size", ""+bundle.getItem(j).getFile(k).getBytes());
+                			
+    	            		File f = new File(track_filename);
+    	            		if(f!=null && f.exists()) {
+    	            			byte[][] sums = SecurityHelper.getMD5SHA1(f);
+    	            			track.addContent("file_checksum", Checksums.make(sums[0],sums[1],null).getMd5String());
+    	            		} else {
+    	            			// file does not exist -> so we have to set the values "manually"
+    	            			// checksum md5  
+    	            			if(bundle.getItem(j).getFile(k).getChecksums().getMd5()!=null)	    	            				
+    	            				track.addContent("file_checksum", SecurityHelper.HexDecoder.encode(bundle.getItem(j).getFile(k).getChecksums().getMd5(),'\0',-1).toLowerCase());
+    	            		}	    	        			
+    	        			
+    	        		
+    	                	/*
+    	                	 * ToDo: <rights/> (streamable, from, to etc.) for every track and territory / not yet available in openSDX! 
+    	                	 *  
+    	                	 */
+    	        		}
+    	        	}
+        		}
+        	}	        	
+
+        	expDocAlbum.addContent("tracks_count", ""+trackCount);
+        	if(discCount>0) {
+        		expDocAlbum.addContent("disks_count", ""+discCount);
+        	}
+        	
+	        // ToDo: more export magic here if needed!
 		        
 		} catch (Exception e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			ir.succeeded = false;
 			ir.errorMessage = e.getMessage();			
 			ir.exception = e;			
@@ -285,5 +288,13 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 	public Document getFormatedDocumentFromExport() {			
 		return this.getExportDocument();	
 	}
+	
+	public Result getIr() {
+		return ir;
+	}
+
+	public void setIr(Result ir) {
+		this.ir = ir;
+	}	
 
 }

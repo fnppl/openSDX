@@ -845,39 +845,47 @@ public class FeedGui extends JFrame implements MyObserver {
 	
 	public void import_feed(String type) {
 		File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
+		Result ir = Result.succeeded();
 		if (f!=null && f.exists()) {
 			try {
 				Feed feed = null;
 				if(type.equals("finetunes")) {
 					FinetunesToOpenSDXImporter imp = new FinetunesToOpenSDXImporter(f);	
-					feed = imp.getFormatedFeedFromImport();				
+					feed = imp.getFormatedFeedFromImport();	
+					ir = imp.getIr();
 				}
 				else if(type.equals("simfy")) {
 					SimfyToOpenSDXImporter imp = new SimfyToOpenSDXImporter(f);				
 					feed = imp.getFormatedFeedFromImport();	
+					ir = imp.getIr();
 				}
+				
+				if(!ir.succeeded) {
+					feed = null;
+					Dialogs.showMessage("ERROR, could not import feed.\nERROR: "+ir.errorMessage);
+				}				
 				
 				if(feed!=null) {
 					currentFeed = feed;
 					update();
 				}
 			} catch (Exception e) {
-				Dialogs.showMessage("ERROR, could not import feed in file\n"+f.getAbsolutePath());
-				e.printStackTrace();
+				Dialogs.showMessage("ERROR, could not import feed from file\n"+f.getAbsolutePath());
+				// e.printStackTrace();
 			}
 		}
 	}
 	
 	public void export_feed(String type) {
 		Feed feed = null;
-
+		Result ir = Result.succeeded();
 		boolean rdyForExport = currentFeed != null && currentFeed.getFeedinfo()!=null && currentFeed.getFeedinfo().getFeedID().length()>0;
 		boolean doExport = true;
 		if(rdyForExport) { 
 			feed = currentFeed;
 		}
 		else {
-			int i = Dialogs.showYES_NO_Dialog("No current Feed", "Please insert feedid and data or import an openSDX feed for export. Do you want to import a file now?");
+			int i = Dialogs.showYES_NO_Dialog("No current Feed", "Please insert feedid and data / import an openSDX feed for export.\n Do you want to import a file now?");
 			if(i==Dialogs.YES) {
 				File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
 				Document doc = null;
@@ -910,14 +918,28 @@ public class FeedGui extends JFrame implements MyObserver {
 		if (rdyForExport && doExport) {
 			try {
 				Document doc = null;
+				String errMsg = "ERROR, could not convert initial file.";
 				if(type.equals("finetunes")) {
 					OpenSDXToFinetunesExporter exp = new OpenSDXToFinetunesExporter(feed);	
-					doc = exp.getFormatedDocumentFromExport();				
+					doc = exp.getFormatedDocumentFromExport();
+					ir = exp.getIr();
 				}
 				else if(type.equals("simfy")) {
-					OpenSDXToSimfyExporter exp = new OpenSDXToSimfyExporter(feed);				
-					doc = exp.getFormatedDocumentFromExport();	
+					if(currentFeed.getBundleCount()>1) {
+						// simfy specs allows only one bundle/album per feed
+						errMsg += "\n Simfy only accept one bundle per feed!";						
+					}
+					else {
+						OpenSDXToSimfyExporter exp = new OpenSDXToSimfyExporter(feed);				
+						doc = exp.getFormatedDocumentFromExport();
+						ir = exp.getIr();
+					}
 				}
+				
+				if(!ir.succeeded) {
+					doc = null;
+					errMsg += "\nERROR: "+ir.errorMessage;
+				}				
 				
 				if(doc!=null) {
 					File f = Dialogs.chooseSaveFile("Select filename for saving feed", lastDir, "newFeed.xml");
@@ -926,7 +948,7 @@ public class FeedGui extends JFrame implements MyObserver {
 					}
 				}
 				else {
-					Dialogs.showMessage("ERROR, could not convert initial file.");
+					Dialogs.showMessage(errMsg);
 				}
 
 			} catch (Exception e) {
