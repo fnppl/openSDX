@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.ftp;
+package org.fnppl.opensdx.file_transfer;
 /*
  * Copyright (C) 2010-2011
  * 							fine people e.V. <opensdx@fnppl.org>

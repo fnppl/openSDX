@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.ftp;
+package org.fnppl.opensdx.file_transfer;
 
 import org.fnppl.opensdx.security.SecurityHelper;
 

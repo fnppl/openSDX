@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.securesocket;
+package org.fnppl.opensdx.file_transfer;
 
 /*
  * Copyright (C) 2010-2011 
@@ -52,11 +52,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.bouncycastle.crypto.engines.ISAACEngine;
-import org.fnppl.opensdx.ftp.RemoteFileSystem;
+import org.fnppl.opensdx.securesocket.ClientSettings;
+import org.fnppl.opensdx.securesocket.OSDXSocketDataHandler;
+import org.fnppl.opensdx.securesocket.OSDXSocketSender;
+import org.fnppl.opensdx.securesocket.OSDXSocketServer;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.OSDXMessage;

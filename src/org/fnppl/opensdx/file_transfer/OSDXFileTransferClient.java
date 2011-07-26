@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.securesocket;
+package org.fnppl.opensdx.file_transfer;
 
 /*
  * Copyright (C) 2010-2011 
@@ -50,11 +50,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Vector;
 
-import org.fnppl.opensdx.ftp.FileTransferClient;
-import org.fnppl.opensdx.ftp.RemoteFileSystem;
+import org.fnppl.opensdx.securesocket.OSDXSocket;
+import org.fnppl.opensdx.securesocket.OSDXSocketDataHandler;
+import org.fnppl.opensdx.securesocket.OSDXSocketSender;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.xml.Document;
-import org.fnppl.opensdx.ftp.RemoteFile;
 
 public class OSDXFileTransferClient extends OSDXSocket implements FileTransferClient {
 

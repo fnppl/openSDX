@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.gui;
+package org.fnppl.opensdx.file_transfer;
 
 /*
  * Copyright (C) 2010-2011 
@@ -62,6 +62,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
@@ -73,23 +74,30 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 
-import org.fnppl.opensdx.ftp.RemoteFile;
-import org.fnppl.opensdx.ftp.RemoteFileSystem;
+import org.fnppl.opensdx.gui.DefaultMessageHandler;
+import org.fnppl.opensdx.gui.Dialogs;
+import org.fnppl.opensdx.gui.Helper;
+import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
+import org.fnppl.opensdx.gui.helper.PanelAccount;
+import org.fnppl.opensdx.gui.helper.PanelEncrypt;
 import org.fnppl.opensdx.gui.helper.TreeAndTablePanel;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.OSDXKey;
+import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.security.SymmetricKey;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
 public class FileTransferGui extends JFrame implements MyObserver {
 
-	private Vector<Account> accounts = new Vector<Account>();
+	private Vector<FileTransferAccount> accounts = new Vector<FileTransferAccount>();
 	private JPanel panelNorth;
 	private JComboBox selectAccount;
 	private JButton buConnect;
 	private JButton buEdit;
+	private JButton buRemove;
 
 	private DefaultComboBoxModel selectAccount_model;
 	private TreeAndTablePanel panelLocal;
@@ -139,7 +147,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 			Vector<Element> eAccounts = root.getChildren("account");
 			for (Element e : eAccounts) {
 				try {
-					Account a = new Account();
+					FileTransferAccount a = new FileTransferAccount();
 					a.type = e.getChildText("type");
 					if (a.type.equals(a.TYPE_FTP)) {
 						a.username = e.getChildText("username");
@@ -176,7 +184,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 		selectAccount_model.removeAllElements();
 		selectAccount_model.addElement("Create new account ...");
 		selectAccount_model.addElement("[separator]");
-		for (Account a : accounts) {
+		for (FileTransferAccount a : accounts) {
 			if (a.type.equals(a.TYPE_FTP)) {
 				selectAccount_model.addElement(a.type+" :: "+a.username+"@"+a.host);
 			} 
@@ -238,8 +246,15 @@ public class FileTransferGui extends JFrame implements MyObserver {
 				button_edit_clicked();
 			}
 		});
+		buRemove = new JButton("remove");
+		buRemove.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				button_remove_clicked();
+			}
+		});
 		panelNorth.add(buConnect);
 		panelNorth.add(buEdit);
+		panelNorth.add(buRemove);
 
 		fsLocal = RemoteFileSystem.initLocalFileSystem();
 		panelLocal = new TreeAndTablePanel(fsLocal,true);
@@ -367,8 +382,11 @@ public class FileTransferGui extends JFrame implements MyObserver {
 		if (buConnect.getText().equals("connect")) {
 			System.out.println("connect");
 			int sel = selectAccount.getSelectedIndex()-2;
-			if (sel>=0 && sel < accounts.size()) {
-				Account a = accounts.get(sel);
+			if (sel<0) {
+				button_edit_clicked();
+			}
+			else if (sel>=0 && sel < accounts.size()) {
+				FileTransferAccount a = accounts.get(sel);
 				System.out.println("account: "+a.type+" :: "+a.username);
 				if (a.type.equals(a.TYPE_FTP)) {
 					String pw = Dialogs.showPasswordDialog("Enter Password","Please enter password for ftp account:\nhost: "+a.host+"\nusername: "+a.username);
@@ -384,7 +402,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 						}
 					}
 					if (!fsRemote.isConnected()) {
-						addStatus("ERROR, could not connect to "+a.username+"@"+a.host+" established.");
+						addStatus("ERROR, could not connect to "+a.username+"@"+a.host+".");
 						Dialogs.showMessage("Sorry, could not connect to given account.");
 						return;
 					} else {
@@ -491,7 +509,37 @@ public class FileTransferGui extends JFrame implements MyObserver {
 	}
 
 	private void button_edit_clicked() {
-
+		int sel = selectAccount.getSelectedIndex()-2;
+		if (sel>=0 && sel < accounts.size()) {
+			FileTransferAccount a = accounts.get(sel);
+			PanelAccount pAcc = new PanelAccount();
+			pAcc.update(a);
+			int ans = JOptionPane.showConfirmDialog(null,pAcc,"Edit Account",JOptionPane.OK_CANCEL_OPTION);
+	    	if (ans == JOptionPane.OK_OPTION) {
+	    		accounts.set(sel, pAcc.getAccount());
+	    		updateAccounts();
+	    		selectAccount.setSelectedIndex(accounts.size()+1);
+		    }
+		} else {
+			PanelAccount pAcc = new PanelAccount();
+			int ans = JOptionPane.showConfirmDialog(null,pAcc,"New Account",JOptionPane.OK_CANCEL_OPTION);
+	    	if (ans == JOptionPane.OK_OPTION) {
+	    		accounts.add(pAcc.getAccount());
+	    		updateAccounts();
+	    		selectAccount.setSelectedIndex(sel+2);
+		    }
+		}
+	}
+	
+	private void button_remove_clicked() {
+		int sel = selectAccount.getSelectedIndex()-2;
+		if (sel>=0 && sel < accounts.size()) {
+			int ans = Dialogs.showYES_NO_Dialog("Remove Account", "Are you sure you want to remove the selected account?");
+			if (ans==Dialogs.YES) {
+				accounts.remove(sel);
+				updateAccounts();
+			}
+		}
 	}
 	
 	private void button_upload_clicked() {
@@ -544,20 +592,5 @@ public class FileTransferGui extends JFrame implements MyObserver {
 		} else if (changedIn == panelLocal) {
 			button_upload_clicked();
 		}
-	}
-
-	private class Account {
-		public final String TYPE_FTP = "ftp";
-		public final String TYPE_OSDXFILESERVER = "openSDX fileserver";
-		
-		public String type = null;
-		public String host = null;
-		public int port = 80;
-		public String prepath = null;
-		public String username = null;
-		public String keystore_filename = null;
-		public String keyid = null;
-		public KeyApprovingStore keystore = null;
-		public OSDXKey key = null;
 	}
 }

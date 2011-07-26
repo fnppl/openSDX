@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.securesocket;
+package org.fnppl.opensdx.file_transfer;
 
 /*
  * Copyright (C) 2010-2011 
@@ -44,79 +44,18 @@ package org.fnppl.opensdx.securesocket;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+
 import java.io.File;
 
-public class FileTransferState {
-	
-	private File rootPath = null;
-	private File currentPath = null;
-	private File writeFile = null;
-	
-	
-	
-	public File getRootPath() {
-		return rootPath;
-	}
 
-	public void setRootPath(File rootPath) {
-		this.rootPath = rootPath;
-		this.currentPath = rootPath;
-		rootPath.mkdirs();
-	}
+public interface FileTransferClient {
 
-	public File getCurrentPath() {
-		return currentPath;
-	}
-
-	public void setCurrentPath(File currentPath) {
-		if (isAllowed(currentPath)) {
-			this.currentPath = currentPath;	
-		} else {
-			System.out.println("ALERT ::  TRYING TO SET PATH OUT OF ROOT DIRECTORY");
-		}
-	}
-
-	public File getWriteFile() {
-		return writeFile;
-	}
-
-	public void setWriteFile(File writeFile) {
-		if (writeFile==null || isAllowed(writeFile)) {
-			this.writeFile = writeFile;
-		} else {
-			System.out.println("ALERT :: TRYING TO SET WRITEFILE OUT OF ROOT DIRECTORY");
-		}
-	}
+	//public String pwd() throws Exception;
+	public void mkdir(String directory);
+	public void cd(String directory) throws Exception;
+	public void cd_up() throws Exception;
+	public void uploadFile(File localFile, String remoteFilename) throws Exception;
+	public void uploadFile(String remoteFilename, byte[] data) throws Exception;
+	public void downloadFile(String filename, File localFile) throws Exception;
 	
-	public boolean isAllowed(File f) {
-		try {
-			if (f.getCanonicalPath().startsWith(rootPath.getAbsolutePath())) {
-				return true;
-			} else {
-				return false;
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return false;
-		}
-	}
-
-	public String getRelativPath() {
-		return getRelativPath(currentPath);
-	}
-	
-	public String getRelativPath(File f) {
-		String rp = f.getAbsolutePath().substring(rootPath.getAbsolutePath().length());
-		if (rp.length()==0) rp = "/";
-		if (rp.startsWith("//")) rp = rp.substring(1);
-		return rp;
-	}
-	
-	public boolean cdup() {
-		if (!currentPath.equals(rootPath)) {
-			currentPath = currentPath.getParentFile();
-			return true;
-		}
-		return false;
-	}
 }

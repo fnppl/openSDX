@@ -3,9 +3,9 @@ package org.fnppl.opensdx.common;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 
-import org.fnppl.opensdx.ftp.FTPClient;
-import org.fnppl.opensdx.ftp.FileTransferClient;
-import org.fnppl.opensdx.securesocket.OSDXFileTransferClient;
+import org.fnppl.opensdx.file_transfer.FTPClient;
+import org.fnppl.opensdx.file_transfer.FileTransferClient;
+import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.Result;
 import org.fnppl.opensdx.security.SecurityHelper;

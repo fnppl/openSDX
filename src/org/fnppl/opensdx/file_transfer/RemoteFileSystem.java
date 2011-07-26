@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.ftp;
+package org.fnppl.opensdx.file_transfer;
 
 import java.io.File;
 import java.util.Vector;
@@ -6,7 +6,6 @@ import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
 
 import org.fnppl.opensdx.gui.Dialogs;
-import org.fnppl.opensdx.securesocket.OSDXFileTransferClient;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.xml.Document;
 
