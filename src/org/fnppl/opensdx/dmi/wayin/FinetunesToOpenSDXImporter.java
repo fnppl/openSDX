@@ -55,7 +55,7 @@ import org.fnppl.opensdx.security.*;
 
 public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	DateFormat ymd = new SimpleDateFormat("yyyyMMdd");
-	Result ir = Result.succeeded();
+	private Result ir = Result.succeeded();
 	// test?
     boolean onlytest = true;
     
@@ -537,6 +537,14 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
     	}   
 
 		return role;		
+	}
+	
+	public Result getIr() {
+		return ir;
+	}
+
+	public void setIr(Result ir) {
+		this.ir = ir;
 	}	
 
 }

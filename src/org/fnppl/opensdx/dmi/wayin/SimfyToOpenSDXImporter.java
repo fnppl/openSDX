@@ -56,7 +56,7 @@ import org.fnppl.opensdx.security.*;
 
 public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	DateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
-	Result ir = Result.succeeded();
+	private Result ir = Result.succeeded();
 	// test?
 	boolean onlytest = true;
     
@@ -158,6 +158,8 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	
         	// license specifics -> empty!
         	LicenseSpecifics license_specifics = LicenseSpecifics.make();  
+        	
+        	
         	
         	Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artist, info, license_basis, license_specifics);
         	
@@ -263,15 +265,17 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         		
         		Territorial track_territorial = Territorial.make();
         		
-            	Vector<Element> tracks_rights = track.getChild("rights").getChildren("right");
-            	for (Iterator<Element> itRights = tracks_rights.iterator(); itRights.hasNext();) {
-            		Element track_right = itRights.next();
-            		String r = track_right.getChildText("country_code");
-            		if(r.length()>0) {
-            			if(r.equals("**")) r="WW";
-            			track_territorial.allow(r);
-            		}
-            	} 
+        		if(track.getChild("rights")!=null) {
+	            	Vector<Element> tracks_rights = track.getChild("rights").getChildren("right");
+	            	for (Iterator<Element> itRights = tracks_rights.iterator(); itRights.hasNext();) {
+	            		Element track_right = itRights.next();
+	            		String r = track_right.getChildText("country_code");
+	            		if(r.length()>0) {
+	            			if(r.equals("**")) r="WW";
+	            			track_territorial.allow(r);
+	            		}
+	            	} 
+        		}
 	        	
             	track_license_basis.setTerritorial(track_territorial);
             	
@@ -358,7 +362,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	feed.addBundle(bundle);
 	        
 		} catch (Exception e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 			ir.succeeded = false;
 			ir.errorMessage = e.getMessage();			
 			ir.exception = e;			
@@ -369,5 +373,13 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	public Feed getFormatedFeedFromImport() {			
 		return this.getImportFeed();	
 	}
+	
+	public Result getIr() {
+		return ir;
+	}
+
+	public void setIr(Result ir) {
+		this.ir = ir;
+	}	
 
 }

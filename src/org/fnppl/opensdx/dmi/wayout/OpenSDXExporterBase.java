@@ -94,8 +94,12 @@ public class OpenSDXExporterBase {
 					ir = expFt.formatToExternalFile();
 					break;
 				case ExportType.SIMFY:
+					if(osdxFeed.getBundleCount()>1) {
+						System.out.println("ERROR: File to export contains "+osdxFeed.getBundleCount()+" bundles! Simfy only accept one bundle per feed.");
+						System.exit(0);	
+					}
 					OpenSDXToSimfyExporter expSimfy = new OpenSDXToSimfyExporter(expType, osdxFeed, savFile);
-					ir = expSimfy.formatToExternalFile();		
+					ir = expSimfy.formatToExternalFile();	
 					break;
 				default:
 					break;
