@@ -103,6 +103,7 @@ public class PanelAccount extends JPanel {
 		initComponents();
 		initLayout();
 		update((FileTransferAccount)null);
+		this.setPreferredSize(new Dimension(500,300));
 	}
 
 
@@ -110,7 +111,7 @@ public class PanelAccount extends JPanel {
 	public void update(FileTransferAccount account) {
 		this.account = account;
 		if (account == null) {;
-			select_type.setSelectedItem(0);
+			select_type.setSelectedIndex(0);
 			text_host.setText("");
 			text_port_integer.setText("4221");
 			text_prepath.setText("/");
@@ -120,7 +121,7 @@ public class PanelAccount extends JPanel {
 			setKeyStroreAndIdVisibility(true);
 		} else {
 			if (account.type.equals(FileTransferAccount.TYPE_OSDXFILESERVER)) {
-				select_type.setSelectedItem(0);
+				select_type.setSelectedIndex(0);
 				text_host.setText(account.host);
 				text_port_integer.setText(""+account.port);
 				text_prepath.setText(account.prepath);
@@ -129,7 +130,7 @@ public class PanelAccount extends JPanel {
 				text_keyid.setText(account.keyid);
 				setKeyStroreAndIdVisibility(true);
 			} else {
-				select_type.setSelectedItem(1);
+				select_type.setSelectedIndex(1);
 				text_host.setText(account.host);
 				//text_port_integer.setText(""+account.port);
 				//text_prepath.setText(account.prepath);

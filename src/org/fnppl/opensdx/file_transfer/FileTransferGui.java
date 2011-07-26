@@ -57,6 +57,7 @@ import java.io.File;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -64,6 +65,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
@@ -112,7 +114,8 @@ public class FileTransferGui extends JFrame implements MyObserver {
 	private TableCellRenderer rightRenderer;
 	
 	private JPanel panelSouth;
-	private JTextArea log;
+	private JList log;
+	private DefaultListModel log_model;
 	private File userHome = null;
 
 	public FileTransferGui() {
@@ -339,8 +342,9 @@ public class FileTransferGui extends JFrame implements MyObserver {
 		panelRemote.setLayout(new BorderLayout());
 		
 		panelSouth = new JPanel();
-		log = new JTextArea();
-		log.setEditable(false);
+		log = new JList();
+		log_model = new DefaultListModel();
+		log.setModel(log_model);
 
 	}
 	
@@ -353,8 +357,9 @@ public class FileTransferGui extends JFrame implements MyObserver {
 		getContentPane().add(split, BorderLayout.CENTER);
 
 		panelSouth.setLayout(new BorderLayout());
-		panelSouth.add(log, BorderLayout.CENTER);
-		log.setPreferredSize(new Dimension(200, 100));
+		JScrollPane scrollLog = new JScrollPane(log);
+		panelSouth.add(scrollLog, BorderLayout.CENTER);
+		scrollLog.setPreferredSize(new Dimension(200, 100));
 		getContentPane().add(panelSouth, BorderLayout.SOUTH);
 
 	}
@@ -529,6 +534,53 @@ public class FileTransferGui extends JFrame implements MyObserver {
 	    		selectAccount.setSelectedIndex(sel+2);
 		    }
 		}
+		saveAccounts();
+	}
+	
+	private void saveAccounts() {
+		File f = new File(userHome,"file_transfer_settings.xml");
+		boolean save = false;
+		if (!f.exists()) {
+			int ans = Dialogs.showYES_NO_Dialog("Save Account Settings", "Do you want to save your account settings to\n"+f.getAbsolutePath()+"?");
+			if (ans == Dialogs.YES) {
+				save = true;
+			}
+		} else {
+			save = true;
+		}
+		if (save) {
+			Element e = new Element("file_transfer_settings");
+			for (FileTransferAccount a : accounts) {
+				Element ea = new Element("account");
+				if (a.type.equals(FileTransferAccount.TYPE_OSDXFILESERVER)) {
+					ea.addContent("type", a.type);
+					ea.addContent("host", a.host);
+					ea.addContent("port", ""+a.port);
+					if (a.prepath!=null && a.prepath.length()>0) {
+						ea.addContent("prepath", a.prepath);
+					}
+					ea.addContent("username", a.username);
+					ea.addContent("keystore", a.keystore_filename);
+					ea.addContent("keyid", a.keyid);
+					e.addContent(ea);
+				}
+				else if (a.type.equals(FileTransferAccount.TYPE_FTP)) {
+					ea.addContent("type", a.type);
+					ea.addContent("host", a.host);
+					ea.addContent("username", a.username);
+					e.addContent(ea);
+				}
+				else {
+					Dialogs.showMessage("unsupported account type: "+a.type);
+				}
+			}
+			try {
+				Document.buildDocument(e).writeToFile(f);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				Dialogs.showMessage("Error writing settings to file:\n"+f.getAbsolutePath());
+			}
+		}
 	}
 	
 	private void button_remove_clicked() {
@@ -574,16 +626,63 @@ public class FileTransferGui extends JFrame implements MyObserver {
 			Dialogs.showMessage("Please select files to download on remote side.");
 			return;
 		}
-		for (RemoteFile remoteFile : remote) {
-			File target = new File(local.getFilnameWithPath(),remoteFile.getName());
-			addStatus("downloading "+remoteFile.getFilnameWithPath()+" -> "+target.getAbsolutePath());
-			fsRemote.download(target, remoteFile);
+		for (final RemoteFile remoteFile : remote) {
+			final File target = new File(local.getFilnameWithPath(),remoteFile.getName());
+			final String pre = "downloading "+remoteFile.getFilnameWithPath()+" -> "+target.getAbsolutePath(); 
+			addStatus(pre);
+			
+			final long fLength = remoteFile.getLength();
+			Thread t = new Thread() {
+				public void run() {
+					long len = target.length();
+					long timeout = System.currentTimeMillis()+10000;
+					while (len < fLength && timeout > System.currentTimeMillis()) {
+						try {
+							sleep(1500);
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+						long nLen = target.length();
+						if (nLen>len) {
+							//refresh timeout
+							timeout = System.currentTimeMillis()+10000;
+							len = nLen;
+						}
+						int proz = (int)(len*100L/fLength);
+						String prog = "Progress: "+proz+"%   ("+len+" / "+fLength+" bytes)";
+						System.out.println(prog);
+						String lastLog = getLastLogEntry();
+						if (lastLog.startsWith(pre)) {
+							setLastStatus(pre+"    "+prog);
+						}
+					}
+				}
+			};
+			t.start();
+			
+			//don't block ui
+			Thread tDownload = new Thread() {
+				public void run() {
+					fsRemote.download(target, remoteFile);
+				}
+			};
+			tDownload.start();
 			
 		}
 	}
 	
 	public void addStatus(String message) {
-		log.append(message+"\n");
+		log_model.addElement(message);
+		log.repaint();
+	}
+	
+	public void setLastStatus(String message) {
+		log_model.set(log_model.getSize()-1, message);
+		log.repaint();
+	}
+	
+	public String getLastLogEntry() {
+		return (String)log_model.lastElement();
 	}
 	
 	public void notifyChange(MyObservable changedIn) {

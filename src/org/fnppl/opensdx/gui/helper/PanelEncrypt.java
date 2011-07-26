@@ -142,8 +142,8 @@ public class PanelEncrypt extends JPanel {
 	public void init() {
 
 		text_file.setText("");
-		select_enc_method.setSelectedItem(1);
-		select_format.setSelectedItem(0);
+		select_enc_method.setSelectedIndex(1);
+		select_format.setSelectedIndex(0);
 		text_output.setText("");
 		text_output2.setText("");
 		text_password.setText("");
