@@ -67,8 +67,8 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import org.fnppl.opensdx.ftp.RemoteFile;
-import org.fnppl.opensdx.ftp.RemoteFileSystem;
+import org.fnppl.opensdx.file_transfer.RemoteFile;
+import org.fnppl.opensdx.file_transfer.RemoteFileSystem;
 import org.fnppl.opensdx.gui.Dialogs;
 
 public class TreeAndTablePanel extends JPanel implements MyObservable {

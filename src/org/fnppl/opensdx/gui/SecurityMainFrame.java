@@ -59,6 +59,7 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
+import org.fnppl.opensdx.gui.helper.PanelEncrypt;
 import org.fnppl.opensdx.gui.helper.PanelKeyLogs;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
@@ -294,6 +295,9 @@ public class SecurityMainFrame extends JFrame {
 				else if(cmd.equalsIgnoreCase("request keys from server")) {
 					requestKeysFromServer();
 				}
+				else if(cmd.equalsIgnoreCase("encryptfiledialog")) {
+					showEncryptFileDialog();
+				}
 				else if(cmd.equalsIgnoreCase("encryptfile")) {
 					encryptFile();
 				}
@@ -395,22 +399,27 @@ public class SecurityMainFrame extends JFrame {
 		jm = new JMenu("<html>Encryption<br>Decryption</html>");
 		jb.add(jm);
 
-		jmi = new JMenuItem("EncryptFile (symmetric)");
-		jmi.setActionCommand("encryptfile");
-		jmi.addActionListener(ja);
-		jm.add(jmi);
+//		jmi = new JMenuItem("EncryptFile (symmetric)");
+//		jmi.setActionCommand("encryptfile");
+//		jmi.addActionListener(ja);
+//		jm.add(jmi);
+//
+//		jmi = new JMenuItem("EncryptFile (random symm. key encrypted with asymm. encryption)");
+//		jmi.setActionCommand("arsencryptfile");
+//		jmi.addActionListener(ja);
+//		jm.add(jmi);
+//		
+//		jmi = new JMenuItem("EncryptFile (asymmetric)");
+//		jmi.setActionCommand("aencryptfile");
+//		jmi.addActionListener(ja);
+//		jm.add(jmi);
 
-		jmi = new JMenuItem("EncryptFile (random symm. key encrypted with asymm. encryption)");
-		jmi.setActionCommand("arsencryptfile");
+		jmi = new JMenuItem("Encrypt File ...");
+		jmi.setActionCommand("encryptfiledialog");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
 		
-		jmi = new JMenuItem("EncryptFile (asymmetric)");
-		jmi.setActionCommand("aencryptfile");
-		jmi.addActionListener(ja);
-		jm.add(jmi);
-
-		jmi = new JMenuItem("DecryptFile");
+		jmi = new JMenuItem("Decrypt File");
 		jmi.setActionCommand("decryptfile");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
@@ -1939,8 +1948,8 @@ public class SecurityMainFrame extends JFrame {
 				if (e.getName().equals("symmetric_encryption")) {
 					SymmetricKey symkey = null;
 					
-					if (e.getChild("pubkey")==null) {
-						String mantra = e.getChildText("mantraname");
+					if (e.getChild("encrypted_symmetric_key")==null) {
+						String mantra = e.getChildTextNN("mantraname");
 						String p = Dialogs.showPasswordDialog("Enter password", "Please enter password for mantra:\n"+mantra);
 						if (p != null) {
 							if (!Arrays.equals(
@@ -1955,10 +1964,23 @@ public class SecurityMainFrame extends JFrame {
 							symkey = SymmetricKey.getKeyFromPass(p.toCharArray(), initv);
 						}
 					} else {
-						OSDXKey akey = OSDXKey.fromPubKeyElement(e.getChild("pubkey"));
-						OSDXKey private_akey = currentKeyStore.getKey(akey.getKeyID());
+						Vector<Element> eEncKeys = e.getChildren("encrypted_symmetric_key");
+						OSDXKey private_akey = null;
+						Element eEncKey = null;
+						for (Element eEncK : eEncKeys) {
+							OSDXKey akey = OSDXKey.fromPubKeyElement(eEncK.getChild("pubkey"));
+							private_akey = currentKeyStore.getKey(akey.getKeyID());
+							if (private_akey!=null && !private_akey.hasPrivateKey()) {
+								private_akey = null;
+							}
+							if (private_akey!=null) {
+								eEncKey = eEncK;
+								break;
+							}
+						}
+						
 						if (private_akey==null || !private_akey.hasPrivateKey()) {
-							Dialogs.showMessage("Decryption failed, no private key with keyid:\n"+akey.getKeyID()+"\nfound in current keystore.");
+							Dialogs.showMessage("Decryption failed, no matching private key found in current keystore.");
 							return;
 						}
 						if (!private_akey.isPrivateKeyUnlocked()) {
@@ -1967,10 +1989,11 @@ public class SecurityMainFrame extends JFrame {
 						if (!private_akey.isPrivateKeyUnlocked()) {
 							return;
 						}
+						
+						
 						//extract sym key
-	
-						byte[] initv = private_akey.decrypt(SecurityHelper.HexDecoder.decode(e.getChildText("enc_initvector")));
-						byte[] keybytes = private_akey.decrypt(SecurityHelper.HexDecoder.decode(e.getChildText("enc_keybytes")));
+						byte[] initv = private_akey.decrypt(SecurityHelper.HexDecoder.decode(eEncKey.getChildText("enc_initvector")));
+						byte[] keybytes = private_akey.decrypt(SecurityHelper.HexDecoder.decode(eEncKey.getChildText("enc_keybytes")));
 						
 						symkey = new SymmetricKey(keybytes, initv);
 					}
@@ -2066,6 +2089,125 @@ public class SecurityMainFrame extends JFrame {
 		}
 		String s = new String(bout.toByteArray(), "UTF-8");
 		return s;
+	}
+	
+	private void showEncryptFileDialog() {
+		PanelEncrypt pEnc = new PanelEncrypt(currentKeyStore);
+		pEnc.init();
+		int ans = JOptionPane.showConfirmDialog(null,pEnc,"Encrypt File",JOptionPane.OK_CANCEL_OPTION);
+    	if (ans == JOptionPane.OK_OPTION) {
+    		File f = pEnc.getFile();
+    		if (f==null) return;
+    		int method = pEnc.getEncMethod();
+    		int fFormat = pEnc.getEncFormat();
+    		if (method==0) {
+    			//sym with password
+    			try {
+					byte[] initv = SecurityHelper.getRandomBytes(16);
+					String pw = pEnc.getPassword().toString();
+					SymmetricKey key = SymmetricKey.getKeyFromPass(pw.toCharArray(), initv);
+
+					Element e = new Element("symmetric_encryption");
+					e.addContent("dataname", f.getName());
+					e.addContent("origlength", ""+f.length());
+					e.addContent("lastmodified", SecurityHelper.getFormattedDate(f.lastModified()));
+					//e.addContent("mantraname",p[0]);
+					e.addContent("pass_sha256", SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA256(pw.getBytes()), ':', -1));
+					e.addContent("algo","AES@256");
+					e.addContent("initvector", SecurityHelper.HexDecoder.encode(initv, ':', -1));
+					e.addContent("padding", "CBC/PKCS#7");
+					Document d = Document.buildDocument(e);
+					
+					if (fFormat == 0) {
+						File[] saveEnc = encryptFileDetached(f, key, d);
+						Dialogs.showMessage("Detached encryption succeeded.\nencrypt file: "+saveEnc[0].getName()+"\nsignature filename: "+saveEnc[1].getName());
+					} else {
+						File saveEnc = encryptFileInline(f, key, d);
+						Dialogs.showMessage("Inline encryption succeeded.\nfilename: "+saveEnc.getName());
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+    		}
+    		else if (method==1) {
+    			
+    			String[] keys = pEnc.getKeyIDs();
+    			if (keys==null) {
+    				Dialogs.showMessage("No selected keys for encrypting random symmetric key");
+    				return;
+    			}
+    			
+    			//rand sym with asymm enc keys
+    			try {
+					SymmetricKey symkey = SymmetricKey.getRandomKey();
+
+					Element e = new Element("symmetric_encryption");
+					e.addContent("dataname", f.getName());
+					e.addContent("origlength", ""+f.length());
+					e.addContent("lastmodified", SecurityHelper.getFormattedDate(f.lastModified()));
+					
+					for (String k : keys) {
+						OSDXKey key = currentKeyStore.getKey(k);
+						Element eKey = new Element("encrypted_symmetric_key");
+						eKey.addContent(key.getSimplePubKeyElement());
+						eKey.addContent("asymmetric_encryption_algo","RSA");
+						byte[] enc_initv = key.encrypt(symkey.getInitVector());
+						byte[] enc_keybytes = key.encrypt(symkey.getKeyBytes());
+						eKey.addContent("enc_initvector", SecurityHelper.HexDecoder.encode(enc_initv, ':', -1));
+						eKey.addContent("enc_keybytes", SecurityHelper.HexDecoder.encode(enc_keybytes, ':', -1));
+						eKey.addContent("symmetric_encryption_algo","AES@256");
+						eKey.addContent("padding", "CBC/PKCS#7");
+						e.addContent(eKey);
+					}
+					Document d = Document.buildDocument(e);
+					
+					if (fFormat == 0) {
+						File[] saveEnc = encryptFileDetached(f, symkey, d);
+						Dialogs.showMessage("Detached encryption succeeded.\nencrypt file: "+saveEnc[0].getName()+"\nsignature filename: "+saveEnc[1].getName());
+					} else {
+						File saveEnc = encryptFileInline(f, symkey, d);
+						Dialogs.showMessage("Inline encryption succeeded.\nfilename: "+saveEnc.getName());
+					}
+					
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+    		}
+    		else if (method==2) {
+    			//asymm
+    			try {
+					SymmetricKey symkey = SymmetricKey.getRandomKey();
+					String k = pEnc.getKeyID();
+					
+					OSDXKey key = currentKeyStore.getKey(k);
+					
+					Element e = new Element("symmetric_encryption");
+					e.addContent("dataname", f.getName());
+					e.addContent("origlength", ""+f.length());
+					e.addContent("lastmodified", SecurityHelper.getFormattedDate(f.lastModified()));
+					e.addContent(key.getSimplePubKeyElement());
+					e.addContent("asymmetric_encryption_algo","RSA");
+					byte[] enc_initv = key.encrypt(symkey.getInitVector());
+					byte[] enc_keybytes = key.encrypt(symkey.getKeyBytes());
+					e.addContent("enc_initvector", SecurityHelper.HexDecoder.encode(enc_initv, ':', -1));
+					e.addContent("enc_keybytes", SecurityHelper.HexDecoder.encode(enc_keybytes, ':', -1));
+					e.addContent("symmetric_encryption_algo","AES@256");
+					e.addContent("padding", "CBC/PKCS#7");
+					Document d = Document.buildDocument(e);
+					
+					if (fFormat == 0) {
+						File[] saveEnc = encryptFileDetached(f, symkey, d);
+						Dialogs.showMessage("Detached encryption succeeded.\nencrypt file: "+saveEnc[0].getName()+"\nsignature filename: "+saveEnc[1].getName());
+					} else {
+						File saveEnc = encryptFileInline(f, symkey, d);
+						Dialogs.showMessage("Inline encryption succeeded.\nfilename: "+saveEnc.getName());
+					}
+					
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+    		}
+	    }
 	}
 
 	private void encryptFile() {
