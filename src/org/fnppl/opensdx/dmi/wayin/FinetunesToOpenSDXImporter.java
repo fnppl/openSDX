@@ -486,7 +486,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	feed.addBundle(bundle);
 	        }
 		} catch (Exception e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 			ir.succeeded = false;
 			ir.errorMessage = e.getMessage();			
 			ir.exception = e;			

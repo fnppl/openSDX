@@ -103,7 +103,7 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
         	
     		Bundle bundle = osdxFeed.getBundle(i);
 	        
-	        // feedid
+	        // upc
 	        String upc = bundle.getIds().getUpc();
 	        if (upc==null || upc.length()==0) upc = "[NOT SET]";
 	        expDocAlbum.addContent("code", upc);

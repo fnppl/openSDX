@@ -920,9 +920,15 @@ public class FeedGui extends JFrame implements MyObserver {
 				Document doc = null;
 				String errMsg = "ERROR, could not convert initial file.";
 				if(type.equals("finetunes")) {
-					OpenSDXToFinetunesExporter exp = new OpenSDXToFinetunesExporter(feed);	
-					doc = exp.getFormatedDocumentFromExport();
-					ir = exp.getIr();
+					if(currentFeed.getBundleCount()>1) {
+						// finetunes specs allows only one bundle/release per feed
+						errMsg += "\n Simfy only accept one bundle per feed!";						
+					}
+					else {
+						OpenSDXToFinetunesExporter exp = new OpenSDXToFinetunesExporter(feed);	
+						doc = exp.getFormatedDocumentFromExport();
+						ir = exp.getIr();
+					}
 				}
 				else if(type.equals("simfy")) {
 					if(currentFeed.getBundleCount()>1) {
@@ -953,7 +959,7 @@ public class FeedGui extends JFrame implements MyObserver {
 
 			} catch (Exception e) {
 				Dialogs.showMessage("ERROR, could not export current feed!");
-				e.printStackTrace();
+				// e.printStackTrace();
 			}
 		}		
 	}	

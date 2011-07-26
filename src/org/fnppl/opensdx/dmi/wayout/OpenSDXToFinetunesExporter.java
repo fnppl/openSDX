@@ -56,9 +56,15 @@ import org.fnppl.opensdx.security.*;
 public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 	DateFormat ymd = new SimpleDateFormat("yyyyMMdd");
 	private Result ir = Result.succeeded();
-	// test?
-    boolean onlytest = true;
+    static HashMap<String, String> finetunes_contributors_types = new HashMap<String, String>();
+    static {
+    	finetunes_contributors_types.put(Contributor.TYPE_DISPLAY_ARTIST, "performer");
+    	finetunes_contributors_types.put(Contributor.TYPE_VOCALS, "lyricist");
+    	finetunes_contributors_types.put(Contributor.TYPE_COMPOSER, "composer");
+    	finetunes_contributors_types.put(Contributor.TYPE_COMPILATOR, "arranger");
+    };
     
+	
 	public OpenSDXToFinetunesExporter(ExportType type, Feed expFeed, File savFile) {
 		super(type, expFeed, savFile);
 	}
@@ -95,9 +101,121 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 			Feed osdxFeed = this.exportFeed;
 	        
 	        // (2) create XML-Data for export document
-	        expDoc = Document.buildDocument(new Element("coming soon"));
+	        expDoc = Document.buildDocument(new Element("feed"));
+	        Element expDocFeed = expDoc.getRootElement();
 	        
-	        // ToDo: write export!
+	        // set attributes
+	        expDocFeed.setAttribute("partnerid", "finetunes");
+	        expDocFeed.setAttribute("version", "1.4");
+	        
+	        // feedid
+	        String feedid = osdxFeed.getFeedinfo().getFeedID();
+	        if (feedid==null || feedid.length()==0) feedid = "[NOT SET]";
+	        expDocFeed.setAttribute("feedid", feedid);
+	        
+	        Element release = new Element("release");
+	        expDocFeed.addContent(release);
+	        
+	        expDocFeed.setAttribute("action", "showinshop");
+	        
+	        // bundleCount max = 1 -> finetunes spec
+        	int i=0;
+        	
+    		Bundle bundle = osdxFeed.getBundle(i);	        
+
+    		// IDs
+			IDs bundleids = bundle.getIds();
+			if(bundleids.getFinetunesid()!=null && bundleids.getFinetunesid().length()>0) {
+				Element id = new Element("id");
+				id.setAttribute("type", "finetunes").setText(bundleids.getFinetunesid());
+				release.addContent(id);
+			}
+			else if(bundleids.getUpc()!=null && bundleids.getUpc().length()>0) {
+				Element id = new Element("id");
+				id.setAttribute("type", "ean").setText(bundleids.getUpc());
+				release.addContent(id);
+			}
+			
+    		// title
+	        String title = bundle.getDisplayname();
+	        if (title==null) title = "";
+	        release.addContent("title", title);
+	        
+	        // longname
+	        String longname = bundle.getName();
+	        if (longname==null) longname = "";
+	        release.addContent("longname", longname);		        
+	        
+			
+			// streaming allowed?			
+			release.addContent("streaming", ""+bundle.getLicense_basis().isStreaming_allowed());	        
+	        
+    		// version
+	        String version = bundle.getVersion();
+	        if (version==null) version = "";
+	        release.addContent("version", version);			
+			
+        	// add label / artistname / copyright / production
+         	Element artists = new Element("artists");
+         	release.addContent(artists);
+         	
+        	Vector<Contributor> contributors = bundle.getAllContributors();
+        	for (Iterator<Contributor> itContributor = contributors.iterator(); itContributor.hasNext();) {
+        		Contributor contributor = itContributor.next();
+        		if(contributor.getType()==Contributor.TYPE_LABEL) {
+        			Element label = new Element("label");
+        			release.addContent(label);
+        			
+        			label.addContent("name", contributor.getName());
+        			if(contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
+        				label.addContent("website", contributor.getWww().getHomepage());
+        			
+        			IDs labelids = bundle.getIds();
+        			if(labelids.getFinetunesid()!=null && labelids.getFinetunesid().length()>0) {
+        				Element id = new Element("id");
+        				id.setAttribute("type", "finetunes").setText(labelids.getFinetunesid());
+        				label.addContent(id);
+        			}
+        			else if(labelids.getGvl()!=null && labelids.getGvl().length()>0) {
+        				Element id = new Element("id");
+        				id.setAttribute("type", "gvl").setText(labelids.getGvl());
+        				label.addContent(id);
+        			}        			
+        		}
+        		else if(finetunes_contributors_types.containsKey(contributor.getType())) {
+        			// artist_name = contributor.getName();
+        			Element artist = new Element("artist");
+        			artists.addContent(artist);
+        			
+        			artist.addContent("name", contributor.getName());
+        			if(contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
+        				artist.addContent("website", contributor.getWww().getHomepage());
+        			
+        			IDs artistids = bundle.getIds();
+        			if(artistids.getFinetunesid()!=null && artistids.getFinetunesid().length()>0) {
+        				Element id = new Element("id");
+        				id.setAttribute("type", "finetunes").setText(artistids.getFinetunesid());
+        				artist.addContent(id);
+        			}
+        			
+        			artist.addContent("role", finetunes_contributors_types.get(Contributor.TYPE_DISPLAY_ARTIST).toString());
+        			
+        		}
+        		else if(contributor.getType()==Contributor.TYPE_COPYRIGHT) {
+        			String copyright = contributor.getName();
+        			if(contributor.getYear().length()>0) copyright = contributor.getYear()+" "+copyright;
+        			release.addContent("copyrightinfo", copyright);
+        		}
+        		else if(contributor.getType()==Contributor.TYPE_PRODUCTION) {
+        			String production = contributor.getName();
+        			if(contributor.getYear().length()>0) production = contributor.getYear()+" "+production;
+        			release.addContent("productioninfo", production);
+        		}	        		
+        	}
+        	
+        	// loop the tracks!
+	        
+	        // ToDo: more export magic if needed!
 
 		} catch (Exception e) {
 			// e.printStackTrace();
