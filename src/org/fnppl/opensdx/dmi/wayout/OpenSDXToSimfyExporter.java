@@ -121,19 +121,19 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
         	Vector<Contributor> contributors = bundle.getAllContributors();
         	for (Iterator<Contributor> itContributor = contributors.iterator(); itContributor.hasNext();) {
         		Contributor contributor = itContributor.next();
-        		if(contributor.getType()==Contributor.TYPE_LABEL) {
+        		if(contributor.getType().equals(Contributor.TYPE_LABEL)) {
         			label = contributor.getName();
         		}
-        		else if(contributor.getType()==Contributor.TYPE_DISPLAY_ARTIST) {
+        		else if(contributor.getType().equals(Contributor.TYPE_DISPLAY_ARTIST)) {
         			artist_name = contributor.getName();
         		}
-        		else if(contributor.getType()==Contributor.TYPE_COPYRIGHT) {
+        		else if(contributor.getType().equals(Contributor.TYPE_COPYRIGHT)) {
         			copyright = contributor.getName();
-        			if(contributor.getYear().length()>0) copyright = contributor.getYear()+" "+copyright;
+        			if(contributor.getYear()!=null && contributor.getYear().length()>0) copyright = contributor.getYear()+" "+copyright;
         		}
-        		else if(contributor.getType()==Contributor.TYPE_PRODUCTION) {
+        		else if(contributor.getType().equals(Contributor.TYPE_PRODUCTION)) {
         			production = contributor.getName();
-        			if(contributor.getYear().length()>0) production = contributor.getYear()+" "+production;
+        			if(contributor.getYear()!=null && contributor.getYear().length()>0) production = contributor.getYear()+" "+production;
         		}	        		
         	}
         	
@@ -164,16 +164,17 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
         	
         	int fileCount = bundle.getFilesCount();
         	for (int j=0;j<fileCount;j++) {
-        		if(bundle.getFile(j).getType().equals("cover")) {
+        		ItemFile file = bundle.getFile(j);
+        		if(file.getType().equals("cover")) {
         			Element cover = new Element("cover");
         			expDocAlbum.addContent(cover);
         				        			
-        			cover.addContent("height", ""+bundle.getFile(j).getDimensionHeight());
-        			cover.addContent("width", ""+bundle.getFile(j).getDimensionHeight());
+        			cover.addContent("height", ""+file.getDimensionHeight());
+        			cover.addContent("width", ""+file.getDimensionWidth());
         			
-        			String filename = bundle.getFile(j).getLocationPath();
+        			String filename = file.getLocationPath();
         			cover.addContent("file_name", filename);
-        			cover.addContent("file_size", ""+bundle.getFile(j).getBytes());
+        			cover.addContent("file_size", ""+file.getBytes());
         			
             		File f = new File(filename);
             		if(f!=null && f.exists()) {
@@ -182,8 +183,8 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
             		} else {
             			//file does not exist -> so we have to set the values "manually"
             			// checksum md5
-            			if(bundle.getFile(j).getChecksums().getMd5String()!=null)
-            				cover.addContent("file_checksum", SecurityHelper.HexDecoder.encode(bundle.getFile(j).getChecksums().getMd5(),'\0',-1).toLowerCase());
+            			if(file.getChecksums().getMd5String()!=null)
+            				cover.addContent("file_checksum", SecurityHelper.HexDecoder.encode(file.getChecksums().getMd5(),'\0',-1).toLowerCase());
             		}	        			
         		}
         	}
@@ -196,16 +197,17 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
         	int trackNum = 0;
         	int discCount = 0;
         	for (int j=0;j<itemCount;j++) {
+        		Item item = bundle.getItem(j);
         		// fulltracks holen
-        		if(bundle.getItem(j).getType().equals("audio")) {	        					
+        		if(item.getType().equals("audio")) {	        					
         			// add track 
         			Element track = new Element("track");
         			expDocTracks.addContent(track);
 	        		
         			trackCount++;
         			// get max disc number
-        			if(bundle.getItem(j).getInformation().getSetNum()>discCount) discCount = bundle.getItem(j).getInformation().getSetNum();	
-        			trackNum = bundle.getItem(j).getInformation().getNum();
+        			if(item.getInformation().getSetNum()>discCount) discCount = item.getInformation().getSetNum();	
+        			trackNum = item.getInformation().getNum();
         			
         			String ext = ""+trackNum;
         			
@@ -215,9 +217,9 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
         			
         			// add track number / disc number
         			track.addContent("track_number", ""+trackNum);
-        			track.addContent("disk_number", ""+bundle.getItem(j).getInformation().getSetNum());        			
+        			track.addContent("disk_number", ""+item.getInformation().getSetNum());        			
         			
-        			IDs ids = bundle.getItem(j).getIds();
+        			IDs ids = item.getIds();
         			if(ids.getIsrc()!=null && ids.getIsrc().length()>0)
         				track.addContent("isrc", ids.getIsrc());
         			
@@ -226,27 +228,28 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
         			
         			// title
         			if(bundle.getItem(j).getDisplayname()!=null)
-        				track.addContent("title", bundle.getItem(j).getDisplayname());
+        				track.addContent("title", item.getDisplayname());
 
     	        	// display_artist
         			if(bundle.getItem(j).getDisplay_artist()!=null)
-        				track.addContent("artist_name", bundle.getItem(j).getDisplay_artist());
+        				track.addContent("artist_name", item.getDisplay_artist());
         			
     	        	// duration
-       				track.addContent("duration", ""+bundle.getItem(j).getInformation().getPlaylength());
+       				track.addContent("duration", ""+item.getInformation().getPlaylength());
         			
         			// explicit_lyrics	    	        	
-                	String explicit_lyrics = bundle.getItem(j).getTags().getExplicit_lyrics();
+                	String explicit_lyrics = item.getTags().getExplicit_lyrics();
                 	if(explicit_lyrics!=null)
                 		track.addContent("explicit_lyrics", explicit_lyrics);
                 	
-    	        	int trackFileCount = bundle.getFilesCount();
+    	        	int trackFileCount = item.getFilesCount();
     	        	for (int k=0;k<trackFileCount;k++) {
-    	        		if(bundle.getItem(j).getFile(k).getType().equals("full")) {
+    	        		ItemFile file = item.getFile(k);
+    	        		if(file.getType().equals("full")) {
     	        			
-    	        			String track_filename = bundle.getItem(j).getFile(k).getLocationPath();
+    	        			String track_filename = file.getLocationPath();
                 			track.addContent("file_name", track_filename);
-                			track.addContent("file_size", ""+bundle.getItem(j).getFile(k).getBytes());
+                			track.addContent("file_size", ""+file.getBytes());
                 			
     	            		File f = new File(track_filename);
     	            		if(f!=null && f.exists()) {
@@ -255,8 +258,8 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
     	            		} else {
     	            			// file does not exist -> so we have to set the values "manually"
     	            			// checksum md5  
-    	            			if(bundle.getItem(j).getFile(k).getChecksums().getMd5()!=null)	    	            				
-    	            				track.addContent("file_checksum", SecurityHelper.HexDecoder.encode(bundle.getItem(j).getFile(k).getChecksums().getMd5(),'\0',-1).toLowerCase());
+    	            			if(file.getChecksums().getMd5()!=null)	    	            				
+    	            				track.addContent("file_checksum", SecurityHelper.HexDecoder.encode(file.getChecksums().getMd5(),'\0',-1).toLowerCase());
     	            		}	    	        			
     	        			
     	        		

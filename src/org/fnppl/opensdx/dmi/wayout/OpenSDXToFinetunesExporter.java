@@ -116,7 +116,7 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 	        Element release = new Element("release");
 	        expDocFeed.addContent(release);
 	        
-	        expDocFeed.setAttribute("action", "showinshop");
+	        release.setAttribute("action", "showinshop");
 	        
 	        // bundleCount max = 1 -> finetunes spec
         	int i=0;
@@ -135,6 +135,16 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 				id.setAttribute("type", "ean").setText(bundleids.getUpc());
 				release.addContent(id);
 			}
+			else if(bundleids.getIsrc()!=null && bundleids.getIsrc().length()>0) {
+				Element id = new Element("id");
+				id.setAttribute("type", "isrc").setText(bundleids.getIsrc());
+				release.addContent(id);
+			} 
+			else if(bundleids.getIsbn()!=null && bundleids.getIsbn().length()>0) {
+				Element id = new Element("id");
+				id.setAttribute("type", "isbn").setText(bundleids.getIsrc());
+				release.addContent(id);
+			}			
 			
     		// title
 	        String title = bundle.getDisplayname();
@@ -157,12 +167,11 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 			
         	// add label / artistname / copyright / production
          	Element artists = new Element("artists");
-         	release.addContent(artists);
          	
         	Vector<Contributor> contributors = bundle.getAllContributors();
         	for (Iterator<Contributor> itContributor = contributors.iterator(); itContributor.hasNext();) {
         		Contributor contributor = itContributor.next();
-        		if(contributor.getType()==Contributor.TYPE_LABEL) {
+        		if(contributor.getType().equals(Contributor.TYPE_LABEL)) {
         			Element label = new Element("label");
         			release.addContent(label);
         			
@@ -198,27 +207,348 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         				artist.addContent(id);
         			}
         			
-        			artist.addContent("role", finetunes_contributors_types.get(Contributor.TYPE_DISPLAY_ARTIST).toString());
+        			artist.addContent("role", finetunes_contributors_types.get(contributor.getType()).toString());
         			
         		}
-        		else if(contributor.getType()==Contributor.TYPE_COPYRIGHT) {
+        		else if(contributor.getType().equals(Contributor.TYPE_COPYRIGHT)) {
         			String copyright = contributor.getName();
-        			if(contributor.getYear().length()>0) copyright = contributor.getYear()+" "+copyright;
+        			if(contributor.getYear()!=null && contributor.getYear().length()>0) copyright = contributor.getYear()+" "+copyright;
         			release.addContent("copyrightinfo", copyright);
         		}
-        		else if(contributor.getType()==Contributor.TYPE_PRODUCTION) {
+        		else if(contributor.getType().equals(Contributor.TYPE_PRODUCTION)) {
         			String production = contributor.getName();
-        			if(contributor.getYear().length()>0) production = contributor.getYear()+" "+production;
+        			if(contributor.getYear()!=null && contributor.getYear().length()>0) production = contributor.getYear()+" "+production;
         			release.addContent("productioninfo", production);
         		}	        		
         	}
         	
-        	// loop the tracks!
-	        
+        	release.addContent(artists);        	
+        	
+        	// add  genres
+        	Element genres = new Element("genres");
+        	release.addContent(genres);
+        	
+        	int genrecount = bundle.getTags().getGenresCount();
+        	for(int j=0; j<genrecount;j++) {
+        		Element genre = new Element("genre");
+        		genre.setText(bundle.getTags().getGenre(j));
+        		genres.addContent(genre);
+        	}
+        	
+        	int filecount = bundle.getFilesCount();
+        	for(int j=0; j<filecount;j++) {
+        		ItemFile file = bundle.getFile(j);
+        		if(file.getType().equals("cover")) {
+	        		Element resource = new Element("resource");
+	        		resource.setAttribute("type", "frontcover");
+	        		if(file.getFiletype()!=null) { resource.addContent("datatype", file.getFiletype());}
+
+	        		Element quality = new Element("quality");
+	        		quality.setAttribute("type", "width").setText(""+file.getDimensionWidth());
+	        		resource.addContent(quality);
+	        		
+	        		quality = new Element("quality");
+	        		quality.setAttribute("type", "height").setText(""+file.getDimensionHeight());
+	        		resource.addContent(quality);	        		
+
+	        		quality = new Element("quality");
+	        		quality.setAttribute("type", "size").setText(""+file.getBytes());
+	        		resource.addContent(quality);	        		
+        			
+        			String filename = file.getLocationPath();
+        			resource.addContent("uri", filename);
+        			
+            		File f = new File(filename);
+            		if(f!=null && f.exists()) {
+            			byte[][] sums = SecurityHelper.getMD5SHA1(f);
+            			Element cs = new Element("checksum");
+            			cs.setAttribute("type", "md5").setText(Checksums.make(sums[0],sums[1],null).getMd5String());
+            			resource.addContent(cs);
+            		} else {
+            			//file does not exist -> so we have to set the values "manually"
+            			// checksum md5
+            			if(file.getChecksums().getMd5String()!=null) {
+                			Element cs = new Element("checksum");
+                			cs.setAttribute("type", "md5").setText(SecurityHelper.HexDecoder.encode(file.getChecksums().getMd5(),'\0',-1).toLowerCase());
+                			resource.addContent(cs);
+            			}
+            		}
+	        		
+	        		release.addContent(resource);
+        		}
+        	}
+        	
+        	// infotexts (promo/teaser)
+        	Element infotexts = new Element("infotexts");
+        	release.addContent(infotexts);
+        	int promocount = bundle.getInformation().getPromotextCount();
+        	for(int j=0; j<promocount;j++) {
+        		String lang = bundle.getInformation().getPromotextLanguage(j);
+        		String text = bundle.getInformation().getPromotext(j);
+        		Element infotext = new Element("infotext");
+        		infotexts.addContent(infotext);
+        		infotext.setAttribute("lang", lang).setText(text);
+        	} 
+        	
+        	int teasercount = bundle.getInformation().getTeasertextCount();
+        	for(int j=0; j<teasercount;j++) {
+        		String lang = bundle.getInformation().getTeasertextLanguage(j);
+        		String text = bundle.getInformation().getTeasertext(j);
+        		Element infotext = new Element("infotext");
+        		infotexts.addContent(infotext);
+        		infotext.setAttribute("lang", lang).setText(text);
+        	}        	
+        	
+        	// distribution territories
+        	Element distributionterritories = new Element("distributionterritories");
+        	release.addContent(distributionterritories);
+
+        	Element allowances = new Element("allowances");
+        	
+        	int territorycount = bundle.getLicense_basis().getTerritorial().getTerritorialCount();
+        	int allow = 0;
+        	for(int j=0; j<territorycount;j++) {
+        		if(bundle.getLicense_basis().getTerritorial().isTerritoryAllowed(j))
+        			allowances.addContent("territory", bundle.getLicense_basis().getTerritorial().getTerritory(j)); allow++;
+        	}
+        	
+        	if(allow>0) distributionterritories.addContent(allowances);
+        	        	
+        	// schedules / releasedates
+        	Element schedules = new Element("schedules");
+        	release.addContent(schedules);
+        	
+        	Calendar cal = Calendar.getInstance();
+        	cal.setTimeInMillis(bundle.getInformation().getPhysicalReleaseDatetime());
+        	schedules.addContent("streetreleasedate", ymd.format(cal.getTime()));
+        	
+        	cal.setTimeInMillis(bundle.getInformation().getDigitalReleaseDatetime());
+        	schedules.addContent("digitalreleasedate", ymd.format(cal.getTime()));
+        	
+        	// tracks
+        	Element tracks = new Element("tracks");
+        	release.addContent(tracks);        	
+        	
+        	int itemcount = bundle.getItemsCount();
+        	tracks.setAttribute("count", ""+itemcount);
+        	for(int j=0; j<itemcount;j++) {
+        		Item item = bundle.getItem(j);
+        		Element track = new Element("track");
+        		tracks.addContent(track);
+        		
+        		// Item IDs
+    			IDs itemids = item.getIds();
+    			if(itemids.getFinetunesid()!=null && itemids.getFinetunesid().length()>0) {
+    				Element id = new Element("id");
+    				id.setAttribute("type", "finetunes").setText(itemids.getFinetunesid());
+    				track.addContent(id);
+    			}
+    			
+    			if(itemids.getUpc()!=null && itemids.getUpc().length()>0) {
+    				Element id = new Element("id");
+    				id.setAttribute("type", "ean").setText(itemids.getUpc());
+    				track.addContent(id);
+    			}
+    			
+    			if(itemids.getIsrc()!=null && itemids.getIsrc().length()>0) {
+    				Element id = new Element("id");
+    				id.setAttribute("type", "isrc").setText(itemids.getIsrc());
+    				track.addContent(id);
+    			} 
+    			
+    			if(itemids.getIsbn()!=null && itemids.getIsbn().length()>0) {
+    				Element id = new Element("id");
+    				id.setAttribute("type", "isbn").setText(itemids.getIsrc());
+    				track.addContent(id);
+    			}    			
+        		
+        		track.addContent("position", ""+item.getInformation().getNum());
+        		track.addContent("cdsourcenum", ""+item.getInformation().getSetNum());
+        		track.addContent("tracklength", ""+item.getInformation().getPlaylength());
+        		track.addContent("explicitlyrics", ""+item.getTags().getExplicit_lyrics());
+        		track.addContent("origincountry", item.getInformation().getOrigin_country());
+        		
+        		// item title
+    	        title = item.getDisplayname();
+    	        if (title==null) title = "";
+    	        track.addContent("title", title);
+    	        
+    	        // item longname
+    	        longname = item.getName();
+    	        if (longname==null) longname = "";
+    	        track.addContent("longname", longname);		        
+    	        
+    			
+    			// item streaming allowed?			
+    	        track.addContent("streaming", ""+item.getLicense_basis().isStreaming_allowed());	        
+    	        
+        		// item version
+    	        version = item.getVersion();
+    	        if (version==null) version = "";
+    	        track.addContent("version", version);			
+    			
+            	// add label / artistname / copyright / production
+             	artists = new Element("artists");
+             	track.addContent(artists); 
+             	
+               	contributors = item.getAllContributors();
+            	for (Iterator<Contributor> itContributor = contributors.iterator(); itContributor.hasNext();) {
+            		Contributor contributor = itContributor.next();
+            		if(contributor.getType().equals(Contributor.TYPE_LABEL)) {
+            			Element label = new Element("label");
+            			track.addContent(label);
+            			
+            			label.addContent("name", contributor.getName());
+            			if(contributor.getWww()!=null && contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
+            				label.addContent("website", contributor.getWww().getHomepage());
+            			
+            			IDs labelids = bundle.getIds();
+            			if(labelids.getFinetunesid()!=null && labelids.getFinetunesid().length()>0) {
+            				Element id = new Element("id");
+            				id.setAttribute("type", "finetunes").setText(labelids.getFinetunesid());
+            				label.addContent(id);
+            			}
+            			
+            			if(labelids.getGvl()!=null && labelids.getGvl().length()>0) {
+            				Element id = new Element("id");
+            				id.setAttribute("type", "gvl").setText(labelids.getGvl());
+            				label.addContent(id);
+            			}        			
+            		}
+            		else if(finetunes_contributors_types.containsKey(contributor.getType())) {
+            			// artist_name = contributor.getName();
+            			Element artist = new Element("artist");
+            			artists.addContent(artist);
+            			
+            			artist.addContent("name", contributor.getName());
+            			if(contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
+            				artist.addContent("website", contributor.getWww().getHomepage());
+            			
+            			IDs artistids = bundle.getIds();
+            			if(artistids.getFinetunesid()!=null && artistids.getFinetunesid().length()>0) {
+            				Element id = new Element("id");
+            				id.setAttribute("type", "finetunes").setText(artistids.getFinetunesid());
+            				artist.addContent(id);
+            			}
+            			
+            			artist.addContent("role", finetunes_contributors_types.get(contributor.getType()).toString());
+            			
+            		}
+            		else if(contributor.getType().equals(Contributor.TYPE_COPYRIGHT)) {
+            			String copyright = contributor.getName();
+            			if(contributor.getYear().length()>0) copyright = contributor.getYear()+" "+copyright;
+            			track.addContent("copyrightinfo", copyright);
+            		}
+            		else if(contributor.getType().equals(Contributor.TYPE_PRODUCTION)) {
+            			String production = contributor.getName();
+            			if(contributor.getYear().length()>0) production = contributor.getYear()+" "+production;
+            			track.addContent("productioninfo", production);
+            		}	        		
+            	}
+            	
+            	// add  genres
+            	genres = new Element("genres");
+            	track.addContent(genres);
+            	
+            	genrecount = item.getTags().getGenresCount();
+            	for(int k=0; k<genrecount;k++) {
+            		Element genre = new Element("genre");
+            		genre.setText(item.getTags().getGenre(k));
+            		genres.addContent(genre);
+            	}
+            	
+	        	boolean track_bundle_only = item.getTags().isBundle_only();
+	        	if(track_bundle_only) {
+	        		track.addContent("bundle", "true");	
+	        	}
+	        	else {
+	        		track.addContent("bundle", "false");	
+	        	}
+	        	
+	        	boolean explicitlyrics = item.getTags().isExplicit_lyrics();
+	        	if(explicitlyrics) {
+	        		track.addContent("explicitlyrics", "true");	
+	        	}
+	        	else {
+	        		track.addContent("explicitlyrics", "false");
+	        	}            	
+            	
+            	// distribution territories
+            	distributionterritories = new Element("distributionterritories");
+            	track.addContent(distributionterritories);
+
+            	allowances = new Element("allowances");
+            	distributionterritories.addContent(allowances);
+            	
+            	if(item.getLicense_basis().getTerritorial()!=null) {
+	            	territorycount = item.getLicense_basis().getTerritorial().getTerritorialCount();
+	            	for(int k=0; k<territorycount;k++) {
+	            		if(item.getLicense_basis().getTerritorial().isTerritoryAllowed(k))
+	            			allowances.addContent("territory", item.getLicense_basis().getTerritorial().getTerritory(k));
+	            	}
+            	}
+            	        	
+            	// schedules / releasedates
+            	schedules = new Element("schedules");
+            	track.addContent(schedules);
+            	
+            	cal.setTimeInMillis(item.getInformation().getPhysicalReleaseDatetime());
+            	schedules.addContent("streetreleasedate", ymd.format(cal.getTime()));
+            	
+            	cal.setTimeInMillis(item.getInformation().getDigitalReleaseDatetime());
+            	schedules.addContent("digitalreleasedate", ymd.format(cal.getTime()));            	
+             	
+	        	int trackFileCount = item.getFilesCount();
+	        	for (int k=0;k<trackFileCount;k++) {
+	        		ItemFile file = item.getFile(k);
+	        		if(file.getType().equals("full")) {
+	        			Element resource = new Element("resource");
+		        		resource.setAttribute("type", "audiofile");
+		        		
+		        		if(file.getFiletype()!=null) { resource.addContent("datatype", file.getFiletype());}
+
+		        		Element quality = new Element("quality");
+		        		quality.setAttribute("type", "duration").setText(""+item.getInformation().getPlaylength());
+		        		resource.addContent(quality);
+		        		
+		        		if(file.getChannels()!=null) {
+			        		quality = new Element("quality");
+			        		quality.setAttribute("type", "channelmode").setText(""+file.getChannels());
+			        		resource.addContent(quality);
+		        		}
+
+		        		quality = new Element("quality");
+		        		quality.setAttribute("type", "size").setText(""+file.getBytes());
+		        		resource.addContent(quality);	        		
+	        			
+	        			String filename = file.getLocationPath();
+	        			resource.addContent("uri", filename);
+	        			
+	            		File f = new File(filename);
+	            		if(f!=null && f.exists()) {
+	            			byte[][] sums = SecurityHelper.getMD5SHA1(f);
+	            			Element cs = new Element("checksum");
+	            			cs.setAttribute("type", "md5").setText(Checksums.make(sums[0],sums[1],null).getMd5String());
+	            			resource.addContent(cs);
+	            		} else {
+	            			//file does not exist -> so we have to set the values "manually"
+	            			// checksum md5
+	            			if(file.getChecksums().getMd5String()!=null) {
+	                			Element cs = new Element("checksum");
+	                			cs.setAttribute("type", "md5").setText(SecurityHelper.HexDecoder.encode(file.getChecksums().getMd5(),'\0',-1).toLowerCase());
+	                			resource.addContent(cs);
+	            			}
+	            		}
+	            		
+	            		track.addContent(resource);
+	        		}
+	        	}            	
+        	}         	
+        	
 	        // ToDo: more export magic if needed!
 
 		} catch (Exception e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 			ir.succeeded = false;
 			ir.errorMessage = e.getMessage();			
 			ir.exception = e;			

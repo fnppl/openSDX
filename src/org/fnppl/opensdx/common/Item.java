@@ -1,5 +1,7 @@
 package org.fnppl.opensdx.common;
 
+import java.util.Vector;
+
 import org.fnppl.opensdx.xml.ChildElementIterator;
 /*
  * Copyright (C) 2010-2011 
@@ -159,6 +161,14 @@ public class Item extends BusinessObject {
 		if (contributors==null) return 0;
 		return contributors.size();
 	}
+	
+	public Vector<Contributor> getAllContributors() {
+		Vector<Contributor> all = new Vector<Contributor>();
+		for (int i=0;i<getContributorCount();i++) {
+			all.add(getContributor(i));
+		}
+		return all;
+	}	
 	
 	public Item ids(IDs ids) {
 		this.ids = ids;

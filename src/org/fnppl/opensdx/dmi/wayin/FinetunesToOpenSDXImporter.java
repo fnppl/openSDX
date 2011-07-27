@@ -136,7 +136,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	else {
 	        		name = release.getChildText("longname");
 	        	}
-	        	
+	        		        	
 	        	// version
 	        	String version = release.getChildText("version");
 	        	
@@ -194,8 +194,8 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	
 	        	LicenseBasis license_basis = LicenseBasis.make(territorial, rf, rt);
 	        	
-	        	if(root.getChild("streaming")!=null) {
-	        		license_basis.streaming_allowed(Boolean.parseBoolean(root.getChildText("streaming")));
+	        	if(release.getChild("streaming")!=null) {
+	        		license_basis.streaming_allowed(Boolean.parseBoolean(release.getChildText("streaming")));
 	        	}
 	        	
 	        	// license specifics -> empty!
@@ -204,8 +204,20 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	// create bundle with gathered information
 	        	Bundle bundle = Bundle.make(bundleids, displayname, name, version, display_artist, info, license_basis, license_specifics);
 	        	
+	        	// copyright
+	        	String copyright = release.getChildTextNN("copyrightinfo");
 	        	// add contributor to bundle
-	        	Contributor contributor = Contributor.make(label.getChildTextNN("name"), Contributor.TYPE_LABEL, ids);
+	        	Contributor contributor = Contributor.make(copyright, Contributor.TYPE_COPYRIGHT, IDs.make());
+	        	bundle.addContributor(contributor);
+	        	
+	        	// copyright
+	        	String productioninfo = release.getChildTextNN("productioninfo");
+	        	// add contributor to bundle
+	        	contributor = Contributor.make(productioninfo, Contributor.TYPE_PRODUCTION, IDs.make());
+	        	bundle.addContributor(contributor);	        		        	
+	        	
+	        	// add contributor to bundle
+	        	contributor = Contributor.make(label.getChildTextNN("name"), Contributor.TYPE_LABEL, ids);
 	        	contributor.www(InfoWWW.make().homepage(label.getChildTextNN("website")));
 	        	bundle.addContributor(contributor);
 	        	
@@ -353,13 +365,13 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        	BundleInformation track_info = BundleInformation.make(srd, prd);		        	
 		        	
 		        	// num
-		        	if(track_label.getChildTextNN("position").length()>0) {
-		        		track_info.num(Integer.parseInt(track_label.getChildTextNN("position")));
+		        	if(track.getChildTextNN("position").length()>0) {
+		        		track_info.num(Integer.parseInt(track.getChildTextNN("position")));
 		        	}
 		        	
 		        	// setnum
-		        	if(track_label.getChildTextNN("cdsourcenum").length()>0) {
-		        		track_info.setnum(Integer.parseInt(track_label.getChildTextNN("cdsourcenum")));
+		        	if(track.getChildTextNN("cdsourcenum").length()>0) {
+		        		track_info.setnum(Integer.parseInt(track.getChildTextNN("cdsourcenum")));
 		        	}
 		        	
 		        	//origin_country
@@ -456,6 +468,14 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        		tags.bundle_only(true);	
 		        	}
 		        	
+		        	String explicitlyrics = track.getChildTextNN("explicitlyrics");
+		        	if(explicitlyrics.equals("false")) {
+		        		tags.explicit_lyrics(false);	
+		        	}
+		        	else if(explicitlyrics.equals("true")) {
+		        		tags.explicit_lyrics(true);	
+		        	}		        	
+		        	
 	        		item.tags(tags);	
 		        	
 		        	// add contributor to item
@@ -471,6 +491,8 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        		IDs track_artist_ids = getIDs(track_artist_vecIds);
 		            	
 		            	String track_artists_role = track_artist.getChildTextNN("role");
+		            	// "performer" -> display_artist
+		            	if(track_artists_role.equals("performer")) item.display_artist(track_artist.getChildTextNN("name"));
 		            	track_contributor = Contributor.make(track_artist.getChildTextNN("name"), getRole(track_artists_role), track_artist_ids);       	
 		            	
 		            	track_contributor.www(InfoWWW.make().homepage(track_artist.getChildTextNN("website")));
