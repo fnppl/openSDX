@@ -325,6 +325,18 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         	cal.setTimeInMillis(bundle.getInformation().getDigitalReleaseDatetime());
         	schedules.addContent("digitalreleasedate", ymd.format(cal.getTime()));
         	
+        	// may release from (?)
+        	if(bundle.getLicense_basis().getTimeframeFrom()!=null) {
+        		cal.setTimeInMillis(bundle.getLicense_basis().getTimeframeFrom());
+        		schedules.addContent("youmayreleasefrom", ymd.format(cal.getTime()));
+        	}
+        	
+        	// may release until (?)
+        	if(bundle.getLicense_basis().getTimeframeTo()!=null) {
+	        	cal.setTimeInMillis(bundle.getLicense_basis().getTimeframeTo());
+	        	schedules.addContent("youmayreleaseuntil", ymd.format(cal.getTime()));        	
+        	}
+        	
         	// tracks
         	Element tracks = new Element("tracks");
         	release.addContent(tracks);        	
