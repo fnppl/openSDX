@@ -67,6 +67,7 @@ public class BundleInformation extends BusinessObject {
 	private BusinessIntegerItem setnum;									//SHOULD
 	private BusinessStringItem origin_country;							//COULD
 	private BusinessStringItem main_language;							//COULD
+	private BusinessIntegerItem suggested_prelistening_offset;			//COULD
 	private BundleRelatedInformation related;							//SHOULD
 
 	public static BundleInformation make(long physical_release_datetime, long digital_release_datetime) {
@@ -81,6 +82,7 @@ public class BundleInformation extends BusinessObject {
 		information.related = BundleRelatedInformation.make();
 		information.origin_country = null;
 		information.main_language = null;
+		information.suggested_prelistening_offset = null;
 		return information;
 	}
 
@@ -114,6 +116,7 @@ public class BundleInformation extends BusinessObject {
 		information.related = BundleRelatedInformation.fromBusinessObject(bo);
 		information.origin_country = BusinessStringItem.fromBusinessObject(bo, "origin_country");
 		information.main_language = BusinessStringItem.fromBusinessObject(bo, "main_language");
+		information.suggested_prelistening_offset = BusinessIntegerItem.fromBusinessObject(bo, "suggested_prelistening_offset");
 		return information;
 	}
 
@@ -228,6 +231,15 @@ public class BundleInformation extends BusinessObject {
 		return this;
 	}
 	
+	public BundleInformation suggested_prelistening_offset(Integer suggested_prelistening_offset) {
+		if (suggested_prelistening_offset==null) {
+			this.suggested_prelistening_offset = null;
+		} else {
+			this.suggested_prelistening_offset = new BusinessIntegerItem("suggested_prelistening_offset", suggested_prelistening_offset.intValue());
+		}
+		return this;
+	}	
+	
 	public BundleInformation related(BundleRelatedInformation related) {
 		this.related = related;
 		return this;
@@ -323,15 +335,20 @@ public class BundleInformation extends BusinessObject {
 		return playlength.getIntValue();
 	}
 	
+	public int getSetNum() {
+		if (setnum==null) throw new RuntimeException("value not set");
+		return setnum.getIntValue();
+	}
+	
 	public int getNum() {
 		if (num==null) throw new RuntimeException("value not set");
 		return num.getIntValue();
 	}
 	
-	public int getSetNum() {
-		if (setnum==null) throw new RuntimeException("value not set");
-		return setnum.getIntValue();
-	}
+	public int getSuggestedPrelistiningOffset() {
+		if (suggested_prelistening_offset==null) throw new RuntimeException("value not set");
+		return suggested_prelistening_offset.getIntValue();
+	}	
 	
 	public boolean hasPlaylength() {
 		if (playlength==null) return false;
@@ -343,6 +360,11 @@ public class BundleInformation extends BusinessObject {
 	}
 	public boolean hasSetNum() {
 		if (setnum==null) return false;
+		return true;
+	}
+	
+	public boolean hasSuggestedPrelistiningOffset() {
+		if (suggested_prelistening_offset==null) return false;
 		return true;
 	}
 	

@@ -92,6 +92,9 @@ public class PanelInformation extends JPanel implements MyObservable {
 	private JLabel label_setnum_integer;
 	private JTextField text_setnum_integer;
 	
+	private JLabel label_suggested_prelistening_offset_integer;
+	private JTextField text_suggested_prelistening_offset_integer;	
+	
 	private JLabel label_main_language;
 	private JTextField text_main_language;
 	private JButton bu_select_lang;
@@ -128,6 +131,8 @@ public class PanelInformation extends JPanel implements MyObservable {
 		text_num_integer.setVisible(false);
 		label_setnum_integer.setVisible(false);
 		text_setnum_integer.setVisible(false);
+		label_suggested_prelistening_offset_integer.setVisible(false);
+		text_suggested_prelistening_offset_integer.setVisible(false);
 	}
 
 	public void setTypeItem() {
@@ -135,6 +140,8 @@ public class PanelInformation extends JPanel implements MyObservable {
 		text_num_integer.setVisible(true);
 		label_setnum_integer.setVisible(true);
 		text_setnum_integer.setVisible(true);
+		label_suggested_prelistening_offset_integer.setVisible(true);
+		text_suggested_prelistening_offset_integer.setVisible(true);		
 	}
 
 	public void update(BundleInformation info) {
@@ -145,6 +152,7 @@ public class PanelInformation extends JPanel implements MyObservable {
 			text_playlength_integer.setText("");
 			text_num_integer.setText("");
 			text_setnum_integer.setText("");
+			text_suggested_prelistening_offset_integer.setText("");
 			text_main_language.setText("");
 			text_origin_country.setText("");
 			updateLanguageList();
@@ -167,6 +175,11 @@ public class PanelInformation extends JPanel implements MyObservable {
 			} else {
 				text_setnum_integer.setText("");
 			}
+			if (info.hasSuggestedPrelistiningOffset()) {
+				text_suggested_prelistening_offset_integer.setText(""+info.getSuggestedPrelistiningOffset());
+			} else {
+				text_suggested_prelistening_offset_integer.setText("");
+			}			
 			text_main_language.setText(info.getMain_language());
 			text_origin_country.setText(info.getOrigin_country());
 			updateLanguageList();
@@ -280,6 +293,12 @@ public class PanelInformation extends JPanel implements MyObservable {
 		text_setnum_integer.setName("text_setnum_integer");
 		map.put("text_setnum_integer", text_setnum_integer);
 		texts.add(text_setnum_integer);
+		
+		label_suggested_prelistening_offset_integer = new JLabel("suggested prelistining offset");
+		text_suggested_prelistening_offset_integer = new JTextField("");
+		text_suggested_prelistening_offset_integer.setName("text_suggested_prelistening_offset_integer");
+		map.put("text_suggested_prelistening_offset_integer", text_suggested_prelistening_offset_integer);
+		texts.add(text_suggested_prelistening_offset_integer);		
 
 		label_main_language = new JLabel("main language");
 
@@ -661,6 +680,37 @@ public void initLayout() {
 	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_setnum_integer,gbc);
 	add(text_setnum_integer);
+	
+	y++;
+	// Component: label_suggested_prelistening_offset_integer
+	gbc.gridx = 0;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(label_suggested_prelistening_offset_integer,gbc);
+	add(label_suggested_prelistening_offset_integer);
+
+	// Component: text_suggested_prelistening_offset_integer
+	gbc.gridx = 1;
+	gbc.gridy = y;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(text_suggested_prelistening_offset_integer,gbc);
+	add(text_suggested_prelistening_offset_integer);	
 	
 	y++;
 	// Component: label_main_language

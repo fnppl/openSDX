@@ -57,6 +57,12 @@ public class ItemFile extends BusinessObject {
 
 	private FileLocation location;								//MUST
 	private BusinessStringItem filetype;						//COULD
+	private BusinessStringItem samplerate;						//COULD
+	private BusinessStringItem samplesize;						//COULD
+	private BusinessStringItem bitrate;							//COULD
+	private BusinessStringItem bitratetype;						//COULD
+	private BusinessStringItem codec;							//COULD
+	private BusinessStringItem codecsettings;					//COULD	
 	private BusinessStringItem type;							//COULD
 	private BusinessIntegerItem bytes;							//COULD
 	private Checksums checksums;								//COULD
@@ -73,6 +79,12 @@ public class ItemFile extends BusinessObject {
 		ItemFile file = new ItemFile();
 		file.type = null;
 		file.filetype = null;
+		file.samplerate = null;
+		file.samplesize = null;
+		file.bitrate = null;
+		file.bitratetype = null;
+		file.codec = null;
+		file.codecsettings = null;
 		file.channels = null;
 		file.bytes = null;
 		file.location = null;
@@ -115,6 +127,12 @@ public class ItemFile extends BusinessObject {
 		
 		file.type = BusinessStringItem.fromBusinessObject(bo, "type");
 		file.filetype = BusinessStringItem.fromBusinessObject(bo, "filetype");
+		file.samplerate = BusinessStringItem.fromBusinessObject(bo, "samplerate");
+		file.samplesize = BusinessStringItem.fromBusinessObject(bo, "samplesize");
+		file.bitrate = BusinessStringItem.fromBusinessObject(bo, "bitrate");
+		file.bitratetype = BusinessStringItem.fromBusinessObject(bo, "bitratetype");
+		file.codec = BusinessStringItem.fromBusinessObject(bo, "codec");
+		file.codecsettings = BusinessStringItem.fromBusinessObject(bo, "codecsettings");
 		file.channels = BusinessStringItem.fromBusinessObject(bo, "channels");
 		file.bytes = BusinessIntegerItem.fromBusinessObject(bo, "bytes");
 		
@@ -224,6 +242,60 @@ public class ItemFile extends BusinessObject {
 		return this;
 	}
 
+	public ItemFile samplerate(String samplerate) {
+		if (samplerate==null) {
+			this.samplerate = null;
+		} else {
+			this.samplerate = new BusinessStringItem("samplerate", samplerate);
+		}
+		return this;
+	}
+	
+	public ItemFile samplesize(String samplesize) {
+		if (samplesize==null) {
+			this.samplesize = null;
+		} else {
+			this.samplesize = new BusinessStringItem("samplesize", samplesize);
+		}
+		return this;
+	}
+	
+	public ItemFile bitrate(String bitrate) {
+		if (bitrate==null) {
+			this.bitrate = null;
+		} else {
+			this.bitrate = new BusinessStringItem("bitrate", bitrate);
+		}
+		return this;
+	}
+	
+	public ItemFile bitratetype(String bitratetype) {
+		if (bitratetype==null) {
+			this.bitratetype = null;
+		} else {
+			this.bitratetype = new BusinessStringItem("bitratetype", bitratetype);
+		}
+		return this;
+	}
+	
+	public ItemFile codec(String codec) {
+		if (codec==null) {
+			this.codec = null;
+		} else {
+			this.codec = new BusinessStringItem("codec", codec);
+		}
+		return this;
+	}
+	
+	public ItemFile codecsettings(String codecsettings) {
+		if (codecsettings==null) {
+			this.codecsettings = null;
+		} else {
+			this.codecsettings = new BusinessStringItem("codecsettings", codecsettings);
+		}
+		return this;
+	}	
+	
 	public ItemFile channels(String channels) {
 		if (channels == null) {
 			this.channels = null;
@@ -248,6 +320,36 @@ public class ItemFile extends BusinessObject {
 	public String getFiletype() {
 		if (filetype==null) return null;
 		return filetype.getString();
+	}
+	
+	public String getSamplerate() {
+		if (samplerate==null) return null;
+		return samplerate.getString();
+	}
+	
+	public String getSamplesize() {
+		if (samplesize==null) return null;
+		return samplesize.getString();
+	}
+	
+	public String getBitrate() {
+		if (bitrate==null) return null;
+		return bitrate.getString();
+	}
+	
+	public String getBitratetype() {
+		if (bitratetype==null) return null;
+		return bitratetype.getString();
+	}
+	
+	public String getCodec() {
+		if (codec==null) return null;
+		return codec.getString();
+	}
+	
+	public String getCodecsettings() {
+		if (codecsettings==null) return null;
+		return codecsettings.getString();
 	}
 
 	public String getChannels() {

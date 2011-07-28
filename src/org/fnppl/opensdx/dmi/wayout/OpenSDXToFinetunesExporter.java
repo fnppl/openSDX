@@ -187,7 +187,7 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         			if(contributor.getWww()!=null && contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
         				label.addContent("website", contributor.getWww().getHomepage());
         			
-        			IDs labelids = bundle.getIds();
+        			IDs labelids = contributor.getIDs();
         			if(labelids.getFinetunesid()!=null && labelids.getFinetunesid().length()>0) {
         				Element id = new Element("id");
         				id.setAttribute("type", "finetunes").setText(labelids.getFinetunesid());
@@ -208,7 +208,7 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         			if(contributor.getWww()!=null && contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
         				artist.addContent("website", contributor.getWww().getHomepage());
         			
-        			IDs artistids = bundle.getIds();
+        			IDs artistids = contributor.getIDs();
         			if(artistids.getFinetunesid()!=null && artistids.getFinetunesid().length()>0) {
         				Element id = new Element("id");
         				id.setAttribute("type", "finetunes").setText(artistids.getFinetunesid());
@@ -399,6 +399,11 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         		track.addContent("live", ""+item.getTags().isLive());
         		track.addContent("acoustic", ""+item.getTags().isAccoustic());
         		track.addContent("instrumental", ""+item.getTags().isInstrumental());
+        		
+	        	// suggested_prelistening_offset
+	        	if(item.getInformation().hasSuggestedPrelistiningOffset()) {
+	        		track.addContent("prelisteningoffset", ""+item.getInformation().getSuggestedPrelistiningOffset());
+	        	}        		
         		       		
         		// item title
     	        title = item.getDisplayname();
@@ -434,7 +439,7 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
             			if(contributor.getWww()!=null && contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
             				label.addContent("website", contributor.getWww().getHomepage());
             			
-            			IDs labelids = bundle.getIds();
+            			IDs labelids = contributor.getIDs();
             			if(labelids.getFinetunesid()!=null && labelids.getFinetunesid().length()>0) {
             				Element id = new Element("id");
             				id.setAttribute("type", "finetunes").setText(labelids.getFinetunesid());
@@ -456,7 +461,7 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
             			if(contributor.getWww()!=null && contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
             				artist.addContent("website", contributor.getWww().getHomepage());
             			
-            			IDs artistids = bundle.getIds();
+            			IDs artistids = contributor.getIDs();
             			if(artistids.getFinetunesid()!=null && artistids.getFinetunesid().length()>0) {
             				Element id = new Element("id");
             				id.setAttribute("type", "finetunes").setText(artistids.getFinetunesid());
@@ -475,7 +480,11 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
             			String production = contributor.getName();
             			if(contributor.getYear().length()>0) production = contributor.getYear()+" "+production;
             			track.addContent("productioninfo", production);
-            		}	        		
+            		}
+            		else if(contributor.getType().equals(Contributor.TYPE_CLEARINGHOUSE)) {
+            			String clearinghouse = contributor.getName();
+            			track.addContent("collectingsociety", clearinghouse);
+            		}            		
             	}
             	
             	// add  genres
@@ -554,6 +563,12 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 			        		resource.addContent(quality);
 		        		}
 
+		        		if(file.getSamplerate()!=null) {
+			        		quality = new Element("quality");
+			        		quality.setAttribute("type", "samplerate").setText(file.getSamplerate());
+			        		resource.addContent(quality);
+		        		}		        		
+		        		
 		        		quality = new Element("quality");
 		        		quality.setAttribute("type", "size").setText(""+file.getBytes());
 		        		resource.addContent(quality);	        		

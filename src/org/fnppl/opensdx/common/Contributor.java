@@ -65,7 +65,8 @@ public class Contributor extends BusinessObject {
 	public static String TYPE_DISPLAY_ARTIST = "display artist";
 	public static String TYPE_COMPILATOR = "compilator";
 	public static String TYPE_COPYRIGHT = "copyright";
-	public static String TYPE_PRODUCTION = "production";	
+	public static String TYPE_PRODUCTION = "production";
+	public static String TYPE_CLEARINGHOUSE = "clearinghouse";
 	public static final Vector<String> TYPES = new Vector<String>();
 	static {
 		TYPES.add(TYPE_LABEL);
@@ -79,6 +80,7 @@ public class Contributor extends BusinessObject {
 		TYPES.add(TYPE_COMPILATOR);
 		TYPES.add(TYPE_COPYRIGHT);
 		TYPES.add(TYPE_PRODUCTION);
+		TYPES.add(TYPE_CLEARINGHOUSE);
 	}
 	
 	private BusinessStringItem name;	//MUST

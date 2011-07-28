@@ -12,6 +12,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.fnppl.opensdx.common.BusinessStringItem;
 import org.fnppl.opensdx.common.Checksums;
 import org.fnppl.opensdx.common.ItemFile;
 import org.fnppl.opensdx.security.SecurityHelper;
@@ -36,7 +37,19 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 	private JTextField text_path;
 	private JButton bu_change;
 	private JLabel label_format;
-	private JTextField text_format;
+	private JTextField text_format;	
+	private JLabel label_samplerate;
+	private JTextField text_samplerate;
+	private JLabel label_samplesize;
+	private JTextField text_samplesize;
+	private JLabel label_bitrate;
+	private JTextField text_bitrate;
+	private JLabel label_bitratetype;
+	private JTextField text_bitratetype;
+	private JLabel label_codec;
+	private JTextField text_codec;
+	private JLabel label_codecsettings;
+	private JTextField text_codecsettings;	
 	private JLabel label_channels;
 	private JComboBox select_channels;
 	private DefaultComboBoxModel select_channels_model;
@@ -69,7 +82,20 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 	public void setTypeBundle() {
 		label_channels.setVisible(false);
-		select_channels.setVisible(false);
+		select_channels.setVisible(false);		
+		label_samplerate.setVisible(false);
+		text_samplerate.setVisible(false);
+		label_samplesize.setVisible(false);
+		text_samplesize.setVisible(false);
+		label_bitrate.setVisible(false);
+		text_bitrate.setVisible(false);
+		label_bitratetype.setVisible(false);
+		text_bitratetype.setVisible(false);
+		label_codec.setVisible(false);
+		text_codec.setVisible(false);
+		label_codecsettings.setVisible(false);
+		text_codecsettings.setVisible(false);
+		
 		select_type_model.removeAllElements();
 		select_type_model.addElement("[not specified]");
 		select_type_model.addElement("cover");
@@ -79,6 +105,19 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 	public void setTypeItem() {
 		label_channels.setVisible(true);
 		select_channels.setVisible(true);
+		label_samplerate.setVisible(true);
+		text_samplerate.setVisible(true);
+		label_samplesize.setVisible(true);
+		text_samplesize.setVisible(true);
+		label_bitrate.setVisible(true);
+		text_bitrate.setVisible(true);
+		label_bitratetype.setVisible(true);
+		text_bitratetype.setVisible(true);
+		label_codec.setVisible(true);
+		text_codec.setVisible(true);
+		label_codecsettings.setVisible(true);
+		text_codecsettings.setVisible(true);		
+		
 		select_type_model.removeAllElements();
 		select_type_model.addElement("[not specified]");
 		select_type_model.addElement("full");
@@ -95,6 +134,12 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 			text_length.setText("");
 			text_md5.setText("");
 			text_sha1.setText("");
+			text_samplerate.setText("");
+			text_samplesize.setText("");
+			text_bitrate.setText("");
+			text_bitratetype.setText("");
+			text_codec.setText("");
+			text_codecsettings.setText("");			
 		} else {
 			text_path.setText(file.getLocationPath());
 			text_format.setText(file.getFiletype());
@@ -114,6 +159,12 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 				text_md5.setText("");
 				text_sha1.setText("");
 			}
+			text_samplerate.setText(file.getSamplerate());
+			text_samplesize.setText(file.getSamplesize());
+			text_bitrate.setText(file.getBitrate());
+			text_bitratetype.setText(file.getBitratetype());
+			text_codec.setText(file.getCodec());
+			text_codecsettings.setText(file.getCodecsettings());				
 		}
 		documentListener.saveStates();
 	}
@@ -205,13 +256,47 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		label_hfiller = new JLabel("");
 
 		label_length = new JLabel("Length in Bytes");
-
 		text_length = new JTextField("");
-
 		text_length.setName("text_length");
 		map.put("text_length", text_length);
 		texts.add(text_length);
 
+		label_samplerate = new JLabel("Samplerate");
+		text_samplerate = new JTextField("");
+		text_samplerate.setName("text_samplerate");
+		map.put("text_samplerate", text_samplerate);
+		texts.add(text_samplerate);		
+
+		label_samplesize = new JLabel("Samplesize");
+		text_samplesize = new JTextField("");
+		text_samplesize.setName("text_samplesize");
+		map.put("text_samplesize", text_samplesize);
+		texts.add(text_samplesize);
+		
+		label_bitrate = new JLabel("Bitrate");
+		text_bitrate = new JTextField("");
+		text_bitrate.setName("text_bitrate");
+		map.put("text_bitrate", text_bitrate);
+		texts.add(text_bitrate);
+		
+		label_bitratetype = new JLabel("Type of bitrate");
+		text_bitratetype = new JTextField("");
+		text_bitratetype.setName("text_bitratetype");
+		map.put("text_bitratetype", text_bitratetype);
+		texts.add(text_bitratetype);
+		
+		label_codec = new JLabel("Codec");
+		text_codec = new JTextField("");
+		text_codec.setName("text_codec");
+		map.put("text_codec", text_codec);
+		texts.add(text_codec);
+		
+		label_codecsettings = new JLabel("Settings of codec");
+		text_codecsettings = new JTextField("");
+		text_codecsettings.setName("text_codecsettings");
+		map.put("text_codecsettings", text_codecsettings);
+		texts.add(text_codecsettings);		
+		
 		label_md5 = new JLabel("MD5 checksum");
 
 		text_md5 = new JTextField("");
@@ -453,9 +538,189 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		gbl.setConstraints(text_length,gbc);
 		add(text_length);
 
-		// Component: label_md5
+		// Component: label_samplerate
 		gbc.gridx = 0;
 		gbc.gridy = 4;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_samplerate,gbc);
+		add(label_samplerate);
+
+		// Component: text_samplerate
+		gbc.gridx = 1;
+		gbc.gridy = 4;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_samplerate,gbc);
+		add(text_samplerate);
+		
+		// Component: label_samplesize
+		gbc.gridx = 0;
+		gbc.gridy = 5;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_samplesize,gbc);
+		add(label_samplesize);
+
+		// Component: text_samplesize
+		gbc.gridx = 1;
+		gbc.gridy = 5;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_samplesize,gbc);
+		add(text_samplesize);
+		
+		// Component: label_bitrate
+		gbc.gridx = 0;
+		gbc.gridy = 6;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_bitrate,gbc);
+		add(label_bitrate);
+
+		// Component: text_bitrate
+		gbc.gridx = 1;
+		gbc.gridy = 6;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_bitrate,gbc);
+		add(text_bitrate);
+		
+		// Component: label_bitratetype
+		gbc.gridx = 0;
+		gbc.gridy = 7;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_bitratetype,gbc);
+		add(label_bitratetype);
+
+		// Component: text_bitratetype
+		gbc.gridx = 1;
+		gbc.gridy = 7;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_bitratetype,gbc);
+		add(text_bitratetype);	
+		
+		// Component: label_codec
+		gbc.gridx = 0;
+		gbc.gridy = 8;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_codec,gbc);
+		add(label_codec);
+
+		// Component: text_codec
+		gbc.gridx = 1;
+		gbc.gridy = 8;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_codec,gbc);
+		add(text_codec);
+		
+		// Component: label_codecsettings
+		gbc.gridx = 0;
+		gbc.gridy = 9;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_codecsettings,gbc);
+		add(label_codecsettings);
+
+		// Component: text_codecsettings
+		gbc.gridx = 1;
+		gbc.gridy = 9;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_codecsettings,gbc);
+		add(text_codecsettings);		
+
+		// Component: label_md5
+		gbc.gridx = 0;
+		gbc.gridy = 10;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -470,7 +735,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_md5
 		gbc.gridx = 1;
-		gbc.gridy = 4;
+		gbc.gridy = 10;
 		gbc.gridwidth = 4;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -485,7 +750,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: label_sha1
 		gbc.gridx = 0;
-		gbc.gridy = 5;
+		gbc.gridy = 11;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -500,7 +765,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_sha1
 		gbc.gridx = 1;
-		gbc.gridy = 5;
+		gbc.gridy = 11;
 		gbc.gridwidth = 4;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -515,7 +780,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: label_filler
 		gbc.gridx = 0;
-		gbc.gridy = 6;
+		gbc.gridy = 12;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;

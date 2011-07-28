@@ -501,6 +501,9 @@
 					<digital_release_datetime>1960-02-13 00:00:00 GMT+00:00</digital_release_datetime>
 			
 					<playlength>185</playlength><!-- MUST ; in seconds ; at least for media-files -->
+					<num>1</num><!-- SHOULD ; e.g. tracknumber -->
+					<setnum>1</setnum><!-- SHOULD; e.g. number of cd -->
+					<suggested_prelistening_offset>90</suggested_prelistening_offset><!-- COULD ; in seconds ; for a nice prelistining -->
 		            <origin_country>DE</origin_country>
 		            <main_language>de</main_language>
 					<related>					
@@ -570,7 +573,8 @@
 						<filetype>MPEG-1 Audio Layer III</filetype><!-- MUST ; should accept "MP3" also as "MPEG-1 Audio Layer III" -->
 						<samplerate>44100</samplerate><!-- in khz -->
 						<samplesize>24</samplesize><!-- in bit -->
-						<bitrate type="cbr">320</bitrate><!-- in kilobitpersecond and type-info such as CBR/VBR/MBR e.g. 256 (on VBR) or 96/320 on (MBR) -->
+						<bitrate>320</bitrate><!-- in kilobitpersecond e.g. 256 (on VBR) or 96/320 on (MBR) -->
+						<bitratetype>cbr</bitratetype><!-- type-info such as CBR/VBR/MBR -->
 						<codec>lame</codec>
 						<codecsettings>insane</codecsettings><!--  some arbitrary info - such as "insane" or "quality=9" -->
 						

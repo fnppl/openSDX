@@ -391,6 +391,11 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        	//origin_country
 		        	track_info.origin_country(track.getChildText("origincountry"));
 		        	
+		        	// suggested_prelistening_offset
+		        	if(track.getChildTextNN("prelisteningoffset").length()>0) {
+		        		track_info.suggested_prelistening_offset(Integer.parseInt(track.getChildTextNN("prelisteningoffset")));
+		        	}		        	
+		        	
 		        	// license basis as on bundle
 		        	LicenseBasis track_license_basis = LicenseBasis.makeAsOnBundle();
 		        	
@@ -430,7 +435,12 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 			        			if(track_quality.getText().length()>0) {	
 			        				itemfile.channels(track_quality.getText());
 			        			}	        			
-			        		}		        		
+			        		}
+			        		else if(track_quality.getAttribute("type").equals("samplerate")) {
+			        			if(track_quality.getText().length()>0) {	
+			        				itemfile.samplerate(track_quality.getText());
+			        			}	        			
+			        		}			        		
 			        		else if(track_quality.getAttribute("type").equals("duration")) {
 			        			if(track_quality.getText().length()>0) {	
 			        				item.getInformation().playlength(Integer.parseInt(track_quality.getText()));
@@ -464,7 +474,12 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 			        			if(track_quality.getText().length()>0) {	
 			        				itemfile.channels(track_quality.getText());
 			        			}	        			
-			        		}			        				        		
+			        		}
+			        		else if(track_quality.getAttribute("type").equals("samplerate")) {
+			        			if(track_quality.getText().length()>0) {	
+			        				itemfile.samplerate(track_quality.getText());
+			        			}	        			
+			        		}			        		
 			        		else if(track_quality.getAttribute("type").equals("duration")) {
 			        			if(track_quality.getText().length()>0) {	
 			        				item.getInformation().playlength(Integer.parseInt(track_quality.getText()));
@@ -512,6 +527,11 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        	contributor.www(InfoWWW.make().homepage(track_label.getChildTextNN("website")));
 		        	item.addContributor(track_contributor);
 		        	
+		        	if(track.getChild("collectingsociety")!=null) {
+			        	track_contributor = Contributor.make(track.getChildTextNN("collectingsociety"), Contributor.TYPE_CLEARINGHOUSE,  IDs.make());
+			        	item.addContributor(track_contributor);
+		        	}
+		        	
 		        	Vector<Element> track_artists = track.getChild("artists").getChildren("artist");
 		        	for (Iterator<Element> track_itArtists = track_artists.iterator(); track_itArtists.hasNext();) {
 		        		Element track_artist = track_itArtists.next();
@@ -522,6 +542,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		            	String track_artists_role = track_artist.getChildTextNN("role");
 		            	// "performer" -> display_artist
 		            	if(track_artists_role.equals("performer")) item.display_artist(track_artist.getChildTextNN("name"));
+		            	
 		            	track_contributor = Contributor.make(track_artist.getChildTextNN("name"), getRole(track_artists_role), track_artist_ids);       	
 		            	
 		            	track_contributor.www(InfoWWW.make().homepage(track_artist.getChildTextNN("website")));
