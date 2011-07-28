@@ -200,10 +200,13 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         		File f = new File(path+filename);
         		if(f!=null && f.exists()) {
         			itemfile.setFile(f);
+        			
+        			// set delivered path to file 
+        			itemfile.setLocation(FileLocation.make(filename));
         		} else {
         			//file does not exist -> so we have to set the values "manually"
         			
-        			//-> use filename as location
+        			//-> use filename for location
         			itemfile.setLocation(FileLocation.make(filename));
         		
         			//file size
@@ -271,34 +274,25 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	            		Element track_right = itRights.next();
 	            		String r = track_right.getChildText("country_code");
 	            		if(r.length()>0) {
-	            			if(r.equals("**")) r="WW";
+	            			if(r.equals("**")) { 
+	            				r="WW";
+	            				// if worldwide then add streamable information -> keep an eye on these (!)
+	            	        	String streamable_from = track_right.getChildTextNN("streamable_from");	        
+	            		        if(streamable_from.length()>0) {
+	            		        	cal.setTime(ymd.parse(streamable_from));
+	            		        	track_license_basis.timeframe_from_datetime(cal.getTimeInMillis());
+	            		        }	        
+	            		        
+	            	        	if(track_right.getChild("allows_streaming")!=null) {
+	            	        		track_license_basis.streaming_allowed(Boolean.parseBoolean(track_right.getChildText("allows_streaming")));
+	            	        	}
+	            			}
 	            			track_territorial.allow(r);
 	            		}
 	            	} 
         		}
 	        	
             	track_license_basis.setTerritorial(track_territorial);
-            	
-            	/*
-            	 * ToDo: save rights (streamable, from, to etc.) for every territory -> add fields to Territorial (?) 
-            	 * 
-            
-	        	String streamable_from = track.getChildTextNN("streamable_from");	        
-		        if(streamable_from.length()>0) {
-		        	cal.setTime(ymd.parse(streamable_from));
-		        	track_license_basis.timeframe_from_datetime(cal.getTimeInMillis());
-		        }
-		        
-	        	String streamable_to = track.getChildTextNN("streamable_to");	        
-		        if(streamable_to.length()>0) {
-		        	cal.setTime(ymd.parse(streamable_to));
-		        	track_license_basis.timeframe_to_datetime(cal.getTimeInMillis());
-		        }		        
-		        
-	        	if(track.getChild("streaming")!=null) {
-	        		track_license_basis.streaming_allowed(Boolean.parseBoolean(root.getChildText("streaming")));
-	        	} 		        
-            	**/
             	
 	        	// license specifics -> empty!
 	        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make();         	
@@ -333,6 +327,9 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         		File f = new File(path+filename);      		
         		if(f!=null && f.exists()) {
         			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
+        			
+        			// set delivered path to file 
+        			itemfile.setLocation(FileLocation.make(filename));        			
         		} else {
         			//file does not exist -> so we have to set the values "manually"
         			

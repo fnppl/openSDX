@@ -179,7 +179,7 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
             		File f = new File(filename);
             		if(f!=null && f.exists()) {
             			byte[][] sums = SecurityHelper.getMD5SHA1(f);
-            			cover.addContent("file_checksum", Checksums.make(sums[0],sums[1],null).getMd5String());
+            			cover.addContent("file_checksum", SecurityHelper.HexDecoder.encode(Checksums.make(sums[0],sums[1],null).getMd5(),'\0',-1).toLowerCase());
             		} else {
             			//file does not exist -> so we have to set the values "manually"
             			// checksum md5
@@ -242,6 +242,11 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
                 	if(explicit_lyrics!=null)
                 		track.addContent("explicit_lyrics", explicit_lyrics);
                 	
+                	genreCount = item.getTags().getGenresCount();
+                	for (int k=0;k<genreCount;k++) {
+                		if(item.getTags().getGenre(k).length()>0) track.addContent("genre", item.getTags().getGenre(k));
+                	}                	
+                	
     	        	int trackFileCount = item.getFilesCount();
     	        	for (int k=0;k<trackFileCount;k++) {
     	        		ItemFile file = item.getFile(k);
@@ -254,7 +259,7 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
     	            		File f = new File(track_filename);
     	            		if(f!=null && f.exists()) {
     	            			byte[][] sums = SecurityHelper.getMD5SHA1(f);
-    	            			track.addContent("file_checksum", Checksums.make(sums[0],sums[1],null).getMd5String());
+    	            			track.addContent("file_checksum", SecurityHelper.HexDecoder.encode(Checksums.make(sums[0],sums[1],null).getMd5(),'\0',-1).toLowerCase());
     	            		} else {
     	            			// file does not exist -> so we have to set the values "manually"
     	            			// checksum md5  
@@ -262,11 +267,18 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
     	            				track.addContent("file_checksum", SecurityHelper.HexDecoder.encode(file.getChecksums().getMd5(),'\0',-1).toLowerCase());
     	            		}	    	        			
     	        			
-    	        		
-    	                	/*
-    	                	 * ToDo: <rights/> (streamable, from, to etc.) for every track and territory / not yet available in openSDX! 
-    	                	 *  
-    	                	 */
+    	            		Element rights = new Element("rights");
+    	            		track.addContent(rights);
+    	            		
+    	            		// if territory is worldwide then take license basis info of item -> if single rights work is needed
+    	            		if(item.getLicense_basis()!=null && item.getLicense_basis().getTerritorial()!=null && item.getLicense_basis().getTerritorial().getTerritory(0)!=null && item.getLicense_basis().getTerritorial().getTerritory(0).equals("WW")) {
+    	            			Element right = new Element("right");
+    	            			rights.addContent(right);
+    	            			right.addContent("country_code", "**");
+    	            			right.addContent("allows_streaming", ""+item.getLicense_basis().isStreaming_allowed());
+    	            			cal.setTimeInMillis(item.getLicense_basis().getTimeframeFrom());
+    	            			right.addContent("streamable_from", ymd.format(cal.getTime()));
+    	            		}
     	        		}
     	        	}
         		}
@@ -280,7 +292,7 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
 	        // ToDo: more export magic here if needed!
 		        
 		} catch (Exception e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 			ir.succeeded = false;
 			ir.errorMessage = e.getMessage();			
 			ir.exception = e;			

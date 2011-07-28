@@ -144,6 +144,9 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 				Element id = new Element("id");
 				id.setAttribute("type", "isbn").setText(bundleids.getIsrc());
 				release.addContent(id);
+			}
+			else if(bundleids.getLabelordernum()!=null && bundleids.getLabelordernum().length()>0) {
+				release.addContent("catno", bundleids.getLabelordernum());
 			}			
 			
     		// title
@@ -160,6 +163,11 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 			// streaming allowed?			
 			release.addContent("streaming", ""+bundle.getLicense_basis().isStreaming_allowed());	        
 	        
+			// pricecode
+        	if(bundle.getLicense_basis().getPricingPricecode()!=null) {
+        		release.addContent("priceband", ""+bundle.getLicense_basis().getPricingPricecode());
+        	}
+			
     		// version
 	        String version = bundle.getVersion();
 	        if (version==null) version = "";
@@ -176,7 +184,7 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         			release.addContent(label);
         			
         			label.addContent("name", contributor.getName());
-        			if(contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
+        			if(contributor.getWww()!=null && contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
         				label.addContent("website", contributor.getWww().getHomepage());
         			
         			IDs labelids = bundle.getIds();
@@ -197,7 +205,7 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         			artists.addContent(artist);
         			
         			artist.addContent("name", contributor.getName());
-        			if(contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
+        			if(contributor.getWww()!=null && contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
         				artist.addContent("website", contributor.getWww().getHomepage());
         			
         			IDs artistids = bundle.getIds();
@@ -433,7 +441,7 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
             			artists.addContent(artist);
             			
             			artist.addContent("name", contributor.getName());
-            			if(contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
+            			if(contributor.getWww()!=null && contributor.getWww().getHomepage()!=null && contributor.getWww().getHomepage().length()>0)
             				artist.addContent("website", contributor.getWww().getHomepage());
             			
             			IDs artistids = bundle.getIds();
@@ -499,6 +507,11 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 	            			allowances.addContent("territory", item.getLicense_basis().getTerritorial().getTerritory(k));
 	            	}
             	}
+            	
+    			// pricecode
+            	if(item.getLicense_basis().getPricingPricecode()!=null) {
+            		track.addContent("priceband", ""+item.getLicense_basis().getPricingPricecode());
+            	}            	
             	        	
             	// schedules / releasedates
             	schedules = new Element("schedules");

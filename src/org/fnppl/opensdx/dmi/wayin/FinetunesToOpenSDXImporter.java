@@ -124,6 +124,11 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	// IDs of bundle
 	        	Vector<Element> vecIds = release.getChildren("id");
 	        	IDs bundleids = getIDs(vecIds);
+	        	
+	        	// catno -> labelordernum
+	        	if(release.getChildTextNN("catno").length()>0) {
+	        		bundleids.labelordernum(release.getChildTextNN("catno"));
+	        	}
 	
 	        	// displayname
 	        	String displayname = release.getChildText("title");
@@ -194,9 +199,15 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	
 	        	LicenseBasis license_basis = LicenseBasis.make(territorial, rf, rt);
 	        	
+	        	// streamin allowed?
 	        	if(release.getChild("streaming")!=null) {
 	        		license_basis.streaming_allowed(Boolean.parseBoolean(release.getChildText("streaming")));
 	        	}
+	        	
+	        	// pricecode
+	        	if(release.getChild("priceband")!=null) {
+	        		license_basis.pricing_pricecode(release.getChildTextNN("priceband"));
+	        	}	        	
 	        	
 	        	// license specifics -> empty!
 	        	LicenseSpecifics license_specifics = LicenseSpecifics.make();
@@ -264,7 +275,10 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        		File f = new File(path+filename);
 	        		if(f!=null && f.exists()) {
 	        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
-	        				        		
+	        			
+	        			// set delivered path to file (?)
+	        			itemfile.setLocation(FileLocation.make(filename));
+	        			
 		        		Vector<Element> qualities = ressource.getChildren("quality");
 			        	for (Iterator<Element> itQualities = qualities.iterator(); itQualities.hasNext();) {
 			        		Element quality = itQualities.next();
@@ -377,11 +391,19 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        	//origin_country
 		        	track_info.origin_country(track.getChildText("origincountry"));
 		        	
+		        	// license basis as on bundle
+		        	LicenseBasis track_license_basis = LicenseBasis.makeAsOnBundle();
+		        	
+		        	// modify track pricecode
+		        	if(track.getChild("priceband")!=null) {
+		        		track_license_basis.pricing_pricecode(track.getChildTextNN("priceband"));
+		        	}
+		        	
 		        	// license specifics -> empty!
 		        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make(); 
 		        	
 	        		// license_basis of Bundle / license_specifics of Bundle / others (?)
-		        	Item item = Item.make(track_labelids, track_displayname, track_name, track_version, "audio", track_display_artist, track_info, LicenseBasis.makeAsOnBundle(), track_license_specifics);
+		        	Item item = Item.make(track_labelids, track_displayname, track_name, track_version, "audio", track_display_artist, track_info, track_license_basis, track_license_specifics);
 		        	
 		        	// add IDs
 		        	item.ids(trackids);
@@ -397,6 +419,9 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        		File f = new File(path+track_filename);
 	        		if(f!=null && f.exists()) {
 	        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
+	        			
+	        			// set delivered path to file 
+	        			itemfile.setLocation(FileLocation.make(track_filename));
 	        			
 		        		Vector<Element> track_qualities = track_ressource.getChildren("quality");
 			        	for (Iterator<Element> track_itQualities = track_qualities.iterator(); track_itQualities.hasNext();) {
