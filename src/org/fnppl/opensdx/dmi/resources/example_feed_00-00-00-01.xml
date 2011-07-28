@@ -507,6 +507,10 @@
 
 				<license_basis>
 					<as_on_bundle /><!-- COULD ; if as_on_bundle-node given, this means to take the enclosing bundle's license-basis ; could also be omitted ; could otherwise be the same rules as above -->
+					<pricing>
+						<pricecode>LOW</pricecode><!-- COULD ; arbitrary-info ; mainly agreed in  -->
+						<wholesale>EUR 0.99</wholesale><!-- COULD ; an explicitly given wholesale-price overrides the basic pricecode-given-wp ; most probably either one of pricecode OR wholesaleprice should be given -->
+					</pricing><!--  given the "as_on_bunlde"-tag, but giving also tags here would override those in effect ... - should also check for "nullable" -->
 				</license_basis>
 				<license_specifics>
 					<as_on_bundle /><!-- COULD ; if as_on_bundle-node given, this means to take the enclosing bundle's license-basis ; could also be omitted ; could otherwise be the same rules as above -->
@@ -518,7 +522,8 @@
 						<genre></genre>
 					</genres>
 					<bundle_only>false</bundle_only>
-					 <explicit_lyrics>false</explicit_lyrics>
+					<explicit_lyrics>false</explicit_lyrics>
+					<live>false</live>
 				</tags>
 				
 				<reporting>
@@ -552,7 +557,13 @@
 				<files>
 					<file>
 						<type>full</type><!-- MUST ; full|prelistening -->
-						<filetype></filetype><!-- MUST ; FILEFORMAT/BITRATE[KBIT/s]/CODEC/CODECSETTINGS e.g. mp3/320/unknown/CBR -->
+						<filetype>MPEG-1 Audio Layer III</filetype><!-- MUST ; should accept "MP3" also as "MPEG-1 Audio Layer III" -->
+						<samplerate>44100</samplerate><!-- in khz -->
+						<samplesize>24</samplesize><!-- in bit -->
+						<bitrate type="cbr">320</bitrate><!-- in kilobitpersecond and type-info such as CBR/VBR/MBR e.g. 256 (on VBR) or 96/320 on (MBR) -->
+						<codec>lame</codec>
+						<codecsettings>insane</codecsettings><!--  some arbitrary info - such as "insane" or "quality=9" -->
+						
 						<channels>stereo</channels><!-- MUST ; mono, stereo, joint-stereo, 5.1 -->
 						<bytes>84848483838</bytes><!-- length of file in bytes -->
 						<location>
