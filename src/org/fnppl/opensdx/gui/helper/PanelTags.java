@@ -33,6 +33,9 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
 	private JCheckBox check_bundle_only;
+	private JCheckBox check_live;
+	private JCheckBox check_accoustic;
+	private JCheckBox check_instrumental;
 	private JPanel panel_genres;
 	private EditCheckBoxTree tree_genres;
 	private JLabel label_explicit_lyrics;
@@ -57,11 +60,17 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 		this.tags = tags;
 		if (tags == null) {
 			check_bundle_only.setSelected(false);
+			check_live.setSelected(false);
+			check_accoustic.setSelected(false);
+			check_instrumental.setSelected(false);
 			select_explicit_lyrics.setSelectedIndex(0);
 			Vector<String> genres = new Vector<String>();
 			tree_genres.setSelectedNodes(genres);
 		} else {
 			check_bundle_only.setSelected(tags.isBundle_only());
+			check_live.setSelected(tags.isLive());
+			check_accoustic.setSelected(tags.isAccoustic());
+			check_instrumental.setSelected(tags.isInstrumental());
 			if (tags.getExplicit_lyrics()==null) {
 				select_explicit_lyrics.setSelectedIndex(0);
 			} else {
@@ -117,6 +126,30 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 				check_bundle_only_changed(check_bundle_only.isSelected());
 			}
 		});
+		
+		check_live = new JCheckBox("live");
+		map.put("check_live", check_live);
+		check_live.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				check_live_changed(check_live.isSelected());
+			}
+		});
+		
+		check_accoustic= new JCheckBox("accoustic");
+		map.put("check_accoustic", check_accoustic);
+		check_live.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				check_accoustic_changed(check_accoustic.isSelected());
+			}
+		});
+		
+		check_instrumental = new JCheckBox("instrumental");
+		map.put("check_instrumental", check_instrumental);
+		check_instrumental.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				check_instrumental_changed(check_instrumental.isSelected());
+			}
+		});		
 
 		panel_genres = new JPanel();
 		panel_genres.setBorder(new TitledBorder("Genres"));
@@ -218,7 +251,7 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 		gbc.gridx = 3;
 		gbc.gridy = 0;
 		gbc.gridwidth = 1;
-		gbc.gridheight = 5;
+		gbc.gridheight = 8;
 		gbc.weightx = 40.0;
 		gbc.weighty = 100.0;
 		gbc.anchor = GridBagConstraints.CENTER;
@@ -229,9 +262,54 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 		gbl.setConstraints(panel_genres,gbc);
 		add(panel_genres);
 
-		// Component: label_explicit_lyrics
+		// Component: check_live
 		gbc.gridx = 0;
 		gbc.gridy = 1;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(check_live,gbc);
+		add(check_live);
+		
+		// Component: check_accoustic
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(check_accoustic,gbc);
+		add(check_accoustic);
+		
+		// Component: check_instrumental
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(check_instrumental,gbc);
+		add(check_instrumental);		
+		
+		// Component: label_explicit_lyrics
+		gbc.gridx = 0;
+		gbc.gridy = 4;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -246,7 +324,7 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 		
 		// Component: check_explicit_lyrics
 		gbc.gridx = 1;
-		gbc.gridy = 1;
+		gbc.gridy = 4;
 		gbc.gridwidth = 2;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -258,8 +336,6 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 		gbc.insets = new Insets(2,2,2,2);
 		gbl.setConstraints(select_explicit_lyrics,gbc);
 		add(select_explicit_lyrics);
-
-		
 
 		// Component: label_filler
 		gbc.gridx = 4;
@@ -284,6 +360,24 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 		tags.bundle_only(selected);
 		notifyChanges();
 	}
+	
+	public void check_live_changed(boolean selected) {
+		if (tags==null) return;
+		tags.live(selected);
+		notifyChanges();
+	}
+	
+	public void check_accoustic_changed(boolean selected) {
+		if (tags==null) return;
+		tags.accoustic(selected);
+		notifyChanges();
+	}
+	
+	public void check_instrumental_changed(boolean selected) {
+		if (tags==null) return;
+		tags.live(selected);
+		notifyChanges();
+	}	
 	
 	public void init_select_explicit_lyrics_model() {
 		select_explicit_lyrics_model.removeAllElements();

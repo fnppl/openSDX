@@ -486,12 +486,16 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        	}
 		        	
 		        	String track_bundle_only = track.getChildTextNN("bundled");
-		        	if(track_bundle_only.equals("false")) {
-		        		tags.bundle_only(false);	
-		        	}
-		        	else if(track_bundle_only.equals("true")) {
-		        		tags.bundle_only(true);	
-		        	}
+		        	if(track_bundle_only.length()>0) tags.bundle_only(Boolean.parseBoolean(track_bundle_only));
+		        	
+		        	String track_live = track.getChildTextNN("live");
+		        	if(track_bundle_only.length()>0) tags.live(Boolean.parseBoolean(track_live));
+		        	
+		        	String track_accoustic = track.getChildTextNN("acoustic");
+		        	if(track_bundle_only.length()>0) tags.accoustic(Boolean.parseBoolean(track_accoustic));
+		        	
+		        	String track_instrumental = track.getChildTextNN("instrumental");
+		        	if(track_bundle_only.length()>0) tags.instrumental(Boolean.parseBoolean(track_instrumental));		        	
 		        	
 		        	String explicitlyrics = track.getChildTextNN("explicitlyrics");
 		        	if(explicitlyrics.equals("false")) {

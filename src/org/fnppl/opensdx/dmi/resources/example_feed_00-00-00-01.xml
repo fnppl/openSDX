@@ -443,6 +443,9 @@
 			</genres>
 			<bundle_only>false</bundle_only> <!--  true|false -->
 			<explicit_lyrics>cleaned</explicit_lyrics> <!--  true|false|cleaned -->
+			<live>false</live> <!--  true|false -->
+			<accoustic>false</accoustic> <!--  true|false -->
+			<instrumental>false</instrumental> <!--  true|false -->
 		</tags><!-- SHOULD -->
 				
 		<items> <!-- those items aka tracks/videos/flash/apps/whatever contained in this bundle -->
@@ -529,6 +532,8 @@
 					<bundle_only>false</bundle_only>
 					<explicit_lyrics>false</explicit_lyrics>
 					<live>false</live>
+					<accoustic>false</accoustic>
+					<instrumental>false</instrumental>
 				</tags>
 				
 				<reporting>

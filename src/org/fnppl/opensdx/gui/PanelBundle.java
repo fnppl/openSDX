@@ -89,7 +89,6 @@ public class PanelBundle extends JPanel implements MyObservable, MyObserver {
 	private PanelTags pTags;
 	private PanelFiles pFiles;
 	
-	
 
 	private JTabbedPane tabs;
 

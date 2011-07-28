@@ -56,6 +56,9 @@ public class ItemTags extends BusinessObject {
 	private BusinessCollection<BusinessStringItem> genres;	//COULD
 	private BusinessBooleanItem bundle_only;		//COULD
 	private BusinessStringItem explicit_lyrics;		//COULD
+	private BusinessBooleanItem live;				//COULD
+	private BusinessBooleanItem accoustic;			//COULD
+	private BusinessBooleanItem instrumental;		//COULD
 
 
 	public static ItemTags make() {
@@ -63,6 +66,9 @@ public class ItemTags extends BusinessObject {
 		tags.genres = null;
 		tags.bundle_only = null;
 		tags.explicit_lyrics = null;
+		tags.live = null;
+		tags.accoustic = null;
+		tags.instrumental = null;
 		return tags;
 	}
 
@@ -91,6 +97,9 @@ public class ItemTags extends BusinessObject {
 		
 		tags.bundle_only = BusinessBooleanItem.fromBusinessObject(bo, "bundle_only");
 		tags.explicit_lyrics = BusinessStringItem.fromBusinessObject(bo, "explicit_lyrics");
+		tags.live = BusinessBooleanItem.fromBusinessObject(bo, "live");
+		tags.accoustic = BusinessBooleanItem.fromBusinessObject(bo, "accoustic");
+		tags.instrumental = BusinessBooleanItem.fromBusinessObject(bo, "instrumental");
 		return tags;
 	}
 	
@@ -143,6 +152,21 @@ public class ItemTags extends BusinessObject {
 		this.explicit_lyrics = new BusinessStringItem("explicit_lyrics", (explicit_lyrics?"true":"false"));
 		return this;
 	}
+	
+	public ItemTags live(boolean live) {
+		this.live = new BusinessBooleanItem("live", live);
+		return this;
+	}	
+	
+	public ItemTags accoustic(boolean accoustic) {
+		this.accoustic = new BusinessBooleanItem("accoustic", accoustic);
+		return this;
+	}
+	
+	public ItemTags instrumental(boolean instrumental) {
+		this.instrumental = new BusinessBooleanItem("instrumental", instrumental);
+		return this;
+	}	
 
 	public boolean isBundle_only() {
 		if (bundle_only==null) return false;
@@ -155,12 +179,26 @@ public class ItemTags extends BusinessObject {
 		if (e.equalsIgnoreCase("true")) return true;
 		return false;
 	}
-	
+		
 	public String getExplicit_lyrics() {
 		if (explicit_lyrics==null) return null;
 		return explicit_lyrics.getString();
 	}
 	
+	public boolean isLive() {
+		if (live==null) return false;
+		return live.getBoolean();
+	}
+	
+	public boolean isAccoustic() {
+		if (accoustic==null) return false;
+		return accoustic.getBoolean();
+	}
+	
+	public boolean isInstrumental() {
+		if (instrumental==null) return false;
+		return instrumental.getBoolean();
+	}	
 
 	public String getKeyname() {
 		return KEY_NAME;

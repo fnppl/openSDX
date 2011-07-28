@@ -381,13 +381,25 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
     				id.setAttribute("type", "isbn").setText(itemids.getIsrc());
     				track.addContent(id);
     			}    			
+    			if(item.getInformation().hasNum())
+    				track.addContent("position", ""+item.getInformation().getNum());
+    			
+        		if(item.getInformation().hasSetNum()) 
+        			track.addContent("cdsourcenum", ""+item.getInformation().getSetNum());
+
+        		if(item.getInformation().hasPlaylength()) 
+        			track.addContent("tracklength", ""+item.getInformation().getPlaylength());
         		
-        		track.addContent("position", ""+item.getInformation().getNum());
-        		track.addContent("cdsourcenum", ""+item.getInformation().getSetNum());
-        		track.addContent("tracklength", ""+item.getInformation().getPlaylength());
-        		track.addContent("explicitlyrics", ""+item.getTags().getExplicit_lyrics());
-        		track.addContent("origincountry", item.getInformation().getOrigin_country());
+        		if(item.getTags().getExplicit_lyrics()!=null)
+        			track.addContent("explicitlyrics", ""+item.getTags().getExplicit_lyrics());
         		
+        		if(item.getInformation().getOrigin_country()!=null)
+        			track.addContent("origincountry", item.getInformation().getOrigin_country());
+        		
+        		track.addContent("live", ""+item.getTags().isLive());
+        		track.addContent("acoustic", ""+item.getTags().isAccoustic());
+        		track.addContent("instrumental", ""+item.getTags().isInstrumental());
+        		       		
         		// item title
     	        title = item.getDisplayname();
     	        if (title==null) title = "";
