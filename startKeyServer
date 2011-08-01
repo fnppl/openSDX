@@ -1,2 +1,2 @@
-java -cp "./bin:lib/jdom.jar:lib/bcprov-jdk16-145.jar:lib/javamail.jar:lib/bcmail-jdk16-145.jar" org.fnppl.opensdx.keyserver.KeyServerMain -s "debug" -m "mail password" -h "localhost"
+java -cp "./bin:lib/postgresql-9.0-801.jdbc4.jar:lib/jdom.jar:lib/bcprov-jdk16-145.jar:lib/javamail.jar:lib/bcmail-jdk16-145.jar" org.fnppl.opensdx.keyserver.KeyServerMain -s "debug" -m "mail password" -h "localhost"
 

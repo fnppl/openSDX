@@ -201,8 +201,12 @@ public class KeyLogAction {
 		Element e = new Element("keylogaction");
 		e.addContent("from_keyid",fromKeyid);
 		e.addContent("to_keyid",toKeyid);
+		e.addContent(getActionElement(showRestricted));
+		return e;
+	}
+	
+	public Element getActionElement(boolean showRestricted) {
 		Element ea =  new Element(action);
-		e.addContent(ea);
 		if (id!=null) {
 			//ea.addContent(id.toElement(true));
 			Element eID = new Element("identity");
@@ -215,7 +219,11 @@ public class KeyLogAction {
 		if (message!=null) {
 			ea.addContent("message",message);
 		}
-		return e;
+		return ea;
+	}
+	
+	public Signature getSignature() {
+		return signature;
 	}
 	
 	public byte[] getSignatureBytes() {
@@ -267,4 +275,13 @@ public class KeyLogAction {
 		if (id==null) return false;
 		return id.hasRestrictedFields();
 	}
+	
+	public byte[] getSha256localproof_complete() {
+		return sha256localproof_complete;
+	}
+
+	public byte[] getSha256localproof_restricted() {
+		return sha256localproof_restricted;
+	}
+
 }

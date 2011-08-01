@@ -122,12 +122,12 @@ public class KeyServerMain extends HTTPServer {
 	
 	private Properties mailProps = null;
 	private MailAuthenticator mailAuth = null;
-	private KeyApprovingStore keystore;
+	
 	
 	private String servername = null;
 	private KeyVerificator keyverificator = null;
 	
-	
+	private KeyServerBackend backend = null;
 	private MessageHandler messageHandler = new DefaultMessageHandler() {
 		public boolean requestOverwriteFile(File file) {//dont ask, just overwrite
 			return true;
@@ -139,13 +139,7 @@ public class KeyServerMain extends HTTPServer {
 			return keyServerSigningKey;
 		}
 	};
-	
-	private HashMap<String, Vector<OSDXKey>> id_keys;
-	private HashMap<String, OSDXKey> keyid_key;
-	private HashMap<String, Vector<KeyLog>> keyid_log;
-	private HashMap<String, Vector<OSDXKey>> keyid_subkeys;
-	private HashMap<String, KeyLog> openTokens;
-	
+
 	protected MasterKey keyServerSigningKey = null;
 	
 	public void init(String pwSigning) {
@@ -160,6 +154,12 @@ public class KeyServerMain extends HTTPServer {
 			Document d = Document.buildDocument(signingKey.getSimplePubKeyElement());
 			System.out.println("\nServer Public SigningKey:");
 			d.output(System.out);
+			
+			if (backend == null) {
+				//user keystore backend if no other backend was initialized in readConfig()
+				System.out.println("Init KeyStore Backend");
+				backend = KeyStoreFileBackend.init(signingKey);
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -177,11 +177,7 @@ public class KeyServerMain extends HTTPServer {
 		} else {
 			throw new RuntimeException("ERROR: root signing key must be on MASTER level!");
 		}
-		id_keys = new HashMap<String, Vector<OSDXKey>>();
-		keyid_key = new HashMap<String, OSDXKey>();
-		keyid_log = new HashMap<String, Vector<KeyLog>>();
-		keyid_subkeys = new HashMap<String, Vector<OSDXKey>>();
-		openTokens = new HashMap<String, KeyLog>();
+		
 		
 		if (mailProps!=null) {
 			if (pwMail !=null && pwMail.trim() != "") {
@@ -189,9 +185,14 @@ public class KeyServerMain extends HTTPServer {
 				mailAuth = new MailAuthenticator(mailProps.getProperty("mail.user"), mailProps.getProperty("mail.password"));
 			}
 		}
-		openDefaultKeyStore();
-		keystore.setSigningKey(keyServerSigningKey);
-		updateCache(keyServerSigningKey, null);
+		
+		
+	}
+	
+	private void updateCache(OSDXKey k, KeyLog l) {
+		if (backend!=null) {
+			backend.updateCache(k, l);
+		}
 	}
 	
 	public OSDXKey createNewSigningKey(String pwSigning, String hostname) {
@@ -283,10 +284,18 @@ public class KeyServerMain extends HTTPServer {
 			}
 			//TODO check localproofs and signatures 
 
+			//db
+			Element eDB = ks.getChild("db");
+			if (eDB!=null) {
+				try {
+					backend = PostgresBackend.init(eDB.getChildText("user"), eDB.getChildText("password"), eDB.getChildText("name"));
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		
 	}
 	
 	public static File getDefaultDir() {
@@ -298,97 +307,6 @@ public class KeyServerMain extends HTTPServer {
 		return f;
 	}
 	
-	public boolean openDefaultKeyStore() {
-		File f = getDefaultDir();
-		f = new File(f, "keyserver_keystore.xml");
-		if (f.exists()) {
-			try {
-				keystore = KeyApprovingStore.fromFile(f, messageHandler);
-				Vector<OSDXKey> keys = keystore.getAllKeys();
-				if (keys != null) {
-					for (OSDXKey k : keys) {
-						updateCache(k, null);
-					}
-				}
-				Vector<KeyLog> keylogs = keystore.getKeyLogs();
-				if (keylogs != null) {
-					for (KeyLog l : keylogs) {
-						updateCache(null, l);
-					}
-				}
-				return true;
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		} else {
-			try {
-				keystore = KeyApprovingStore.createNewKeyApprovingStore(f, messageHandler);
-				saveKeyStore();
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		}
-		return false;
-	}
-	
-	private void updateCache(OSDXKey k, KeyLog l) {
-		if (k!=null) {
-			keyid_key.put(k.getKeyModulusSHA1(), k);
-			System.out.println("adding keyid_key: "+k.getKeyModulusSHA1()+"::OSDXKey");
-			if (k instanceof MasterKey) {
-				Vector<Identity> ids = ((MasterKey)k).getIdentities();
-				if (ids != null) {
-					//use only currentIdentity for searching for known keys to email
-					Identity id = ((MasterKey)k).getCurrentIdentity();
-					if (!id_keys.containsKey(id.getEmail())) {
-						id_keys.put(id.getEmail(),
-								new Vector<OSDXKey>());
-					}
-					Vector<OSDXKey> listId = id_keys.get(id.getEmail());
-					if (!listId.contains(k)) {
-						listId.add(k);
-					}
-					System.out.println("adding id_keys: "+id.getEmail()+"::"+k.getKeyModulusSHA1());
-						
-//					for (Identity id : ids) {
-//						if (!id_keys.containsKey(id.getEmail())) {
-//							id_keys.put(id.getEmail(),
-//									new Vector<OSDXKey>());
-//						}
-//						id_keys.get(id.getEmail()).add(k);
-//						System.out.println("adding id_keys: "+id.getEmail()+"::"+k.getKeyModulusSHA1());
-//					}
-				}
-			}
-			if (k instanceof SubKey) {
-				String parentKeyID = ((SubKey)k).getParentKeyID();
-				if (parentKeyID!=null && parentKeyID.length()>0) {
-					parentKeyID = OSDXKey.getFormattedKeyIDModulusOnly(parentKeyID);
-					if (!keyid_subkeys.containsKey(parentKeyID)) {
-						keyid_subkeys.put(parentKeyID, new Vector<OSDXKey>());
-					}
-					keyid_subkeys.get(parentKeyID).add(k);
-					System.out.println("adding subkey: "+k.getKeyModulusSHA1()+" for parent key: "+parentKeyID);
-				}
-			}
-		}
-		if (l!=null) {
-			//String keyid = l.getKeyIDTo();
-			String keyid = OSDXKey.getFormattedKeyIDModulusOnly(l.getKeyIDTo());
-			if (!keyid_log.containsKey(keyid)) {
-				keyid_log.put(keyid, new Vector<KeyLog>());
-			}
-			keyid_log.get(keyid).add(l);
-		}
-	}
-
-	private void saveKeyStore() {
-		try {
-			keystore.toFile(keystore.getFile());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
 	private KeyServerResponse errorMessage(String msg) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
@@ -419,8 +337,9 @@ public class KeyServerMain extends HTTPServer {
 		
 		//check key already on server
 		String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(pubkey.getKeyID());
-		if (keyid_key.containsKey(newkeyid)) {
-			OSDXKey k = keyid_key.get(newkeyid);
+		OSDXKey k = backend.getKey(newkeyid);
+		if (k!=null) {
+			//OSDXKey k = keyid_key.get(newkeyid);
 			//really equal -> or only sha1 fingerprint collision
 			if (!Arrays.equals(pubkey.getPublicModulusBytes(), k.getPublicModulusBytes())) {
 				return errorMessage("Sorry, another key with the same fingerprint (key id) is already registered.");
@@ -450,7 +369,7 @@ public class KeyServerMain extends HTTPServer {
 				//TODO HT 2011-06-26 hier bitte checken, ob noch ein offener approval rumliegt und NICHT in der aktuellen token-hash drin ist -> resend...
 				if(key != null) {
 					System.out.println("WrongIDNum key!=null...");
-					KeyStatus ks = keystore.getKeyStatus(key.getKeyID());
+					KeyStatus ks = backend.getKeyStatus(key.getKeyID());
 					//if (ks==null || !(ks.isValid() || ks.isUnapproved())) {
 					System.out.println("WrongIDNum keystatus: "+ks.getValidityStatusName());
 					if (ks!=null && ks.isUnapproved()) {
@@ -465,8 +384,7 @@ public class KeyServerMain extends HTTPServer {
 			}
 			key.addIdentity(idd);
 			updateCache(key, null);
-			saveKeyStore();
-			
+
 			KeyServerResponse resp = new KeyServerResponse(serverid);
 			return resp;
 		}
@@ -495,10 +413,9 @@ public class KeyServerMain extends HTTPServer {
 		sendApprovalTokenMail(kl, idd);
 		
 		//save to keystore
-		keystore.addKey(key);
-		keystore.addKeyLog(kl);
+		backend.addKey(key);
+		backend.addKeyLog(kl);
 		updateCache(key, kl);
-		saveKeyStore();
 		
 		//send response
 		KeyServerResponse resp = new KeyServerResponse(serverid);
@@ -514,7 +431,7 @@ public class KeyServerMain extends HTTPServer {
 		//String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+":"+port+"/approve_mail?id="+token;
 		String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+"/approve_mail?id="+token;
 		
-		openTokens.put(token, kl);
+		backend.addOpenToken(token, kl);
 		try {
 			sendMail(idd.getEmail(), "email address verification", verificationMsg);
 		} catch (Exception ex) {
@@ -527,7 +444,7 @@ public class KeyServerMain extends HTTPServer {
 		//System.out.println("KeyServerResponse | ::handle verify request");
 		String id = request.getParamValue("id");
 		System.out.println("Token ID: "+id);
-		KeyLog kl = openTokens.get(id);
+		KeyLog kl = backend.getKeyLogFromTokenId(id);
 		if (kl != null) {
 			//derive approval of email keylog from approval pending keylog 
 			Identity idd = Identity.newEmptyIdentity();
@@ -536,15 +453,15 @@ public class KeyServerMain extends HTTPServer {
 			
 			KeyLogAction keylogAction = KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, keyServerSigningKey, kl.getKeyIDTo(), idd, "email address verfied by a token mail");
 			KeyLog klApprove = KeyLog.buildNewKeyLog(keylogAction, request.getRealIP(), "", keyServerSigningKey); 
-			keystore.addKeyLog(klApprove);
-			openTokens.remove(id);
+			backend.addKeyLog(klApprove);
+			backend.removeOpenToken(id);
 			
 			//save to keystore
 			updateCache(null, klApprove);
-			saveKeyStore();
+
 			
 			//add key to trusted keys
-			OSDXKey key = keyid_key.get(kl.getKeyIDTo());
+			OSDXKey key = backend.getKey(kl.getKeyIDTo());
 			if (key!=null) {
 				keyverificator.addKeyRating(key, TrustRatingOfKey.RATING_MARGINAL);
 			}
@@ -577,13 +494,13 @@ public class KeyServerMain extends HTTPServer {
 		
 		//check masterkey on server
 		String masterkeyid = content.getChildText("masterkeyid");
-		OSDXKey masterkey = keystore.getKey(masterkeyid);
+		OSDXKey masterkey = backend.getKey(masterkeyid);
 		if (masterkey==null || !(masterkey instanceof MasterKey)) {
 			return errorMessage("associatied masterkey is not on server.");
 		}
 		
 		//check masterkey approved
-		KeyStatus ks = keystore.getKeyStatus(masterkey.getKeyID());
+		KeyStatus ks = backend.getKeyStatus(masterkey.getKeyID());
 		//if (ks==null || !ks.isValid()) {
 		if (ks==null || !(ks.isValid() || ks.isUnapproved())) { //TODO for testing with approval_pending
 			return errorMessage("associatied masterkey is not approved.");
@@ -600,18 +517,17 @@ public class KeyServerMain extends HTTPServer {
 		
 		//check key already on server
 		String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(revokekey.getKeyID());
-		if (keyid_key.containsKey(newkeyid)) {
-			OSDXKey old = keyid_key.get(newkeyid);
-			keystore.removeKey(old);
+		OSDXKey old = backend.getKey(newkeyid);
+		if (old!=null) {
+			backend.removeKey(old);
 		}
 		((MasterKey)masterkey).addRevokeKey((RevokeKey)revokekey);
 		((RevokeKey)revokekey).setParentKey((MasterKey)masterkey);
 		
 		//save
-		keystore.addKey(revokekey);
+		backend.addKey(revokekey);
 		//keystore.addKeyLog(kl);
 		updateCache(revokekey, null);
-		saveKeyStore();
 		
 		//add revokekey to trusted keys
 		keyverificator.addKeyRating(revokekey, TrustRatingOfKey.RATING_MARGINAL);
@@ -642,7 +558,7 @@ public class KeyServerMain extends HTTPServer {
 		
 		KeyLogAction keylogAction = KeyLogAction.fromElement(content.getChild("keylogaction"));
 		
-		OSDXKey revokekey = keyid_key.get(OSDXKey.getFormattedKeyIDModulusOnly(keylogAction.getKeyIDFrom())); 
+		OSDXKey revokekey = backend.getKey(OSDXKey.getFormattedKeyIDModulusOnly(keylogAction.getKeyIDFrom())); 
 		if (revokekey==null || !(revokekey instanceof RevokeKey)) {
 			return errorMessage("revokekey not registered on keyserver");
 		}
@@ -662,8 +578,7 @@ public class KeyServerMain extends HTTPServer {
 		
 		//save
 		updateCache(null,log);
-		keystore.addKeyLog(log);
-		saveKeyStore();
+		backend.addKeyLog(log);
 		
 		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
@@ -693,7 +608,7 @@ public class KeyServerMain extends HTTPServer {
 //		String message = content.getChildText("message");
 
 		
-		OSDXKey subkey = keyid_key.get(OSDXKey.getFormattedKeyIDModulusOnly(keylogAction.getKeyIDTo())); 
+		OSDXKey subkey = backend.getKey(OSDXKey.getFormattedKeyIDModulusOnly(keylogAction.getKeyIDTo())); 
 		if (subkey==null || !(subkey instanceof SubKey)) {
 			return errorMessage("subkey not registered on keyserver");
 		}
@@ -713,8 +628,7 @@ public class KeyServerMain extends HTTPServer {
 		
 		//save
 		updateCache(null,log);
-		keystore.addKeyLog(log);
-		saveKeyStore();
+		backend.addKeyLog(log);
 		
 		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
@@ -738,13 +652,13 @@ public class KeyServerMain extends HTTPServer {
 		
 		//check masterkey on server
 		String masterkeyid = content.getChildText("masterkeyid");
-		OSDXKey masterkey = keystore.getKey(masterkeyid);
+		OSDXKey masterkey = backend.getKey(masterkeyid);
 		if (masterkey==null || !(masterkey instanceof MasterKey)) {
 			return errorMessage("associatied masterkey is not on server.");
 		}
 		
 		//check masterkey approved
-		KeyStatus ks = keystore.getKeyStatus(masterkey.getKeyID());
+		KeyStatus ks = backend.getKeyStatus(masterkey.getKeyID());
 		//if (ks==null || !ks.isValid()) {
 		if (ks==null || !(ks.isValid() || ks.isUnapproved())) { //TODO for testing with approval_pending
 			return errorMessage("associatied masterkey is not approved.");
@@ -761,9 +675,9 @@ public class KeyServerMain extends HTTPServer {
 		
 		//check key already on server
 		String newkeyid = OSDXKey.getFormattedKeyIDModulusOnly(subkey.getKeyID());
-		if (keyid_key.containsKey(newkeyid)) {
-			OSDXKey old = keyid_key.get(newkeyid);
-			keystore.removeKey(old);
+		OSDXKey old = backend.getKey(newkeyid);
+		if (old!=null) {
+			backend.removeKey(old);
 			//resp.setRetCode(404, "FAILED");
 			//resp.createErrorMessageContent("A key with this id is already registered.");
 			//return resp;
@@ -772,11 +686,10 @@ public class KeyServerMain extends HTTPServer {
 		((SubKey)subkey).setParentKey((MasterKey)masterkey);
 		
 		//save
-		keystore.addKey(subkey);
+		backend.addKey(subkey);
 		//keystore.addKeyLog(kl);
 		updateCache(subkey, null);
-		saveKeyStore();
-		
+
 		//add to trusted keys
 		keyverificator.addKeyRating(subkey, TrustRatingOfKey.RATING_MARGINAL);
 		
@@ -812,7 +725,7 @@ public class KeyServerMain extends HTTPServer {
 				return errorMessage("verification of keylogaction signature failed.");
 			}
 			//check toKey not revoked
-			KeyStatus ks = keystore.getKeyStatus(log.getKeyIDTo());
+			KeyStatus ks = backend.getKeyStatus(log.getKeyIDTo());
 			if (ks!=null && ks.getValidityStatus()==KeyStatus.STATUS_REVOKED) {
 				return errorMessage("key is already revoked.");	
 			}
@@ -820,12 +733,9 @@ public class KeyServerMain extends HTTPServer {
 			//TODO check given approved identitiy fields match the original (same identnum) identity fields  
 
 			KeyLog kl = KeyLog.buildNewKeyLog(log, request.getRealIP(), "", keyServerSigningKey);
-			keystore.addKeyLog(kl);
+			backend.addKeyLog(kl);
 			updateCache(null,kl);
-
 		}
-		//save
-		saveKeyStore();
 		
 		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
@@ -876,33 +786,33 @@ public class KeyServerMain extends HTTPServer {
 				return handlePutRevokeSubkeyRequest(request);
 			}
 			else if (cmd.equals("/identities")) {
-				return KeyServerResponse.createIdentityResponse(serverid, request, keyid_key, keyid_log, keyServerSigningKey);
+				return KeyServerResponse.createIdentityResponse(serverid, request, backend, keyServerSigningKey);
 			}
 			else if (cmd.equals("/keylogs")) {
-				return KeyServerResponse.createKeyLogResponse(serverid, request, keyid_log, keyServerSigningKey);
+				return KeyServerResponse.createKeyLogResponse(serverid, request, backend, keyServerSigningKey);
 			}
 		} 
 		else if (request.method.equals("GET")) {
 			if (cmd.equals("/masterpubkeys")) {
-				return KeyServerResponse.createMasterPubKeyResponse(serverid,request, id_keys, keyServerSigningKey);
+				return KeyServerResponse.createMasterPubKeyResponse(serverid,request, backend, keyServerSigningKey);
 			}
 			else if (cmd.equals("/masterpubkey")) {
-				return KeyServerResponse.createMasterPubKeyToSubKeyResponse(serverid,request, keyid_key, keyServerSigningKey);
+				return KeyServerResponse.createMasterPubKeyToSubKeyResponse(serverid,request, backend, keyServerSigningKey);
 			}
 			else if (cmd.equals("/identities")) {
-				return KeyServerResponse.createIdentityResponse(serverid, request, keyid_key, keyid_log, keyServerSigningKey);
+				return KeyServerResponse.createIdentityResponse(serverid, request, backend, keyServerSigningKey);
 			}
 			else if (cmd.equals("/keystatus")) {
-				return KeyServerResponse.createKeyStatusyResponse(serverid, request, keystore, keyServerSigningKey);
+				return KeyServerResponse.createKeyStatusyResponse(serverid, request, backend, keyServerSigningKey);
 			}
 			else if (cmd.equals("/keylogs")) {
-				return KeyServerResponse.createKeyLogResponse(serverid, request, keyid_log, keyServerSigningKey);
+				return KeyServerResponse.createKeyLogResponse(serverid, request, backend, keyServerSigningKey);
 			}
 			else if (cmd.equals("/subkeys")) {
-				return KeyServerResponse.createSubKeyResponse(serverid, request, keyid_subkeys, keyServerSigningKey);
+				return KeyServerResponse.createSubKeyResponse(serverid, request, backend, keyServerSigningKey);
 			}
 			else if (cmd.equals("/pubkey")) {
-				return KeyServerResponse.createPubKeyResponse(serverid, request, keyid_key, keyServerSigningKey);
+				return KeyServerResponse.createPubKeyResponse(serverid, request, backend, keyServerSigningKey);
 			}
 			else if (cmd.equals("/approve_mail")) {
 				return handleVerifyRequest(request);

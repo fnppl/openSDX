@@ -58,7 +58,7 @@ public abstract class  RemoteFileSystem {
 	private RemoteFile root;
 	
 	
-	private RemoteFileSystem() {
+	public RemoteFileSystem() {
 		
 	}
 	public RemoteFile getRoot()  {

@@ -1,0 +1,58 @@
+DROP TABLE "keylogs";;
+DROP TABLE "approval_token";;
+DROP TABLE "keys";;
+
+CREATE TABLE "keys" (
+	"id"			SERIAL,
+	"keyid" 		VARCHAR(200) NOT NULL UNIQUE,
+	"level"			VARCHAR(10),
+	"usage"			VARCHAR(10),
+	"valid_from"	TIMESTAMP,
+	"valid_until"	TIMESTAMP,
+	"algo"			VARCHAR(10),
+	"bits"			INTEGER,
+	"modulus" 		BYTEA NOT NULL,
+	"exponent" 		BYTEA NOT NULL,
+	"email"			VARCHAR(200),
+	"identnum"		INTEGER,
+	"parentkeyid"	VARCHAR(200),
+	PRIMARY KEY(id)
+);;
+
+
+CREATE TABLE "keylogs" (
+	"id"				SERIAL,
+	"ipv4"				VARCHAR(15),
+	"ipv6"				VARCHAR(100),
+	"keyid_to" 			VARCHAR(200),
+	"action"			VARCHAR(30),
+	"action_content"	VARCHAR(2000),
+	"sha256_complete"	BYTEA NOT NULL,
+	"sha256_restricted"	BYTEA NOT NULL,
+	"asig_md5"			BYTEA NOT NULL,
+	"asig_sha1"			BYTEA NOT NULL,
+	"asig_sha256"		BYTEA NOT NULL,
+	"asig_datetime"		TIMESTAMP,
+	"asig_dataname"		VARCHAR(200),
+	"asig_key"			INTEGER,
+	"asig_bytes" 		BYTEA NOT NULL,
+	"sha256"	BYTEA NOT NULL,
+	"sig_md5"			BYTEA NOT NULL,
+	"sig_sha1"			BYTEA NOT NULL,
+	"sig_sha256"		BYTEA NOT NULL,
+	"sig_datetime"		TIMESTAMP,
+	"sig_dataname"		VARCHAR(200),
+	"sig_key"			INTEGER,
+	"sig_bytes" 		BYTEA NOT NULL,
+	PRIMARY KEY(id),
+	FOREIGN KEY (asig_key) REFERENCES keys(id),
+	FOREIGN KEY (sig_key) REFERENCES keys(id)
+);;
+
+CREATE TABLE approval_token (
+	"id"				SERIAL,
+	"token"				VARCHAR(200),
+	"keylog"			INTEGER,
+	PRIMARY KEY(id),
+	FOREIGN KEY (keylog) REFERENCES keylogs(id)
+);;

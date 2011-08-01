@@ -72,13 +72,13 @@ public class KeyServerResponse extends HTTPServerResponse {
 		super(serverid);
 	}
 	
-	public static KeyServerResponse createMasterPubKeyResponse(String serverid, HTTPServerRequest request, HashMap<String, Vector<OSDXKey>> id_keys, OSDXKey signoffkey) {
+	public static KeyServerResponse createMasterPubKeyResponse(String serverid, HTTPServerRequest request, KeyServerBackend backend, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("Identity");
 		if (id != null) {
 			Element e = new Element("masterpubkeys_response");
 			e.addContent("identity",id);
-			Vector<OSDXKey> keys = id_keys.get(id);
+			Vector<OSDXKey> keys = backend.getKeysToId(id);
 			if (keys != null && keys.size() > 0) {
 				Element er = new Element("related_keys");
 				e.addContent(er);
@@ -101,13 +101,13 @@ public class KeyServerResponse extends HTTPServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createMasterPubKeyToSubKeyResponse(String serverid, HTTPServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
+	public static KeyServerResponse createMasterPubKeyToSubKeyResponse(String serverid, HTTPServerRequest request, KeyServerBackend backend, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("SubKeyID");
 		if (id != null) {
 			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("masterpubkey_response");
-			OSDXKey key = keyid_key.get(id);
+			OSDXKey key = backend.getKey(id);
 			if (key!=null && key instanceof SubKey) {
 				e.addContent("subkeyid", key.getKeyID());
 				e.addContent(((SubKey)key).getParentKey().getSimplePubKeyElement());
@@ -126,7 +126,7 @@ public class KeyServerResponse extends HTTPServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createIdentityResponse(String serverid, HTTPServerRequest request, HashMap<String, OSDXKey> keyid_key, HashMap<String, Vector<KeyLog>> keyid_log, OSDXKey signoffkey) {
+	public static KeyServerResponse createIdentityResponse(String serverid, HTTPServerRequest request, KeyServerBackend backend, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String keyid = request.getParamValue("KeyID");
 		boolean showRestricted = false;
@@ -137,7 +137,7 @@ public class KeyServerResponse extends HTTPServerResponse {
 				Result verify = msg.verifySignaturesWithoutKeyVerification();
 				if (verify.succeeded) {
 					OSDXKey sign = msg.getSignatures().get(0).getKey();
-					showRestricted = allowRestricted(keyid, sign, keyid_log);
+					showRestricted = allowRestricted(keyid, sign, backend);
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -147,7 +147,7 @@ public class KeyServerResponse extends HTTPServerResponse {
 			keyid = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
 			Element e = new Element("identities_response");
 			e.addContent("keyid",keyid);
-			OSDXKey key = keyid_key.get(keyid);
+			OSDXKey key = backend.getKey(keyid);
 			if (key != null && key instanceof MasterKey) {
 				Vector<Identity> ids = ((MasterKey)key).getIdentities();
 				for (Identity aid : ids) {
@@ -168,11 +168,11 @@ public class KeyServerResponse extends HTTPServerResponse {
 		return null;
 	}
 	
-	private static boolean allowRestricted(String from_keyid, OSDXKey sign, HashMap<String, Vector<KeyLog>> keyid_log)  {
+	private static boolean allowRestricted(String from_keyid, OSDXKey sign, KeyServerBackend backend)  {
 		try {
 			boolean allow = false; 
 			String keyidSign = OSDXKey.getFormattedKeyIDModulusOnly(sign.getKeyID());
-			Vector<KeyLog> logs = keyid_log.get(keyidSign);
+			Vector<KeyLog> logs = backend.getKeyLogsToID(keyidSign);
 			if (logs!=null) {
 				SecurityHelper.sortKeyLogsbyDate(logs);
 				for (KeyLog log : logs) {
@@ -193,7 +193,7 @@ public class KeyServerResponse extends HTTPServerResponse {
 		return false;
 	}
 	
-	public static KeyServerResponse createKeyStatusyResponse(String serverid, HTTPServerRequest request, KeyApprovingStore keystore, OSDXKey signoffkey) {
+	public static KeyServerResponse createKeyStatusyResponse(String serverid, HTTPServerRequest request, KeyServerBackend backend, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
@@ -201,7 +201,7 @@ public class KeyServerResponse extends HTTPServerResponse {
 			Element e = new Element("keystatus_response");
 			e.addContent("keyid",id);
 			try {
-				KeyStatus ks = keystore.getKeyStatus(id);
+				KeyStatus ks = backend.getKeyStatus(id);
 				if (ks!=null) {
 					e.addContent(ks.toElement());
 //					Vector<Element> status = ks.toElement().getChildren();
@@ -226,14 +226,14 @@ public class KeyServerResponse extends HTTPServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createKeyLogResponse(String serverid, HTTPServerRequest request, HashMap<String, Vector<KeyLog>> keyid_log, OSDXKey signoffkey) {
+	public static KeyServerResponse createKeyLogResponse(String serverid, HTTPServerRequest request, KeyServerBackend backend, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String keyid = request.getParamValue("KeyID");
 		if (keyid != null) {
 			String keyid_short = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
 			Element e = new Element("keylogactions_response");
 			e.addContent("keyid",keyid);
-			Vector<KeyLog> keylogs = keyid_log.get(keyid_short);
+			Vector<KeyLog> keylogs = backend.getKeyLogsToID(keyid_short);
 			if (keylogs!=null && keylogs.size()>0) {
 				//decide if client can see restricted fields
 				boolean showRestricted = false;
@@ -244,7 +244,7 @@ public class KeyServerResponse extends HTTPServerResponse {
 						Result verify = msg.verifySignaturesWithoutKeyVerification();
 						if (verify.succeeded) {
 							OSDXKey sign = msg.getSignatures().get(0).getKey();
-							showRestricted = allowRestricted(keyid, sign, keyid_log);
+							showRestricted = allowRestricted(keyid, sign, backend);
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace();
@@ -269,14 +269,14 @@ public class KeyServerResponse extends HTTPServerResponse {
 	}
 	
 	
-	public static KeyServerResponse createSubKeyResponse(String serverid, HTTPServerRequest request, HashMap<String, Vector<OSDXKey>> keyid_subkeys, OSDXKey signoffkey) {
+	public static KeyServerResponse createSubKeyResponse(String serverid, HTTPServerRequest request, KeyServerBackend backend, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
 			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("subkeys_response");
 			e.addContent("parentkeyid", id);
-			Vector<OSDXKey> subkeys = keyid_subkeys.get(id);
+			Vector<OSDXKey> subkeys = backend.getSubKeysToId(id);
 			if (subkeys!=null && subkeys.size()>0) {
 				for (OSDXKey key : subkeys) {
 					if (key.isSub())
@@ -298,13 +298,13 @@ public class KeyServerResponse extends HTTPServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createPubKeyResponse(String serverid, HTTPServerRequest request, HashMap<String, OSDXKey> keyid_key, OSDXKey signoffkey) {
+	public static KeyServerResponse createPubKeyResponse(String serverid, HTTPServerRequest request, KeyServerBackend backend, OSDXKey signoffkey) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String id = request.getParamValue("KeyID");
 		if (id != null) {
 			id = OSDXKey.getFormattedKeyIDModulusOnly(id);
 			Element e = new Element("pubkey_response");
-			OSDXKey key = keyid_key.get(id);
+			OSDXKey key = backend.getKey(id);
 			if (key!=null) {
 				e.addContent(key.getSimplePubKeyElement());
 			}

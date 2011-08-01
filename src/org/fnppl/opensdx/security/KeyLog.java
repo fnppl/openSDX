@@ -254,6 +254,10 @@ public class KeyLog {
 		return kl;
 	}
 	
+	public String getActionElementString() {
+		Element e = action.getActionElement(true);
+		return Document.buildDocument(e).toStringCompact(); 
+	}
 	
 	public Element toElement(boolean showRestricted) {
 		Element e = new Element("keylog");
@@ -334,6 +338,26 @@ public class KeyLog {
 	}
 	public String getAction() {
 		return action.getAction();
+	}
+	
+	public byte[] getActionSha256ProofComplete() {
+		return action.getSha256localproof_complete();
+	}
+	
+	public byte[] getActionSha256ProofRestricted() {
+		return action.getSha256localproof_restricted();
+	}
+	
+	public Signature getActionSignature() {
+		return action.getSignature();
+	}
+	
+	public Signature getSignature() {
+		return signature;
+	}
+	
+	public byte[] getSHA256LocalProof() {
+		return sha256localproof;
 	}
 	
 	public void addDataPath(DataSourceStep step) {
