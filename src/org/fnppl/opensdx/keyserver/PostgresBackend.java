@@ -46,6 +46,7 @@ package org.fnppl.opensdx.keyserver;
  */
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.Connection;
@@ -57,7 +58,9 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Vector;
 
+import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.security.Identity;
+import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.KeyLog;
 import org.fnppl.opensdx.security.KeyStatus;
 import org.fnppl.opensdx.security.MasterKey;
@@ -86,6 +89,23 @@ public class PostgresBackend implements KeyServerBackend {
 		PostgresBackend be = new PostgresBackend();
 		be.connect(user, pw, dbname);
 		return be;
+	}
+	
+	private void addKeysAndLogsFromKeyStore(String filename) {
+		try {
+			File f = new File(filename);
+			KeyApprovingStore store = KeyApprovingStore.fromFile(f, new DefaultMessageHandler());
+			Vector<OSDXKey> keys = store.getAllKeys();
+			for (OSDXKey key : keys) {
+				addKey(key);
+			}
+//			Vector<KeyLog> logs =store.getKeyLogs();
+//			for (KeyLog log : logs) {
+//				addKeyLog(log);
+//			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 	
 	public void setupEmptyDB() {
@@ -126,6 +146,7 @@ public class PostgresBackend implements KeyServerBackend {
         } catch (Exception ex) {
         	ex.printStackTrace();
         }
+        addKeysAndLogsFromKeyStore("/home/neo/openSDX/keyserver_keystore.xml");
 	}
 	
 	public void connect(String user, String pw, String dbname) {
@@ -150,7 +171,7 @@ public class PostgresBackend implements KeyServerBackend {
 	
 	public void addKey(OSDXKey key) {
 		try {
-			PreparedStatement sql = con.prepareStatement("INSERT INTO keys (keyid, level, usage, valid_from, valid_until, algo, bits, modulus, exponent,email,identnum, parentkeyid) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
+			PreparedStatement sql = con.prepareStatement("INSERT INTO keys (keyid, level, usage, valid_from, valid_until, algo, bits, modulus, exponent, email, identnum, parentkeyid) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
 			sql.setString(1, key.getKeyID());
 			sql.setString(2, key.getLevelName());
 			sql.setString(3, key.getUsageName());
@@ -309,7 +330,8 @@ public class PostgresBackend implements KeyServerBackend {
 			keyIndexSig = getKeyIndex(sig.getKey().getKeyID());
 		}
 		try {
-			PreparedStatement sql = con.prepareStatement("INSERT INTO keylogs (ipv4, ipv6, keyid_to, action, action_content, sha256_complete, sha256_restricted, asig_md5, asig_sha1, asig_sha25, asig_datetime, asig_key, asig_bytes, sha256, sig_md5, sig_sha1, sig_sha25, sig_datetime, sig_key, sig_bytes) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+			PreparedStatement sql = con.prepareStatement("INSERT INTO keylogs (ipv4, ipv6, keyid_to, action, action_content, sha256_complete, sha256_restricted," +
+					"asig_md5, asig_sha1, asig_sha256, asig_datetime, asig_key, asig_bytes, sha256, sig_md5, sig_sha1, sig_sha256, sig_datetime, sig_key, sig_bytes) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 			sql.setString(1, log.getIPv4());
 			sql.setString(2, log.getIPv6());
 			sql.setString(3, log.getKeyIDTo());

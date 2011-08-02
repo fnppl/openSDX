@@ -31,11 +31,12 @@ public class DefaultMessageHandler implements MessageHandler {
 		
 		Vector<String> keynames = new Vector<String>();
 		for (int i=0; i<signoffkeys.size(); i++) {
-			Vector<Identity> ids = signoffkeys.get(i).getIdentities();
-			String name = signoffkeys.get(i).getKeyID();
-			for (Identity id : ids) {
-				name += ", "+id.getEmail();
-			}
+			//Vector<Identity> ids = signoffkeys.get(i).getIdentities();
+			MasterKey mk = signoffkeys.get(i);
+			String name = mk.getKeyID()+", "+mk.getIDEmailAndMnemonic();
+//			for (Identity id : ids) {
+//				name += ", "+id.getID;
+//			}
 			keynames.add(name);
 		}
 		

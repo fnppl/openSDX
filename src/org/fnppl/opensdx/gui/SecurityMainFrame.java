@@ -2768,7 +2768,8 @@ public class SecurityMainFrame extends JFrame {
 		final JPanel[] pSouth =  new JPanel[1];
 		final Vector<JCheckBox> checks = new Vector<JCheckBox>();
 		final Vector<JTextField> texts = new Vector<JTextField>();
-	
+		final Vector<JButton> buttons = new Vector<JButton>();
+			
 		
 		y++;
 		JLabel l = new JLabel("Key ID to:");
@@ -2894,8 +2895,27 @@ public class SecurityMainFrame extends JFrame {
 						checks.get(i).setSelected(true);
 						texts.get(i).setBackground(Color.GREEN);
 					}
+					if  (name.equals("photo")) {
+						if (restricted) {
+							checks.get(i).setEnabled(false);
+							checks.get(i).setSelected(false);
+							int photoW = 90;
+							int photoH = 120;
+							BufferedImage img = new BufferedImage(photoW, photoH, BufferedImage.TYPE_INT_RGB);
+							Graphics g = img.getGraphics();
+							g.setColor(Color.WHITE);
+							g.fillRect(0,0,photoW,photoH);
+							g.setColor(Color.GRAY);
+							g.setFont(new Font("arial", Font.BOLD, 12));
+							g.drawString("[RESTRICTED]", photoW/2-39 ,photoH/2);
+							buttons.get(0).setIcon(new ImageIcon(img));
+						} else {
+							checks.get(i).setEnabled(true);
+							buttons.get(0).setIcon(new ImageIcon(idd.getPhoto()));
+						}
+					}
 				}
-				id[0] = idd;		
+				id[0] = idd;
 			}
 		});
 		y++;
@@ -2936,7 +2956,7 @@ public class SecurityMainFrame extends JFrame {
 		
 		pDialog.setLayout(new BorderLayout());
 		pDialog.add(p, BorderLayout.NORTH);
-		pSouth[0] = buildIDElement(id[0], checks, texts);
+		pSouth[0] = buildIDElement(id[0], checks, texts, buttons);
 		pDialog.add(pSouth[0], BorderLayout.CENTER);
 		
 	    int ans = JOptionPane.showConfirmDialog(null,pDialog,head,JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
@@ -2981,10 +3001,12 @@ public class SecurityMainFrame extends JFrame {
 	    }
 	}
 	
-	private JPanel buildIDElement(Identity id, Vector<JCheckBox> checks, Vector<JTextField> texts) {
+	private JPanel buildIDElement(Identity id, Vector<JCheckBox> checks, Vector<JTextField> texts, Vector<JButton> buttons) {
 		JPanel p = new JPanel();
 		checks.removeAllElements();
 		texts.removeAllElements();
+		buttons.removeAllElements();
+		
 		//p.setLayout(new BorderLayout());
 		GridBagLayout gb = new GridBagLayout();		
 		p.setLayout(gb);
@@ -2995,6 +3017,7 @@ public class SecurityMainFrame extends JFrame {
 		int y = -1;
 		JLabel l;
 		Vector<Element> content = id.getContentElements(true);
+		int contentSize = 0;
 		for (int i=0;i<content.size();i++) {
 			y++;
 			Element ec = content.get(i);
@@ -3003,9 +3026,11 @@ public class SecurityMainFrame extends JFrame {
 			boolean restricted = Boolean.parseBoolean(ec.getAttribute("restricted"));
 			
 			l = new JLabel(name);
+			
 			final JTextField t = new JTextField(value);
 			t.setBackground(Color.WHITE);
 			t.setEditable(false);
+			
 			final JCheckBox check = new JCheckBox();
 			check.setPreferredSize(new Dimension(20,20));
 			check.setSelected(false);
@@ -3042,17 +3067,49 @@ public class SecurityMainFrame extends JFrame {
 			c.gridy = y;
 			p.add(l, c);
 
-			t.setEditable(false);
-			c.fill = GridBagConstraints.HORIZONTAL;
-			c.weightx = 1;
-			c.gridx = 2;
-			c.gridy = y;
-			c.gridwidth = 1;
-			p.add(t,c);
-			checks.add(check);
-			texts.add(t);
+			if (name.equals("photo")) {
+				contentSize += 125;
+				JButton buPhoto = new JButton();
+				BufferedImage img = id.getPhoto();
+				if (img==null) {
+					int photoW = 90;
+					int photoH = 120;
+					img = new BufferedImage(photoW, photoH, BufferedImage.TYPE_INT_RGB);
+					Graphics g = img.getGraphics();
+					g.setColor(Color.WHITE);
+					g.fillRect(0,0,photoW,photoH);
+					g.setColor(Color.GRAY);
+					g.setFont(new Font("arial", Font.BOLD, 12));
+					g.drawString("[RESTRICTED]", photoW/2-39 ,photoH/2);
+				}
+				buPhoto.setIcon(new ImageIcon(img));
+				Dimension d = new Dimension(90,120);
+				buPhoto.setMinimumSize(d);
+				buPhoto.setMaximumSize(d);
+				buPhoto.setPreferredSize(d);
+				c.fill = GridBagConstraints.NONE;
+				c.weightx = 1;
+				c.gridx = 2;
+				c.gridy = y;
+				c.gridwidth = 1;
+				p.add(buPhoto,c);
+				checks.add(check);
+				texts.add(t);
+				buttons.add(buPhoto);
+			} else {
+				contentSize += 31;
+				t.setEditable(false);
+				c.fill = GridBagConstraints.HORIZONTAL;
+				c.weightx = 1;
+				c.gridx = 2;
+				c.gridy = y;
+				c.gridwidth = 1;
+				p.add(t,c);
+				checks.add(check);
+				texts.add(t);
+			}
 		}
-		Dimension d = new Dimension(700,(content.size())*30);
+		Dimension d = new Dimension(700,contentSize);
 		p.setPreferredSize(d);
 		p.setMinimumSize(d);
 		p.setMaximumSize(d);
