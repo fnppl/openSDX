@@ -1,9 +1,11 @@
-DROP TABLE "keylogs";;
 DROP TABLE "approval_token";;
+DROP TABLE "keylogs";;
+DROP TABLE "key_identity";;
 DROP TABLE "keys";;
+DROP TABLE "identities";;
+
 
 CREATE TABLE "keys" (
-	"id"			SERIAL,
 	"keyid" 		VARCHAR(200) NOT NULL UNIQUE,
 	"level"			VARCHAR(10),
 	"usage"			VARCHAR(10),
@@ -13,20 +15,71 @@ CREATE TABLE "keys" (
 	"bits"			INTEGER,
 	"modulus" 		BYTEA NOT NULL,
 	"exponent" 		BYTEA NOT NULL,
-	"email"			VARCHAR(200),
-	"identnum"		INTEGER,
 	"parentkeyid"	VARCHAR(200),
+	PRIMARY KEY(keyid)
+);;
+
+CREATE TABLE "identities" (
+	"id"			BIGINT,
+	"identnum"		INTEGER,
+	"email"			VARCHAR(200),
+	"mnemonic"		VARCHAR(200),
+	"company"		VARCHAR(200),
+	"unit"			VARCHAR(200),
+	"subunit"		VARCHAR(200),
+	"function"		VARCHAR(200),
+	"surname"		VARCHAR(200),
+	"firstname"		VARCHAR(200),
+	"middlename"	VARCHAR(200),
+	"birthday"		VARCHAR(100),
+	"placeofbirth"	VARCHAR(200),
+	"city"			VARCHAR(200),
+	"postcode"		VARCHAR(200),
+	"region"		VARCHAR(200),
+	"country"		VARCHAR(200),
+	"phone"			VARCHAR(200),
+	"fax"			VARCHAR(200),
+	"note"			VARCHAR(2000),
+	"photo"			BYTEA,
+	"mnemonic_r"	BOOLEAN,
+	"company_r"		BOOLEAN,
+	"unit_r"		BOOLEAN,
+	"subunit_r"		BOOLEAN,
+	"function_r"	BOOLEAN,
+	"surname_r"		BOOLEAN,
+	"firstname_r"	BOOLEAN,
+	"middlename_r"	BOOLEAN,
+	"birthday_r"	BOOLEAN,
+	"placeofbirth_r"		BOOLEAN,
+	"city_r"		BOOLEAN,
+	"postcode_r"	BOOLEAN,
+	"region_r"		BOOLEAN,
+	"country_r"		BOOLEAN,
+	"phone_r"		BOOLEAN,
+	"fax_r"			BOOLEAN,
+	"note_r"		BOOLEAN,
+	"photo_r"		BOOLEAN,
 	PRIMARY KEY(id)
+);;
+
+CREATE TABLE "key_identity" (
+	"id"		BIGINT,
+	"keyid"		VARCHAR(200),
+	"identity"  BIGINT,
+	PRIMARY KEY(id),
+	FOREIGN KEY (keyid) REFERENCES keys(keyid),
+	FOREIGN KEY (identity) REFERENCES identities(id)
 );;
 
 
 CREATE TABLE "keylogs" (
-	"id"				SERIAL,
+	"id"				BIGINT,
 	"ipv4"				VARCHAR(15),
 	"ipv6"				VARCHAR(100),
 	"keyid_to" 			VARCHAR(200),
 	"action"			VARCHAR(30),
-	"action_content"	VARCHAR(2000),
+	"action_id"			BIGINT,
+	"action_msg"		VARCHAR(200),
 	"sha256_complete"	BYTEA NOT NULL,
 	"sha256_restricted"	BYTEA NOT NULL,
 	"asig_md5"			BYTEA NOT NULL,
@@ -34,25 +87,25 @@ CREATE TABLE "keylogs" (
 	"asig_sha256"		BYTEA NOT NULL,
 	"asig_datetime"		TIMESTAMP,
 	"asig_dataname"		VARCHAR(200),
-	"asig_key"			INTEGER,
+	"asig_keyid"		VARCHAR(200),
 	"asig_bytes" 		BYTEA NOT NULL,
-	"sha256"	BYTEA NOT NULL,
+	"sha256"			BYTEA NOT NULL,
 	"sig_md5"			BYTEA NOT NULL,
 	"sig_sha1"			BYTEA NOT NULL,
 	"sig_sha256"		BYTEA NOT NULL,
 	"sig_datetime"		TIMESTAMP,
 	"sig_dataname"		VARCHAR(200),
-	"sig_key"			INTEGER,
+	"sig_keyid"			VARCHAR(200),
 	"sig_bytes" 		BYTEA NOT NULL,
 	PRIMARY KEY(id),
-	FOREIGN KEY (asig_key) REFERENCES keys(id),
-	FOREIGN KEY (sig_key) REFERENCES keys(id)
+	FOREIGN KEY (asig_keyid) REFERENCES keys(keyid),
+	FOREIGN KEY (sig_keyid) REFERENCES keys(keyid)
 );;
 
 CREATE TABLE approval_token (
-	"id"				SERIAL,
+	"id"				BIGINT,
 	"token"				VARCHAR(200),
-	"keylog"			INTEGER,
+	"keylog"			BIGINT,
 	PRIMARY KEY(id),
 	FOREIGN KEY (keylog) REFERENCES keylogs(id)
 );;

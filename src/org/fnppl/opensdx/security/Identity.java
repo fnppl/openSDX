@@ -621,6 +621,7 @@ public class Identity {
 				new BASE64Encoder().encode(s,out);
 				photo = out.toString();
 				//System.out.println("photo: "+photo);
+				photoImage = null;
 			} catch (IOException e) {
 				photo = null;
 				e.printStackTrace();
@@ -642,6 +643,36 @@ public class Identity {
 		}
 		return false;
 	}
+	
+	public byte[] getPhotoBytes() {
+		if (photo==null) {
+			return null;
+		} else if (isActualPhotoRestricted() ){
+			try {
+				return RESTRICTED.getBytes("UTF-8");
+			} catch (Exception ex) {
+				return RESTRICTED.getBytes();	
+			}
+		}
+		try {
+			byte[] imagedata = new BASE64Decoder().decodeBuffer(photo);
+			return imagedata;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	} 
+	
+	public void setPhotoBytes(byte[] b) {
+		if (b==null) {
+			photo = null;
+			photoImage = null;	
+		} else {
+			photo = new BASE64Encoder().encode(b);
+			photoImage = null;
+		}
+	}
+	
 	public BufferedImage getPhoto() {
 		if (photo==null || photo.equals("")) {
 			photoImage = null;

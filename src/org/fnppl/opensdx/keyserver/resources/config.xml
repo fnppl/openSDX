@@ -62,13 +62,13 @@
       		<password></password> <!-- can, but should not be given in config -->
       		<smtp_host>smtp.fnppl.org</smtp_host>
       	</mail>
- <!--  
- 		<db>
+   
+ 	<!-- 	<db>
       		<name>jdbc:postgresql://localhost:5432/keyserverdb</name>
       		<user>keyserver</user>
       		<password>oo0oo_keyserverDBpassword_..Q..</password>
       	</db>
-  -->    	
+    -->	
 	</keyserver>
 	<rootsigningkey>
 		<keypair>
