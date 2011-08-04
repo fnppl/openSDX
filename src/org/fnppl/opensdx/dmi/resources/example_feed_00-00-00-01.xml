@@ -298,6 +298,42 @@
 					<phone publishable="false">+49 44 9191919</phone><!-- COULD international format -->
 			</www><!-- SHOULD further information on this ; every single information-entry cold be tagged *publishable* which would then mean wether customers of receiver are also allowed to be given this information ; if publishable is not given, then this is granted -->				
 			</contributor>
+			<contributor num="5">
+				<name></name><!-- could be compilator -->
+				<type>copyright</type><!-- e.g. vocals -->
+				<year>2005</year><!-- SHOULD for copyright/production -->
+				<ids>
+					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<own></own><!-- must be unique for that contributor/licensor -->
+					<your></your><!-- if given some kind of "your" id: thats it -->
+					<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
+				</ids>
+				<www>
+					<facebook></facebook>
+					<myspace></myspace>
+					<homepage></homepage>
+					<twitter></twitter>
+					<phone publishable="false">+49 44 9191919</phone><!-- COULD international format -->
+			</www><!-- SHOULD further information on this ; every single information-entry cold be tagged *publishable* which would then mean wether customers of receiver are also allowed to be given this information ; if publishable is not given, then this is granted -->				
+			</contributor>	
+			<contributor num="6">
+				<name></name><!-- could be compilator -->
+				<type>production</type><!-- e.g. vocals -->
+				<year>2004</year><!-- SHOULD for copyright/production -->
+				<ids>
+					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<own></own><!-- must be unique for that contributor/licensor -->
+					<your></your><!-- if given some kind of "your" id: thats it -->
+					<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
+				</ids>
+				<www>
+					<facebook></facebook>
+					<myspace></myspace>
+					<homepage></homepage>
+					<twitter></twitter>
+					<phone publishable="false">+49 44 9191919</phone><!-- COULD international format -->
+			</www><!-- SHOULD further information on this ; every single information-entry cold be tagged *publishable* which would then mean wether customers of receiver are also allowed to be given this information ; if publishable is not given, then this is granted -->				
+			</contributor>					
 			<!-- HT 14.02.2011 - could also have some "restrictions/conditions" on it - e.g. when an artist is different for some territory or such... -->
 		</contributors><!-- MUST the contributors are ordered from 1 to n - most significant ones (per type) are the ones with the smalles n -->
 		
