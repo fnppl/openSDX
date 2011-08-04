@@ -57,13 +57,13 @@ public class IDs extends BusinessObject {
 	private BusinessStringItem grid;				//COULD
 	private BusinessStringItem upc;					//COULD
 	private BusinessStringItem isrc;				//COULD
-	private BusinessStringItem contentauthid;		//COULD
+	private BusinessStringItem contentauth;			//COULD
 	private BusinessStringItem labelordernum;		//COULD
 	private BusinessStringItem amzn;				//COULD
 	private BusinessStringItem isbn;				//COULD
-	private BusinessStringItem finetunesid;			//COULD
-	private BusinessStringItem ourid;				//COULD
-	private BusinessStringItem yourid;				//COULD
+	private BusinessStringItem finetunes;			//COULD
+	private BusinessStringItem licensor;				//COULD
+	private BusinessStringItem licensee;				//COULD
 	private BusinessStringItem gvl;					//COULD
 
 
@@ -72,13 +72,13 @@ public class IDs extends BusinessObject {
 		ids.grid = null;
 		ids.upc = null;
 		ids.isrc = null;
-		ids.contentauthid = null;
+		ids.contentauth = null;
 		ids.labelordernum = null;
 		ids.amzn = null;
 		ids.isbn = null;
-		ids.finetunesid = null;
-		ids.ourid = null;
-		ids.yourid = null;
+		ids.finetunes = null;
+		ids.licensor = null;
+		ids.licensee = null;
 		ids.gvl = null;
 		return ids;
 	}
@@ -95,13 +95,13 @@ public class IDs extends BusinessObject {
 		ids.grid = BusinessStringItem.fromBusinessObject(bo, "grid");
 		ids.upc = BusinessStringItem.fromBusinessObject(bo, "upc");
 		ids.isrc = BusinessStringItem.fromBusinessObject(bo, "isrc");
-		ids.contentauthid = BusinessStringItem.fromBusinessObject(bo, "contentauthid");
+		ids.contentauth = BusinessStringItem.fromBusinessObject(bo, "contentauth");
 		ids.labelordernum = BusinessStringItem.fromBusinessObject(bo, "labelordernum");
 		ids.amzn = BusinessStringItem.fromBusinessObject(bo, "amzn");
 		ids.isbn = BusinessStringItem.fromBusinessObject(bo, "isbn");
-		ids.finetunesid = BusinessStringItem.fromBusinessObject(bo, "finetunesid");
-		ids.ourid = BusinessStringItem.fromBusinessObject(bo, "ourid");
-		ids.yourid = BusinessStringItem.fromBusinessObject(bo, "yourid");
+		ids.finetunes = BusinessStringItem.fromBusinessObject(bo, "finetunes");
+		ids.licensor = BusinessStringItem.fromBusinessObject(bo, "licensor");
+		ids.licensee = BusinessStringItem.fromBusinessObject(bo, "licensee");
 		ids.gvl = BusinessStringItem.fromBusinessObject(bo, "gvl");
 		
 		
@@ -126,9 +126,9 @@ public class IDs extends BusinessObject {
 		return this;
 	}
 
-	public IDs contentauthid(String contentauthid) {
-		if (contentauthid==null) this.contentauthid=null;
-		this.contentauthid = new BusinessStringItem("contentauthid", contentauthid);
+	public IDs contentauth(String contentauth) {
+		if (contentauth==null) this.contentauth=null;
+		this.contentauth = new BusinessStringItem("contentauth", contentauth);
 		return this;
 	}
 
@@ -150,20 +150,20 @@ public class IDs extends BusinessObject {
 		return this;
 	}
 
-	public IDs finetunesid(String finetunesid) {
-		this.finetunesid = new BusinessStringItem("finetunesid", finetunesid);
+	public IDs finetunes(String finetunes) {
+		this.finetunes = new BusinessStringItem("finetunes", finetunes);
 		return this;
 	}
 
-	public IDs ourid(String ourid) {
-		if (ourid==null) this.ourid=null;
-		this.ourid = new BusinessStringItem("ourid", ourid);
+	public IDs licensor(String licensor) {
+		if (licensor==null) this.licensor=null;
+		this.licensor = new BusinessStringItem("licensor", licensor);
 		return this;
 	}
 
-	public IDs yourid(String yourid) {
-		if (yourid==null) this.yourid=null;
-		this.yourid = new BusinessStringItem("yourid", yourid);
+	public IDs licensee(String licensee) {
+		if (licensee==null) this.licensee=null;
+		this.licensee = new BusinessStringItem("licensee", licensee);
 		return this;
 	}
 
@@ -189,9 +189,9 @@ public class IDs extends BusinessObject {
 		return isrc.getString();
 	}
 
-	public String getContentauthid() {
-		if (contentauthid==null) return null;
-		return contentauthid.getString();
+	public String getContentauth() {
+		if (contentauth==null) return null;
+		return contentauth.getString();
 	}
 
 	public String getLabelordernum() {
@@ -209,19 +209,19 @@ public class IDs extends BusinessObject {
 		return isbn.getString();
 	}
 
-	public String getFinetunesid() {
-		if (finetunesid==null) return null;
-		return finetunesid.getString();
+	public String getFinetunes() {
+		if (finetunes==null) return null;
+		return finetunes.getString();
 	}
 
-	public String getOurid() {
-		if (ourid==null) return null;
-		return ourid.getString();
+	public String getLicensor() {
+		if (licensor==null) return null;
+		return licensor.getString();
 	}
 
-	public String getYourid() {
-		if (yourid==null) return null;
-		return yourid.getString();
+	public String getLicensee() {
+		if (licensee==null) return null;
+		return licensee.getString();
 	}
 	
 	public String getGvl() {

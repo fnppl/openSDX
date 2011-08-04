@@ -125,9 +125,9 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 
     		// IDs
 			IDs bundleids = bundle.getIds();
-			if(bundleids.getFinetunesid()!=null && bundleids.getFinetunesid().length()>0) {
+			if(bundleids.getFinetunes()!=null && bundleids.getFinetunes().length()>0) {
 				Element id = new Element("id");
-				id.setAttribute("type", "finetunes").setText(bundleids.getFinetunesid());
+				id.setAttribute("type", "finetunes").setText(bundleids.getFinetunes());
 				release.addContent(id);
 			}
 			else if(bundleids.getUpc()!=null && bundleids.getUpc().length()>0) {
@@ -188,9 +188,9 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         				label.addContent("website", contributor.getWww().getHomepage());
         			
         			IDs labelids = contributor.getIDs();
-        			if(labelids.getFinetunesid()!=null && labelids.getFinetunesid().length()>0) {
+        			if(labelids.getFinetunes()!=null && labelids.getFinetunes().length()>0) {
         				Element id = new Element("id");
-        				id.setAttribute("type", "finetunes").setText(labelids.getFinetunesid());
+        				id.setAttribute("type", "finetunes").setText(labelids.getFinetunes());
         				label.addContent(id);
         			}
         			else if(labelids.getGvl()!=null && labelids.getGvl().length()>0) {
@@ -209,9 +209,9 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         				artist.addContent("website", contributor.getWww().getHomepage());
         			
         			IDs artistids = contributor.getIDs();
-        			if(artistids.getFinetunesid()!=null && artistids.getFinetunesid().length()>0) {
+        			if(artistids.getFinetunes()!=null && artistids.getFinetunes().length()>0) {
         				Element id = new Element("id");
-        				id.setAttribute("type", "finetunes").setText(artistids.getFinetunesid());
+        				id.setAttribute("type", "finetunes").setText(artistids.getFinetunes());
         				artist.addContent(id);
         			}
         			
@@ -358,9 +358,9 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         		
         		// Item IDs
     			IDs itemids = item.getIds();
-    			if(itemids.getFinetunesid()!=null && itemids.getFinetunesid().length()>0) {
+    			if(itemids.getFinetunes()!=null && itemids.getFinetunes().length()>0) {
     				Element id = new Element("id");
-    				id.setAttribute("type", "finetunes").setText(itemids.getFinetunesid());
+    				id.setAttribute("type", "finetunes").setText(itemids.getFinetunes());
     				track.addContent(id);
     			}
     			
@@ -440,9 +440,9 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
             				label.addContent("website", contributor.getWww().getHomepage());
             			
             			IDs labelids = contributor.getIDs();
-            			if(labelids.getFinetunesid()!=null && labelids.getFinetunesid().length()>0) {
+            			if(labelids.getFinetunes()!=null && labelids.getFinetunes().length()>0) {
             				Element id = new Element("id");
-            				id.setAttribute("type", "finetunes").setText(labelids.getFinetunesid());
+            				id.setAttribute("type", "finetunes").setText(labelids.getFinetunes());
             				label.addContent(id);
             			}
             			
@@ -462,9 +462,9 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
             				artist.addContent("website", contributor.getWww().getHomepage());
             			
             			IDs artistids = contributor.getIDs();
-            			if(artistids.getFinetunesid()!=null && artistids.getFinetunesid().length()>0) {
+            			if(artistids.getFinetunes()!=null && artistids.getFinetunes().length()>0) {
             				Element id = new Element("id");
-            				id.setAttribute("type", "finetunes").setText(artistids.getFinetunesid());
+            				id.setAttribute("type", "finetunes").setText(artistids.getFinetunes());
             				artist.addContent(id);
             			}
             			

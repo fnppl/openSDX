@@ -80,20 +80,20 @@ public class PanelIDs extends JPanel implements MyObservable {
 	private JTextField text_upc;
 	private JLabel label_isrc;
 	private JTextField text_isrc;
-	private JLabel label_contentauthid;
-	private JTextField text_contentauthid;
+	private JLabel label_contentauth;
+	private JTextField text_contentauth;
 	private JLabel label_labelordernum;
 	private JTextField text_labelordernum;
 	private JLabel label_amazon;
 	private JTextField text_amazon;
 	private JLabel label_isbn;
 	private JTextField text_isbn;
-	private JLabel label_finetunesid;
-	private JTextField text_finetunesid;
-	private JLabel label_ourid;
-	private JTextField text_ourid;
-	private JLabel label_yourid;
-	private JTextField text_yourid;
+	private JLabel label_finetunes;
+	private JTextField text_finetunes;
+	private JLabel label_licensor;
+	private JTextField text_licensor;
+	private JLabel label_licensee;
+	private JTextField text_licensee;
 	private JLabel label_filler;
 	private Vector<JTextComponent> texts = new Vector<JTextComponent>();
 	private Vector<JLabel> labels = new Vector<JLabel>();
@@ -102,7 +102,7 @@ public class PanelIDs extends JPanel implements MyObservable {
 		this.ids = ids;
 		initKeyAdapter();
 		initComponents();
-		text_ourid.setPreferredSize(new Dimension(150,(int)text_ourid.getPreferredSize().getHeight()));
+		text_licensor.setPreferredSize(new Dimension(150,(int)text_licensor.getPreferredSize().getHeight()));
 		initLayout();
 	}
 
@@ -131,25 +131,25 @@ public class PanelIDs extends JPanel implements MyObservable {
 			text_grid.setText("");
 			text_upc.setText("");
 			text_isrc.setText("");
-			text_contentauthid.setText("");
+			text_contentauth.setText("");
 			text_labelordernum.setText("");
 			text_amazon.setText("");
 			text_isbn.setText("");
-			text_finetunesid.setText("");
-			text_ourid.setText("");
-			text_yourid.setText("");
+			text_finetunes.setText("");
+			text_licensor.setText("");
+			text_licensee.setText("");
 		} else {
 			text_gvl.setText(ids.getGvl());
 			text_grid.setText(ids.getGrid());
 			text_upc.setText(ids.getUpc());
 			text_isrc.setText(ids.getIsrc());
-			text_contentauthid.setText(ids.getContentauthid());
+			text_contentauth.setText(ids.getContentauth());
 			text_labelordernum.setText(ids.getLabelordernum());
 			text_amazon.setText(ids.getAmzn());
 			text_isbn.setText(ids.getIsbn());
-			text_finetunesid.setText(ids.getFinetunesid());
-			text_ourid.setText(ids.getOurid());
-			text_yourid.setText(ids.getYourid());
+			text_finetunes.setText(ids.getFinetunes());
+			text_licensor.setText(ids.getLicensor());
+			text_licensee.setText(ids.getLicensee());
 		}
 		documentListener.saveStates();
 	}
@@ -225,14 +225,14 @@ public class PanelIDs extends JPanel implements MyObservable {
 		map.put("text_isrc", text_isrc);
 		texts.add(text_isrc);
 
-		label_contentauthid = new JLabel("Content Auth ID");
-		label_contentauthid.setName("label_contentauthid");
-		labels.add(label_contentauthid);
-		text_contentauthid = new JTextField("");
+		label_contentauth = new JLabel("Content Auth");
+		label_contentauth.setName("label_contentauth");
+		labels.add(label_contentauth);
+		text_contentauth = new JTextField("");
 
-		text_contentauthid.setName("text_contentauthid");
-		map.put("text_contentauthid", text_contentauthid);
-		texts.add(text_contentauthid);
+		text_contentauth.setName("text_contentauth");
+		map.put("text_contentauth", text_contentauth);
+		texts.add(text_contentauth);
 
 		label_labelordernum = new JLabel("Label Order Num");
 		label_labelordernum.setName("label_labelordernum");
@@ -262,32 +262,32 @@ public class PanelIDs extends JPanel implements MyObservable {
 		map.put("text_isbn", text_isbn);
 		texts.add(text_isbn);
 
-		label_finetunesid = new JLabel("finetunes ID");
-		label_finetunesid.setName("label_finetunesid");
-		labels.add(label_finetunesid);
-		text_finetunesid = new JTextField("");
+		label_finetunes = new JLabel("finetunes");
+		label_finetunes.setName("label_finetunes");
+		labels.add(label_finetunes);
+		text_finetunes = new JTextField("");
 
-		text_finetunesid.setName("text_finetunesid");
-		map.put("text_finetunesid", text_finetunesid);
-		texts.add(text_finetunesid);
+		text_finetunes.setName("text_finetunes");
+		map.put("text_finetunes", text_finetunes);
+		texts.add(text_finetunes);
 
-		label_ourid = new JLabel("Our ID");
-		label_ourid.setName("label_ourid");
-		labels.add(label_ourid);
-		text_ourid = new JTextField("");
+		label_licensor = new JLabel("Licensor");
+		label_licensor.setName("label_licensor");
+		labels.add(label_licensor);
+		text_licensor = new JTextField("");
 
-		text_ourid.setName("text_ourid");
-		map.put("text_ourid", text_ourid);
-		texts.add(text_ourid);
+		text_licensor.setName("text_licensor");
+		map.put("text_licensor", text_licensor);
+		texts.add(text_licensor);
 
-		label_yourid = new JLabel("Your ID");
-		label_yourid.setName("label_yourid");
-		labels.add(label_yourid);
-		text_yourid = new JTextField("");
+		label_licensee = new JLabel("Licensee");
+		label_licensee.setName("label_licensee");
+		labels.add(label_licensee);
+		text_licensee = new JTextField("");
 
-		text_yourid.setName("text_yourid");
-		map.put("text_yourid", text_yourid);
-		texts.add(text_yourid);
+		text_licensee.setName("text_licensee");
+		map.put("text_licensee", text_licensee);
+		texts.add(text_licensee);
 
 		label_filler = new JLabel("");
 
@@ -455,7 +455,7 @@ public void initLayout() {
 	gbl.setConstraints(text_isrc,gbc);
 	add(text_isrc);
 
-	// Component: label_contentauthid
+	// Component: label_contentauth
 	gbc.gridx = 0;
 	gbc.gridy = 4;
 	gbc.gridwidth = 1;
@@ -467,10 +467,10 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_contentauthid,gbc);
-	add(label_contentauthid);
+	gbl.setConstraints(label_contentauth,gbc);
+	add(label_contentauth);
 
-	// Component: text_contentauthid
+	// Component: text_contentauth
 	gbc.gridx = 1;
 	gbc.gridy = 4;
 	gbc.gridwidth = 1;
@@ -482,8 +482,8 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_contentauthid,gbc);
-	add(text_contentauthid);
+	gbl.setConstraints(text_contentauth,gbc);
+	add(text_contentauth);
 
 	// Component: label_labelordernum
 	gbc.gridx = 0;
@@ -575,7 +575,7 @@ public void initLayout() {
 	gbl.setConstraints(text_isbn,gbc);
 	add(text_isbn);
 
-	// Component: label_finetunesid
+	// Component: label_finetunes
 	gbc.gridx = 0;
 	gbc.gridy = 8;
 	gbc.gridwidth = 1;
@@ -587,10 +587,10 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_finetunesid,gbc);
-	add(label_finetunesid);
+	gbl.setConstraints(label_finetunes,gbc);
+	add(label_finetunes);
 
-	// Component: text_finetunesid
+	// Component: text_finetunes
 	gbc.gridx = 1;
 	gbc.gridy = 8;
 	gbc.gridwidth = 1;
@@ -602,10 +602,10 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_finetunesid,gbc);
-	add(text_finetunesid);
+	gbl.setConstraints(text_finetunes,gbc);
+	add(text_finetunes);
 
-	// Component: label_ourid
+	// Component: label_licensor
 	gbc.gridx = 0;
 	gbc.gridy = 9;
 	gbc.gridwidth = 1;
@@ -617,10 +617,10 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_ourid,gbc);
-	add(label_ourid);
+	gbl.setConstraints(label_licensor,gbc);
+	add(label_licensor);
 
-	// Component: text_ourid
+	// Component: text_licensor
 	gbc.gridx = 1;
 	gbc.gridy = 9;
 	gbc.gridwidth = 1;
@@ -632,10 +632,10 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_ourid,gbc);
-	add(text_ourid);
+	gbl.setConstraints(text_licensor,gbc);
+	add(text_licensor);
 
-	// Component: label_yourid
+	// Component: label_licensee
 	gbc.gridx = 0;
 	gbc.gridy = 10;
 	gbc.gridwidth = 1;
@@ -647,10 +647,10 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_yourid,gbc);
-	add(label_yourid);
+	gbl.setConstraints(label_licensee,gbc);
+	add(label_licensee);
 
-	// Component: text_yourid
+	// Component: text_licensee
 	gbc.gridx = 1;
 	gbc.gridy = 10;
 	gbc.gridwidth = 1;
@@ -662,8 +662,8 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_yourid,gbc);
-	add(text_yourid);
+	gbl.setConstraints(text_licensee,gbc);
+	add(text_licensee);
 
 	// Component: label_filler
 	gbc.gridx = 0;
@@ -698,8 +698,8 @@ public void initLayout() {
 		else if (text == text_isrc) {
 			ids.isrc(t);
 		}
-		else if (text == text_contentauthid) {
-			ids.contentauthid(t);
+		else if (text == text_contentauth) {
+			ids.contentauth(t);
 		}
 		else if (text == text_labelordernum) {
 			ids.labelordernum(t);
@@ -710,14 +710,14 @@ public void initLayout() {
 		else if (text == text_isbn) {
 			ids.isbn(t);
 		}
-		else if (text == text_finetunesid) {
-			ids.finetunesid(t);
+		else if (text == text_finetunes) {
+			ids.finetunes(t);
 		}
-		else if (text == text_ourid) {
-			ids.ourid(t);
+		else if (text == text_licensor) {
+			ids.licensor(t);
 		}
-		else if (text == text_yourid) {
-			ids.yourid(t);
+		else if (text == text_licensee) {
+			ids.licensee(t);
 		}
 		notifyChanges();
 	}

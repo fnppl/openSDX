@@ -145,8 +145,8 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	// version
 	        	String version = release.getChildText("version");
 	        	
-	        	// display_artist
-	        	String display_artist = "";
+	        	// display_artistname
+	        	String display_artistname = "";
 	        	
 	        	// contributors label/artists/...
 	        	Element label = release.getChild("label");
@@ -213,7 +213,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	LicenseSpecifics license_specifics = LicenseSpecifics.make();
 	        	
 	        	// create bundle with gathered information
-	        	Bundle bundle = Bundle.make(bundleids, displayname, name, version, display_artist, info, license_basis, license_specifics);
+	        	Bundle bundle = Bundle.make(bundleids, displayname, name, version, display_artistname, info, license_basis, license_specifics);
 	        	
 	        	// copyright
 	        	String copyright = release.getChildTextNN("copyrightinfo");
@@ -244,7 +244,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	                contributor = Contributor.make(artist.getChildText("name"), getRole(role), ids); 
 	                
 	                if(role.equals("performer")) {
-	                	display_artist = artist.getChildText("name");
+	                	display_artistname = artist.getChildText("name");
 	            	}
 	            	
 	            	contributor.www(InfoWWW.make().homepage(label.getChildText("website")));
@@ -367,8 +367,8 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        	// version
 		        	String track_version = track.getChildText("version");
 		        	
-		        	// display_artist
-		        	String track_display_artist = "";
+		        	// display_artistname
+		        	String track_display_artistname = "";
 		        	
 		        	// contributors label/artists/...
 		        	Element track_label = track.getChild("label");
@@ -408,7 +408,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make(); 
 		        	
 	        		// license_basis of Bundle / license_specifics of Bundle / others (?)
-		        	Item item = Item.make(track_labelids, track_displayname, track_name, track_version, "audio", track_display_artist, track_info, track_license_basis, track_license_specifics);
+		        	Item item = Item.make(track_labelids, track_displayname, track_name, track_version, "audio", track_display_artistname, track_info, track_license_basis, track_license_specifics);
 		        	
 		        	// add IDs
 		        	item.ids(trackids);
@@ -540,8 +540,8 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        		IDs track_artist_ids = getIDs(track_artist_vecIds);
 		            	
 		            	String track_artists_role = track_artist.getChildTextNN("role");
-		            	// "performer" -> display_artist
-		            	if(track_artists_role.equals("performer")) item.display_artist(track_artist.getChildTextNN("name"));
+		            	// "performer" -> display_artistname
+		            	if(track_artists_role.equals("performer")) item.display_artistname(track_artist.getChildTextNN("name"));
 		            	
 		            	track_contributor = Contributor.make(track_artist.getChildTextNN("name"), getRole(track_artists_role), track_artist_ids);       	
 		            	
@@ -577,7 +577,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
     		Element id = itIDs.next();
     		String idType = id.getAttribute("type");
     		if(idType.equals("finetunes")) {
-    			ids.finetunesid(id.getText());
+    			ids.finetunes(id.getText());
     		}
     		else if(idType.equals("ean")) {
     			ids.upc(id.getText());

@@ -105,7 +105,7 @@ public class PanelItemBasics extends JPanel implements MyObservable {
 			text_displayname.setText(item.getDisplayname());
 			text_version.setText(item.getVersion());
 			text_name.setText(item.getName());
-			text_displayartist.setText(item.getDisplay_artist());
+			text_displayartist.setText(item.getDisplay_artistname());
 			select_type.setSelectedItem(item.getType());
 		}
 		documentListener.saveStates();
@@ -413,7 +413,7 @@ public class PanelItemBasics extends JPanel implements MyObservable {
 			item.name(t);
 		}
 		else if (text == text_displayartist) {
-			item.display_artist(t);
+			item.display_artistname(t);
 		}
 		notifyChanges();
 	}

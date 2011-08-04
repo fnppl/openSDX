@@ -185,7 +185,7 @@ public class FeedCreator {
 		= Bundle.make(
 			IDs.make()
 				.amzn("amazon")
-				.finetunesid("fineid")
+				.finetunes("fineid")
 				.upc("a2312")
 			,
 			"displayname",
@@ -206,8 +206,8 @@ public class FeedCreator {
 						.youtube_url("my.youtube.url")
 						.youtube_url("my.youtube.channel")
 						.addRelatedBundleIDs(IDs.make()
-								.ourid("our id")
-								.yourid("your id")
+								.licensor("our id")
+								.licensee("your id")
 						)
 				)
 			,

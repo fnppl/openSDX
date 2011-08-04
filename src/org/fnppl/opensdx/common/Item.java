@@ -57,7 +57,7 @@ public class Item extends BusinessObject {
 	private BusinessStringItem name;						//MUST
 	private BusinessStringItem version;						//MUST
 	private BusinessStringItem type;						//MUST
-	private BusinessStringItem display_artist;				//SHOULD
+	private BusinessStringItem display_artistname;				//SHOULD
 	private IDs ids;										//MUST
 	private BusinessCollection<Contributor> contributors;	//MUST
 	private BundleInformation information;					//MUST
@@ -72,14 +72,14 @@ public class Item extends BusinessObject {
 		
 	}
 	
-	public static Item make(IDs ids, String displayname, String name, String version, String type, String display_artist, BundleInformation information, LicenseBasis license_basis, LicenseSpecifics license_specifics) {
+	public static Item make(IDs ids, String displayname, String name, String version, String type, String display_artistname, BundleInformation information, LicenseBasis license_basis, LicenseSpecifics license_specifics) {
 		Item item = new Item();
 		item.ids = ids;
 		item.displayname = new BusinessStringItem("displayname", displayname);
 		item.name = new BusinessStringItem("name", name);
 		item.version = new BusinessStringItem("version", version);
 		item.type = new BusinessStringItem("type", type);
-		item.display_artist = new BusinessStringItem("display_artist", display_artist);
+		item.display_artistname = new BusinessStringItem("display_artistname", display_artistname);
 		item.contributors = new BusinessCollection<Contributor>() {
 			public String getKeyname() {
 				return "contributors";
@@ -107,7 +107,7 @@ public class Item extends BusinessObject {
 		item.name = BusinessStringItem.fromBusinessObject(bo, "name");
 		item.version = BusinessStringItem.fromBusinessObject(bo, "version");
 		item.type = BusinessStringItem.fromBusinessObject(bo, "type");
-		item.display_artist = BusinessStringItem.fromBusinessObject(bo, "display_artist");
+		item.display_artistname = BusinessStringItem.fromBusinessObject(bo, "display_artistname");
 		item.contributors =  new BusinessCollection<Contributor>() {
 			public String getKeyname() {
 				return "contributors";
@@ -195,8 +195,8 @@ public class Item extends BusinessObject {
 		return this;
 	}
 
-	public Item display_artist(String display_artist) {
-		this.display_artist = new BusinessStringItem("display_artist", display_artist);
+	public Item display_artistname(String display_artistname) {
+		this.display_artistname = new BusinessStringItem("display_artistname", display_artistname);
 		return this;
 	}
 
@@ -240,9 +240,9 @@ public class Item extends BusinessObject {
 		return type.getString();
 	}
 
-	public String getDisplay_artist() {
-		if (display_artist==null) return null;
-		return display_artist.getString();
+	public String getDisplay_artistname() {
+		if (display_artistname==null) return null;
+		return display_artistname.getString();
 	}
 
 	public Contributor getContributor(int index) {

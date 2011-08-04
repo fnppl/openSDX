@@ -58,7 +58,7 @@ public class Bundle extends BusinessObject {
 	private BusinessStringItem displayname;					//MUST
 	private BusinessStringItem name;						//MUST
 	private BusinessStringItem version;						//MUST
-	private BusinessStringItem display_artist;				//SHOULD
+	private BusinessStringItem display_artistname;				//SHOULD
 	private BusinessCollection<Contributor> contributors;	//MUST
 	private BundleInformation information;					//MUST
 	private LicenseBasis license_basis;						//MUST
@@ -67,13 +67,13 @@ public class Bundle extends BusinessObject {
 	private BusinessCollection<Item> items;					//SHOULD
 	private BusinessCollection<ItemFile> files;	 			//COULD
 
-	public static Bundle make(IDs ids, String displayname, String name, String version, String display_artist, BundleInformation information, LicenseBasis license_basis, LicenseSpecifics license_specifics) {
+	public static Bundle make(IDs ids, String displayname, String name, String version, String display_artistname, BundleInformation information, LicenseBasis license_basis, LicenseSpecifics license_specifics) {
 		Bundle bundle = new Bundle();
 		bundle.ids = ids;
 		bundle.displayname = new BusinessStringItem("displayname", displayname);
 		bundle.name = new BusinessStringItem("name", name);
 		bundle.version = new BusinessStringItem("version", version);
-		bundle.display_artist = new BusinessStringItem("display_artist", display_artist);
+		bundle.display_artistname = new BusinessStringItem("display_artistname", display_artistname);
 		bundle.contributors = new BusinessCollection<Contributor>() {
 			public String getKeyname() {
 				return "contributors";
@@ -106,7 +106,7 @@ public class Bundle extends BusinessObject {
 		bundle.displayname = BusinessStringItem.fromBusinessObject(bo, "displayname");
 		bundle.name = BusinessStringItem.fromBusinessObject(bo, "name");
 		bundle.version = BusinessStringItem.fromBusinessObject(bo, "version");
-		bundle.display_artist = BusinessStringItem.fromBusinessObject(bo, "display_artist");
+		bundle.display_artistname = BusinessStringItem.fromBusinessObject(bo, "display_artistname");
 		bundle.contributors =  new BusinessCollection<Contributor>() {
 			public String getKeyname() {
 				return "contributors";
@@ -309,8 +309,8 @@ public class Bundle extends BusinessObject {
 		return this;
 	}
 
-	public Bundle display_artist(String display_artist) {
-		this.display_artist = new BusinessStringItem("display_artist", display_artist);
+	public Bundle display_artistname(String display_artistname) {
+		this.display_artistname = new BusinessStringItem("display_artistname", display_artistname);
 		return this;
 	}
 
@@ -349,9 +349,9 @@ public class Bundle extends BusinessObject {
 		return version.getString();
 	}
 
-	public String getDisplay_artist() {
-		if (display_artist==null) return null;
-		return display_artist.getString();
+	public String getDisplay_artistname() {
+		if (display_artistname==null) return null;
+		return display_artistname.getString();
 	}
 
 	public Contributor getContributor(int index) {

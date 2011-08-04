@@ -489,7 +489,7 @@
 				<name></name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
 				<version></version><!-- MUST version if different versions of this bundle exist - can be empty -->
 				<type>audio</type><!-- MUST ; audio, video, android-app, win32-program, whatever -->
-				<display_artist>Artist</display_artist>
+				<display_artistname>Artist</display_artistname>
 				<ids>
 					<grid></grid><!-- COULD grid -->
 					<isrc></isrc><!-- SHOULD isrc - not applicable on bundle-level, but for -->

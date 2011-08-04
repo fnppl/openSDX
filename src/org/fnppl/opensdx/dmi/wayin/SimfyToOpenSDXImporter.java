@@ -147,8 +147,8 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	// displayname
         	String displayname = root.getChildTextNN("title");
         	
-        	// display_artist
-        	String display_artist = root.getChildTextNN("artist_name");
+        	// display_artistname
+        	String display_artistname = root.getChildTextNN("artist_name");
         	
         	// license basis
         	Territorial territorial = Territorial.make();
@@ -161,7 +161,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	
         	
         	
-        	Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artist, info, license_basis, license_specifics);
+        	Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artistname, info, license_basis, license_specifics);
         	
         	// add Tags
         	ItemTags tags = ItemTags.make();   		
@@ -243,8 +243,8 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	        	// displayname
 	        	String track_displayname = track.getChildTextNN("title");  
 	        	
-	        	// display_artist
-	        	String track_display_artist = track.getChildTextNN("artist_name");
+	        	// display_artistname
+	        	String track_display_artistname = track.getChildTextNN("artist_name");
 	        	
 	        	BundleInformation track_info = BundleInformation.make(srd, prd);		        	
 	        	
@@ -298,7 +298,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make();         	
 	        	
         		// license_basis of Bundle / license_specifics of Bundle / others (?)
-	        	Item item = Item.make(trackids, track_displayname, track_displayname, "", "audio", track_display_artist, track_info, track_license_basis, track_license_specifics);
+	        	Item item = Item.make(trackids, track_displayname, track_displayname, "", "audio", track_display_artistname, track_info, track_license_basis, track_license_specifics);
 	        	            	
         		// add contributor
         		Contributor track_contributor = Contributor.make(track.getChildTextNN("artist_name"), Contributor.TYPE_DISPLAY_ARTIST, IDs.make());

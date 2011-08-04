@@ -101,7 +101,7 @@ public class PanelBundleBasics extends JPanel implements MyObservable {
 			text_displayname.setText(bundle.getDisplayname());
 			text_version.setText(bundle.getVersion());
 			text_name.setText(bundle.getName());
-			text_displayartist.setText(bundle.getDisplay_artist());
+			text_displayartist.setText(bundle.getDisplay_artistname());
 		}
 		documentListener.saveStates();
 	}
@@ -351,7 +351,7 @@ public class PanelBundleBasics extends JPanel implements MyObservable {
 			bundle.name(t);
 		}
 		else if (text == text_displayartist) {
-			bundle.display_artist(t);
+			bundle.display_artistname(t);
 		}
 		notifyChanges();
 	}

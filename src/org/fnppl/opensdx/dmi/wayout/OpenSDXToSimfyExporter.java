@@ -231,8 +231,8 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
         				track.addContent("title", item.getDisplayname());
 
     	        	// display_artist
-        			if(bundle.getItem(j).getDisplay_artist()!=null)
-        				track.addContent("artist_name", item.getDisplay_artist());
+        			if(bundle.getItem(j).getDisplay_artistname()!=null)
+        				track.addContent("artist_name", item.getDisplay_artistname());
         			
     	        	// duration
        				track.addContent("duration", ""+item.getInformation().getPlaylength());
