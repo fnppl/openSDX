@@ -212,13 +212,13 @@
 			<grid></grid><!-- COULD grid -->
 			<upc></upc><!-- SHOULD ean/upc -->
 			<isrc></isrc><!-- SHOULD isrc - not applicable on bundle-level, but for  -->
-			<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->
+			<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
 			<labelordernum></labelordernum><!-- COULD -->
 			<amzn></amzn><!-- COULD ; amazon-id-stuff -->
 			<isbn></isbn><!-- COULD -->
-			<finetunesid></finetunesid><!-- COULD -->
-			<ourid>ourid</ourid><!-- COULD -->
-			<yourid></yourid><!-- COULD -->
+			<finetunes></finetunes><!-- COULD -->
+			<licensor>ourid</licensor><!-- COULD -->
+			<licensee></licensee><!-- COULD -->
 		</ids><!-- MUST -->
 		<displayname></displayname><!-- MUST this is how this should be displayed in pos -->
 		<name></name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
@@ -231,10 +231,10 @@
 				<year></year><!-- SHOULD for copyright/production -->
 				<ids>
 					<gvl></gvl><!-- gvl -->
-					<finetunesid></finetunesid><!-- finetunes-strange-id -->
-					<ourid></ourid><!-- must be unique for that contributor/sender/licensor -->
-					<yourid></yourid><!-- if given some kind of "your" id: thats it -->
-					<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->
+					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<licensor></licensor><!-- must be unique for that contributor/sender/licensor -->
+					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
+					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
 				</ids><!-- MUST -->
 				<www>
 					<facebook></facebook>
@@ -250,9 +250,9 @@
 				<year></year><!-- SHOULD for copyright/production -->
 				<ids>
 					<finetunes></finetunes><!-- finetunes-strange-id -->
-					<own></own><!-- must be unique for that contributor/licensor -->
-					<your></your><!-- if given some kind of "your" id: thats it -->					
-					<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->
+					<licensor></licensor><!-- must be unique for that contributor/licensor -->
+					<licensee></licensee><!-- if given some kind of "your" id: thats it -->					
+					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
 				</ids>
 				<www>
 					<facebook></facebook>
@@ -268,9 +268,9 @@
 				<year></year><!-- SHOULD for copyright/production -->
 				<ids>
 					<finetunes></finetunes><!-- finetunes-strange-id -->
-					<own></own><!-- must be unique for that contributor/licensor -->
-					<your></your><!-- if given some kind of "your" id: thats it -->					
-					<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->
+					<licensor></licensor><!-- must be unique for that contributor/licensor -->
+					<licensee></licensee><!-- if given some kind of "your" id: thats it -->					
+					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
 				</ids>
 				<www>
 					<facebook></facebook>
@@ -286,9 +286,9 @@
 				<year></year><!-- SHOULD for copyright/production -->
 				<ids>
 					<finetunes></finetunes><!-- finetunes-strange-id -->
-					<own></own><!-- must be unique for that contributor/licensor -->
-					<your></your><!-- if given some kind of "your" id: thats it -->
-					<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
+					<licensor></licensor><!-- must be unique for that contributor/licensor -->
+					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
+					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
 				</ids>
 				<www>
 					<facebook></facebook>
@@ -357,7 +357,7 @@
 				<from>1960-02-13 00:00:00 GMT+01:00</from><!-- MUST ; most-recent-release-date from which on receiver may use this -->
 				<to>2050-02-13 23:59:59 GMT+01:00</to><!-- MUST ; cancellation-date -->
 			</timeframe>
-			
+						
 			<pricing>
 				<pricecode>MEDIUM</pricecode><!-- COULD ; arbitrary-info ; mainly agreed in  -->
 				<wholesale>EUR 9.99</wholesale><!-- COULD ; an explicitly given wholesale-price overrides the basic pricecode-given-wp ; most probably either one of pricecode OR wholesaleprice should be given -->
@@ -373,7 +373,7 @@
 			<!-- all territories here MUST be given in *basis* -->
 			<!-- all times here MUST be included in the basis-timeframe -->
 			<!-- HT 14.02.2011 - using some *basic-if-then-else*-style here because of clarity and easy implemenation-possibility -->
-			<rule_1><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
+			<rule num="1"><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
 				<if>
 					<what>territory</what>
 					<operator>containedin</operator><!-- equals/before/after/contains/containedin -->
@@ -394,9 +394,9 @@
 					</proclaim>
 					<break />
 				</else>
-			</rule_1><!-- numbered since we need an ordered mode here - first come first match -->
+			</rule><!-- numbered since we need an ordered mode here - first come first match -->
 			
-			<rule_2><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
+			<rule num="2"><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
 				<if>
 					<what>territory</what><!-- *field* -->
 					<operator>equals</operator><!-- equals/before/after/contains/containedin -->
@@ -405,7 +405,7 @@
 				<then>
 					<echo>YOU CANNOT EVEN REACH ME - since RULE1 breaks and DE is in EU</echo>					
 				</then>				
-			</rule_2>
+			</rule>
 		</license_specifics><!-- MUST ; if no specific rules should be applied: empty node -->
 		
 		<reporting>
@@ -458,7 +458,7 @@
 				<ids>
 					<grid></grid><!-- COULD grid -->
 					<isrc></isrc><!-- SHOULD isrc - not applicable on bundle-level, but for -->
-					<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com -->
+					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com -->
 					<finetunes></finetunes><!-- strange finetunes id -->
 				</ids><!-- MUST -->
 				<fingerprint>
@@ -471,9 +471,9 @@
 						<year></year><!-- SHOULD for copyright/production -->
 						<ids>
 							<finetunes></finetunes><!-- finetunes-strange-id -->
-							<own></own><!-- must be unique for that contributor/licensor -->
-							<your></your><!-- if given some kind of "your" id: thats it -->					
-							<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->
+							<licensor></licensor><!-- must be unique for that contributor/licensor -->
+							<licensee></licensee><!-- if given some kind of "your" id: thats it -->					
+							<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
 						</ids>
 						<www>
 							<facebook></facebook>
