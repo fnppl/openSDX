@@ -178,10 +178,26 @@ public class Util {
         return text.toString();
     }
     
-    public static void saveTextToFile(String text, String dateiname) {
+//    public static void saveTextToFile(String text, String dateiname) {
+//        try {
+//            BufferedWriter out = new BufferedWriter(new FileWriter(dateiname));
+//            out.write(text);
+//            out.close();
+//        } catch (IOException ioe) { System.err.println(ioe.toString());}
+//    }
+    
+    public static void saveTextToFile(String text, File file) {
         try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(dateiname));
+            BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write(text);
+            out.close();
+        } catch (IOException ioe) { System.err.println(ioe.toString());}
+    }
+    
+    public static void saveBytesToFile(byte[] data, File f) {
+        try {
+        	FileOutputStream out = new FileOutputStream(f);
+            out.write(data);
             out.close();
         } catch (IOException ioe) { System.err.println(ioe.toString());}
     }

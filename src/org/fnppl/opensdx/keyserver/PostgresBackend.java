@@ -56,10 +56,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Vector;
 
+import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.keyserver.helper.IdGenerator;
+import org.fnppl.opensdx.keyserver.helper.SQLStatement;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.KeyLog;
@@ -78,19 +81,35 @@ public class PostgresBackend implements KeyServerBackend {
 	private String DB_DRIVER = "org.postgresql.Driver";
 	
 	public Connection con;
-
+	private File data_path = null;
+	
 	private PostgresBackend() {
 		con = null;
+		
 		//Load DB_Driver
 		try {
 			Class.forName(DB_DRIVER);
 		} catch (Exception e) {}
 	}
 	
-	public static PostgresBackend init(String user, String pw, String dbname) {
+	public static PostgresBackend init(String user, String pw, String dbname, File data_path) {
 		PostgresBackend be = new PostgresBackend();
+		if (data_path==null) {
+			be.data_path = new File(System.getProperty("user.home")+File.separator+"db_data");
+		} else {
+			be.data_path = data_path;
+		}
 		be.connect(user, pw, dbname);
 		return be;
+	}
+	
+	private File getFileFromID(long id, String ending) {
+		String name = ""+id;
+		if (name.length()>3) {
+			name = name.substring(0,name.length()-3)+File.separator+name;
+		}
+		if (ending!=null) name += ending;
+		return new File(data_path, name);
 	}
 	
 	public void addKeysAndLogsFromKeyStore(String filename) {
@@ -101,10 +120,10 @@ public class PostgresBackend implements KeyServerBackend {
 			for (OSDXKey key : keys) {
 				addKey(key);
 			}
-//			Vector<KeyLog> logs =store.getKeyLogs();
-//			for (KeyLog log : logs) {
-//				addKeyLog(log);
-//			}
+			Vector<KeyLog> logs =store.getKeyLogs();
+			for (KeyLog log : logs) {
+				addKeyLog(log);
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -113,14 +132,16 @@ public class PostgresBackend implements KeyServerBackend {
 	public boolean hasKey(String keyid) {
 		boolean has = false;
 		try {
-			PreparedStatement sql = con.prepareStatement("SELECT keyid FROM keys WHERE keyid=?");
+			SQLStatement sql = new SQLStatement("SELECT keyid FROM keys WHERE keyid=?");
 			sql.setString(1, keyid);
-			ResultSet rs = sql.executeQuery();
+			
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
 			if (rs.next()) {
 				has = true;
 			}
 			rs.close();
-			sql.close();
+			stmt.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -165,6 +186,36 @@ public class PostgresBackend implements KeyServerBackend {
         } catch (Exception ex) {
         	ex.printStackTrace();
         }
+        
+//        CREATE TABLE "keylogs" (
+//        		"id"				BIGINT,
+//        		"ipv4"				VARCHAR(15),
+//        		"ipv6"				VARCHAR(100),
+//        		"keyid_to" 			VARCHAR(200),
+//        		"action"			VARCHAR(30),
+//        		"action_id"			BIGINT,
+//        		"action_msg"		VARCHAR(200),
+//        		"sha256_complete"	BYTEA NOT NULL,
+//        		"sha256_restricted"	BYTEA NOT NULL,
+//        		"asig_md5"			BYTEA NOT NULL,
+//        		"asig_sha1"			BYTEA NOT NULL,
+//        		"asig_sha256"		BYTEA NOT NULL,
+//        		"asig_datetime"		TIMESTAMP,
+//        		"asig_dataname"		VARCHAR(200),
+//        		"asig_keyid"		VARCHAR(200),
+//        		"asig_bytes" 		BYTEA NOT NULL,
+//        		"sha256"			BYTEA NOT NULL,
+//        		"sig_md5"			BYTEA NOT NULL,
+//        		"sig_sha1"			BYTEA NOT NULL,
+//        		"sig_sha256"		BYTEA NOT NULL,
+//        		"sig_datetime"		TIMESTAMP,
+//        		"sig_dataname"		VARCHAR(200),
+//        		"sig_keyid"			VARCHAR(200),
+//        		"sig_bytes" 		BYTEA NOT NULL,
+//        		PRIMARY KEY(id),
+//        		FOREIGN KEY (asig_keyid) REFERENCES keys(keyid),
+//        		FOREIGN KEY (sig_keyid) REFERENCES keys(keyid)
+//        	);;
 	}
 	
 	public void connect(String user, String pw, String dbname) {
@@ -189,7 +240,7 @@ public class PostgresBackend implements KeyServerBackend {
 		if (hasKey(key.getKeyID())) return;
 		
 		try {
-			PreparedStatement sql = con.prepareStatement("INSERT INTO keys (keyid, level, usage, valid_from, valid_until, algo, bits, modulus, exponent, parentkeyid) VALUES (?,?,?,?,?,?,?,?,?,?)");
+			SQLStatement sql = new SQLStatement("INSERT INTO keys (keyid, level, usage, valid_from, valid_until, algo, bits, modulus, exponent, parentkeyid) VALUES (?,?,?,?,?,?,?,?,?,?)");
 			sql.setString(1, key.getKeyID());
 			sql.setString(2, key.getLevelName());
 			sql.setString(3, key.getUsageName());
@@ -197,15 +248,18 @@ public class PostgresBackend implements KeyServerBackend {
 			sql.setTimestamp(5, new Timestamp(key.getValidUntil()));
 			sql.setString(6, "RSA");
 			sql.setInt(7, key.getPubKey().getBitCount());
-			sql.setBytes(8, key.getPublicModulusBytes());
-			sql.setBytes(9, key.getPubKey().getPublicExponentBytes());	
+			sql.setString(8, SecurityHelper.HexDecoder.encode(key.getPublicModulusBytes(),':',-1));
+			sql.setString(9, "0x"+SecurityHelper.HexDecoder.encode(key.getPubKey().getPublicExponentBytes(),':',-1));	
 			if (key.isSub() && ((SubKey)key).getParentKeyID()!=null) {
 				sql.setString(10, ((SubKey)key).getParentKeyID());
 			} else {
-				sql.setNull(10, java.sql.Types.VARCHAR); //no parent keyid found	
+				sql.setString(10, null);
+				//sql.setNull(10, java.sql.Types.VARCHAR); //no parent keyid found	
 			}
-			sql.executeUpdate();
-			sql.close();
+			Statement stmt = con.createStatement();
+			System.out.println("addKey:: "+sql.toString());
+			stmt.executeUpdate(sql.toString());
+			stmt.close();
 			
 			//add identities for masterkey
 			if (key.isMaster()) {
@@ -224,15 +278,17 @@ public class PostgresBackend implements KeyServerBackend {
 	public OSDXKey getKey(String keyid) {
 		OSDXKey key = null;
 		try {
-			PreparedStatement sql = con.prepareStatement("SELECT * FROM keys WHERE keyid LIKE ?");
+			SQLStatement sql = new SQLStatement("SELECT * FROM keys WHERE keyid LIKE ?");
 			sql.setString(1, keyid+"%");
-			//Statement sql = con.createStatement();
-			ResultSet rs = sql.executeQuery();//"SELECT * FROM keys WHERE keyid LIKE '"+keyid+"%'");
+			
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
+			
 			if (rs.next()) {
 				key = buildKey(rs);
 			}
 			rs.close();
-			sql.close();
+			stmt.close();
 			//con.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -250,17 +306,23 @@ public class PostgresBackend implements KeyServerBackend {
 			pk.addContent("valid_until", SecurityHelper.getFormattedDate(rs.getTimestamp(5).getTime()));
 			pk.addContent("algo", rs.getString(6));
 			pk.addContent("bits", ""+rs.getInt(7));
-			byte[] mod = rs.getBytes(8);
-			byte[] exp = rs.getBytes(9);
-			pk.addContent("modulus", SecurityHelper.HexDecoder.encode(mod, '\0',-1));
-			pk.addContent("exponent", "0x"+SecurityHelper.HexDecoder.encode(exp, '\0',-1));
+			pk.addContent("modulus", rs.getString(8));
+			pk.addContent("exponent", rs.getString(9));
 			//Document.buildDocument(pk).output(System.out);
 			OSDXKey key = OSDXKey.fromPubKeyElement(pk);
 			if (key.isMaster()) {
-				Identity idd = null; //TODO getLastIdentity(keyid);
-				if (idd!=null) {
+				//all OR only last IDs??
+				
+				//all for identities request
+				Vector<Identity> ids = getIdentities(key.getKeyID());
+				for (Identity idd : ids) {
 					((MasterKey)key).addIdentity(idd);
 				}
+				
+//				Identity idd = getLastIdentity(key.getKeyID());
+//				if (idd!=null) {
+//					((MasterKey)key).addIdentity(idd);
+//				}
 			}
 			if (key.isSub()) {
 				((SubKey)key).setParentKeyID(rs.getString("parentkeyid"));
@@ -272,6 +334,49 @@ public class PostgresBackend implements KeyServerBackend {
 		return null;
 	}
 	
+	public Vector<Identity> getIdentities(String keyid) {
+		Vector<Identity> ids = new Vector<Identity>();
+		try {
+			SQLStatement sql = new SQLStatement("SELECT identities.id FROM key_identity, identities WHERE identities.id=identity AND keyid=? ORDER BY identnum");
+			sql.setString(1, keyid);
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
+			while (rs.next()) {
+				Identity id = getIdentitiy(rs.getLong(1));
+				if (id!=null) {
+					ids.add(id);
+				}
+			}
+			rs.close();
+			stmt.close();
+			//con.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		
+		return ids;
+	}
+	
+	public Identity getLastIdentity(String keyid) {
+		try {
+			SQLStatement sql = new SQLStatement("SELECT identities.id FROM key_identity, identities WHERE identities.id=identity AND keyid=? ORDER BY identnum DESC LIMIT 1");
+			sql.setString(1, keyid);
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
+			Identity id = null;
+			if (rs.next()) {
+				id = getIdentitiy(rs.getLong(1));
+			}
+			rs.close();
+			stmt.close();
+			//con.close();
+			return id;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+	
 	public long addIdentity(Identity id) {
 		return addIdentity(id, null);
 	}
@@ -279,7 +384,7 @@ public class PostgresBackend implements KeyServerBackend {
 	public long addIdentity(Identity id, String keyid) {
 		long idid = IdGenerator.getTimestamp();
 		try {
-			PreparedStatement sql = con.prepareStatement("INSERT INTO identities (id, identnum, email, mnemonic, mnemonic_r, company, company_r, unit, unit_r, subunit, subunit_r, function, function_r, surname, surname_r, firstname, firstname_r, middlename, middlename_r, birthday, birthday_r, placeofbirth, placeofbirth_r, city, city_r, postcode, postcode_r, region, region_r, country, country_r, phone, phone_r, fax, fax_r, note, note_r, photo, photo_r) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+			SQLStatement sql = new SQLStatement("INSERT INTO identities (id, identnum, email, mnemonic, mnemonic_r, company, company_r, unit, unit_r, subunit, subunit_r, function, function_r, surname, surname_r, firstname, firstname_r, middlename, middlename_r, birthday, birthday_r, placeofbirth, placeofbirth_r, city, city_r, postcode, postcode_r, region, region_r, country, country_r, phone, phone_r, fax, fax_r, note, note_r, photo_id, photo_md5, photo_r) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 			sql.setLong(1, idid);
 			sql.setInt(2, id.getIdentNum());
 			sql.setString(3, id.getEmail());
@@ -317,21 +422,34 @@ public class PostgresBackend implements KeyServerBackend {
 			sql.setBoolean(35, id.is_fax_restricted());
 			sql.setString(36, id.getNote());
 			sql.setBoolean(37, id.is_note_restricted());
-			sql.setBytes(38, id.getPhotoBytes());
-			sql.setBoolean(39, id.is_photo_restricted());
+			if (id.getPhotoBytes()!=null) {
+				long photoId = IdGenerator.getTimestamp();
+				String photoMD5 = SecurityHelper.HexDecoder.encode(SecurityHelper.getMD5(id.getPhotoBytes()),':',-1);
+				File f = getFileFromID(photoId, ".png");
+				f.getParentFile().mkdirs();
+				Util.saveBytesToFile(id.getPhotoBytes(), f);
+				sql.setLong(38, photoId);
+				sql.setString(39, photoMD5);
+			} else {
+				sql.setLong(38, -1L);
+				sql.setString(39, null);
+			}
+			sql.setBoolean(40, id.is_photo_restricted());
 			
-			sql.executeUpdate();
-			sql.close();
+			Statement stmt = con.createStatement();
+			//System.out.println("add identity:: "+sql.toString());
+			stmt.executeUpdate(sql.toString());
+			stmt.close();
 			
 			if (keyid!=null) {
 				long kiid = IdGenerator.getTimestamp();
-				sql = con.prepareStatement("INSERT INTO key_identity (id, keyid, identity) VALUES (?,?,?)");
+				sql = new SQLStatement("INSERT INTO key_identity (id, keyid, identity) VALUES (?,?,?)");
 				sql.setLong(1, kiid);
 				sql.setString(2, keyid);
 				sql.setLong(3, idid);
-				sql.executeUpdate();
-				sql.close();
-				
+				stmt = con.createStatement();
+				stmt.executeUpdate(sql.toString());
+				stmt.close();
 			}
 			return idid;
 		} catch (Exception ex) {
@@ -343,10 +461,10 @@ public class PostgresBackend implements KeyServerBackend {
 	public Identity getIdentitiy(long id) {
 		try {
 			Identity idd = null;
-			PreparedStatement sql = con.prepareStatement("SELECT * FROM identities WHERE id=?");
+			SQLStatement sql = new SQLStatement("SELECT * FROM identities WHERE id=?");
 			sql.setLong(1, id);
-			
-			ResultSet rs = sql.executeQuery();
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
 			if (rs.next()) {
 				try {
 					idd = Identity.newEmptyIdentity();
@@ -387,9 +505,18 @@ public class PostgresBackend implements KeyServerBackend {
 					idd.set_fax_restricted(rs.getBoolean("fax_r"));
 					idd.setNote(rs.getString("note"));
 					idd.set_note_restricted(rs.getBoolean("note_r"));
-					byte[] pb = rs.getBytes("photo");
-					if (pb!=null) {
-						idd.setPhotoBytes(pb);
+					long photoId = rs.getLong("photo_id");
+					if (photoId!=-1L) {
+						File f = getFileFromID(photoId, ".png");
+						if (!f.exists()) {	
+							throw new RuntimeException("DB DataBackend Error: File "+f.getAbsolutePath()+" does not exist.");
+						}
+						byte[] calc_md5 = SecurityHelper.getMD5(f);
+						byte[] given_md5 = SecurityHelper.HexDecoder.decode(rs.getString("photo_md5"));
+						if (!Arrays.equals(calc_md5, given_md5)) {
+							throw new RuntimeException("DB DataBackend Error: MD5 Check for file "+f.getAbsolutePath()+" FAILED!");
+						}
+						idd.setPhoto(f);
 					}
 					idd.set_photo_restricted(rs.getBoolean("photo_r"));
 				} catch (Exception e) {
@@ -397,7 +524,7 @@ public class PostgresBackend implements KeyServerBackend {
 				}
 			}
 			rs.close();
-			sql.close();
+			stmt.close();
 			//con.close();
 			return idd;
 		} catch (Exception ex) {
@@ -410,10 +537,12 @@ public class PostgresBackend implements KeyServerBackend {
 	public void removeKey(OSDXKey key) {
 		try {
 			//TODO remove Identitites to key
-			PreparedStatement sql = con.prepareStatement("REMOVE FROM keys WHERE keyid=?");
+			SQLStatement sql = new SQLStatement("REMOVE FROM keys WHERE keyid=?");
 			sql.setString(1, key.getKeyID());
-			sql.executeUpdate();
-			sql.close();
+			
+			Statement stmt = con.createStatement();
+			stmt.executeUpdate(sql.toString());
+			stmt.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -428,61 +557,95 @@ public class PostgresBackend implements KeyServerBackend {
 		
 		try {
 			long ts = IdGenerator.getTimestamp();
-			
-			PreparedStatement sql = con.prepareStatement("INSERT INTO keylogs (id, ipv4, ipv6, keyid_to, action, action_id, action_msg, " +
-					"sha256_complete, sha256_restricted, asig_md5, asig_sha1, asig_sha256, asig_datetime, asig_dataname, asig_keyid, asig_bytes," +
-												 "sha256, sig_md5,  sig_sha1,  sig_sha256,  sig_datetime,  sig_dataname,  sig_keyid,  sig_bytes)" +
-					" VALUES (?,?,?,?,?,? ,?,?,?,?,?,? ,?,?,?,?,?,? ,?,?,?,?,?,?)");
+			File f = getFileFromID(ts, "_keylog.xml");
+			f.getParentFile().mkdirs();
+			Document.buildDocument(log.toElement(true)).writeToFile(f);
+			String md5 = SecurityHelper.HexDecoder.encode(SecurityHelper.getMD5(f), ':', -1);
+			SQLStatement sql = new SQLStatement("INSERT INTO keylogs (id, keylog_md5, keyid_to, keyid_from, asig_datetime, sig_datetime) VALUES (?,?,?,?,?,?)");
 			sql.setLong(1, ts);
-			sql.setString(2, log.getIPv4());
-			sql.setString(3, log.getIPv6());
-			sql.setString(4, log.getKeyIDTo());
-			sql.setString(5, log.getAction());
-			Identity idd = log.getIdentity();
-			if (idd!=null) {
-				long idid = addIdentity(idd);
-				sql.setLong(6, idid);
-			}
-			sql.setString(7, log.getMessage());
+			sql.setString(2, md5);
+			sql.setString(3, log.getKeyIDTo());
+			sql.setString(4, log.getKeyIDFrom());
+			sql.setTimestamp(5, new Timestamp(asig.getSignDatetime()));
+			sql.setTimestamp(6, new Timestamp(sig.getSignDatetime()));
 			
-			//action signature
-			sql.setBytes(8, log.getActionSha256ProofComplete());
-			sql.setBytes(9, log.getActionSha256ProofRestricted());
-			sql.setBytes(10, asig.getMD5());
-			sql.setBytes(11, asig.getSHA1());
-			sql.setBytes(12, asig.getSHA256());
-			sql.setTimestamp(13, new Timestamp(asig.getSignDatetime()));
-			sql.setString(14, asig.getDataName());
-			sql.setString(15, asig.getKey().getKeyID());
-			sql.setBytes(16, asig.getSignatureBytes());
-			
-			//signature
-			sql.setBytes(17, log.getSHA256LocalProof());
-			sql.setBytes(18, sig.getMD5());
-			sql.setBytes(19, sig.getSHA1());
-			sql.setBytes(20, sig.getSHA256());
-			sql.setTimestamp(21, new Timestamp(sig.getSignDatetime()));
-			sql.setString(22, sig.getDataName());
-			sql.setString(23, sig.getKey().getKeyID());
-			sql.setBytes(24, sig.getSignatureBytes());
-			
-			sql.executeUpdate();
-			sql.close();
+			System.out.println("addKeylog:: "+sql.toString());
+			Statement stmt = con.createStatement();
+			stmt.executeUpdate(sql.toString());
+			stmt.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
+	
+//	public void addKeyLog(KeyLog log) {
+//		Signature asig = log.getActionSignature();
+//		Signature sig = log.getSignature();
+//		
+//		addKey(asig.getKey());
+//		addKey(sig.getKey());
+//		
+//		try {
+//			long ts = IdGenerator.getTimestamp();
+//			
+//			SQLStatement sql = new SQLStatement("INSERT INTO keylogs (id, ipv4, ipv6, keyid_to, action, action_id, action_msg, " +
+//					"sha256_complete, sha256_restricted, asig_md5, asig_sha1, asig_sha256, asig_datetime, asig_dataname, asig_keyid, asig_bytes," +
+//												 "sha256, sig_md5,  sig_sha1,  sig_sha256,  sig_datetime,  sig_dataname,  sig_keyid,  sig_bytes)" +
+//					" VALUES (?,?,?,?,?,? ,?,?,?,?,?,? ,?,?,?,?,?,? ,?,?,?,?,?,?)");
+//			sql.setLong(1, ts);
+//			sql.setString(2, log.getIPv4());
+//			sql.setString(3, log.getIPv6());
+//			sql.setString(4, log.getKeyIDTo());
+//			sql.setString(5, log.getAction());
+//			Identity idd = log.getIdentity();
+//			if (idd!=null) {
+//				long idid = addIdentity(idd);
+//				sql.setLong(6, idid);
+//			}
+//			sql.setString(7, log.getMessage());
+//			
+//			//action signature
+//			sql.setBytes(8, log.getActionSha256ProofComplete());
+//			sql.setBytes(9, log.getActionSha256ProofRestricted());
+//			sql.setBytes(10, asig.getMD5());
+//			sql.setBytes(11, asig.getSHA1());
+//			sql.setBytes(12, asig.getSHA256());
+//			sql.setTimestamp(13, new Timestamp(asig.getSignDatetime()));
+//			sql.setString(14, asig.getDataName());
+//			sql.setString(15, asig.getKey().getKeyID());
+//			sql.setBytes(16, asig.getSignatureBytes());
+//			
+//			//signature
+//			sql.setBytes(17, log.getSHA256LocalProof());
+//			sql.setBytes(18, sig.getMD5());
+//			sql.setBytes(19, sig.getSHA1());
+//			sql.setBytes(20, sig.getSHA256());
+//			sql.setTimestamp(21, new Timestamp(sig.getSignDatetime()));
+//			sql.setString(22, sig.getDataName());
+//			sql.setString(23, sig.getKey().getKeyID());
+//			sql.setBytes(24, sig.getSignatureBytes());
+//			
+//			sql.executeUpdate();
+//			sql.close();
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
+//	}
 
 	
 	private long getKeylogIndex(KeyLog log) {
 		long index = -1L;
 		try {
 			Signature asig = log.getActionSignature();
-			PreparedStatement sql = con.prepareStatement("SELECT id FROM keylogs WHERE keyid_to=? AND asig_bytes=?");
-			sql.setString(1, log.getKeyIDTo());
-			sql.setBytes(2, asig.getSignatureBytes());
 			
-			ResultSet rs = sql.executeQuery();
+			SQLStatement sql = new SQLStatement("SELECT id FROM keylogs WHERE keyid_to=? AND keyid_from=? AND asig_datetime=?");
+			sql.setString(1, log.getKeyIDTo());
+			sql.setString(2, log.getKeyIDFrom());
+			sql.setTimestamp(3, new Timestamp(asig.getSignDatetime()));
+			System.out.println("getKeyLogIndex :: "+sql.toString());
+			
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
 			if (rs.next()) {
 				try {
 					index = rs.getLong(1);
@@ -491,7 +654,7 @@ public class PostgresBackend implements KeyServerBackend {
 				}
 			}
 			rs.close();
-			sql.close();
+			stmt.close();
 			//con.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -506,11 +669,13 @@ public class PostgresBackend implements KeyServerBackend {
 			klIndex = getKeylogIndex(log);
 		}
 		try {
-			PreparedStatement sql = con.prepareStatement("INSERT INTO approval_token (token, keylog) VALUES (?,?)");
+			SQLStatement sql = new SQLStatement("INSERT INTO approval_token (token, keylog) VALUES (?,?)");
 			sql.setString(1, token);
 			sql.setLong(2, klIndex);
-			sql.executeUpdate();
-			sql.close();
+			
+			Statement stmt = con.createStatement();
+			stmt.executeUpdate(sql.toString());
+			stmt.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -520,9 +685,10 @@ public class PostgresBackend implements KeyServerBackend {
 		long klIndex = -1;
 		KeyLog log = null;
 		try {
-			PreparedStatement sql = con.prepareStatement("SELECT keylog FROM approval_token WHERE token=?");
+			SQLStatement sql = new SQLStatement("SELECT keylog FROM approval_token WHERE token=?");
 			sql.setString(1, id);
-			ResultSet rs = sql.executeQuery();
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
 			if (rs.next()) {
 				try {
 					klIndex = rs.getLong(1);
@@ -531,7 +697,7 @@ public class PostgresBackend implements KeyServerBackend {
 				}
 			}
 			rs.close();
-			sql.close();
+			stmt.close();
 			//con.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -540,9 +706,10 @@ public class PostgresBackend implements KeyServerBackend {
 			return null;
 		}
 		try {
-			PreparedStatement sql = con.prepareStatement("SELECT * FROM keylogs WHERE id=?");
+			SQLStatement sql = new SQLStatement("SELECT * FROM keylogs WHERE id=?");
 			sql.setLong(1, klIndex);
-			ResultSet rs = sql.executeQuery();
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
 			if (rs.next()) {
 				try {
 					log = buildKeylog(rs);
@@ -551,7 +718,7 @@ public class PostgresBackend implements KeyServerBackend {
 				}
 			}
 			rs.close();
-			sql.close();
+			stmt.close();
 			//con.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -561,57 +728,17 @@ public class PostgresBackend implements KeyServerBackend {
 	
 	private KeyLog buildKeylog(ResultSet rs) {
 		try {
-			OSDXKey asigKey = getKey(rs.getString("asig_keyid"));
-			Element e = new Element("keylog");
-			e.addContent("ipv4",rs.getString("ipv4"));
-			e.addContent("ipv6",rs.getString("ipv6"));
-			
-			Element ea = new Element("keylogaction");
-			//action content
-			ea.addContent("from_keyid", asigKey.getKeyID());
-			ea.addContent("to_keyid", rs.getString("keyid_to"));
-			Element eaa = new Element(rs.getString("action"));
-			Identity idd = getIdentitiy(rs.getLong("action_id"));
-			if (idd!=null) {
-				eaa.addContent(idd.toElement(true));
+			long id = rs.getLong("id");
+			File f = getFileFromID(id, "_keylog.xml");
+			if (!f.exists()) {	
+				throw new RuntimeException("DB DataBackend Error: File "+f.getAbsolutePath()+" does not exist.");
 			}
-			String msg = rs.getString("action_msg");
-			if (msg!=null) {
-				eaa.addContent("message", msg);
+			byte[] calc_md5 = SecurityHelper.getMD5(f);
+			byte[] given_md5 = SecurityHelper.HexDecoder.decode(rs.getString("keylog_md5"));
+			if (!Arrays.equals(calc_md5, given_md5)) {
+				throw new RuntimeException("DB DataBackend Error: MD5 Check for file "+f.getAbsolutePath()+" FAILED!");
 			}
-			ea.addContent(eaa);
-			ea.addContent("sha256localproof_complete", SecurityHelper.HexDecoder.encode(rs.getBytes("sha256_complete"),':',-1));
-			ea.addContent("sha256localproof_restricted", SecurityHelper.HexDecoder.encode(rs.getBytes("sha256_restricted"),':',-1));
-			
-			Element asig = new Element("signature");
-			Element asigData = new Element("data");
-			asigData.addContent("md5", SecurityHelper.HexDecoder.encode(rs.getBytes("asig_md5"),':',-1));
-			asigData.addContent("sha1", SecurityHelper.HexDecoder.encode(rs.getBytes("asig_sha1"),':',-1));
-			asigData.addContent("sha256", SecurityHelper.HexDecoder.encode(rs.getBytes("asig_sha256"),':',-1));
-			asigData.addContent("signdatetime", SecurityHelper.getFormattedDate(rs.getTimestamp("asig_datetime").getTime()));
-			asigData.addContent("dataname", rs.getString("asig_dataname"));
-			
-			asig.addContent(asigData);
-			asig.addContent(asigKey.getSimplePubKeyElement());
-			asig.addContent("signaturebytes", SecurityHelper.HexDecoder.encode(rs.getBytes("asig_bytes"),'\0',-1));
-			
-			ea.addContent(asig);
-			
-			e.addContent(ea);
-			
-			e.addContent("sha256localproof", SecurityHelper.HexDecoder.encode(rs.getBytes("sha256"),':',-1));
-			Element sig = new Element("signature");
-			Element sigData = new Element("data");
-			sigData.addContent("md5", SecurityHelper.HexDecoder.encode(rs.getBytes("sig_md5"),':',-1));
-			sigData.addContent("sha1", SecurityHelper.HexDecoder.encode(rs.getBytes("sig_sha1"),':',-1));
-			sigData.addContent("sha256", SecurityHelper.HexDecoder.encode(rs.getBytes("sig_sha256"),':',-1));
-			sigData.addContent("signdatetime", SecurityHelper.getFormattedDate(rs.getTimestamp("sig_datetime").getTime()));
-			sigData.addContent("dataname", rs.getString("sig_dataname"));
-			sig.addContent(sigData);
-			sig.addContent(getKey(rs.getString("sig_keyid")).getSimplePubKeyElement());
-			sig.addContent("signaturebytes", SecurityHelper.HexDecoder.encode(rs.getBytes("sig_bytes"),'\0',-1));
-			e.addContent(sig);
-			Document.buildDocument(e).output(System.out);
+			Element e = Document.fromFile(f).getRootElement();
 			KeyLog log = KeyLog.fromElement(e);
 			return log;
 		} catch (Exception ex) {
@@ -619,27 +746,89 @@ public class PostgresBackend implements KeyServerBackend {
 		}
 		return null; 
 	}
+	
+//	private KeyLog buildKeylog(ResultSet rs) {
+//		try {
+//			OSDXKey asigKey = getKey(rs.getString("asig_keyid"));
+//			Element e = new Element("keylog");
+//			e.addContent("ipv4",rs.getString("ipv4"));
+//			e.addContent("ipv6",rs.getString("ipv6"));
+//			
+//			Element ea = new Element("keylogaction");
+//			//action content
+//			ea.addContent("from_keyid", asigKey.getKeyID());
+//			ea.addContent("to_keyid", rs.getString("keyid_to"));
+//			Element eaa = new Element(rs.getString("action"));
+//			Identity idd = getIdentitiy(rs.getLong("action_id"));
+//			if (idd!=null) {
+//				eaa.addContent(idd.toElement(true));
+//			}
+//			String msg = rs.getString("action_msg");
+//			if (msg!=null) {
+//				eaa.addContent("message", msg);
+//			}
+//			ea.addContent(eaa);
+//			ea.addContent("sha256localproof_complete", SecurityHelper.HexDecoder.encode(rs.getBytes("sha256_complete"),':',-1));
+//			ea.addContent("sha256localproof_restricted", SecurityHelper.HexDecoder.encode(rs.getBytes("sha256_restricted"),':',-1));
+//			
+//			Element asig = new Element("signature");
+//			Element asigData = new Element("data");
+//			asigData.addContent("md5", SecurityHelper.HexDecoder.encode(rs.getBytes("asig_md5"),':',-1));
+//			asigData.addContent("sha1", SecurityHelper.HexDecoder.encode(rs.getBytes("asig_sha1"),':',-1));
+//			asigData.addContent("sha256", SecurityHelper.HexDecoder.encode(rs.getBytes("asig_sha256"),':',-1));
+//			asigData.addContent("signdatetime", SecurityHelper.getFormattedDate(rs.getTimestamp("asig_datetime").getTime()));
+//			asigData.addContent("dataname", rs.getString("asig_dataname"));
+//			
+//			asig.addContent(asigData);
+//			asig.addContent(asigKey.getSimplePubKeyElement());
+//			asig.addContent("signaturebytes", SecurityHelper.HexDecoder.encode(rs.getBytes("asig_bytes"),'\0',-1));
+//			
+//			ea.addContent(asig);
+//			
+//			e.addContent(ea);
+//			
+//			e.addContent("sha256localproof", SecurityHelper.HexDecoder.encode(rs.getBytes("sha256"),':',-1));
+//			Element sig = new Element("signature");
+//			Element sigData = new Element("data");
+//			sigData.addContent("md5", SecurityHelper.HexDecoder.encode(rs.getBytes("sig_md5"),':',-1));
+//			sigData.addContent("sha1", SecurityHelper.HexDecoder.encode(rs.getBytes("sig_sha1"),':',-1));
+//			sigData.addContent("sha256", SecurityHelper.HexDecoder.encode(rs.getBytes("sig_sha256"),':',-1));
+//			sigData.addContent("signdatetime", SecurityHelper.getFormattedDate(rs.getTimestamp("sig_datetime").getTime()));
+//			sigData.addContent("dataname", rs.getString("sig_dataname"));
+//			sig.addContent(sigData);
+//			sig.addContent(getKey(rs.getString("sig_keyid")).getSimplePubKeyElement());
+//			sig.addContent("signaturebytes", SecurityHelper.HexDecoder.encode(rs.getBytes("sig_bytes"),'\0',-1));
+//			e.addContent(sig);
+//			Document.buildDocument(e).output(System.out);
+//			KeyLog log = KeyLog.fromElement(e);
+//			return log;
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
+//		return null; 
+//	}
 
 	 
 	public Vector<KeyLog> getKeyLogsToID(String keyid) {
 		Vector<KeyLog> logs = new Vector<KeyLog>();
 		try {
 			System.out.println("get keylogs");
-			PreparedStatement sql = con.prepareStatement("SELECT * FROM keylogs WHERE keyid_to LIKE ? ORDER BY asig_datetime");
+			SQLStatement sql = new SQLStatement("SELECT * FROM keylogs WHERE keyid_to LIKE ? ORDER BY asig_datetime");
 			sql.setString(1, keyid+"%");
 			System.out.println("SQL: "+sql.toString());
-			ResultSet rs = sql.executeQuery();
+			
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
 			
 			while (rs.next()) {
 				try {
-					System.out.println("found from: "+rs.getString("asig_keyid"));
 					logs.add(buildKeylog(rs));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 			rs.close();
-			sql.close();
+			stmt.close();
 			//con.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -684,9 +873,10 @@ public class PostgresBackend implements KeyServerBackend {
 	public Vector<OSDXKey> getKeysToId(String email) {
 		Vector<OSDXKey> keys = new Vector<OSDXKey>();
 		try {
-			PreparedStatement sql = con.prepareStatement("SELECT DISTINCT keyid FROM identities, key_identity WHERE identities.email=?");
+			SQLStatement sql = new SQLStatement("SELECT DISTINCT keyid FROM identities, key_identity WHERE identities.id = key_identity.identity AND identities.email=?");
 			sql.setString(1, email);
-			ResultSet rs = sql.executeQuery();
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
 			while (rs.next()) {
 				try {
 					OSDXKey key = getKey(rs.getString(1));
@@ -696,7 +886,7 @@ public class PostgresBackend implements KeyServerBackend {
 				}
 			}
 			rs.close();
-			sql.close();
+			stmt.close();
 			//con.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -708,10 +898,11 @@ public class PostgresBackend implements KeyServerBackend {
 	public Vector<OSDXKey> getSubKeysToId(String parentkeyid) {
 		Vector<OSDXKey> keys = new Vector<OSDXKey>();
 		try {
-			PreparedStatement sql = con.prepareStatement("SELECT * FROM keys WHERE parentkeyid LIKE ?");
+			SQLStatement sql = new SQLStatement("SELECT * FROM keys WHERE parentkeyid LIKE ?");
 			sql.setString(1, parentkeyid+"%");
 			System.out.println("SQL: "+sql.toString());
-			ResultSet rs = sql.executeQuery();
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
 			while (rs.next()) {
 				try {
 					OSDXKey key = buildKey(rs);
@@ -721,7 +912,7 @@ public class PostgresBackend implements KeyServerBackend {
 				}
 			}
 			rs.close();
-			sql.close();
+			stmt.close();
 			//con.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -732,10 +923,11 @@ public class PostgresBackend implements KeyServerBackend {
 	 
 	public void removeOpenToken(String token) {
 		try {
-			PreparedStatement sql = con.prepareStatement("REMOVE FROM approval_token WHERE token=?");
+			SQLStatement sql = new SQLStatement("DELETE FROM approval_token WHERE token=?");
 			sql.setString(1, token);
-			sql.executeUpdate();
-			sql.close();
+			Statement stmt = con.createStatement();
+			stmt.executeUpdate(sql.toString());
+			stmt.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

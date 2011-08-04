@@ -288,7 +288,12 @@ public class KeyServerMain extends HTTPServer {
 			Element eDB = ks.getChild("db");
 			if (eDB!=null) {
 				try {
-					backend = PostgresBackend.init(eDB.getChildText("user"), eDB.getChildText("password"), eDB.getChildText("name"));
+					File dp = null;
+					String data_path = eDB.getChildText("data_path");
+					if (data_path!=null) {
+						dp = new File(data_path);
+					}
+					backend = PostgresBackend.init(eDB.getChildText("user"), eDB.getChildText("password"), eDB.getChildText("name"),dp);
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}

@@ -412,6 +412,14 @@ public class SecurityHelper {
 		return ret;
 	}
 	
+	public static byte[] getMD5(File f) throws Exception {
+		FileInputStream fin_ = new FileInputStream(f);
+		BufferedInputStream fin = new BufferedInputStream(fin_);
+		byte[] ret =  getMD5(fin);
+		fin.close();
+		return ret;
+	}
+	
 	public static byte[][] getMD5SHA1(File f) throws Exception {
 		FileInputStream fin_ = new FileInputStream(f);
 		BufferedInputStream fin = new BufferedInputStream(fin_);
