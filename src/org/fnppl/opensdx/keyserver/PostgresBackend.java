@@ -105,8 +105,8 @@ public class PostgresBackend implements KeyServerBackend {
 	
 	private File getFileFromID(long id, String ending) {
 		String name = ""+id;
-		if (name.length()>3) {
-			name = name.substring(0,name.length()-3)+File.separator+name;
+		if (name.length()>5) {
+			name = name.substring(0,name.length()-5)+File.separator+name;
 		}
 		if (ending!=null) name += ending;
 		return new File(data_path, name);
