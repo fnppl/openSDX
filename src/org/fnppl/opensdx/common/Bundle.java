@@ -58,7 +58,7 @@ public class Bundle extends BusinessObject {
 	private BusinessStringItem displayname;					//MUST
 	private BusinessStringItem name;						//MUST
 	private BusinessStringItem version;						//MUST
-	private BusinessStringItem display_artistname;				//SHOULD
+	private BusinessStringItem display_artistname;			//SHOULD
 	private BusinessCollection<Contributor> contributors;	//MUST
 	private BundleInformation information;					//MUST
 	private LicenseBasis license_basis;						//MUST
