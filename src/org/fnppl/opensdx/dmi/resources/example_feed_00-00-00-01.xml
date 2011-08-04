@@ -69,8 +69,7 @@
 	in these days, it should never be a problem to have computers work on this in a proper manner 
  -->
 
-<feed xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:noNamespaceSchemaLocation="openSDX_00-00-00-01.xsd">
+<feed xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"	xsi:noNamespaceSchemaLocation="openSDX_00-00-00-01.xsd">
 	<feedinfo>
 		<onlytest>true</onlytest><!-- MUST testmode true|false -->
 		<feedid>kaakka</feedid><!-- MUST id is provided by sender; should be unique -->
@@ -223,7 +222,7 @@
 		<displayname></displayname><!-- MUST this is how this should be displayed in pos -->
 		<name></name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
 		<version></version><!-- MUST version if different versions of this bundle exist - can be empty -->
-		<display_artist></display_artist><!-- SHOULD ; convenience-info receiver can decide to ignore this and to create from the give contributors -->	
+		<display_artistname></display_artistname><!-- SHOULD ; convenience-info receiver can decide to ignore this and to create from the give contributors -->	
 		<contributors>
 			<contributor num="1">
 				<name></name><!-- MUST could be labelname -->
