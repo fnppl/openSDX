@@ -51,7 +51,7 @@
 
     <xsd:element name="feed">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">explain me!</xsd:documentation>
+            <xsd:documentation xml:lang="en">General Element for the whole XML-Doc (root)</xsd:documentation>
         </xsd:annotation>
 
         <xsd:complexType>
@@ -65,7 +65,20 @@
     
     <xsd:complexType name="feedinfo">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">explain me!</xsd:documentation>
+            <xsd:documentation xml:lang="en">On feedinfo-level there are the global information needed or 
+            at least valuable for ingesting / identifying the content sent.
+			It is defined, when the feed was created, when it shall be come effective, who created the feed and 
+			who is the receiver of the feed. Also the sender (which can diverge from the creator) is to be stated. 
+			The licensor is also to be stated (which in turn can also diverge from the creator and/or the sender).
+			There can be "actions" defined on the receiving-party's side which should be "done" when initially 
+			receiving this feed, or starting to process the feed for ingestion or finishing the feeds processing. 
+			Additionally when everything could be interpreted correctly (in the sense of the receiving party), 
+			a "full-success-action" could be issued; likewise if "some error" occurred while processing the feed, 
+			an "onerror-action" could be issued.
+			Those actions are initially defined to be email-notifications or http-calls; we also included some 
+			action to have a "registered letter" and/or "fax" to be sent; wether this is accepted/handled by the 
+			receiving party is to be dealt with contractually (we included a field for stating how much the 
+			sending party will cover the fee max.).</xsd:documentation>
         </xsd:annotation>
 
         <xsd:sequence>
@@ -77,13 +90,21 @@
             <xsd:element name="receiver" type="receiver"/>
             <xsd:element name="sender" type="sender"/>
             <xsd:element name="licensor" type="licensor"/>
+            <xsd:element name="licensee" type="licensee"/>            
             <xsd:element name="actions" type="actions"/>
         </xsd:sequence>
     </xsd:complexType>    
 
     <xsd:complexType name="bundle">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">explain me!</xsd:documentation>
+            <xsd:documentation xml:lang="en">On bundle level, there are information on how to handle a collection 
+            of "items". This is mainly an album/ep/single. A bundle is identified by one unique identifier, 
+            but more unique identifiers could and should be transmitted as well (see below "ids").  
+            Most notably on the bundle-level is the "bundle name" which is basically the conjunction of the "name"-
+            and the "version"-field. Also to have this easy at hand, there should be the 
+            desired "display_artist"-string be present on this level. 
+            Of course, the receiver of the feed can still calculate the "correct" display_artist 
+            by evaluating the contributors (see below) for this.</xsd:documentation>
         </xsd:annotation> 
         
         <xsd:sequence>
@@ -105,12 +126,18 @@
     </xsd:complexType>
 
     <xsd:complexType name="creator">
+    	<xsd:annotation>
+            This element contains information about the creator of that feed. 
+        </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="email" type="email"/>
             <xsd:element name="userid" type="userid"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="receiver">
+    <xsd:annotation>
+            This element contains information about the receiver of that feed. 
+        </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="type" type="receivertypes"/>
             <xsd:element name="servername" type="iporhostname"/>
@@ -121,6 +148,9 @@
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="crypto">
+   		<xsd:annotation>
+            This element contains crypto information for secure and authenticated transfer. 
+        </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="relatedemail" type="email"/>
             <xsd:element name="usedkeyid" type="keyid"/>
@@ -128,6 +158,9 @@
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="sender">
+    	<xsd:annotation>
+            This element contains information about the sender of that feed. 
+        </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
             <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
@@ -135,6 +168,20 @@
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="licensor">
+    	<xsd:annotation>
+            This element contains information about the licensor of that feed. 
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="contractpartnerid" type="xsd:string"/>
+            <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
+            <xsd:element name="email" type="email"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="licensee">
+    	<xsd:annotation>
+            This element contains information about the licensee of that feed. 
+        </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
             <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
@@ -143,6 +190,9 @@
     </xsd:complexType>
 
     <xsd:complexType name="actions">
+    	<xsd:annotation>
+            This element contains information about possible actions with the feed.
+        </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="oninitialreceive" type="event"/>
             <xsd:element name="onprocesstart" type="event"/>
@@ -152,31 +202,62 @@
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="oninitialreceive">
+    	<xsd:annotation>
+            This element contains information about what should be done on initial receive of the feed.
+        </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="onprocesstart">
+   	 	<xsd:annotation>
+            This element contains information about what should be done on the start of processing the feed.
+        </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="onprocessend">
+   		<xsd:annotation>
+            This element contains information about what should be done on the end of processing the feed.
+        </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="onfullsuccess">
+    	<xsd:annotation>
+            This element contains information about what should be done on full success processing the feed.
+        </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="onerror">
+    	<xsd:annotation>
+            This element contains information about what should be done on error processing the feed.
+        </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
         </xsd:complexContent>
     </xsd:complexType>
+    
+    <xsd:complexType name="event">
+    	<xsd:annotation>
+            This element contains information about possible events and actions.
+        </xsd:annotation>    
+        <xsd:sequence>
+            <xsd:element name="mailto" type="mailto" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="http" type="http" minOccurs="0" maxOccurs="unbounded"/>            
+            <xsd:element name="fax" type="fax" minOccurs="0" maxOccurs="unbounded"/>            
+            <xsd:element name="letter" type="letter" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
     <xsd:complexType name="mailto">
+    	<xsd:annotation>
+            This element contains information about mailto-event.
+        </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="action">
                 <xsd:sequence>
@@ -184,11 +265,14 @@
                     <xsd:element name="subject" type="xsd:string"/>
                     <xsd:element name="text" type="xsd:string"/>
                 </xsd:sequence>
-
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+    
     <xsd:complexType name="http">
+    	<xsd:annotation>
+            This element contains information about http-event.
+        </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="action">
                 <xsd:sequence>
@@ -300,18 +384,12 @@
             <!-- "2010-01-31 00:00:00 GMT+00:00" - should be altered to some NMTOKENS or such ... -->
         </xsd:restriction>
     </xsd:simpleType>
-    <xsd:complexType name="event">
-        <xsd:sequence>
-            <xsd:element name="mailto" type="mailto" minOccurs="0" maxOccurs="unbounded"/>
-            <xsd:element name="http" type="http" minOccurs="0" maxOccurs="unbounded"/>            
-            <xsd:element name="fax" type="fax" minOccurs="0" maxOccurs="unbounded"/>            
-            <xsd:element name="letter" type="letter" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-    </xsd:complexType>
+    
     <xsd:complexType name="action"/>
     <xsd:complexType name="action_instruction"/>
 
     <xsd:simpleType name="receivertypes">
+    
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="ftp"/>
             <xsd:enumeration value="ftps"/>
