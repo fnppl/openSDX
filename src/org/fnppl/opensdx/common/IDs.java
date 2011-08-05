@@ -62,8 +62,8 @@ public class IDs extends BusinessObject {
 	private BusinessStringItem amzn;				//COULD
 	private BusinessStringItem isbn;				//COULD
 	private BusinessStringItem finetunes;			//COULD
-	private BusinessStringItem licensor;				//COULD
-	private BusinessStringItem licensee;				//COULD
+	private BusinessStringItem licensor;			//COULD
+	private BusinessStringItem licensee;			//COULD
 	private BusinessStringItem gvl;					//COULD
 
 

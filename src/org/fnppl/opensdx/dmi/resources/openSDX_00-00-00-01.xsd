@@ -102,8 +102,8 @@
             but more unique identifiers could and should be transmitted as well (see below "ids").  
             Most notably on the bundle-level is the "bundle name" which is basically the conjunction of the "name"-
             and the "version"-field. Also to have this easy at hand, there should be the 
-            desired "display_artist"-string be present on this level. 
-            Of course, the receiver of the feed can still calculate the "correct" display_artist 
+            desired "display_artistname"-string be present on this level. 
+            Of course, the receiver of the feed can still calculate the "correct" display_artistname 
             by evaluating the contributors (see below) for this.</xsd:documentation>
         </xsd:annotation> 
         
@@ -125,9 +125,127 @@
         </xsd:sequence>           	
     </xsd:complexType>
 
+	<xsd:complexType name="contributors">
+		<xsd:annotation>
+            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+        </xsd:annotation> 
+        
+        <xsd:sequence>
+            <xsd:element name="contributor" type="contributor" maxOccurs="unbounded" minOccurs="1" />
+        </xsd:sequence> 
+	</xsd:complexType>
+	
+	<xsd:complexType name="contributor">
+		<xsd:annotation>
+            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+        </xsd:annotation> 
+        
+        <xsd:sequence>
+        	<xsd:element name="name" type="xsd:string" />
+        	<xsd:element name="type"  type="contributorType" />
+        	<xsd:element name="year" type="xsd:string" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="ids" type="ids" />
+            <xsd:element name="www" type="www" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="on_sublevel_only" type="xsd:boolean" /> 
+        </xsd:sequence>	
+	</xsd:complexType>
+	
+  	<xsd:simpleType name="contributorType">
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="label"/>
+          <xsd:enumeration value="performer"/>
+          <xsd:enumeration value="texter"/>
+          <xsd:enumeration value="writer"/>
+          <xsd:enumeration value="vocals"/>
+          <xsd:enumeration value="conductor"/>
+          <xsd:enumeration value="display artist"/>
+          <xsd:enumeration value="compilator"/>
+          <xsd:enumeration value="copyright"/>
+          <xsd:enumeration value="production"/>
+          <xsd:enumeration value="clearinghouse"/>
+        </xsd:restriction>
+  	</xsd:simpleType>	
+
+    <xsd:complexType name="ids">
+		<xsd:annotation>
+            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+        </xsd:annotation> 
+        
+        <xsd:sequence>
+        	<xsd:element name="grid" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="upc" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="isrc" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="contentauth" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="labelordernum" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="amzn" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="isbn" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="finetunes" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="licensor" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="licensee" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="gvl" type="xsd:string" maxOccurs="1" minOccurs="0" /> 
+        </xsd:sequence>    
+    </xsd:complexType>
+
+    <xsd:complexType name="www">
+ 		<xsd:annotation>
+            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+        </xsd:annotation> 
+        
+        <xsd:sequence>
+        	<xsd:element name="facebook" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="myspace" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="homepage" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="twitter" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="phone" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        </xsd:sequence>    
+    </xsd:complexType>
+
+
+    <xsd:complexType name="items">
+		<xsd:annotation>
+            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+        </xsd:annotation> 
+        
+        <xsd:sequence>
+            <xsd:element name="item" type="item" maxOccurs="unbounded" minOccurs="1" />
+        </xsd:sequence>    
+    </xsd:complexType>
+    
+    <xsd:complexType name="item">
+		<xsd:annotation>
+            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+        </xsd:annotation> 
+        
+        <xsd:sequence>
+            <xsd:element name="displayname" type="xsd:string" />
+            <xsd:element name="name" type="xsd:string" />
+            <xsd:element name="version" type="xsd:string" />
+            <xsd:element name="type" type="xsd:string" />
+            <xsd:element name="display_artistname" type="xsd:string" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="ids" type="ids" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="contributors" type="contributors" />
+            <xsd:element name="information" type="information" />
+            <xsd:element name="license_basis" type="license_basis" />
+            <xsd:element name="license_specifics" type="license_specifics" />
+            <xsd:element name="tags" type="tags" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="fingerprint" type="fingerprint" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="files" type="files" maxOccurs="unbounded" minOccurs="0" />
+        </xsd:sequence>    
+    </xsd:complexType>
+
+    <xsd:complexType name="fingerprint">
+		<xsd:annotation>
+            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+        </xsd:annotation> 
+        
+        <xsd:sequence>
+            <xsd:element name="echoprint" type="xsd:string" maxOccurs="1" minOccurs="0" />
+        </xsd:sequence>    
+    </xsd:complexType>
+
     <xsd:complexType name="creator">
     	<xsd:annotation>
-            This element contains information about the creator of that feed. 
+            <xsd:documentation xml:lang="en">This element contains  information about the creator of that feed.</xsd:documentation> 
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="email" type="email"/>
@@ -136,7 +254,7 @@
     </xsd:complexType>
     <xsd:complexType name="receiver">
     <xsd:annotation>
-            This element contains information about the receiver of that feed. 
+            <xsd:documentation xml:lang="en">This element contains  information about the receiver of that feed.</xsd:documentation> 
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="type" type="receivertypes"/>
@@ -149,7 +267,7 @@
     </xsd:complexType>
     <xsd:complexType name="crypto">
    		<xsd:annotation>
-            This element contains crypto information for secure and authenticated transfer. 
+            <xsd:documentation xml:lang="en">This element contains  crypto information for secure and authenticated transfer.</xsd:documentation> 
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="relatedemail" type="email"/>
@@ -159,7 +277,7 @@
     </xsd:complexType>
     <xsd:complexType name="sender">
     	<xsd:annotation>
-            This element contains information about the sender of that feed. 
+            <xsd:documentation xml:lang="en">This element contains  information about the sender of that feed.</xsd:documentation> 
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
@@ -169,7 +287,7 @@
     </xsd:complexType>
     <xsd:complexType name="licensor">
     	<xsd:annotation>
-            This element contains information about the licensor of that feed. 
+            <xsd:documentation xml:lang="en">This element contains  information about the licensor of that feed.</xsd:documentation> 
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
@@ -180,7 +298,7 @@
     
     <xsd:complexType name="licensee">
     	<xsd:annotation>
-            This element contains information about the licensee of that feed. 
+            <xsd:documentation xml:lang="en">This element contains  information about the licensee of that feed.</xsd:documentation> 
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
@@ -191,7 +309,7 @@
 
     <xsd:complexType name="actions">
     	<xsd:annotation>
-            This element contains information about possible actions with the feed.
+            <xsd:documentation xml:lang="en">This element contains  information about possible actions with the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="oninitialreceive" type="event"/>
@@ -203,7 +321,7 @@
     </xsd:complexType>
     <xsd:complexType name="oninitialreceive">
     	<xsd:annotation>
-            This element contains information about what should be done on initial receive of the feed.
+            <xsd:documentation xml:lang="en">This element contains  information about what should be done on initial receive of the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
@@ -211,7 +329,7 @@
     </xsd:complexType>
     <xsd:complexType name="onprocesstart">
    	 	<xsd:annotation>
-            This element contains information about what should be done on the start of processing the feed.
+            <xsd:documentation xml:lang="en">This element contains  information about what should be done on the start of processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
@@ -219,7 +337,7 @@
     </xsd:complexType>
     <xsd:complexType name="onprocessend">
    		<xsd:annotation>
-            This element contains information about what should be done on the end of processing the feed.
+            <xsd:documentation xml:lang="en">This element contains  information about what should be done on the end of processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
@@ -227,7 +345,7 @@
     </xsd:complexType>
     <xsd:complexType name="onfullsuccess">
     	<xsd:annotation>
-            This element contains information about what should be done on full success processing the feed.
+            <xsd:documentation xml:lang="en">This element contains  information about what should be done on full success processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
@@ -235,7 +353,7 @@
     </xsd:complexType>
     <xsd:complexType name="onerror">
     	<xsd:annotation>
-            This element contains information about what should be done on error processing the feed.
+            <xsd:documentation xml:lang="en">This element contains  information about what should be done on error processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
@@ -244,7 +362,7 @@
     
     <xsd:complexType name="event">
     	<xsd:annotation>
-            This element contains information about possible events and actions.
+            <xsd:documentation xml:lang="en">This element contains  information about possible events and actions.</xsd:documentation>
         </xsd:annotation>    
         <xsd:sequence>
             <xsd:element name="mailto" type="mailto" minOccurs="0" maxOccurs="unbounded"/>
@@ -256,7 +374,7 @@
     
     <xsd:complexType name="mailto">
     	<xsd:annotation>
-            This element contains information about mailto-event.
+            <xsd:documentation xml:lang="en">This element contains  information about mailto-event.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="action">
@@ -271,7 +389,7 @@
     
     <xsd:complexType name="http">
     	<xsd:annotation>
-            This element contains information about http-event.
+            <xsd:documentation xml:lang="en">This element contains  information about http-event.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="action">
@@ -322,15 +440,11 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+    
+    
+    
     <xsd:complexType name="to"/>
     <xsd:complexType name="costcoveredby"/>
-
-    <xsd:complexType name="ids"/>
-
-    <xsd:complexType name="contributors"/>
-    <xsd:complexType name="contributor"/>
-
-    <xsd:complexType name="www"/>
 
     <xsd:complexType name="information"/>
     <xsd:complexType name="related"/>
@@ -356,9 +470,6 @@
     <xsd:complexType name="tags"/>
     <xsd:complexType name="genres"/>
     <xsd:complexType name="genre"/>
-
-    <xsd:complexType name="items"/>
-    <xsd:complexType name="item"/>
 
     <xsd:complexType name="files"/>
     <xsd:complexType name="file"/>
