@@ -72,6 +72,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
@@ -99,6 +100,16 @@ public class Dialogs {
 	
 	public static void showMessage(String message) {
 		JOptionPane.showMessageDialog(null, message);
+	}
+	
+	public static void showText(String title, String message) {
+		JFrame f = new JFrame(title);
+		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		JTextArea text = new JTextArea();
+		text.setText(message);
+		f.getContentPane().add(new JScrollPane(text), BorderLayout.CENTER);
+		f.setSize(500,600);
+		f.setVisible(true);
 	}
 	
 	public static String showInputDialog(String title, String message) {

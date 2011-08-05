@@ -70,7 +70,7 @@ import java.util.Vector;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-public class PanelEncrypt extends JPanel {
+public class PanelSign extends JPanel {
 
 	//init fields
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
@@ -78,18 +78,17 @@ public class PanelEncrypt extends JPanel {
 	private JLabel label_file;
 	private JTextField text_file;
 	private JButton bu_file;
-	private JLabel label_enc_method;
-	private JComboBox select_enc_method;
-	private DefaultComboBoxModel select_enc_method_model;
+	
 	private JLabel label_format;
 	private JComboBox select_format;
 	private DefaultComboBoxModel select_format_model;
+	
 	private JLabel label_output;
 	private JTextField text_output;
-	private JTextField text_output2;
-	private JLabel label_password;
-	private JPasswordField text_password;
-	private JCheckBox check_show_pw;
+
+	private JCheckBox check_tsa;
+	private JTextField text_tsa;
+	
 	private JLabel label_keystore;
 	private JTextField text_keystore;
 	private JButton bu_keystore;
@@ -98,12 +97,13 @@ public class PanelEncrypt extends JPanel {
 	private JButton bu_keyid;
 	private JLabel label_listkeyids;
 	private JList list_keyids;
+	private JScrollPane scroll_list_keyids;
 	private DefaultListModel list_keyids_model;
 	private JButton bu_add;
 	private JButton bu_remove;
 	private KeyApprovingStore keystore =null;
 
-	public PanelEncrypt(KeyApprovingStore keystore) {
+	public PanelSign(KeyApprovingStore keystore) {
 		this.keystore = keystore;
 		initComponents();
 		initLayout();
@@ -119,14 +119,11 @@ public class PanelEncrypt extends JPanel {
 		return text_keyid.getText();
 	}
 	
-	public char[] getPassword() {
-		return text_password.getPassword();
-	}
-	public int getEncMethod() {
-		return select_enc_method.getSelectedIndex();
-	}
-	public int getEncFormat() {
-		return select_format.getSelectedIndex();
+	public String getTSAServer() {
+		if (check_tsa.isSelected() && text_tsa.getText().length()>0) {
+			return text_tsa.getText();
+		}
+		return null;
 	}
 	public String[] getKeyIDs() {
 		int kc = list_keyids_model.getSize(); 
@@ -142,28 +139,30 @@ public class PanelEncrypt extends JPanel {
 	public void init() {
 
 		text_file.setText("");
-		select_enc_method.setSelectedIndex(1);
 		select_format.setSelectedIndex(0);
 		text_output.setText("");
-		text_output2.setText("");
-		text_password.setText("");
-		check_show_pw.setSelected(false);
+		check_tsa.setSelected(false);
+		text_tsa.setEnabled(false);
+		
+		label_format.setVisible(false);
+		select_format.setVisible(false);
+		
 		text_keystore.setText("");
 		text_keyid.setText("");
-		label_password.setVisible(false);
-		text_password.setVisible(false);
-		check_show_pw.setVisible(false);
 		label_keystore.setVisible(false);
 		text_keystore.setVisible(false);
 		bu_keystore.setVisible(false);
-		label_keyid.setVisible(false);
-		text_keyid.setVisible(false);
-		bu_keyid.setVisible(false);
+		
+		boolean singleKey = true;
+		
+		label_keyid.setVisible(singleKey);
+		text_keyid.setVisible(singleKey);
+		bu_keyid.setVisible(singleKey);
 
-		label_listkeyids.setVisible(true);
-		list_keyids.setVisible(true);
-		bu_add.setVisible(true);
-		bu_remove.setVisible(true);
+		label_listkeyids.setVisible(!singleKey);
+		scroll_list_keyids.setVisible(!singleKey);
+		bu_add.setVisible(!singleKey);
+		bu_remove.setVisible(!singleKey);
 
 	}
 
@@ -186,19 +185,6 @@ public class PanelEncrypt extends JPanel {
 			}
 		});
 
-		label_enc_method = new JLabel("Encryption");
-
-		select_enc_method = new JComboBox();
-		select_enc_method_model = new DefaultComboBoxModel();
-		select_enc_method.setModel(select_enc_method_model);
-		init_select_enc_method_model();
-		map.put("select_enc_method", select_enc_method);
-		select_enc_method.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				select_enc_method_changed(select_enc_method.getSelectedIndex());
-			}
-		});
-
 		label_format = new JLabel("Format");
 
 		select_format = new JComboBox();
@@ -215,30 +201,20 @@ public class PanelEncrypt extends JPanel {
 		label_output = new JLabel("Output File");
 
 		text_output = new JTextField("");
-
 		text_output.setName("text_output");
 		map.put("text_output", text_output);
 		texts.add(text_output);
+		
+		text_tsa = new JTextField("");
+		text_tsa.setName("text_tsa");
+		map.put("text_tsa", text_tsa);
+		texts.add(text_tsa);
 
-		text_output2 = new JTextField("");
-
-		text_output2.setName("text_output2");
-		map.put("text_output2", text_output2);
-		texts.add(text_output2);
-
-		label_password = new JLabel("Password");
-
-		text_password = new JPasswordField("");
-
-		text_password.setName("text_password");
-		map.put("text_password", text_password);
-		texts.add(text_password);
-
-		check_show_pw = new JCheckBox("show");
-		map.put("check_show_pw", check_show_pw);
-		check_show_pw.addActionListener(new ActionListener() {
+		check_tsa = new JCheckBox("TSA Server");
+		map.put("check_tsa", check_tsa);
+		check_tsa.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				check_show_pw_changed(check_show_pw.isSelected());
+				check_tsa_changed(check_tsa.isSelected());
 			}
 		});
 
@@ -304,7 +280,6 @@ public class PanelEncrypt extends JPanel {
 		});
 		
 		text_output.setEditable(false);
-		text_output2.setEditable(false);
 		text_keyid.setEditable(false);
 	}
 
@@ -354,10 +329,10 @@ public class PanelEncrypt extends JPanel {
 		Container spacer0 = new Container();
 		Container spacer1 = new Container();
 
-
+		int y = 0;
 		// Component: label_file
 		gbc.gridx = 0;
-		gbc.gridy = 0;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -372,7 +347,7 @@ public class PanelEncrypt extends JPanel {
 
 		// Component: text_file
 		gbc.gridx = 1;
-		gbc.gridy = 0;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 100.0;
@@ -387,7 +362,7 @@ public class PanelEncrypt extends JPanel {
 
 		// Component: bu_file
 		gbc.gridx = 2;
-		gbc.gridy = 0;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -400,39 +375,10 @@ public class PanelEncrypt extends JPanel {
 		gbl.setConstraints(bu_file,gbc);
 		add(bu_file);
 
-		// Component: label_enc_method
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(label_enc_method,gbc);
-		add(label_enc_method);
-
-		// Component: select_enc_method
-		gbc.gridx = 1;
-		gbc.gridy = 1;
-		gbc.gridwidth = 2;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(select_enc_method,gbc);
-		add(select_enc_method);
-
+		y++;
 		// Component: label_format
 		gbc.gridx = 0;
-		gbc.gridy = 2;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -447,7 +393,7 @@ public class PanelEncrypt extends JPanel {
 
 		// Component: select_format
 		gbc.gridx = 1;
-		gbc.gridy = 2;
+		gbc.gridy = y;
 		gbc.gridwidth = 2;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -460,9 +406,10 @@ public class PanelEncrypt extends JPanel {
 		gbl.setConstraints(select_format,gbc);
 		add(select_format);
 
+		y++;
 		// Component: label_output
 		gbc.gridx = 0;
-		gbc.gridy = 3;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -477,7 +424,7 @@ public class PanelEncrypt extends JPanel {
 
 		// Component: text_output
 		gbc.gridx = 1;
-		gbc.gridy = 3;
+		gbc.gridy = y;
 		gbc.gridwidth = 2;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -490,84 +437,10 @@ public class PanelEncrypt extends JPanel {
 		gbl.setConstraints(text_output,gbc);
 		add(text_output);
 
-		// Component: spacer0
-		gbc.gridx = 0;
-		gbc.gridy = 4;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(spacer0,gbc);
-		add(spacer0);
-
-		// Component: text_output2
-		gbc.gridx = 1;
-		gbc.gridy = 4;
-		gbc.gridwidth = 2;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(text_output2,gbc);
-		add(text_output2);
-
-		// Component: label_password
-		gbc.gridx = 0;
-		gbc.gridy = 5;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(label_password,gbc);
-		add(label_password);
-
-		// Component: text_password
-		gbc.gridx = 1;
-		gbc.gridy = 5;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 100.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(text_password,gbc);
-		add(text_password);
-
-		// Component: check_show_pw
-		gbc.gridx = 2;
-		gbc.gridy = 5;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(check_show_pw,gbc);
-		add(check_show_pw);
-
+		y++;
 		// Component: label_keystore
 		gbc.gridx = 0;
-		gbc.gridy = 6;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -582,7 +455,7 @@ public class PanelEncrypt extends JPanel {
 
 		// Component: text_keystore
 		gbc.gridx = 1;
-		gbc.gridy = 6;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 100.0;
@@ -597,7 +470,7 @@ public class PanelEncrypt extends JPanel {
 
 		// Component: bu_keystore
 		gbc.gridx = 2;
-		gbc.gridy = 6;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -610,9 +483,10 @@ public class PanelEncrypt extends JPanel {
 		gbl.setConstraints(bu_keystore,gbc);
 		add(bu_keystore);
 
+		y++;
 		// Component: label_keyid
 		gbc.gridx = 0;
-		gbc.gridy = 7;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -627,7 +501,7 @@ public class PanelEncrypt extends JPanel {
 
 		// Component: text_keyid
 		gbc.gridx = 1;
-		gbc.gridy = 7;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 100.0;
@@ -642,7 +516,7 @@ public class PanelEncrypt extends JPanel {
 
 		// Component: bu_keyid
 		gbc.gridx = 2;
-		gbc.gridy = 7;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -655,9 +529,41 @@ public class PanelEncrypt extends JPanel {
 		gbl.setConstraints(bu_keyid,gbc);
 		add(bu_keyid);
 
+		y++;	
+		// Component: check_tsa
+		gbc.gridx = 0;
+		gbc.gridy = y;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(5,5,5,5);
+		gbl.setConstraints(check_tsa,gbc);
+		add(check_tsa);
+
+		// Component: text_tsa
+		gbc.gridx = 1;
+		gbc.gridy = y;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(5,5,5,5);
+		gbl.setConstraints(text_tsa,gbc);
+		add(text_tsa);
+		
+		y++;
 		// Component: label_listkeyids
 		gbc.gridx = 0;
-		gbc.gridy = 8;
+		gbc.gridy = y;
 		gbc.gridwidth = 2;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -670,10 +576,11 @@ public class PanelEncrypt extends JPanel {
 		gbl.setConstraints(label_listkeyids,gbc);
 		add(label_listkeyids);
 
+		y++;
 		// Component: list_keyids
-		JScrollPane scroll = new JScrollPane(list_keyids);
+		scroll_list_keyids = new JScrollPane(list_keyids);
 		gbc.gridx = 0;
-		gbc.gridy = 9;
+		gbc.gridy = y;
 		gbc.gridwidth = 2;
 		gbc.gridheight = 3;
 		gbc.weightx = 100.0;
@@ -683,12 +590,13 @@ public class PanelEncrypt extends JPanel {
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
 		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(scroll,gbc);
-		add(scroll);
+		gbl.setConstraints(scroll_list_keyids,gbc);
+		add(scroll_list_keyids);
 
+		
 		// Component: bu_add
 		gbc.gridx = 2;
-		gbc.gridy = 10;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -700,10 +608,11 @@ public class PanelEncrypt extends JPanel {
 		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(bu_add,gbc);
 		add(bu_add);
-
+		
+		y++;
 		// Component: bu_remove
 		gbc.gridx = 2;
-		gbc.gridy = 11;
+		gbc.gridy = y;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -716,21 +625,7 @@ public class PanelEncrypt extends JPanel {
 		gbl.setConstraints(bu_remove,gbc);
 		add(bu_remove);
 
-		// Component: spacer1
-		gbc.gridx = 0;
-		gbc.gridy = 12;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(spacer1,gbc);
-		add(spacer1);
-
+		y++;
 		// Component: filler
 		JLabel filler = new JLabel();
 		gbc.gridx = 0;
@@ -748,11 +643,11 @@ public class PanelEncrypt extends JPanel {
 		add(filler);
 	}
 
-	public OSDXKey selectEncryptionKey() {
+	public OSDXKey selectSigningKey() {
 		if (keystore==null) return null;
-		Vector<SubKey> keys = keystore.getAllEncyrptionSubKeys();
+		Vector<OSDXKey> keys = keystore.getAllPrivateSigningKeys();
 		if (keys.size()==0) {
-			Dialogs.showMessage("Sorry, no keys for encryption in keystore");
+			Dialogs.showMessage("Sorry, no keys for signtaure in keystore");
 			return null;
 		}
 		Vector<String> select = new Vector<String>();
@@ -770,7 +665,7 @@ public class PanelEncrypt extends JPanel {
 			}
 			map[select.size()-1] = i;
 		}
-		int ans = Dialogs.showSelectDialog("Select encryption key","Please select a key for encryption", select);
+		int ans = Dialogs.showSelectDialog("Select signature key","Please select a key for signature", select);
 		if (ans>=0 && ans<select.size()) {
 			return keys.get(map[ans]);
 		}
@@ -789,98 +684,42 @@ public class PanelEncrypt extends JPanel {
 			text_file.setText(f.getAbsolutePath());
 			if (select_format.getSelectedIndex()==0) {
 				//detatched
-				text_output.setText(f.getAbsolutePath()+".osdx.enc");
-				text_output2.setText(f.getAbsolutePath()+".osdx.enc.xml");
+				text_output.setText(f.getAbsolutePath()+"_signature.xml");
 			} else {
 				//inline
-				text_output.setText(f.getAbsolutePath()+".enc.osdx");
-				text_output2.setText("");
-			}	
+				text_output.setText(f.getAbsolutePath()+"_signed.osdx");
+			}
 		}
 	}
-	public void init_select_enc_method_model() {
-		select_enc_method_model.addElement("symmetric (with password)");
-		select_enc_method_model.addElement("symmetric (rand. key enc. with asymm. enc)");
-		select_enc_method_model.addElement("asymmetric");
-	}
-	public void select_enc_method_changed(int selected) {
-		if (selected==0) {
-			label_password.setVisible(true);
-			text_password.setVisible(true);
-			check_show_pw.setVisible(false); //true
-			label_keystore.setVisible(false);
-			text_keystore.setVisible(false);
-			bu_keystore.setVisible(false);
-			label_keyid.setVisible(false);
-			text_keyid.setVisible(false);
-			bu_keyid.setVisible(false);
-			label_listkeyids.setVisible(false);
-			list_keyids.setVisible(false);
-			bu_add.setVisible(false);
-			bu_remove.setVisible(false);
-		}
-		else if (selected==1) {
-			label_password.setVisible(false);
-			text_password.setVisible(false);
-			check_show_pw.setVisible(false);
-			label_keystore.setVisible(false);
-			text_keystore.setVisible(false);
-			bu_keystore.setVisible(false);
-			label_keyid.setVisible(false);
-			text_keyid.setVisible(false);
-			bu_keyid.setVisible(false);
-			label_listkeyids.setVisible(true);
-			list_keyids.setVisible(true);
-			bu_add.setVisible(true);
-			bu_remove.setVisible(true);
-		}
-		else {
-			label_password.setVisible(false);
-			text_password.setVisible(false);
-			check_show_pw.setVisible(false);
-			label_keystore.setVisible(false);
-			text_keystore.setVisible(false);
-			bu_keystore.setVisible(false);
-			label_keyid.setVisible(true);
-			text_keyid.setVisible(true);
-			bu_keyid.setVisible(true);
-			label_listkeyids.setVisible(false);
-			list_keyids.setVisible(false);
-			bu_add.setVisible(false);
-			bu_remove.setVisible(false);
-		}
-	}
+	
 	public void init_select_format_model() {
-		select_format_model.addElement("detatched metainfo file");
-		select_format_model.addElement("inline with encrypted data");
+		select_format_model.addElement("detatched signature file");
+		select_format_model.addElement("inline with original data");
 	}
+	
 	public void select_format_changed(int selected) {
 		if (selected==0) {
-			text_output2.setVisible(true);
 			//detatched
 			String f= text_file.getText();
 			if (f.length()>0) {
-				text_output.setText(f+".osdx.enc");
-				text_output2.setText(f+".osdx.enc.xml");
+				text_output.setText(f+"_signed.osdx");
 			}
 		} else {
-			text_output2.setVisible(false);
 			//inline
 			String f= text_file.getText();
 			if (f.length()>0) {	
-				text_output.setText(f+".enc.osdx");
-				text_output2.setText("");	
+				text_output.setText(f+"_signature.xml");
 			}
 		}
 	}
-	public void check_show_pw_changed(boolean selected) {
-		//not implemented
+	public void check_tsa_changed(boolean selected) {
+		text_tsa.setEnabled(selected);
 	}
 	public void bu_keystore_clicked() {
 		//not implemented 
 	}
 	public void bu_keyid_clicked() {
-		OSDXKey k = selectEncryptionKey();
+		OSDXKey k = selectSigningKey();
 		if (k!=null) {
 			text_keyid.setText(k.getKeyID());
 		}
@@ -892,7 +731,7 @@ public class PanelEncrypt extends JPanel {
 		//nothing to do
 	}
 	public void bu_add_clicked() {
-		OSDXKey k = selectEncryptionKey();
+		OSDXKey k = selectSigningKey();
 		if (k!=null) {
 			list_keyids_model.addElement(k.getKeyID());
 		}

@@ -167,6 +167,31 @@ public class Signature {
 		doc.writeToFile(output);
 	}
 	
+	public static void createSignatureFile(File toSign, File output, OSDXKey key, String tsa_server) throws Exception {
+		Signature s = createSignature(toSign, key);
+		String host = tsa_server;
+		int port = TSAClient.OSDX_TSASERVER_DEFAULT_PORT;
+		int ind = tsa_server.indexOf(':'); 
+		if (ind>0) {
+			try {
+				port = Integer.parseInt(tsa_server.substring(ind+1));
+			} catch (Exception ex) {
+				port = TSAClient.OSDX_TSASERVER_DEFAULT_PORT;
+				ex.printStackTrace();
+			}
+			host = tsa_server.substring(0,ind);
+		}
+		TSAClient tsa = new TSAClient(host,port);
+		tsa.connect();
+		Signature sig_tsa = tsa.getTSASignature(s);
+		tsa.close();
+		Element e = new Element("signatures");
+		e.addContent(s.toElement());
+		e.addContent(sig_tsa.toElement());
+		Document doc = Document.buildDocument(e);
+		doc.writeToFile(output);
+	}
+	
 	public OSDXKey getKey() {
 		return key;
 	}
@@ -215,25 +240,71 @@ public class Signature {
 	}
 	
 	public Result tryVerification(byte[] md5, byte[] sha1, byte[] sha256) throws Exception {
+		Element report = new Element("signature_verification_report");
+		report.addContent("keyid",key.getKeyID());
+		report.addContent("check_datetime", SecurityHelper.getFormattedDate(System.currentTimeMillis()));
+		if (md5!=null) {
+			report.addContent("md5",SecurityHelper.HexDecoder.encode(md5, ':',-1));
+		}
+		if (sha1!=null) {
+			report.addContent("sha1",SecurityHelper.HexDecoder.encode(sha1, ':',-1));
+		}
+		if (sha256!=null) {
+			report.addContent("sha256",SecurityHelper.HexDecoder.encode(sha256, ':',-1));
+		}
+		report.addContent("signature_datetime", SecurityHelper.getFormattedDate(getSignDatetime()));
+		report.addContent("key_valid_from", SecurityHelper.getFormattedDate(key.getValidFrom()));
+		report.addContent("key_valid_until", SecurityHelper.getFormattedDate(key.getValidUntil()));
+		
+		boolean ok = true;
 		//sha1 of key modulus = keyid
 		byte[] keyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(key.getKeyID()));
 		if (!Arrays.equals(keyid, SecurityHelper.getSHA1(key.getPublicModulusBytes()))) {
-			return Result.error("keyid dos not match sha1 of key modulus");
+			addReportElement(report,"key id matches sha1 of modulus",false);
+			ok = false;
+		} else {
+			addReportElement(report,"key id matches sha1 of modulus",true);
 		}
 		//datetime
+		boolean inDatetime = true;
 		if (key.getValidFrom()>signdatetime) {
-			return Result.error("signdatetime before key valid period");
+			inDatetime = false;
 		}
 		if (key.getValidUntil()<signdatetime) {
-			return Result.error("signdatetime after key valid period");
+			inDatetime = false;
+		}
+		if (inDatetime) {
+			addReportElement(report,"key valid at signature datetime",true);
+		} else {
+			ok = false;
+			addReportElement(report,"key valid at signature datetime",false);
 		}
 		try {
 			boolean verify = key.verify(signaturebytes,md5,sha1,sha256,signdatetime);
-			if (!verify) return Result.error("");
+			if (!verify) {
+				ok = false;
+				addReportElement(report,"signature bytes sign hashes and datetime",false);
+			} else {
+				addReportElement(report,"signature bytes sign hashes and datetime",true);
+			}
 		} catch (Exception ex) {
-			return Result.error(ex);
+			addReportElement(report,"signature bytes sign hashes and datetime",false);
+			Result r = Result.error(ex);
+			r.report = report;
+			return r;
 		}
-		return Result.succeeded();
+		if (ok) {
+			return Result.succeeded(report);
+		} else {
+			return Result.error(report);
+		}
+	}
+	
+	private void addReportElement(Element report, String msg, boolean ok) {
+		Element e = new Element("check");
+		e.addContent("message",msg);
+		e.addContent("result", (ok?"OK":"FAILED"));
+		report.addContent(e);
 	}
 	
 	public String getDataName() {

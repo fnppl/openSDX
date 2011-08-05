@@ -1,5 +1,7 @@
 package org.fnppl.opensdx.security;
 
+import org.fnppl.opensdx.xml.Element;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -50,6 +52,7 @@ public class Result {
 	public boolean succeeded = true;
 	public String errorMessage = null;
 	public Exception exception = null;
+	public Element report = null;
 	
 	private Result() {
 		
@@ -59,10 +62,23 @@ public class Result {
 		return new Result();
 	}
 	
+	public static Result succeeded(Element report) {
+		Result r = new Result();
+		r.report = report;
+		return r;
+	}
+	
 	public static Result error(String message) {
 		Result r = new Result();
 		r.succeeded = false;
 		r.errorMessage = message;
+		return r;
+	}
+	
+	public static Result error(Element report) {
+		Result r = new Result();
+		r.succeeded = false;
+		r.report = report;
 		return r;
 	}
 	

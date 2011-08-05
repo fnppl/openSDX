@@ -187,6 +187,8 @@ public class OSDXMessage {
 	
 	private Result verifySignatures(boolean verifyKeys, KeyVerificator keyverificator) throws Exception {
 	//	if (1==1) throw new RuntimeException("ERROR: OSDXMessage::verifySignatures not implemented");
+		Element report = new Element("signatures_verification_report");
+		boolean ok = true;
 		for (int i=0;i<signatures.size();i++) {
 			Signature signature = signatures.get(i);
 			Result verified = null;
@@ -196,13 +198,31 @@ public class OSDXMessage {
 			} else {
 				verified = signature.tryVerificationMD5SHA1SHA256(signatures.get(i-1).getSignatureBytes());
 			}
+			
+			Element aReport = verified.report;
+			if (aReport==null) throw new RuntimeException("signature verification DID NOT return a report!");
+			
 			if (verified.succeeded && verifyKeys) {
 				//verify key from signature
 				verified = keyverificator.verifyKey(signature.getKey(), signature.getSignDatetime());
+				//TODO add chain of trust to report
+				if (verified.succeeded) {
+					aReport.addContent("key_verification", "OK");
+				} else {
+					aReport.addContent("key_verification", "FAILED");
+				}
 			}
-			if (!verified.succeeded) return verified;
+			report.addContent(aReport);
+			if (!verified.succeeded) {
+				ok = false;
+				break;
+			}
 		}
-		return Result.succeeded();
+		if (ok) {
+			return Result.succeeded(report);
+		} else {
+			return Result.error(report);
+		}
 	}
 	
 	public Element toElement() {

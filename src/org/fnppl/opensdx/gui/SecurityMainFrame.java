@@ -61,6 +61,7 @@ import javax.swing.table.*;
 
 import org.fnppl.opensdx.gui.helper.PanelEncrypt;
 import org.fnppl.opensdx.gui.helper.PanelKeyLogs;
+import org.fnppl.opensdx.gui.helper.PanelSign;
 import org.fnppl.opensdx.security.*;
 import org.fnppl.opensdx.xml.*;
 import org.w3c.dom.ranges.RangeException;
@@ -311,7 +312,8 @@ public class SecurityMainFrame extends JFrame {
 					decryptFile();
 				}
 				else if(cmd.equalsIgnoreCase("signfile")) {
-					signFile();
+					//signFile();
+					showSignFileDialog();
 				}
 				else if(cmd.equalsIgnoreCase("verifysignature")) {
 					verifySignature();
@@ -1337,7 +1339,7 @@ public class SecurityMainFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				File f = Dialogs.chooseOpenFile("Please select file for signing", lastDir, "");
 				if (f!=null && f.exists()) {
-					signFile(key,f);
+					signFile(key,f,null);
 				}
 			}
 		});
@@ -1908,6 +1910,31 @@ public class SecurityMainFrame extends JFrame {
 		
 		return p;
 	}
+	
+	private void showSignFileDialog() {
+		PanelSign pSign = new PanelSign(currentKeyStore);
+		pSign.init();
+		int ans = JOptionPane.showConfirmDialog(null,pSign,"Sign File",JOptionPane.OK_CANCEL_OPTION);
+    	if (ans == JOptionPane.OK_OPTION) {
+    		File f = pSign.getFile();
+    		if (f==null) {
+    			Dialogs.showMessage("Sorry, no file for signing selected.");
+    			return;
+    		}
+			try {
+				String keyid = pSign.getKeyID(); 
+				if (keyid==null || keyid.length()==0) {
+					Dialogs.showMessage("Sorry, no signing key selected.");
+					return;
+				}
+				OSDXKey key = currentKeyStore.getKey(keyid);
+				String tsa_server = pSign.getTSAServer();
+				signFile(key, f, tsa_server);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+	    }
+	}
 
 
 	private void decryptFile() {
@@ -2326,31 +2353,81 @@ public class SecurityMainFrame extends JFrame {
 			File f = Dialogs.chooseOpenFile("Please select signature file for verification", lastDir, "");
 			if (f!=null && f.exists()) {
 				try {
-					Signature s = Signature.fromFile(f);
-					File origFile = null;
-					if (f.getName().endsWith("_signature.xml")) {
-						origFile = new File(f.getAbsolutePath().substring(0,f.getAbsolutePath().length()-14));
-						System.out.println("checking file: "+origFile.getAbsolutePath());
-						if (!origFile.exists()) origFile = null;
-					}
-					if (origFile == null) {
-						origFile = Dialogs.chooseOpenFile("Please select original file for signature verification", lastDir, "");
-					}
-					if (origFile != null) {
-						boolean v = s.tryVerificationFile(origFile).succeeded;
-						if (v) {
-							//Dialogs.showMessage("Signature verified!");
-							//verify signature key
-							Result r = keyverificator.verifyKey(s.getKey(), s.getSignDatetime());
-							if (r.succeeded) {
-								Dialogs.showMessage("Signature verified!");
-							} else {
-								Dialogs.showMessage("Signature NOT verified!\n"+r.errorMessage);
-							}
+					Element content = Document.fromFile(f).getRootElement();
+					if (content.getName().equals("signature")) {
+						Signature s = Signature.fromElement(content);
+						File origFile = getSignaturesOrigFile(f, s.getDataName());
+						if (origFile != null) {
+							Result res = s.tryVerificationFile(origFile);
 							
-						} else {
-							Dialogs.showMessage("Signature NOT verified!");
+							if (res.succeeded) {
+								//Dialogs.showMessage("Signature verified!");
+								//verify signature key
+								Result r = keyverificator.verifyKey(s.getKey(), s.getSignDatetime());
+								
+								if (r.succeeded) {
+									Dialogs.showMessage("Signature verified!");
+								} else {
+									Dialogs.showMessage("Signature NOT verified!\n"+r.errorMessage);
+								}
+								
+							} else {
+								Dialogs.showMessage("Signature NOT verified!");
+							}
+							Dialogs.showText("Signature Verification Report", Document.buildDocument(res.report).toString());
 						}
+					} else if (content.getName().equals("signatures")) {
+						boolean verifyKeys = true;
+						Vector<Element> sList = content.getChildren("signature");
+						if (sList==null || sList.size()==0) {
+							Dialogs.showMessage("ERROR: unknown signature format in: "+f.getAbsolutePath()+".");
+							return;
+						}
+						Signature sFirst = Signature.fromElement(sList.get(0));
+						File origFile = getSignaturesOrigFile(f, sFirst.getDataName());
+						if (origFile != null) {
+							Vector<Signature> signatures = new Vector<Signature>();
+							signatures.add(sFirst);
+							for (int i=1;i<sList.size();i++) {
+								Signature s = Signature.fromElement(sList.get(i));
+								signatures.add(s);
+							}
+							Element report = new Element("signatures_verification_report");
+							boolean ok = true;
+							for (int i=0;i<signatures.size();i++) {
+								Signature signature = signatures.get(i);
+								Result verified = null;
+								//verify internal signature
+								if (i==0) {
+									verified = signature.tryVerificationFile(origFile);
+								} else {
+									verified = signature.tryVerificationMD5SHA1SHA256(signatures.get(i-1).getSignatureBytes());
+								}
+								
+								Element aReport = verified.report;
+								if (aReport==null) throw new RuntimeException("signature verification DID NOT return a report!");
+								
+								if (verified.succeeded && verifyKeys) {
+									//verify key from signature
+									verified = keyverificator.verifyKey(signature.getKey(), signature.getSignDatetime());
+									//TODO add chain of trust to report
+									if (verified.succeeded) {
+										aReport.addContent("key_verification", "OK");
+									} else {
+										aReport.addContent("key_verification", "FAILED");
+									}
+								}
+								report.addContent(aReport);
+								if (!verified.succeeded) {
+									ok = false;
+									break;
+								}
+							}
+							Dialogs.showText("Signature Verification Report", Document.buildDocument(report).toString());
+						}
+					} else {
+						Dialogs.showMessage("ERROR: unknown signature format in: "+f.getAbsolutePath()+".");
+						return;
 					}
 				} catch (Exception e) {
 					Dialogs.showMessage("ERROR: verifying signature for file: "+f.getAbsolutePath()+" failed");
@@ -2358,6 +2435,23 @@ public class SecurityMainFrame extends JFrame {
 				}
 			}
 		}
+	}
+	
+	private File getSignaturesOrigFile(File f, String dataname) {
+		File origFile = null;
+		if (f.getName().endsWith("_signature.xml")) {
+			origFile = new File(f.getAbsolutePath().substring(0,f.getAbsolutePath().length()-14));
+			System.out.println("checking file: "+origFile.getAbsolutePath());
+			if (!origFile.exists()) origFile = null;
+		}
+		if (origFile == null) {
+			origFile = new File(f.getParent(),dataname);
+			if (!origFile.exists()) origFile = null;
+		}
+		if (origFile == null) {
+			origFile = Dialogs.chooseOpenFile("Please select original file for signature verification", lastDir, "");
+		}
+		return origFile;
 	}
 	
 	private void asymmetricEncryptedRandomSymmetricKeyEncryptionOfFile() {
@@ -2509,7 +2603,7 @@ public class SecurityMainFrame extends JFrame {
 			File f = Dialogs.chooseOpenFile("Please select file for signing", lastDir, "");
 			if (f!=null) {
 				lastDir = f.getParentFile();
-				signFile(key,f);
+				signFile(key,f,null);
 			}
 			
 //			Vector<SubKey> keys = currentKeyStore.getAllSigningSubKeys(); 
@@ -2533,17 +2627,25 @@ public class SecurityMainFrame extends JFrame {
 		}
 	}
 
-	private void signFile(OSDXKey key, File file) {
+	private void signFile(OSDXKey key, File file, String tsa_server) {
 		try {
 			if (!key.isPrivateKeyUnlocked()) key.unlockPrivateKey(messageHandler);
-
 			File fileout = new File(file.getAbsolutePath()+"_signature.xml");
-			Signature.createSignatureFile(file, fileout, key);
+			if (tsa_server==null) {
+				Signature.createSignatureFile(file, fileout, key);
+			} else {
+				Signature.createSignatureFile(file, fileout, key, tsa_server);
+			}
 			if (fileout.exists())
 				Dialogs.showMessage("Signature creation succeeded. \nfile: "+fileout.getAbsolutePath());
+			
 		} catch (Exception ex) {
-			Dialogs.showMessage("ERROR: Creating signature for file: "+file.getAbsolutePath()+" failed");
 			ex.printStackTrace();
+			if (tsa_server==null) {
+				Dialogs.showMessage("ERROR: Creating signature for file: "+file.getAbsolutePath()+" failed");
+			} else {
+				Dialogs.showMessage("ERROR: Creating signature for file: "+file.getAbsolutePath()+" incl. TSA failed");
+			}
 		}
 	}
 	

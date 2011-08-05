@@ -183,18 +183,40 @@ public class KeyLog {
 	
 	
 	private Result verifyLocalproofAndSignature() throws Exception {
-		if (signature == null) return  Result.error("missing signature");
-		if (sha256localproof == null) return  Result.error("missing keyserver localproof");
+		Element report = new Element("signature_verification_report");
+		
+		if (signature == null) {
+			report.addContent("error", "missing signature");
+			return  Result.error(report);
+		}
+		if (sha256localproof == null) {
+			report.addContent("error", "missing keyserver localproof");
+			return  Result.error(report);
+		}
 		
 		//check localproof
 		byte[] bsha256 = calcSha256LocalProof();
 		if (!Arrays.equals(bsha256, sha256localproof)) {
 			System.out.println("sha256localproof given      : "+SecurityHelper.HexDecoder.encode(sha256localproof, '\0', -1));
 			System.out.println("sha256localproof calculated : "+SecurityHelper.HexDecoder.encode(bsha256, '\0', -1));
-			return Result.error("verification of sha256localproof failed");
+			report.addContent("error", "verification of sha256localproof failed");
+			return  Result.error(report);
 		}
 		//check signoff
-		return signature.tryVerificationMD5SHA1SHA256(bsha256);
+		Result r = signature.tryVerificationMD5SHA1SHA256(bsha256);
+		if (r.report != null) {
+			//copy report content
+			for (Element e : r.report.getChildren()) {
+				report.addContent(XMLHelper.cloneElement(e));
+			}
+		} else {
+			throw new RuntimeException("signature verification DID NOT return a report!");
+		}
+		if (r.succeeded) {
+			return Result.succeeded(report);
+		} else {
+			return Result.error(report);
+		}
 	}
 	
 //	private void updateSha1(String field, org.bouncycastle.crypto.digests.SHA1Digest sha1) throws Exception {

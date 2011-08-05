@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLHelper;
 
 import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
@@ -157,9 +158,19 @@ public class KeyLogAction {
 	}
 	
 	public Result verifySignature() {
-		if (signature==null) return  Result.error("missing action signature");
-		if (sha256localproof_complete == null) return  Result.error("missing action localproof_complete");
-		if (sha256localproof_restricted == null) return  Result.error("missing action localproof_restricted");
+		Element report = new Element("signature_verification_report");
+		if (signature==null) {
+			report.addContent("error","missing signature of keylog action");
+			return  Result.error(report);
+		}
+		if (sha256localproof_complete == null) {
+			report.addContent("error","missing localproof_complete of keylog action");
+			return  Result.error(report);
+		}
+		if (sha256localproof_restricted == null) {
+			report.addContent("error","missing localproof_restricted of keylog action");
+			return  Result.error(report);
+		}
 		
 		//check signatures
 		try {
@@ -167,7 +178,19 @@ public class KeyLogAction {
 			if (Arrays.equals(calcLocalProof, sha256localproof_complete) ||  Arrays.equals(calcLocalProof, sha256localproof_restricted)) {
 				byte[] localproof = SecurityHelper.concat(sha256localproof_complete, sha256localproof_restricted);
 				Result res = signature.tryVerificationMD5SHA1SHA256(localproof);
-				return res;	
+				if (res.report != null) {
+					//copy report content
+					for (Element e : res.report.getChildren()) {
+						report.addContent(XMLHelper.cloneElement(e));
+					}
+				} else {
+					throw new RuntimeException("signature verification DID NOT return a report!");
+				}
+				if (res.succeeded) {
+					return Result.succeeded(report);
+				} else {
+					return Result.error(report);
+				}
 			} else {
 				System.out.println("sha256localproof complete    : "+SecurityHelper.HexDecoder.encode(sha256localproof_complete, '\0', -1));
 				System.out.println("sha256localproof restricted  : "+SecurityHelper.HexDecoder.encode(sha256localproof_restricted, '\0', -1));
@@ -175,14 +198,16 @@ public class KeyLogAction {
 				
 				Document.buildDocument(this.toElement(true)).output(System.out);
 				
-				
-				return Result.error("localproof does NOT match sha256localproof complete or restricted");
+				report.addContent("error","localproof in keylog action does NOT match sha256localproof complete or restricted");
+				return  Result.error(report);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Result.error(ex);
+			report.addContent("error","unknown error when checking localproof in keylog action");
+			Result r = Result.error(report);
+			r.exception = ex;
+			return r;
 		}
-		return Result.error("YOU WILL NEVER SEE ME!!");
 	}
 	
 	public Element toElement(boolean showRestricted) {
