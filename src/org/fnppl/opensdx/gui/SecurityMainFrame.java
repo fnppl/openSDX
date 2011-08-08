@@ -2352,25 +2352,61 @@ public class SecurityMainFrame extends JFrame {
 		if (currentKeyStore!=null) {
 			File f = Dialogs.chooseOpenFile("Please select signature file for verification", lastDir, "");
 			if (f!=null && f.exists()) {
+				lastDir = f.getParentFile();
 				try {
+					Element report = new Element("file_signature_verification_report");
+					report.addContent("check_datetime", SecurityHelper.getFormattedDate(System.currentTimeMillis()));
 					Element content = Document.fromFile(f).getRootElement();
 					if (content.getName().equals("signature")) {
 						Signature s = Signature.fromElement(content);
 						File origFile = getSignaturesOrigFile(f, s.getDataName());
 						if (origFile != null) {
-							Result res = s.tryVerificationFile(origFile);
-							
+							//calc md5, sha1, sha256
+							FileInputStream in = new FileInputStream(origFile);
+							BufferedInputStream bin = new BufferedInputStream(in);
+							byte[][] kk = SecurityHelper.getMD5SHA1SHA256(in);
+							byte[] md5sha1sha256 = kk[0];
+							byte[] md5 = kk[1];
+							byte[] sha1 = kk[2];
+							byte[] sha256 = kk[3];
+							in.close();
+							report.addContent("signed_filename", origFile.getName());
+							report.addContent("signature_filename", f.getName());
+							if (md5!=null) {
+								report.addContent("md5",SecurityHelper.HexDecoder.encode(md5, ':',-1));
+							}
+							if (sha1!=null) {
+								report.addContent("sha1",SecurityHelper.HexDecoder.encode(sha1, ':',-1));
+							}
+							if (sha256!=null) {
+								report.addContent("sha256",SecurityHelper.HexDecoder.encode(sha256, ':',-1));
+							}
+							Result res = s.tryVerification(md5, sha1, sha256);
+							Vector<Identity> ids = null;
+							if (s.getKey().isMaster()) {
+								ids = requestIdentitiyDetails(s.getKey().getKeyID(), null);	
+							} else {
+								if(s.getKey().isSub()) {
+									try {
+										ids = requestIdentitiyDetails(((SubKey)s.getKey()).getParentKeyID(), null);
+									} catch (Exception ex) {}
+								}
+							}
+							if (ids!=null && ids.size()>0) {
+								res.report.addContent(ids.lastElement().toElement(true));
+							} else { 
+								res.report.addContent("msg","no identity details found.");
+							}
 							if (res.succeeded) {
 								//Dialogs.showMessage("Signature verified!");
 								//verify signature key
 								Result r = keyverificator.verifyKey(s.getKey(), s.getSignDatetime());
-								
+								res.report.addContent(r.report);
 								if (r.succeeded) {
 									Dialogs.showMessage("Signature verified!");
 								} else {
 									Dialogs.showMessage("Signature NOT verified!\n"+r.errorMessage);
 								}
-								
 							} else {
 								Dialogs.showMessage("Signature NOT verified!");
 							}
@@ -2392,25 +2428,62 @@ public class SecurityMainFrame extends JFrame {
 								Signature s = Signature.fromElement(sList.get(i));
 								signatures.add(s);
 							}
-							Element report = new Element("signatures_verification_report");
+							//Element report = new Element("signatures_verification_report");
 							boolean ok = true;
 							for (int i=0;i<signatures.size();i++) {
 								Signature signature = signatures.get(i);
 								Result verified = null;
 								//verify internal signature
 								if (i==0) {
-									verified = signature.tryVerificationFile(origFile);
+									//calc md5, sha1, sha256
+									FileInputStream in = new FileInputStream(origFile);
+									BufferedInputStream bin = new BufferedInputStream(in);
+									byte[][] kk = SecurityHelper.getMD5SHA1SHA256(in);
+									byte[] md5sha1sha256 = kk[0];
+									byte[] md5 = kk[1];
+									byte[] sha1 = kk[2];
+									byte[] sha256 = kk[3];
+									in.close();
+									report.addContent("signed_filename", origFile.getName());
+									report.addContent("signature_filename", f.getName());
+									if (md5!=null) {
+										report.addContent("md5",SecurityHelper.HexDecoder.encode(md5, ':',-1));
+									}
+									if (sha1!=null) {
+										report.addContent("sha1",SecurityHelper.HexDecoder.encode(sha1, ':',-1));
+									}
+									if (sha256!=null) {
+										report.addContent("sha256",SecurityHelper.HexDecoder.encode(sha256, ':',-1));
+									}
+									verified = signature.tryVerification(md5, sha1, sha256);
+									//verified = signature.tryVerificationFile(origFile);
 								} else {
 									verified = signature.tryVerificationMD5SHA1SHA256(signatures.get(i-1).getSignatureBytes());
 								}
-								
 								Element aReport = verified.report;
 								if (aReport==null) throw new RuntimeException("signature verification DID NOT return a report!");
+								
+								Vector<Identity> ids = null;
+								if (signature.getKey().isMaster()) {
+									ids = requestIdentitiyDetails(signature.getKey().getKeyID(), null);	
+								} else {
+									if(signature.getKey().isSub()) {
+										try {
+											ids = requestIdentitiyDetails(((SubKey)signature.getKey()).getParentKeyID(), null);
+										} catch (Exception ex) {}
+									}
+								}
+								if (ids!=null && ids.size()>0) {
+									aReport.addContent(ids.lastElement().toElement(true));
+								} else { 
+									aReport.addContent("msg","no identity details found.");
+								}
 								
 								if (verified.succeeded && verifyKeys) {
 									//verify key from signature
 									verified = keyverificator.verifyKey(signature.getKey(), signature.getSignDatetime());
-									//TODO add chain of trust to report
+									//add chain of trust to report
+									aReport.addContent(verified.report);
 									if (verified.succeeded) {
 										aReport.addContent("key_verification", "OK");
 									} else {
@@ -2424,6 +2497,11 @@ public class SecurityMainFrame extends JFrame {
 								}
 							}
 							Dialogs.showText("Signature Verification Report", Document.buildDocument(report).toString());
+							
+							File fPDF = Dialogs.chooseSaveFile("Save report as PDF", lastDir, f.getName()+"_sig_verif.pdf");
+							if (fPDF!=null) {
+								ReportGenerator.buildFileSignatureVerificationReport(report, fPDF);
+							}
 						}
 					} else {
 						Dialogs.showMessage("ERROR: unknown signature format in: "+f.getAbsolutePath()+".");

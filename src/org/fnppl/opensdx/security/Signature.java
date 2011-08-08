@@ -57,6 +57,8 @@ import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
+import com.sun.jndi.cosnaming.IiopUrl.Address;
+
 /*
  * @author Henning Thieß <ht@fnppl.org>
  * 
@@ -232,6 +234,7 @@ public class Signature {
 		byte[] sha1 = kk[2];
 		byte[] sha256 = kk[3];
 		
+		
 //		System.out.println("md5            : "+SecurityHelper.HexDecoder.encode(md5,'\0',-1));
 //		System.out.println("sha1           : "+SecurityHelper.HexDecoder.encode(sha1,'\0',-1));
 //		System.out.println("sha256         : "+SecurityHelper.HexDecoder.encode(sha256,'\0',-1));
@@ -243,27 +246,38 @@ public class Signature {
 		Element report = new Element("signature_verification_report");
 		report.addContent("keyid",key.getKeyID());
 		report.addContent("check_datetime", SecurityHelper.getFormattedDate(System.currentTimeMillis()));
-		if (md5!=null) {
-			report.addContent("md5",SecurityHelper.HexDecoder.encode(md5, ':',-1));
+		report.addContent("dataname", dataname);
+		report.addContent("signature_datetime", SecurityHelper.getFormattedDate(signdatetime));
+		if (datamd5!=null) {
+			report.addContent("md5",SecurityHelper.HexDecoder.encode(datamd5, ':',-1));
 		}
-		if (sha1!=null) {
-			report.addContent("sha1",SecurityHelper.HexDecoder.encode(sha1, ':',-1));
+		if (datasha1!=null) {
+			report.addContent("sha1",SecurityHelper.HexDecoder.encode(datasha1, ':',-1));
 		}
-		if (sha256!=null) {
-			report.addContent("sha256",SecurityHelper.HexDecoder.encode(sha256, ':',-1));
+		if (datasha256!=null) {
+			report.addContent("sha256",SecurityHelper.HexDecoder.encode(datasha256, ':',-1));
 		}
 		report.addContent("signature_datetime", SecurityHelper.getFormattedDate(getSignDatetime()));
 		report.addContent("key_valid_from", SecurityHelper.getFormattedDate(key.getValidFrom()));
 		report.addContent("key_valid_until", SecurityHelper.getFormattedDate(key.getValidUntil()));
 		
+		if (datamd5!=null && md5!=null) {
+			addReportCheck(report,"md5 hash matches", Arrays.equals(datamd5, md5));
+		}
+		if (datasha1!=null && sha1!=null) {
+			addReportCheck(report,"sha1 hash matches", Arrays.equals(datasha1, sha1));
+		}
+		if (datasha256!=null && sha256!=null) {
+			addReportCheck(report,"sha256 hash matches", Arrays.equals(datasha256, sha256));
+		}
 		boolean ok = true;
 		//sha1 of key modulus = keyid
 		byte[] keyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(key.getKeyID()));
 		if (!Arrays.equals(keyid, SecurityHelper.getSHA1(key.getPublicModulusBytes()))) {
-			addReportElement(report,"key id matches sha1 of modulus",false);
+			addReportCheck(report,"key id matches sha1 of modulus",false);
 			ok = false;
 		} else {
-			addReportElement(report,"key id matches sha1 of modulus",true);
+			addReportCheck(report,"key id matches sha1 of modulus",true);
 		}
 		//datetime
 		boolean inDatetime = true;
@@ -274,21 +288,21 @@ public class Signature {
 			inDatetime = false;
 		}
 		if (inDatetime) {
-			addReportElement(report,"key valid at signature datetime",true);
+			addReportCheck(report,"key valid at signature datetime",true);
 		} else {
 			ok = false;
-			addReportElement(report,"key valid at signature datetime",false);
+			addReportCheck(report,"key valid at signature datetime",false);
 		}
 		try {
 			boolean verify = key.verify(signaturebytes,md5,sha1,sha256,signdatetime);
 			if (!verify) {
 				ok = false;
-				addReportElement(report,"signature bytes sign hashes and datetime",false);
+				addReportCheck(report,"signature bytes sign hashes and datetime",false);
 			} else {
-				addReportElement(report,"signature bytes sign hashes and datetime",true);
+				addReportCheck(report,"signature bytes sign hashes and datetime",true);
 			}
 		} catch (Exception ex) {
-			addReportElement(report,"signature bytes sign hashes and datetime",false);
+			addReportCheck(report,"signature bytes sign hashes and datetime",false);
 			Result r = Result.error(ex);
 			r.report = report;
 			return r;
@@ -300,7 +314,7 @@ public class Signature {
 		}
 	}
 	
-	private void addReportElement(Element report, String msg, boolean ok) {
+	private void addReportCheck(Element report, String msg, boolean ok) {
 		Element e = new Element("check");
 		e.addContent("message",msg);
 		e.addContent("result", (ok?"OK":"FAILED"));

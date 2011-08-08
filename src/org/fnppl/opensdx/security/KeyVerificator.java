@@ -53,6 +53,7 @@ import java.util.Vector;
 import java.util.WeakHashMap;
 
 import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.xml.Element;
 
 
 /**
@@ -81,41 +82,95 @@ public class KeyVerificator {
 	public static KeyVerificator make() {
 		return new KeyVerificator();
 	}
+	
+	private Element addReportCheck(Element report, String msg, boolean ok) {
+		Element e = new Element("check");
+		e.addContent("message",msg);
+		e.addContent("result", (ok?"OK":"FAILED"));
+		report.addContent(e);
+		return e;
+	}
 
 	public Result verifyKey(OSDXKey key, long datetime) {
 		return verifyKey(key, false, datetime);
 	}
 	
 	private Result verifyKey(OSDXKey key, boolean chainactive, long datetime) {
+		Element report = new Element("key_verification_report");
+		report.addContent("keyid", key.getKeyID());
+		report.addContent("verify_for_datetime", SecurityHelper.getFormattedDate(datetime));
+		
 		//sha1 of key modulus = keyid
 		byte[] keyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(key.getKeyID()));
 		if (!Arrays.equals(keyid, SecurityHelper.getSHA1(key.getPublicModulusBytes()))) {
-			return Result.error("keyid dos not match sha1 of key modulus");
+			addReportCheck(report, "key id matches sha1 of modulus", false);
+			Result res = Result.error("keyid dos not match sha1 of key modulus");
+			res.report = report;
+			return res;
+		} else {
+			addReportCheck(report, "key id matches sha1 of modulus", true);
 		}
+		
+		//valid at datetime
+		boolean inDatetime = true;
+		if (key.getValidFrom()>datetime) {
+			inDatetime = false;
+		}
+		if (key.getValidUntil()<datetime) {
+			inDatetime = false;
+		}
+		if (inDatetime) {
+			addReportCheck(report,"key valid at signature datetime",true);
+		} else {
+			addReportCheck(report,"key valid at signature datetime",false);
+			Result res = Result.error("key not valid for given datetime");
+			res.report = report;
+			return res;
+		}
+		
 		//already trusted key
-		if (isDirectlyTrusted(key.getKeyID())) return Result.succeeded();
+		if (isDirectlyTrusted(key.getKeyID())) {
+			addReportCheck(report,"key is directly trusted",true);
+			return Result.succeeded(report);
+		} else {
+			addReportCheck(report,"key is directly trusted",false); //NOT TOO BAD, it just says we have to find a chain-of-trust
+		}
 		
 		//find a keylog of a trusted key that approves the given key		
 		Result r = checkForKeyLogsThatTrustKey(key, datetime);
+		report.addContent(r.report);
 		if (r.succeeded) {
-			return Result.succeeded();
+			return Result.succeeded(report);
 		}
 		
 		if(chainactive) {
 //			return findChainOfTrustTo(key);
-			return Result.error("Given keyid: "+key.getKeyID()+"\nis NOT directly trusted and NO approval keylog of a trusted key could be found.\nChain-of-trust verification is NOT IMPLEMENTED yet.");			
+			report.addContent("error","Given keyid: "+key.getKeyID()+"\nis NOT directly trusted and NO approval keylog of a trusted key could be found.\nChain-of-trust verification is NOT IMPLEMENTED yet.");
+			Result res = Result.error("Given keyid: "+key.getKeyID()+"\nis NOT directly trusted and NO approval keylog of a trusted key could be found.\nChain-of-trust verification is NOT IMPLEMENTED yet.");
+			res.report = report;
+			return res;	
 		}
 		else {
-			return Result.error("Given keyid: "+key.getKeyID()+"\nis NOT directly trusted and NO approval keylog of a trusted key could be found.\n");
+			report.addContent("error","Given keyid: "+key.getKeyID()+"\nis NOT directly trusted and NO approval keylog of a trusted key could be found.\n");
+			Result res = Result.error("Given keyid: "+key.getKeyID()+"\nis NOT directly trusted and NO approval keylog of a trusted key could be found.\n");
+			res.report = report;
+			return res;
 		}
 	}
 	
 	private Result checkForKeyLogsThatTrustKey(OSDXKey key, long datetime) {
+		Element report = new Element("key_trustings_report");
 		if (isCheckInProgress(key.getKeyID())) {
-			return Result.error("key check is already progessing -> no loop");
+			report.addContent("error", "key check is already progessing -> no loop");
+			Result r = Result.error("key check is already progessing -> no loop");
+			r.report = report;
+			return r;
 		}
 		if (isDirectlyNotTrusted(key.getKeyID())) {
-			return Result.error("key is already registered as not trusted");
+			report.addContent("error", "key is already registered as not trusted");
+			Result r = Result.error("key is already registered as not trusted");
+			r.report = report;
+			return r;
 		}
 		checkInProgress.add(key);
 		//check keylogs for keys that trust this key
@@ -139,6 +194,7 @@ public class KeyVerificator {
 							if (!isDirectlyNotTrusted(keylog.getKeyIDFrom())) {
 								hasRevokeLog = true;
 								System.out.println("found revocation for subkey: "+key.getKeyID());
+								report.addContent("messsage", "key is a subkey and is REVOKED by "+keylog.getKeyIDFrom());
 							}
 						}
 					} catch (Exception ex) {
@@ -147,15 +203,22 @@ public class KeyVerificator {
 				}
 			}
 			if (!hasRevokeLog) {
+				report.addContent("messsage", "key is a subkey -> parent key is checked for trust");
 				//next step: verify parent-key
 				MasterKey parent = requestParentKey((SubKey)key);
 				if (parent!=null) {
 					if (isDirectlyTrusted(parent.getKeyID())) {
 						checkInProgress.remove(key);
+						Element e = addReportCheck(report, "parent key is directly trusted", true);
+						e.addContent("parent_keyid", parent.getKeyID());
 						return Result.succeeded();
 					} else {
 						checkInProgress.remove(key);
-						return checkForKeyLogsThatTrustKey(parent, datetime);
+						Element e = addReportCheck(report, "parent key is directly trusted", false);
+						e.addContent("parent_keyid", parent.getKeyID());
+						Result res = checkForKeyLogsThatTrustKey(parent, datetime);
+						report.addContent(res.report);
+						return res;
 					}
 				}
 			}
@@ -209,7 +272,9 @@ public class KeyVerificator {
 				for (KeyLog child : preChildKeylogs) {
 					try {
 						if (isDirectlyTrusted(child.getKeyIDFrom())) {
-							return Result.succeeded();
+							Element e = addReportCheck(report, "key is approved by a directly trusted key", true);
+							e.addContent("keyid", child.getKeyIDFrom());
+							return Result.succeeded(report);
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace();
@@ -218,7 +283,10 @@ public class KeyVerificator {
 			}
 		}
 		checkInProgress.remove(key);
-		return Result.error("Sorry, no approval keylog of a trusted key found.");
+		addReportCheck(report, "key is approved by a directly trusted key", false);
+		Result r = Result.error("Sorry, no approval keylog of a trusted key found.");
+		r.report = report;
+		return r;
 	}
 	
 	public void addKeyServer(KeyServerIdentity keyserver) {

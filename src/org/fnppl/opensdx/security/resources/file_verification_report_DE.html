@@ -1,0 +1,113 @@
+<html>
+<head></head>
+<body>
+<h1>Signatur - Pr&uuml;fbericht<h1>
+<br></br>
+
+<table border="0" cellspacing="4" style="font-family:Arial, Helvetica, sans-serif; font-size:9.5px">
+  <tr>
+    <td colspan="30">Zeitpunkt der Pr&uuml;fung</td>
+    <td colspan="70">[check_datetime]</td>
+  </tr>
+  <tr><td colspan="100"></td></tr>
+  <tr>
+    <td colspan="100"><b>Signierte Daten</b></td>
+  </tr>
+  <tr>
+    <td colspan="30">Name der signierten Datei</td>
+    <td colspan="70">[orig_filename]</td>
+  </tr>
+  <tr>
+    <td colspan="30">Name der Signatur-Datei</td>
+    <td colspan="70">[signature_filename]</td>
+  </tr>
+  <tr>
+    <td colspan="100">Hashwerte der signierten Datei</td>
+  </tr>
+  <tr>
+    <td colspan="1"></td>
+    <td colspan="8">MD5</td>
+    <td colspan="91">[orig_md5]</td>
+  </tr>
+  <tr>
+    <td colspan="1"></td>
+    <td colspan="8">SHA1</td>
+    <td colspan="91">[orig_sha1]</td>
+  </tr>
+  <tr>
+    <td colspan="1"></td>
+    <td colspan="8">SHA256</td>
+    <td colspan="91">[orig_sha256]</td>
+  </tr>
+<!-- signature start -->
+  <tr><td colspan="100"></td></tr>
+  <tr><td colspan="100"></td></tr>
+  <tr>
+    <td colspan="100"><b>Signatur</b></td>
+  </tr>
+  <tr>
+    <td colspan="30">Datum der Signatur</td>
+    <td colspan="70">[sig_datetime]</td>
+  </tr>
+  <tr>
+    <td colspan="30">Signatur-Schl&uuml;ssel ID</td>
+    <td colspan="70">[sig_keyid]</td>
+  </tr>
+  <tr>
+    <td colspan="100"></td>
+  </tr>
+  <tr>
+    <td colspan="30">G&uuml;ltigkeit des Schl&uuml;ssels</td>
+    <td colspan="30">[sig_key_valid_from]</td>
+    <td colspan="5">bis</td>
+    <td colspan="30">[sig_key_valid_until]</td>
+  </tr>
+  <tr><td colspan="100"></td></tr>
+  <tr><td colspan="100"></td></tr>
+  <tr>
+    <td colspan="100"><u>&Ouml;ffentliche Angaben zum Besitzer des vewendeten Schl&uuml;ssles</u></td>
+  </tr>
+  <tr>
+    <td colspan="30">Schl&uuml;ssel-Server</td>
+    <td colspan="70">[sig_keyserver]</td>
+  </tr>
+  <!-- identity field start -->
+  <tr>
+    <td colspan="30">[id_name]</td>
+    <td colspan="70">[id_value]</td>
+  </tr>
+  <!-- identity field end -->
+  <tr><td colspan="100"></td></tr>
+  <tr><td colspan="100"></td></tr>
+  <tr>
+    <td colspan="100"><u>Signatur Pr&uuml;fung</u></td>
+  </tr>
+  <tr>
+    <td colspan="80">Angaben zum Schl&uuml;ssel stimmen mit Angaben auf dem Schl&uuml;ssel-Server &uuml;berein:</td>
+    <td colspan="20">[check_key_keyserver]</td>
+  </tr>
+  <tr>
+    <td colspan="80">Schl&uuml;ssel ist für Signaturen zugelassen:</td>
+    <td colspan="20">[check_can_sign]</td>
+  </tr>
+  <tr>
+    <td colspan="80">Schl&uuml;ssel ID passt zum Schl&uuml;ssel-Modulus</td>
+    <td colspan="20">[check_keyid]</td>
+  </tr>
+  <tr>
+    <td colspan="80">Signatur wurde im Zeitraum der Schl&uuml;ssel-G&uuml;tigkeit erstellt:</td>
+    <td colspan="20">[check_valid]</td>
+  </tr>
+  <tr>
+    <td colspan="80">Signatur-Bytes signieren die Hash-Werte und das Signaturdatum korrekt:</td>
+    <td colspan="20">[check_sig_bytes]</td>
+  </tr>
+  <tr>
+    <td colspan="80">Hashwerte der signierten Daten stimmen mit den Angaben in der Signatur überein:</td>
+    <td colspan="20">[check_hash]</td>
+  </tr>
+<!-- signature end -->
+</table>
+
+</body>
+</html>
