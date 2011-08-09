@@ -121,7 +121,7 @@
     </xsd:complexType>
 	<xsd:complexType name="contributors">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains a list of contributor.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="contributor" type="contributor" maxOccurs="unbounded" minOccurs="1" />
@@ -129,7 +129,9 @@
 	</xsd:complexType>
 	<xsd:complexType name="contributor">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information of one contributor. A contributor can be a label, performer, 
+            texter, writer, vocals, conductor, display_artist, compilator, copyright, production or clearinghouse. A Year should be provided 
+            in case the type equals copyright or production.</xsd:documentation>
         </xsd:annotation> 
         <xsd:all>
         	<xsd:element name="name" type="xsd:string" />
@@ -142,7 +144,7 @@
 	</xsd:complexType>
     <xsd:complexType name="ids">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+            <xsd:documentation xml:lang="en">This Element is a container for all IDs which are important for the associated element.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
         	<xsd:element name="grid" type="xsd:string" maxOccurs="1" minOccurs="0" />
@@ -160,26 +162,27 @@
     </xsd:complexType>
     <xsd:complexType name="www">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+            <xsd:documentation xml:lang="en">This Element is a container for the important web addresses and phone of the associated element (contributor e.g.). Phone should be in international format.
+            Every single information-entry cold be tagged "publishable" which would then mean wether customers of receiver are also allowed to be given this information. If publishable is not given, then this is granted.</xsd:documentation>
         </xsd:annotation>
-        <xsd:sequence>
-        	<xsd:element name="facebook" type="xsd:string" maxOccurs="1" minOccurs="0" />
-        	<xsd:element name="myspace" type="xsd:string" maxOccurs="1" minOccurs="0" />
-        	<xsd:element name="homepage" type="xsd:string" maxOccurs="1" minOccurs="0" />
-        	<xsd:element name="twitter" type="xsd:string" maxOccurs="1" minOccurs="0" />
-        	<xsd:element name="phone" type="phone" maxOccurs="1" minOccurs="0" />
-        </xsd:sequence>    
+        <xsd:all>
+        	<xsd:element name="facebook" type="publishable" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="myspace" type="publishable" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="homepage" type="publishable" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="twitter" type="publishable" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="phone" type="publishable" maxOccurs="1" minOccurs="0" />
+        </xsd:all>  
     </xsd:complexType>
-	<xsd:complexType name="phone">
+	<xsd:complexType name="publishable">
 	  <xsd:simpleContent>
 	    <xsd:extension base="xsd:string">
 	      <xsd:attribute name="publishable" type="xsd:boolean" />
 	    </xsd:extension>
 	  </xsd:simpleContent>
-	</xsd:complexType>
+	</xsd:complexType>    
     <xsd:complexType name="items">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element is a container for item-elements.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="item" type="item" maxOccurs="unbounded" minOccurs="1" />
@@ -187,7 +190,9 @@
     </xsd:complexType>
     <xsd:complexType name="item">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about a item just like a track. The type describes what the item is e.g. audio, video, android-app et cetera.
+            The entry "version" is important if different versions of the bundle exist. The licens_basic and license_specifics contains information and rules about pricing, allowed and 
+            disallowed territories, channels an so on. The child "files" hold information for the associated files for this item.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="displayname" type="xsd:string" />
@@ -208,7 +213,9 @@
     </xsd:complexType>
     <xsd:complexType name="information">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains important data for an item/file. Multilingual promotexts ans teasertexts, dates of physical and
+            digital release, playlength of file, position of the file in relation to other file of bundle, number of set (e.g. 2 for cd 2), the suggested prelistining 
+            offset if the file not starts e.g. with significant content, origin country and main language of file and information about related bundles.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="promotext" type="promotext" maxOccurs="unbounded" minOccurs="0" />
@@ -240,7 +247,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="related">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">Say what?</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains informations of bundles which are related to the bundle of the actual feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="physical_distributor" type="physical_distributor" maxOccurs="unbounded" minOccurs="0" />
