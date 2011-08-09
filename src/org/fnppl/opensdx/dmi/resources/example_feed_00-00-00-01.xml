@@ -303,9 +303,9 @@
 				<year>2005</year><!-- SHOULD for copyright/production -->
 				<ids>
 					<finetunes></finetunes><!-- finetunes-strange-id -->
-					<own></own><!-- must be unique for that contributor/licensor -->
-					<your></your><!-- if given some kind of "your" id: thats it -->
-					<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
+					<licensor></licensor><!-- must be unique for that contributor/licensor -->
+					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
+					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
 				</ids>
 				<www>
 					<facebook></facebook>
@@ -321,9 +321,9 @@
 				<year>2004</year><!-- SHOULD for copyright/production -->
 				<ids>
 					<finetunes></finetunes><!-- finetunes-strange-id -->
-					<own></own><!-- must be unique for that contributor/licensor -->
-					<your></your><!-- if given some kind of "your" id: thats it -->
-					<contentauthid></contentauthid><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
+					<licensor></licensor><!-- must be unique for that contributor/licensor -->
+					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
+					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
 				</ids>
 				<www>
 					<facebook></facebook>
@@ -399,7 +399,7 @@
 			</pricing>
 			<streaming_allowed>true</streaming_allowed>
 	        <channels>
-	          <channels type="allow">ad supported</channels>  <!-- all | ad supported | premium -->
+	          <channel type="allow">ad supported</channel>  <!-- all | ad supported | premium -->
 	        </channels>
 		</license_basis><!-- these are the basic rules under which this bundle is provided to u (of course on basis of those agreed on in the contracting phase) -->
 		
@@ -408,39 +408,41 @@
 			<!-- all territories here MUST be given in *basis* -->
 			<!-- all times here MUST be included in the basis-timeframe -->
 			<!-- HT 14.02.2011 - using some *basic-if-then-else*-style here because of clarity and easy implemenation-possibility -->
-			<rule num="1"><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
-				<if>
-					<what>territory</what>
-					<operator>containedin</operator><!-- equals/before/after/contains/containedin -->
-					<value>EU</value>
-				</if>
-				<then>
-					<echo>me is debugging output for happy programmers...</echo><!-- HT 14.02.2011 - much appreciated... -->
-					<break /><!-- this means to not process any more rules...; just leave it away to "continue" -->
-				</then>
-				<else><!-- HT 14.02.2011 we should not cascade this now..., but could easily do -->
-					<proclaim>
-						<what>price</what>
-						<for>EUR 9.99</for>
-					</proclaim>
-					<proclaim>
-						<what>pricelevel</what>
-						<for>medium</for>
-					</proclaim>
-					<break />
-				</else>
-			</rule><!-- numbered since we need an ordered mode here - first come first match -->
-			
-			<rule num="2"><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
-				<if>
-					<what>territory</what><!-- *field* -->
-					<operator>equals</operator><!-- equals/before/after/contains/containedin -->
-					<value>DE</value>
-				</if>
-				<then>
-					<echo>YOU CANNOT EVEN REACH ME - since RULE1 breaks and DE is in EU</echo>					
-				</then>				
-			</rule>
+			<rules>
+				<rule num="1"><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
+					<if>
+						<what>territory</what>
+						<operator>containedin</operator><!-- equals/before/after/contains/containedin -->
+						<value>EU</value>
+					</if>
+					<then>
+						<echo>me is debugging output for happy programmers...</echo><!-- HT 14.02.2011 - much appreciated... -->
+						<break /><!-- this means to not process any more rules...; just leave it away to "continue" -->
+					</then>
+					<else><!-- HT 14.02.2011 we should not cascade this now..., but could easily do -->
+						<proclaim>
+							<what>price</what>
+							<for>EUR 9.99</for>
+						</proclaim>
+						<proclaim>
+							<what>pricelevel</what>
+							<for>medium</for>
+						</proclaim>
+						<break />
+					</else>
+				</rule><!-- numbered since we need an ordered mode here - first come first match -->
+				
+				<rule num="2"><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
+					<if>
+						<what>territory</what><!-- *field* -->
+						<operator>equals</operator><!-- equals/before/after/contains/containedin -->
+						<value>DE</value>
+					</if>
+					<then>
+						<echo>YOU CANNOT EVEN REACH ME - since RULE1 breaks and DE is in EU</echo>					
+					</then>				
+				</rule>
+			</rules>
 		</license_specifics><!-- MUST ; if no specific rules should be applied: empty node -->
 		
 		<reporting>
@@ -544,22 +546,20 @@
 					<related>					
 						<utube>
 							<url></url>
-						</utube>
-						<utube>
 							<channel></channel>
 						</utube>
 					</related><!-- SHOULD ; if available any other forms of this product (versions, cover, tracks included in mix etc.) -->
 				</information>
 
 				<license_basis>
-					<as_on_bundle /><!-- COULD ; if as_on_bundle-node given, this means to take the enclosing bundle's license-basis ; could also be omitted ; could otherwise be the same rules as above -->
+					<as_on_bundle>true</as_on_bundle><!-- COULD ; if as_on_bundle 'true', this means to take the enclosing bundle's license-basis ; could also be omitted ; could otherwise be the same rules as above -->
 					<pricing>
 						<pricecode>LOW</pricecode><!-- COULD ; arbitrary-info ; mainly agreed in  -->
 						<wholesale>EUR 0.99</wholesale><!-- COULD ; an explicitly given wholesale-price overrides the basic pricecode-given-wp ; most probably either one of pricecode OR wholesaleprice should be given -->
 					</pricing><!--  given the "as_on_bunlde"-tag, but giving also tags here would override those in effect ... - should also check for "nullable" -->
 				</license_basis>
 				<license_specifics>
-					<as_on_bundle /><!-- COULD ; if as_on_bundle-node given, this means to take the enclosing bundle's license-basis ; could also be omitted ; could otherwise be the same rules as above -->
+					<rules /><!-- MUST ; no rules -> empty -->
 				</license_specifics>
 
 				<tags>
