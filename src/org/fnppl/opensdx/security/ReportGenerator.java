@@ -55,11 +55,11 @@ import org.fnppl.opensdx.keyserver.PostgresBackend;
 import org.fnppl.opensdx.pdf.PDFUtil;
 import org.fnppl.opensdx.xml.Element;
 
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 public class ReportGenerator {
 	
 	public static void buildFileSignatureVerificationReport(Element report, File outputPDF) {
-		String sOK = "OK";
-		String sFAILED = "NEIN";
 		URL html_template = ReportGenerator.class.getResource("resources/file_verification_report_DE.html");
 		try {
 		    BufferedReader in = new BufferedReader(new InputStreamReader(html_template.openStream()));
@@ -141,35 +141,28 @@ public class ReportGenerator {
 	            		}
 	            	}
 	            	else if (msg.equals("key id matches sha1 of modulus")) {
-	            		if (value.equals("OK")) {
-	            			sigAppend = sigAppend.replace("[check_keyid]", sOK);	
-	            		} else {
-	            			sigAppend = sigAppend.replace("[check_keyid]", sFAILED);
-	            		}
+	            		sigAppend = sigAppend.replace("[check_keyid]", getStatusMsg(value));	
 	            	}
 	            	else if (msg.equals("key valid at signature datetime")) {
-	            		if (value.equals("OK")) {
-	            			sigAppend = sigAppend.replace("[check_valid]", sOK);	
-	            		} else {
-	            			sigAppend = sigAppend.replace("[check_valid]", sFAILED);
-	            		}
+	            		sigAppend = sigAppend.replace("[check_valid]", getStatusMsg(value));	
 	            	}
 	            	else if (msg.equals("signature bytes sign hashes and datetime")) {
-	            		if (value.equals("OK")) {
-	            			sigAppend = sigAppend.replace("[check_sig_bytes]", sOK);	
-	            		} else {
-	            			sigAppend = sigAppend.replace("[check_sig_bytes]", sFAILED);
-	            		}
-	            	}            
+	            		sigAppend = sigAppend.replace("[check_sig_bytes]", getStatusMsg(value));	
+	            		
+	            	}
+	            	else if (msg.equals("key allows signing")) {
+	            		sigAppend = sigAppend.replace("[check_can_sign]", getStatusMsg(value));	
+	            	}
 	            }
 	            if (md5ok && sha1ok && sha256ok) {
-	            	sigAppend = sigAppend.replace("[check_hash]", sOK);
+	            	sigAppend = sigAppend.replace("[check_hash]", getStatusMsg("OK"));
 	            } else {
-	            	sigAppend = sigAppend.replace("[check_hash]", sFAILED);
+	            	sigAppend = sigAppend.replace("[check_hash]", getStatusMsg("FAILED"));
 	            }
 	            
+	            //key verificator report
+	            
 	            sigAppend = sigAppend.replace("[check_key_keyserver]", "?");
-	            sigAppend = sigAppend.replace("[check_can_sign]", "?");
 	      
 	            tb.append(sig);
 	            tb.append(sigAppend);
@@ -180,6 +173,19 @@ public class ReportGenerator {
             PDFUtil.fromHTMLtoPDF(tb.toString(), outputPDF);
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		}
+	}
+	private static String sOK = "OK";
+	private static String sFAILED = "NEIN";
+	private static String sUNKNOWN = "?";
+	
+	private static String getStatusMsg(String value) {
+		if (value.equals("OK")) {
+			return sOK;	
+		} else if (value.equals("FAILED")) {
+			return sFAILED;
+		} else {
+			return sUNKNOWN;
 		}
 	}
 }

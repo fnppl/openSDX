@@ -58,60 +58,46 @@
 	</tsaserver>
 	<rootsigningkey>
 		<keypair>
-  <identities>
-    <identity>
-      <identnum>0001</identnum>
-      <email>debug_tsa_signing@tsaserver.fnppl.org</email>
-      <mnemonic />
-      <country />
-      <region />
-      <city />
-      <postcode />
-      <company />
-      <unit />
-      <subunit />
-      <function />
-      <surname />
-      <middlename />
-      <name />
-      <phone />
-      <note />
-      <sha256>5D:0E:0A:7A:B3:F0:D0:DF:C4:DA:4C:D6:AD:30:8D:A3:1D:5A:72:59:DB:E4:15:BC:E6:70:D2:BA:AB:A4:58:59</sha256>
-      <datapath />
-    </identity>
-  </identities>
-  <sha1fingerprint>E1:2A:18:8C:2D:70:32:91:F2:A4:E2:ED:48:3E:AA:35:41:68:6C:CD</sha1fingerprint>
-  <authoritativekeyserver>localhost</authoritativekeyserver>
-  <datapath>
-    <step1>
-      <datasource>LOCAL</datasource>
-      <datainsertdatetime>2011-05-02 12:10:44 GMT+00:00</datainsertdatetime>
-    </step1>
-  </datapath>
-  <valid_from>2011-05-02 12:10:44 GMT+00:00</valid_from>
-  <valid_until>2036-05-01 18:10:44 GMT+00:00</valid_until>
-  <usage>ONLYSIGN</usage>
-  <level>MASTER</level>
-  <parentkeyid />
-  <algo>RSA</algo>
-  <bits>3072</bits>
-  <modulus>00:85:7B:26:53:98:E5:79:DA:33:BD:16:B4:14:F7:01:75:09:98:4F:16:CA:00:DA:AC:2C:05:23:B2:1B:9E:46:85:B1:1A:E0:CC:79:1A:53:83:E3:B4:65:6A:3E:47:E4:27:D3:84:F5:58:31:D2:95:E1:5B:F5:C0:93:0B:A7:99:28:9F:63:17:23:5A:7B:81:14:B3:E1:00:03:32:99:25:EA:CC:90:E0:2C:C8:15:A1:5E:E6:3E:04:F0:A8:EE:FF:BF:C4:4B:34:B4:AA:0F:4F:62:29:94:89:EC:DA:F8:25:FD:20:09:B5:C4:A0:2B:C0:6B:16:F3:EA:F3:98:E9:4D:E4:76:59:A5:BA:E5:74:3B:9E:2D:82:3F:DD:6F:3D:35:92:FB:A1:77:72:0B:E0:97:D2:2A:40:95:BE:AE:38:E0:18:90:7C:70:E7:F6:B1:FD:09:15:17:07:2B:A7:34:98:6F:3F:BD:BC:86:4D:D4:2D:4A:28:BA:B6:15:A0:FE:63:1D:CB:A6:04:00:45:F6:7B:1C:D6:F6:BB:64:97:BB:36:1F:C8:A9:2E:31:36:B9:B7:9E:38:82:4C:0C:6F:B4:38:4C:B0:68:0E:7B:A1:5A:69:18:3C:B2:29:92:AC:6D:E3:45:21:94:49:D0:84:4D:FB:5B:00:1A:8D:AC:0E:05:DD:3F:0F:FA:09:45:90:17:AF:B0:16:DE:E1:E8:77:08:DD:75:B8:D1:26:C1:70:5A:21:D5:A1:F3:B1:AB:F5:72:9C:05:06:F3:A7:89:CC:10:16:8A:09:C9:DB:39:64:07:F3:C4:79:12:A4:10:DF:98:62:00:26:A8:BE:DF:7A:07:CE:0B:E3:42:41:CD:33:73:FE:68:C8:E4:7B:13:87:88:97:D9:CE:A8:DF:8F:77:2A:90:38:C0:3C:83:5F:20:0D:16:8C:E5:0E:F1:4F:93:FE:05:2C:98:27:E1:67:0B:F1:33:9E:48:F6:50:78:9B:B2:C3:75:62:1E:3F:FD:F9:8A:55:3F</modulus>
-  <pubkey>
-    <exponent>01:00:01</exponent>
-  </pubkey>
-  <privkey>
-    <exponent>
-      <locked>
-        <mantraname>debug</mantraname>
-        <algo>AES@256</algo>
-        <initvector>84:62:4E:53:9C:38:FE:96:FC:33:BF:7C:16:25:10:B6</initvector>
-        <padding>CBC/PKCS#5</padding>
-        <bytes>02:01:F0:7B:99:91:08:AB:A8:D5:C3:F5:30:C3:3D:FE:C8:7F:B1:F2:57:0C:A6:82:1E:D8:51:06:40:E6:CB:C9:36:51:C2:77:6A:11:F4:88:44:D8:88:27:97:8B:01:9F:79:1E:86:4F:26:9D:BF:47:1B:2B:41:10:C6:94:51:8D:6B:FB:3D:B0:95:96:2C:72:6E:18:6B:79:53:93:FC:61:70:FB:A1:0A:DF:1A:19:B7:3E:34:71:99:D7:E8:DA:FE:D7:06:F4:95:E3:2B:F3:7D:98:9D:6F:11:04:70:7F:FF:E0:5C:A9:09:DD:1B:2B:4D:F3:92:FD:F3:69:02:21:8B:03:3B:54:47:28:95:83:6E:CA:18:46:34:7C:91:56:A8:2F:8B:22:5E:6F:26:77:11:D3:FF:53:8B:7E:A8:3A:95:5F:DA:5B:A3:DB:EC:2B:44:05:27:8B:1B:25:85:20:D5:DE:E9:FF:5F:56:01:C6:4D:6A:28:DE:20:0A:DF:57:54:0B:FE:9F:FF:83:5D:1C:12:AD:92:6A:18:5A:6C:09:0A:A6:32:FD:75:4D:AD:78:D9:AA:6A:7D:EC:E7:95:9B:83:A4:3D:86:83:D9:E9:25:18:00:05:95:C2:68:2A:DE:D9:BE:F7:21:B4:07:CA:72:97:9E:71:AA:07:05:40:AE:27:6C:15:EB:53:5D:D5:68:9C:A9:E6:60:19:5E:57:BB:04:AA:A2:FE:D0:60:52:94:A9:94:1D:8E:C2:AE:EB:5F:5D:E9:08:D5:C9:DB:E5:95:82:4C:92:DE:F0:61:EA:F6:20:AB:A8:ED:A6:42:DE:66:AA:C8:92:E2:27:9B:B6:A8:0F:F3:DA:C9:1F:DF:C7:A3:67:CD:6C:67:AE:98:53:EF:EE:B2:E8:C2:3E:42:D5:59:72:B4:79:76:E7:D1:0C:CF:8A:FD:40:02:1F:C5:72:F0:64:E7:7E:89:D5:04:53:A4:B5:FD:8E:61:7E:1C:CC:17:40:D1:97:D3:02:B9:ED:E6:CE:AC:80:15:DD:6D:1D:18:CC:E2:5B:21:14:95:EB:2D:83</bytes>
-      </locked>
-    </exponent>
-  </privkey>
-  <gpgkeyserverid />
-</keypair>
+		  <identities>
+		    <identity>
+		      <identnum>0001</identnum>
+		      <email>debug@it-is-awesome.de</email>
+		      <mnemonic restricted="false">TSA Signature</mnemonic>
+		      <sha256>18:D8:15:36:C2:ED:CE:B3:CF:80:29:FD:D2:BB:05:E9:B8:4F:C2:A0:47:29:C6:00:32:2B:86:41:1A:CC:4F:C1</sha256>
+		    </identity>
+		  </identities>
+		  <sha1fingerprint>A0:7F:D1:E4:BB:B1:E9:6D:AC:D7:D1:C6:5D:9E:38:9E:43:A9:F7:60</sha1fingerprint>
+		  <authoritativekeyserver>keyserver.fnppl.org</authoritativekeyserver>
+		  <datapath>
+		    <step1>
+		      <datasource>LOCAL</datasource>
+		      <datainsertdatetime>2011-08-09 12:25:52 GMT+00:00</datainsertdatetime>
+		    </step1>
+		  </datapath>
+		  <valid_from>2011-08-09 12:25:52 GMT+00:00</valid_from>
+		  <valid_until>2036-08-08 18:25:52 GMT+00:00</valid_until>
+		  <usage>ONLYSIGN</usage>
+		  <level>MASTER</level>
+		  <parentkeyid />
+		  <algo>RSA</algo>
+		  <bits>3072</bits>
+		  <modulus>00:94:0C:BB:AA:E2:58:66:FF:28:F2:4D:D0:DA:28:18:A5:BD:AF:47:BD:9E:DF:3C:5E:F4:CF:42:30:83:D2:49:4A:9B:2E:47:53:29:C0:A3:28:9D:24:AB:9D:CA:B7:5E:66:84:1C:EA:DC:CC:87:DE:70:A9:23:DF:D8:93:7F:26:B5:AD:5E:32:07:C0:5A:C7:A8:F8:83:23:4A:78:0E:11:A1:B3:7C:D4:71:63:73:F6:1E:4B:00:40:EE:E7:1D:C5:41:36:95:C8:5F:FB:F5:57:6C:D9:F0:70:AD:1D:BC:F2:3E:84:88:8D:53:F6:94:DC:63:31:D2:1D:D1:0C:8D:23:00:57:5B:DD:F1:99:90:1E:12:E1:DB:21:B4:AB:2A:B2:BC:F3:A0:E2:9C:CC:B9:73:13:70:D0:C8:27:D4:D6:60:D0:69:9C:02:E8:2D:B1:74:3A:15:B6:E9:B4:21:C5:AD:68:38:7D:CE:D4:BF:79:49:EA:A2:A6:99:8C:64:56:4E:51:F2:95:69:E3:C8:59:E0:5B:F5:C2:78:0B:3E:43:43:AA:EB:C3:4D:47:61:36:50:25:6D:D7:52:42:E3:54:E9:0F:79:46:7D:31:50:6D:2E:41:9E:FE:BE:33:46:79:E8:F4:F7:E4:F1:47:3A:78:DC:A0:15:9E:53:8E:8B:2F:05:96:D0:74:1B:73:76:67:A2:84:89:A1:66:B7:72:2E:5B:27:0F:FF:D8:2F:EB:2D:4B:2C:82:D0:84:D0:79:5D:E6:7B:4D:A4:AE:EE:8D:7B:96:E6:FB:5C:FF:F4:A9:91:CB:F8:2D:CB:57:8F:7E:87:69:11:01:97:60:C2:84:07:1B:14:DC:3D:D8:EB:4B:7A:9C:D7:74:D4:55:25:0B:A4:32:C9:59:A2:93:B7:3D:13:34:9F:46:93:0E:51:D9:9E:AE:B5:0D:C2:1D:6E:99:D9:47:B1:EB:1C:4B:CB:05:66:5A:C0:DD:04:94:59:C5:21:15:A7:C9:C1:C3:22:D8:8E:C5:3B</modulus>
+		  <pubkey>
+		    <exponent>01:00:01</exponent>
+		  </pubkey>
+		  <privkey>
+		    <exponent>
+		      <locked>
+		        <mantraname />
+		        <algo>AES@256</algo>
+		        <initvector>DD:7D:18:92:AA:9A:A3:A7:9C:D9:5A:1F:E3:81:35:F1</initvector>
+		        <padding>CBC/PKCS#5</padding>
+		        <bytes>22:BE:34:95:60:71:CF:D0:41:2E:85:6D:07:01:0C:10:F1:2E:1F:42:D5:13:1A:65:DB:97:25:16:01:4E:B8:D6:1F:23:27:A7:BF:9E:0F:0F:76:C6:6A:FC:48:85:C8:3C:99:5C:21:29:DD:DF:81:A0:C2:A7:BA:E3:F1:40:85:96:A0:17:7A:4B:47:BC:AC:C9:06:FB:E8:0A:E6:FA:77:48:1A:B8:49:B3:31:3E:3D:DF:6F:0C:EC:82:06:A7:51:D2:E6:ED:87:CA:24:40:86:2C:AA:B8:8D:5B:59:34:4D:89:63:B9:FC:16:F4:E0:F6:FE:EF:D2:BB:77:1E:E4:81:33:AE:A1:10:B6:74:89:9A:3C:0A:C6:53:EA:A6:66:26:CF:B2:64:55:0F:FB:9C:E0:39:36:AA:36:47:7A:95:D7:46:31:07:F4:B6:05:3A:70:E0:E3:C0:55:7B:16:A2:F3:E6:2B:37:7A:40:03:4E:42:15:83:A3:A6:28:DE:18:26:3C:65:CE:72:F9:7E:75:FF:F5:01:5E:62:8C:3D:98:6B:94:35:32:AD:9C:13:0D:C3:A0:74:F8:CA:D2:E5:0D:40:8A:F6:35:5D:FF:11:2C:23:06:F7:56:22:98:ED:F4:C9:16:8C:E6:2E:31:A8:58:BF:18:EF:7F:D9:1E:90:21:59:77:38:65:B7:C2:6C:21:94:CF:61:B8:E9:25:FD:62:1A:9E:AB:EA:66:E2:71:69:F1:3D:D3:CB:FC:14:E8:85:7B:94:EB:B3:28:F2:16:E1:4F:A1:A7:38:7E:B3:12:4C:92:F9:F3:D5:A6:A7:C7:13:B1:36:B4:D0:4B:A4:5E:C9:27:BB:94:6E:62:C2:A7:EE:28:0E:22:7C:FB:B6:E0:7E:5A:D1:55:DF:50:8C:3F:D3:81:73:72:2A:30:5F:6C:95:67:F3:BC:40:B2:0B:6D:22:5F:35:9B:EF:E7:5C:3D:3A:60:5B:00:C2:21:39:4C:D5:EB:8B:D2:22:92:38:5D:C9:10:C3:6E:E5:D7:C4:98:44:C2:B2:CA:22:F0:DA:75:B5:CA:C4</bytes>
+		      </locked>
+		    </exponent>
+		  </privkey>
+		  <gpgkeyserverid />
+		</keypair>
 	</rootsigningkey>
 </opensdx_tsaserver>
 

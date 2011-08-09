@@ -100,6 +100,21 @@ public class KeyVerificator {
 		report.addContent("keyid", key.getKeyID());
 		report.addContent("verify_for_datetime", SecurityHelper.getFormattedDate(datetime));
 		
+		//key data matches keydata on keyserver 
+//		OSDXKey remoteKey = requestPublicKey(key.getKeyID());
+//		boolean match = true;
+//		try {
+//			if (remoteKey.getLevel()!=key.getLevel()) match = false;
+//			if (remoteKey.getUsage()!=key.getUsage()) match = false;
+//			if (remoteKey.getValidFrom()!=key.getValidFrom()) match = false;
+//			if (remoteKey.getValidUntil()!=key.getValidUntil()) match = false;
+//			if (!Arrays.equals(remoteKey.getPublicModulusBytes(), key.getPublicModulusBytes())) match = false;
+//			if (!Arrays.equals(remoteKey.getPubKey().getPublicExponentBytes(), key.getPubKey().getPublicExponentBytes())) match = false;
+//			addReportCheck(report, "key data matches key data on keyserver", match);
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
+		
 		//sha1 of key modulus = keyid
 		byte[] keyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(key.getKeyID()));
 		if (!Arrays.equals(keyid, SecurityHelper.getSHA1(key.getPublicModulusBytes()))) {
@@ -296,8 +311,17 @@ public class KeyVerificator {
 		if (!keyservers.contains(keyserver)) {
 			keyservers.add(keyserver);
 		}
-		
 	}
+	
+	public KeyServerIdentity getKeyServer(String host) {
+		for(KeyServerIdentity ks : keyservers) {
+			if (ks.getHost().equalsIgnoreCase(host)) {
+				return ks;
+			}
+		}
+		return KeyServerIdentity.make(host, KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "");
+	}
+	
 	
 	public void addKeyRating(OSDXKey key, int trustRating) {
 		TrustRatingOfKey tr = directRating.get(key.getKeyID());
@@ -374,7 +398,8 @@ public class KeyVerificator {
 	
 	public Vector<KeyLog> requestKeyLogs(OSDXKey key) {
 		try {
-			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "",this);
+			KeyServerIdentity keyserver = getKeyServer(key.getAuthoritativekeyserver());
+			KeyClient client = new KeyClient(keyserver, this);
 			Vector<KeyLog> result = client.requestKeyLogs(key.getKeyID(),null);
 			if (client.getMessage()!=null) {
 				System.out.println("request Keylogs: Message: "+client.getMessage());
@@ -404,7 +429,8 @@ public class KeyVerificator {
 	
 	public MasterKey requestParentKey(SubKey sub) {
 		try {
-			KeyClient client = new KeyClient(sub.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "",this);
+			KeyServerIdentity keyserver = getKeyServer(sub.getAuthoritativekeyserver());
+			KeyClient client = new KeyClient(keyserver, this);
 			MasterKey parent = client.requestMasterPubKey(sub.getKeyID());
 			if (client.getMessage()!=null) {
 				System.out.println("request parentkey: Message: "+client.getMessage());
@@ -415,10 +441,31 @@ public class KeyVerificator {
 		}
 		return null;
 	}
-	
+
+	public OSDXKey requestPublicKey(String keyid) {
+		try {
+			if (keyid.indexOf('@')<0) {
+				return null;
+			}
+			String keyservername = keyid.substring(keyid.lastIndexOf('@')+1);
+			
+			KeyServerIdentity keyserver = getKeyServer(keyservername);
+			KeyClient client = new KeyClient(keyserver, this);
+			OSDXKey pubkey = client.requestPublicKey(keyid);
+			if (client.getMessage()!=null) {
+				System.out.println("request public key: Message: "+client.getMessage());
+			}
+			return pubkey;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+
 	public Vector<Identity> requestIdentity(MasterKey key) {
 		try {
-			KeyClient client = new KeyClient(key.getAuthoritativekeyserver(), KeyClient.OSDX_KEYSERVER_DEFAULT_PORT, "",this);
+			KeyServerIdentity keyserver = getKeyServer(key.getAuthoritativekeyserver());
+			KeyClient client = new KeyClient(keyserver, this);
 			Vector<Identity> ids = client.requestIdentities(key.getKeyID(),null);
 			if (client.getMessage()!=null) {
 				System.out.println("request parentkey: Message: "+client.getMessage());

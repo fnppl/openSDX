@@ -92,6 +92,7 @@ public class SecurityMainFrame extends JFrame {
 
 	//menu items
 	private JMenuItem jmiCloseKeyStore;
+	private JMenuItem jmiSaveKeyStore;
 	private JMenuItem jmiWriteKeyStoreToFile;
 	private JMenuItem jmiGenerateMaster;
 	private JMenuItem jmiGenerateSet;
@@ -278,6 +279,9 @@ public class SecurityMainFrame extends JFrame {
 				else if(cmd.equalsIgnoreCase("openkeystore")) {
 					openKeystore();
 				}
+				else if(cmd.equalsIgnoreCase("savekeystore")) {
+					writeCurrentKeyStore(false);
+				}
 				else if(cmd.equalsIgnoreCase("closekeystore")) {
 					closeCurrentStore();
 				}
@@ -337,6 +341,11 @@ public class SecurityMainFrame extends JFrame {
 		jmi.addActionListener(ja);
 		jm.add(jmi);
 
+		jmiSaveKeyStore = new JMenuItem("SaveKeyStore");
+		jmiSaveKeyStore.setActionCommand("savekeystore");
+		jmiSaveKeyStore.addActionListener(ja);
+		jm.add(jmiSaveKeyStore);
+		
 		jmiCloseKeyStore = new JMenuItem("CloseKeyStore");
 		jmiCloseKeyStore.setActionCommand("closekeystore");
 		jmiCloseKeyStore.addActionListener(ja);
@@ -432,12 +441,12 @@ public class SecurityMainFrame extends JFrame {
 	
 	private void setMenuOptionVisible(boolean keystoreOpend) {
 		jmiCloseKeyStore.setEnabled(keystoreOpend);
+		jmiSaveKeyStore.setEnabled(keystoreOpend);
 		jmiWriteKeyStoreToFile.setEnabled(keystoreOpend);
 		jmiGenerateMaster.setEnabled(keystoreOpend);
 		jmiGenerateSet.setEnabled(keystoreOpend);
 		jmiRequestKeys.setEnabled(keystoreOpend);
 		jmiAddKeyServer.setEnabled(keystoreOpend);
-		
 	}
 
 	private void buildUi() {
@@ -2365,7 +2374,6 @@ public class SecurityMainFrame extends JFrame {
 							FileInputStream in = new FileInputStream(origFile);
 							BufferedInputStream bin = new BufferedInputStream(in);
 							byte[][] kk = SecurityHelper.getMD5SHA1SHA256(in);
-							byte[] md5sha1sha256 = kk[0];
 							byte[] md5 = kk[1];
 							byte[] sha1 = kk[2];
 							byte[] sha256 = kk[3];
@@ -2388,8 +2396,22 @@ public class SecurityMainFrame extends JFrame {
 							} else {
 								if(s.getKey().isSub()) {
 									try {
-										ids = requestIdentitiyDetails(((SubKey)s.getKey()).getParentKeyID(), null);
-									} catch (Exception ex) {}
+										String parentkeyid = ((SubKey)s.getKey()).getParentKeyID();
+										if (parentkeyid==null) {
+											OSDXKey key = s.getKey();
+											KeyClient client =  getKeyClient(key.getAuthoritativekeyserver());
+											if (client!=null) {
+												MasterKey masterkey = client.requestMasterPubKey(key.getKeyID());
+												if (masterkey!=null) {
+													ids = requestIdentitiyDetails(masterkey.getKeyID(), null);
+												}
+											}
+										} else {
+											ids = requestIdentitiyDetails(parentkeyid, null);
+										}
+									} catch (Exception ex) {
+										ex.printStackTrace();
+									}
 								}
 							}
 							if (ids!=null && ids.size()>0) {
@@ -2397,6 +2419,7 @@ public class SecurityMainFrame extends JFrame {
 							} else { 
 								res.report.addContent("msg","no identity details found.");
 							}
+							report.addContent(res.report);
 							if (res.succeeded) {
 								//Dialogs.showMessage("Signature verified!");
 								//verify signature key
@@ -2405,12 +2428,16 @@ public class SecurityMainFrame extends JFrame {
 								if (r.succeeded) {
 									Dialogs.showMessage("Signature verified!");
 								} else {
-									Dialogs.showMessage("Signature NOT verified!\n"+r.errorMessage);
+									Dialogs.showMessage("Signature NOT verified!");
 								}
 							} else {
 								Dialogs.showMessage("Signature NOT verified!");
 							}
-							Dialogs.showText("Signature Verification Report", Document.buildDocument(res.report).toString());
+							//Dialogs.showText("Signature Verification Report", Document.buildDocument(report).toString());
+							File fPDF = Dialogs.chooseSaveFile("Save verification report as PDF", lastDir, f.getName()+"_sig_verif.pdf");
+							if (fPDF!=null) {
+								ReportGenerator.buildFileSignatureVerificationReport(report, fPDF);
+							}
 						}
 					} else if (content.getName().equals("signatures")) {
 						boolean verifyKeys = true;
@@ -2439,7 +2466,6 @@ public class SecurityMainFrame extends JFrame {
 									FileInputStream in = new FileInputStream(origFile);
 									BufferedInputStream bin = new BufferedInputStream(in);
 									byte[][] kk = SecurityHelper.getMD5SHA1SHA256(in);
-									byte[] md5sha1sha256 = kk[0];
 									byte[] md5 = kk[1];
 									byte[] sha1 = kk[2];
 									byte[] sha256 = kk[3];
@@ -2469,8 +2495,22 @@ public class SecurityMainFrame extends JFrame {
 								} else {
 									if(signature.getKey().isSub()) {
 										try {
-											ids = requestIdentitiyDetails(((SubKey)signature.getKey()).getParentKeyID(), null);
-										} catch (Exception ex) {}
+											String parentkeyid = ((SubKey)signature.getKey()).getParentKeyID();
+											if (parentkeyid==null) {
+												OSDXKey key = signature.getKey();
+												KeyClient client =  getKeyClient(key.getAuthoritativekeyserver());
+												if (client!=null) {
+													MasterKey masterkey = client.requestMasterPubKey(key.getKeyID());
+													if (masterkey!=null) {
+														ids = requestIdentitiyDetails(masterkey.getKeyID(), null);
+													}
+												}
+											} else {
+												ids = requestIdentitiyDetails(parentkeyid, null);
+											}
+										} catch (Exception ex) {
+											ex.printStackTrace();
+										}
 									}
 								}
 								if (ids!=null && ids.size()>0) {
@@ -2496,8 +2536,12 @@ public class SecurityMainFrame extends JFrame {
 									break;
 								}
 							}
-							Dialogs.showText("Signature Verification Report", Document.buildDocument(report).toString());
-							
+							//Dialogs.showText("Signature Verification Report", Document.buildDocument(report).toString());
+							if (ok) {
+								Dialogs.showMessage("Signature verified!");
+							} else {
+								Dialogs.showMessage("Signature NOT verified!");
+							}
 							File fPDF = Dialogs.chooseSaveFile("Save report as PDF", lastDir, f.getName()+"_sig_verif.pdf");
 							if (fPDF!=null) {
 								ReportGenerator.buildFileSignatureVerificationReport(report, fPDF);
@@ -3998,6 +4042,7 @@ public class SecurityMainFrame extends JFrame {
 		currentKeyStore = null;
 		update();
 	}
+
 
 	public void generateMasterKeyPair() {
 		if (currentKeyStore!=null) {

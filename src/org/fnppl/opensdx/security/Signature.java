@@ -271,6 +271,13 @@ public class Signature {
 			addReportCheck(report,"sha256 hash matches", Arrays.equals(datasha256, sha256));
 		}
 		boolean ok = true;
+		//key allows signing
+		if (key.allowsSignatures()) {
+			addReportCheck(report,"key allows signing",true);
+		} else {
+			addReportCheck(report,"key allows signing",false);
+			ok = false;
+		}
 		//sha1 of key modulus = keyid
 		byte[] keyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(key.getKeyID()));
 		if (!Arrays.equals(keyid, SecurityHelper.getSHA1(key.getPublicModulusBytes()))) {

@@ -109,11 +109,22 @@ public class TSAServerMain extends HTTPServer {
 			MasterKey newSigningKey = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
 			newSigningKey.setAuthoritativeKeyServer(servername);
 			Identity id = Identity.newEmptyIdentity();
-			id.setEmail("debug_tsa_signing@it-is-awesome.de");
+			id.setEmail("debug@it-is-awesome.de");
+			id.setMnemonic("TSA Signature");
+			id.set_mnemonic_restricted(false);
 			id.setIdentNum(1);
 			id.createSHA256();	
 			newSigningKey.addIdentity(id);
+			newSigningKey.setAuthoritativeKeyServer("keyserver.fnppl.org");
 			newSigningKey.createLockedPrivateKey("", pwSigning);
+			
+			//upload to fnppl.org
+			KeyVerificator verify = KeyVerificator.make();
+			KeyClient client = new KeyClient("keyserver.fnppl.org", 80, "", verify);
+			client.putMasterKey(newSigningKey, id);
+			//upload self approval
+			//client.putKeyLogAction(KeyLogAction.buildKeyLogAction(KeyLogAction.APPROVAL, newSigningKey, newSigningKey.getKeyID(), id, "self approval"), newSigningKey);
+			client.close();
 			
 			Document d = Document.buildDocument(newSigningKey.toElement(messageHandler));
 			System.out.println("\nTSAServerSigningKey:");

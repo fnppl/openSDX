@@ -385,6 +385,11 @@ public class OSDXKey {
 		}
 		return false;
 	}
+	
+	public boolean allowsSignatures() {
+		return usage == USAGE_SIGN || usage == USAGE_WHATEVER;
+	}
+	
 	public String getKeyID() {
 		return getKeyModulusSHA1()+"@"+authoritativekeyserver;
 	}

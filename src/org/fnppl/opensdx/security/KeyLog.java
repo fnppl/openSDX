@@ -269,7 +269,12 @@ public class KeyLog {
 			Result v = kl.verify();
 			//Document.buildDocument(kl.toElement(true)).output(System.out);
 			if(!v.succeeded) {
-				System.out.println(v.errorMessage);
+				if (v.errorMessage!=null) {
+					System.out.println(v.errorMessage);
+				}
+				if (v.report!=null) {
+					Document.buildDocument(v.report).output(System.out);
+				}
 				throw new Exception("KeyLog:  verification of localproof and signature failed.");
 			}
 		}

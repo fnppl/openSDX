@@ -118,8 +118,8 @@ public class IdentityEditDialog extends JDialog {
 	int x3 = x2+w2+absX;
 	int x4 = x3+w3+absX+absX+absX;
 	
-	int absY = 6;
-	int h = 22;
+	int absY = 2;
+	int h = 27;
 	
 	int y = 20;
 	
