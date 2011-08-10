@@ -133,9 +133,10 @@ public class PostgresBackend implements KeyServerBackend {
 	}
 	
 	public boolean hasKey(String keyid) {
+		keyid = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
 		boolean has = false;
 		try {
-			SQLStatement sql = new SQLStatement("SELECT keyid FROM keys WHERE keyid=?");
+			SQLStatement sql = new SQLStatement("SELECT keysha1 FROM keys WHERE keysha1=?");
 			sql.setString(1, keyid);
 			
 			Statement stmt = con.createStatement();
@@ -159,7 +160,7 @@ public class PostgresBackend implements KeyServerBackend {
             String line = null;
             String nextCommand = "";
             while ((line = in.readLine())!=null) {
-            	int trenn = line.indexOf(";;");
+            	int trenn = line.indexOf(";");
             	if (trenn>=0) {
             		nextCommand += line.substring(0,trenn);
             		//executeCommand
@@ -171,7 +172,7 @@ public class PostgresBackend implements KeyServerBackend {
     						innerEx.printStackTrace();
     					}		
     				}
-            		nextCommand = line.substring(trenn+2);
+            		nextCommand = line.substring(trenn+1);
             	} else {
             		nextCommand += line;
             	}
@@ -241,24 +242,33 @@ public class PostgresBackend implements KeyServerBackend {
 	
 	public void addKey(OSDXKey key) {
 		if (hasKey(key.getKeyID())) return;
-		
 		try {
-			SQLStatement sql = new SQLStatement("INSERT INTO keys (keyid, level, usage, valid_from, valid_until, algo, bits, modulus, exponent, parentkeyid) VALUES (?,?,?,?,?,?,?,?,?,?)");
-			sql.setString(1, key.getKeyID());
-			sql.setString(2, key.getLevelName());
-			sql.setString(3, key.getUsageName());
-			sql.setTimestamp(4, new Timestamp(key.getValidFrom()));
-			sql.setTimestamp(5, new Timestamp(key.getValidUntil()));
-			sql.setString(6, "RSA");
-			sql.setInt(7, key.getPubKey().getBitCount());
-			sql.setString(8, SecurityHelper.HexDecoder.encode(key.getPublicModulusBytes(),':',-1));
-			sql.setString(9, "0x"+SecurityHelper.HexDecoder.encode(key.getPubKey().getPublicExponentBytes(),':',-1));	
+			SQLStatement sql = new SQLStatement("INSERT INTO keys (keysha1, keyserver, level, usage, valid_from, valid_until, algo, bits, modulus, exponent, parentkeysha1, parentkeyserver) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
+			sql.setString(1, key.getKeyModulusSHA1());
+			sql.setString(2, key.getAuthoritativekeyserver());
+			sql.setString(3, key.getLevelName());
+			sql.setString(4, key.getUsageName());
+			sql.setTimestamp(5, new Timestamp(key.getValidFrom()));
+			sql.setTimestamp(6, new Timestamp(key.getValidUntil()));
+			sql.setString(7, "RSA");
+			sql.setInt(8, key.getPubKey().getBitCount());
+			sql.setString(9, SecurityHelper.HexDecoder.encode(key.getPublicModulusBytes(),':',-1));
+			sql.setString(10, "0x"+SecurityHelper.HexDecoder.encode(key.getPubKey().getPublicExponentBytes(),':',-1));
+			
 			if (key.isSub() && ((SubKey)key).getParentKeyID()!=null) {
-				sql.setString(10, ((SubKey)key).getParentKeyID());
+				String pkid = ((SubKey)key).getParentKeyID();
+				String pkid_sha1 = OSDXKey.getFormattedKeyIDModulusOnly(pkid);
+				String pkid_ks = OSDXKey.getKeyServerFromKeyID(pkid);
+				if (pkid_ks==null || pkid_ks.equals("")) {
+					pkid_ks = key.getAuthoritativekeyserver();
+				}
+				sql.setString(11, pkid_sha1);
+				sql.setString(12, pkid_ks);
 			} else {
-				sql.setString(10, null);
-				//sql.setNull(10, java.sql.Types.VARCHAR); //no parent keyid found	
+				sql.setString(11, "");
+				sql.setString(12, key.getAuthoritativekeyserver());
 			}
+			
 			Statement stmt = con.createStatement();
 			System.out.println("addKey:: "+sql.toString());
 			stmt.executeUpdate(sql.toString());
@@ -279,10 +289,11 @@ public class PostgresBackend implements KeyServerBackend {
 	}
 	
 	public OSDXKey getKey(String keyid) {
+		String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
 		OSDXKey key = null;
 		try {
-			SQLStatement sql = new SQLStatement("SELECT * FROM keys WHERE keyid LIKE ?");
-			sql.setString(1, keyid+"%");
+			SQLStatement sql = new SQLStatement("SELECT * FROM keys WHERE keysha1=?");
+			sql.setString(1, keysha1);
 			
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql.toString());
@@ -302,15 +313,15 @@ public class PostgresBackend implements KeyServerBackend {
 	private OSDXKey buildKey(ResultSet rs) {
 		try {
 			Element pk = new Element("pubkey");
-			pk.addContent("keyid", rs.getString(1));
-			pk.addContent("level", rs.getString(2));
-			pk.addContent("usage", rs.getString(3));
-			pk.addContent("valid_from", SecurityHelper.getFormattedDate(rs.getTimestamp(4).getTime()));
-			pk.addContent("valid_until", SecurityHelper.getFormattedDate(rs.getTimestamp(5).getTime()));
-			pk.addContent("algo", rs.getString(6));
-			pk.addContent("bits", ""+rs.getInt(7));
-			pk.addContent("modulus", rs.getString(8));
-			pk.addContent("exponent", rs.getString(9));
+			pk.addContent("keyid", rs.getString("keysha1")+"@"+rs.getString("keyserver"));
+			pk.addContent("level", rs.getString("level"));
+			pk.addContent("usage", rs.getString("usage"));
+			pk.addContent("valid_from", SecurityHelper.getFormattedDate(rs.getTimestamp("valid_from").getTime()));
+			pk.addContent("valid_until", SecurityHelper.getFormattedDate(rs.getTimestamp("valid_until").getTime()));
+			pk.addContent("algo", rs.getString("algo"));
+			pk.addContent("bits", ""+rs.getInt("bits"));
+			pk.addContent("modulus", rs.getString("modulus"));
+			pk.addContent("exponent", rs.getString("exponent"));
 			//Document.buildDocument(pk).output(System.out);
 			OSDXKey key = OSDXKey.fromPubKeyElement(pk);
 			if (key.isMaster()) {
@@ -328,7 +339,10 @@ public class PostgresBackend implements KeyServerBackend {
 //				}
 			}
 			if (key.isSub()) {
-				((SubKey)key).setParentKeyID(rs.getString("parentkeyid"));
+				String parentkeysha1 = rs.getString("parentkeyid");
+				if (parentkeysha1!=null && parentkeysha1.length()>0) {
+					((SubKey)key).setParentKeyID(parentkeysha1+"@"+rs.getString("parentkeyserver"));
+				}
 			}
 			return key;
 		} catch (Exception e) {
@@ -340,12 +354,13 @@ public class PostgresBackend implements KeyServerBackend {
 	public Vector<Identity> getIdentities(String keyid) {
 		Vector<Identity> ids = new Vector<Identity>();
 		try {
-			SQLStatement sql = new SQLStatement("SELECT identities.id FROM key_identity, identities WHERE identities.id=identity AND keyid=? ORDER BY identnum");
-			sql.setString(1, keyid);
+			String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
+			SQLStatement sql = new SQLStatement("SELECT * FROM identities WHERE keysha1=? ORDER BY identnum");
+			sql.setString(1, keysha1);
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql.toString());
 			while (rs.next()) {
-				Identity id = getIdentitiy(rs.getLong(1));
+				Identity id = buildIdentitiy(rs);
 				if (id!=null) {
 					ids.add(id);
 				}
@@ -362,13 +377,14 @@ public class PostgresBackend implements KeyServerBackend {
 	
 	public Identity getLastIdentity(String keyid) {
 		try {
-			SQLStatement sql = new SQLStatement("SELECT identities.id FROM key_identity, identities WHERE identities.id=identity AND keyid=? ORDER BY identnum DESC LIMIT 1");
-			sql.setString(1, keyid);
+			String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
+			SQLStatement sql = new SQLStatement("SELECT * FROM identities WHERE keysha1=? ORDER BY identnum DESC LIMIT 1");
+			sql.setString(1, keysha1);
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql.toString());
 			Identity id = null;
 			if (rs.next()) {
-				id = getIdentitiy(rs.getLong(1));
+				id = buildIdentitiy(rs);
 			}
 			rs.close();
 			stmt.close();
@@ -380,80 +396,83 @@ public class PostgresBackend implements KeyServerBackend {
 		return null;
 	}
 	
-	public long addIdentity(Identity id) {
-		return addIdentity(id, null);
-	}
+//	public long addIdentity(Identity id) {
+//		return addIdentity(id, null);
+//	}
 
 	public long addIdentity(Identity id, String keyid) {
 		long idid = IdGenerator.getTimestamp();
 		try {
-			SQLStatement sql = new SQLStatement("INSERT INTO identities (id, identnum, email, mnemonic, mnemonic_r, company, company_r, unit, unit_r, subunit, subunit_r, function, function_r, surname, surname_r, firstname, firstname_r, middlename, middlename_r, birthday, birthday_r, placeofbirth, placeofbirth_r, city, city_r, postcode, postcode_r, region, region_r, country, country_r, phone, phone_r, fax, fax_r, note, note_r, photo_id, photo_md5, photo_r) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-			sql.setLong(1, idid);
-			sql.setInt(2, id.getIdentNum());
-			sql.setString(3, id.getEmail());
-			sql.setString(4, id.getMnemonic());
-			sql.setBoolean(5, id.is_mnemonic_restricted());
-			sql.setString(6, id.getCompany());
-			sql.setBoolean(7, id.is_company_restricted());
-			sql.setString(8, id.getUnit());
-			sql.setBoolean(9, id.is_unit_restricted());
-			sql.setString(10, id.getSubunit());
-			sql.setBoolean(11, id.is_subunit_restricted());
-			sql.setString(12, id.getFunction());
-			sql.setBoolean(13, id.is_function_restricted());
-			sql.setString(14, id.getSurname());
-			sql.setBoolean(15, id.is_surname_restricted());
-			sql.setString(16, id.getFirstNames());
-			sql.setBoolean(17, id.is_firstname_s_restricted());
-			sql.setString(18, id.getMiddlename());
-			sql.setBoolean(19, id.is_middlename_restricted());
-			sql.setString(20, id.getBirthdayGMTString());
-			sql.setBoolean(21, id.is_birthday_gmt_restricted());
-			sql.setString(22, id.getPlaceOfBirth());
-			sql.setBoolean(23, id.is_placeofbirth_restricted());
-			sql.setString(24, id.getCity());
-			sql.setBoolean(25, id.is_city_restricted());
-			sql.setString(26, id.getPostcode());
-			sql.setBoolean(27, id.is_postcode_restricted());
-			sql.setString(28, id.getRegion());
-			sql.setBoolean(29, id.is_region_restricted());
-			sql.setString(30, id.getCountry());
-			sql.setBoolean(31, id.is_country_restricted());
-			sql.setString(32, id.getPhone());
-			sql.setBoolean(33, id.is_phone_restricted());
-			sql.setString(34, id.getFax());
-			sql.setBoolean(35, id.is_fax_restricted());
-			sql.setString(36, id.getNote());
-			sql.setBoolean(37, id.is_note_restricted());
+			SQLStatement sql = new SQLStatement("INSERT INTO identities (keysha1, keyserver, identnum, email, mnemonic, mnemonic_r, company, company_r, unit, unit_r, subunit, subunit_r, function, function_r, surname, surname_r, firstname, firstname_r, middlename, middlename_r, birthday, birthday_r, placeofbirth, placeofbirth_r, city, city_r, postcode, postcode_r, region, region_r, country, country_r, phone, phone_r, fax, fax_r, note, note_r, photo_id, photo_md5, photo_r, most_recent) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+			sql.setString(1, OSDXKey.getFormattedKeyIDModulusOnly(keyid));
+			sql.setString(2, OSDXKey.getKeyServerFromKeyID(keyid));
+			
+			sql.setInt(3, id.getIdentNum());
+			sql.setString(4, id.getEmail());
+			sql.setString(5, id.getMnemonic());
+			sql.setBoolean(6, id.is_mnemonic_restricted());
+			sql.setString(7, id.getCompany());
+			sql.setBoolean(8, id.is_company_restricted());
+			sql.setString(9, id.getUnit());
+			sql.setBoolean(10, id.is_unit_restricted());
+			sql.setString(11, id.getSubunit());
+			sql.setBoolean(12, id.is_subunit_restricted());
+			sql.setString(13, id.getFunction());
+			sql.setBoolean(14, id.is_function_restricted());
+			sql.setString(15, id.getSurname());
+			sql.setBoolean(16, id.is_surname_restricted());
+			sql.setString(17, id.getFirstNames());
+			sql.setBoolean(18, id.is_firstname_s_restricted());
+			sql.setString(19, id.getMiddlename());
+			sql.setBoolean(20, id.is_middlename_restricted());
+			sql.setString(21, id.getBirthdayGMTString());
+			sql.setBoolean(22, id.is_birthday_gmt_restricted());
+			sql.setString(23, id.getPlaceOfBirth());
+			sql.setBoolean(24, id.is_placeofbirth_restricted());
+			sql.setString(25, id.getCity());
+			sql.setBoolean(26, id.is_city_restricted());
+			sql.setString(27, id.getPostcode());
+			sql.setBoolean(28, id.is_postcode_restricted());
+			sql.setString(29, id.getRegion());
+			sql.setBoolean(30, id.is_region_restricted());
+			sql.setString(31, id.getCountry());
+			sql.setBoolean(32, id.is_country_restricted());
+			sql.setString(33, id.getPhone());
+			sql.setBoolean(34, id.is_phone_restricted());
+			sql.setString(35, id.getFax());
+			sql.setBoolean(36, id.is_fax_restricted());
+			sql.setString(37, id.getNote());
+			sql.setBoolean(38, id.is_note_restricted());
 			if (id.getPhotoBytes()!=null) {
 				long photoId = IdGenerator.getTimestamp();
 				String photoMD5 = SecurityHelper.HexDecoder.encode(SecurityHelper.getMD5(id.getPhotoBytes()),':',-1);
 				File f = getFileFromID(photoId, ".png");
 				f.getParentFile().mkdirs();
 				Util.saveBytesToFile(id.getPhotoBytes(), f);
-				sql.setLong(38, photoId);
-				sql.setString(39, photoMD5);
+				sql.setLong(39, photoId);
+				sql.setString(40, photoMD5);
 			} else {
-				sql.setLong(38, -1L);
-				sql.setString(39, null);
+				sql.setLong(39, -1L);
+				sql.setString(40, null);
 			}
-			sql.setBoolean(40, id.is_photo_restricted());
+			sql.setBoolean(41, id.is_photo_restricted());
+			sql.setBoolean(42, false); //most_recent
 			
 			Statement stmt = con.createStatement();
 			//System.out.println("add identity:: "+sql.toString());
 			stmt.executeUpdate(sql.toString());
 			stmt.close();
 			
-			if (keyid!=null) {
-				long kiid = IdGenerator.getTimestamp();
-				sql = new SQLStatement("INSERT INTO key_identity (id, keyid, identity) VALUES (?,?,?)");
-				sql.setLong(1, kiid);
-				sql.setString(2, keyid);
-				sql.setLong(3, idid);
-				stmt = con.createStatement();
-				stmt.executeUpdate(sql.toString());
-				stmt.close();
-			}
+//			if (keyid!=null) {
+//				long kiid = IdGenerator.getTimestamp();
+//				sql = new SQLStatement("INSERT INTO key_identity (id, keyid, identity) VALUES (?,?,?)");
+//				sql.setLong(1, kiid);
+//				sql.setString(2, keyid);
+//				sql.setLong(3, idid);
+//				stmt = con.createStatement();
+//				stmt.executeUpdate(sql.toString());
+//				stmt.close();
+//			}
 			return idid;
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -461,14 +480,14 @@ public class PostgresBackend implements KeyServerBackend {
 		return -1L;
 	}
 	
-	public Identity getIdentitiy(long id) {
+	private Identity buildIdentitiy(ResultSet rs) {
 		try {
 			Identity idd = null;
-			SQLStatement sql = new SQLStatement("SELECT * FROM identities WHERE id=?");
-			sql.setLong(1, id);
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());
-			if (rs.next()) {
+//			SQLStatement sql = new SQLStatement("SELECT * FROM identities WHERE id=?");
+//			sql.setLong(1, id);
+//			Statement stmt = con.createStatement();
+//			ResultSet rs = stmt.executeQuery(sql.toString());
+//			if (rs.next()) {
 				try {
 					idd = Identity.newEmptyIdentity();
 					idd.setIdentNum(rs.getInt("identnum"));
@@ -525,10 +544,10 @@ public class PostgresBackend implements KeyServerBackend {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			}
-			rs.close();
-			stmt.close();
-			//con.close();
+//			}
+//			rs.close();
+//			stmt.close();
+//			//con.close();
 			return idd;
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -540,7 +559,8 @@ public class PostgresBackend implements KeyServerBackend {
 	public void removeKey(OSDXKey key) {
 		try {
 			//TODO remove Identitites to key
-			SQLStatement sql = new SQLStatement("REMOVE FROM keys WHERE keyid=?");
+			String keysha1 = key.getKeyModulusSHA1();
+			SQLStatement sql = new SQLStatement("REMOVE FROM keys WHERE keysha1=?");
 			sql.setString(1, key.getKeyID());
 			
 			Statement stmt = con.createStatement();
@@ -564,13 +584,18 @@ public class PostgresBackend implements KeyServerBackend {
 			f.getParentFile().mkdirs();
 			Document.buildDocument(log.toElement(true)).writeToFile(f);
 			String md5 = SecurityHelper.HexDecoder.encode(SecurityHelper.getMD5(f), ':', -1);
-			SQLStatement sql = new SQLStatement("INSERT INTO keylogs (id, keylog_md5, keyid_to, keyid_from, asig_datetime, sig_datetime) VALUES (?,?,?,?,?,?)");
+			SQLStatement sql = new SQLStatement("INSERT INTO keylogs (keylogid, keylog_md5, keysha1_to, keyserver_to, keysha1_from, keyserver_from, asig_datetime, sig_datetime) VALUES (?,?,?,?,?,?,?,?)");
 			sql.setLong(1, ts);
 			sql.setString(2, md5);
-			sql.setString(3, log.getKeyIDTo());
-			sql.setString(4, log.getKeyIDFrom());
-			sql.setTimestamp(5, new Timestamp(asig.getSignDatetime()));
-			sql.setTimestamp(6, new Timestamp(sig.getSignDatetime()));
+			String to_id = log.getKeyIDTo(); 
+			sql.setString(3, OSDXKey.getFormattedKeyIDModulusOnly(to_id));
+			sql.setString(4, OSDXKey.getKeyServerFromKeyID(to_id));
+			String from_id = log.getKeyIDFrom(); 
+			sql.setString(5, OSDXKey.getFormattedKeyIDModulusOnly(from_id));
+			sql.setString(6, OSDXKey.getKeyServerFromKeyID(from_id));
+			
+			sql.setTimestamp(7, new Timestamp(asig.getSignDatetime()));
+			sql.setTimestamp(8, new Timestamp(sig.getSignDatetime()));
 			
 			System.out.println("addKeylog:: "+sql.toString());
 			Statement stmt = con.createStatement();
@@ -641,9 +666,9 @@ public class PostgresBackend implements KeyServerBackend {
 		try {
 			Signature asig = log.getActionSignature();
 			
-			SQLStatement sql = new SQLStatement("SELECT id FROM keylogs WHERE keyid_to=? AND keyid_from=? AND asig_datetime=?");
-			sql.setString(1, log.getKeyIDTo());
-			sql.setString(2, log.getKeyIDFrom());
+			SQLStatement sql = new SQLStatement("SELECT keylogid FROM keylogs WHERE keysha1_to=? AND keysh1_from=? AND asig_datetime=?");
+			sql.setString(1, OSDXKey.getFormattedKeyIDModulusOnly(log.getKeyIDTo()));
+			sql.setString(2, OSDXKey.getFormattedKeyIDModulusOnly(log.getKeyIDFrom()));
 			sql.setTimestamp(3, new Timestamp(asig.getSignDatetime()));
 			System.out.println("getKeyLogIndex :: "+sql.toString());
 			
@@ -672,9 +697,11 @@ public class PostgresBackend implements KeyServerBackend {
 			klIndex = getKeylogIndex(log);
 		}
 		try {
-			SQLStatement sql = new SQLStatement("INSERT INTO approval_token (token, keylog) VALUES (?,?)");
-			sql.setString(1, token);
-			sql.setLong(2, klIndex);
+			SQLStatement sql = new SQLStatement("INSERT INTO approval_token (approvalid, token, keylogid) VALUES (?,?,?)");
+			long approvalid = IdGenerator.getTimestamp();
+			sql.setLong(1, approvalid);
+			sql.setString(2, token);
+			sql.setLong(3, klIndex);
 			
 			Statement stmt = con.createStatement();
 			stmt.executeUpdate(sql.toString());
@@ -685,32 +712,11 @@ public class PostgresBackend implements KeyServerBackend {
 	}
 
 	public KeyLog getKeyLogFromTokenId(String id) {
-		long klIndex = -1;
+//		long klIndex = -1;
 		KeyLog log = null;
 		try {
-			SQLStatement sql = new SQLStatement("SELECT keylog FROM approval_token WHERE token=?");
+			SQLStatement sql = new SQLStatement("SELECT * FROM approval_token, keylogs WHERE approval_token.keylogid = keylogs.keylogid AND token=?");
 			sql.setString(1, id);
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());
-			if (rs.next()) {
-				try {
-					klIndex = rs.getLong(1);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-			rs.close();
-			stmt.close();
-			//con.close();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		if (klIndex<0) {
-			return null;
-		}
-		try {
-			SQLStatement sql = new SQLStatement("SELECT * FROM keylogs WHERE id=?");
-			sql.setLong(1, klIndex);
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql.toString());
 			if (rs.next()) {
@@ -726,12 +732,33 @@ public class PostgresBackend implements KeyServerBackend {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+//		if (klIndex<0) {
+//			return null;
+//		}
+//		try {
+//			SQLStatement sql = new SQLStatement("SELECT * FROM keylogs WHERE id=?");
+//			sql.setLong(1, klIndex);
+//			Statement stmt = con.createStatement();
+//			ResultSet rs = stmt.executeQuery(sql.toString());
+//			if (rs.next()) {
+//				try {
+//					log = buildKeylog(rs);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//			rs.close();
+//			stmt.close();
+//			//con.close();
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
 		return log;
 	}
 	
 	private KeyLog buildKeylog(ResultSet rs) {
 		try {
-			long id = rs.getLong("id");
+			long id = rs.getLong("keylogid");
 			File f = getFileFromID(id, "_keylog.xml");
 			if (!f.exists()) {	
 				throw new RuntimeException("DB DataBackend Error: File "+f.getAbsolutePath()+" does not exist.");
@@ -816,8 +843,9 @@ public class PostgresBackend implements KeyServerBackend {
 		Vector<KeyLog> logs = new Vector<KeyLog>();
 		try {
 			System.out.println("get keylogs");
-			SQLStatement sql = new SQLStatement("SELECT * FROM keylogs WHERE keyid_to LIKE ? ORDER BY asig_datetime");
-			sql.setString(1, keyid+"%");
+			String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
+			SQLStatement sql = new SQLStatement("SELECT * FROM keylogs WHERE keysha1_to=? ORDER BY asig_datetime");
+			sql.setString(1, keysha1);
 			System.out.println("SQL: "+sql.toString());
 			
 			Statement stmt = con.createStatement();
@@ -876,7 +904,7 @@ public class PostgresBackend implements KeyServerBackend {
 	public Vector<OSDXKey> getKeysToId(String email) {
 		Vector<OSDXKey> keys = new Vector<OSDXKey>();
 		try {
-			SQLStatement sql = new SQLStatement("SELECT DISTINCT keyid FROM identities, key_identity WHERE identities.id = key_identity.identity AND identities.email=?");
+			SQLStatement sql = new SQLStatement("SELECT DISTINCT keysha1,keyserver FROM identities WHERE email=?");
 			sql.setString(1, email);
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql.toString());
@@ -901,8 +929,9 @@ public class PostgresBackend implements KeyServerBackend {
 	public Vector<OSDXKey> getSubKeysToId(String parentkeyid) {
 		Vector<OSDXKey> keys = new Vector<OSDXKey>();
 		try {
-			SQLStatement sql = new SQLStatement("SELECT * FROM keys WHERE parentkeyid LIKE ?");
-			sql.setString(1, parentkeyid+"%");
+			String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(parentkeyid);
+			SQLStatement sql = new SQLStatement("SELECT * FROM keys WHERE parentkeysh1=?");
+			sql.setString(1, keysha1);
 			System.out.println("SQL: "+sql.toString());
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql.toString());

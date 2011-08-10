@@ -729,6 +729,14 @@ public class OSDXKey {
 			return SecurityHelper.HexDecoder.encode(SecurityHelper.HexDecoder.decode(id), ':', -1);
 		}
 	}
+	public static String getKeyServerFromKeyID(String id) {
+		int iat = id.indexOf('@');
+		if (iat>0) {
+			return id.substring(iat+1);
+		} else {
+			return "";
+		}
+	}
 	
 	
 	public static void main(String[] args) throws Exception {

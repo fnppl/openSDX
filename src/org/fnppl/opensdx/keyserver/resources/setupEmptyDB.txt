@@ -1,6 +1,5 @@
 DROP TABLE "approval_token";
 DROP TABLE "keylogs";
-DROP TABLE "key_identity";
 DROP TABLE "keys";
 DROP TABLE "identities";
 
