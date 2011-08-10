@@ -95,10 +95,13 @@ public class PostgresBackend implements KeyServerBackend {
 	public static PostgresBackend init(String user, String pw, String dbname, File data_path) {
 		PostgresBackend be = new PostgresBackend();
 		if (data_path==null) {
-			be.data_path = new File(System.getProperty("user.home")+File.separator+"db_data");
+			be.data_path = new File(System.getProperty("user.home"), "db_data");
 		} else {
 			be.data_path = data_path;
 		}
+		be.data_path.mkdirs();
+		
+		System.out.println("PostgresBackend::init::using data_path: "+be.data_path.getAbsolutePath());
 		be.connect(user, pw, dbname);
 		return be;
 	}
