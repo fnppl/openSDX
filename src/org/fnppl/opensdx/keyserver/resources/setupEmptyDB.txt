@@ -88,8 +88,7 @@ create index keylogs_keysha1_from_idx on keylogs(keysha1_from);
 create index keylogs_keysha1_to_idx on keylogs(keysha1_to);
 
 CREATE TABLE approval_token (
-	"approvalid"				BIGINT not null,
-	"file_md5"			char(47),
+	"approvalid"		BIGINT not null,
 	"token"				VARCHAR(200),
 	"keylogid"			BIGINT not null,
 	

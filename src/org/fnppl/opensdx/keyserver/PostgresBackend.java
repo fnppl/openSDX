@@ -403,8 +403,9 @@ public class PostgresBackend implements KeyServerBackend {
 	public long addIdentity(Identity id, String keyid) {
 		long idid = IdGenerator.getTimestamp();
 		try {
+			String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
 			SQLStatement sql = new SQLStatement("INSERT INTO identities (keysha1, keyserver, identnum, email, mnemonic, mnemonic_r, company, company_r, unit, unit_r, subunit, subunit_r, function, function_r, surname, surname_r, firstname, firstname_r, middlename, middlename_r, birthday, birthday_r, placeofbirth, placeofbirth_r, city, city_r, postcode, postcode_r, region, region_r, country, country_r, phone, phone_r, fax, fax_r, note, note_r, photo_id, photo_md5, photo_r, most_recent) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-			sql.setString(1, OSDXKey.getFormattedKeyIDModulusOnly(keyid));
+			sql.setString(1, keysha1);
 			sql.setString(2, OSDXKey.getKeyServerFromKeyID(keyid));
 			
 			sql.setInt(3, id.getIdentNum());
@@ -456,12 +457,20 @@ public class PostgresBackend implements KeyServerBackend {
 				sql.setString(40, null);
 			}
 			sql.setBoolean(41, id.is_photo_restricted());
-			sql.setBoolean(42, false); //most_recent
+			sql.setBoolean(42, true); //most_recent
 			
 			Statement stmt = con.createStatement();
 			//System.out.println("add identity:: "+sql.toString());
 			stmt.executeUpdate(sql.toString());
 			stmt.close();
+			
+			//set all other most_recent for this keyid to false
+			sql = new SQLStatement("UPDATE identities SET most_recent=\'false\' WHERE keysha1=? AND identnum<>?");
+			sql.setString(1, keysha1);
+			sql.setInt(2, id.getIdentNum());
+			
+			stmt = con.createStatement();
+			stmt.executeUpdate(sql.toString());
 			
 //			if (keyid!=null) {
 //				long kiid = IdGenerator.getTimestamp();
