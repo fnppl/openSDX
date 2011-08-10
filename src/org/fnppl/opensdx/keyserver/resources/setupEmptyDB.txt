@@ -1,12 +1,12 @@
-DROP TABLE "approval_token";;
-DROP TABLE "keylogs";;
-DROP TABLE "key_identity";;
-DROP TABLE "keys";;
-DROP TABLE "identities";;
-
+DROP TABLE "approval_token";
+DROP TABLE "keylogs";
+DROP TABLE "key_identity";
+DROP TABLE "keys";
+DROP TABLE "identities";
 
 CREATE TABLE "keys" (
-	"keyid" 		VARCHAR(200) NOT NULL UNIQUE,
+	"keysha1" 		CHAR(60) NOT NULL UNIQUE,
+	"keyserver"		varchar(200) not null default 'LOCAL',
 	"level"			VARCHAR(10),
 	"usage"			VARCHAR(10),
 	"valid_from"	TIMESTAMP,
@@ -15,13 +15,19 @@ CREATE TABLE "keys" (
 	"bits"			INTEGER,
 	"modulus" 		VARCHAR(1154),
 	"exponent" 		VARCHAR(20),
-	"parentkeyid"	VARCHAR(200),
-	PRIMARY KEY(keyid)
-);;
+	
+	"parentkeysha1"	char(60) not null default '',
+	"parentkeyserver"	varchar(200),
+	
+	PRIMARY KEY(keysha1)
+);
+create index keys_parentkeyid_idx on keys(parentkeysha1);
+create index keys_parentkeyserver_idx on keys(parentkeyserver);
 
 CREATE TABLE "identities" (
-	"id"			BIGINT,
-	"identnum"		INTEGER,
+	"keysha1"			char(60) not null,
+	"keyserver"	varchar(200) not null default 'LOCAL',
+	"identnum"		INTEGER not null default 0,
 	"email"			VARCHAR(200),
 	"mnemonic"		VARCHAR(200),
 	"company"		VARCHAR(200),
@@ -40,7 +46,7 @@ CREATE TABLE "identities" (
 	"phone"			VARCHAR(200),
 	"fax"			VARCHAR(200),
 	"note"			VARCHAR(2000),
-	"photo_id"		BIGINT,
+	"photo_id"		BIGINT not null default -1,
 	"photo_md5"		VARCHAR(47),
 	"mnemonic_r"	BOOLEAN,
 	"company_r"		BOOLEAN,
@@ -60,36 +66,35 @@ CREATE TABLE "identities" (
 	"fax_r"			BOOLEAN,
 	"note_r"		BOOLEAN,
 	"photo_r"		BOOLEAN,
-	PRIMARY KEY(id)
-);;
-
-CREATE TABLE "key_identity" (
-	"id"		BIGINT,
-	"keyid"		VARCHAR(200),
-	"identity"  BIGINT,
-	PRIMARY KEY(id),
-	FOREIGN KEY (keyid) REFERENCES keys(keyid),
-	FOREIGN KEY (identity) REFERENCES identities(id)
-);;
+	
+	most_recent		boolean,
+	
+	PRIMARY KEY(keysha1,identnum)
+); 
+create index indentities_most_recent_idx on identities(most_recent);
 
 
 CREATE TABLE "keylogs" (
-	"id"				BIGINT,
-	"keylog_md5"		VARCHAR(47),
-	"keyid_to" 			VARCHAR(200),
-	"keyid_from" 		VARCHAR(200),
+	"keylogid"				BIGINT not null,
+	"keylog_md5"		char(47),
+	"keysha1_to" 			char(60) not null,
+	"keyserver_to" 			varchar(200) not null default 'LOCAL',
+	"keysha1_from" 		char(60) not null,
+	"keyserver_from" 		char(60) not null,
 	"asig_datetime"		TIMESTAMP,
 	"sig_datetime"		TIMESTAMP,
-	PRIMARY KEY(id),
-	FOREIGN KEY (keyid_to) REFERENCES keys(keyid),
-	FOREIGN KEY (keyid_from) REFERENCES keys(keyid)
-);;
+	PRIMARY KEY(keylogid)	
+);
+create index keylogs_keysha1_from_idx on keylogs(keysha1_from);
+create index keylogs_keysha1_to_idx on keylogs(keysha1_to);
 
 CREATE TABLE approval_token (
-	"id"				BIGINT,
-	"file_md5"			VARCHAR(47),
+	"approvalid"				BIGINT not null,
+	"file_md5"			char(47),
 	"token"				VARCHAR(200),
-	"keylog"			BIGINT,
-	PRIMARY KEY(id),
-	FOREIGN KEY (keylog) REFERENCES keylogs(id)
-);;
+	"keylogid"			BIGINT not null,
+	
+	PRIMARY KEY(approvalid)
+);
+create index approval_token_keylogid_idx on approval_token(keylogid);
+
