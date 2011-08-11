@@ -52,6 +52,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.keyserver.PostgresBackend;
 import org.fnppl.opensdx.pdf.PDFUtil;
 import org.fnppl.opensdx.xml.Element;
@@ -84,6 +85,15 @@ public class ReportGenerator {
 	        String preID = sigTemplate.substring(0,idStart);
 	        String idTemplate = sigTemplate.substring(idStart, idEnd);
 	        String postID = sigTemplate.substring(idEnd);
+	        
+	        int keylogsStart = postID.indexOf("<!-- keylog fields start -->");
+	        int keylogsEnd = postID.indexOf("<!-- keylog fields end -->");
+	        int keylogStart = postID.indexOf("<!-- keylog field start -->");
+	        int keylogEnd = postID.indexOf("<!-- keylog field end -->");
+	        
+	        String keylogsTemplatePre = postID.substring(keylogsStart, keylogStart);
+	        String keylogTemplate = postID.substring(keylogStart, keylogEnd);
+	        String keylogsTemplatePost = postID.substring(keylogEnd, keylogsEnd);
 	        
 	        preSig = preSig.replace("[check_datetime]", report.getChildTextNN("check_datetime"));
 	        preSig = preSig.replace("[orig_filename]", report.getChildTextNN("signed_filename"));
@@ -120,7 +130,7 @@ public class ReportGenerator {
 	            	}
 	            }
 	            
-	            String sigAppend = ""+postID;
+	            String sigAppend = ""+keylogsTemplatePost;
 	            Vector<Element> checks = es.getChildren("check");
 	            boolean md5ok = false, sha1ok = false, sha256ok = false;
 	            for (Element ec : checks) {
@@ -177,25 +187,45 @@ public class ReportGenerator {
 	            sigAppend = sigAppend.replace("[check_key_keyserver]", keyMatch);
 	            
 	            
-	            //key verificator report
-	            Element eVerify = es.getChild("key_verification_report");
-	            if (eVerify!=null) {
-	            	checks = eVerify.getChildren("check");
-	 	            for (Element ec : checks) {
-	 	            	String msg = ec.getChildTextNN("message");
-	 	            	String value = ec.getChildTextNN("result");
-	 	            	if (msg.equals("")) {
-	 	            		
-	 	            	}
-	 	            }
+	            
+	            //key verificator report and keylogs
+//	            Element eVerify = es.getChild("key_verification_report");
+//	            if (eVerify!=null) {
+//	            	checks = eVerify.getChildren("check");
+//	 	            for (Element ec : checks) {
+//	 	            	String msg = ec.getChildTextNN("message");
+//	 	            	String value = ec.getChildTextNN("result");
+//	 	            	if (msg.equals("")) {
+//	 	            		
+//	 	            	}
+//	 	            }
+//	            }
+	            Element eKeylogs = es.getChild("keylogs_report");
+	            if (eKeylogs!=null) {
+	            	Vector<Element> ekls = eKeylogs.getChildren("keylog_entry");
+	            	if (ekls!=null && ekls.size()>0) {
+		            	String klTemp = ""+keylogsTemplatePre;
+		            	for (Element ec : ekls) {
+		 	            	String keyid_from = ec.getChildTextNN("keyid_from");
+		 	            	String action = ec.getChildTextNN("action");
+		 	            	String email = ec.getChildTextNN("email");
+		 	            	String date =  ec.getChildTextNN("date");
+		 	            	String tmp = keylogTemplate.replace("[keylog_action]", action);
+		 	            	tmp = tmp.replace("[keylog_date]", date);
+		 	            	tmp = tmp.replace("[keylog_id_from]", keyid_from);
+		 	            	tmp = tmp.replace("[keylog_email]", email);
+		 	            	klTemp += tmp;
+		 	            }
+		 	            klTemp += keylogsTemplatePost;
+		 	            sig += klTemp;
+	            	}
 	            }
-	      
 	            tb.append(sig);
 	            tb.append(sigAppend);
 	            tb.append("\n");
             }
             tb.append(postSig);
-            
+            //Dialogs.showText("html", tb.toString());
             PDFUtil.fromHTMLtoPDF(tb.toString(), outputPDF);
 		} catch (Exception ex) {
 			ex.printStackTrace();

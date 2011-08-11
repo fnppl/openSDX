@@ -225,12 +225,24 @@ public class SecurityControl {
 			//keylogs
 			Element keylogs_report = new Element("keylogs_report");
 			keylogs_report.addContent("keyid", s.getKey().getKeyID());
-			Vector<KeyLog> logs = requestKeyLogs(s.getKey(), null);
+			
+			Vector<KeyLog> logs = null;
+			if (s.getKey().isMaster()) {
+				logs = requestKeyLogs(s.getKey().getKeyID(), null);
+			} else {
+				if (s.getKey().isSub()) {
+					String pkid = ((SubKey)s.getKey()).getParentKeyID();
+					if (pkid!=null && pkid.length()>0) {
+						logs = requestKeyLogs(pkid, null);
+					}
+				}
+			}
 			if (logs!=null && logs.size()>0) {
 				for (KeyLog kl : logs) {
 					Element ekl = new Element("keylog_entry");
 					ekl.addContent("keyid_from", kl.getKeyIDFrom());
 					ekl.addContent("action", kl.getAction());
+					ekl.addContent("date", kl.getActionDatetimeString());
 					Identity id = requestCurrentIdentitiyDetails(kl.getKeyIDFrom(), null);
 					if (id!=null) {
 						ekl.addContent("email", id.getEmail());
@@ -314,15 +326,16 @@ public class SecurityControl {
 		//Dialogs.showMessage("No identities found for "+keyid);
 		return null;
 	}
+
 	
-	public Vector<KeyLog> requestKeyLogs(OSDXKey key, OSDXKey sign) {
+	public Vector<KeyLog> requestKeyLogs(String keyid, OSDXKey sign) {
 		final Vector<KeyLog> logs = new Vector<KeyLog>();
 		if (sign!=null) {
 			sign.unlockPrivateKey(messageHandler);
 		}
-		KeyClient client = getKeyClient(key.getAuthoritativekeyserver());
+		KeyClient client = getKeyClient(OSDXKey.getKeyServerFromKeyID(keyid));
 		try {
-			Vector<KeyLog> rlogs = client.requestKeyLogs(key.getKeyID(),sign);
+			Vector<KeyLog> rlogs = client.requestKeyLogs(keyid,sign);
 			if (rlogs!=null && rlogs.size()>0) {
 				logs.addAll(rlogs);
 			}
