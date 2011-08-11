@@ -19,4 +19,5 @@ public interface MessageHandler {
 	public String requestPassword(String keyid, String mantra);
 	public String[] requestNewPasswordAndMantra(String message);
 	public void fireWrongPasswordMessage();
+	public File chooseOriginalFileForSignature(File dir, String selectFile);
 }

@@ -681,5 +681,6 @@ public class KeyApprovingStore {
 	public void setSigningKey(OSDXKey key) {
 		keystoreSigningKey = key;
 	}
+	
 }
 

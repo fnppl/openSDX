@@ -65,6 +65,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
+import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.http.HTTPServer;
 import org.fnppl.opensdx.http.HTTPServerRequest;
@@ -137,6 +138,9 @@ public class KeyServerMain extends HTTPServer {
 		}
 		public MasterKey requestMasterSigningKey(KeyApprovingStore keystore) throws Exception {
 			return keyServerSigningKey;
+		}
+		public File chooseOriginalFileForSignature(File dir, String selectFile) {
+			return null;
 		}
 	};
 

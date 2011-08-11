@@ -65,6 +65,9 @@ public class DefaultMessageHandler implements MessageHandler {
 	public void fireWrongPasswordMessage() {
 		Dialogs.showMessage("Sorry, wrong password!");
 	}
-	
+
+	public File chooseOriginalFileForSignature(File dir, String selectFile) {
+		return Dialogs.chooseOpenFile("Please select original file for signature verification", dir, selectFile);
+	}
 	
 }

@@ -49,6 +49,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Vector;
 
 import org.fnppl.opensdx.keyserver.PostgresBackend;
@@ -160,9 +161,34 @@ public class ReportGenerator {
 	            	sigAppend = sigAppend.replace("[check_hash]", getStatusMsg("FAILED"));
 	            }
 	            
-	            //key verificator report
+	            //key data match key data on keyserver
+	            String keyMatch = sUNKNOWN;
+	            Element eKeyMatch = es.getChild("key_data_match_report");
+	            if (eKeyMatch!=null) {
+	            	checks = eKeyMatch.getChildren("check");
+	 	            for (Element ec : checks) {
+	 	            	String msg = ec.getChildTextNN("message");
+	 	            	String value = ec.getChildTextNN("result");
+	 	            	if (msg.equals("key data matches key data on keyserver")) {
+	 	            		keyMatch = getStatusMsg(value);
+	 	            	}
+	 	            }
+	            }
+	            sigAppend = sigAppend.replace("[check_key_keyserver]", keyMatch);
 	            
-	            sigAppend = sigAppend.replace("[check_key_keyserver]", "?");
+	            
+	            //key verificator report
+	            Element eVerify = es.getChild("key_verification_report");
+	            if (eVerify!=null) {
+	            	checks = eVerify.getChildren("check");
+	 	            for (Element ec : checks) {
+	 	            	String msg = ec.getChildTextNN("message");
+	 	            	String value = ec.getChildTextNN("result");
+	 	            	if (msg.equals("")) {
+	 	            		
+	 	            	}
+	 	            }
+	            }
 	      
 	            tb.append(sig);
 	            tb.append(sigAppend);
