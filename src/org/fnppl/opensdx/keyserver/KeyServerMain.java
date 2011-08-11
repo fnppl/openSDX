@@ -795,7 +795,7 @@ public class KeyServerMain extends HTTPServer {
 				return handlePutRevokeSubkeyRequest(request);
 			}
 			else if (cmd.equals("/identities")) {
-				return KeyServerResponse.createIdentityResponse(serverid, request, backend, keyServerSigningKey);
+				return KeyServerResponse.createIdentityResponse(serverid, request, backend, keyServerSigningKey, false);
 			}
 			else if (cmd.equals("/keylogs")) {
 				return KeyServerResponse.createKeyLogResponse(serverid, request, backend, keyServerSigningKey);
@@ -809,7 +809,10 @@ public class KeyServerMain extends HTTPServer {
 				return KeyServerResponse.createMasterPubKeyToSubKeyResponse(serverid,request, backend, keyServerSigningKey);
 			}
 			else if (cmd.equals("/identities")) {
-				return KeyServerResponse.createIdentityResponse(serverid, request, backend, keyServerSigningKey);
+				return KeyServerResponse.createIdentityResponse(serverid, request, backend, keyServerSigningKey, false);
+			}
+			else if (cmd.equals("/identity")) {
+				return KeyServerResponse.createIdentityResponse(serverid, request, backend, keyServerSigningKey, true);
 			}
 			else if (cmd.equals("/keystatus")) {
 				return KeyServerResponse.createKeyStatusyResponse(serverid, request, backend, keyServerSigningKey);

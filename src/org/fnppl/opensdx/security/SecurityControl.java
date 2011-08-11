@@ -53,6 +53,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
+import javax.swing.JDialog;
+
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.MessageHandler;
@@ -65,7 +67,7 @@ public class SecurityControl {
 	private KeyVerificator keyverificator = null;
 	private HashMap<String, KeyClient> keyclients = new HashMap<String, KeyClient>();
 	private MessageHandler messageHandler = new DefaultMessageHandler();
-	private File lastDir = null;
+	private File lastDir = getDefaultDir();
 
 	public SecurityControl() {
 
@@ -117,87 +119,6 @@ public class SecurityControl {
 								ok = false;
 							}
 						}
-//						Result verified = null;
-//						//verify internal signature
-//						if (i==0) {
-//							//calc md5, sha1, sha256
-//							FileInputStream in = new FileInputStream(origFile);
-//							BufferedInputStream bin = new BufferedInputStream(in);
-//							byte[][] kk = SecurityHelper.getMD5SHA1SHA256(in);
-//							byte[] md5 = kk[1];
-//							byte[] sha1 = kk[2];
-//							byte[] sha256 = kk[3];
-//							in.close();
-//							report.addContent("signed_filename", origFile.getName());
-//							report.addContent("signature_filename", f.getName());
-//							if (md5!=null) {
-//								report.addContent("md5",SecurityHelper.HexDecoder.encode(md5, ':',-1));
-//							}
-//							if (sha1!=null) {
-//								report.addContent("sha1",SecurityHelper.HexDecoder.encode(sha1, ':',-1));
-//							}
-//							if (sha256!=null) {
-//								report.addContent("sha256",SecurityHelper.HexDecoder.encode(sha256, ':',-1));
-//							}
-//							verified = signature.tryVerification(md5, sha1, sha256);
-//							//verified = signature.tryVerificationFile(origFile);
-//						} else {
-//							verified = signature.tryVerificationMD5SHA1SHA256(signatures.get(i-1).getSignatureBytes());
-//						}
-//						Element aReport = verified.report;
-//						if (aReport==null) throw new RuntimeException("signature verification DID NOT return a report!");
-//
-//						Vector<Identity> ids = null;
-//						if (signature.getKey().isMaster()) {
-//							ids = requestIdentitiyDetails(signature.getKey().getKeyID(), null);	
-//						} else {
-//							if(signature.getKey().isSub()) {
-//								try {
-//									String parentkeyid = ((SubKey)signature.getKey()).getParentKeyID();
-//									if (parentkeyid==null) {
-//										OSDXKey key = signature.getKey();
-//										KeyClient client =  getKeyClient(key.getAuthoritativekeyserver());
-//										if (client!=null) {
-//											MasterKey masterkey = client.requestMasterPubKey(key.getKeyID());
-//											if (masterkey!=null) {
-//												ids = requestIdentitiyDetails(masterkey.getKeyID(), null);
-//											}
-//										}
-//									} else {
-//										ids = requestIdentitiyDetails(parentkeyid, null);
-//									}
-//								} catch (Exception ex) {
-//									ex.printStackTrace();
-//								}
-//							}
-//						}
-//						if (ids!=null && ids.size()>0) {
-//							aReport.addContent(ids.lastElement().toElement(true));
-//						} else { 
-//							aReport.addContent("msg","no identity details found.");
-//						}
-//
-//						if (verified.succeeded && verifyKeys) {
-//							//key data matches key data on keyserver
-//							Result keymatch = keyverificator.matchKeyDataWithKeyServer(signature.getKey());
-//							aReport.addContent(keymatch.report);
-//
-//							//verify key from signature
-//							verified = keyverificator.verifyKey(signature.getKey(), signature.getSignDatetime());
-//
-//							//add chain of trust to report
-//							aReport.addContent(verified.report);
-//							if (verified.succeeded) {
-//								aReport.addContent("key_verification", "OK");
-//							} else {
-//								aReport.addContent("key_verification", "FAILED");
-//							}
-//						}
-//						report.addContent(aReport);
-//						if (!verified.succeeded) {
-//							ok = false;
-//							break;
-//						}
 					}
 				}
 				if (ok) {
@@ -301,13 +222,28 @@ public class SecurityControl {
 			Result r = keyverificator.verifyKey(s.getKey(), s.getSignDatetime());
 			res.report.addContent(r.report);
 			
+			//keylogs
+			Element keylogs_report = new Element("keylogs_report");
+			keylogs_report.addContent("keyid", s.getKey().getKeyID());
+			Vector<KeyLog> logs = requestKeyLogs(s.getKey(), null);
+			if (logs!=null && logs.size()>0) {
+				for (KeyLog kl : logs) {
+					Element ekl = new Element("keylog_entry");
+					ekl.addContent("keyid_from", kl.getKeyIDFrom());
+					ekl.addContent("action", kl.getAction());
+					Identity id = requestCurrentIdentitiyDetails(kl.getKeyIDFrom(), null);
+					if (id!=null) {
+						ekl.addContent("email", id.getEmail());
+					} else {
+						ekl.addContent("email", "[not found]");
+					}
+					keylogs_report.addContent(ekl);
+				}
+			} else {
+				keylogs_report.addContent("msg","no keylogs found");
+			}
+			res.report.addContent(keylogs_report);
 			return r.succeeded;
-			
-//			if (r.succeeded) {
-//				Dialogs.showMessage("Signature verified!");
-//			} else {
-//				Dialogs.showMessage("Signature NOT verified!");
-//			}
 		} else {
 			//Dialogs.showMessage("Signature NOT verified!");
 			return res.succeeded;
@@ -315,9 +251,10 @@ public class SecurityControl {
 		
 		
 	}
+	
 	public Vector<Identity> requestIdentitiyDetails(String keyid, OSDXKey signingKey) {
 		if (currentKeyStore.getKeyServer() == null) {
-			Dialogs.showMessage("Sorry, no keyservers found.");
+			//Dialogs.showMessage("Sorry, no keyservers found.");
 			return null;
 		}
 		String authServer = keyid.substring(keyid.indexOf('@')+1);
@@ -335,7 +272,7 @@ public class SecurityControl {
 			ids = client.requestIdentities(keyid, signingKey);
 		} catch (Exception ex) {
 			if (ex.getMessage()!=null && ex.getMessage().startsWith("Connection refused")) {
-				Dialogs.showMessage("Sorry, could not connect to server.");
+				//Dialogs.showMessage("Sorry, could not connect to server.");
 				return null;
 			} else {
 				ex.printStackTrace();
@@ -344,8 +281,59 @@ public class SecurityControl {
 		if (ids!=null) {
 			return ids;
 		}
-		Dialogs.showMessage("No identities found for "+keyid);
+		//Dialogs.showMessage("No identities found for "+keyid);
 		return null;
+	}
+	
+	public Identity requestCurrentIdentitiyDetails(String keyid, OSDXKey signingKey) {
+		if (currentKeyStore.getKeyServer() == null) {
+			//Dialogs.showMessage("Sorry, no keyservers found.");
+			return null;
+		}
+		String authServer = OSDXKey.getKeyServerFromKeyID(keyid);
+		KeyClient client =  getKeyClient(authServer);
+		if (client == null) {
+			return null;
+		}
+		try {
+			client.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		try {
+			Identity id = client.requestCurrentIdentity(keyid, signingKey);
+			return id;
+		} catch (Exception ex) {
+			if (ex.getMessage()!=null && ex.getMessage().startsWith("Connection refused")) {
+				//Dialogs.showMessage("Sorry, could not connect to server.");
+				return null;
+			} else {
+				ex.printStackTrace();
+			}
+		}
+		//Dialogs.showMessage("No identities found for "+keyid);
+		return null;
+	}
+	
+	public Vector<KeyLog> requestKeyLogs(OSDXKey key, OSDXKey sign) {
+		final Vector<KeyLog> logs = new Vector<KeyLog>();
+		if (sign!=null) {
+			sign.unlockPrivateKey(messageHandler);
+		}
+		KeyClient client = getKeyClient(key.getAuthoritativekeyserver());
+		try {
+			Vector<KeyLog> rlogs = client.requestKeyLogs(key.getKeyID(),sign);
+			if (rlogs!=null && rlogs.size()>0) {
+				logs.addAll(rlogs);
+			}
+		} catch (Exception ex) {
+			if (ex.getMessage()!=null && ex.getLocalizedMessage().startsWith("Connection refused")) {
+				return null;
+			} else {
+				ex.printStackTrace();
+			}
+		}
+		return logs;
 	}
 
 	public KeyClient getKeyClient(String servername) {

@@ -110,7 +110,13 @@ public class KeyServerResponse extends HTTPServerResponse {
 			OSDXKey key = backend.getKey(id);
 			if (key!=null && key instanceof SubKey) {
 				e.addContent("subkeyid", key.getKeyID());
-				e.addContent(((SubKey)key).getParentKey().getSimplePubKeyElement());
+				OSDXKey parentkey = ((SubKey)key).getParentKey(); 
+				if (parentkey==null) {
+					parentkey = backend.getKey(((SubKey)key).getParentKeyID());
+				}
+				if (parentkey!=null) {
+					e.addContent(parentkey.getSimplePubKeyElement());
+				}
 			}
 			try {
 				OSDXMessage msg = OSDXMessage.buildMessage(e, signoffkey);
@@ -126,7 +132,7 @@ public class KeyServerResponse extends HTTPServerResponse {
 		return null;
 	}
 	
-	public static KeyServerResponse createIdentityResponse(String serverid, HTTPServerRequest request, KeyServerBackend backend, OSDXKey signoffkey) {
+	public static KeyServerResponse createIdentityResponse(String serverid, HTTPServerRequest request, KeyServerBackend backend, OSDXKey signoffkey, boolean currentIdentityOnly) {
 		KeyServerResponse resp = new KeyServerResponse(serverid);
 		String keyid = request.getParamValue("KeyID");
 		boolean showRestricted = false;
@@ -149,9 +155,14 @@ public class KeyServerResponse extends HTTPServerResponse {
 			e.addContent("keyid",keyid);
 			OSDXKey key = backend.getKey(keyid);
 			if (key != null && key instanceof MasterKey) {
-				Vector<Identity> ids = ((MasterKey)key).getIdentities();
-				for (Identity aid : ids) {
-					e.addContent(aid.toElement(showRestricted)); 
+				if (currentIdentityOnly) {
+					Identity cid = ((MasterKey)key).getCurrentIdentity();
+					e.addContent(cid.toElement(showRestricted));
+				} else {
+					Vector<Identity> ids = ((MasterKey)key).getIdentities();
+					for (Identity aid : ids) {
+						e.addContent(aid.toElement(showRestricted)); 
+					}
 				}
 			}
 			try {

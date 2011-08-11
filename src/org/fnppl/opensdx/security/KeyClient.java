@@ -218,6 +218,34 @@ public class KeyClient extends HTTPClient {
 		}
 	} 
 	
+	public Identity requestCurrentIdentity(String keyid, OSDXKey signingKey) throws Exception {
+		HTTPClientRequest req = KeyClientMessageFactory.buildRequestIdentities(host, prepath, keyid, signingKey);
+		HTTPClientResponse resp = send(req);
+		writeLog(req, resp, "IDENTITY");
+		if (resp==null || resp.status == null) {
+			message = ERROR_NO_RESPONSE;
+			return null;
+		}
+		OSDXMessage msg = OSDXMessage.fromElement(resp.doc.getRootElement());
+		Result result = msg.verifySignatures(keyverificator);
+		
+		if (result.succeeded) {
+			Element content = msg.getContent();
+			if (!content.getName().equals(KeyClientMessageFactory.IDENTITIES_RESPONSE)) {
+				message = ERROR_WRONG_RESPONE_FORMAT;
+				return null;
+			}
+		 	Vector<Element> eid = content.getChildren("identity");
+		 	if (eid.size()>0) {
+		 		return (Identity.fromElement(eid.get(0)));
+		 	}
+		 	return null;
+		} else {
+			message = result.errorMessage;
+			return null;
+		}
+	} 
+	
 	//3. Ich, als fremder user, möchte beim keyserver den aktuellen (beim keyserver bekannten) status zu einem pubkey bekommen können (valid/revoked/etc.)
 	public KeyStatus requestKeyStatus(String keyid) throws Exception {
 		HTTPClientRequest req = KeyClientMessageFactory.buildRequestKeyStatus(host, prepath, keyid);

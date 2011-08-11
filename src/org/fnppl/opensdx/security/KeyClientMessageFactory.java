@@ -89,6 +89,27 @@ public class KeyClientMessageFactory {
 		return req;
 	}
 	
+	public static HTTPClientRequest buildRequestCurrentIdentity(String host, String prepath, String keyid, OSDXKey signingKey) {
+		HTTPClientRequest req = new HTTPClientRequest();
+		req.setURI(host, prepath+"/identity");
+		req.addRequestParam("KeyID", keyid);
+		if (signingKey!=null) {
+			try {
+				//build osdxmessage
+				Element content = new Element("identity_request");
+				content.addContent("keyid", keyid);
+				OSDXMessage m = OSDXMessage.buildMessage(content, signingKey);
+				req.setContentElement(m.toElement());
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				throw new RuntimeException("ERROR building signed identity request");
+			}
+		} else {
+			req.toggleGETMode();
+		}
+		return req;
+	}
+	
 	public static HTTPClientRequest buildRequestKeyStatus(String host, String prepath, String keyid) {
 		HTTPClientRequest req = new HTTPClientRequest();
 		req.setURI(host, prepath+"/keystatus");

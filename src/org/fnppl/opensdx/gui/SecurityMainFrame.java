@@ -2285,6 +2285,7 @@ public class SecurityMainFrame extends JFrame {
 					Dialogs.showMessage("Signature NOT verified!");
 				}
 				if (verify.report!=null) {
+					Dialogs.showText("Key Verification Report", Document.buildDocument(verify.report).toString());
 					File fPDF = Dialogs.chooseSaveFile("Save report as PDF", control.getLastDir(), f.getName()+"_sig_verif.pdf");
 					if (fPDF!=null) {
 						ReportGenerator.buildFileSignatureVerificationReport(verify.report, fPDF);

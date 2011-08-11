@@ -339,7 +339,7 @@ public class PostgresBackend implements KeyServerBackend {
 //				}
 			}
 			if (key.isSub()) {
-				String parentkeysha1 = rs.getString("parentkeyid");
+				String parentkeysha1 = rs.getString("parentkeysha1");
 				if (parentkeysha1!=null && parentkeysha1.length()>0) {
 					((SubKey)key).setParentKeyID(parentkeysha1+"@"+rs.getString("parentkeyserver"));
 				}
