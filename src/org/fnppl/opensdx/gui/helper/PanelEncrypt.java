@@ -801,7 +801,7 @@ public class PanelEncrypt extends JPanel {
 	public void init_select_enc_method_model() {
 		select_enc_method_model.addElement("symmetric (with password)");
 		select_enc_method_model.addElement("symmetric (rand. key enc. with asymm. enc)");
-		select_enc_method_model.addElement("asymmetric");
+		//select_enc_method_model.addElement("asymmetric");
 	}
 	public void select_enc_method_changed(int selected) {
 		if (selected==0) {

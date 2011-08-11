@@ -90,6 +90,35 @@ public class KeyVerificator {
 		report.addContent(e);
 		return e;
 	}
+	
+	public Result matchKeyDataWithKeyServer(OSDXKey key) {
+		//key data matches keydata on keyserver 
+		Element report = new Element("key_data_match_report");
+		OSDXKey remoteKey = requestPublicKey(key.getKeyID());
+		if (remoteKey==null) {
+			report.addContent("error", "could not retrieve key information from keyserver.");
+			return Result.error(report);
+		}
+		boolean match = true;
+		try {
+			if (remoteKey.getLevel()!=key.getLevel()) match = false;
+			if (remoteKey.getUsage()!=key.getUsage()) match = false;
+			if (remoteKey.getValidFrom()!=key.getValidFrom()) match = false;
+			if (remoteKey.getValidUntil()!=key.getValidUntil()) match = false;
+			if (!Arrays.equals(remoteKey.getPublicModulusBytes(), key.getPublicModulusBytes())) match = false;
+			if (!Arrays.equals(remoteKey.getPubKey().getPublicExponentBytes(), key.getPubKey().getPublicExponentBytes())) match = false;
+			addReportCheck(report, "key data matches key data on keyserver", match);
+			if (match) {
+				return Result.succeeded(report);
+			} else {
+				return Result.error(report);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		report.addContent("error", "unknown error");
+		return Result.error(report);
+	}
 
 	public Result verifyKey(OSDXKey key, long datetime) {
 		return verifyKey(key, false, datetime);
@@ -99,21 +128,6 @@ public class KeyVerificator {
 		Element report = new Element("key_verification_report");
 		report.addContent("keyid", key.getKeyID());
 		report.addContent("verify_for_datetime", SecurityHelper.getFormattedDate(datetime));
-		
-		//key data matches keydata on keyserver 
-//		OSDXKey remoteKey = requestPublicKey(key.getKeyID());
-//		boolean match = true;
-//		try {
-//			if (remoteKey.getLevel()!=key.getLevel()) match = false;
-//			if (remoteKey.getUsage()!=key.getUsage()) match = false;
-//			if (remoteKey.getValidFrom()!=key.getValidFrom()) match = false;
-//			if (remoteKey.getValidUntil()!=key.getValidUntil()) match = false;
-//			if (!Arrays.equals(remoteKey.getPublicModulusBytes(), key.getPublicModulusBytes())) match = false;
-//			if (!Arrays.equals(remoteKey.getPubKey().getPublicExponentBytes(), key.getPubKey().getPublicExponentBytes())) match = false;
-//			addReportCheck(report, "key data matches key data on keyserver", match);
-//		} catch (Exception ex) {
-//			ex.printStackTrace();
-//		}
 		
 		//sha1 of key modulus = keyid
 		byte[] keyid = SecurityHelper.HexDecoder.decode(OSDXKey.getFormattedKeyIDModulusOnly(key.getKeyID()));
