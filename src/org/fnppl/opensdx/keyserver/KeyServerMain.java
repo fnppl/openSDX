@@ -45,8 +45,7 @@ package org.fnppl.opensdx.keyserver;
  * 
  */
 
-import java.io.Console;
-import java.io.File;
+import java.io.*;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Date;
@@ -928,10 +927,51 @@ public class KeyServerMain extends HTTPServer {
 		}
 	    
 	}
+	public static void migrateFromXMLKeyStoreToDBKeyStore() throws Exception {
+		System.out.print("Please enter location of XML-KeyStore: ");
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		String file = br.readLine().trim();
+		File f = new File(file);
+		if(!f.exists() || !f.isFile() || !f.canRead() || f.length()==0) {
+			throw new Exception("File not exist or whatever: "+f.getAbsolutePath());
+		}
+		
+		System.out.print("Please enter hostname for postres-server: ");		
+		String host = br.readLine().trim();
+		
+		System.out.print("Please enter port for postres-server: ");		
+		int port = Integer.parseInt(br.readLine().trim());
+		
+		System.out.print("Please enter username for postres-server: ");		
+		String user = br.readLine().trim();
+		
+		System.out.print("Please enter password for postres-server: ");		
+		String pass = br.readLine().trim();
+		
+		System.out.print("Please enter dbname for postres-server: ");		
+		String dbname = br.readLine().trim();
+		
+		System.out.println("Trying to connect to postgres..");
+		PostgresBackend be = PostgresBackend.init(user, pass, "jdbc:postgresql://"+host+":"+port+"/"+dbname, null);
+		System.out.println("Connected. Setting up empty-db-structure - this will erase existing data!!! [ENTER]");
+		br.readLine();
+		
+		be.setupEmptyDB();
+
+		System.out.println("Copying files from "+f.getAbsolutePath());
+		be.addKeysAndLogsFromKeyStore(f.getAbsolutePath());
+		System.out.println("Data added to db - now closing connection...");
+		be.closeDBConnection();
+		System.out.println("Connection closed...[FINISHED].");
+	}
 	
 	public static void main(String[] args) throws Exception {
 		if (args!=null && args.length==1 && args[0].equals("--makeconfig")) {
 			makeConfig();
+			return;
+		}
+		if (args!=null && args.length==1 && args[0].equals("--migrate")) {
+			migrateFromXMLKeyStoreToDBKeyStore();
 			return;
 		}
 		if (args==null || args.length!=6) {
