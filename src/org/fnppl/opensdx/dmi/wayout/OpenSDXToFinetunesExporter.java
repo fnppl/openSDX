@@ -289,19 +289,19 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         	// infotexts (promo/teaser)
         	Element infotexts = new Element("infotexts");
         	release.addContent(infotexts);
-        	int promocount = bundle.getInformation().getPromotextCount();
+        	int promocount = bundle.getInformation().getTexts().getPromotextCount();
         	for(int j=0; j<promocount;j++) {
-        		String lang = bundle.getInformation().getPromotextLanguage(j);
-        		String text = bundle.getInformation().getPromotext(j);
+        		String lang = bundle.getInformation().getTexts().getPromotextLanguage(j);
+        		String text = bundle.getInformation().getTexts().getPromotext(j);
         		Element infotext = new Element("infotext");
         		infotexts.addContent(infotext);
         		infotext.setAttribute("lang", lang).setText(text);
         	} 
         	
-        	int teasercount = bundle.getInformation().getTeasertextCount();
+        	int teasercount = bundle.getInformation().getTexts().getTeasertextCount();
         	for(int j=0; j<teasercount;j++) {
-        		String lang = bundle.getInformation().getTeasertextLanguage(j);
-        		String text = bundle.getInformation().getTeasertext(j);
+        		String lang = bundle.getInformation().getTexts().getTeasertextLanguage(j);
+        		String text = bundle.getInformation().getTexts().getTeasertext(j);
         		Element infotext = new Element("infotext");
         		infotexts.addContent(infotext);
         		infotext.setAttribute("lang", lang).setText(text);

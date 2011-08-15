@@ -191,14 +191,14 @@ public class PanelInformation extends JPanel implements MyObservable {
 	private void updateLanguageList() {
         list_language_model.removeAllElements();
         if (info !=null) {
-            int anzP = info.getPromotextCount();
-            int anzT = info.getTeasertextCount();
+            int anzP = info.getTexts().getPromotextCount();
+            int anzT = info.getTexts().getTeasertextCount();
             Vector<String> lang = new Vector<String>();
             for (int i=0;i<anzP;i++) {
-                lang.add(info.getPromotextLanguage(i));
+                lang.add(info.getTexts().getPromotextLanguage(i));
             }
             for (int i=0;i<anzT;i++) {
-                String l = info.getTeasertextLanguage(i);
+                String l = info.getTexts().getTeasertextLanguage(i);
                 if (!lang.contains(l)) {
                     lang.add(l);
                 }
@@ -218,8 +218,8 @@ public class PanelInformation extends JPanel implements MyObservable {
            text_promotion.setText("");
            text_teaser.setText("");
         } else {
-           text_promotion.setText(info.getPromotext(lang));
-           text_teaser.setText(info.getTeasertext(lang));
+           text_promotion.setText(info.getTexts().getPromotext(lang));
+           text_teaser.setText(info.getTexts().getTeasertext(lang));
         }
         documentListener.saveState(text_promotion);
         documentListener.saveState(text_teaser);
@@ -894,13 +894,13 @@ public void initLayout() {
 		if (info != null) {
             String lang = FeedGui.showLanguageCodeSelector();
             if (lang!=null) {
-                String p = info.getPromotext(lang);
-                String t = info.getTeasertext(lang);
+                String p = info.getTexts().getPromotext(lang);
+                String t = info.getTexts().getTeasertext(lang);
                 if (t!=null || p !=null) {
                     Dialogs.showMessage("Selected language \""+lang+"\" is already in list.");
                     return;
                 }
-                info.setPromotext(lang, "");
+                info.getTexts().setPromotext(lang, "");
                 updateLanguageList();
                 list_language.setSelectedIndex(list_language.getModel().getSize()-1);
                 notifyChanges();
@@ -912,8 +912,8 @@ public void initLayout() {
 		int sel = list_language.getSelectedIndex();
         if (sel>=0) {
             String lang = (String)list_language.getModel().getElementAt(sel);
-            info.removePromotext(lang);
-            info.removeTeasertext(lang);
+            info.getTexts().removePromotext(lang);
+            info.getTexts().removeTeasertext(lang);
             updateLanguageList();
             updatePromoAndTeaserText();
             notifyChanges();
@@ -923,7 +923,7 @@ public void initLayout() {
 		if (info==null) return;
         String lang = (String)list_language.getSelectedValue();
         if (lang!=null) {
-        	info.setPromotext(lang, text_promotion.getText());
+        	info.getTexts().setPromotext(lang, text_promotion.getText());
             text_promotion.setBackground(Color.WHITE);
             documentListener.saveState(text_promotion);
             notifyChanges();
@@ -937,7 +937,7 @@ public void initLayout() {
 		if (info==null) return;
         String lang = (String)list_language.getSelectedValue();
         if (lang!=null) {
-        	info.setTeasertext(lang, text_teaser.getText());
+        	info.getTexts().setTeasertext(lang, text_teaser.getText());
             text_teaser.setBackground(Color.WHITE);
             documentListener.saveState(text_teaser);
             notifyChanges();

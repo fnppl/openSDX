@@ -170,10 +170,10 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		        		Element infotext = itInfotexts.next();
 		        		
 		        		if(infotext.getName().equals("promotext")) {
-		        			info.setPromotext(infotext.getAttribute("lang"), infotext.getText());
+		        			info.getTexts().setPromotext(infotext.getAttribute("lang"), infotext.getText());
 		        		}
 		        		else if(infotext.getName().equals("teasertext")) {
-		        			info.setTeasertext(infotext.getAttribute("lang"), infotext.getText());
+		        			info.getTexts().setTeasertext(infotext.getAttribute("lang"), infotext.getText());
 		        		}
 		        	}            	
 	        	} catch (Exception ex) {

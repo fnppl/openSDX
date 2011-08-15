@@ -58,8 +58,7 @@ public class BundleInformation extends BusinessObject {
 
 	public static String KEY_NAME = "information";
 
-	private Vector<BusinessStringItem> promotext;						//SHOULD
-	private Vector<BusinessStringItem> teasertext;						//SHOULD
+	private BundleTexts texts;											//SHOULD
 	private BusinessDatetimeItem physical_release_datetime;				//MUST
 	private BusinessDatetimeItem digital_release_datetime;				//MUST
 	private BusinessIntegerItem playlength;								//MUST for media files
@@ -72,8 +71,7 @@ public class BundleInformation extends BusinessObject {
 
 	public static BundleInformation make(long physical_release_datetime, long digital_release_datetime) {
 		BundleInformation information = new BundleInformation();
-		information.promotext = new Vector<BusinessStringItem>();
-		information.teasertext = new Vector<BusinessStringItem>();
+		information.texts = new BundleTexts();
 		information.physical_release_datetime = new BusinessDatetimeItem("physical_release_datetime", physical_release_datetime);
 		information.digital_release_datetime = new BusinessDatetimeItem("digital_release_datetime", digital_release_datetime);
 		information.playlength = null;
@@ -96,18 +94,7 @@ public class BundleInformation extends BusinessObject {
 		final BundleInformation information = new BundleInformation();
 		information.initFromBusinessObject(bo);
 		
-		information.promotext = new Vector<BusinessStringItem>();
-		new ChildElementIterator(bo, "promotext") {
-			public void processBusinessStringItem(BusinessStringItem item) {
-				information.promotext.add(item);
-			}
-		};
-		information.teasertext = new Vector<BusinessStringItem>();
-		new ChildElementIterator(bo, "teasertext") {
-			public void processBusinessStringItem(BusinessStringItem item) {
-				information.teasertext.add(item);
-			}
-		};
+		information.texts = BundleTexts.fromBusinessObject(bo);
 		information.physical_release_datetime = BusinessDatetimeItem.fromBusinessObject(bo, "physical_release_datetime");
 		information.digital_release_datetime = BusinessDatetimeItem.fromBusinessObject(bo, "digital_release_datetime");
 		information.playlength = BusinessIntegerItem.fromBusinessObject(bo, "playlength");
@@ -147,53 +134,6 @@ public class BundleInformation extends BusinessObject {
 	public String getMain_language() {
 		if (main_language==null) return null;
 		return main_language.getString();
-	}
-	
-	
-	public BundleInformation setPromotext(String language, String promotext) {
-		for (int i=0;i<this.promotext.size();i++) {
-			if (this.promotext.get(i).getAttribute("lang").equals(language)) {
-				this.promotext.get(i).setString(promotext);
-				return this;
-			}
-		}
-		BusinessStringItem text = new BusinessStringItem("promotext", promotext);
-		text.setAttribute("lang", language);
-		this.promotext.add(text);
-		return this;
-	}
-	
-	public void removePromotext(String lang) {
-		if (promotext==null) return;
-		for (int i=0;i<promotext.size();i++) {
-			if (getPromotextLanguage(i)!=null && getPromotextLanguage(i).equals(lang)) {
-				promotext.remove(i);
-				i--;
-			}
-		}
-	}
-	
-	public void removeTeasertext(String lang) {
-		if (teasertext==null) return;
-		for (int i=0;i<teasertext.size();i++) {
-			if (getTeasertextLanguage(i)!=null && getTeasertextLanguage(i).equals(lang)) {
-				teasertext.remove(i);
-				i--;
-			}
-		}
-	}
-
-	public BundleInformation setTeasertext(String language, String teasertext) {
-		for (int i=0;i<this.teasertext.size();i++) {
-			if (this.teasertext.get(i).getAttribute("lang").equals(language)) {
-				this.teasertext.get(i).setString(teasertext);
-				return this;
-			}
-		}
-		BusinessStringItem text = new BusinessStringItem("teasertext", teasertext);
-		text.setAttribute("lang", language);
-		this.teasertext.add(text);
-		return this;
 	}
 
 	public BundleInformation physical_release_datetime(long physical_release_datetime) {
@@ -244,73 +184,11 @@ public class BundleInformation extends BusinessObject {
 		this.related = related;
 		return this;
 	}
-
-	public String getPromotext(int index) {
-		if (promotext==null || index<0 || index>=promotext.size()) return null;
-		return promotext.get(index).getString();
-	}
 	
-	public String getPromotext(String lang) {
-		if (promotext==null) return null;
-		for (int i=0;i<promotext.size();i++) {
-			if (promotext.get(i).getAttribute("lang").equals(lang)) {
-				return promotext.get(i).getString();
-			}
-		}
-		return null;
-	}
-	
-	public String getPromotextLanguage(int index) {
-		if (promotext==null || index<0 || index>=promotext.size()) return null;
-		return promotext.get(index).getAttribute("lang");
-	}
-	
-	public void promotext_language(int index, String language) {
-		if (promotext == null || index < 0 || index >= promotext.size()) return;
-		promotext.get(index).setAttribute("lang",language);
-	}
-	public void promotext(int index, String text) {
-		if (promotext == null || index < 0 || index >= promotext.size()) return;
-		promotext.get(index).setString(text);
-	}
-	
-	public int getPromotextCount() {
-		if (promotext==null) return 0;
-		return promotext.size();
-	}
-
-	public String getTeasertext(int index) {
-		if (teasertext==null || index<0 || index>=teasertext.size()) return null;
-		return teasertext.get(index).getString();
-	}
-	public String getTeasertextLanguage(int index) {
-		if (teasertext==null || index<0 || index>=teasertext.size()) return null;
-		return teasertext.get(index).getAttribute("lang");
-	}
-	
-	public String getTeasertext(String lang) {
-		if (teasertext==null) return null;
-		for (int i=0;i<teasertext.size();i++) {
-			if (teasertext.get(i).getAttribute("lang").equals(lang)) {
-				return teasertext.get(i).getString();
-			}
-		}
-		return null;
-	}
-	
-	public void teasertext_language(int index, String language) {
-		if (teasertext == null || index < 0 || index >= teasertext.size()) return;
-		teasertext.get(index).setAttribute("lang",language);
-	}
-	public void teasertext(int index, String text) {
-		if (teasertext == null || index < 0 || index >= teasertext.size()) return;
-		teasertext.get(index).setString(text);
-	}
-	
-	public int getTeasertextCount() {
-		if (teasertext==null) return 0;
-		return teasertext.size();
-	}
+	public BundleInformation texts(BundleTexts texts) {
+		this.texts = texts;
+		return this;
+	}	
 	
 	public String getPhysicalReleaseDatetimeText() {
 		if (physical_release_datetime==null) return null;
@@ -371,6 +249,10 @@ public class BundleInformation extends BusinessObject {
 	public BundleRelatedInformation getRelated() {
 		return related;
 	}
+	
+	public BundleTexts getTexts() {
+		return texts;
+	}	
 	
 	public String getKeyname() {
 		return KEY_NAME;
