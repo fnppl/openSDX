@@ -129,9 +129,10 @@
 	</xsd:complexType>
 	<xsd:complexType name="contributor">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains information of one contributor. A contributor can be a label, performer, 
-            texter, writer, vocals, conductor, display_artist, compilator, copyright, production or clearinghouse. A Year should be provided 
-            in case the type equals copyright or production.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information of one contributor. 
+            A contributor can be a label, performer, texter, writer, vocals, conductor, display_artist, 
+            compilator, copyright, production or clearinghouse. A Year should be provided in case the type 
+            equals copyright or production.</xsd:documentation>
         </xsd:annotation> 
         <xsd:all>
         	<xsd:element name="name" type="xsd:string" />
@@ -144,7 +145,8 @@
 	</xsd:complexType>
     <xsd:complexType name="ids">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This Element is a container for all IDs which are available for the associated element.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This Element is a container for all IDs which are available for 
+            the associated element.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
         	<xsd:element name="grid" type="xsd:string" maxOccurs="1" minOccurs="0" />
@@ -162,8 +164,11 @@
     </xsd:complexType>
     <xsd:complexType name="www">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This Element is a container for the important web addresses and phone of the associated element (contributor e.g.). Phone should be in international format.
-            Every single information-entry cold be tagged "publishable" which would then mean wether customers of receiver are also allowed to be given this information. If publishable is not given, then this is granted.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This Element is a container for the important web addresses and 
+            phone of the associated element (contributor e.g.). Phone should be in international format.
+            Every single information-entry cold be tagged "publishable" which would then mean wether customers 
+            of receiver are also allowed to be given this information. If publishable is not given, then this 
+            is granted.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
         	<xsd:element name="facebook" type="publishable" maxOccurs="1" minOccurs="0" />
@@ -190,9 +195,12 @@
     </xsd:complexType>
     <xsd:complexType name="item">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains information about a item just like a track. The type describes what the item is e.g. audio, video, android-app et cetera.
-            The entry "version" is important if different versions of the bundle exist. The licens_basic and license_specifics contains information and rules about pricing, allowed and 
-            disallowed territories, channels an so on. The child "files" hold information for the associated files for this item.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about a item just like a track. 
+            The type describes what the item is e.g. audio, video, android-app et cetera.
+            The entry "version" is important if different versions of the bundle exist. The licens_basic and 
+            license_specifics contains information and rules about pricing, allowed and 
+            disallowed territories, channels an so on. The child "files" hold information for the associated 
+            files for this item.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="displayname" type="xsd:string" />
@@ -213,9 +221,12 @@
     </xsd:complexType>
     <xsd:complexType name="information">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains important data for an item/file. Multilingual promotexts ans teasertexts, dates of physical and
-            digital release, playlength of file, position of the file in relation to other file of bundle, number of set (e.g. 2 for cd 2), the suggested prelistining 
-            offset if the file not starts e.g. with significant content, origin country and main language of file and information about related bundles.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains important data for an item/file. Multilingual 
+            promotexts ans teasertexts, dates of physical and
+            digital release, playlength of file, position of the file in relation to other file of bundle, number 
+            of set (e.g. 2 for cd 2), the suggested prelistining 
+            offset if the file not starts e.g. with significant content, origin country and main language of file 
+            and information about related bundles.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="promotext" type="promotext" maxOccurs="unbounded" minOccurs="0" />
@@ -247,7 +258,8 @@
 	</xsd:complexType>
 	<xsd:complexType name="related">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains informations of bundles which are related to the bundle of the actual feed.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains informations of bundles which are related 
+            to the bundle of the actual feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="physical_distributor" type="physical_distributor" maxOccurs="unbounded" minOccurs="0" />
@@ -273,7 +285,8 @@
     </xsd:complexType>
     <xsd:complexType name="fingerprint">
 		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element includes an element "echoprint" (http://echoprint.me | https://github.com/echonest/echoprint-codegen).</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element includes an element "echoprint" 
+            (http://echoprint.me | https://github.com/echonest/echoprint-codegen).</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="echoprint" type="xsd:string" maxOccurs="1" minOccurs="0" />
@@ -281,7 +294,8 @@
     </xsd:complexType>
     <xsd:complexType name="license_basis">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element includes the basic rules and information under which this bundle is provided.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element includes the basic rules and information under which 
+            this bundle is provided.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="territorial" type="territorial" maxOccurs="1" minOccurs="0" />
@@ -294,7 +308,8 @@
     </xsd:complexType>
     <xsd:complexType name="channels">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element is a container for channels which can be either "all", "ad supported" or "premium".</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element is a container for channels which can be either "all", 
+            "ad supported" or "premium".</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="channel" type="channel" maxOccurs="unbounded" minOccurs="0" />
@@ -302,8 +317,9 @@
     </xsd:complexType>
 	<xsd:complexType name="channel">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en"> A channels can be either "all", "ad supported" or "premium". The required attribute "type" regards to the allowance 
-            in reference to the channel. Type can be "allow" or "disallow".</xsd:documentation>
+            <xsd:documentation xml:lang="en"> A channels can be either "all", "ad supported" or "premium". 
+            The required attribute "type" regards to the allowance in reference to the channel. 
+            Type can be "allow" or "disallow".</xsd:documentation>
         </xsd:annotation>	
 	  <xsd:simpleContent>
 	    <xsd:extension base="xsd:string">
@@ -313,7 +329,8 @@
 	</xsd:complexType>
     <xsd:complexType name="timeframe">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en">Timeframe contains the most-recent-release-date from which on receiver may use this and the cancellation-date.</xsd:documentation>
+            <xsd:documentation xml:lang="en">Timeframe contains the most-recent-release-date from which on 
+            receiver may use this and the cancellation-date.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="from" type="datetimeGMT" />
@@ -322,7 +339,8 @@
     </xsd:complexType>
     <xsd:complexType name="pricing">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en">Pricecode is an arbitrary-info. An	explicitly given wholesale-price overrides the basic pricecode-given-wp. 
+            <xsd:documentation xml:lang="en">Pricecode is an arbitrary-info. An	explicitly given wholesale-price 
+            overrides the basic pricecode-given-wp. 
             Most probably either one of pricecode OR wholesaleprice should be given</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
@@ -332,8 +350,8 @@
     </xsd:complexType>
     <xsd:complexType name="territorial">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This Element is a container for territories. There should be a entry for all territories with a attribute if distribution
-            is allowed or not.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This Element is a container for territories. There should be a entry 
+            for all territories with a attribute if distribution is allowed or not.</xsd:documentation>
         </xsd:annotation>         
         <xsd:sequence>
             <xsd:element name="territory" type="territory" maxOccurs="unbounded" minOccurs="0" />
@@ -341,7 +359,8 @@
     </xsd:complexType>
 	<xsd:complexType name="territory">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en">A territory includes one country code an the required attribute "type". Type can be "allow" or "disallow".</xsd:documentation>
+            <xsd:documentation xml:lang="en">A territory includes one country code an the required attribute "type". 
+            Type can be "allow" or "disallow".</xsd:documentation>
         </xsd:annotation>	
 	  <xsd:simpleContent>
 	    <xsd:extension base="xsd:string">
@@ -351,7 +370,8 @@
 	</xsd:complexType>
     <xsd:complexType name="license_specifics">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element includes specific rules which should be applied. This can be achieved by given rules.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element includes specific rules which should be applied. 
+            This can be achieved by given rules.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="rules" type="rules" />
@@ -359,7 +379,8 @@
     </xsd:complexType>
     <xsd:complexType name="rules">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element is a container for rules. It needs an ordered mode here - first come first match.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element is a container for rules. It needs an ordered mode here -
+             first come first match.</xsd:documentation>
         </xsd:annotation>        
         <xsd:sequence>
             <xsd:element name="rule" type="rule" maxOccurs="unbounded" minOccurs="0" />
@@ -367,8 +388,8 @@
     </xsd:complexType>    
     <xsd:complexType name="rule">
  		<xsd:annotation>
-            <xsd:documentation xml:lang="en">A rule must include a "if"-element and a "then"-element to shape a legal instruction. 
-            It can also include a "else"-element.</xsd:documentation>
+            <xsd:documentation xml:lang="en">A rule must include a "if"-element and a "then"-element to shape a 
+            legal instruction. It can also include a "else"-element.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="if" type="if" />
@@ -379,8 +400,9 @@
     </xsd:complexType>
     <xsd:complexType name="if">
   		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element must be the first element in a rule. It includes the information what is affected by the rule, an operator like 
-            "equals", "before","after","contains" or "containedin" and a value which will be compared.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element must be the first element in a rule. It includes the 
+            information what is affected by the rule, an operator like "equals", "before","after","contains" or 
+            "containedin" and a value which will be compared.</xsd:documentation>
         </xsd:annotation>        
         <xsd:sequence>
             <xsd:element name="what" type="xsd:string" />
@@ -390,8 +412,9 @@
     </xsd:complexType>    
     <xsd:complexType name="then">
   		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element must be the second in a rule and includes information "echo" for debugging output and can include an element "break" 
-            which means to not process any more rules.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element must be the second in a rule and includes information 
+            "echo" for debugging output and can include an element "break" which means to not process any more 
+            rules.</xsd:documentation>
         </xsd:annotation>        
         <xsd:sequence>
             <xsd:element name="echo" type="xsd:string" maxOccurs="1" minOccurs="0" />
@@ -400,8 +423,8 @@
     </xsd:complexType>    
     <xsd:complexType name="else">
   		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element is optional. It includes information "proclaim" and can include an element "break" 
-            which means to not process any more rules.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element is optional. It includes information "proclaim" and can 
+            include an element "break" which means to not process any more rules.</xsd:documentation>
         </xsd:annotation>        
         <xsd:sequence>
             <xsd:element name="proclaim" type="proclaim" maxOccurs="unbounded" minOccurs="0" />
@@ -410,7 +433,8 @@
     </xsd:complexType>
     <xsd:complexType name="proclaim">
   		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element includes the information what is affected and the corresponding value.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element includes the information what is affected and the 
+            corresponding value.</xsd:documentation>
         </xsd:annotation>        
         <xsd:sequence>
             <xsd:element name="what" type="xsd:string" />
@@ -532,7 +556,7 @@
     </xsd:complexType>
     <xsd:complexType name="sender">
     	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about the sender of that feed.</xsd:documentation> 
+            <xsd:documentation xml:lang="en">This element contains information about the sender of that feed.</xsd:documentation> 
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
@@ -543,7 +567,7 @@
     </xsd:complexType>
     <xsd:complexType name="licensor">
     	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about the licensor of that feed.</xsd:documentation> 
+            <xsd:documentation xml:lang="en">This element contains information about the licensor of that feed.</xsd:documentation> 
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
@@ -554,7 +578,7 @@
     </xsd:complexType>    
     <xsd:complexType name="licensee">
     	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about the licensee of that feed.</xsd:documentation> 
+            <xsd:documentation xml:lang="en">This element contains information about the licensee of that feed.</xsd:documentation> 
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
@@ -566,7 +590,7 @@
 
     <xsd:complexType name="actions">
     	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about possible actions with the feed.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about possible actions with the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="oninitialreceive" type="event"/>
@@ -578,7 +602,8 @@
     </xsd:complexType>
     <xsd:complexType name="oninitialreceive">
     	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about what should be done on initial receive of the feed.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about what should be done on initial
+             receive of the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
@@ -586,7 +611,8 @@
     </xsd:complexType>
     <xsd:complexType name="onprocesstart">
    	 	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about what should be done on the start of processing the feed.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about what should be done on the 
+            start of processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
@@ -594,7 +620,8 @@
     </xsd:complexType>
     <xsd:complexType name="onprocessend">
    		<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about what should be done on the end of processing the feed.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about what should be done on the 
+            end of processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
@@ -602,7 +629,8 @@
     </xsd:complexType>
     <xsd:complexType name="onfullsuccess">
     	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about what should be done on full success processing the feed.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about what should be done on full 
+            success processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
@@ -610,7 +638,8 @@
     </xsd:complexType>
     <xsd:complexType name="onerror">
     	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about what should be done on error processing the feed.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about what should be done on error 
+            processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="event"/>
@@ -629,7 +658,7 @@
     </xsd:complexType>
     <xsd:complexType name="mailto">
     	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about mailto-event.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about mailto-event.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="action">
@@ -643,7 +672,7 @@
     </xsd:complexType>
     <xsd:complexType name="http">
     	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about http-event.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about http-event.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="action">
@@ -752,7 +781,8 @@
     </xsd:complexType>
     <xsd:complexType name="purchase">
      	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains information about purchase. Mostly when this feeds recipient is a POS.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about purchase. Mostly when this 
+            feeds recipient is a POS.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="pos" type="xsd:string" />
@@ -778,7 +808,8 @@
     </xsd:complexType>
     <xsd:complexType name="postponed">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains some info on reporting when doing the "usual" time-gap-reporting.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains some info on reporting when doing the "usual" 
+            time-gap-reporting.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="id" type="xsd:string" />
@@ -786,7 +817,8 @@
     </xsd:complexType>        
     <xsd:complexType name="decryptinfo">
     	<xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains information about decryption of corresponding file.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about decryption of corresponding 
+            file.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="cipher" type="xsd:string" minOccurs="0" maxOccurs="1" />
