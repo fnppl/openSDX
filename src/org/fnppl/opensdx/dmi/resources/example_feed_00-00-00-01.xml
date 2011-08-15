@@ -337,15 +337,17 @@
 		</contributors><!-- MUST the contributors are ordered from 1 to n - most significant ones (per type) are the ones with the smalles n -->
 		
 		<information>
-			<promotext lang="en">
-			EN asdasd
-			</promotext>
-			<promotext lang="de">
-			DE asdasd
-			</promotext>
-			<teasertext lang="de">
-			DE asdasd
-			</teasertext>
+			<texts>
+				<promotext lang="en">
+				EN asdasd
+				</promotext>
+				<promotext lang="de">
+				DE asdasd
+				</promotext>
+				<teasertext lang="de">
+				DE asdasd
+				</teasertext>
+			</texts>
 			
 			<physical_release_datetime>1960-02-13 00:00:00 GMT+00:00</physical_release_datetime>
 			<digital_release_datetime>1960-02-13 00:00:00 GMT+00:00</digital_release_datetime>
@@ -524,15 +526,17 @@
 				</contributors><!-- MUST the contributors are ordered from 1 to n - most significant ones (per type) are the ones with the smalles n -->
 		
 				<information>
-					<promotext lang="en">
-					EN asdasd
-					</promotext>
-					<promotext lang="de">
-					DE asdasd
-					</promotext>
-					<teasertext lang="de">
-					DE asdasd
-					</teasertext>
+					<texts>
+						<promotext lang="en">
+						EN asdasd
+						</promotext>
+						<promotext lang="de">
+						DE asdasd
+						</promotext>
+						<teasertext lang="de">
+						DE asdasd
+						</teasertext>
+					</texts>
 			
 					<physical_release_datetime>1960-02-13 00:00:00 GMT+00:00</physical_release_datetime>
 					<digital_release_datetime>1960-02-13 00:00:00 GMT+00:00</digital_release_datetime>

@@ -217,9 +217,8 @@
             digital release, playlength of file, position of the file in relation to other file of bundle, number of set (e.g. 2 for cd 2), the suggested prelistining 
             offset if the file not starts e.g. with significant content, origin country and main language of file and information about related bundles.</xsd:documentation>
         </xsd:annotation>
-        <xsd:sequence>
-            <xsd:element name="promotext" type="promotext" maxOccurs="unbounded" minOccurs="0" />
-            <xsd:element name="teasertext" type="teasertext" maxOccurs="unbounded" minOccurs="0" />
+        <xsd:all>
+            <xsd:element name="texts" type="texts" maxOccurs="1" minOccurs="0" />
             <xsd:element name="physical_release_datetime" type="datetimeGMT" />
             <xsd:element name="digital_release_datetime" type="datetimeGMT" />
             <xsd:element name="playlength" type="xsd:integer" maxOccurs="1" minOccurs="0" />
@@ -229,8 +228,19 @@
             <xsd:element name="origin_country" type="xsd:string" maxOccurs="1" minOccurs="0" />
             <xsd:element name="main_language" type="xsd:string" maxOccurs="1" minOccurs="0" />
             <xsd:element name="related" type="related" maxOccurs="1" minOccurs="0" />
-        </xsd:sequence>    
+        </xsd:all>    
     </xsd:complexType>
+    <xsd:complexType name="texts">
+		<xsd:annotation>
+            <xsd:documentation xml:lang="en">This element contains important data for an item/file. Multilingual promotexts ans teasertexts, dates of physical and
+            digital release, playlength of file, position of the file in relation to other file of bundle, number of set (e.g. 2 for cd 2), the suggested prelistining 
+            offset if the file not starts e.g. with significant content, origin country and main language of file and information about related bundles.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="promotext" type="promotext" maxOccurs="unbounded" minOccurs="0" />
+            <xsd:element name="teasertext" type="teasertext" maxOccurs="unbounded" minOccurs="0" />
+        </xsd:sequence>    
+    </xsd:complexType>    
 	<xsd:complexType name="promotext">
 	  <xsd:simpleContent>
 	    <xsd:extension base="xsd:string">
