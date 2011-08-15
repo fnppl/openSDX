@@ -348,8 +348,7 @@
     <xsd:complexType name="pricing">
  		<xsd:annotation>
             <xsd:documentation xml:lang="en">Pricecode is an arbitrary-info. An	explicitly given wholesale-price 
-            overrides the basic pricecode-given-wp. 
-            Most probably either one of pricecode OR wholesaleprice should be given</xsd:documentation>
+            overrides the basic pricecode-given-wp. Most probably either one of pricecode OR wholesaleprice should be given.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="pricecode" type="xsd:string" maxOccurs="1" minOccurs="0" />

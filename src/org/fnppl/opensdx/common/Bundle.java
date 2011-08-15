@@ -171,6 +171,7 @@ public class Bundle extends BusinessObject {
 	}
 
 	public Bundle addContributor(Contributor contributor) {
+		contributor.setAttribute("num", ""+(contributors.size()+1));
 		contributors.add(contributor);
 		return this;
 	}
@@ -190,6 +191,10 @@ public class Bundle extends BusinessObject {
 						) {
 						item.removeContributor(j);
 						j--;
+					}
+					else {
+						// get Attribut "num" right
+						ic.setAttribute("num", ""+(j+1));
 					}
 				}
 			}
@@ -213,6 +218,10 @@ public class Bundle extends BusinessObject {
 						item.removeContributor(j);
 						j--;
 					}
+					else {
+						// get Attribut "num" right
+						ic.setAttribute("num", ""+(j+1));
+					}					
 				}
 			}
 		}
@@ -225,8 +234,13 @@ public class Bundle extends BusinessObject {
 	
 	public Vector<Contributor> getAllContributors() {
 		Vector<Contributor> all = new Vector<Contributor>();
+		int num = 1;
 		for (int i=0;i<getContributorCount();i++) {
+			// set Attribute "num"
+			Contributor c = getContributor(i);
+			c.setAttribute("num", ""+num);
 			all.add(getContributor(i));
+			num++;
 		}
 		for (int j=0;j<getItemsCount();j++) {
 			Item item = getItem(j);
@@ -242,7 +256,9 @@ public class Bundle extends BusinessObject {
 				}
 				if (!found) {
 					c.on_sublevel_only(true);
+					c.setAttribute("num", ""+num);
 					all.add(c);
+					num++;
 				}
 			}
 		}
@@ -402,7 +418,7 @@ public class Bundle extends BusinessObject {
 							Contributor c = getContributor(i);
 							if (!c.getOnSubLevelOnly()) {
 								Element ce = c.toElement();
-								//ce.setAttribute("pos", ""+(i+1));
+								ce.setAttribute("num", ""+(i+1));
 								e.addContent(ce);
 							}
 						}
