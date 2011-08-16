@@ -227,10 +227,20 @@ public class PostgresBackend implements KeyServerBackend {
 			con = DriverManager.getConnection(dbname, user, pw);
 			System.out.println("Connection established DB: "+dbname); 
 		} catch (Exception e) {
+			con = null;
 			e.printStackTrace();
 			throw new RuntimeException("Connection to DB could not be established.");
 		}
 	}
+	
+	public boolean isConnected() {
+		if (con==null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
 	
 	public void closeDBConnection() {
 		try {

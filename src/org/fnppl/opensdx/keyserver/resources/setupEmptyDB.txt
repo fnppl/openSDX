@@ -14,7 +14,6 @@ CREATE TABLE "keys" (
 	"bits"			INTEGER,
 	"modulus" 		VARCHAR(1154),
 	"exponent" 		VARCHAR(20),
-	
 	"parentkeysha1"	char(60) not null default '',
 	"parentkeyserver"	varchar(200),
 	

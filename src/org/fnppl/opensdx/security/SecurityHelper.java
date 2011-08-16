@@ -184,14 +184,14 @@ public class SecurityHelper {
 	    	for (int i = off; i < (off + length); i++) {
 	            int v = data[i] & 0xff;
 
+	            if(wrapat!=-1 && i>0 && i%wrapat==0) {
+	            	out.write('\n');
+	            }
 	            out.write(ENCODING_TABLE[(v >>> 4)]);
 	            out.write(ENCODING_TABLE[v & 0xf]);
 	            
 	            if(pad != '\0' && i < (off + length)-1) {
 	            	out.write(pad);
-	            }
-	            if(wrapat!=-1 && i>0 && i%wrapat==0) {
-	            	out.write('\n');
 	            }
 	        }
 

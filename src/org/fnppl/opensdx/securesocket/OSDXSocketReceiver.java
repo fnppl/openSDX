@@ -145,7 +145,7 @@ public class OSDXSocketReceiver {
 				}
 			}
 		} catch (IOException e) {
-			if (e.getMessage().startsWith("Socket closed")) {
+			if (e.getMessage().startsWith("Socket closed") || e.getMessage().startsWith("Connection reset")) {
 				stop();
 			} else {
 				e.printStackTrace();
