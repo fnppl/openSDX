@@ -46,18 +46,17 @@
  * 
  */
  -->
-
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://fnppl.org/opensdx" xmlns:osdx="http://fnppl.org/opensdx" xmlns:cc="http://fnppl.org/opensdx/countrycodes">
+	<xsd:import namespace="http://fnppl.org/opensdx/countrycodes" id="countryCodes" schemaLocation="openSDX_countryCodes.xsd"/>
     <xsd:element name="feed">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">General Element for the whole XML-Doc (root)</xsd:documentation>
         </xsd:annotation>
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:element name="feedinfo" type="feedinfo"/>
-                <xsd:element name="bundle" type="bundle" maxOccurs="unbounded" minOccurs="0"/>
-                <xsd:element name="item" type="item" maxOccurs="unbounded" minOccurs="0"/>
+                <xsd:element name="feedinfo" type="osdx:feedinfo"/>
+                <xsd:element name="bundle" type="osdx:bundle" maxOccurs="unbounded" minOccurs="0"/>
+                <xsd:element name="item" type="osdx:item" maxOccurs="unbounded" minOccurs="0"/>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
@@ -81,14 +80,14 @@
         <xsd:all>
             <xsd:element name="onlytest" type="xsd:boolean" />
             <xsd:element name="feedid" type="xsd:string"/>
-            <xsd:element name="creationdatetime" type="datetimeGMT"/>
-            <xsd:element name="effectivedatetime" type="datetimeGMT"/>
-            <xsd:element name="creator" type="creator"/>
-            <xsd:element name="receiver" type="receiver"/>
-            <xsd:element name="sender" type="sender"/>
-            <xsd:element name="licensor" type="licensor"/>
-            <xsd:element name="licensee" type="licensee"/>            
-            <xsd:element name="actions" type="actions" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="creationdatetime" type="osdx:datetimeGMT"/>
+            <xsd:element name="effectivedatetime" type="osdx:datetimeGMT"/>
+            <xsd:element name="creator" type="osdx:creator"/>
+            <xsd:element name="receiver" type="osdx:receiver"/>
+            <xsd:element name="sender" type="osdx:sender"/>
+            <xsd:element name="licensor" type="osdx:licensor"/>
+            <xsd:element name="licensee" type="osdx:licensee"/>            
+            <xsd:element name="actions" type="osdx:actions" maxOccurs="1" minOccurs="0" />
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="bundle">
@@ -107,16 +106,16 @@
         	<xsd:element name="name" type="xsd:string" maxOccurs="1" minOccurs="0"/>
         	<xsd:element name="version" type="xsd:string" maxOccurs="1" minOccurs="0"/>
         	<xsd:element name="display_artistname" type="xsd:string" maxOccurs="1" minOccurs="0" />
-        	<xsd:element name="ids" type="ids" />	
-            <xsd:element name="items" type="items" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="contributors" type="contributors" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="information" type="information" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="license_basis" type="license_basis" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="license_specifics" type="license_specifics" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="reporting" type="reporting" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="tags" type="tags" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="files" type="files" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="purchase" type="purchase" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="ids" type="osdx:ids" />	
+            <xsd:element name="items" type="osdx:items" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="contributors" type="osdx:contributors" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="information" type="osdx:information" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="license_basis" type="osdx:license_basis" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="license_specifics" type="osdx:license_specifics" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="reporting" type="osdx:reporting" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="tags" type="osdx:tags" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="files" type="osdx:files" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="purchase" type="osdx:purchase" maxOccurs="1" minOccurs="0" />
         </xsd:all>           	
     </xsd:complexType>
 	<xsd:complexType name="contributors">
@@ -124,7 +123,7 @@
             <xsd:documentation xml:lang="en">This element contains a list of contributor.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="contributor" type="contributor" maxOccurs="unbounded" minOccurs="1" />
+            <xsd:element name="contributor" type="osdx:contributor" maxOccurs="unbounded" minOccurs="1" />
         </xsd:sequence> 
 	</xsd:complexType>
 	<xsd:complexType name="contributor">
@@ -136,10 +135,10 @@
         </xsd:annotation> 
         <xsd:all>
         	<xsd:element name="name" type="xsd:string" />
-        	<xsd:element name="type"  type="contributorType" />
+        	<xsd:element name="type"  type="osdx:contributorType" />
         	<xsd:element name="year" type="xsd:string" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="ids" type="ids" />
-            <xsd:element name="www" type="www" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="ids" type="osdx:ids" />
+            <xsd:element name="www" type="osdx:www" maxOccurs="1" minOccurs="0" />
         </xsd:all> 
         <xsd:attribute name="num" type="xsd:integer" />              
 	</xsd:complexType>
@@ -171,11 +170,11 @@
             is granted.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-        	<xsd:element name="facebook" type="publishable" maxOccurs="1" minOccurs="0" />
-        	<xsd:element name="myspace" type="publishable" maxOccurs="1" minOccurs="0" />
-        	<xsd:element name="homepage" type="publishable" maxOccurs="1" minOccurs="0" />
-        	<xsd:element name="twitter" type="publishable" maxOccurs="1" minOccurs="0" />
-        	<xsd:element name="phone" type="publishable" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="facebook" type="osdx:publishable" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="myspace" type="osdx:publishable" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="homepage" type="osdx:publishable" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="twitter" type="osdx:publishable" maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="phone" type="osdx:publishable" maxOccurs="1" minOccurs="0" />
         </xsd:all>  
     </xsd:complexType>
 	<xsd:complexType name="publishable">
@@ -190,7 +189,7 @@
             <xsd:documentation xml:lang="en">This element is a container for item-elements.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="item" type="item" maxOccurs="unbounded" minOccurs="1" />
+            <xsd:element name="item" type="osdx:item" maxOccurs="unbounded" minOccurs="1" />
         </xsd:sequence>    
     </xsd:complexType>
     <xsd:complexType name="item">
@@ -208,15 +207,15 @@
             <xsd:element name="version" type="xsd:string" />
             <xsd:element name="type" type="xsd:string" />
             <xsd:element name="display_artistname" type="xsd:string" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="ids" type="ids" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="contributors" type="contributors" />
-            <xsd:element name="information" type="information" />
-            <xsd:element name="license_basis" type="license_basis" />
-            <xsd:element name="license_specifics" type="license_specifics" />
-            <xsd:element name="tags" type="tags" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="fingerprint" type="fingerprint" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="reporting" type="reporting" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="files" type="files" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="ids" type="osdx:ids" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="contributors" type="osdx:contributors" />
+            <xsd:element name="information" type="osdx:information" />
+            <xsd:element name="license_basis" type="osdx:license_basis" />
+            <xsd:element name="license_specifics" type="osdx:license_specifics" />
+            <xsd:element name="tags" type="osdx:tags" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="fingerprint" type="osdx:fingerprint" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="reporting" type="osdx:reporting" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="files" type="osdx:files" maxOccurs="1" minOccurs="0" />
         </xsd:all>    
     </xsd:complexType>
     <xsd:complexType name="information">
@@ -229,16 +228,16 @@
             and information about related bundles.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="texts" type="texts" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="physical_release_datetime" type="datetimeGMT" />
-            <xsd:element name="digital_release_datetime" type="datetimeGMT" />
+            <xsd:element name="texts" type="osdx:texts" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="physical_release_datetime" type="osdx:datetimeGMT" />
+            <xsd:element name="digital_release_datetime" type="osdx:datetimeGMT" />
             <xsd:element name="playlength" type="xsd:integer" maxOccurs="1" minOccurs="0" />
             <xsd:element name="num" type="xsd:integer" maxOccurs="1" minOccurs="0" />
             <xsd:element name="setnum" type="xsd:integer" maxOccurs="1" minOccurs="0" />
             <xsd:element name="suggested_prelistening_offset" type="xsd:integer" maxOccurs="1" minOccurs="0" />            
-            <xsd:element name="origin_country" type="xsd:string" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="origin_country" type="cc:countryCode" maxOccurs="1" minOccurs="0" />
             <xsd:element name="main_language" type="xsd:string" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="related" type="related" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="related" type="osdx:related" maxOccurs="1" minOccurs="0" />
         </xsd:all>    
     </xsd:complexType>
     <xsd:complexType name="texts">
@@ -246,8 +245,8 @@
             <xsd:documentation xml:lang="en">This element contains multilingual promotexts ans teasertexts.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="promotext" type="promotext" maxOccurs="unbounded" minOccurs="0" />
-            <xsd:element name="teasertext" type="teasertext" maxOccurs="unbounded" minOccurs="0" />
+            <xsd:element name="promotext" type="osdx:promotext" maxOccurs="unbounded" minOccurs="0" />
+            <xsd:element name="teasertext" type="osdx:teasertext" maxOccurs="unbounded" minOccurs="0" />
         </xsd:sequence>    
     </xsd:complexType>    
 	<xsd:complexType name="promotext">
@@ -270,9 +269,9 @@
             to the bundle of the actual feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="physical_distributor" type="physical_distributor" maxOccurs="unbounded" minOccurs="0" />
-            <xsd:element name="utube" type="utube" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="bundle" type="bundle" maxOccurs="unbounded" minOccurs="0" />
+            <xsd:element name="physical_distributor" type="osdx:physical_distributor" maxOccurs="unbounded" minOccurs="0" />
+            <xsd:element name="utube" type="osdx:utube" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="bundle" type="osdx:bundle" maxOccurs="unbounded" minOccurs="0" />
         </xsd:sequence> 	
 	</xsd:complexType>
 	<xsd:complexType name="physical_distributor">
@@ -306,11 +305,11 @@
             this bundle is provided.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="territorial" type="territorial" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="timeframe" type="timeframe" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="pricing" type="pricing" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="territorial" type="osdx:territorial" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="timeframe" type="osdx:timeframe" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="pricing" type="osdx:pricing" maxOccurs="1" minOccurs="0" />
             <xsd:element name="streaming_allowed" type="xsd:boolean" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="channels" type="channels" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="channels" type="osdx:channels" maxOccurs="1" minOccurs="0" />
             <xsd:element name="as_on_bundle" type="xsd:boolean" maxOccurs="1" minOccurs="0" />
         </xsd:all>    
     </xsd:complexType>
@@ -320,7 +319,7 @@
             "ad supported" or "premium".</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="channel" type="channel" maxOccurs="unbounded" minOccurs="0" />
+            <xsd:element name="channel" type="osdx:channel" maxOccurs="unbounded" minOccurs="0" />
         </xsd:sequence>    
     </xsd:complexType>
 	<xsd:complexType name="channel">
@@ -331,7 +330,7 @@
         </xsd:annotation>	
 	  <xsd:simpleContent>
 	    <xsd:extension base="xsd:string">
-	      <xsd:attribute name="type" type="allowance" use="required"  />
+	      <xsd:attribute name="type" type="osdx:allowance" use="required"  />
 	    </xsd:extension>
 	  </xsd:simpleContent>
 	</xsd:complexType>
@@ -341,8 +340,8 @@
             receiver may use this and the cancellation-date.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="from" type="datetimeGMT" />
-            <xsd:element name="to" type="datetimeGMT" />
+            <xsd:element name="from" type="osdx:datetimeGMT" />
+            <xsd:element name="to" type="osdx:datetimeGMT" />
         </xsd:sequence>    
     </xsd:complexType>
     <xsd:complexType name="pricing">
@@ -361,7 +360,7 @@
             for all territories with a attribute if distribution is allowed or not.</xsd:documentation>
         </xsd:annotation>         
         <xsd:sequence>
-            <xsd:element name="territory" type="territory" maxOccurs="unbounded" minOccurs="0" />
+            <xsd:element name="territory" type="osdx:territory" maxOccurs="unbounded" minOccurs="0" />
         </xsd:sequence>    	
     </xsd:complexType>
 	<xsd:complexType name="territory">
@@ -371,7 +370,7 @@
         </xsd:annotation>	
 	  <xsd:simpleContent>
 	    <xsd:extension base="xsd:string">
-	      <xsd:attribute name="type" type="allowance" use="optional"  />
+	      <xsd:attribute name="type" type="osdx:allowance" use="optional"  />
 	    </xsd:extension>
 	  </xsd:simpleContent>
 	</xsd:complexType>
@@ -381,7 +380,7 @@
             This can be achieved by given rules.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="rules" type="rules" />
+            <xsd:element name="rules" type="osdx:rules" />
         </xsd:sequence>     
     </xsd:complexType>
     <xsd:complexType name="rules">
@@ -390,7 +389,7 @@
              first come first match.</xsd:documentation>
         </xsd:annotation>        
         <xsd:sequence>
-            <xsd:element name="rule" type="rule" maxOccurs="unbounded" minOccurs="0" />
+            <xsd:element name="rule" type="osdx:rule" maxOccurs="unbounded" minOccurs="0" />
         </xsd:sequence>     
     </xsd:complexType>    
     <xsd:complexType name="rule">
@@ -399,9 +398,9 @@
             legal instruction. It can also include a "else"-element.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="if" type="if" />
-            <xsd:element name="then" type="then" />
-            <xsd:element name="else" type="else" maxOccurs="1" minOccurs="0"  />
+            <xsd:element name="if" type="osdx:if" />
+            <xsd:element name="then" type="osdx:then" />
+            <xsd:element name="else" type="osdx:else" maxOccurs="1" minOccurs="0"  />
         </xsd:sequence>
         <xsd:attribute name="num" type="xsd:integer" />     
     </xsd:complexType>
@@ -413,7 +412,7 @@
         </xsd:annotation>        
         <xsd:sequence>
             <xsd:element name="what" type="xsd:string" />
-            <xsd:element name="operator" type="operator" />
+            <xsd:element name="operator" type="osdx:operator" />
             <xsd:element name="value" type="xsd:string" />
         </xsd:sequence>   
     </xsd:complexType>    
@@ -434,7 +433,7 @@
             include an element "break" which means to not process any more rules.</xsd:documentation>
         </xsd:annotation>        
         <xsd:sequence>
-            <xsd:element name="proclaim" type="proclaim" maxOccurs="unbounded" minOccurs="0" />
+            <xsd:element name="proclaim" type="osdx:proclaim" maxOccurs="unbounded" minOccurs="0" />
             <xsd:element name="break" maxOccurs="1" minOccurs="0" />
         </xsd:sequence>     
     </xsd:complexType>
@@ -453,9 +452,9 @@
             <xsd:documentation xml:lang="en">This element contains information about genres and more.</xsd:documentation>
         </xsd:annotation>        
         <xsd:all>
-            <xsd:element name="genres" type="genres" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="genres" type="osdx:genres" maxOccurs="1" minOccurs="0" />
             <xsd:element name="bundle_only" type="xsd:boolean" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="explicit_lyrics" type="explicitLyrics" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="explicit_lyrics" type="osdx:explicitLyrics" maxOccurs="1" minOccurs="0" />
             <xsd:element name="live" type="xsd:boolean" maxOccurs="1" minOccurs="0" />
             <xsd:element name="accoustic" type="xsd:boolean" maxOccurs="1" minOccurs="0" />
             <xsd:element name="instrumental" type="xsd:boolean" maxOccurs="1" minOccurs="0" />
@@ -474,7 +473,7 @@
             <xsd:documentation xml:lang="en">This element contains a list of files.</xsd:documentation>
         </xsd:annotation>        
         <xsd:sequence>
-            <xsd:element name="file" type="file" maxOccurs="unbounded" minOccurs="0" />
+            <xsd:element name="file" type="osdx:file" maxOccurs="unbounded" minOccurs="0" />
         </xsd:sequence>     
     </xsd:complexType>    
     <xsd:complexType name="file">
@@ -482,8 +481,8 @@
             <xsd:documentation xml:lang="en">This element contains information and location of a file.</xsd:documentation>
         </xsd:annotation>        
         <xsd:all>
-            <xsd:element name="location" type="fileLocation" />
-            <xsd:element name="type" type="fileType" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="location" type="osdx:fileLocation" />
+            <xsd:element name="type" type="osdx:fileType" maxOccurs="1" minOccurs="0" />
             <xsd:element name="filetype" type="xsd:string" maxOccurs="1" minOccurs="0" />
             <xsd:element name="samplerate" type="xsd:string" maxOccurs="1" minOccurs="0" />
             <xsd:element name="samplesize" type="xsd:string" maxOccurs="1" minOccurs="0" />
@@ -492,10 +491,10 @@
             <xsd:element name="codec" type="xsd:string" maxOccurs="1" minOccurs="0" />
             <xsd:element name="codecsettings" type="xsd:string" maxOccurs="1" minOccurs="0" />
             <xsd:element name="bytes" type="xsd:integer" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="checksums" type="checksums" />
-            <xsd:element name="channels" type="fileChannels" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="dimension" type="dimension" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="decryptinfo" type="decryptinfo" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="checksums" type="osdx:checksums" />
+            <xsd:element name="channels" type="osdx:fileChannels" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="dimension" type="osdx:dimension" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="decryptinfo" type="osdx:decryptinfo" maxOccurs="1" minOccurs="0" />
         </xsd:all>     
     </xsd:complexType>	
 	<xsd:complexType name="checksums">
@@ -523,8 +522,8 @@
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="path" type="xsd:string" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="http" type="fileHttp" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="ftp" type="fileFtp" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="http" type="osdx:fileHttp" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="ftp" type="osdx:fileFtp" maxOccurs="1" minOccurs="0" />
         </xsd:all>   
     </xsd:complexType>
     <xsd:complexType name="creator">
@@ -532,8 +531,8 @@
             <xsd:documentation xml:lang="en">This element contains  information about the creator of that feed.</xsd:documentation> 
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="email" type="email"/>
-            <xsd:element name="userid" type="userid"/>
+            <xsd:element name="email" type="osdx:email"/>
+            <xsd:element name="userid" type="osdx:userid"/>
             <xsd:element name="keyid" type="xsd:string"/>
         </xsd:all>
     </xsd:complexType>
@@ -542,13 +541,13 @@
             <xsd:documentation xml:lang="en">This element contains  information about the receiver of that feed.</xsd:documentation> 
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="type" type="receivertypes"/>
-            <xsd:element name="servername" type="iporhostname"/>
-            <xsd:element name="serveripv4" type="ipv4"/>
-            <xsd:element name="serveripv6" type="ipv6"/>
-            <xsd:element name="authtype" type="authtype"/>
+            <xsd:element name="type" type="osdx:receivertypes"/>
+            <xsd:element name="servername" type="osdx:iporhostname"/>
+            <xsd:element name="serveripv4" type="osdx:ipv4"/>
+            <xsd:element name="serveripv6" type="osdx:ipv6"/>
+            <xsd:element name="authtype" type="osdx:authtype"/>
             <xsd:element name="username" type="xsd:string"/>
-            <xsd:element name="crypto" type="crypto"/>
+            <xsd:element name="crypto" type="osdx:crypto"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="crypto">
@@ -556,8 +555,8 @@
             <xsd:documentation xml:lang="en">This element contains crypto information for secure and authenticated transfer.</xsd:documentation> 
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="relatedemail" type="email"/>
-            <xsd:element name="usedkeyid" type="keyid"/>
+            <xsd:element name="relatedemail" type="osdx:email"/>
+            <xsd:element name="usedkeyid" type="osdx:keyid"/>
             <xsd:element name="usedpubkey" type="xsd:base64Binary"/>
         </xsd:all>
     </xsd:complexType>
@@ -568,7 +567,7 @@
         <xsd:all>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
             <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
-            <xsd:element name="email" type="email"/>
+            <xsd:element name="email" type="osdx:email"/>
 			<xsd:element name="keyid" type="xsd:string"/>            
         </xsd:all>
     </xsd:complexType>
@@ -579,7 +578,7 @@
         <xsd:all>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
             <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
-            <xsd:element name="email" type="email"/>
+            <xsd:element name="email" type="osdx:email"/>
             <xsd:element name="keyid" type="xsd:string"/>
         </xsd:all>
     </xsd:complexType>    
@@ -590,7 +589,7 @@
         <xsd:all>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
             <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
-            <xsd:element name="email" type="email"/>
+            <xsd:element name="email" type="osdx:email"/>
             <xsd:element name="keyid" type="xsd:string"/>
         </xsd:all>
     </xsd:complexType>
@@ -600,11 +599,11 @@
             <xsd:documentation xml:lang="en">This element contains information about possible actions with the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="oninitialreceive" type="event"/>
-            <xsd:element name="onprocesstart" type="event"/>
-            <xsd:element name="onprocesend" type="event"/>
-            <xsd:element name="onfullsuccess" type="event"/>
-            <xsd:element name="onerror" type="event"/>
+            <xsd:element name="oninitialreceive" type="osdx:event"/>
+            <xsd:element name="onprocesstart" type="osdx:event"/>
+            <xsd:element name="onprocesend" type="osdx:event"/>
+            <xsd:element name="onfullsuccess" type="osdx:event"/>
+            <xsd:element name="onerror" type="osdx:event"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="oninitialreceive">
@@ -613,7 +612,7 @@
              receive of the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="event"/>
+            <xsd:extension base="osdx:event"/>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="onprocesstart">
@@ -622,7 +621,7 @@
             start of processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="event"/>
+            <xsd:extension base="osdx:event"/>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="onprocessend">
@@ -631,7 +630,7 @@
             end of processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="event"/>
+            <xsd:extension base="osdx:event"/>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="onfullsuccess">
@@ -640,7 +639,7 @@
             success processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="event"/>
+            <xsd:extension base="osdx:event"/>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="onerror">
@@ -649,7 +648,7 @@
             processing the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="event"/>
+            <xsd:extension base="osdx:event"/>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="event">
@@ -657,10 +656,10 @@
             <xsd:documentation xml:lang="en">This element contains information about possible events and actions.</xsd:documentation>
         </xsd:annotation>    
         <xsd:sequence>
-            <xsd:element name="mailto" type="mailto" minOccurs="0" maxOccurs="unbounded"/>
-            <xsd:element name="http" type="http" minOccurs="0" maxOccurs="unbounded"/>            
-            <xsd:element name="fax" type="fax" minOccurs="0" maxOccurs="unbounded"/>            
-            <xsd:element name="letter" type="letter" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="mailto" type="osdx:mailto" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="http" type="osdx:http" minOccurs="0" maxOccurs="unbounded"/>            
+            <xsd:element name="fax" type="osdx:fax" minOccurs="0" maxOccurs="unbounded"/>            
+            <xsd:element name="letter" type="osdx:letter" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="mailto">
@@ -668,9 +667,9 @@
             <xsd:documentation xml:lang="en">This element contains information about mailto-event.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="action">
+            <xsd:extension base="osdx:action">
                 <xsd:sequence>
-                    <xsd:element name="receiver" type="emaillist" minOccurs="1" maxOccurs="unbounded" />
+                    <xsd:element name="receiver" type="osdx:emaillist" minOccurs="1" maxOccurs="unbounded" />
                     <xsd:element name="subject" type="xsd:string"/>
                     <xsd:element name="text" type="xsd:string"/>
                 </xsd:sequence>
@@ -682,12 +681,12 @@
             <xsd:documentation xml:lang="en">This element contains information about http-event.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="action">
+            <xsd:extension base="osdx:action">
                 <xsd:all>
-                    <xsd:element name="url" type="url"/>
-                    <xsd:element name="type" type="httpmethods"/>
-                    <xsd:element name="addheader" type="http_addheader"/>
-                    <xsd:element name="addparams" type="http_addparams"/>
+                    <xsd:element name="url" type="osdx:url"/>
+                    <xsd:element name="type" type="osdx:httpmethods"/>
+                    <xsd:element name="addheader" type="osdx:http_addheader"/>
+                    <xsd:element name="addparams" type="osdx:http_addparams"/>
                 </xsd:all>
             </xsd:extension>
         </xsd:complexContent>
@@ -697,12 +696,12 @@
             <xsd:documentation xml:lang="en">This element contains information about http access to file.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="action">
+            <xsd:extension base="osdx:action">
                 <xsd:all>
-                    <xsd:element name="url" type="url"/>
+                    <xsd:element name="url" type="osdx:url"/>
                     <xsd:element name="user" type="xsd:string" maxOccurs="1" minOccurs="0" />
                     <xsd:element name="pass" type="xsd:string" maxOccurs="1" minOccurs="0" />
-                    <xsd:element name="expiresdatetime" type="datetimeGMT"/>
+                    <xsd:element name="expiresdatetime" type="osdx:datetimeGMT"/>
                 </xsd:all>
             </xsd:extension>
         </xsd:complexContent>
@@ -712,21 +711,21 @@
             <xsd:documentation xml:lang="en">This element contains information about ftp access to file.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
-            <xsd:extension base="action">
+            <xsd:extension base="osdx:action">
                 <xsd:all>
                     <xsd:element name="server" type="xsd:string"/>
                     <xsd:element name="port" type="xsd:string"/>
                     <xsd:element name="path" type="xsd:string"/>
                     <xsd:element name="user" type="xsd:string" maxOccurs="1" minOccurs="0" />
                     <xsd:element name="pass" type="xsd:string" maxOccurs="1" minOccurs="0" />
-                    <xsd:element name="expiresdatetime" type="datetimeGMT"/>
+                    <xsd:element name="expiresdatetime" type="osdx:datetimeGMT"/>
                 </xsd:all>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>    
     <xsd:complexType name="http_addheader">
         <xsd:complexContent mixed="false">
-            <xsd:extension base="action_instruction">
+            <xsd:extension base="osdx:action_instruction">
                 <xsd:sequence>
                     <xsd:any processContents="lax" maxOccurs="unbounded"/>    
                 </xsd:sequence>                
@@ -735,7 +734,7 @@
     </xsd:complexType>
     <xsd:complexType name="http_addparams">
         <xsd:complexContent>
-            <xsd:extension base="action_instruction">
+            <xsd:extension base="osdx:action_instruction">
                 <xsd:sequence>
                     <xsd:any processContents="lax" maxOccurs="unbounded"/>    
                 </xsd:sequence>
@@ -744,7 +743,7 @@
     </xsd:complexType>
     <xsd:complexType name="fax">
         <xsd:complexContent>
-            <xsd:extension base="action">
+            <xsd:extension base="osdx:action">
                 <xsd:sequence>
                     <xsd:any processContents="lax" maxOccurs="unbounded"/>    
                 </xsd:sequence>
@@ -757,9 +756,9 @@
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="registered" type="xsd:boolean" />
-            <xsd:element name="to" type="to"/>            
+            <xsd:element name="to" type="osdx:to"/>            
             <xsd:element name="text" type="xsd:string" />            
-            <xsd:element name="costscoveredby" type="costscoveredby"/>   
+            <xsd:element name="costscoveredby" type="osdx:costscoveredby"/>   
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="to">
@@ -801,8 +800,8 @@
             <xsd:documentation xml:lang="en">This element contains information about reporting.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="realtime" type="realtime" />
-            <xsd:element name="postponed" type="postponed" />
+            <xsd:element name="realtime" type="osdx:realtime" />
+            <xsd:element name="postponed" type="osdx:postponed" />
         </xsd:all>     
     </xsd:complexType>    
     <xsd:complexType name="realtime">
@@ -810,7 +809,7 @@
             <xsd:documentation xml:lang="en">This element contains http information for realtime reporting.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="http" type="http" />
+            <xsd:element name="http" type="osdx:http" />
         </xsd:sequence>    
     </xsd:complexType>
     <xsd:complexType name="postponed">
@@ -832,7 +831,7 @@
             <xsd:element name="initvector" type="xsd:string" minOccurs="0" maxOccurs="1" />
             <xsd:element name="key" type="xsd:string" minOccurs="0" maxOccurs="1" />
             <xsd:element name="bytes" type="xsd:string" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="checksums" type="checksums" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="checksums" type="osdx:checksums" minOccurs="0" maxOccurs="1" />
         </xsd:all>    
     </xsd:complexType>
     <xsd:complexType name="action"/>
