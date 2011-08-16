@@ -72,7 +72,7 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 
 		this.setDataHandler(new OSDXSocketDataHandler() {
 			public void handleNewText(String text, OSDXSocketSender sender) {
-				System.out.println("RECEIVED TEXT: "+text);
+				//System.out.println("RECEIVED TEXT: "+text);
 				textQueue.add(text);
 				while (textQueue.size()>1000) {
 					textQueue.remove(0);
@@ -115,6 +115,13 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 	}
 	
 	public String pwd() {
+		//remove all previous ACK PWD from queue
+		for (int i=0;i<textQueue.size();i++) {
+			if (textQueue.get(i).startsWith("ACK PWD :: ")) {
+				textQueue.remove(i);
+				i--;
+			}
+		}
 		sendEncryptedText("PWD");
 		String pwd = null;
 		long timeout = System.currentTimeMillis()+2000;
@@ -179,17 +186,31 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 				} else {
 					sendEncryptedText("PUT "+new_filename);
 				}
-				try {
-					ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-					FileInputStream fin = new FileInputStream(f);
-					byte[] buffer = new byte[1024];
-					int read;
-					while ((read = fin.read(buffer))>0) {
-						bOut.write(buffer, 0, read);
+				//wait for ACK or ERROR of PUT
+				String msg = null;
+				long timeout = System.currentTimeMillis()+2000;
+				while (msg==null && System.currentTimeMillis()<timeout) {
+					for (int i=0;i<textQueue.size();i++) {
+						if (textQueue.get(i).startsWith("ACK PUT :: ") || textQueue.get(i).startsWith("ERROR IN PUT :: ")) {
+							msg = textQueue.remove(i);
+						}
 					}
-					sendEncryptedData(bOut.toByteArray());
-				} catch (Exception ex) {
-					ex.printStackTrace();
+				}
+				if (msg.startsWith("ACK")) {
+					try {
+						ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+						FileInputStream fin = new FileInputStream(f);
+						byte[] buffer = new byte[1024];
+						int read;
+						while ((read = fin.read(buffer))>0) {
+							bOut.write(buffer, 0, read);
+						}
+						sendEncryptedData(bOut.toByteArray());
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				} else {
+					System.out.println("ERROR uploading file: "+f.getName()+" :: "+msg.substring(msg.indexOf(" :: ")+4));
 				}
 			}
 		}

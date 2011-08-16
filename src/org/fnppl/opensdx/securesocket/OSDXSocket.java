@@ -212,15 +212,18 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketDataHandler {
 		}
 	}
 	
+	private Object o = new Object();
 	private boolean sendBytes(byte[] data, String type) {
-		try {
-			OutputStream out = socket.getOutputStream();
-			out.write((type+data.length+":").getBytes("UTF-8"));
-			out.write(data);
-			return true;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			message = ex.getMessage();
+		synchronized (o) {
+			try {
+				OutputStream out = socket.getOutputStream();
+				out.write((type+data.length+":").getBytes("UTF-8"));
+				out.write(data);
+				return true;
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				message = ex.getMessage();
+			}
 		}
 		return false;
 	}

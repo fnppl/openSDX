@@ -44,10 +44,12 @@ package org.fnppl.opensdx.securesocket;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Vector;
 
+import org.bouncycastle.crypto.RuntimeCryptoException;
 import org.fnppl.opensdx.security.SymmetricKey;
 
 public class OSDXSocketReceiver {
@@ -119,8 +121,19 @@ public class OSDXSocketReceiver {
 			
 			if (byteCount>0) {
 				//read bytes
-				byte[] data = new byte[byteCount];
-				intputStream.read(data);
+				ByteArrayOutputStream bout = new ByteArrayOutputStream();
+				//byte[] data = new byte[byteCount];
+				
+				byte[] buffer = new byte[1024];
+				int sum = 0;
+				while (sum<byteCount) { //block until complete data is read
+					int r = intputStream.read(buffer);
+					bout.write(buffer, 0, r);
+					sum += r;
+				}
+				byte[] data = bout.toByteArray();
+				
+				assert(data.length==byteCount);
 				
 				//decrypt if necessary
 				if (lastReceivedWasEncrypted) {
@@ -134,7 +147,7 @@ public class OSDXSocketReceiver {
 				}
 				if (command.contains("TEXT")) {
 					String text = new String(data, "UTF-8");
-					//System.out.println("RECEIVED MESSAGE::"+lastReceivedText);
+					//System.out.println("RECEIVED MESSAGE::"+text);
 					for (OSDXSocketDataHandler l : listeners) {
 						l.handleNewText(text, sender);
 					}

@@ -491,7 +491,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 				sender.sendEncryptedText("ERROR IN PUT :: FILE ALREADY EXISTS");
 			} else {
 				state.setWriteFile(f);
-				sender.sendEncryptedText("ACK GET :: WAITING FOR DATA");
+				sender.sendEncryptedText("ACK PUT :: WAITING FOR DATA");
 			}
 		}
 	}
