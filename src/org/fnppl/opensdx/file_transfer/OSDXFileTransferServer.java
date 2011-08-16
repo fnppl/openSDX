@@ -139,7 +139,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		return s;
 	}
 	
-	public void handleNewData(byte[] data, OSDXSocketSender sender) {	
+	public void handleNewData(byte[] data, OSDXSocketSender sender) {
 		//if data arrives, it must be a file
 		FileTransferState state = getState(sender);
 		if (state.getWriteFile() == null) {
