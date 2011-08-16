@@ -48,7 +48,7 @@
  -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://fnppl.org/opensdx/genres">
-<xsd:simpleType name="genres">
+<xsd:simpleType name="genre">
     <xsd:annotation>
       <xsd:documentation xml:lang="en">This element includes a list of ISO 3166-1 country codes.</xsd:documentation>
     </xsd:annotation>

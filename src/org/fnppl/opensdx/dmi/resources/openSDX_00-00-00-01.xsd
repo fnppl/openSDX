@@ -46,9 +46,10 @@
  * 
  */
  -->
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:cc="http://fnppl.org/opensdx/countrycodes" xmlns:g="http://fnppl.org/opensdx/genres">
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:cc="http://fnppl.org/opensdx/countrycodes" xmlns:g="http://fnppl.org/opensdx/genres" xmlns:l="http://fnppl.org/opensdx/languages">
 	<xsd:import namespace="http://fnppl.org/opensdx/countrycodes" schemaLocation="openSDX_countryCodes.xsd"/>
 	<xsd:import namespace="http://fnppl.org/opensdx/genres" schemaLocation="openSDX_genres.xsd"/>
+	<xsd:import namespace="http://fnppl.org/opensdx/languages" schemaLocation="openSDX_languages.xsd"/>
     <xsd:element name="feed">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">General Element for the whole XML-Doc (root)</xsd:documentation>
@@ -237,7 +238,7 @@
             <xsd:element name="setnum" type="xsd:integer" maxOccurs="1" minOccurs="0" />
             <xsd:element name="suggested_prelistening_offset" type="xsd:integer" maxOccurs="1" minOccurs="0" />            
             <xsd:element name="origin_country" type="cc:countryCode" maxOccurs="1" minOccurs="0" />
-            <xsd:element name="main_language" type="xsd:string" maxOccurs="1" minOccurs="0" />
+            <xsd:element name="main_language" type="l:language" maxOccurs="1" minOccurs="0" />
             <xsd:element name="related" type="related" maxOccurs="1" minOccurs="0" />
         </xsd:all>    
     </xsd:complexType>
@@ -466,7 +467,7 @@
             <xsd:documentation xml:lang="en">This element contains a list of genres.</xsd:documentation>
         </xsd:annotation>        
         <xsd:sequence>
-            <xsd:element name="genre" type="g:genres" maxOccurs="unbounded" minOccurs="0" />
+            <xsd:element name="genre" type="g:genre" maxOccurs="unbounded" minOccurs="0" />
         </xsd:sequence>    
     </xsd:complexType>
     <xsd:complexType name="files">
