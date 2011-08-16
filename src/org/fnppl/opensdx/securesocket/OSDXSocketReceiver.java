@@ -123,17 +123,28 @@ public class OSDXSocketReceiver {
 				//read bytes
 				ByteArrayOutputStream bout = new ByteArrayOutputStream();
 				//byte[] data = new byte[byteCount];
+				int bufferSize = 1024;
+				byte[] buffer = new byte[bufferSize];
 				
-				byte[] buffer = new byte[1024];
 				int sum = 0;
 				while (sum<byteCount) { //block until complete data is read
-					int r = intputStream.read(buffer);
-					bout.write(buffer, 0, r);
-					sum += r;
+					if (byteCount-sum > bufferSize) {
+						read = intputStream.read(buffer);
+						if (read>0) {
+							bout.write(buffer, 0, read);
+							sum += read;
+						}
+					} else { //avoid reading next command
+						read = intputStream.read(b);
+						if (read>0) {
+							bout.write(b, 0, read);
+							sum += read;
+						}
+					}
 				}
 				byte[] data = bout.toByteArray();
 				
-				assert(data.length==byteCount);
+				//assert(data.length==byteCount);
 				
 				//decrypt if necessary
 				if (lastReceivedWasEncrypted) {
