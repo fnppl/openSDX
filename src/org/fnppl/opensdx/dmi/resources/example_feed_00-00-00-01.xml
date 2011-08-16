@@ -69,7 +69,7 @@
 	in these days, it should never be a problem to have computers work on this in a proper manner 
  -->
 
-<feed xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://fnppl.org/opensdx/openSDX_00-00-00-01.xsd">
+<feed xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://fnppl.org/opensdx openSDX_00-00-00-01.xsd">
 	<feedinfo>
 		<onlytest>true</onlytest><!-- MUST testmode true|false -->
 		<feedid>kaakka</feedid><!-- MUST id is provided by sender; should be unique -->
