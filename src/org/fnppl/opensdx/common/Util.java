@@ -45,23 +45,10 @@ package org.fnppl.opensdx.common;
  * 
  */
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.Arrays;
-import java.util.Vector;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.io.*;
 
+import java.util.*;
+import java.util.zip.*;
 
 /**
  * 
@@ -225,6 +212,6 @@ public class Util {
     	} catch (Exception ex) {
     		return -1;
     	}
-    }
+    }    
     
 }

@@ -236,6 +236,12 @@ public class FeedGui extends JFrame implements MyObserver {
 				}				
 				else if(cmd.equalsIgnoreCase("export simfy feed")) {
 					export_feed("simfy");
+				}
+				else if(cmd.equalsIgnoreCase("validate file")) {
+					validateFile();
+				}
+				else if(cmd.equalsIgnoreCase("validate feed")) {
+					validateFeed();
 				}				
 			}
 		};
@@ -305,7 +311,20 @@ public class FeedGui extends JFrame implements MyObserver {
 		jmi = new JMenuItem("Simfy Feed");
 		jmi.setActionCommand("export simfy feed");
 		jmi.addActionListener(ja);
-		jm3.add(jmi);		
+		jm3.add(jmi);
+		
+		JMenu jm4 = new JMenu("Extras");
+		jb.add(jm4);
+		
+		jmi = new JMenuItem("Validate Feed");
+		jmi.setActionCommand("validate feed");
+		jmi.addActionListener(ja);
+		jm4.add(jmi);
+		
+		jmi = new JMenuItem("Validate File");
+		jmi.setActionCommand("validate file");
+		jmi.addActionListener(ja);
+		jm4.add(jmi);		
 		
 		setJMenuBar(jb);
 	}
@@ -842,6 +861,36 @@ public class FeedGui extends JFrame implements MyObserver {
 		.disallow("US");
 		update();
 	}
+	
+	public void validateFeed() {
+		if(currentFeed==null) {
+			Dialogs.showMessage("ERROR, could not validate feed. No current feed found.");
+			return;
+		}
+		
+		try {
+			boolean valide = new FeedValidator().validateOSDX_0_0_1(currentFeed);
+			String msg = "Feed invalid.";
+			if(valide) {
+				msg = "Yehaw. Feed is valid.";
+			}
+			Dialogs.showMessage(msg);
+		}
+		catch(Exception ex) {
+			Dialogs.showMessage(ex.getMessage());	
+		}
+	}
+	
+	public void validateFile() {
+		File f = Dialogs.chooseOpenFile("Select file to validate", lastDir, "feed.xml");
+		try {
+			String msg = new FeedValidator().validateOSDX_0_0_1(f);
+			Dialogs.showMessage(msg);
+		}
+		catch(Exception ex) {
+			Dialogs.showMessage(ex.getMessage());	
+		}
+	}	
 	
 	public void import_feed(String type) {
 		File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
