@@ -64,8 +64,6 @@ import org.fnppl.opensdx.xml.Element;
 
 
 public class OSDXSocket implements OSDXSocketSender, OSDXSocketDataHandler {
-	
-	
 	protected Socket socket = null;
 	private long timeout = 2000;
 	
