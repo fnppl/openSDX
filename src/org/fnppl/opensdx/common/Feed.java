@@ -265,7 +265,7 @@ public class Feed extends BusinessObject {
 		return this;
 	}
 	
-	public void removeSignleItem(int index) {
+	public void removeSingleItem(int index) {
 		if (single_items==null) return;
 		single_items.remove(index);
 		if (single_items.size()==0) {

@@ -57,26 +57,46 @@ public class Contributor extends BusinessObject {
 
 	public static String TYPE_LABEL = "label";
 	public static String TYPE_PERFORMER = "performer";
-	public static String TYPE_COMPOSER = "composer";
 	public static String TYPE_TEXTER = "texter";
-	public static String TYPE_WRITER = "writer";
-	public static String TYPE_VOCALS = "vocals";
+	public static String TYPE_EDITOR = "editor";
 	public static String TYPE_CONDUCTOR = "conductor";	
-	public static String TYPE_DISPLAY_ARTIST = "display artist";
+	public static String TYPE_ARTIST = "artist";
+	public static String TYPE_SINGER = "singer";
+	public static String TYPE_COMPOSER = "composer";
+	public static String TYPE_MIXER = "mixer";
+	public static String TYPE_REMIXER = "remixer";
+	public static String TYPE_PRODUCER = "producer";
+	public static String TYPE_FEATURING = "featuring";
+	public static String TYPE_WITH = "with";
+	public static String TYPE_DJ = "DJ";
+	public static String TYPE_VERSUS = "versus";
+	public static String TYPE_MEETS = "meets";
+	public static String TYPE_PRESENTS = "presents";
 	public static String TYPE_COMPILATOR = "compilator";
 	public static String TYPE_COPYRIGHT = "copyright";
 	public static String TYPE_PRODUCTION = "production";
 	public static String TYPE_CLEARINGHOUSE = "clearinghouse";
+	
 	public static final Vector<String> TYPES = new Vector<String>();
+	
 	static {
 		TYPES.add(TYPE_LABEL);
 		TYPES.add(TYPE_PERFORMER);
-		TYPES.add(TYPE_DISPLAY_ARTIST);
-		TYPES.add(TYPE_COMPOSER);
 		TYPES.add(TYPE_TEXTER);
-		TYPES.add(TYPE_WRITER);
-		TYPES.add(TYPE_VOCALS);
+		TYPES.add(TYPE_EDITOR);
 		TYPES.add(TYPE_CONDUCTOR);
+		TYPES.add(TYPE_ARTIST);
+		TYPES.add(TYPE_SINGER);
+		TYPES.add(TYPE_COMPOSER);
+		TYPES.add(TYPE_MIXER);
+		TYPES.add(TYPE_REMIXER);
+		TYPES.add(TYPE_PRODUCER);
+		TYPES.add(TYPE_FEATURING);
+		TYPES.add(TYPE_WITH);
+		TYPES.add(TYPE_DJ);
+		TYPES.add(TYPE_VERSUS);
+		TYPES.add(TYPE_MEETS);
+		TYPES.add(TYPE_PRESENTS);
 		TYPES.add(TYPE_COMPILATOR);
 		TYPES.add(TYPE_COPYRIGHT);
 		TYPES.add(TYPE_PRODUCTION);
