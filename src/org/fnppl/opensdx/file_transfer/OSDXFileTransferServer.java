@@ -345,6 +345,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	//change working directory: CWD directory_name
 	public void handle_cd(String param, OSDXSocketSender sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsCD()) {
+			sender.sendEncryptedText("ERROR IN CD :: NOT ALLOWED");
+			return;
+		}
 		if (param!=null) {
 			FileTransferState state = getState(sender);
 			File path = null; 
@@ -363,6 +368,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	}
 	
 	public void handle_mkdir(String param, OSDXSocketSender sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsMkdir()) {
+			sender.sendEncryptedText("ERROR IN MKDIR :: NOT ALLOWED");
+			return;
+		}
 		if (param!=null) {
 			FileTransferState state = getState(sender);
 			File path = null;
@@ -386,6 +396,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	//change directory up
 	public void handle_cdup(String param, OSDXSocketSender sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsCD()) {
+			sender.sendEncryptedText("ERROR IN CDUP :: NOT ALLOWED");
+			return;
+		}
 		FileTransferState state = getState(sender);
 		boolean ok = state.cdup();
 		if (ok) {
@@ -396,6 +411,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	}
 	
 	public void handle_pwd(String param, OSDXSocketSender sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsPWD()) {
+			sender.sendEncryptedText("ERROR IN PWD :: NOT ALLOWED");
+			return;
+		}
 		FileTransferState state = getState(sender);
 		System.out.println("ACK PWD :: "+state.getRelativPath());
 		sender.sendEncryptedText("ACK PWD :: "+state.getRelativPath());
@@ -403,6 +423,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 
 	public void handle_list(String param, OSDXSocketSender sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsList()) {
+			sender.sendEncryptedText("ERROR IN LIST :: NOT ALLOWED");
+			return;
+		}
 		FileTransferState state = getState(sender);
 		File f = null;
 		if (param!=null) {
@@ -432,6 +457,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	}
 	
 	public void handle_delete(String param, OSDXSocketSender sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsDelete()) {
+			sender.sendEncryptedText("ERROR IN DELETE :: NOT ALLOWED");
+			return;
+		}
 		FileTransferState state = getState(sender);
 		File f = null;
 		if (param!=null) {
@@ -479,8 +509,16 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	}
 	
 	public void handle_put(String param, OSDXSocketSender sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsUpload()) {
+			sender.sendEncryptedText("ERROR IN PUT :: NOT ALLOWED");
+			return;
+		}
 		FileTransferState state = getState(sender);
 		if (param!=null) {
+			//TODO check if signature in param, extract and save
+			boolean hasSignature = false;
+			
 			File f = null;
 			if (param.startsWith("/")) {
 				f = new File(state.getRootPath()+param);
@@ -490,8 +528,13 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			if (f.exists()) {
 				sender.sendEncryptedText("ERROR IN PUT :: FILE ALREADY EXISTS");
 			} else {
-				state.setWriteFile(f);
-				sender.sendEncryptedText("ACK PUT :: WAITING FOR DATA");
+				boolean needsSignature = cs.getRightsAndDuties().needsSignature(f.getName());
+				if (needsSignature && !hasSignature) {
+					sender.sendEncryptedText("ERROR IN PUT :: FILE NEEDS SIGNATURE");
+				} else {
+					state.setWriteFile(f);
+					sender.sendEncryptedText("ACK PUT :: WAITING FOR DATA");
+				}
 			}
 		}
 	}
@@ -501,6 +544,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	}
 	
 	public void handle_get(String param, OSDXSocketSender sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsDownload()) {
+			sender.sendEncryptedText("ERROR IN GET :: NOT ALLOWED");
+			return;
+		}
 		FileTransferState state = getState(sender);
 		if (param!=null) {
 			File f = null;

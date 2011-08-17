@@ -52,7 +52,6 @@
 <opensdxserver>
 	<osdxfiletransferserver>
 		<port>4221</port>
-		<prepath></prepath><!-- e.g. /osdxuploadserver as path-prefix -->
 		<ipv4>127.0.0.1</ipv4>
       	<ipv6>127.0.0.1</ipv6>
       	<path_uploaded_files>/home/neo/openSDX/file_transfer_server</path_uploaded_files>
@@ -67,7 +66,18 @@
 				<sha256></sha256>
 				<initv></initv>
 			</login> -->
-			<!--  if auth_type is keyfile no further steps are needed, because authentication is already done via the keyid --> 
+			<!--  if auth_type is keyfile no further steps are needed, because authentication is already done via the keyid -->
+			<rights_and_duties>
+			  <allow_mkdir>true</allow_mkdir>       <!--  default true -->
+			  <allow_delete>true</allow_delete>     <!--  default true -->
+			  <allow_pwd>true</allow_pwd>           <!--  default true -->
+			  <allow_cd>true</allow_cd>             <!--  default true -->
+			  <allow_list>true</allow_list>         <!--  default true -->
+			  <allow_upload>true</allow_upload>     <!--  default true -->
+			  <allow_download>true</allow_download> <!--  default true -->
+			  <signature_needed>*.pdf</signature_needed> <!--  default no signatures needed -->
+			  <signature_needed>*.txt</signature_needed>
+			</rights_and_duties> 
 		</client>
 		<client>
 			<username>user_1</username> <!-- COULD -->
