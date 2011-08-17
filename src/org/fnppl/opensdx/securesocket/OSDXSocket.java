@@ -68,6 +68,7 @@ import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
 
+
 public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandler {
 	
 	private static String version = "openSDX 0.1";

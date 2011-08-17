@@ -58,8 +58,8 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 	private Result ir = Result.succeeded();
     static HashMap<String, String> finetunes_contributors_types = new HashMap<String, String>();
     static {
-    	finetunes_contributors_types.put(Contributor.TYPE_DISPLAY_ARTIST, "performer");
-    	finetunes_contributors_types.put(Contributor.TYPE_VOCALS, "lyricist");
+    	finetunes_contributors_types.put(Contributor.TYPE_ARTIST, "performer");
+    	finetunes_contributors_types.put(Contributor.TYPE_TEXTER, "lyricist");
     	finetunes_contributors_types.put(Contributor.TYPE_COMPOSER, "composer");
     	finetunes_contributors_types.put(Contributor.TYPE_COMPILATOR, "arranger");
     };

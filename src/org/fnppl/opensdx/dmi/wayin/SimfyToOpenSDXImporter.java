@@ -172,7 +172,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	Contributor contributor = Contributor.make(root.getChildTextNN("label"), Contributor.TYPE_LABEL, IDs.make());
         	bundle.addContributor(contributor);
         	
-        	contributor = Contributor.make(root.getChildTextNN("artist_name"), Contributor.TYPE_DISPLAY_ARTIST, IDs.make());
+        	contributor = Contributor.make(root.getChildTextNN("artist_name"), Contributor.TYPE_ARTIST, IDs.make());
          	bundle.addContributor(contributor);
          	
          	String copyright = root.getChildTextNN("c_line");
@@ -193,7 +193,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	// cover: license_basis & license_specifics from bundle, right?
         	Element cover = root.getChild("cover");
         	if(cover != null) {
-        		ItemFile itemfile = ItemFile.make();
+        		ItemFile itemfile = ItemFile.make(); 
         		itemfile.type("cover");
         		// check if file exist at path
         		String filename = cover.getChildTextNN("file_name");
@@ -301,7 +301,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	        	Item item = Item.make(trackids, track_displayname, track_displayname, "", "audio", track_display_artistname, track_info, track_license_basis, track_license_specifics);
 	        	            	
         		// add contributor
-        		Contributor track_contributor = Contributor.make(track.getChildTextNN("artist_name"), Contributor.TYPE_DISPLAY_ARTIST, IDs.make());
+        		Contributor track_contributor = Contributor.make(track.getChildTextNN("artist_name"), Contributor.TYPE_ARTIST, IDs.make());
              	item.addContributor(track_contributor);  
              	
             	// add Tags

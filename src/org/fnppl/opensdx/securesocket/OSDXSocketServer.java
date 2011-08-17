@@ -68,10 +68,10 @@ import org.fnppl.opensdx.xml.Element;
 public class OSDXSocketServer {
 
 	protected int port = -1;
-	//protected InetAddress address = null;
 
 	private OSDXKey mySigningKey = null;
 	private OSDXSocketDataHandler dataHandler = null;
+
 
 	public OSDXSocketServer(int port, OSDXKey mySigningKey) throws Exception {
 		this.port = port;

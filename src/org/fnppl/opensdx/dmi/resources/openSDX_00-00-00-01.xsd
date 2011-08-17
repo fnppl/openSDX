@@ -131,9 +131,10 @@
 	<xsd:complexType name="contributor">
 		<xsd:annotation>
             <xsd:documentation xml:lang="en">This element contains information of one contributor. 
-            A contributor can be a label, performer, texter, writer, vocals, conductor, display_artist, 
-            compilator, copyright, production or clearinghouse. A Year should be provided in case the type 
-            equals copyright or production.</xsd:documentation>
+            A contributor can be a label, performer, texter, editor, conductor, artist, singer,
+            composer, mixer, remixer, producer, featuring-Artist, with-Artist, DJ, versus-Artist,
+            meets-Artist, presents-Artist, compilator, copyright, production or clearinghouse.
+            A Year should be provided in case the type equals copyright or production.</xsd:documentation>
         </xsd:annotation> 
         <xsd:all>
         	<xsd:element name="name" type="xsd:string" />
@@ -904,15 +905,25 @@
           <xsd:enumeration value="label"/>
           <xsd:enumeration value="performer"/>
           <xsd:enumeration value="texter"/>
-          <xsd:enumeration value="writer"/>
-          <xsd:enumeration value="vocals"/>
+          <xsd:enumeration value="editor"/>
           <xsd:enumeration value="conductor"/>
-          <xsd:enumeration value="display_artist"/>
+          <xsd:enumeration value="artist"/>
+          <xsd:enumeration value="singer"/>
+          <xsd:enumeration value="composer"/>
+          <xsd:enumeration value="mixer"/>
+          <xsd:enumeration value="remixer"/>
+          <xsd:enumeration value="producer"/>
+          <xsd:enumeration value="featuring"/>
+          <xsd:enumeration value="with"/>
+          <xsd:enumeration value="DJ"/>
+          <xsd:enumeration value="versus"/>
+          <xsd:enumeration value="meets"/>
+          <xsd:enumeration value="presents"/>
           <xsd:enumeration value="compilator"/>
           <xsd:enumeration value="copyright"/>
           <xsd:enumeration value="production"/>
           <xsd:enumeration value="clearinghouse"/>
-        </xsd:restriction>
+         </xsd:restriction>
   	</xsd:simpleType> 
   	<xsd:simpleType name="operator">
         <xsd:restriction base="xsd:string">

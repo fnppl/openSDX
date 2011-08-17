@@ -124,7 +124,7 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
         		if(contributor.getType().equals(Contributor.TYPE_LABEL)) {
         			label = contributor.getName();
         		}
-        		else if(contributor.getType().equals(Contributor.TYPE_DISPLAY_ARTIST)) {
+        		else if(contributor.getType().equals(Contributor.TYPE_ARTIST)) {
         			artist_name = contributor.getName();
         		}
         		else if(contributor.getType().equals(Contributor.TYPE_COPYRIGHT)) {
