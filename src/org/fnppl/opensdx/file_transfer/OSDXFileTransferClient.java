@@ -66,16 +66,34 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 
 	private Vector<File> nextDownloadFile = new Vector<File>();
 	private Vector<String> textQueue = new Vector<String>();
+	private Vector<Element> xmlQueue = new Vector<Element>();
+	private RightsAndDuties rights_duties = null;
 	
 	public OSDXFileTransferClient(String host, int port, String prepath) {
 		super(host, port, prepath);
-
+		rights_duties = new RightsAndDuties();
 		this.setDataHandler(new OSDXSocketDataHandler() {
 			public void handleNewText(String text, OSDXSocketSender sender) {
 				//System.out.println("RECEIVED TEXT: "+text);
-				textQueue.add(text);
-				while (textQueue.size()>1000) {
-					textQueue.remove(0);
+				if (text.startsWith("<?xml")) {
+					try {
+						Element e = Document.fromString(text).getRootElement();
+						if (e.getName().equals("rights_and_duties")) {
+							rights_duties = RightsAndDuties.fromElement(e);
+						} else {
+							xmlQueue.add(e);
+							while (xmlQueue.size()>100) {
+								xmlQueue.remove(0);
+							}
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				} else {
+					textQueue.add(text);
+					while (textQueue.size()>1000) {
+						textQueue.remove(0);
+					}
 				}
 			}
 
@@ -99,22 +117,29 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 	
 	
 	public void cd(String dir) {
+		if (!rights_duties.allowsCD())  return;
 		sendEncryptedText("CD "+dir);
 	}
 	
 	public void cd_up() {
+		if (!rights_duties.allowsCD()) return;
 		sendEncryptedText("CDUP");
 	}
 	
 	public void mkdir(String dir) {
+		if (!rights_duties.allowsMkdir()) return;
 		sendEncryptedText("MKDIR "+dir);
+		
 	}
 	
 	public void delete(String file) {
+		if (!rights_duties.allowsDelete()) return;
 		sendEncryptedText("DELETE "+file);
+		
 	}
 	
 	public String pwd() {
+		if (!rights_duties.allowsPWD()) return null;
 		//remove all previous ACK PWD from queue
 		for (int i=0;i<textQueue.size();i++) {
 			if (textQueue.get(i).startsWith("ACK PWD :: ")) {
@@ -143,10 +168,12 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 	
 	
 	public void uploadFile(File f) {
+		if (!rights_duties.allowsUpload()) return;
 		uploadFile(f, null);
 	}
 	
 	public Vector<RemoteFile> list() {
+		if (!rights_duties.allowsList()) return null;
 		sendEncryptedText("LIST");
 		String list = null;
 		long timeout = System.currentTimeMillis()+2000;
@@ -179,6 +206,7 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 	}
 	
 	public void uploadFile(File f, String new_filename) {
+		if (!rights_duties.allowsUpload()) return;
 		if (f.exists()) {
 			if (!f.isDirectory()) {
 				if (new_filename==null) {
@@ -217,11 +245,28 @@ public class OSDXFileTransferClient extends OSDXSocket implements FileTransferCl
 	}
 	
 	public void uploadFile(String filename, byte[] data) {
+		if (!rights_duties.allowsUpload()) return;
 		sendEncryptedText("PUT "+filename);
-		sendEncryptedData(data);
+		//wait for ACK or ERROR of PUT
+		String msg = null;
+		long timeout = System.currentTimeMillis()+2000;
+		while (msg==null && System.currentTimeMillis()<timeout) {
+			for (int i=0;i<textQueue.size();i++) {
+				if (textQueue.get(i).startsWith("ACK PUT :: ") || textQueue.get(i).startsWith("ERROR IN PUT :: ")) {
+					msg = textQueue.remove(i);
+				}
+			}
+		}
+		if (msg.startsWith("ACK")) {
+			sendEncryptedData(data);
+		} else {
+			System.out.println("ERROR uploading file: "+filename+" :: "+msg.substring(msg.indexOf(" :: ")+4));
+		}
+		
 	}
 	
 	public void downloadFile(String filename, File localFile) {
+		if (!rights_duties.allowsDownload()) return;
 		nextDownloadFile.add(localFile);
 		sendEncryptedText("GET "+filename);
 	}
