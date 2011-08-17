@@ -53,18 +53,22 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.HashMap;
 
+import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.OSDXMessage;
+import org.fnppl.opensdx.security.PublicKey;
 import org.fnppl.opensdx.security.Result;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
-public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, OSDXSocketDataHandler {
+public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, OSDXSocketLowLevelDataHandler {
 
+	private static String version = "openSDX 0.2";
 	public final static String ERROR_NO_RESPONSE = "ERROR: server does not respond.";
 	public final static String ERROR_WRONG_RESPONE_FORMAT = "ERROR: Wrong format in uploadserver's response.";
 	public final static String ERROR_UNKNOWN_KEY_OR_USER = "ERROR: login failed: unknown signature key or wrong username.";
@@ -73,8 +77,11 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	
 	private Socket socket;
 	private OSDXKey mySigningKey = null;
-	private OSDXKey myEncryptionKey = null;
+	private String client_keyid = null; 
+	private byte[] client_nonce = null;
+	private byte[] server_nonce = null;
 	private SymmetricKey agreedEncryptionKey = null;
+	
 	private String message = null;
 	private boolean secure_connection_established = false;
 	private String userID = "unknown_user";
@@ -82,14 +89,87 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	private OSDXSocketDataHandler dataHandler = null;
 	private OSDXSocketReceiver receiver = null;
 	private long nextTimeOut = Long.MAX_VALUE;
-	private HashMap<String, ClientSettings> clients;
 	
-	public OSDXSocketServerThread(Socket socket, OSDXKey mySigningKey, OSDXKey myEncryptionKey, OSDXSocketDataHandler dataHandler, HashMap<String, ClientSettings> clients) {
+	public OSDXSocketServerThread(Socket socket, OSDXKey mySigningKey, OSDXSocketDataHandler dataHandler) {
 		this.socket = socket;
 		this.mySigningKey = mySigningKey;
-		this.myEncryptionKey = myEncryptionKey;
 		this.dataHandler = dataHandler;
-		this.clients = clients;
+	}
+	
+	public boolean initConnection(String[] lines) {
+		try {
+		if (lines!=null) {
+//			for (int i=0;i<lines.length;i++) {
+//				System.out.println((i+1)+" :: "+lines[i]);
+//			}
+			boolean ok = true;
+		
+			String version = lines[0];
+			String host = lines[1];
+			
+			client_nonce = SecurityHelper.HexDecoder.decode(lines[2]);
+			client_keyid = lines[3];
+			byte[] client_mod = SecurityHelper.HexDecoder.decode(lines[4]);
+			byte[] client_exp = SecurityHelper.HexDecoder.decode(lines[5]);
+			byte[] client_signature = SecurityHelper.HexDecoder.decode(lines[6]);
+			AsymmetricKeyPair client_pubkey = new AsymmetricKeyPair(client_mod, client_exp, null);
+			
+//			System.out.println(SecurityHelper.HexDecoder.encode(client_pubkey.getModulus(),'\0',-1));
+//			System.out.println(SecurityHelper.HexDecoder.encode(client_pubkey.getPublicExponent(),'\0',-1));
+			byte[][] checks = SecurityHelper.getMD5SHA1SHA256(client_nonce);
+			boolean verifySig = client_pubkey.verify(client_signature, checks[1],checks[2],checks[3],0L);
+//			System.out.println("signature verified: "+verifySig);
+			if (verifySig) {
+				//generate response
+				server_nonce = SecurityHelper.getRandomBytes(32);
+				
+				String msg = version+" 200\n";
+				msg += host+"\n";
+				msg += mySigningKey.getKeyID()+"\n";
+				msg += SecurityHelper.HexDecoder.encode(mySigningKey.getPublicModulusBytes(),':',-1)+"\n";
+				msg += SecurityHelper.HexDecoder.encode(mySigningKey.getPublicExponentBytes(),':',-1)+"\n";
+				
+				
+				String encmsg = SecurityHelper.HexDecoder.encode(client_nonce,':',-1)+"\n";
+				encmsg += SecurityHelper.HexDecoder.encode(server_nonce,':',-1)+"\n";
+				encmsg += lines[3]+"\n";
+				encmsg += lines[4]+"\n";
+				encmsg += lines[5]+"\n";
+				byte[] enc = client_pubkey.encryptBlocks(encmsg.getBytes("UTF-8"));
+				
+				checks = SecurityHelper.getMD5SHA1SHA256(enc);
+				
+				byte[] sigOfEnc = mySigningKey.sign(checks[1],checks[2],checks[3],0L);
+				msg += SecurityHelper.HexDecoder.encode(sigOfEnc,':',-1)+"\n";
+				msg += "ENC "+enc.length+"\n";
+				
+				byte[] concat_nonce = SecurityHelper.concat(client_nonce, server_nonce);
+				System.out.println("byte len :: concat_nonce = "+concat_nonce.length);
+				
+				byte[] key_bytes = SecurityHelper.getSHA256(concat_nonce); 			//32 bytes = 256 bit
+				byte[] iv = Arrays.copyOf(SecurityHelper.getMD5(concat_nonce),16);	//16 bytes = 128 bit
+				System.out.println("byte len :: iv = "+iv.length+"  b = "+key_bytes.length);
+				agreedEncryptionKey = new SymmetricKey(key_bytes, iv);
+				receiver.setEncryptionKey(agreedEncryptionKey);
+//				System.out.println("byte len :: iv = "+iv.length+"  b = "+key_bytes.length);
+//				System.out.println(SecurityHelper.HexDecoder.encode(iv, '\0', -1));
+//				System.out.println(SecurityHelper.HexDecoder.encode(key_bytes, '\0', -1));
+				sendBytesPacket(msg.getBytes("UTF-8"), '\0');
+				sendBytesPacket(enc, '\0');
+				
+			} else {
+				ok = false;
+				String msg = version+" 421 You are not authorized to make the connection\n";
+				msg += host+"\n";
+				sendBytesPacket(msg.getBytes("UTF-8"), '\0');
+			}
+			return ok;
+		}
+	} catch (Exception e1) {
+		e1.printStackTrace();
+	}
+	message = "Unknown Error.";
+	return false;
 	}
 	
 	public void handleNewText(String text, OSDXSocketSender sender) {
@@ -107,31 +187,27 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 			} else {
 				System.out.println("RECEIVED TEXT: "+text);
 			}
-		} else {
-			if (!secure_connection_established) {
-				if (text.startsWith("HOST")) { //should be first client message
-					if (dataHandler!=null) {
-						dataHandler.handleNewText(text, this);
-					} else {
-						System.out.println("no datahandler");
-						return;
-					}
-				} else {
-					secure_connection_established = initConnection(text);
-					if (secure_connection_established) {
-						sendEncryptedText("Secure Connection Established!");
-					} else {
-						//ERROR
-						System.out.println("init secure_connection ERROR: "+message);
-						sendPlainText(message);
-					}
-				}
-			}
 		}
+	}
+	
+	public void handleNewInitMsg(String[] lines, byte[] data, OSDXSocketSender sender) {
+		try {
+			secure_connection_established = initConnection(lines);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	public String getClientKeyID() {
+		return client_keyid;
 	}
 	
 	public String getID() {
 		return userID;
+	}
+	
+	public void setID(String id) {
+		this.userID = id;
 	}
 	
 	public void handleNewData(byte[] data, OSDXSocketSender sender) {
@@ -148,8 +224,7 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 			InetAddress addr = socket.getInetAddress();
 			String remoteIP = addr.getHostAddress();
 			int remotePort = socket.getPort();
-			receiver = new OSDXSocketReceiver(socket.getInputStream(),this);
-			receiver.addEventListener(this);
+			receiver =OSDXSocketReceiver.initServerReceiver(socket.getInputStream(),this,this);
 			
 			nextTimeOut = System.currentTimeMillis()+timeout;
 			while (System.currentTimeMillis()<nextTimeOut) {
@@ -165,77 +240,114 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	private void closeConnection() throws Exception { 
 		receiver.stop();
 		if (socket != null) {
-			sendPlainText("Connection closed.");
+			//TODO sendPlainText("Connection closed.");
 			socket.close();
 		}
 		nextTimeOut = System.currentTimeMillis();
 		System.out.println("Connection closed.");
 	}
 	
-	private boolean initConnection(String initMsg) {
-		try {
-			if (initMsg!=null) {
-				System.out.println("init message username and symmetric key");
-				//get serves encryption key out of message
-				OSDXMessage msg = OSDXMessage.fromElement(Document.fromString(initMsg).getRootElement());
-				
-				//TODO check with Key
-				Result ok = msg.verifySignaturesWithoutKeyVerification();
-				if (!ok.succeeded) {
-					message = ok.errorMessage;
-					return false;
-				}
-				String keyid = msg.getSignatures().get(0).getKey().getKeyID();
-				
-				Element responseElement = msg.getDecryptedContent(myEncryptionKey);
-				Document.buildDocument(responseElement).output(System.out);
-				if (responseElement==null || !responseElement.getName().equals("init_connection")) {
-					message = ERROR_WRONG_RESPONE_FORMAT;
-					return false;
-				}
-				ClientSettings cs = null;
-				try {
-					String username = responseElement.getChild("login").getChildText("username");
-					userID = username+"::"+keyid;
-					cs = clients.get(username+"::"+keyid);
-				} catch (Exception ex) {
-				}
-				if (cs==null) {
-					System.out.println("Client NOT FOUND!");
-					message = ERROR_UNKNOWN_KEY_OR_USER;
-					return false;
-				}
-				
-				System.out.println("client: "+userID+" ->  local path: "+cs.getLocalRootPath().getAbsolutePath());
-				Element eEnc = responseElement.getChild("session_encryption_key");
-				if (eEnc==null || eEnc.getChildren("init_vector")==null || eEnc.getChildren("key_bytes")==null) {
-					message = ERROR_MISSING_ENCRYTION_KEY;
-					return false;
-				}
-				
-				byte[] iv = SecurityHelper.HexDecoder.decode(eEnc.getChildText("init_vector"));
-				byte[] key_bytes = SecurityHelper.HexDecoder.decode(eEnc.getChildText("key_bytes"));
-				
-				agreedEncryptionKey = new SymmetricKey(key_bytes, iv);
-				receiver.setEncryptionKey(agreedEncryptionKey);
-				//System.out.println("symmetric key init OK");
-				return true;
-			}
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		message = "Unknown Error.";
-		return false;
-	}
+//	private boolean initConnection(String initMsg) {
+//		try {
+//			if (initMsg!=null) {
+//				System.out.println("init message username and symmetric key");
+//				//get serves encryption key out of message
+//				OSDXMessage msg = OSDXMessage.fromElement(Document.fromString(initMsg).getRootElement());
+//				
+//				//TODO check with Key
+//				Result ok = msg.verifySignaturesWithoutKeyVerification();
+//				if (!ok.succeeded) {
+//					message = ok.errorMessage;
+//					return false;
+//				}
+//				String keyid = msg.getSignatures().get(0).getKey().getKeyID();
+//				
+//				Element responseElement = msg.getDecryptedContent(myEncryptionKey);
+//				Document.buildDocument(responseElement).output(System.out);
+//				if (responseElement==null || !responseElement.getName().equals("init_connection")) {
+//					message = ERROR_WRONG_RESPONE_FORMAT;
+//					return false;
+//				}
+//				ClientSettings cs = null;
+//				try {
+//					String username = responseElement.getChild("login").getChildText("username");
+//					userID = username+"::"+keyid;
+//					cs = clients.get(username+"::"+keyid);
+//				} catch (Exception ex) {
+//				}
+//				if (cs==null) {
+//					System.out.println("Client NOT FOUND!");
+//					message = ERROR_UNKNOWN_KEY_OR_USER;
+//					return false;
+//				}
+//				
+//				System.out.println("client: "+userID+" ->  local path: "+cs.getLocalRootPath().getAbsolutePath());
+//				Element eEnc = responseElement.getChild("session_encryption_key");
+//				if (eEnc==null || eEnc.getChildren("init_vector")==null || eEnc.getChildren("key_bytes")==null) {
+//					message = ERROR_MISSING_ENCRYTION_KEY;
+//					return false;
+//				}
+//				
+//				byte[] iv = SecurityHelper.HexDecoder.decode(eEnc.getChildText("init_vector"));
+//				byte[] key_bytes = SecurityHelper.HexDecoder.decode(eEnc.getChildText("key_bytes"));
+//				
+//				agreedEncryptionKey = new SymmetricKey(key_bytes, iv);
+//				receiver.setEncryptionKey(agreedEncryptionKey);
+//				//System.out.println("symmetric key init OK");
+//				return true;
+//			}
+//		} catch (Exception e1) {
+//			e1.printStackTrace();
+//		}
+//		message = "Unknown Error.";
+//		return false;
+//	}
 	
-	private boolean sendBytes(byte[] data, String type) {
-		if (socket!=null) {
+//	private boolean sendBytes(byte[] data, String type) {
+//		if (socket!=null) {
+//			try {
+//				OutputStream out = socket.getOutputStream();
+//				out.write((type+data.length+":").getBytes("UTF-8"));
+//				out.write(data);
+//				return true;
+//			} catch (SocketException sex) {
+//				//sex.printStackTrace();
+//				message = sex.getMessage();
+//				if (receiver.isRunning()) {
+//					try {
+//						closeConnection();
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			 }  catch (Exception ex) {
+//				ex.printStackTrace();
+//				message = ex.getMessage();
+//			}
+//		}
+//		return false;
+//	}
+	
+	private Object o = new Object();
+	private boolean sendBytesPacket(byte[] data, char type) {
+		synchronized (o) {
 			try {
+				//System.out.println((type+data.length+":")+new String(data));
 				OutputStream out = socket.getOutputStream();
-				out.write((type+data.length+":").getBytes("UTF-8"));
-				out.write(data);
+				if (type=='\0') {
+					out.write(data);
+					out.flush();
+				} else {
+					int byteCount = data.length+1;
+					byte[] typeB = (type=='T'?new byte[] {0}:new byte[] {1});
+					System.out.println("sending bytes: "+byteCount);
+					out.write((byteCount+"\n").getBytes("UTF-8"));
+					out.write(typeB);
+					out.write(data);
+					out.flush();
+				}
 				return true;
-			} catch (SocketException sex) {
+			}  catch (SocketException sex) {
 				//sex.printStackTrace();
 				message = sex.getMessage();
 				if (receiver.isRunning()) {
@@ -256,7 +368,7 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	public boolean sendEncryptedData(byte[] data) {
 		try {
 			byte[] encData = agreedEncryptionKey.encrypt(data);
-			sendBytes(encData,"ENCDATA");
+			sendBytesPacket(encData,'D');
 			return true;
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -265,14 +377,12 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 		return false;
 	}
 	
-	public boolean sendPlainData(byte[] data) {
-		return sendBytes(data,"DATA");
-	}
-	
 	public boolean sendEncryptedText(String text) {
 		try {
+			System.out.println("sending: "+text);
 			byte[] encText = agreedEncryptionKey.encrypt(text.getBytes("UTF-8"));
-			return sendBytes(encText,"ENCTEXT");
+			//byte[] encText = text.getBytes("UTF-8");
+			return sendBytesPacket(encText,'T');
 		} catch (Exception e) {
 			e.printStackTrace();
 			message = e.getMessage();
@@ -280,13 +390,5 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 		}
 	}
 	
-	public boolean sendPlainText(String text) {
-		try {
-			return sendBytes(text.getBytes("UTF-8"),"TEXT");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
 	
 }

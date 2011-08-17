@@ -58,6 +58,7 @@ import org.fnppl.opensdx.securesocket.ClientSettings;
 import org.fnppl.opensdx.securesocket.OSDXSocketDataHandler;
 import org.fnppl.opensdx.securesocket.OSDXSocketSender;
 import org.fnppl.opensdx.securesocket.OSDXSocketServer;
+import org.fnppl.opensdx.securesocket.OSDXSocketServerThread;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.OSDXMessage;
@@ -73,24 +74,21 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	private File alterConfigFile = new File("src/org/fnppl/opensdx/securesocket/resources/config.xml"); 
 
 	protected int port = -1;
-	protected String prepath = "";
-	private String serverid = "OSDXFileTransferServer v0.1";
 	
 	protected InetAddress address = null;
 
 	private OSDXKey mySigningKey = null;
-	private OSDXKey myEncryptionKey = null;
+	
 	//private File path_uploaded_files = null;
 	private HashMap<OSDXSocketSender, FileTransferState> states = null;
 	private HashMap<String, ClientSettings> clients = null;
 	
 	
-	public OSDXFileTransferServer(String pwSigning, String pwEncryption) {
+	public OSDXFileTransferServer(String pwSigning) {
 		readConfig();
 		try {
 			mySigningKey.unlockPrivateKey(pwSigning);
-			myEncryptionKey.unlockPrivateKey(pwEncryption);
-			serverSocket = new OSDXSocketServer(port, prepath, serverid, mySigningKey, myEncryptionKey, clients);
+			serverSocket = new OSDXSocketServer(port, mySigningKey);
 			serverSocket.setDataHandler(this);
 			states = new HashMap<OSDXSocketSender, FileTransferState>();
 		} catch (Exception e) {
@@ -98,7 +96,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		}
 	}
 	
-	public void handleNewText(String text, OSDXSocketSender sender) {		
+	public void handleNewText(String text, OSDXSocketSender sender) {
 		String command = text;
 		String param = null;
 		int ind = text.indexOf(' ');
@@ -185,7 +183,6 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			Element ks = root.getChild("osdxfiletransferserver");
 //			host = ks.getChildText("host");
 			port = ks.getChildInt("port");
-			prepath = ks.getChildTextNN("prepath");
 			
 			String ip4 = ks.getChildText("ipv4");
 			try {
@@ -224,13 +221,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			try {
 				OSDXKey k = OSDXKey.fromElement(root.getChild("rootsigningkey").getChild("keypair"));
 				if (k instanceof MasterKey) {
-					mySigningKey = (MasterKey)k;
-					
-					//TODO e.g. generate a new key when server starts
-					//should be subkey of signing key for easier verification by client
-					myEncryptionKey = OSDXKey.fromElement(Document.fromString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>  <keypair><sha1fingerprint>83:16:8A:C4:97:0F:9C:6A:E5:3F:F9:F5:DF:87:8D:E1:EA:94:E1:D5</sha1fingerprint><authoritativekeyserver>localhost</authoritativekeyserver><datapath><step1><datasource>LOCAL</datasource><datainsertdatetime>2011-06-08 14:32:45 GMT+00:00</datainsertdatetime></step1></datapath><valid_from>2011-06-08 14:32:45 GMT+00:00</valid_from><valid_until>2036-06-07 20:32:45 GMT+00:00</valid_until><usage>ONLYCRYPT</usage><level>SUB</level><parentkeyid>27:61:62:78:C1:29:F3:C6:A9:03:44:D2:18:36:37:22:E2:9F:63:BF@localhost</parentkeyid><algo>RSA</algo><bits>3072</bits><modulus>00:9F:0E:67:EF:48:C3:59:48:71:F0:9E:8D:41:A4:44:3D:A5:3B:14:0B:35:C8:EE:95:6F:C6:9B:35:DE:F1:2F:BA:D6:97:BB:34:BE:92:F1:7F:A8:B9:D2:27:87:64:02:21:6E:32:DF:AD:E1:C7:66:DA:1D:71:75:07:E7:AC:7E:56:2D:EC:B9:F8:67:A2:66:98:82:61:83:1D:86:23:E4:2D:28:C2:6E:A3:F5:1D:9F:AA:24:A9:FD:84:3A:D8:1D:8B:DC:0B:EC:34:04:6B:6B:57:58:21:47:5C:41:2E:09:15:79:08:7F:01:CC:AB:E4:28:1C:CE:D7:8F:D6:C6:7E:5C:CC:D4:E0:74:47:51:0D:40:0B:0B:DD:D3:03:8C:18:56:68:88:C4:B5:DC:48:BB:36:32:C6:4A:B3:EF:08:E6:81:3F:80:96:68:25:93:58:EE:76:8F:DB:3B:39:B0:9B:8E:29:40:67:8D:C5:02:1F:F1:4A:C5:6A:D0:2A:02:F8:5C:DD:B3:0A:8C:2B:04:A5:4A:AF:25:39:89:DB:D8:4A:7F:4A:4D:10:28:10:88:6D:A4:0B:31:50:D8:C7:2E:9E:3F:EF:C8:A0:D0:19:97:EB:80:CE:DE:A0:1B:2D:4B:C7:D9:FA:39:8B:8E:10:D8:05:40:29:FD:71:EF:0D:7D:2B:8F:B6:2E:F5:FE:A7:51:84:22:CF:BA:CA:A8:63:78:E1:23:8E:F3:4D:D7:66:2F:6A:D5:CC:ED:AC:5D:35:86:E6:A9:9C:2D:7E:93:3F:77:87:6A:34:04:4D:58:97:6D:C1:67:B4:AE:17:5D:8D:75:5E:59:C7:18:82:AA:51:C7:E1:27:24:90:FE:3E:9D:1D:39:83:5A:27:61:BC:89:03:47:04:53:D6:58:0B:D1:A7:97:D3:6E:BD:BE:B6:0E:40:9D:87:76:C7:11:4A:A6:39:68:23:FB:11:21:96:43:34:C2:7F:09:C4:F4:D4:59:B0:10:01:04:9B:0F:CA:5D:FF:01:57</modulus><pubkey><exponent>01:00:01</exponent></pubkey><privkey><exponent><locked><mantraname>password</mantraname><algo>AES@256</algo><initvector>44:18:F8:24:D3:B5:FB:01:DD:DE:96:90:4D:2B:A9:E8</initvector><padding>CBC/PKCS#5</padding><bytes>93:2F:3D:72:BC:29:D5:5F:CA:01:3A:08:90:E4:5C:43:E1:69:A0:0D:41:23:18:F5:E9:5C:D1:54:68:2B:84:5E:B2:9B:0B:F4:C6:D7:C9:CE:68:FC:37:10:75:B5:11:47:4D:D8:42:D6:9D:70:14:81:75:29:17:C7:0A:26:19:25:99:FA:46:C4:F8:BE:56:B1:31:F7:BF:22:5F:3D:7F:D7:AB:E5:F0:86:18:71:C4:7C:EC:24:77:61:28:E0:7B:27:6B:A3:45:3E:50:9E:F4:03:F5:E3:68:D7:DF:1D:D3:F9:9F:1B:21:FC:4C:6B:DA:3A:65:27:00:94:43:50:14:C0:92:F9:6E:02:DC:BA:56:42:91:2B:5B:6D:FE:15:41:CF:E4:B6:4C:47:F4:27:03:9F:59:65:CC:62:55:93:D5:72:9C:B9:FF:3B:26:D1:0A:20:B4:5B:5D:21:9A:E0:8A:CD:A3:A4:FE:14:8A:42:56:59:14:8E:79:05:33:09:F3:F1:85:8A:51:5C:22:7B:BD:AA:60:E9:A2:4D:85:98:75:BE:C5:F4:30:91:58:AA:A4:F5:AB:5B:BD:E0:D4:1E:A0:25:5C:D2:EC:1A:F5:9B:23:74:1A:14:5C:7E:ED:0C:1E:E0:65:83:46:F1:D4:F2:E7:E0:52:5C:81:A7:93:D5:F6:C7:3C:66:83:13:BF:E3:B7:32:D6:06:1F:4E:22:27:CE:90:1E:A0:2F:66:76:6A:ED:E7:1B:A9:45:49:28:F0:75:AC:15:DA:EE:8C:01:78:50:C3:70:53:0C:89:7A:FF:FE:BA:28:8A:D8:6E:45:D4:EC:93:7F:3B:EE:22:6C:5D:0E:A8:D6:9D:61:6F:B1:62:C5:46:10:3E:AC:6B:F9:9A:A7:87:EC:D7:7C:8B:8A:8E:F1:70:81:52:8C:2E:83:7C:1C:A7:72:FF:7D:02:82:46:BA:E1:4F:0F:57:CF:A8:C1:61:7F:DC:6B:CC:C1:97:57:95:B8:BE:46:A2:8B:53:D6:32:E7:5C:DC:74:5B:0C:94:79:33:D9:3B:6A:CD:B7:52:C0:1F</bytes></locked></exponent></privkey><gpgkeyserverid /></keypair>  ").getRootElement());
-					//myEncryptionKey.unlockPrivateKey("password");
-					
+					mySigningKey = (MasterKey)k;					
 				} else {
 					System.out.println("ERROR: no master signing key in config.");	
 				}
@@ -300,9 +291,8 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		
 		//debug
 		String pwS = "upload";
-		String pwE = "password";
 		
-		OSDXFileTransferServer s = new OSDXFileTransferServer(pwS,pwE);
+		OSDXFileTransferServer s = new OSDXFileTransferServer(pwS);
 		s.startService();
 	}
 	
@@ -316,21 +306,19 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	// -- implementation of commands starts here --------------------------------------------
 	
 
-	//first message from client: HOST [prepath] e.g HOST /
-	public void handle_host(String param, OSDXSocketSender sender) {
-		if (param!=null) {
-			//TODO handle prepath routing here
-			
-			//sendHello
-			try {
-				Element e = new Element("hello_client");
-				e.addContent("message","please choose a symmetric key and send it encrypted with my following public key");
-				e.addContent(myEncryptionKey.getSimplePubKeyElement());
-				OSDXMessage msg = OSDXMessage.buildMessage(e, mySigningKey);
-				sender.sendPlainText(Document.buildDocument(msg.toElement()).toString());
-			} catch (Exception e1) {
-				e1.printStackTrace();
+	
+	public void handle_login(String username, OSDXSocketSender sender) {
+		if (sender instanceof OSDXSocketServerThread) {
+			OSDXSocketServerThread sst = (OSDXSocketServerThread)sender;
+			if (username!=null) {
+				String userid = username+":"+sst.getClientKeyID();
+				sender.setID(userid);
 			}
+		}
+		if (sender.getID().equals("unknown_user")) {
+			sender.sendEncryptedText("ERROR IN LOGIN :: ACCESS DENIED");
+		} else {
+			sender.sendEncryptedText("ACK LOGIN :: "+sender.getID());
 		}
 	}
 	

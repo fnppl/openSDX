@@ -238,8 +238,8 @@ public abstract class  RemoteFileSystem {
 //				//connected = client.connect(mysigning, username);
 
 				
-				client = new OSDXFileTransferClient(host, port, prepath);
-				connected = client.connect(key, username);
+				client = new OSDXFileTransferClient();
+				connected = client.connect(host, port, prepath,key, username);
 				System.out.println("connected: "+connected);
 			};
 			public void disconnect() {

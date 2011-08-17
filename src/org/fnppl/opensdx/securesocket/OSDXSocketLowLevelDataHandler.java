@@ -44,9 +44,8 @@ package org.fnppl.opensdx.securesocket;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
-public interface OSDXSocketDataHandler {
+public interface OSDXSocketLowLevelDataHandler extends OSDXSocketDataHandler {
 	
-	public void handleNewText(String text, OSDXSocketSender sender);
-	public void handleNewData(byte[] data, OSDXSocketSender sender);
+	public void handleNewInitMsg(String[] lines, byte[] encdata, OSDXSocketSender sender);
 	
 }

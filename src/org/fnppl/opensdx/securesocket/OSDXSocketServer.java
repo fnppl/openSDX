@@ -68,29 +68,16 @@ import org.fnppl.opensdx.xml.Element;
 public class OSDXSocketServer {
 
 	protected int port = -1;
-	protected String prepath = "/";
-	private String serverid = "serverid";
-	
 	//protected InetAddress address = null;
 
 	private OSDXKey mySigningKey = null;
-	private OSDXKey myEncryptionKey = null;
-	
 	private OSDXSocketDataHandler dataHandler = null;
-	private HashMap<String, ClientSettings> clients = null;
 
-	public OSDXSocketServer(int port, String prepath, String serverid, OSDXKey mySigningKey, OSDXKey myEncryptionKey, HashMap<String, ClientSettings> clients) throws Exception {
+	public OSDXSocketServer(int port, OSDXKey mySigningKey) throws Exception {
 		this.port = port;
-		this.prepath = prepath;
-		this.serverid = serverid;
-		this.clients = clients;
 		this.mySigningKey = mySigningKey;
-		this.myEncryptionKey = myEncryptionKey;
 		if (!mySigningKey.hasPrivateKey() && !mySigningKey.isPrivateKeyUnlocked()) {
-			throw new Exception("siging key not accessable");
-		}
-		if (!myEncryptionKey.hasPrivateKey() && !myEncryptionKey.isPrivateKeyUnlocked()) {
-			throw new Exception("encryption key not accessable");
+			throw new Exception("signing key not accessable");
 		}
 	}
 	
@@ -98,14 +85,13 @@ public class OSDXSocketServer {
 		dataHandler = handler;
 	}
 	
-	
 	public void startService() throws Exception {
 		//System.out.println("Starting Server at "+address.getHostAddress()+" on port " + port +"  at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
 		ServerSocket so = new ServerSocket(port);
 		while (true) {
 			try {
 				final Socket me = so.accept();
-				OSDXSocketServerThread t = new OSDXSocketServerThread(me, mySigningKey, myEncryptionKey, dataHandler, clients);
+				OSDXSocketServerThread t = new OSDXSocketServerThread(me, mySigningKey, dataHandler);
 				t.start();
 			} catch (Exception ex) {
 				ex.printStackTrace();

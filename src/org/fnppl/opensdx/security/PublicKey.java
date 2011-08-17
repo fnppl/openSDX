@@ -289,6 +289,14 @@ public class PublicKey {
 		//System.out.println("PubKey_verify: SIGNATURE_DEC_cut (COMPARE2; length: "+real.length+")\n:"+SecurityHelper.HexDecoder.encode(real, ':', 80));
 	}
 	
+	public boolean verifyDirectly(byte[] signature_bytes, byte[] compare) throws Exception {
+		byte[] ka = encryptPKCSed7(signature_bytes);
+		byte[] real = new byte[ka.length-1];
+		System.arraycopy(ka, 1, real, 0, real.length);//0x00 header killr
+		System.out.println("real "+SecurityHelper.HexDecoder.encode(real, '\0', -1));
+		return Arrays.equals(real,compare);
+	}
+	
 	public String getKeyID() {
 		String keyid = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(pub.getModulus().toByteArray()), ':', -1);
 		return keyid;

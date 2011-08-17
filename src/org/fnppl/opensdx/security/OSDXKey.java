@@ -137,6 +137,10 @@ public class OSDXKey {
 		return akp.getModulus();
 	}
 	
+	public byte[] getPublicExponentBytes() {
+		return akp.getPublicExponent();
+	}
+	
 	public byte[] encrypt(byte[] bytes) {
 		try {
 			return akp.encryptWithPublicKey(bytes);
@@ -149,6 +153,24 @@ public class OSDXKey {
 	public byte[] decrypt(byte[] bytes) {
 		try {
 			return akp.decryptWithPrivateKey(bytes);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public byte[] encryptBlocks(byte[] bytes) {
+		try {
+			return akp.encryptBlocks(bytes);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public byte[] decryptBlocks(byte[] data)  {
+		try {
+			return akp.decryptBlocks(data);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -437,6 +459,11 @@ public class OSDXKey {
 				datetime
 			);
 	}
+	
+//	public byte[] signDirectly(byte[] data) throws Exception {
+//		if (!isPrivateKeyUnlocked()) throw new RuntimeException("ERROR: Private Key is locked!");
+//		return akp.signDirectly(data);			
+//	}
 	
 	public boolean isPrivateKeyUnlocked() {
 		return akp.hasPrivateKey(); 

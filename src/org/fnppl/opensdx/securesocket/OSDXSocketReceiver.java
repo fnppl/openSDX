@@ -47,27 +47,47 @@ package org.fnppl.opensdx.securesocket;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Vector;
 
 import org.bouncycastle.crypto.RuntimeCryptoException;
+import org.fnppl.opensdx.security.AsymmetricKeyPair;
+import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
 
 public class OSDXSocketReceiver {
 
 	private InputStream intputStream;
 	private SymmetricKey agreedEncryptionKey = null;
-	private Vector<OSDXSocketDataHandler> listeners = new Vector<OSDXSocketDataHandler>();
+	private OSDXSocketLowLevelDataHandler dataHandler = null;
+	private boolean isServerReceiver;
 	private OSDXSocketSender sender;
 	private boolean run = true;
 	
-	public OSDXSocketReceiver(InputStream input, OSDXSocketSender sender) {
+	public static OSDXSocketReceiver initServerReceiver(InputStream input, OSDXSocketSender sender, OSDXSocketLowLevelDataHandler dataHandler) {
+		return new OSDXSocketReceiver(input, sender, true, dataHandler);
+	}
+	public static OSDXSocketReceiver initClientReceiver(InputStream input, OSDXSocketSender sender, OSDXSocketLowLevelDataHandler dataHandler) {
+		return new OSDXSocketReceiver(input, sender, false, dataHandler);
+	}
+	
+	private OSDXSocketReceiver(InputStream input, OSDXSocketSender sender, final boolean isServerReceiver, OSDXSocketLowLevelDataHandler dataHandler) {
+		this.dataHandler = dataHandler;
+		this.isServerReceiver = isServerReceiver;
 		intputStream = input;
 		agreedEncryptionKey = null; //start without encryption
 		this.sender = sender;
 		Thread t = new Thread() {
 			public void run() {
-				while (run) {
-					receiveData();
+				if (isServerReceiver) {
+					waitForClientInitMsg();
+				} else {
+					waitForServerInitMsg();
+				}
+				if (agreedEncryptionKey!=null) {
+					while (run) {
+						receiveData();
+					}
 				}
 				System.out.println("Receiver stopped");
 			}
@@ -82,12 +102,100 @@ public class OSDXSocketReceiver {
 	public boolean isRunning() {
 		return run;
 	}
-	public void addEventListener(OSDXSocketDataHandler listener) {
-		listeners.add(listener);
-	}
 	
 	public void setEncryptionKey(SymmetricKey agreedEncryptionKey) {
 		this.agreedEncryptionKey = agreedEncryptionKey;
+	}
+	
+	private void waitForServerInitMsg() {
+		try {
+			String[] lines = new String[7];
+			int count = 0;
+			while (count<7) {
+				final StringBuffer lineBuffer = new StringBuffer();
+				byte[] b = new byte[1];
+				int read;
+				boolean lineNotComplete = true;
+				while (lineNotComplete) {
+					read = intputStream.read(b); //this one blocks
+					if (read>0) {
+						if (b[0] == '\n') { // data starts after :
+							lineNotComplete = false;
+						} else {
+							lineBuffer.append((char)b[0]);
+						}
+					}
+				}	
+				lines[count] = lineBuffer.toString();
+				//System.out.println((count+1)+" :: "+lines[count]);
+				count++;
+			}
+			byte[] data = null;
+			if (lines[6].startsWith("ENC ")) {
+				int byteCount = Integer.parseInt(lines[6].substring(4));
+				if (byteCount>0) {
+					//read bytes
+					ByteArrayOutputStream bout = new ByteArrayOutputStream();
+					//byte[] data = new byte[byteCount];
+					int bufferSize = 1024;
+					byte[] buffer = new byte[bufferSize];
+					byte[] b = new byte[1];
+					int read;
+					int sum = 0;
+					while (sum<byteCount) { //block until complete data is read
+						if (byteCount-sum > bufferSize) {
+							read = intputStream.read(buffer);
+							if (read>0) {
+								bout.write(buffer, 0, read);
+								sum += read;
+							}
+						} else { //avoid reading next command
+							read = intputStream.read(b);
+							if (read>0) {
+								bout.write(b, 0, read);
+								sum += read;
+							}
+						}
+					}
+					data = bout.toByteArray();
+				}
+			}
+			if (dataHandler!=null) {
+				dataHandler.handleNewInitMsg(lines, data, sender);
+			}	
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private void waitForClientInitMsg() {
+		try {
+		String[] lines = new String[8];
+		int count = 0;
+		while (count<8) {
+			final StringBuffer lineBuffer = new StringBuffer();
+			byte[] b = new byte[1];
+			int read;
+			boolean lineNotComplete = true;
+			while (lineNotComplete) {
+				read = intputStream.read(b); //this one blocks
+				if (read>0) {
+					if (b[0] == '\n') { // data starts after :
+						lineNotComplete = false;
+					} else {
+						lineBuffer.append((char)b[0]);
+					}
+				}
+			}	
+			lines[count] = lineBuffer.toString();
+			count++;
+		}
+		if (dataHandler!=null) {
+			dataHandler.handleNewInitMsg(lines, null, sender);
+		}
+	} catch (Exception ex) {
+		ex.printStackTrace();
+	}
 	}
 	
 	public void receiveData() {
@@ -99,25 +207,17 @@ public class OSDXSocketReceiver {
 			while (commandNotComplete) {
 				read = intputStream.read(b); //this one blocks
 				if (read>0) {
-					if (b[0] == 58) { // data starts after :
+					if (b[0] == '\n') { // data starts after :
 						commandNotComplete = false;
 					} else {
 						commandBuffer.append((char)b[0]);
 					}
 				}
-			}	
+			}
 			String command = commandBuffer.toString();
+			System.out.println("receiving bytes: "+command);
 			
-			boolean lastReceivedWasEncrypted = false;
-			
-			int byteCount = 0;
-			if (command.startsWith("TEXT") || command.startsWith("DATA"))  {
-				byteCount = Integer.parseInt(command.substring(4));
-			}
-			else if (command.startsWith("ENCTEXT")||command.startsWith("ENCDATA"))  {
-				byteCount = Integer.parseInt(command.substring(7));
-				lastReceivedWasEncrypted = true;
-			}
+			int byteCount = Integer.parseInt(command);
 			
 			if (byteCount>0) {
 				//read bytes
@@ -146,25 +246,25 @@ public class OSDXSocketReceiver {
 				
 				//assert(data.length==byteCount);
 				
-				//decrypt if necessary
-				if (lastReceivedWasEncrypted) {
-					try {
-						if (agreedEncryptionKey!=null) {
-							data = agreedEncryptionKey.decrypt(data);
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace();
+				//decrypt
+				try {
+					if (agreedEncryptionKey!=null) {
+						System.out.println("decrypt");
+						data = agreedEncryptionKey.decrypt(data);
 					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
-				if (command.contains("TEXT")) {
-					String text = new String(data, "UTF-8");
-					//System.out.println("RECEIVED MESSAGE::"+text);
-					for (OSDXSocketDataHandler l : listeners) {
-						l.handleNewText(text, sender);
+			
+				if (data[0] == 0) {
+					String text = new String(Arrays.copyOfRange(data, 1, data.length), "UTF-8");
+					System.out.println("RECEIVED MESSAGE::"+text);
+					if (dataHandler!=null) {
+						dataHandler.handleNewText(text, sender);
 					}
 				} else {
-					for (OSDXSocketDataHandler l : listeners) {
-						l.handleNewData(data, sender);
+					if (dataHandler!=null) {
+						dataHandler.handleNewData(Arrays.copyOfRange(data, 1, data.length), sender);
 					}
 				}
 			}

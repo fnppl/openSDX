@@ -253,6 +253,47 @@ public class AsymmetricKeyPair {
 		return privkey.decrypt(me);
 	}
 	
+	public byte[] encryptBlocks(byte[] data) throws Exception {
+		int blockSize = 342;
+		if (blockSize>342) {
+			//max 342 bytes can be encrypted with asymmeric encryption -> use block sizes <= 342
+			throw new RuntimeException("max blocksize is 342");
+		}
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		int pos = 0;
+		while (pos<data.length) {
+			byte[] crypt;
+			if (pos<data.length) {
+				crypt = pubkey.encrypt(Arrays.copyOfRange(data, pos, pos+blockSize));
+			} else {
+				crypt = pubkey.encrypt(Arrays.copyOfRange(data, pos, data.length));
+			}
+			pos += blockSize;
+			out.write(crypt);	
+		}
+		out.close();
+		return out.toByteArray();
+	}
+	
+	public byte[] decryptBlocks(byte[] data) throws Exception {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		int blockSize = 384;
+		int pos = 0;
+		byte[] decrypt = null;
+		while (pos<data.length) {
+			if (pos+blockSize<data.length) {
+				decrypt = privkey.decrypt(Arrays.copyOfRange(data, pos, pos+blockSize));
+			} else {
+				decrypt = privkey.decrypt(Arrays.copyOfRange(data, pos, data.length));
+			}
+			pos += blockSize;
+			out.write(decrypt);
+		}
+		out.close();
+		return out.toByteArray();
+	}
+	
+	
 //	public byte[] sign(byte[] plain) throws Exception {
 //		return privkey.sign(plain);
 //	}
@@ -282,6 +323,10 @@ public class AsymmetricKeyPair {
 		return privkey.sign(dd);
 	}
 	
+//	public byte[] signDirectly(byte[] data) throws Exception {
+//		return privkey.sign(data);
+//	}
+	
 //	public boolean verify(byte[] signature, byte[] plain) throws Exception {
 //		return pubkey.verify(signature, plain);
 //	}
@@ -301,6 +346,10 @@ public class AsymmetricKeyPair {
 				timestamp
 			);
 	}
+	
+//	public boolean verifyDirectly(byte[] signature_bytes, byte[] compare) throws Exception {
+//		return pubkey.verifyDirectly(signature_bytes, compare);
+//	}
 	
 	public byte[] getEncrytedPrivateKey(SymmetricKey sk) throws Exception {
 		return privkey.getEncrytedPrivateKey(sk);

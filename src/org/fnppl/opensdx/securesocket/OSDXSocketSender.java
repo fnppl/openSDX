@@ -49,9 +49,8 @@ import java.io.OutputStream;
 public interface OSDXSocketSender {
 
 	public boolean sendEncryptedData(byte[] data);
-	public boolean sendPlainData(byte[] data);
 	public boolean sendEncryptedText(String text);
-	public boolean sendPlainText(String text);
-	
 	public String getID();
+	public void setID(String id);
+	
 }
