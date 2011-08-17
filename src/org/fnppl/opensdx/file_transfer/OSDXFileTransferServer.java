@@ -516,6 +516,9 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		}
 		FileTransferState state = getState(sender);
 		if (param!=null) {
+			//TODO check if signature in param, extract and save
+			boolean hasSignature = false;
+			
 			File f = null;
 			if (param.startsWith("/")) {
 				f = new File(state.getRootPath()+param);
@@ -525,8 +528,13 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			if (f.exists()) {
 				sender.sendEncryptedText("ERROR IN PUT :: FILE ALREADY EXISTS");
 			} else {
-				state.setWriteFile(f);
-				sender.sendEncryptedText("ACK PUT :: WAITING FOR DATA");
+				boolean needsSignature = cs.getRightsAndDuties().needsSignature(f.getName());
+				if (needsSignature && !hasSignature) {
+					sender.sendEncryptedText("ERROR IN PUT :: FILE NEEDS SIGNATURE");
+				} else {
+					state.setWriteFile(f);
+					sender.sendEncryptedText("ACK PUT :: WAITING FOR DATA");
+				}
 			}
 		}
 	}
