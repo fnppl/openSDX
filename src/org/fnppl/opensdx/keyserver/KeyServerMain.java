@@ -953,16 +953,20 @@ public class KeyServerMain extends HTTPServer {
 		
 		System.out.println("Trying to connect to postgres..");
 		PostgresBackend be = PostgresBackend.init(user, pass, "jdbc:postgresql://"+host+":"+port+"/"+dbname, null);
-		System.out.println("Connected. Setting up empty-db-structure - this will erase existing data!!! [ENTER]");
-		br.readLine();
-		
-		be.setupEmptyDB();
-
-		System.out.println("Copying files from "+f.getAbsolutePath());
-		be.addKeysAndLogsFromKeyStore(f.getAbsolutePath());
-		System.out.println("Data added to db - now closing connection...");
-		be.closeDBConnection();
-		System.out.println("Connection closed...[FINISHED].");
+		if (be.isConnected()) {
+			System.out.println("Connected. Setting up empty-db-structure - this will erase existing data!!! [ENTER]");
+			br.readLine();
+			
+			be.setupEmptyDB();
+	
+			System.out.println("Copying files from "+f.getAbsolutePath());
+			be.addKeysAndLogsFromKeyStore(f.getAbsolutePath());
+			System.out.println("Data added to db - now closing connection...");
+			be.closeDBConnection();
+			System.out.println("Connection closed...[FINISHED].");
+		} else {
+			System.out.println("Error: Could not connect to db: jdbc:postgresql://"+host+":"+port+"/"+dbname);
+		}
 	}
 	
 	public static void main(String[] args) throws Exception {

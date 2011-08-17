@@ -45,6 +45,7 @@ package org.fnppl.opensdx.securesocket;
  */
 import java.io.File;
 
+import org.fnppl.opensdx.file_transfer.RightsAndDuties;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.Element;
 
@@ -55,6 +56,7 @@ public class ClientSettings {
 	private String auth_type = null;
 	private byte[] login_sha256 = null;
 	private byte[] login_initv = null;
+	private RightsAndDuties rights_duties = null;
 	
 	private File local_path;
 	
@@ -79,7 +81,16 @@ public class ClientSettings {
 				throw new RuntimeException("Format ERROR in client settings");
 			}
 		}
+		if (e.getChild("rights_and_duties")!=null) {
+			s.rights_duties = RightsAndDuties.fromElement(e.getChild("rights_and_duties"));
+		} else {
+			s.rights_duties = new RightsAndDuties();
+		}
 		return s;
+	}
+	
+	public RightsAndDuties getRightsAndDuties() {
+		return rights_duties;
 	}
 	
 	public String getSettingsID() {

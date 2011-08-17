@@ -69,7 +69,7 @@
 	in these days, it should never be a problem to have computers work on this in a proper manner 
  -->
 
-<feed xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"	xsi:noNamespaceSchemaLocation="openSDX_00-00-00-01.xsd">
+<feed xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="openSDX_00-00-00-01.xsd">
 	<feedinfo>
 		<onlytest>true</onlytest><!-- MUST testmode true|false -->
 		<feedid>kaakka</feedid><!-- MUST id is provided by sender; should be unique -->
@@ -337,15 +337,17 @@
 		</contributors><!-- MUST the contributors are ordered from 1 to n - most significant ones (per type) are the ones with the smalles n -->
 		
 		<information>
-			<promotext lang="en">
-			EN asdasd
-			</promotext>
-			<promotext lang="de">
-			DE asdasd
-			</promotext>
-			<teasertext lang="de">
-			DE asdasd
-			</teasertext>
+			<texts>
+				<promotext lang="en">
+				EN asdasd
+				</promotext>
+				<promotext lang="de">
+				DE asdasd
+				</promotext>
+				<teasertext lang="de">
+				DE asdasd
+				</teasertext>
+			</texts>
 			
 			<physical_release_datetime>1960-02-13 00:00:00 GMT+00:00</physical_release_datetime>
 			<digital_release_datetime>1960-02-13 00:00:00 GMT+00:00</digital_release_datetime>
@@ -475,8 +477,8 @@
 		
 		<tags>
 			<genres>
-				<genre></genre>
-				<genre></genre>
+				<genre>Rock</genre>
+				<genre>Surf</genre>
 			</genres>
 			<bundle_only>false</bundle_only> <!--  true|false -->
 			<explicit_lyrics>cleaned</explicit_lyrics> <!--  true|false|cleaned -->
@@ -524,15 +526,17 @@
 				</contributors><!-- MUST the contributors are ordered from 1 to n - most significant ones (per type) are the ones with the smalles n -->
 		
 				<information>
-					<promotext lang="en">
-					EN asdasd
-					</promotext>
-					<promotext lang="de">
-					DE asdasd
-					</promotext>
-					<teasertext lang="de">
-					DE asdasd
-					</teasertext>
+					<texts>
+						<promotext lang="en">
+						EN asdasd
+						</promotext>
+						<promotext lang="de">
+						DE asdasd
+						</promotext>
+						<teasertext lang="de">
+						DE asdasd
+						</teasertext>
+					</texts>
 			
 					<physical_release_datetime>1960-02-13 00:00:00 GMT+00:00</physical_release_datetime>
 					<digital_release_datetime>1960-02-13 00:00:00 GMT+00:00</digital_release_datetime>
@@ -564,8 +568,8 @@
 
 				<tags>
 					<genres>
-						<genre></genre>
-						<genre></genre>
+						<genre>Rock</genre>
+						<genre>Surf</genre>
 					</genres>
 					<bundle_only>false</bundle_only>
 					<explicit_lyrics>false</explicit_lyrics>
