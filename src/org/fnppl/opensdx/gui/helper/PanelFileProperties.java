@@ -98,7 +98,8 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		
 		select_type_model.removeAllElements();
 		select_type_model.addElement("[not specified]");
-		select_type_model.addElement("cover");
+		select_type_model.addElement("frontcover");
+		select_type_model.addElement("backcover");
 		select_type_model.addElement("booklet");
 	}
 
