@@ -151,6 +151,69 @@ public class Util {
 	}
 	
 	
+	public static String makeParamsString(String[] txt) {
+		if (txt!=null && txt.length>0) {
+			try {
+				StringBuffer out = new StringBuffer();
+				out.append("\"");
+				for (int i=0;i<txt.length;i++) {
+					if (txt[i]!=null) {
+						out.append(makeEscapeChars(txt[i]));
+					}
+					if (i<txt.length-1) {
+						out.append("\",\"");
+					} else {
+						out.append("\"\n");
+					}
+				}
+				return out.toString();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			} 
+		}
+		return "";
+	}
+	
+	public static String makeEscapeChars(String s) {
+		String r = "";
+		for (char c : s.toCharArray()) {
+			if (c == '\\' || c == '\"') {
+				r += '\\';
+			}
+			r += c;
+		}
+		return r;
+	}
+	
+	public static String[] getParams(String param) {
+		if (param == null) return null;
+		String[] params = param.split("\",\"");
+		params[0] = params[0].substring(1);
+		int last = params.length-1;
+		params[last] = params[last].substring(0,params[last].length()-2);
+		for (int i=0;i<params.length;i++) {
+			params[i] = resolveEscapeChars(params[i]);
+			System.out.println("PARAMS ("+i+") "+params[i]);
+		}
+		return params;
+	}
+	
+	public static String resolveEscapeChars(String s) {
+		String r = "";
+		char[] chars = s.toCharArray();
+		for (int pos = 0; pos < chars.length; pos++) {
+			if (chars[pos] == '\\') {
+				pos++;
+				if (pos<chars.length) {
+					r += chars[pos];	
+				}
+			} else {
+				r += chars[pos];
+			}
+		}
+		return r;
+	}
+	
     public static String loadText(String filename) {
     	StringBuffer text = new StringBuffer();
         try {

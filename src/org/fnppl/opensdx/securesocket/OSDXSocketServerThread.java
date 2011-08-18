@@ -56,6 +56,7 @@ import java.net.SocketException;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.fnppl.opensdx.file_transfer.FileTransferLog;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.OSDXMessage;

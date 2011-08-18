@@ -54,6 +54,7 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.securesocket.ClientSettings;
 import org.fnppl.opensdx.securesocket.OSDXSocketDataHandler;
 import org.fnppl.opensdx.securesocket.OSDXSocketSender;
@@ -63,12 +64,16 @@ import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.OSDXMessage;
 import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.security.Signature;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
+
+import com.lowagie.text.pdf.PRAcroForm;
 
 public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 
 	private OSDXSocketServer serverSocket;
+	private FileTransferLog log = FileTransferLog.getLog();
 	
 	private File configFile = new File("osdxserver_config.xml"); 
 	private File alterConfigFile = new File("src/org/fnppl/opensdx/file_transfer/resources/osdxfiletransferserver_config.xml"); 
@@ -280,6 +285,8 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 //		}
 	}
 	
+	
+	
 	public static void main(String[] args) throws Exception {
 		if (args!=null && args.length==1 && args[0].equals("--makeconfig")) {
 			makeConfig();
@@ -294,10 +301,9 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	}
 	
 	public void handle_command_not_implemented(String command, String param, OSDXSocketSender sender) {
+		log.logCommand(sender.getID(), command, param, "COMMAND \""+command+"\" NOT IMPLEMENTED");
 		sender.sendEncryptedText("COMMAND \""+command+"\" NOT IMPLEMENTED");
 	}
-	
-	
 	
 	
 	// -- implementation of commands starts here --------------------------------------------
@@ -316,9 +322,15 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			}
 		}
 		if (sender.getID().equals("unknown_user")) {
-			sender.sendEncryptedText("ERROR IN LOGIN :: ACCESS DENIED");
+			String resp = "ERROR IN LOGIN :: ACCESS DENIED";
+			log.logCommand(sender.getID(), "LOGIN", username, resp);
+			sender.sendEncryptedText(resp);
 		} else {
-			sender.sendEncryptedText("ACK LOGIN :: "+sender.getID());
+			//respond with username and rights and duties
+			String param = Util.makeParamsString(new String[]{sender.getID(),Document.buildDocument(clients.get(sender.getID()).getRightsAndDuties().toElement()).toStringCompact()});
+			String resp = "ACK LOGIN :: "+param;
+			log.logCommand(sender.getID(), "LOGIN", username, resp);
+			sender.sendEncryptedText(resp);
 		}
 	}
 	
@@ -336,10 +348,12 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
 			sender.sendEncryptedText("ERROR IN CD :: PLEASE LOGIN");
+			log.logCommand(sender.getID(), "CD", param, "ERROR IN CD :: PLEASE LOGIN");
 			return;
 		}
 		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsCD()) {
 			sender.sendEncryptedText("ERROR IN CD :: NOT ALLOWED");
+			log.logCommand(sender.getID(), "CD", param, "ERROR IN CD :: NOT ALLOWED");
 			return;
 		}
 		if (param!=null) {
@@ -352,9 +366,13 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			}
 			if (path.exists()) {
 				state.setCurrentPath(path);
-				sender.sendEncryptedText("ACK CD :: "+state.getRelativPath());
+				String resp = "ACK CD :: "+state.getRelativPath();
+				log.logCommand(sender.getID(), "CD", param, resp);
+				sender.sendEncryptedText(resp);
 			} else {
-				sender.sendEncryptedText("ERROR IN CD :: PWD is "+state.getRelativPath());
+				String resp = "ERROR IN CD :: PWD is "+state.getRelativPath();
+				log.logCommand(sender.getID(), "CD", param, resp);
+				sender.sendEncryptedText(resp);
 			}
 		}
 	}
@@ -520,36 +538,66 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		return(path.delete());
 	}
 	
+	
+	
+	
 	public void handle_put(String param, OSDXSocketSender sender) {
+		System.out.println("PUT "+param);
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
-			sender.sendEncryptedText("ERROR IN PUT :: PLEASE LOGIN");
+			String resp = "ERROR IN PUT :: PLEASE LOGIN";
+			log.logCommand(sender.getID(), "PUT", param, resp);
+			sender.sendEncryptedText(resp);
 			return;
 		}
 		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsUpload()) {
-			sender.sendEncryptedText("ERROR IN PUT :: NOT ALLOWED");
+			String resp = "ERROR IN PUT :: NOT ALLOWED";
+			log.logCommand(sender.getID(), "PUT", param, resp);
+			sender.sendEncryptedText(resp);
 			return;
 		}
 		FileTransferState state = getState(sender);
 		if (param!=null) {
-			//TODO check if signature in param, extract and save
-			boolean hasSignature = false;
+			String[] params = Util.getParams(param);
 			
 			File f = null;
-			if (param.startsWith("/")) {
-				f = new File(state.getRootPath()+param);
+			if (params[0].startsWith("/")) {
+				f = new File(state.getRootPath()+params[0]);
 			} else {
-				f = new File(state.getCurrentPath(),param);
+				f = new File(state.getCurrentPath(),params[0]);
 			}
 			if (f.exists()) {
-				sender.sendEncryptedText("ERROR IN PUT :: FILE ALREADY EXISTS");
+				String resp = "ERROR IN PUT :: FILE ALREADY EXISTS";
+				log.logCommand(sender.getID(), "PUT", param, resp);
+				sender.sendEncryptedText(resp);
 			} else {
+				//check if signature in param, extract and save
+				boolean hasSignature = false;
+				if (params.length>=2 && params[1].startsWith("<?xml")) {
+					//parse signature
+					try {
+						Document docSig = Document.fromString(params[1]); 
+						Signature sig = Signature.fromElement(docSig.getRootElement());					
+						//parsing successful without exception -> save signature 
+						File fsig = new File(f.getAbsolutePath()+"_signature.xml");
+						docSig.writeToFile(fsig);
+						//only if no error occurred -> hasSignature = true;
+						hasSignature = true;
+					} catch (Exception ex) {
+						log.logError(sender.getID(), "ERROR parsing signature during PUT file command :: "+ex.getMessage());
+						ex.printStackTrace();
+					}
+				}
 				boolean needsSignature = cs.getRightsAndDuties().needsSignature(f.getName());
 				if (needsSignature && !hasSignature) {
-					sender.sendEncryptedText("ERROR IN PUT :: FILE NEEDS SIGNATURE");
+					String resp = "ERROR IN PUT :: FILE NEEDS SIGNATURE";
+					log.logCommand(sender.getID(), "PUT", param, resp);
+					sender.sendEncryptedText(resp);
 				} else {
 					state.setWriteFile(f);
-					sender.sendEncryptedText("ACK PUT :: WAITING FOR DATA");
+					String resp = "ACK PUT :: WAITING FOR DATA";
+					log.logCommand(sender.getID(), "PUT", param, resp);
+					sender.sendEncryptedText(resp);
 				}
 			}
 		}
