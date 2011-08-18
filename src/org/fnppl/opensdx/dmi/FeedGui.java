@@ -99,6 +99,7 @@ import org.fnppl.opensdx.dmi.wayin.*;
 import org.fnppl.opensdx.dmi.wayout.*;
 
 
+@SuppressWarnings("serial")
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
 	private URL configGenres = FeedCreator.class.getResource("resources/config_genres.xml");
@@ -869,11 +870,13 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 		
 		try {
-			boolean valide = new FeedValidator().validateOSDX_0_0_1(currentFeed);
-			String msg = "Feed invalid.";
-			if(valide) {
+			Document doc = Document.buildDocument(currentFeed.toElement());	
+			String msg = new FeedValidator().validateOSDX_0_0_1(doc.toString());
+			
+			if(msg.length()==0) {
 				msg = "Yehaw. Feed is valid.";
 			}
+
 			Dialogs.showMessage(msg);
 		}
 		catch(Exception ex) {
@@ -883,12 +886,22 @@ public class FeedGui extends JFrame implements MyObserver {
 	
 	public void validateFile() {
 		File f = Dialogs.chooseOpenFile("Select file to validate", lastDir, "feed.xml");
-		try {
-			String msg = new FeedValidator().validateOSDX_0_0_1(f);
-			Dialogs.showMessage(msg);
+		if (f!=null && f.exists()) {
+			try {
+				String msg = new FeedValidator().validateOSDX_0_0_1(f);
+				
+				if(msg.length()==0) {
+					msg = "Yehaw. Feed is valid.";
+				}
+				
+				Dialogs.showMessage(msg);
+			}
+			catch(Exception ex) {
+				Dialogs.showMessage(ex.getMessage());	
+			}
 		}
-		catch(Exception ex) {
-			Dialogs.showMessage(ex.getMessage());	
+		else {
+			Dialogs.showMessage("File not found!");
 		}
 	}	
 	
