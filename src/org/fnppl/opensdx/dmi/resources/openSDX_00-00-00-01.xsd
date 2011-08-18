@@ -922,6 +922,7 @@
           <xsd:enumeration value="compilator"/>
           <xsd:enumeration value="copyright"/>
           <xsd:enumeration value="production"/>
+          <xsd:enumeration value="publisher"/>
           <xsd:enumeration value="clearinghouse"/>
          </xsd:restriction>
   	</xsd:simpleType> 
