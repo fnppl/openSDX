@@ -100,9 +100,9 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	public boolean initConnection(String[] lines) {
 		try {
 		if (lines!=null) {
-			for (int i=0;i<lines.length;i++) {
-				System.out.println("("+(i+1)+")"+" "+lines[i]);
-			}
+//			for (int i=0;i<lines.length;i++) {
+//				System.out.println("("+(i+1)+")"+" "+lines[i]);
+//			}
 			
 			boolean ok = true;
 			String version = lines[0];

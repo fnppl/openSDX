@@ -129,7 +129,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		FileTransferState s = states.get(sender);
 		if (s==null) {
 			s = new FileTransferState();
-			System.out.println("looking for client key id: "+sender.getID());
+			//System.out.println("looking for client key id: "+sender.getID());
 			ClientSettings settings = clients.get(sender.getID());
 			if (settings == null) {
 				return null;
@@ -542,7 +542,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	
 	public void handle_put(String param, OSDXSocketSender sender) {
-		System.out.println("PUT "+param);
+		//System.out.println("PUT "+param);
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
 			String resp = "ERROR IN PUT :: PLEASE LOGIN";

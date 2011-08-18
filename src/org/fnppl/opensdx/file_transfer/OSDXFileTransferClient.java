@@ -154,8 +154,6 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		textQueue = new Vector<String>();
 		xmlQueue = new Vector<Element>();
 		rights_duties = new RightsAndDuties();
-		
-		System.out.println("Connection closed.");
 	}
 	
 	private void sendEncryptedText(String text) {
@@ -198,8 +196,8 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		while (System.currentTimeMillis()<timeout) {
 			for (int i=0;i<textQueue.size();i++) {
 				if (textQueue.get(i).startsWith("ACK LOGIN :: ")) {
-					String txt = textQueue.remove(i).substring(14);
-					System.out.println("LOGIN: "+txt);
+					String txt = textQueue.remove(i).substring(13);
+					//System.out.println("LOGIN: "+txt);
 					String[] param = Util.getParams(txt);
 					try {
 						rights_duties = RightsAndDuties.fromElement(Document.fromString(param[1]).getRootElement());
