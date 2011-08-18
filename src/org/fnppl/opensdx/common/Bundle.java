@@ -171,6 +171,9 @@ public class Bundle extends BusinessObject {
 	}
 
 	public Bundle addContributor(Contributor contributor) {
+		if (contributor == null) {
+			return this;
+		}
 		contributor.setAttribute("num", ""+(contributors.size()+1));
 		contributors.add(contributor);
 		return this;

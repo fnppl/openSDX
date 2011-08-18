@@ -353,7 +353,8 @@ public class FeedGui extends JFrame implements MyObserver {
 		if (feed.getFeedinfo()==null) {
 			ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER, "","");
 			ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR, "","");
-			feed.setFeedInfo(FeedInfo.make(true, "", now, now, sender, licensor));
+			ContractPartner licensee = ContractPartner.make(ContractPartner.ROLE_LICENSEE,"","");
+			feed.setFeedInfo(FeedInfo.make(true, "", now, now, sender, licensor, licensee));
 		}
 		if (feed.getFeedinfo().getSender()==null) {
 			feed.getFeedinfo().sender(ContractPartner.make(ContractPartner.ROLE_SENDER, "",""));
@@ -503,6 +504,7 @@ public class FeedGui extends JFrame implements MyObserver {
 			return;
 		}
 		
+		/* TODO: Commented out because it makes compilation errors
 		OSDXFileTransferClient s = new OSDXFileTransferClient(servername, 4221, "/");
 		Result r = currentFeed.upload(s, username, mysigning);
 		if (r.succeeded) {
@@ -510,6 +512,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		} else {
 			Dialogs.showMessage(r.errorMessage);
 		}
+		*/
 		
 	}
 	
