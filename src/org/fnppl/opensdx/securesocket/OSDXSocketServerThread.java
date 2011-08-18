@@ -99,11 +99,11 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	public boolean initConnection(String[] lines) {
 		try {
 		if (lines!=null) {
-//			for (int i=0;i<lines.length;i++) {
-//				System.out.println((i+1)+" :: "+lines[i]);
-//			}
+			for (int i=0;i<lines.length;i++) {
+				System.out.println("("+(i+1)+")"+" "+lines[i]);
+			}
+			
 			boolean ok = true;
-		
 			String version = lines[0];
 			String host = lines[1];
 			
@@ -114,11 +114,8 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 			byte[] client_signature = SecurityHelper.HexDecoder.decode(lines[6]);
 			AsymmetricKeyPair client_pubkey = new AsymmetricKeyPair(client_mod, client_exp, null);
 			
-//			System.out.println(SecurityHelper.HexDecoder.encode(client_pubkey.getModulus(),'\0',-1));
-//			System.out.println(SecurityHelper.HexDecoder.encode(client_pubkey.getPublicExponent(),'\0',-1));
 			byte[][] checks = SecurityHelper.getMD5SHA1SHA256(client_nonce);
 			boolean verifySig = client_pubkey.verify(client_signature, checks[1],checks[2],checks[3],0L);
-//			System.out.println("signature verified: "+verifySig);
 			if (verifySig) {
 				//generate response
 				server_nonce = SecurityHelper.getRandomBytes(32);
@@ -129,39 +126,38 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 				msg += SecurityHelper.HexDecoder.encode(mySigningKey.getPublicModulusBytes(),':',-1)+"\n";
 				msg += SecurityHelper.HexDecoder.encode(mySigningKey.getPublicExponentBytes(),':',-1)+"\n";
 				
-				
+				//encrypted part
 				String encmsg = SecurityHelper.HexDecoder.encode(client_nonce,':',-1)+"\n";
 				encmsg += SecurityHelper.HexDecoder.encode(server_nonce,':',-1)+"\n";
 				encmsg += lines[3]+"\n";
 				encmsg += lines[4]+"\n";
 				encmsg += lines[5]+"\n";
 				byte[] enc = client_pubkey.encryptBlocks(encmsg.getBytes("UTF-8"));
-				
-				checks = SecurityHelper.getMD5SHA1SHA256(enc);
-				
+
+				//sign enc part
+				checks = SecurityHelper.getMD5SHA1SHA256(enc);				
 				byte[] sigOfEnc = mySigningKey.sign(checks[1],checks[2],checks[3],0L);
+				
+				//add signature bytes and enc part
 				msg += SecurityHelper.HexDecoder.encode(sigOfEnc,':',-1)+"\n";
 				msg += "ENC "+enc.length+"\n";
 				
+				//build sym key of client_nonce and server nonce
 				byte[] concat_nonce = SecurityHelper.concat(client_nonce, server_nonce);
-				System.out.println("byte len :: concat_nonce = "+concat_nonce.length);
-				
 				byte[] key_bytes = SecurityHelper.getSHA256(concat_nonce); 			//32 bytes = 256 bit
 				byte[] iv = Arrays.copyOf(SecurityHelper.getMD5(concat_nonce),16);	//16 bytes = 128 bit
-				System.out.println("byte len :: iv = "+iv.length+"  b = "+key_bytes.length);
 				agreedEncryptionKey = new SymmetricKey(key_bytes, iv);
 				receiver.setEncryptionKey(agreedEncryptionKey);
-//				System.out.println("byte len :: iv = "+iv.length+"  b = "+key_bytes.length);
-//				System.out.println(SecurityHelper.HexDecoder.encode(iv, '\0', -1));
-//				System.out.println(SecurityHelper.HexDecoder.encode(key_bytes, '\0', -1));
-				sendBytesPacket(msg.getBytes("UTF-8"), '\0');
-				sendBytesPacket(enc, '\0');
+				
+				//send packet
+				sendBytesPacket(msg.getBytes("UTF-8"), TYPE_NULL,false);
+				sendBytesPacket(enc, TYPE_NULL,false);
 				
 			} else {
 				ok = false;
 				String msg = version+" 421 You are not authorized to make the connection\n";
 				msg += host+"\n";
-				sendBytesPacket(msg.getBytes("UTF-8"), '\0');
+				sendBytesPacket(msg.getBytes("UTF-8"), TYPE_NULL,false);
 			}
 			return ok;
 		}
@@ -328,36 +324,30 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 //		return false;
 //	}
 	
+	private static byte TYPE_TEXT = 84;
+	private static byte TYPE_DATA = 68;
+	private static byte TYPE_NULL = 0;
 	private Object o = new Object();
-	private boolean sendBytesPacket(byte[] data, char type) {
+	private boolean sendBytesPacket(byte[] data, byte type, boolean encrypt) {
 		synchronized (o) {
 			try {
-				//System.out.println((type+data.length+":")+new String(data));
 				OutputStream out = socket.getOutputStream();
-				if (type=='\0') {
+				if (type==TYPE_NULL) {
 					out.write(data);
 					out.flush();
 				} else {
-					int byteCount = data.length+1;
-					byte[] typeB = (type=='T'?new byte[] {0}:new byte[] {1});
-					System.out.println("sending bytes: "+byteCount);
-					out.write((byteCount+"\n").getBytes("UTF-8"));
-					out.write(typeB);
-					out.write(data);
+					byte[] send = new byte[data.length+1];
+					send[0] = type;
+					System.arraycopy(data, 0, send, 1, data.length);;
+					if (encrypt && agreedEncryptionKey!=null) {
+						send = agreedEncryptionKey.encrypt(send);
+					}
+					out.write((send.length+"\n").getBytes("UTF-8"));
+					out.write(send);
 					out.flush();
 				}
 				return true;
-			}  catch (SocketException sex) {
-				//sex.printStackTrace();
-				message = sex.getMessage();
-				if (receiver.isRunning()) {
-					try {
-						closeConnection();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			 }  catch (Exception ex) {
+			} catch (Exception ex) {
 				ex.printStackTrace();
 				message = ex.getMessage();
 			}
@@ -366,29 +356,27 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	}
 	
 	public boolean sendEncryptedData(byte[] data) {
-		try {
-			byte[] encData = agreedEncryptionKey.encrypt(data);
-			sendBytesPacket(encData,'D');
-			return true;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			message = ex.getMessage();
+		if (agreedEncryptionKey!=null) {
+			try {
+				return sendBytesPacket(data,TYPE_DATA,true);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				message = ex.getMessage();
+			}
 		}
 		return false;
 	}
 	
 	public boolean sendEncryptedText(String text) {
-		try {
-			System.out.println("sending: "+text);
-			byte[] encText = agreedEncryptionKey.encrypt(text.getBytes("UTF-8"));
-			//byte[] encText = text.getBytes("UTF-8");
-			return sendBytesPacket(encText,'T');
-		} catch (Exception e) {
-			e.printStackTrace();
-			message = e.getMessage();
-			return false;
+		if (agreedEncryptionKey!=null) {
+			try {
+				return sendBytesPacket(text.getBytes("UTF-8"),TYPE_TEXT,true);
+			} catch (Exception e) {
+				e.printStackTrace();
+				message = e.getMessage();
+			}
 		}
+		return false;
 	}
-	
 	
 }

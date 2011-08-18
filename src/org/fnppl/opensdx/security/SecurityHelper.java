@@ -299,6 +299,9 @@ public class SecurityHelper {
 	        return length;
 	    }
 
+	   	    public static String encode(final byte[] data) {
+	    	return encode(data,':',-1);
+	    }
 	    /**
 	     * Encodes the input data producing a Hex output stream.
 	     * @param data Input data to encode.

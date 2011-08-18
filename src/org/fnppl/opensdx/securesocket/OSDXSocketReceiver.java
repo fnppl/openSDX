@@ -198,7 +198,9 @@ public class OSDXSocketReceiver {
 	}
 	}
 	
-	public void receiveData() {
+	private static byte TYPE_TEXT = 84;
+	private static byte TYPE_DATA = 68;
+	private void receiveData() {
 		try {
 			final StringBuffer commandBuffer = new StringBuffer();
 			byte[] b = new byte[1];
@@ -215,7 +217,7 @@ public class OSDXSocketReceiver {
 				}
 			}
 			String command = commandBuffer.toString();
-			System.out.println("receiving bytes: "+command);
+			//System.out.println("receiving bytes: "+command);
 			
 			int byteCount = Integer.parseInt(command);
 			
@@ -249,23 +251,24 @@ public class OSDXSocketReceiver {
 				//decrypt
 				try {
 					if (agreedEncryptionKey!=null) {
-						System.out.println("decrypt");
 						data = agreedEncryptionKey.decrypt(data);
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			
-				if (data[0] == 0) {
+				if (data[0] == TYPE_TEXT) {
 					String text = new String(Arrays.copyOfRange(data, 1, data.length), "UTF-8");
-					System.out.println("RECEIVED MESSAGE::"+text);
+					//System.out.println("RECEIVED MESSAGE::"+text);
 					if (dataHandler!=null) {
 						dataHandler.handleNewText(text, sender);
 					}
-				} else {
+				} else if (data[0] == TYPE_DATA) {
 					if (dataHandler!=null) {
 						dataHandler.handleNewData(Arrays.copyOfRange(data, 1, data.length), sender);
 					}
+				} else {
+					System.out.println("ERROR in received package!");
 				}
 			}
 		} catch (IOException e) {

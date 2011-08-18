@@ -71,7 +71,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	private OSDXSocketServer serverSocket;
 	
 	private File configFile = new File("osdxserver_config.xml"); 
-	private File alterConfigFile = new File("src/org/fnppl/opensdx/securesocket/resources/config.xml"); 
+	private File alterConfigFile = new File("src/org/fnppl/opensdx/file_transfer/resources/osdxfiletransferserver_config.xml"); 
 
 	protected int port = -1;
 	
@@ -79,9 +79,8 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 
 	private OSDXKey mySigningKey = null;
 	
-	//private File path_uploaded_files = null;
 	private HashMap<OSDXSocketSender, FileTransferState> states = null;
-	private HashMap<String, ClientSettings> clients = null;
+	private HashMap<String, ClientSettings> clients = null; //client id := username::keyid
 	
 	
 	public OSDXFileTransferServer(String pwSigning) {
@@ -198,9 +197,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 				System.out.println("CAUTION: error while parsing ip adress");
 				ex.printStackTrace();
 			}
-			//path_uploaded_files = new File(ks.getChildText("path_uploaded_files"));
-//			System.out.println("path for uploaded files: "+pathUploadedFiles.getAbsolutePath());
-			
+		
 			///Clients
 			clients = new HashMap<String, ClientSettings>();
 			//System.out.println("init clients");
@@ -311,8 +308,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		if (sender instanceof OSDXSocketServerThread) {
 			OSDXSocketServerThread sst = (OSDXSocketServerThread)sender;
 			if (username!=null) {
-				String userid = username+":"+sst.getClientKeyID();
-				sender.setID(userid);
+				String userid = username+"::"+sst.getClientKeyID();
+				ClientSettings cs  = clients.get(userid);
+				if (cs!=null) {
+					sender.setID(userid);
+				}
 			}
 		}
 		if (sender.getID().equals("unknown_user")) {
@@ -334,7 +334,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	//change working directory: CWD directory_name
 	public void handle_cd(String param, OSDXSocketSender sender) {
 		ClientSettings cs = clients.get(sender.getID());
-		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsCD()) {
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN CD :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsCD()) {
 			sender.sendEncryptedText("ERROR IN CD :: NOT ALLOWED");
 			return;
 		}
@@ -357,7 +361,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	public void handle_mkdir(String param, OSDXSocketSender sender) {
 		ClientSettings cs = clients.get(sender.getID());
-		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsMkdir()) {
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN MKDIR :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsMkdir()) {
 			sender.sendEncryptedText("ERROR IN MKDIR :: NOT ALLOWED");
 			return;
 		}
@@ -385,7 +393,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	//change directory up
 	public void handle_cdup(String param, OSDXSocketSender sender) {
 		ClientSettings cs = clients.get(sender.getID());
-		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsCD()) {
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN CDUP :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsCD()) {
 			sender.sendEncryptedText("ERROR IN CDUP :: NOT ALLOWED");
 			return;
 		}
@@ -400,7 +412,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	public void handle_pwd(String param, OSDXSocketSender sender) {
 		ClientSettings cs = clients.get(sender.getID());
-		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsPWD()) {
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN PWD :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsPWD()) {
 			sender.sendEncryptedText("ERROR IN PWD :: NOT ALLOWED");
 			return;
 		}
@@ -412,7 +428,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 
 	public void handle_list(String param, OSDXSocketSender sender) {
 		ClientSettings cs = clients.get(sender.getID());
-		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsList()) {
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN LIST :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsList()) {
 			sender.sendEncryptedText("ERROR IN LIST :: NOT ALLOWED");
 			return;
 		}
@@ -446,7 +466,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	public void handle_delete(String param, OSDXSocketSender sender) {
 		ClientSettings cs = clients.get(sender.getID());
-		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsDelete()) {
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN DELETE :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsDelete()) {
 			sender.sendEncryptedText("ERROR IN DELETE :: NOT ALLOWED");
 			return;
 		}
@@ -498,7 +522,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	public void handle_put(String param, OSDXSocketSender sender) {
 		ClientSettings cs = clients.get(sender.getID());
-		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsUpload()) {
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN PUT :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsUpload()) {
 			sender.sendEncryptedText("ERROR IN PUT :: NOT ALLOWED");
 			return;
 		}
@@ -533,7 +561,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	public void handle_get(String param, OSDXSocketSender sender) {
 		ClientSettings cs = clients.get(sender.getID());
-		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsDownload()) {
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN GET :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsDownload()) {
 			sender.sendEncryptedText("ERROR IN GET :: NOT ALLOWED");
 			return;
 		}

@@ -221,28 +221,32 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 			byte[][] checks = SecurityHelper.getMD5SHA1SHA256(client_nonce);
 			init += SecurityHelper.HexDecoder.encode(key.sign(checks[1],checks[2],checks[3],0L),':',-1)+"\n";
 			init += "\n";
-			sendBytesPacket(init.getBytes("UTF-8"), '\0');
+			sendBytesPacket(init.getBytes("UTF-8"), TYPE_NULL, false);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 	
+	private static byte TYPE_TEXT = 84;
+	private static byte TYPE_DATA = 68;
+	private static byte TYPE_NULL = 0;
 	private Object o = new Object();
-	private boolean sendBytesPacket(byte[] data, char type) {
+	private boolean sendBytesPacket(byte[] data, byte type, boolean encrypt) {
 		synchronized (o) {
 			try {
-				//System.out.println((type+data.length+":")+new String(data));
 				OutputStream out = socket.getOutputStream();
-				if (type=='\0') {
+				if (type==TYPE_NULL) {
 					out.write(data);
 					out.flush();
 				} else {
-					int byteCount = data.length+1;
-					byte[] typeB = (type=='T'?new byte[] {0}:new byte[] {1});
-				//	System.out.println("sending bytes: "+byteCount);
-					out.write((byteCount+"\n").getBytes("UTF-8"));
-					out.write(typeB);
-					out.write(data);
+					byte[] send = new byte[data.length+1];
+					send[0] = type;
+					System.arraycopy(data, 0, send, 1, data.length);;
+					if (encrypt && agreedEncryptionKey!=null) {
+						send = agreedEncryptionKey.encrypt(send);
+					}
+					out.write((send.length+"\n").getBytes("UTF-8"));
+					out.write(send);
 					out.flush();
 				}
 				return true;
@@ -257,9 +261,7 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 	public boolean sendEncryptedData(byte[] data) {
 		if (secureConnectionEstablished && agreedEncryptionKey!=null) {
 			try {
-				byte[] encData = agreedEncryptionKey.encrypt(data);				
-				sendBytesPacket(encData,'D');
-				return true;
+				return sendBytesPacket(data,TYPE_DATA,true);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				message = ex.getMessage();
@@ -271,9 +273,7 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 	public boolean sendEncryptedText(String text) {
 		if (secureConnectionEstablished && agreedEncryptionKey!=null) {
 			try {
-				byte[] encText = agreedEncryptionKey.encrypt(text.getBytes("UTF-8"));
-				//byte[] encText = text.getBytes("UTF-8");
-				return sendBytesPacket(encText,'T');
+				return sendBytesPacket(text.getBytes("UTF-8"),TYPE_TEXT,true);
 			} catch (Exception e) {
 				e.printStackTrace();
 				message = e.getMessage();

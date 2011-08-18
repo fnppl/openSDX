@@ -127,6 +127,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		this.key = mySigningKey;
 		this.username = username;
 		socket.connect(host, port, prepath, mySigningKey);
+		socket.setDataHandler(dataHandler);
 		if (socket.isConnected()) {
 			return login(username);
 		} else {
@@ -290,7 +291,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 						}
 					}
 				}
-				if (msg.startsWith("ACK")) {
+				if (msg!=null && msg.startsWith("ACK")) {
 					try {
 						ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 						FileInputStream fin = new FileInputStream(f);
@@ -304,7 +305,11 @@ public class OSDXFileTransferClient implements FileTransferClient {
 						ex.printStackTrace();
 					}
 				} else {
-					System.out.println("ERROR uploading file: "+f.getName()+" :: "+msg.substring(msg.indexOf(" :: ")+4));
+					if (msg==null) {
+						System.out.println("ERROR uploading file: "+f.getName()+" :: TIMEOUT");
+					} else {
+						System.out.println("ERROR uploading file: "+f.getName()+" :: "+msg.substring(msg.indexOf(" :: ")+4));
+					}
 				}
 			}
 		}

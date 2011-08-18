@@ -54,7 +54,6 @@
 		<port>4221</port>
 		<ipv4>127.0.0.1</ipv4>
       	<ipv6>127.0.0.1</ipv6>
-      	<path_uploaded_files>/home/neo/openSDX/file_transfer_server</path_uploaded_files>
 	</osdxfiletransferserver>
 	<clients>
 		<client> <!--  testkey in OSDXFielTransferClient main() -->
@@ -76,7 +75,7 @@
 			  <allow_upload>true</allow_upload>     <!--  default true -->
 			  <allow_download>true</allow_download> <!--  default true -->
 			  <signature_needed>*.pdf</signature_needed> <!--  default no signatures needed -->
-			  <signature_needed>*.txt</signature_needed>
+			  <signature_needed>*.xls</signature_needed>
 			</rights_and_duties> 
 		</client>
 		<client>
@@ -88,7 +87,7 @@
 				<sha256></sha256>
 				<initv></initv>
 			</login>
-			<!--  if auth_type is keyfile no further steps are needed, because authentication is already done via the keyid --> 
+			<!--  no <rights_and_duties> means all rights, no duties --> 
 		</client>
 	</clients>
 	<rootsigningkey>
