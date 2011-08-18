@@ -114,8 +114,9 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	        
 	        ContractPartner sender = ContractPartner.make(0, lic , "");
 	        ContractPartner licensor = ContractPartner.make(1, lic, "");
+	        ContractPartner licensee = ContractPartner.make(ContractPartner.ROLE_LICENSEE,"","");
 	        
-	        FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor);
+	        FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor, licensee);
 	        
 	        // path to importfile
 	        String path = this.importFile.getParent()+File.separator;

@@ -89,7 +89,14 @@ public class FeedInfo extends BusinessObject {
 	 * 	COULD: 	receiver:: see receiver(Receiver receiver)
 	 *  SHOULD: actions :: see addAction(int trigger, Action action)
 	 */
-	public static FeedInfo make(boolean onlytest, String feedid, long creationdatetime, long effectivedatetime, ContractPartner sender, ContractPartner licensor) {
+	public static FeedInfo make(
+			boolean onlytest, 
+			String feedid, 
+			long creationdatetime, 
+			long effectivedatetime, 
+			ContractPartner sender, 
+			ContractPartner licensor,
+			ContractPartner licensee) {
 		FeedInfo f = new FeedInfo();
 		f.onlytest = new BusinessBooleanItem("onlytest", onlytest);
 		f.feedid = new BusinessStringItem("feedid", feedid);
@@ -99,7 +106,7 @@ public class FeedInfo extends BusinessObject {
 		f.receiver = null;
 		f.sender = sender;
 		f.licensor = licensor;
-		f.licensee = null;
+		f.licensee = licensee;
 		f.actions = null;
 		return f;
 	}

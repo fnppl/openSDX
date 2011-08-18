@@ -113,6 +113,7 @@ public class FeedCreator {
 		
 		ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER,"","");
 		ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR,"","");
+		ContractPartner licensee = ContractPartner.make(ContractPartner.ROLE_LICENSEE,"","");
 		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
 //								.servername("localhost")
 //								.serveripv4("127.0.0.1")
@@ -120,7 +121,7 @@ public class FeedCreator {
 								;
 		
 		long now = System.currentTimeMillis();
-		FeedInfo feedinfo = FeedInfo.make(true, "", now, now, sender, licensor)
+		FeedInfo feedinfo = FeedInfo.make(true, "", now, now, sender, licensor, licensee)
 									.creator(Creator.make("", "", null))
 									.receiver(receiver);
 		
@@ -141,7 +142,7 @@ public class FeedCreator {
 		String feedid = "example feedid";
 		long creationdatetime = System.currentTimeMillis();
 		long effectivedatetime = System.currentTimeMillis();
-
+		ContractPartner licensee = ContractPartner.make(ContractPartner.ROLE_LICENSEE,"","");
 		FeedInfo feedinfo
 			= FeedInfo.make(
 				onlytest,
@@ -149,7 +150,8 @@ public class FeedCreator {
 				creationdatetime,
 				effectivedatetime,
 				sender,
-				licensor
+				licensor,
+				licensee
 			)
 			.creator(Creator.make(creator_email, creator_userid, null))
 			.receiver(

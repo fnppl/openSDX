@@ -106,8 +106,8 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        if (partner==null) partner = "[NOT SET]";
 	        ContractPartner sender = ContractPartner.make(0, partner , "");
 	        ContractPartner licensor = ContractPartner.make(1, "", "");
-	        
-	        FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor);
+	        ContractPartner licensee = ContractPartner.make(ContractPartner.ROLE_LICENSEE,"","");
+	        FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor, licensee);
 
 	        // path to importfile
 	        String path = this.importFile.getParent()+File.separator;	        

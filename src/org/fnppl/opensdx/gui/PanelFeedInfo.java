@@ -111,7 +111,8 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable, M
     public void update(FeedInfo fi) {
         if (fi==null) {
             long now = System.currentTimeMillis();
-            fi = FeedInfo.make(true, "",now, now, ContractPartner.make(ContractPartner.ROLE_SENDER, "", ""), ContractPartner.make(ContractPartner.ROLE_LICENSOR, "", ""));
+            ContractPartner licensee = ContractPartner.make(ContractPartner.ROLE_LICENSEE,"","");
+            fi = FeedInfo.make(true, "",now, now, ContractPartner.make(ContractPartner.ROLE_SENDER, "", ""), ContractPartner.make(ContractPartner.ROLE_LICENSOR, "", ""), licensee);
         }
         this.feedinfo = fi;
         
