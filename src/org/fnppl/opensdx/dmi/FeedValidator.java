@@ -56,25 +56,19 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-
 import org.fnppl.opensdx.common.*;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
+
 
 public class FeedValidator {
 	public final static URL FILE_OSDX_0_0_1 = FeedValidator.class.getResource("resources/openSDX_00-00-00-01.xsd");
 	public String message = "";
 	public int errorCount = 0;
+	
 	public String validateOSDX_0_0_1(String s) throws Exception { //validate against oSDX 0.0.1 (mayor minor sub)
 		File file = new File(FILE_OSDX_0_0_1.toURI());
 		if(!file.exists()) { throw new Exception("Validation Error. Schema-File not loaded."); }
-		
-		// ToDo: cut of UTF-8 characters before the first document tag
-		// -> org.xml.sax.SAXParseException: Content is not allowed in prolog
+
 		String xml = s.trim().replaceFirst("^([\\W]+)<","<");
 		return validateXmlFeed(xml, file);
 	}
@@ -114,7 +108,12 @@ public class FeedValidator {
 			reader.parse(is); // try to parse and validate	
 			
 			if(errorCount>0) {
-				message = "Validation error! "+errorCount+" errors occurred!\n"+ message;
+				if(errorCount==1) {
+					message = "Validation error! "+errorCount+" error occurred!\n"+ message;
+				}
+				else {
+					message = "Validation error! "+errorCount+" errors occurred!\n"+ message;
+				}
 			}
 		    
 		}
@@ -127,7 +126,6 @@ public class FeedValidator {
 				x = spe.getException();
 			
 			message += " "+x;
-			// throw new Exception(message, x);
 		}
 		catch (SAXException sxe)
 		{
@@ -136,19 +134,16 @@ public class FeedValidator {
 				x = sxe.getException();
 			
 			message = "Error during validation." + x;
-			// throw new Exception("Error during validation.", x);
 
 		}
 		catch (ParserConfigurationException pce)
 		{
 			message = "Validator with specified options can't be built." + pce;
-			// throw new Exception("Validator with specified options can't be built.", pce);
 		}
 		catch (IOException ioe)
 		{
 			// I/O error
 			message = "Error validating file." + ioe;
-			// throw new Exception("Error validating file.", ioe);
 		}  	
     	
     	return message;
@@ -221,17 +216,17 @@ public class FeedValidator {
     public class ValidationErrorHandler implements ErrorHandler {
         public void warning(SAXParseException e) throws SAXException {
         	errorCount++;
-        	message += errorCount +". "+e.getLineNumber() + "::"+e.getColumnNumber()+" // Message: "+e.getMessage()+"\n"; 
+        	message += errorCount +". ["+e.getLineNumber() + "::"+e.getColumnNumber()+"] Message: "+e.getMessage()+"\n"; 
         }
 
         public void error(SAXParseException e) throws SAXException {
         	errorCount++;        	
-        	message += errorCount +". "+e.getLineNumber() + "::"+e.getColumnNumber()+" // Message: "+e.getMessage()+"\n";
+        	message += errorCount +". ["+e.getLineNumber() + "::"+e.getColumnNumber()+"] Message: "+e.getMessage()+"\n"; 
         }
 
         public void fatalError(SAXParseException e) throws SAXException {
         	errorCount++;        	
-        	message += errorCount +". "+e.getLineNumber() + "::"+e.getColumnNumber()+" // Message: "+e.getMessage()+"\n";
+        	message += errorCount +". ["+e.getLineNumber() + "::"+e.getColumnNumber()+"] Message: "+e.getMessage()+"\n"; 
         }
     }    
 	

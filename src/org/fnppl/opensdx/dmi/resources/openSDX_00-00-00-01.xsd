@@ -861,7 +861,8 @@
             <xsd:enumeration value="ftp"/>
             <xsd:enumeration value="ftps"/>
             <xsd:enumeration value="sftp"/>
-            <xsd:enumeration value="openSDX-Beam"/>
+            <xsd:enumeration value="webdav"/>
+            <xsd:enumeration value="openSDX fileserver"/>
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="httpmethods">

@@ -99,6 +99,7 @@ import org.fnppl.opensdx.dmi.wayin.*;
 import org.fnppl.opensdx.dmi.wayout.*;
 
 
+@SuppressWarnings("serial")
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
 	private URL configGenres = FeedCreator.class.getResource("resources/config_genres.xml");
@@ -502,7 +503,6 @@ public class FeedGui extends JFrame implements MyObserver {
 			return;
 		}
 		
-		/* could not compile - greets MR
 		OSDXFileTransferClient s = new OSDXFileTransferClient(servername, 4221, "/");
 		Result r = currentFeed.upload(s, username, mysigning);
 		if (r.succeeded) {
@@ -510,7 +510,6 @@ public class FeedGui extends JFrame implements MyObserver {
 		} else {
 			Dialogs.showMessage(r.errorMessage);
 		}
-		*/
 		
 	}
 	
