@@ -245,7 +245,7 @@
 			</contributor><!-- MUST -->
 			<contributor num="2">
 				<name></name><!-- could be artistname -->
-				<type>display_artist</type><!-- e.g. display_artist -->
+				<type>artist</type><!-- e.g. display_artist -->
 				<year></year><!-- SHOULD for copyright/production -->
 				<ids>
 					<finetunes></finetunes><!-- finetunes-strange-id -->
@@ -281,7 +281,7 @@
 			</contributor>
 			<contributor num="4">
 				<name></name><!-- could be compilator -->
-				<type>vocals</type><!-- e.g. vocals -->
+				<type>singer</type><!-- e.g. vocals -->
 				<year></year><!-- SHOULD for copyright/production -->
 				<ids>
 					<finetunes></finetunes><!-- finetunes-strange-id -->
@@ -506,7 +506,7 @@
 				<contributors>
 					<contributor num="1">
 						<name></name><!-- could be artistname -->
-						<type>display_artist</type><!-- e.g. display_artist -->
+						<type>artist</type><!-- e.g. display_artist -->
 						<year></year><!-- SHOULD for copyright/production -->
 						<ids>
 							<finetunes></finetunes><!-- finetunes-strange-id -->
@@ -680,7 +680,7 @@
 		
 		<files>
 			<file>
-				<type>cover</type><!-- MUST ; cover / booklet -->
+				<type>frontcover</type><!-- MUST ; cover / booklet -->
 				<filetype></filetype><!-- MUST ; FILEFORMAT/BITRATE[KBIT/s]/CODEC/CODECSETTINGS e.g. mp3/320/unknown/CBR -->
 				<bytes>84848483838</bytes><!-- length of file in bytes -->
 				<dimension>

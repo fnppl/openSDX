@@ -267,7 +267,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        	Element ressource = release.getChild("resource");
 	        	if(ressource != null && ressource.getAttribute("type").equals("frontcover")) {
 	        		ItemFile itemfile = ItemFile.make();
-	        		itemfile.type("cover");
+	        		itemfile.type("frontcover");
 	        		String width = "";
 	        		String height = "";	        		
 
