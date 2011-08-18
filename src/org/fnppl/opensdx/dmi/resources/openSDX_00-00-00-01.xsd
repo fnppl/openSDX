@@ -570,8 +570,8 @@
         <xsd:all>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
             <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
-            <xsd:element name="email" type="email"/>
-			<xsd:element name="keyid" type="xsd:string"/>            
+            <xsd:element name="email" type="email" maxOccurs="1" minOccurs="0" />
+			<xsd:element name="keyid" type="xsd:string" maxOccurs="1" minOccurs="0" />            
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="licensor">
@@ -581,8 +581,8 @@
         <xsd:all>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
             <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
-            <xsd:element name="email" type="email"/>
-            <xsd:element name="keyid" type="xsd:string"/>
+            <xsd:element name="email" type="email" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="keyid" type="xsd:string" maxOccurs="1" minOccurs="0" />
         </xsd:all>
     </xsd:complexType>    
     <xsd:complexType name="licensee">
@@ -592,8 +592,8 @@
         <xsd:all>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
             <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
-            <xsd:element name="email" type="email"/>
-            <xsd:element name="keyid" type="xsd:string"/>
+            <xsd:element name="email" type="email" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="keyid" type="xsd:string" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
 
