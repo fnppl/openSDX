@@ -64,7 +64,7 @@ public class ItemFile extends BusinessObject {
 	private BusinessStringItem codec;							//COULD
 	private BusinessStringItem codecsettings;					//COULD	
 	private BusinessStringItem type;							//COULD
-	private BusinessIntegerItem bytes;							//COULD
+	private BusinessLongItem bytes;								//COULD - better Long than Integer as for big filesizes
 	private Checksums checksums;								//COULD
 	private BusinessStringItem channels;						//COULD
 	private BusinessCollection<BusinessIntegerItem> dimension; 	//COULD
@@ -105,7 +105,7 @@ public class ItemFile extends BusinessObject {
 		if (f.exists() && !f.isDirectory()) {
 			location = FileLocation.make(f.getAbsolutePath());
 			int b = (int)f.length();
-			bytes = new BusinessIntegerItem("bytes", b);
+			bytes = new BusinessLongItem("bytes", b);
 			try {
 				byte[][] sums = SecurityHelper.getMD5SHA1(f);
 				checksums = Checksums.make(sums[0],sums[1],null);
@@ -134,7 +134,7 @@ public class ItemFile extends BusinessObject {
 		file.codec = BusinessStringItem.fromBusinessObject(bo, "codec");
 		file.codecsettings = BusinessStringItem.fromBusinessObject(bo, "codecsettings");
 		file.channels = BusinessStringItem.fromBusinessObject(bo, "channels");
-		file.bytes = BusinessIntegerItem.fromBusinessObject(bo, "bytes");
+		file.bytes = BusinessLongItem.fromBusinessObject(bo, "bytes");
 		
 		file.checksums = Checksums.fromBusinessObject(bo);
 		file.location = FileLocation.fromBusinessObject(bo);
@@ -305,8 +305,8 @@ public class ItemFile extends BusinessObject {
 		return this;
 	}
 
-	public ItemFile bytes(int length) {
-		this.bytes = new BusinessIntegerItem("bytes", length);
+	public ItemFile bytes(long length) {
+		this.bytes = new BusinessLongItem("bytes", length);
 		return this;
 	}
 
@@ -364,7 +364,7 @@ public class ItemFile extends BusinessObject {
 	
 	public int getBytes() {
 		if (bytes==null) return -1;
-		return bytes.getIntValue();
+		return bytes.getLongValue();
 	}
 
 	public String getKeyname() {

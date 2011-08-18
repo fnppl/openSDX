@@ -44,10 +44,13 @@ package org.fnppl.opensdx.file_transfer;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Vector;
@@ -61,6 +64,7 @@ import org.fnppl.opensdx.securesocket.OSDXSocketSender;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
+import org.fnppl.opensdx.security.Signature;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
@@ -122,6 +126,9 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		};
 	}
 	
+	
+	
+	
 	public boolean connect(String host, int port, String prepath, OSDXKey mySigningKey, String username) throws Exception {
 		socket = new OSDXSocket();
 		this.key = mySigningKey;
@@ -147,8 +154,6 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		textQueue = new Vector<String>();
 		xmlQueue = new Vector<Element>();
 		rights_duties = new RightsAndDuties();
-		
-		System.out.println("Connection closed.");
 	}
 	
 	private void sendEncryptedText(String text) {
@@ -191,9 +196,16 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		while (System.currentTimeMillis()<timeout) {
 			for (int i=0;i<textQueue.size();i++) {
 				if (textQueue.get(i).startsWith("ACK LOGIN :: ")) {
-					String txt = textQueue.remove(i);
-					System.out.println("LOGIN: "+txt);
-					return true;
+					String txt = textQueue.remove(i).substring(13);
+					//System.out.println("LOGIN: "+txt);
+					String[] param = Util.getParams(txt);
+					try {
+						rights_duties = RightsAndDuties.fromElement(Document.fromString(param[1]).getRootElement());
+						return true;
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						return false;
+					}
 				}
 				if (textQueue.get(i).startsWith("ERROR IN LOGIN :: ")) {
 					String txt = textQueue.remove(i);
@@ -236,7 +248,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	
 	public void uploadFile(File f) {
 		if (!rights_duties.allowsUpload()) return;
-		uploadFile(f, null);
+		uploadFile(f, null, false);
 	}
 	
 	public Vector<RemoteFile> list() {
@@ -271,16 +283,32 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		}
 		return null;
 	}
-	
 	public void uploadFile(File f, String new_filename) {
+		uploadFile(f, new_filename, false);
+	}
+	
+	public void uploadFile(File f, String new_filename, boolean sign) {
 		if (!rights_duties.allowsUpload()) return;
 		if (f.exists()) {
 			if (!f.isDirectory()) {
+				String param = null;
 				if (new_filename==null) {
-					sendEncryptedText("PUT "+f.getName());
-				} else {
-					sendEncryptedText("PUT "+new_filename);
+					new_filename = f.getName();
 				}
+				if (sign || rights_duties.needsSignature(new_filename)) {
+					try {
+						Signature sig = Signature.createSignature(f, key);
+						String sigText = Document.buildDocument(sig.toElement()).toStringCompact();
+						param = Util.makeParamsString(new String[]{new_filename, sigText});
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						param = Util.makeParamsString(new String[]{new_filename});
+					}
+				} else {
+					param = Util.makeParamsString(new String[]{new_filename});
+				}
+				
+				sendEncryptedText("PUT "+param);
 				//wait for ACK or ERROR of PUT
 				String msg = null;
 				long timeout = System.currentTimeMillis()+2000;

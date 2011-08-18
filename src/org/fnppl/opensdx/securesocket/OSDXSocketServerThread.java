@@ -56,6 +56,7 @@ import java.net.SocketException;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.fnppl.opensdx.file_transfer.FileTransferLog;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.OSDXMessage;
@@ -99,9 +100,9 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	public boolean initConnection(String[] lines) {
 		try {
 		if (lines!=null) {
-			for (int i=0;i<lines.length;i++) {
-				System.out.println("("+(i+1)+")"+" "+lines[i]);
-			}
+//			for (int i=0;i<lines.length;i++) {
+//				System.out.println("("+(i+1)+")"+" "+lines[i]);
+//			}
 			
 			boolean ok = true;
 			String version = lines[0];
