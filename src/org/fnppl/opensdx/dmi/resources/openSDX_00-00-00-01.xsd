@@ -951,7 +951,8 @@
         <xsd:restriction base="xsd:string">
           <xsd:enumeration value="full"/>
           <xsd:enumeration value="prelistening"/>
-		  <xsd:enumeration value="cover"/>
+		  <xsd:enumeration value="frontcover"/>
+		  <xsd:enumeration value="backcover"/>
           <xsd:enumeration value="booklet"/>
         </xsd:restriction>
   	</xsd:simpleType>
