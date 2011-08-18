@@ -193,7 +193,7 @@ public class Util {
 		params[last] = params[last].substring(0,params[last].length()-2);
 		for (int i=0;i<params.length;i++) {
 			params[i] = resolveEscapeChars(params[i]);
-			System.out.println("PARAMS ("+i+") "+params[i]);
+			//System.out.println("PARAMS ("+i+") "+params[i]);
 		}
 		return params;
 	}
