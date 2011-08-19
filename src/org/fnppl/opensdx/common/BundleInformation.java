@@ -57,7 +57,6 @@ import org.fnppl.opensdx.xml.Element;
 public class BundleInformation extends BusinessObject {
 
 	public static String KEY_NAME = "information";
-
 	private BundleTexts texts;											//SHOULD
 	private BusinessDatetimeItem physical_release_datetime;				//MUST
 	private BusinessDatetimeItem digital_release_datetime;				//MUST
@@ -251,6 +250,9 @@ public class BundleInformation extends BusinessObject {
 	}
 	
 	public BundleTexts getTexts() {
+		if (texts==null) {
+			texts = BundleTexts.make();
+		}
 		return texts;
 	}	
 	
