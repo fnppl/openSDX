@@ -75,10 +75,11 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	private String username = null;
 	private OSDXKey key = null;
 	
-	private Vector<File> nextDownloadFile = new Vector<File>();
+	private Vector<DownloadFile> nextDownloadFile = new Vector<DownloadFile>();
 	private Vector<String> textQueue = new Vector<String>();
 	private Vector<Element> xmlQueue = new Vector<Element>();
 	private RightsAndDuties rights_duties = null;
+	private int maxByteLength = 4*1024*1024;
 	
 	public OSDXFileTransferClient() {
 		//super(host, port, prepath);
@@ -113,11 +114,16 @@ public class OSDXFileTransferClient implements FileTransferClient {
 				if (nextDownloadFile!=null && nextDownloadFile.size()>0) {
 					//only process if requested
 					try {
-						File f = nextDownloadFile.remove(0);
-						System.out.println("Saving to file: "+f.getAbsolutePath());
-						FileOutputStream fout = new FileOutputStream(f);
+						DownloadFile f = nextDownloadFile.get(0);
+						System.out.println("Saving to file: "+f.file.getAbsolutePath());
+						f.file.getParentFile().mkdirs();
+						FileOutputStream fout = new FileOutputStream(f.file,true);
 						fout.write(data);
-						nextDownloadFile = null;
+						fout.close();
+						//remove from download list if complete length has arrived
+						if (f.file.length()==f.length) {
+							nextDownloadFile.remove(0);
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -150,7 +156,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		socket = null;
 		username = null;
 		key = null;
-		nextDownloadFile = new Vector<File>();
+		nextDownloadFile = new Vector<DownloadFile>();
 		textQueue = new Vector<String>();
 		xmlQueue = new Vector<Element>();
 		rights_duties = new RightsAndDuties();
@@ -251,6 +257,11 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		uploadFile(f, null, false);
 	}
 	
+	public void resumeuploadFile(File f) {
+		if (!rights_duties.allowsUpload()) return;
+		resumeuploadFile(f, null);
+	}
+	
 	public Vector<RemoteFile> list() {
 		if (!rights_duties.allowsList()) return null;
 		sendEncryptedText("LIST");
@@ -291,6 +302,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		if (!rights_duties.allowsUpload()) return;
 		if (f.exists()) {
 			if (!f.isDirectory()) {
+				long filelenght = f.length();
 				String param = null;
 				if (new_filename==null) {
 					new_filename = f.getName();
@@ -299,13 +311,13 @@ public class OSDXFileTransferClient implements FileTransferClient {
 					try {
 						Signature sig = Signature.createSignature(f, key);
 						String sigText = Document.buildDocument(sig.toElement()).toStringCompact();
-						param = Util.makeParamsString(new String[]{new_filename, sigText});
+						param = Util.makeParamsString(new String[]{new_filename, ""+filelenght, sigText});
 					} catch (Exception ex) {
 						ex.printStackTrace();
-						param = Util.makeParamsString(new String[]{new_filename});
+						param = Util.makeParamsString(new String[]{new_filename,""+filelenght});
 					}
 				} else {
-					param = Util.makeParamsString(new String[]{new_filename});
+					param = Util.makeParamsString(new String[]{new_filename,""+filelenght});
 				}
 				
 				sendEncryptedText("PUT "+param);
@@ -320,19 +332,110 @@ public class OSDXFileTransferClient implements FileTransferClient {
 					}
 				}
 				if (msg!=null && msg.startsWith("ACK")) {
-					try {
-						ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-						FileInputStream fin = new FileInputStream(f);
-						byte[] buffer = new byte[1024];
-						int read;
-						while ((read = fin.read(buffer))>0) {
-							bOut.write(buffer, 0, read);
+					if (filelenght<=maxByteLength) {
+						//send in one data package
+						try {
+							ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+							FileInputStream fin = new FileInputStream(f);
+							byte[] buffer = new byte[1024];
+							int read;
+							while ((read = fin.read(buffer))>0) {
+								bOut.write(buffer, 0, read);
+							}
+							sendEncryptedData(bOut.toByteArray());
+						} catch (Exception ex) {
+							ex.printStackTrace();
 						}
-						sendEncryptedData(bOut.toByteArray());
+					} else {
+						//send in multiple data packages
+						long nextStart = 0;
+						try {
+							FileInputStream fin = new FileInputStream(f);
+							byte[] buffer = new byte[maxByteLength];
+							int read;
+							while ((read = fin.read(buffer))>0) {
+								param = Util.makeParamsString(new String[]{new_filename, ""+nextStart, ""+read});
+								sendEncryptedText("PUTPART "+param);
+								ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+								bOut.write(buffer, 0, read);
+								sendEncryptedData(bOut.toByteArray());
+								nextStart += read;
+								//if (Math.random()>0.5) return; //BB random errors to test resumeupload
+							}
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+				} else {
+					if (msg==null) {
+						System.out.println("ERROR uploading file: "+f.getName()+" :: TIMEOUT");
+					} else {
+						System.out.println("ERROR uploading file: "+f.getName()+" :: "+msg.substring(msg.indexOf(" :: ")+4));
+					}
+				}
+			}
+		}
+	}
+	
+	public void resumeuploadFile(File f, String new_filename) {
+		if (!rights_duties.allowsUpload()) return;
+		if (f.exists()) {
+			if (!f.isDirectory()) {
+				long filelenght = f.length();
+				String param = null;
+				if (new_filename==null) {
+					new_filename = f.getName();
+				}
+				param = Util.makeParamsString(new String[]{new_filename,""+filelenght});
+				sendEncryptedText("RESUMEPUT "+param);
+				
+				//wait for ACK or ERROR of PUT
+				String msg = null;
+				long timeout = System.currentTimeMillis()+2000;
+				while (msg==null && System.currentTimeMillis()<timeout) {
+					for (int i=0;i<textQueue.size();i++) {
+						if (textQueue.get(i).startsWith("ACK RESUMEPUT :: ") || textQueue.get(i).startsWith("ERROR IN RESUMEPUT :: ")) {
+							msg = textQueue.remove(i);
+						}
+					}
+				}
+				if (msg!=null && msg.startsWith("ACK")) {
+					//send in multiple data packages
+					long nextStart = -1;
+					try {
+						//parse next start
+						nextStart = Long.parseLong(msg.substring(msg.lastIndexOf('=')+1));
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
-				} else {
+					if (nextStart<0) {
+						System.out.println("ERROR resume uploading file: "+f.getName()+" :: WRONG ACK FORMAT IN SERVERS RESPONSE");
+						return;
+					}
+					try {
+						FileInputStream fin = new FileInputStream(f);
+						if (nextStart>0) fin.skip(nextStart);
+						
+						byte[] buffer = new byte[maxByteLength];
+						int read;
+						while ((read = fin.read(buffer))>0) {
+							param = Util.makeParamsString(new String[]{new_filename, ""+nextStart, ""+read});
+							sendEncryptedText("PUTPART "+param);
+							ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+							bOut.write(buffer, 0, read);
+							sendEncryptedData(bOut.toByteArray());
+							nextStart += read;
+						}
+						
+						fin.close();
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+				else if (msg!=null && msg.equals("ERROR IN RESUMEPUT :: FILE DOES NOT EXIST, PLEASE USE PUT INSTEAD")) {
+					uploadFile(f, new_filename);
+				}
+				else {
 					if (msg==null) {
 						System.out.println("ERROR uploading file: "+f.getName()+" :: TIMEOUT");
 					} else {
@@ -366,8 +469,37 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	
 	public void downloadFile(String filename, File localFile) {
 		if (!rights_duties.allowsDownload()) return;
-		nextDownloadFile.add(localFile);
+		if (localFile.isDirectory()) {
+			localFile = new File(localFile,filename);
+		}
+		if (localFile.exists()) {
+			System.out.println("Error downloading file: "+filename+" :: local file: "+localFile.getAbsolutePath()+" exists.");
+			return;
+		}
 		sendEncryptedText("GET "+filename);
+		//wait for ACK or ERROR of GET
+		String msg = null;
+		long timeout = System.currentTimeMillis()+2000;
+		while (msg==null && System.currentTimeMillis()<timeout) {
+			for (int i=0;i<textQueue.size();i++) {
+				if (textQueue.get(i).startsWith("ACK GET :: ") || textQueue.get(i).startsWith("ERROR IN GET :: ")) {
+					msg = textQueue.remove(i);
+				}
+			}
+		}
+		if (msg!=null && msg.startsWith("ACK")) {
+			long length = 0;
+			try {
+				length = Long.parseLong(msg.substring(msg.lastIndexOf('=')+1));
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			nextDownloadFile.add(new DownloadFile(localFile, length));
+		} else if (msg!=null) {
+			System.out.println("Error downloading file: "+filename+" :: "+msg);
+		} else {
+			System.out.println("Error downloading file: "+filename+" :: TIMEOUT");
+		}
 	}
 	
 	
@@ -382,12 +514,13 @@ public class OSDXFileTransferClient implements FileTransferClient {
 			s.connect("localhost", 4221,"/", mysigning, username);
 			
 			//some test commands
-			s.mkdir("test-dir");
-			s.cd("test-dir");
+//			s.mkdir("test-dir");
+//			s.cd("test-dir");
 			s.pwd();
-			s.uploadFile(new File("README"));
+//			s.uploadFile(new File("README"));
 //			s.downloadFile("README", downloadPath);
 			
+			s.downloadFile("test.data", downloadPath);
 			
 			Thread.sleep(10000);
 			s.closeConnection();
@@ -397,7 +530,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		}
 	}
 	
-	public static void upload_files(String host, int port, String prepath, OSDXKey mysigning, String username, Vector<File> files, String remoteDir) {
+	public static void upload_files(String host, int port, String prepath, OSDXKey mysigning, String username, Vector<File> files, String remoteDir, boolean resume) {
 		if (prepath==null || prepath.length()==0) prepath = "/";
 		OSDXFileTransferClient s = new OSDXFileTransferClient();
 		try {
@@ -409,7 +542,11 @@ public class OSDXFileTransferClient implements FileTransferClient {
 			}
 			for (int i=0;i<files.size();i++) {
 				System.out.println("uploading file "+(i+1)+" of "+files.size()+" :: "+files.get(i).getAbsolutePath());
-				s.uploadFile(files.get(i));
+				if (resume) {
+					s.resumeuploadFile(files.get(i));
+				} else {
+					s.uploadFile(files.get(i));
+				}
 			}
 			Thread.sleep(1000);
 			s.closeConnection();
@@ -419,7 +556,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	}
 	
 	public static void main(String[] args) {
-		//test(); if (2 == 1+1) return;
+		test(); if (2 == 1+1) return;
 		
 		//System.out.println("args: "+Arrays.toString(args));
 		OSDXKey key = null;
@@ -433,6 +570,8 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		String keypw = null;	// --keypw
 		String keypwfile = null;// --keypwfile
 		String config = null;	// --config
+		boolean resume = false;	// --resume
+		
 		
 		Vector<File> files = new Vector<File>();
 		int i=0;
@@ -488,10 +627,16 @@ public class OSDXFileTransferClient implements FileTransferClient {
 					else if (s.equals("--config")) {
 						config = args[i+1];
 						i+=2;
-					} else if (s.startsWith("--")) {
+					}
+					else if (s.equals("--resume")) {
+						resume = true;
+						i++;
+					}
+					else if (s.startsWith("--")) {
 						System.out.println("CANT UNDERSTAND ARGUMENT: "+s+" "+args[i+1]);
 						i+=2;
-					} else {
+					}
+					else {
 						start_files = true;
 					}
 				}
@@ -592,7 +737,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 			}
 			
 			//yes, we can finally execute the uploads
-			upload_files(host, port, prepath, key, username, files, remotepath);
+			upload_files(host, port, prepath, key, username, files, remotepath, resume);
 			
 		} catch (Exception ex) {
 			System.out.println("usage: OSDXFileTransferClient --host localhost --port 4221 --prepath \"/\" --user username --keystore defautlKeyStore.xml --keyid 11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:11:22:33:44:55 --keypw key-password [file or list of files to upload]");
@@ -608,5 +753,14 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		System.out.println("or   : OSDXFileTransferClient --config configfile.xml [file or list of files to upload]");
 		
 		System.exit(1);
+	}
+	
+	private class DownloadFile {
+		public File file;
+		public long length;
+		public DownloadFile(File file, long lenghth) {
+			this.file = file;
+			this.length = lenghth;
+		}
 	}
 }

@@ -51,7 +51,8 @@ public class FileTransferState {
 	private File rootPath = null;
 	private File currentPath = null;
 	private File writeFile = null;
-	
+	private long nextFilePartStart = -1L;
+	private int nextFilePartLength = -1;
 	
 	
 	public File getRootPath() {
@@ -79,6 +80,24 @@ public class FileTransferState {
 	public File getWriteFile() {
 		return writeFile;
 	}
+	
+	
+
+	public long getNextFilePartStart() {
+		return nextFilePartStart;
+	}
+
+	public void setNextFilePartStart(long nextFilePartStart) {
+		this.nextFilePartStart = nextFilePartStart;
+	}
+
+	public int getNextFilePartLength() {
+		return nextFilePartLength;
+	}
+
+	public void setNextFilePartLength(int nextFilePartLength) {
+		this.nextFilePartLength = nextFilePartLength;
+	}
 
 	public void setWriteFile(File writeFile) {
 		if (writeFile==null || isAllowed(writeFile)) {
@@ -87,6 +106,7 @@ public class FileTransferState {
 			System.out.println("ALERT :: TRYING TO SET WRITEFILE OUT OF ROOT DIRECTORY");
 		}
 	}
+	
 	
 	public boolean isAllowed(File f) {
 		try {
