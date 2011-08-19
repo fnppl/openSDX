@@ -556,7 +556,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	}
 	
 	public static void main(String[] args) {
-		test(); if (2 == 1+1) return;
+		//test(); if (2 == 1+1) return;
 		
 		//System.out.println("args: "+Arrays.toString(args));
 		OSDXKey key = null;
