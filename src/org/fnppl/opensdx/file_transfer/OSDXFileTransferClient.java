@@ -53,6 +53,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Vector;
 
 import org.fnppl.opensdx.common.Util;
@@ -184,16 +185,17 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		sendEncryptedText("CDUP");
 	}
 	
-	public void mkdir(String dir) {
-		if (!rights_duties.allowsMkdir()) return;
+	public void mkdir(String dir) throws Exception {
+		if (!rights_duties.allowsMkdir()) {
+			throw new Exception("MKDIR NOT ALLOWED");
+//			return;
+		}
 		sendEncryptedText("MKDIR "+dir);
-		
 	}
 	
 	public void delete(String file) {
 		if (!rights_duties.allowsDelete()) return;
 		sendEncryptedText("DELETE "+file);
-		
 	}
 	
 	public boolean login(String username) {
@@ -540,18 +542,41 @@ public class OSDXFileTransferClient implements FileTransferClient {
 				s.cd(remoteDir);
 				s.pwd();
 			}
-			for (int i=0;i<files.size();i++) {
-				System.out.println("uploading file "+(i+1)+" of "+files.size()+" :: "+files.get(i).getAbsolutePath());
+			
+			recursePut(files, s, 0, resume);
+			
+			Thread.sleep(1000);
+			s.closeConnection();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	public static void recursePut(Vector<File> files, OSDXFileTransferClient s, int depth, boolean resume) throws Exception {
+		for (int i=0; i<files.size(); i++) {
+			System.out.println("Depth["+depth+"] uploading file "+(i+1)+" of "+files.size()+" :: "+files.get(i).getAbsolutePath());
+			
+			File l = files.elementAt(i);
+			if(l.isDirectory()) {
+				s.mkdir(l.getName());
+				s.cd(l.getName());
+				
+				try {
+					Vector<File> nfiles = new Vector<File>(Arrays.asList(l.listFiles()));
+					recursePut(nfiles, s, depth+1, resume);
+				} catch(Exception ex) {
+					s.cd_up();
+					throw ex;
+				}
+				
+				s.cd_up();
+			}
+			else {
 				if (resume) {
 					s.resumeuploadFile(files.get(i));
 				} else {
 					s.uploadFile(files.get(i));
 				}
 			}
-			Thread.sleep(1000);
-			s.closeConnection();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 	
