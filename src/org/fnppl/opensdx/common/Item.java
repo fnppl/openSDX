@@ -140,6 +140,10 @@ public class Item extends BusinessObject {
 	}
 	
 	public Item addContributor(Contributor contributor) {
+		if (contributor == null) {
+			return this;
+		}
+		contributor.setAttribute("num", ""+(contributors.size()+1));
 		contributors.add(contributor);
 		return this;
 	}
