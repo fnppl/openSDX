@@ -2,6 +2,7 @@ package org.fnppl.opensdx.common;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.Vector;
 
 import org.fnppl.opensdx.file_transfer.FTPClient;
 import org.fnppl.opensdx.file_transfer.FileTransferClient;
@@ -62,17 +63,18 @@ public class Feed extends BusinessObject {
 	public static String KEY_NAME = "feed";
 	
 	private FeedInfo feedinfo;								//MUST
-	private BusinessCollection<Bundle> bundles;				//SHOULD
+	private Vector<Bundle> bundles;							//SHOULD
 	private BusinessCollection<Item> single_items;			//COULD
 	
 	public static Feed make(FeedInfo feedinfo) {
 		Feed f = new Feed();
 		f.feedinfo = feedinfo;
-		f.bundles = new BusinessCollection<Bundle>() {
-			public String getKeyname() {
-				return "bundles";
-			}
-		};
+//		f.bundles = new BusinessCollection<Bundle>() {
+//			public String getKeyname() {
+//				return "bundles";
+//			}
+//		};
+		f.bundles = null;
 		
 		f.single_items = null;
 		return f;
@@ -90,12 +92,13 @@ public class Feed extends BusinessObject {
 		
 		try {
 			f.feedinfo = FeedInfo.fromBusinessObject(f);
-			f.bundles = new BusinessCollection<Bundle>() {
-				public String getKeyname() {
-					return "bundles";
-				}
-			};
-			new ChildElementIterator(bo, "bundles","bundle") {
+			f.bundles = null;
+//			new ChildElementIterator(bo, "bundles","bundle") {
+//				public void processBusinessObject(BusinessObject bo) {
+//					f.addBundle(Bundle.fromBusinessObject(bo));
+//				}
+//			};
+			new ChildElementIterator(bo, "bundle") {
 				public void processBusinessObject(BusinessObject bo) {
 					f.addBundle(Bundle.fromBusinessObject(bo));
 				}
@@ -122,8 +125,9 @@ public class Feed extends BusinessObject {
 	}
 	
 	
-	public Result upload(OSDXFileTransferClient client, String host, int port, String prepath, String username, OSDXKey mysigning) {
+	public Result upload(String host, int port, String prepath, String username, OSDXKey mysigning) {
 		try {
+			OSDXFileTransferClient client = new OSDXFileTransferClient();
 			boolean ok = client.connect(host, port, prepath, mysigning, username);
 			if (!ok) {
 				return Result.error("ERROR: Connection to server could not be established.");
@@ -247,6 +251,7 @@ public class Feed extends BusinessObject {
 	}
 	
 	public Feed addBundle(Bundle bundle) {
+		if (bundles == null) bundles = new Vector<Bundle>();
 		bundles.add(bundle);
 		return this;
 	}

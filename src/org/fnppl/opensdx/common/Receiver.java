@@ -87,6 +87,8 @@ public class Receiver extends BusinessObject {
 	
 	private BusinessStringItem type;						//MUST
 	private BusinessStringItem servername;  				//MUST
+	private BusinessIntegerItem port;  						//SHOULD
+	private BusinessStringItem prepath;  					//COULD
 	private BusinessStringItem serveripv4; 					//MUST
 	private BusinessStringItem serveripv6; 					//COULD
 	private BusinessStringItem authtype; 					//MUST
@@ -124,6 +126,8 @@ public class Receiver extends BusinessObject {
 //		r.authsha1 = new BusinessStringItem("authsha1", SecurityHelper.HexDecoder.encode(authsha1, ':', -1));
 		
 		r.servername = null;
+		r.port = null;
+		r.prepath = null;
 		r.serveripv4 = null;
 		r.authtype = null;
 		r.authsha1 = null;
@@ -147,6 +151,8 @@ public class Receiver extends BusinessObject {
 		
 		r.type = BusinessStringItem.fromBusinessObject(bo, "type");
 		r.servername = BusinessStringItem.fromBusinessObject(bo, "servername");
+		r.port = BusinessIntegerItem.fromBusinessObject(bo, "port");
+		r.prepath = BusinessStringItem.fromBusinessObject(bo, "prepath");
 		r.serveripv4 = BusinessStringItem.fromBusinessObject(bo, "serveripv4");
 		r.authtype = BusinessStringItem.fromBusinessObject(bo, "authtype");
 		r.authsha1 = BusinessBytesItem.fromBusinessObject(bo, "authsha1");
@@ -192,6 +198,26 @@ public class Receiver extends BusinessObject {
 			servername = new BusinessStringItem("servername", value);
 		} else {
 			servername.setString(value);
+		}
+		return this;
+	}
+	public Receiver port(int value) {
+		if (value <= 0 ) {
+			port = null;
+		} else if (port == null) {
+			port = new BusinessIntegerItem("prepath", value);
+		} else {
+			port.setInteger(value);
+		}
+		return this;
+	}
+	public Receiver prepath(String value) {
+		if (value == null) {
+			prepath = null;
+		} else if (prepath == null) {
+			prepath = new BusinessStringItem("prepath", value);
+		} else {
+			prepath.setString(value);
 		}
 		return this;
 	}
@@ -297,6 +323,18 @@ public class Receiver extends BusinessObject {
 	public String getServername() {
 		if (servername==null) return null;
 		return servername.getString();
+	}
+	
+	public int getPort() {
+		if (port==null) return -1;
+		return port.getIntValue();
+	}
+	
+	public String getPrepath() {
+		if (prepath==null) return "/";
+		String pp = prepath.getString();
+		if (pp.length()==0) pp = "/";
+		return pp;
 	}
 	
 	public String getServerIPv4() {
