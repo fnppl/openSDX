@@ -236,6 +236,9 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 					ClientSettings cs = ClientSettings.fromElement(e);
 					clients.put(cs.getSettingsID(),cs);
 					System.out.println("adding client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath());
+					
+					cs.getLocalRootPath().mkdirs();
+					
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
