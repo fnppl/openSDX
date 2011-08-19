@@ -84,7 +84,7 @@
 		<receiver>
 			<type>ftp</type><!-- openSDX fileserver|ftp|sftp|ftps|webdav -->
 			<servername>myftpserver.org</servername><!-- MUST provider should really give hostname instead of ip ; if hostname is given as ip, then put that one here -->
-			<serveripv4>000.000.000.000</serveripv4><!-- MUST resolved servername ipv4 -->
+			<serveripv4>0.0.0.0</serveripv4><!-- MUST resolved servername ipv4 -->
 			<serveripv6></serveripv6><!-- COULD resolved servername ipv6 -->
 			<authtype>login</authtype><!-- MUST login|keyfile|token|other -->
 			<username>testuser</username><!-- MUST for authtype login or keyfile -->
