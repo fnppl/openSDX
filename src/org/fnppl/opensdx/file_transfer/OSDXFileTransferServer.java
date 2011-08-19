@@ -53,6 +53,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Vector;
+import java.io.Console;
 
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.securesocket.ClientSettings;
@@ -315,8 +316,14 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			return;
 		}
 		
-		//debug
-		String pwS = "upload";
+		String pwS = null;
+		if(args.length > 0 ) {
+			pwS = args[0];
+		}
+		else {
+			Console console = System.console();
+		    pwS = console.readLine("Please enter password for unlocking private-key: ");
+		}
 		
 		OSDXFileTransferServer s = new OSDXFileTransferServer(pwS);
 		s.startService();
