@@ -62,6 +62,7 @@ public class FileTransferLog {
 	}
 	
 	public static FileTransferLog initLog(File logfile) {
+		logfile.getParentFile().mkdirs();
 		return new FileTransferLog(logfile);
 	}
 	
