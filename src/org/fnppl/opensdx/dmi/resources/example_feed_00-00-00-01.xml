@@ -82,7 +82,7 @@
 		</creator><!-- creator is a mere info-field for the sending-party ; receiving party may totally feel free to ignore this -->
 
 		<receiver>
-			<type>ftp</type><!-- openSDX fileserver|ftp|sftp|ftps|webdav| -->
+			<type>ftp</type><!-- openSDX fileserver|ftp|sftp|ftps|webdav -->
 			<servername>myftpserver.org</servername><!-- MUST provider should really give hostname instead of ip ; if hostname is given as ip, then put that one here -->
 			<serveripv4>000.000.000.000</serveripv4><!-- MUST resolved servername ipv4 -->
 			<serveripv6></serveripv6><!-- COULD resolved servername ipv6 -->
@@ -92,23 +92,23 @@
 				<relatedemail></relatedemail><!-- SHOULD -->
 				<usedkeyid></usedkeyid><!-- COULD ; keyid on gpgkesyerver -->
 				<usedpubkey></usedpubkey><!-- SHOULD ; ascii-armored / base64-form ; either this or keyid must be given -->
-			</crypto><!-- COULD -->					
-		</receiver>
+			</crypto><!-- COULD -->
+		</receiver><!-- MUST -->
 		<sender>
 			<contractpartnerid>id</contractpartnerid><!-- MUST your side of "ID" ; worst case: the sending-company's correct trade-register-name/number -->
-			<ourcontractpartnerid>id</ourcontractpartnerid><!-- MUST our side of "ID" -->
+			<ourcontractpartnerid>id</ourcontractpartnerid><!-- MUST our side of "ID" ; "worst case" (aka "good choice"): trading name of company sending this feed -->
 			<email>sender@fnppl.org</email><!-- MUST esp. for signature-check ; could of course be a generic account e.g. deliveryteam@dsphouse.nät -->		
 			<keyid>66:BC:2C:A0:A1:70:FD:5A:CD:9F:C3:EA:44:FB:E0:A6:5C:EA:8B:86@keyserver.fnppl.org</keyid>
 		</sender><!-- MUST -->
 		<licensor>
-			<contractpartnerid>id</contractpartnerid><!-- MUST your side of "ID" ; worst case: the license-giving-company's correct trade-register-name/number -->
-			<ourcontractpartnerid>id</ourcontractpartnerid><!-- MUST our side of "ID" -->
+			<contractpartnerid>id</contractpartnerid><!-- MUST your side of "ID" ; worst case: the license-giving-company's correct trade-register-name/number of the entity you are licensed of -->
+			<ourcontractpartnerid>id</ourcontractpartnerid><!-- MUST our side of "ID" ; "worst case" (aka "good choice"): trading name of company giving license for this feed -->
 			<email>licensor@fnppl.org</email><!-- SHOULD good, but not neccessarily needed -->
 			<keyid>88:BC:2C:A0:A1:70:FD:5A:CD:9F:C3:EA:44:FB:E0:A6:5C:EA:8B:86@keyserver.fnppl.org</keyid>
 		</licensor><!-- MUST could be identical to sender, but has to be given -->
 		<licensee>
-			<contractpartnerid>id</contractpartnerid><!-- MUST your side of "ID" ; worst case: the license-giving-company's correct trade-register-name/number -->
-			<ourcontractpartnerid>id</ourcontractpartnerid><!-- MUST our side of "ID" -->
+			<contractpartnerid>id</contractpartnerid><!-- MUST your side of "ID" ; worst case: the license-taking-company's correct trade-register-name/number -->
+			<ourcontractpartnerid>id</ourcontractpartnerid><!-- MUST our side of "ID" ; worst case: the license-taking-company's correct trade-register-name/number -->
 			<email>licensee@fnppl.org</email><!-- SHOULD good, but not neccessarily needed -->
 			<keyid>AA:BC:2C:A0:A1:70:FD:5A:CD:9F:C3:EA:44:FB:E0:A6:5C:EA:8B:86@keyserver.fnppl.org</keyid>
 		</licensee><!-- MUST could be identical to sender, but has to be given -->
@@ -204,7 +204,7 @@
 			</onfullsuccess><!-- SHOULD when *machine* thinks, everything was read and successfully process - without ANY error -->
 			<onerror></onerror><!-- SHOULD when *machine* could process this, but some error, or total fail occured -->
 		</actions><!-- SHOULD - hopefully the receiving party also respects this ; this would ease a lot in the chain... -->
-	</feedinfo>
+	</feedinfo><!-- MUST -->
 	
 	<bundle>
 		<ids>
@@ -637,6 +637,8 @@
 						<filetype></filetype><!-- MUST ; FILEFORMAT/BITRATE[KBIT/s]/CODEC/CODECSETTINGS e.g. mp3/320/unknown/CBR -->
 						<channels>stereo</channels>
 						<bytes>84848483838</bytes><!-- length of file in bytes -->
+						<prelistening_offset>90</prelistening_offset><!-- SHOULD ; for type "prelistening" -->
+						<prelistening_length>90</prelistening_length><!-- SHOULD ; for type "prelistening" -->
 						<location>
 							<ftp>
 								<server></server>
