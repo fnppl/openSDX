@@ -77,9 +77,9 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	private OSDXKey key = null;
 	
 	private Vector<DownloadFile> nextDownloadFile = new Vector<DownloadFile>();
-	private Vector<String> textQueue = new Vector<String>();
-	private Vector<Element> xmlQueue = new Vector<Element>();
-	private RightsAndDuties rights_duties = null;
+	protected Vector<String> textQueue = new Vector<String>();
+	protected Vector<Element> xmlQueue = new Vector<Element>();
+	protected RightsAndDuties rights_duties = null;
 	private int maxByteLength = 4*1024*1024;
 	
 	public OSDXFileTransferClient() {
@@ -163,13 +163,13 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		rights_duties = new RightsAndDuties();
 	}
 	
-	private void sendEncryptedText(String text) {
+	protected void sendEncryptedText(String text) {
 		if (socket!=null) {
 			socket.sendEncryptedText(text);
 		}
 	}
 	
-	private void sendEncryptedData(byte[] data) {
+	protected void sendEncryptedData(byte[] data) {
 		if (socket!=null) {
 			socket.sendEncryptedData(data);
 		}

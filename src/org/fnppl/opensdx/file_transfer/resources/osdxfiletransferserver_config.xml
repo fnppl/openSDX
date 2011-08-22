@@ -68,6 +68,7 @@
 			</login> -->
 			<!--  if auth_type is keyfile no further steps are needed, because authentication is already done via the keyid -->
 			<rights_and_duties>
+			  <admin>true</admin>   			    <!--  default false -->
 			  <allow_mkdir>true</allow_mkdir>       <!--  default true -->
 			  <allow_delete>true</allow_delete>     <!--  default true -->
 			  <allow_pwd>true</allow_pwd>           <!--  default true -->
@@ -84,10 +85,6 @@
 			<keyid>AF:08:7F:7E:92:D8:48:98:24:7B:56:00:71:F8:47:65:62:8A:46:EA@localhost</keyid> <!-- keyid of a clients signing key -->
 			<local_path>/home/neo/openSDX/file_transfer_server/user_1</local_path> <!-- mapping of a client to a local directory -->
 			<auth_type>keyfile</auth_type>  <!--  keyfile|login|token|... -->
-			<login> <!--  only if password required -->
-				<sha256></sha256>
-				<initv></initv>
-			</login>
 			<!--  no <rights_and_duties> means all rights, no duties --> 
 		</client>
 	</clients>
