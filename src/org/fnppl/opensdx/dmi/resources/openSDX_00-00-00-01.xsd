@@ -861,7 +861,9 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     <xsd:complexType name="action"/>
     <xsd:complexType name="action_instruction"/>
     <xsd:simpleType name="email">
-        <xsd:restriction base="xsd:string"/>
+        <xsd:restriction base="xsd:string">
+        	<xsd:pattern value="(([a-zA-Z0-9_\-\.]+)@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})*)?" />
+        </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="emaillist">
         <xsd:restriction base="xsd:string"/>
@@ -897,22 +899,24 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
         <xsd:restriction base="xsd:string"> </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="keyid">
-        <xsd:restriction base="xsd:string"> </xsd:restriction>
+        <xsd:restriction base="xsd:string"> 
+        </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="ipv4">
         <xsd:restriction base="xsd:string">
             <xsd:pattern
-                value="((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])"/>
-            <!-- should be checked for 0-255 etc. -->
+            	value="(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[0-9]{1,2})(\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[0-9]{1,2})){3}" />
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="ipv6">
         <xsd:restriction base="xsd:string">
-            <!-- not pattern defined yet... --> </xsd:restriction>
+        <!-- not pattern defined yet... -->   
+		</xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="url">
         <xsd:restriction base="xsd:string">
-            <!-- not pattern defined yet... --> </xsd:restriction>
+        <!-- not pattern defined yet... -->   
+		</xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="authtype">
         <xsd:restriction base="xsd:string">

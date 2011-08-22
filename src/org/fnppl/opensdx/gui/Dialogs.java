@@ -101,7 +101,7 @@ public class Dialogs {
 	public static void showMessage(String message) {
 		JOptionPane.showMessageDialog(null, message);
 	}
-	
+		
 	public static void showText(String title, String message) {
 		JFrame f = new JFrame(title);
 		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
