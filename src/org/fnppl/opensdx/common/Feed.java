@@ -64,7 +64,7 @@ public class Feed extends BusinessObject {
 	
 	private FeedInfo feedinfo;								//MUST
 	private Vector<Bundle> bundles;							//SHOULD
-	private BusinessCollection<Item> single_items;			//COULD
+	private Vector<Item> single_items;						//COULD
 	
 	public static Feed make(FeedInfo feedinfo) {
 		Feed f = new Feed();
@@ -103,7 +103,7 @@ public class Feed extends BusinessObject {
 					f.addBundle(Bundle.fromBusinessObject(bo));
 				}
 			};
-			f.single_items = new BusinessCollection<Item>() {
+			f.single_items = new Vector<Item>() {
 				public String getKeyname() {
 					return "items";
 				}
@@ -258,7 +258,7 @@ public class Feed extends BusinessObject {
 	
 	public Feed addSingleItem(Item item) {
 		if (single_items==null) {
-			single_items = new BusinessCollection<Item>() {
+			single_items = new Vector<Item>() {
 				public String getKeyname() {
 					return "items";
 				}
