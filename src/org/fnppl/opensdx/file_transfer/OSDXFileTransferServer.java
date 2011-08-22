@@ -51,6 +51,7 @@ import java.io.FileOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
 import java.io.Console;
@@ -476,7 +477,6 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		sender.sendEncryptedText("ACK PWD :: "+state.getRelativPath());
 	}
 	
-
 	public void handle_list(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
@@ -798,6 +798,72 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 				sender.sendEncryptedText("ERROR IN GET :: FILE DOES NOT EXIST");
 			}
 		}
+	}
+
+	//admin clients management
+	public void handle_listclients(String param, OSDXSocketServerThread sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN LISTCLIENTS :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().isAdmin()) {
+			sender.sendEncryptedText("ERROR IN LISTCLIENTS :: NOT ALLOWED");
+			return;
+		}
+		Collection<ClientSettings> cClients = clients.values();
+		String[] pClients = new String[cClients.size()];
+		int i=0;
+		for (ClientSettings ci : cClients) {
+			pClients[i] = ci.getSettingsID();
+			i++;
+		}
+		
+		String resp;
+		resp = "ACK LISTCLIENTS :: "+Util.makeParamsString(pClients);
+		sender.sendEncryptedText(resp);
+	}
+	
+	public void handle_getclient(String param, OSDXSocketServerThread sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN GETCLIENT :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().isAdmin()) {
+			sender.sendEncryptedText("ERROR IN GETCLIENT :: NOT ALLOWED");
+			return;
+		}
+		ClientSettings client = clients.get(param);
+		String resp;
+		if (client!=null) {
+			resp = "ACK GETCLIENT :: "+Document.buildDocument(client.toElement()).toStringCompact();
+		} else {
+			resp = "ERROR IN GETCLIENT :: CLIENT NOT FOUND";
+		}
+		sender.sendEncryptedText(resp);
+	}
+	
+	public void handle_putclient(String param, OSDXSocketServerThread sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN PUTCLIENT :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().isAdmin()) {
+			sender.sendEncryptedText("ERROR IN PUTCLIENT :: NOT ALLOWED");
+			return;
+		}
+		String resp;
+		try {
+			ClientSettings newcs = ClientSettings.fromElement(Document.fromString(param).getRootElement());
+			clients.put(newcs.getSettingsID(),newcs);
+			resp = "ACK PUTCLIENT";
+		} catch (Exception ex) {
+			resp = "ERROR IN PUTCLIENT :: WRONG FORMAT";
+			ex.printStackTrace();
+		}
+		sender.sendEncryptedText(resp);
 	}
 
 }

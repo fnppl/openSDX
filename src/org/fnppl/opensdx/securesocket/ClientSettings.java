@@ -69,7 +69,9 @@ public class ClientSettings {
 		ClientSettings s = new ClientSettings();
 		s.username = e.getChildText("username");
 		s.keyid = e.getChildText("keyid");
-		s.local_path = new File(e.getChildText("local_path"));
+		if (e.getChildText("local_path")!=null) {
+			s.local_path = new File(e.getChildText("local_path"));
+		}
 		s.auth_type = e.getChildText("auth_type");
 		if (s.username==null || s.keyid==null || s.local_path==null || s.auth_type==null) {
 			throw new RuntimeException("Format ERROR in client settings");
@@ -89,6 +91,28 @@ public class ClientSettings {
 		return s;
 	}
 	
+	public Element toElement() {
+		Element e = new Element("client");
+		if (username!=null) e.addContent("username",username);
+		if (keyid!=null) e.addContent("keyid",keyid);
+		if (local_path!=null) e.addContent("local_path",local_path.getAbsolutePath());
+		if (auth_type!=null) e.addContent("auth_type",auth_type);
+		if (login_initv!=null || login_sha256 != null)  {
+			Element el = new Element("login");
+			if (login_sha256 != null)  {
+				el.addContent("sha256", SecurityHelper.HexDecoder.encode(login_sha256));
+			}
+			if (login_initv!=null) {
+				el.addContent("initv", SecurityHelper.HexDecoder.encode(login_initv));
+			}
+			e.addContent(el);
+		}
+		if (rights_duties!=null) {
+			e.addContent(rights_duties.toElement());
+		}
+		return e;
+	}
+	
 	public RightsAndDuties getRightsAndDuties() {
 		return rights_duties;
 	}
@@ -101,7 +125,14 @@ public class ClientSettings {
 		return keyid;
 	}
 	
+	public String getUsername() {
+		return username;
+	}
+	
 	public File getLocalRootPath() {
 		return local_path;
+	}
+	public void setLocalRootPath(File path) {
+		local_path = path;
 	}
 }

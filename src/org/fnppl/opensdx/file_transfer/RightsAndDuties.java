@@ -59,6 +59,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class RightsAndDuties {
 
+	private boolean admin = false;
 	private boolean allow_mkdir = true;
 	private boolean allow_delete = true;
 	private boolean allow_pwd = true;
@@ -75,6 +76,7 @@ public class RightsAndDuties {
 
 	public static RightsAndDuties fromElement(Element e) {
 		RightsAndDuties r = new RightsAndDuties();
+		r.admin = parse(e,"admin",false);
 		r.allow_mkdir = parse(e,"allow_mkdir",true);
 		r.allow_delete = parse(e,"allow_delete",true);
 		r.allow_pwd = parse(e,"allow_pwd",true);
@@ -161,8 +163,13 @@ public class RightsAndDuties {
 		return allow_download;
 	}
 	
+	public boolean isAdmin() {
+		return admin;
+	}
+	
 	public Element toElement() {
 		Element e = new Element("rights_and_duties");
+		if (admin) e.addContent("admin", "true");
 		if (!allow_mkdir) e.addContent("allow_mkdir", "false");
 		if (!allow_delete) e.addContent("allow_delete", "false");
 		if (!allow_pwd) e.addContent("allow_pwd", "false");
@@ -176,6 +183,51 @@ public class RightsAndDuties {
 			}
 		}
 		return e;
+	}
+
+	public void setAdmin(boolean admin) {
+		this.admin = admin;
+	}
+
+	public void setAllow_mkdir(boolean allowMkdir) {
+		allow_mkdir = allowMkdir;
+	}
+
+	public void setAllow_delete(boolean allowDelete) {
+		allow_delete = allowDelete;
+	}
+
+	public void setAllow_pwd(boolean allowPwd) {
+		allow_pwd = allowPwd;
+	}
+
+	public void setAllow_cd(boolean allowCd) {
+		allow_cd = allowCd;
+	}
+
+	public void setAllow_list(boolean allowList) {
+		allow_list = allowList;
+	}
+
+	public void setAllow_upload(boolean allowUpload) {
+		allow_upload = allowUpload;
+	}
+
+	public void setAllow_download(boolean allowDownload) {
+		allow_download = allowDownload;
+	}
+	
+	public String getSignaturesNeededAsList() {
+		if (signature_needed==null || signature_needed.size()==0) {
+			return "(no signatures needed)";
+		}
+		else {
+			String s = signature_needed.get(0);
+			for (int i=1;i<signature_needed.size();i++) {
+				s += ";"+signature_needed.get(i);
+			}
+			return s;
+		}
 	}
 	
 	
