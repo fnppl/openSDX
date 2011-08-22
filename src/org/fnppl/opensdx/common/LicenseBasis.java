@@ -58,7 +58,7 @@ public class LicenseBasis extends BusinessObject {
 	private BusinessObject pricing;								 //SHOULD
 	private BusinessBooleanItem streaming_allowed;				 //COULD
 	private BusinessCollection<BusinessStringItem> channels;	 //COULD
-	private BusinessStringItem asOnBundle;
+	private BusinessBooleanItem asOnBundle;
 	
 	private LicenseBasis() {
 		
@@ -99,7 +99,7 @@ public class LicenseBasis extends BusinessObject {
 		b.pricing = null;
 		b.streaming_allowed = null;
 		b.channels = null;
-		b.asOnBundle = new BusinessStringItem("as_on_bundle", "");
+		b.asOnBundle = new BusinessBooleanItem("as_on_bundle", true);
 		return b;
 	}
 	
@@ -156,7 +156,7 @@ public class LicenseBasis extends BusinessObject {
 				}
 			};
 		}
-		b.asOnBundle = BusinessStringItem.fromBusinessObject(b, "as_on_bundle");
+		b.asOnBundle = BusinessBooleanItem.fromBusinessObject(b, "as_on_bundle");
 		return b;
 	}
 	
@@ -187,7 +187,7 @@ public class LicenseBasis extends BusinessObject {
 	
 	public LicenseBasis as_on_bundle(boolean value) {
 		if (value) {
-			asOnBundle = new BusinessStringItem("as_on_bundle", "");
+			asOnBundle = new BusinessBooleanItem("as_on_bundle", value);
 			territorial = null;
 			timeframe = null;
 			pricing = null;
@@ -209,8 +209,12 @@ public class LicenseBasis extends BusinessObject {
 	}
 	
 	public boolean isAsOnBundle() {
-		if (asOnBundle==null) return false;
-		else return true;
+		if (asOnBundle == null) {
+			return false;
+		}
+		else {
+			return asOnBundle.getBoolean();
+		}
 	}
 	
 	public Long getTimeframeFrom() {

@@ -566,10 +566,10 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
             <xsd:element name="type" type="receivertypes"/>
             <xsd:element name="servername" type="iporhostname"/>
             <xsd:element name="serveripv4" type="ipv4"/>
-            <xsd:element name="serveripv6" type="ipv6"/>
+            <xsd:element name="serveripv6" type="ipv6" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="authtype" type="authtype"/>
             <xsd:element name="username" type="xsd:string"/>
-            <xsd:element name="crypto" type="crypto"/>
+            <xsd:element name="crypto" type="crypto" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="crypto">
@@ -577,9 +577,9 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
             <xsd:documentation xml:lang="en">This element contains crypto information for secure and authenticated transfer.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="relatedemail" type="email"/>
-            <xsd:element name="usedkeyid" type="keyid"/>
-            <xsd:element name="usedpubkey" type="xsd:base64Binary"/>
+            <xsd:element name="relatedemail" type="email" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="usedkeyid" type="keyid" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="usedpubkey" type="xsd:base64Binary" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="sender">
