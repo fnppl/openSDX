@@ -478,7 +478,7 @@
 		<tags>
 			<genres>
 				<genre>Rock</genre>
-				<genre>Surf</genre>
+				<genre>Surf Rock</genre>
 			</genres>
 			<bundle_only>false</bundle_only> <!--  true|false -->
 			<explicit_lyrics>cleaned</explicit_lyrics> <!--  true|false|cleaned -->
@@ -569,7 +569,7 @@
 				<tags>
 					<genres>
 						<genre>Rock</genre>
-						<genre>Surf</genre>
+						<genre>Surf Rock</genre>
 					</genres>
 					<bundle_only>false</bundle_only>
 					<explicit_lyrics>false</explicit_lyrics>
