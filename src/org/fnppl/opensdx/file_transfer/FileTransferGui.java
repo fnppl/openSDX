@@ -121,7 +121,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 	public FileTransferGui() {
 		initUserHome();
 		initSettings();
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				exit();
