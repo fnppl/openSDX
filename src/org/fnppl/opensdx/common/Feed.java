@@ -7,11 +7,19 @@ import java.util.Vector;
 import org.fnppl.opensdx.file_transfer.FTPClient;
 import org.fnppl.opensdx.file_transfer.FileTransferClient;
 import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
+import org.fnppl.opensdx.gui.DefaultMessageHandler;
+import org.fnppl.opensdx.gui.Dialogs;
+import org.fnppl.opensdx.gui.MessageHandler;
+import org.fnppl.opensdx.security.KeyApprovingStore;
+import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.Result;
 import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.security.Signature;
+import org.fnppl.opensdx.security.SubKey;
 import org.fnppl.opensdx.xml.ChildElementIterator;
 import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.xml.Element;
 
 /*
  * Copyright (C) 2010-2011 
@@ -125,26 +133,229 @@ public class Feed extends BusinessObject {
 	}
 	
 	
-	public Result upload(String host, int port, String prepath, String username, OSDXKey mysigning) {
+	
+	public Result sendToReceiver(MessageHandler mh, OSDXKey signatureKey) {
+		Receiver receiver = feedinfo.getReceiver();
+		if (receiver==null) {
+			return Result.error("Please enter complete receiver information in FeedInfo tab first.");
+		}
+		
+		String type = receiver.getType();
+		
+		FileTransferClient client = null;
+		if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
+			if (signatureKey==null) {
+				Result getSigKey = selectPrivateSigningKey(null, mh); 
+				if (getSigKey.succeeded) {
+					signatureKey = (OSDXKey)getSigKey.userobject;
+				} else {
+					return Result.error("no signature key for signing feed.");
+				}
+			}
+			try {
+				Result result = initOSDXFileTransferClient(receiver, mh);
+				if (!result.succeeded) {
+					return result;
+				}
+				client = (OSDXFileTransferClient)result.userobject;
+			} catch (Exception e) {
+				e.printStackTrace();
+				Result r = Result.error("ERROR: Upload of Feed failed.");
+				r.exception = e;
+				return r;
+			}
+		}
+		else if (type.equals(Receiver.TRANSFER_TYPE_FTP)) {
+			if (signatureKey==null) {
+				Result getSigKey = selectPrivateSigningKey(null, mh); 
+				if (getSigKey.succeeded) {
+					signatureKey = (OSDXKey)getSigKey.userobject;
+				} else {
+					return Result.error("no signature key for signing feed.");
+				}
+			}
+			try {
+				Result result = initFTPClient(receiver, mh);
+				if (!result.succeeded) {
+					return result;
+				}
+				client = (OSDXFileTransferClient)result.userobject;
+			} catch (Exception e) {
+				e.printStackTrace();
+				Result r = Result.error("ERROR: Upload of Feed failed.");
+				r.exception = e;
+				return r;
+			}
+		}
+		else {
+			return Result.error("Sorry, receiver type \""+type+"\" not implemented.");
+		}
+		if (client!=null) {
+			try {
+				Result result = uploadFeed(client, signatureKey);
+				client.closeConnection();
+				return result;
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				Result r = Result.error("ERROR: Upload of Feed failed.");
+				r.exception = ex;
+				return r;
+			}
+		}
+		return Result.error("unknown error");
+	}
+	
+	private Result initOSDXFileTransferClient(Receiver r, MessageHandler mh) {
+		
+		String servername = r.getServername();
+		int port = r.getPort();
+		if (port<=0) port = 4221;
+		String prepath = r.getPrepath();
+		String username = r.getUsername();
+		if (username==null || username.length()==0) {
+			return Result.error("Missing parameter: username"); 
+		}
+		
+		File f = null;
+		
+		String keystore = r.getFileKeystore();
+		String keyid = r.getKeyID();
+		
+		if (keystore!=null) {
+			f = new File(keystore);
+		} else {
+			f = mh.requestOpenKeystore();
+		}
+		if (f==null) return Result.error("keystore could not be opened.");
+		
+		OSDXKey mysigning = null;
+		MessageHandler mh2 = new DefaultMessageHandler() {
+			public boolean requestOverwriteFile(File file) {
+				return false;
+			}
+			public boolean requestIgnoreVerificationFailure() {
+				return false;
+			}
+			public boolean requestIgnoreKeyLogVerificationFailure() {
+				return false;
+			}
+		};
 		try {
-			OSDXFileTransferClient client = new OSDXFileTransferClient();
-			boolean ok = client.connect(host, port, prepath, mysigning, username);
+			KeyApprovingStore store = KeyApprovingStore.fromFile(f, mh2); 
+			
+			if (keyid!=null) {
+				mysigning = store.getKey(keyid);
+				if (mysigning==null) {
+					return Result.error("You given key id \""+keyid+"\"\nfor authentification could not be found in selected keystore.\nPlease select a valid key.");
+				}
+			}
+			
+		} catch (Exception e1) {
+			Result.error("Error opening keystore:\n"+f.getAbsolutePath());
+		}
+		if (mysigning==null) return Result.error("no signing key");
+		try {
+			mysigning.unlockPrivateKey(mh);
+		} catch (Exception e1) {
+			//e1.printStackTrace();
+			return Result.error("Sorry, wrong password.");
+		}
+		
+		if (!mysigning.isPrivateKeyUnlocked()) {
+			return Result.error("Sorry, private is is locked.");
+		}
+		
+		try {
+			OSDXFileTransferClient c = new OSDXFileTransferClient();
+			boolean ok = c.connect(servername, port, prepath, mysigning, username);
 			if (!ok) {
 				return Result.error("ERROR: Connection to server could not be established.");
 			}
-			uploadFeed(client);
-			client.closeConnection();
+			Result res = Result.succeeded();
+			res.userobject = c;
 			
-			//Dialogs.showMessage("Upload of Feed successful.");
+			//uploadFeed(client);
+			//c.closeConnection();
+			
+			return res; 
 		} catch (Exception e) {
 			e.printStackTrace();
-			Result.error("ERROR: Upload of Feed failed.");
-			//Dialogs.showMessage("ERROR: Upload of Feed failed.");
+			Result res = Result.error("ERROR: Upload of Feed failed.");
+			res.exception = e;
+			return res;
 		}
-		return Result.succeeded();
+//		
 	}
 	
-	public Result uploadFTP(String host, String username, String password) {
+	private Result selectPrivateSigningKey(String keystore, MessageHandler mh) {
+		File f;
+		if (keystore!=null) {
+			f = new File(keystore);
+		} else {
+			f = mh.requestOpenKeystore();
+		}
+		if (f==null) return Result.error("keystore could not be opened.");
+		
+		MessageHandler mh2 = new DefaultMessageHandler() {
+			public boolean requestOverwriteFile(File file) {
+				return false;
+			}
+			public boolean requestIgnoreVerificationFailure() {
+				return false;
+			}
+			public boolean requestIgnoreKeyLogVerificationFailure() {
+				return false;
+			}
+		};
+		try {
+			KeyApprovingStore store = KeyApprovingStore.fromFile(f, mh2); 
+			
+			Vector<OSDXKey> storedPrivateKeys = store.getAllPrivateSigningKeys();
+			if (storedPrivateKeys==null || storedPrivateKeys.size()==0) {
+				return Result.error("Sorry, no private key for signing in keystore");
+			}
+			Vector<String> select = new Vector<String>();
+			int[] map = new int[storedPrivateKeys.size()];
+			for (int i=0;i<storedPrivateKeys.size();i++) {
+				OSDXKey k = storedPrivateKeys.get(i);
+				if (k.allowsSigning()) {
+					if (k.isMaster()) {
+						select.add(k.getKeyID()+", "+((MasterKey)k).getIDEmailAndMnemonic());
+					}
+					else if (k.isSub()) {
+						select.add(k.getKeyID()+" subkey of "+((SubKey)k).getParentKey().getIDEmailAndMnemonic());
+					}
+					else {
+						select.add(k.getKeyID());
+					}
+					map[select.size()-1] = i;
+				}
+			}
+			int ans = Dialogs.showSelectDialog("Select private key","Please select a private key for signing", select);
+			if (ans>=0 && ans<select.size()) {
+				OSDXKey key = storedPrivateKeys.get(map[ans]);
+				Result res = Result.succeeded();
+				res.userobject = key;
+				key.unlockPrivateKey(mh);
+				return res;
+			}
+			return Result.error("Abort upload by user.");
+		} catch (Exception e1) {
+			Result.error("Error opening keystore:\n"+f.getAbsolutePath());
+		}
+		return Result.error("unknown error");
+	}
+	
+	private Result initFTPClient(Receiver r, MessageHandler mh) {
+		String host = r.getServername();
+		String username = r.getUsername();
+		if (username==null || username.length()==0) {
+			return Result.error("Missing parameter: username"); 
+		}
+		String password = mh.requestPasswordTitleAndMessage("Enter password", "Please enter password for user account:");
+		if (password == null) {
+			Result.error("ERROR: No password.");
+		}
 		try {
 			FTPClient client = null;
 			try {
@@ -156,19 +367,63 @@ public class Feed extends BusinessObject {
 			if (client==null) {
 				return Result.error("ERROR: Connection to server could not be established.");
 			}
-			uploadFeed(client);			
-			client.closeConnection();
-			
-			//Dialogs.showMessage("Upload of Feed successful.");
+			Result res = Result.succeeded();
+			res.userobject = client;
+			return res;
 		} catch (Exception e) {
 			e.printStackTrace();
-			Result.error("ERROR: Upload of Feed failed.");
-			//Dialogs.showMessage("ERROR: Upload of Feed failed.");
+			Result res = Result.error("ERROR: Upload of Feed failed.");
+			res.exception = e;
+			return res;
 		}
-		return Result.succeeded();
+//		
 	}
 	
-	private void uploadFeed(FileTransferClient client) throws Exception {
+	
+//	public Result upload(String host, int port, String prepath, String username, OSDXKey mysigning) {
+//		try {
+//			OSDXFileTransferClient client = new OSDXFileTransferClient();
+//			boolean ok = client.connect(host, port, prepath, mysigning, username);
+//			if (!ok) {
+//				return Result.error("ERROR: Connection to server could not be established.");
+//			}
+//			uploadFeed(client);
+//			client.closeConnection();
+//			
+//			//Dialogs.showMessage("Upload of Feed successful.");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			Result.error("ERROR: Upload of Feed failed.");
+//			//Dialogs.showMessage("ERROR: Upload of Feed failed.");
+//		}
+//		return Result.succeeded();
+//	}
+	
+//	public Result uploadFTP(String host, String username, String password) {
+//		try {
+//			FTPClient client = null;
+//			try {
+//				client = FTPClient.connect(host, username, password);
+//			} catch (Exception ex) {
+//				ex.printStackTrace();
+//				return Result.error("ERROR: Connection to server could not be established.");
+//			}
+//			if (client==null) {
+//				return Result.error("ERROR: Connection to server could not be established.");
+//			}
+//			uploadFeed(client);			
+//			client.closeConnection();
+//			
+//			//Dialogs.showMessage("Upload of Feed successful.");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			Result.error("ERROR: Upload of Feed failed.");
+//			//Dialogs.showMessage("ERROR: Upload of Feed failed.");
+//		}
+//		return Result.succeeded();
+//	}
+	
+	private Result uploadFeed(FileTransferClient client, OSDXKey signaturekey) throws Exception {
 		String feedid = getFeedinfo().getFeedID();
 		String normFeedid = Util.filterCharactersFile(feedid.toLowerCase());
 		System.out.println("norm feedid: "+normFeedid);
@@ -192,7 +447,21 @@ public class Feed extends BusinessObject {
 		client.mkdir(dir);
 		client.cd(dir);
 		
-		//upload all bundle and  item files
+		//upload feed
+		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+		Element eFeed = copyOfFeed.toElement();
+		Document.buildDocument(eFeed).output(bOut);
+		byte[] feedbytes = bOut.toByteArray();
+		client.uploadFile(normFeedid+".xml",feedbytes);
+		
+		//upload feed signature
+		byte[][] checks  = SecurityHelper.getMD5SHA1SHA256(feedbytes);
+		Signature feed_sig = Signature.createSignature(checks[1], checks[2], checks[3], "signature of "+normFeedid+".xml",signaturekey);
+		bOut = new ByteArrayOutputStream();
+		Document.buildDocument(feed_sig.toElement()).output(bOut);
+		client.uploadFile(normFeedid+".osdx.sig",bOut.toByteArray());
+		
+		//upload all bundle and item files
 		Bundle bundle = copyOfFeed.getBundle(0);
 		if (bundle!=null) {
 			//bundle files (cover, booklet, ..)
@@ -242,12 +511,9 @@ public class Feed extends BusinessObject {
 			}
 		}
 		
-		//upload feed
-		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-		//Document.buildDocument(this.toElement()).output(System.out);
-		Document.buildDocument(copyOfFeed.toElement()).output(bOut);
-		client.uploadFile(normFeedid+".xml",bOut.toByteArray());
-		
+		//upload feed finished file
+		client.uploadFile(normFeedid+".finished",new byte[]{0});
+		return Result.succeeded();
 	}
 	
 	public Feed addBundle(Bundle bundle) {

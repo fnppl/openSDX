@@ -401,6 +401,8 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 	}
 	
+	
+	//AKA beam me up
 	public void sendFeedToReceiver() {
 		if (currentFeed!=null) {
 			Receiver receiver = currentFeed.getFeedinfo().getReceiver();
@@ -410,16 +412,21 @@ public class FeedGui extends JFrame implements MyObserver {
 			}
 			String type = receiver.getType();
 			String servername = receiver.getServername();
-			if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
+			if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER) || type.equals(Receiver.TRANSFER_TYPE_FTP)) {
 				int ans = Dialogs.showYES_NO_Dialog("Sending Feed", "Do you really want to send the current feed to "+servername+"?");
 				if (ans==Dialogs.YES) {
-					sendFeedToOSDXFileserver();
-				}
-			}
-			else if (type.equals(Receiver.TRANSFER_TYPE_FTP)) {
-				int ans = Dialogs.showYES_NO_Dialog("Sending Feed", "Do you really want to send the current feed to "+servername+"?");
-				if (ans==Dialogs.YES) {
-					sendFeedToFTPServer();
+					Result result  = currentFeed.sendToReceiver(new DefaultMessageHandler(), null);
+					if (result.succeeded) {
+						Dialogs.showMessage("Feed successfully send.");
+					} else {
+						String msg = "Error sending feed";
+						if (result.errorMessage!=null) {
+							msg += ": "+result.errorMessage;
+						} else {
+							msg += ".";
+						}
+						Dialogs.showMessage(msg);
+					}
 				}
 			}
 			else {
@@ -428,99 +435,99 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 	}
 	
-	private void sendFeedToFTPServer() {
-		String servername = currentFeed.getFeedinfo().getReceiver().getServername();
-		if (servername==null || servername.length()==0) {
-			Dialogs.showMessage("Missing parameter: servername");
-			return;
-		}
-		String username = currentFeed.getFeedinfo().getReceiver().getUsername();
-		
-		if (username==null || username.length()==0) {
-			Dialogs.showMessage("Missing parameter: username");
-			return;
-		}
-		
-		String password = Dialogs.showPasswordDialog("Enter Password", "Please enter Password for\nFTP Server: "+servername+"\nUser: "+username);
-		if (password==null) return;
-		
-		Result r = currentFeed.uploadFTP(servername, username, password);
-		if (r.succeeded) {
-			Dialogs.showMessage("Upload of Feed successful.");
-		} else {
-			Dialogs.showMessage(r.errorMessage);
-		}
-	}
-	
-	private void sendFeedToOSDXFileserver() {
-		Receiver receiver = currentFeed.getFeedinfo().getReceiver();
-		String servername =receiver.getServername();
-		int port = receiver.getPort();
-		if (port <= 0) port = 4221;
-		String prepath = receiver.getPrepath();
-		String keystore = receiver.getFileKeystore();
-		String keyid = receiver.getKeyID();
-		String username = receiver.getUsername();
-		
-		if (username==null || username.length()==0) {
-			Dialogs.showMessage("Missing parameter: username");
-			return;
-		}
-		File f = null;
-		if (keystore!=null) {
-			f = new File(keystore);
-		} else {
-			f = Dialogs.chooseOpenFile("Open KeyStore", lastDir, "keystore.xml");
-		}
-		if (f==null) return;
-		
-		OSDXKey mysigning = null;
-		MessageHandler mh = new DefaultMessageHandler() {
-			public boolean requestOverwriteFile(File file) {
-				return false;
-			}
-			public boolean requestIgnoreVerificationFailure() {
-				return false;
-			}
-			public boolean requestIgnoreKeyLogVerificationFailure() {
-				return false;
-			}
-		};
-		try {
-			KeyApprovingStore store = KeyApprovingStore.fromFile(f, mh); 
-			
-			if (keyid!=null) {
-				mysigning = store.getKey(keyid);
-				if (mysigning==null) {
-					Dialogs.showMessage("You given key id \""+keyid+"\"\nfor authentification could not be found in selected keystore.\nPlease select a valid key.");
-					return;
-				}
-			}
-			if (mysigning==null) {
-				mysigning = selectPrivateSigningKey(store);	
-			}
-			
-		} catch (Exception e1) {
-			Dialogs.showMessage("Error opening keystore:\n"+f.getAbsolutePath());
-		}
-		if (mysigning==null) return;
-		mysigning.unlockPrivateKey(mh);
-		
-		if (!mysigning.isPrivateKeyUnlocked()) {
-			Dialogs.showMessage("Sorry, private is is locked.");
-			return;
-		}
-		
-		
-		Result r = currentFeed.upload(servername, port, prepath, username, mysigning);
-		if (r.succeeded) {
-			Dialogs.showMessage("Upload of Feed successful.");
-		} else {
-			Dialogs.showMessage(r.errorMessage);
-		}
-	
-		
-	}
+//	private void sendFeedToFTPServer() {
+//		String servername = currentFeed.getFeedinfo().getReceiver().getServername();
+//		if (servername==null || servername.length()==0) {
+//			Dialogs.showMessage("Missing parameter: servername");
+//			return;
+//		}
+//		String username = currentFeed.getFeedinfo().getReceiver().getUsername();
+//		
+//		if (username==null || username.length()==0) {
+//			Dialogs.showMessage("Missing parameter: username");
+//			return;
+//		}
+//		
+//		String password = Dialogs.showPasswordDialog("Enter Password", "Please enter Password for\nFTP Server: "+servername+"\nUser: "+username);
+//		if (password==null) return;
+//		
+//		Result r = currentFeed.uploadFTP(servername, username, password);
+//		if (r.succeeded) {
+//			Dialogs.showMessage("Upload of Feed successful.");
+//		} else {
+//			Dialogs.showMessage(r.errorMessage);
+//		}
+//	}
+//	
+//	private void sendFeedToOSDXFileserver() {
+//		Receiver receiver = currentFeed.getFeedinfo().getReceiver();
+//		String servername =receiver.getServername();
+//		int port = receiver.getPort();
+//		if (port <= 0) port = 4221;
+//		String prepath = receiver.getPrepath();
+//		String keystore = receiver.getFileKeystore();
+//		String keyid = receiver.getKeyID();
+//		String username = receiver.getUsername();
+//		
+//		if (username==null || username.length()==0) {
+//			Dialogs.showMessage("Missing parameter: username");
+//			return;
+//		}
+//		File f = null;
+//		if (keystore!=null) {
+//			f = new File(keystore);
+//		} else {
+//			f = Dialogs.chooseOpenFile("Open KeyStore", lastDir, "keystore.xml");
+//		}
+//		if (f==null) return;
+//		
+//		OSDXKey mysigning = null;
+//		MessageHandler mh = new DefaultMessageHandler() {
+//			public boolean requestOverwriteFile(File file) {
+//				return false;
+//			}
+//			public boolean requestIgnoreVerificationFailure() {
+//				return false;
+//			}
+//			public boolean requestIgnoreKeyLogVerificationFailure() {
+//				return false;
+//			}
+//		};
+//		try {
+//			KeyApprovingStore store = KeyApprovingStore.fromFile(f, mh); 
+//			
+//			if (keyid!=null) {
+//				mysigning = store.getKey(keyid);
+//				if (mysigning==null) {
+//					Dialogs.showMessage("You given key id \""+keyid+"\"\nfor authentification could not be found in selected keystore.\nPlease select a valid key.");
+//					return;
+//				}
+//			}
+//			if (mysigning==null) {
+//				mysigning = selectPrivateSigningKey(store);	
+//			}
+//			
+//		} catch (Exception e1) {
+//			Dialogs.showMessage("Error opening keystore:\n"+f.getAbsolutePath());
+//		}
+//		if (mysigning==null) return;
+//		mysigning.unlockPrivateKey(mh);
+//		
+//		if (!mysigning.isPrivateKeyUnlocked()) {
+//			Dialogs.showMessage("Sorry, private is is locked.");
+//			return;
+//		}
+//		
+//		
+//		Result r = currentFeed.upload(servername, port, prepath, username, mysigning);
+//		if (r.succeeded) {
+//			Dialogs.showMessage("Upload of Feed successful.");
+//		} else {
+//			Dialogs.showMessage(r.errorMessage);
+//		}
+//	
+//		
+//	}
 	
 	public static OSDXKey selectPrivateSigningKey(KeyApprovingStore store) {
 		Vector<OSDXKey> storedPrivateKeys = store.getAllPrivateSigningKeys();

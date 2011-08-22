@@ -53,6 +53,7 @@ public class Result {
 	public String errorMessage = null;
 	public Exception exception = null;
 	public Element report = null;
+	public Object userobject = null;
 	
 	private Result() {
 		

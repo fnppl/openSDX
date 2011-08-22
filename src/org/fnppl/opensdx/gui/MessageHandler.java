@@ -20,4 +20,7 @@ public interface MessageHandler {
 	public String[] requestNewPasswordAndMantra(String message);
 	public void fireWrongPasswordMessage();
 	public File chooseOriginalFileForSignature(File dir, String selectFile);
+	public String requestPasswordTitleAndMessage(String title, String message);
+	public File requestOpenKeystore();
+	
 }

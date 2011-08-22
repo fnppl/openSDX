@@ -53,6 +53,10 @@ public class DefaultMessageHandler implements MessageHandler {
 	public boolean requestOverwriteFile(File file) {
 		return Dialogs.YES == Dialogs.showYES_NO_Dialog("OVERWRITE?", "File \""+file.getName()+"\" exits?\nDo you really want to overwrite?");
 	}
+	
+	public String requestPasswordTitleAndMessage(String title, String message) {
+		return Dialogs.showPasswordDialog(title, message);
+	}
 
 	public String requestPassword(String keyid, String mantra) {
 		return Dialogs.showPasswordDialog("UNLOCK PRIVATE KEY", "KeyID: "+keyid+"\nPlease enter passphrase for mantra: \""+mantra+"\"");
@@ -68,6 +72,10 @@ public class DefaultMessageHandler implements MessageHandler {
 
 	public File chooseOriginalFileForSignature(File dir, String selectFile) {
 		return Dialogs.chooseOpenFile("Please select original file for signature verification", dir, selectFile);
+	}
+
+	public File requestOpenKeystore() {
+		return Dialogs.chooseOpenFile("Open KeyStore", new File("openSDX"), "keystore.xml");
 	}
 	
 }

@@ -57,5 +57,6 @@ public interface FileTransferClient {
 	public void uploadFile(File localFile, String remoteFilename) throws Exception;
 	public void uploadFile(String remoteFilename, byte[] data) throws Exception;
 	public void downloadFile(String filename, File localFile) throws Exception;
+	public void closeConnection() throws Exception;
 	
 }

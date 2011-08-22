@@ -450,7 +450,40 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	
 	public void uploadFile(String filename, byte[] data) {
 		if (!rights_duties.allowsUpload()) return;
-		sendEncryptedText("PUT "+filename);
+//		sendEncryptedText("PUT "+filename);
+//		//wait for ACK or ERROR of PUT
+//		String msg = null;
+//		long timeout = System.currentTimeMillis()+2000;
+//		while (msg==null && System.currentTimeMillis()<timeout) {
+//			for (int i=0;i<textQueue.size();i++) {
+//				if (textQueue.get(i).startsWith("ACK PUT :: ") || textQueue.get(i).startsWith("ERROR IN PUT :: ")) {
+//					msg = textQueue.remove(i);
+//				}
+//			}
+//		}
+//		if (msg.startsWith("ACK")) {
+//			sendEncryptedData(data);
+//		} else {
+//			System.out.println("ERROR uploading file: "+filename+" :: "+msg.substring(msg.indexOf(" :: ")+4));
+//		}
+		if (!rights_duties.allowsUpload()) return;
+		long filelenght = data.length;
+		String param = null;
+		
+		if (rights_duties.needsSignature(filename)) {
+			try {
+//						Signature sig = null; //TODO
+//						String sigText = Document.buildDocument(sig.toElement()).toStringCompact();
+						param = Util.makeParamsString(new String[]{filename, ""+filelenght});
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				param = Util.makeParamsString(new String[]{filename,""+filelenght});
+			}
+		} else {
+			param = Util.makeParamsString(new String[]{filename,""+filelenght});
+		}
+		
+		sendEncryptedText("PUT "+param);
 		//wait for ACK or ERROR of PUT
 		String msg = null;
 		long timeout = System.currentTimeMillis()+2000;
@@ -461,12 +494,43 @@ public class OSDXFileTransferClient implements FileTransferClient {
 				}
 			}
 		}
-		if (msg.startsWith("ACK")) {
-			sendEncryptedData(data);
+		if (msg!=null && msg.startsWith("ACK")) {
+			if (filelenght<=maxByteLength) {
+				//send in one data package
+				try {
+					sendEncryptedData(data);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			} else {
+				//send in multiple data packages
+				long nextStart = 0;
+				try {
+					int pos = 0;
+					int read;
+					while (pos < data.length) {
+						read = pos + maxByteLength;
+						if (pos+maxByteLength>data.length) {
+							read = maxByteLength-pos; 
+						}
+						param = Util.makeParamsString(new String[]{filename, ""+nextStart, ""+read});
+						sendEncryptedText("PUTPART "+param);
+						sendEncryptedData(Arrays.copyOfRange(data, pos, read));
+						nextStart += read;
+						//if (Math.random()>0.5) return; //BB random errors to test resumeupload
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
 		} else {
-			System.out.println("ERROR uploading file: "+filename+" :: "+msg.substring(msg.indexOf(" :: ")+4));
+			if (msg==null) {
+				System.out.println("ERROR uploading file: "+filename+" :: TIMEOUT");
+			} else {
+				System.out.println("ERROR uploading file: "+filename+" :: "+msg.substring(msg.indexOf(" :: ")+4));
+			}
 		}
-		
+
 	}
 	
 	public void downloadFile(String filename, File localFile) {
@@ -724,6 +788,14 @@ public class OSDXFileTransferClient implements FileTransferClient {
 					System.exit(1);
 				}
 				public File chooseOriginalFileForSignature(File dir, String selectFile) {
+					return null;
+				}
+
+				public File requestOpenKeystore() {
+					return null;
+				}
+
+				public String requestPasswordTitleAndMessage(String title, String message) {
 					return null;
 				}
 			};

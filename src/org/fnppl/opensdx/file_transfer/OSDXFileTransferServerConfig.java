@@ -520,6 +520,12 @@ public class OSDXFileTransferServerConfig extends OSDXFileTransferClient {
 				public File chooseOriginalFileForSignature(File dir, String selectFile) {
 					return null;
 				}
+				public File requestOpenKeystore() {
+					return null;
+				}
+				public String requestPasswordTitleAndMessage(String title, String message) {
+					return null;
+				}
 			};
 		
 		
