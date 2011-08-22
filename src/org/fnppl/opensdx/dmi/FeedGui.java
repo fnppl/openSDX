@@ -337,9 +337,12 @@ public class FeedGui extends JFrame implements MyObserver {
 				Document doc = Document.fromFile(f);
 				Feed feed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
 				makeSureFeedHasMinimalFeedRequirementsForGui(feed);
-				currentFeed = feed;
-				
+				currentFeed = feed;				
 				update();
+				
+				// pronto validation of imported feed
+				validateFeed();
+				
 			} catch (Exception e) {
 				Dialogs.showMessage("ERROR, could not open feed in file\n"+f.getAbsolutePath());
 				e.printStackTrace();
@@ -883,7 +886,7 @@ public class FeedGui extends JFrame implements MyObserver {
 				msg = "Yehaw. Feed is valid.";
 			}
 
-			Dialogs.showMessage(msg);
+			Dialogs.showText("Feed validation", msg);
 		}
 		catch(Exception ex) {
 			Dialogs.showMessage(ex.getMessage());	
@@ -900,7 +903,7 @@ public class FeedGui extends JFrame implements MyObserver {
 					msg = "Yehaw. Feed is valid.";
 				}
 				
-				Dialogs.showMessage(msg);
+				Dialogs.showText("File validation", msg);
 			}
 			catch(Exception ex) {
 				Dialogs.showMessage(ex.getMessage());	
@@ -936,7 +939,11 @@ public class FeedGui extends JFrame implements MyObserver {
 				if(feed!=null) {
 					currentFeed = feed;
 					update();
+					
+					// pronto validation of imported feed
+					validateFeed();					
 				}
+				
 			} catch (Exception e) {
 				Dialogs.showMessage("ERROR, could not import feed from file\n"+f.getAbsolutePath());
 				// e.printStackTrace();

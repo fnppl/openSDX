@@ -76,7 +76,7 @@
 		<creationdatetime>2010-10-01 00:00:00 GMT+00:00</creationdatetime><!-- MUST datetime of creation of this feed -->
 		<effectivedatetime>2010-10-01 00:00:00 GMT+00:00</effectivedatetime><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
 		<creator>
-			<email>user@sendingparty.nät</email><!-- should be an email-address of the *user* on the sending side -->
+			<email>user@sendingparty.net</email><!-- should be an email-address of the *user* on the sending side -->
 			<userid>1919kdkdk12929</userid><!-- should be an unique id of the *user* on the sending side-->
 			<keyid>44:BC:2C:A0:A1:70:FD:5A:CD:9F:C3:EA:44:FB:E0:A6:5C:EA:8B:86@keyserver.fnppl.org</keyid>
 		</creator><!-- creator is a mere info-field for the sending-party ; receiving party may totally feel free to ignore this -->
@@ -84,7 +84,7 @@
 		<receiver>
 			<type>ftp</type><!-- openSDX fileserver|ftp|sftp|ftps|webdav -->
 			<servername>myftpserver.org</servername><!-- MUST provider should really give hostname instead of ip ; if hostname is given as ip, then put that one here -->
-			<serveripv4>0.0.0.0</serveripv4><!-- MUST resolved servername ipv4 -->
+			<serveripv4>127.0.0.1</serveripv4><!-- MUST resolved servername ipv4 -->
 			<serveripv6></serveripv6><!-- COULD resolved servername ipv6 -->
 			<authtype>login</authtype><!-- MUST login|keyfile|token|other -->
 			<username>testuser</username><!-- MUST for authtype login or keyfile -->

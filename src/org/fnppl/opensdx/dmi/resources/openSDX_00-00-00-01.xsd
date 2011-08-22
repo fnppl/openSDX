@@ -566,10 +566,10 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
             <xsd:element name="type" type="receivertypes"/>
             <xsd:element name="servername" type="iporhostname"/>
             <xsd:element name="serveripv4" type="ipv4"/>
-            <xsd:element name="serveripv6" type="ipv6"/>
+            <xsd:element name="serveripv6" type="ipv6" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="authtype" type="authtype"/>
             <xsd:element name="username" type="xsd:string"/>
-            <xsd:element name="crypto" type="crypto"/>
+            <xsd:element name="crypto" type="crypto" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="crypto">
@@ -577,9 +577,9 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
             <xsd:documentation xml:lang="en">This element contains crypto information for secure and authenticated transfer.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="relatedemail" type="email"/>
-            <xsd:element name="usedkeyid" type="keyid"/>
-            <xsd:element name="usedpubkey" type="xsd:base64Binary"/>
+            <xsd:element name="relatedemail" type="email" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="usedkeyid" type="keyid" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="usedpubkey" type="xsd:base64Binary" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="sender">
@@ -861,7 +861,9 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     <xsd:complexType name="action"/>
     <xsd:complexType name="action_instruction"/>
     <xsd:simpleType name="email">
-        <xsd:restriction base="xsd:string"/>
+        <xsd:restriction base="xsd:string">
+        	<xsd:pattern value="(([a-zA-Z0-9_\-\.]+)@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})*)?" />
+        </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="emaillist">
         <xsd:restriction base="xsd:string"/>
@@ -897,22 +899,24 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
         <xsd:restriction base="xsd:string"> </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="keyid">
-        <xsd:restriction base="xsd:string"> </xsd:restriction>
+        <xsd:restriction base="xsd:string"> 
+        </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="ipv4">
         <xsd:restriction base="xsd:string">
             <xsd:pattern
-                value="((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])"/>
-            <!-- should be checked for 0-255 etc. -->
+            	value="(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[0-9]{1,2})(\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[0-9]{1,2})){3}" />
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="ipv6">
         <xsd:restriction base="xsd:string">
-            <!-- not pattern defined yet... --> </xsd:restriction>
+        <!-- not pattern defined yet... -->   
+		</xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="url">
         <xsd:restriction base="xsd:string">
-            <!-- not pattern defined yet... --> </xsd:restriction>
+        <!-- not pattern defined yet... -->   
+		</xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="authtype">
         <xsd:restriction base="xsd:string">
