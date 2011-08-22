@@ -64,6 +64,8 @@ public class ItemFile extends BusinessObject {
 	private BusinessStringItem codec;							//COULD
 	private BusinessStringItem codecsettings;					//COULD	
 	private BusinessStringItem type;							//COULD
+	private BusinessIntegerItem prelistening_offset;			//COULD
+	private BusinessIntegerItem prelistening_length;			//COULD
 	private BusinessLongItem bytes;								//COULD - better Long than Integer as for big filesizes
 	private Checksums checksums;								//COULD
 	private BusinessStringItem channels;						//COULD
@@ -90,6 +92,8 @@ public class ItemFile extends BusinessObject {
 		file.location = null;
 		file.checksums = null;
 		file.dimension = null;
+		file.prelistening_offset = null;
+		file.prelistening_offset = null;
 		return file;
 	}
 	
@@ -126,6 +130,8 @@ public class ItemFile extends BusinessObject {
 		file.initFromBusinessObject(bo);
 		
 		file.type = BusinessStringItem.fromBusinessObject(bo, "type");
+		file.prelistening_length = BusinessIntegerItem.fromBusinessObject(bo, "prelistening_length");
+		file.prelistening_offset = BusinessIntegerItem.fromBusinessObject(bo, "prelistening_offset");		
 		file.filetype = BusinessStringItem.fromBusinessObject(bo, "filetype");
 		file.samplerate = BusinessStringItem.fromBusinessObject(bo, "samplerate");
 		file.samplesize = BusinessStringItem.fromBusinessObject(bo, "samplesize");
@@ -302,6 +308,16 @@ public class ItemFile extends BusinessObject {
 		} else {
 			this.channels = new BusinessStringItem("channels", channels);
 		}
+		return this;
+	}
+	
+	public ItemFile prelistening_length(int prelistening_length) {
+		this.prelistening_length = new BusinessIntegerItem("prelistening_length", prelistening_length);
+		return this;
+	}
+	
+	public ItemFile prelistening_offset(int prelistening_offset) {
+		this.prelistening_offset = new BusinessIntegerItem("prelistening_offset", prelistening_offset);
 		return this;
 	}
 

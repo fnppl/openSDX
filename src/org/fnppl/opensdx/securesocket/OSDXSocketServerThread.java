@@ -77,6 +77,8 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	private long timeout = 10000;
 	
 	private Socket socket;
+	private String remoteIP = null;
+	private int remotePort = -1;
 	private OSDXKey mySigningKey = null;
 	private String client_keyid = null; 
 	private byte[] client_nonce = null;
@@ -219,8 +221,8 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	public void run() {
 		try {
 			InetAddress addr = socket.getInetAddress();
-			String remoteIP = addr.getHostAddress();
-			int remotePort = socket.getPort();
+			remoteIP = addr.getHostAddress();
+			remotePort = socket.getPort();
 			receiver =OSDXSocketReceiver.initServerReceiver(socket.getInputStream(),this,this);
 			
 			nextTimeOut = System.currentTimeMillis()+timeout;
@@ -234,96 +236,23 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 		}
 	}
 	
+	public String getRemoteIP() {
+		return remoteIP;
+	}
+	
+	public int getRemotePort() {
+		return remotePort;
+	}
+	
 	private void closeConnection() throws Exception { 
 		receiver.stop();
 		if (socket != null) {
-			//TODO sendPlainText("Connection closed.");
 			socket.close();
 		}
-		nextTimeOut = System.currentTimeMillis();
 		System.out.println("Connection closed.");
+		remoteIP = null;
+		remotePort = -1;
 	}
-	
-//	private boolean initConnection(String initMsg) {
-//		try {
-//			if (initMsg!=null) {
-//				System.out.println("init message username and symmetric key");
-//				//get serves encryption key out of message
-//				OSDXMessage msg = OSDXMessage.fromElement(Document.fromString(initMsg).getRootElement());
-//				
-//				//TODO check with Key
-//				Result ok = msg.verifySignaturesWithoutKeyVerification();
-//				if (!ok.succeeded) {
-//					message = ok.errorMessage;
-//					return false;
-//				}
-//				String keyid = msg.getSignatures().get(0).getKey().getKeyID();
-//				
-//				Element responseElement = msg.getDecryptedContent(myEncryptionKey);
-//				Document.buildDocument(responseElement).output(System.out);
-//				if (responseElement==null || !responseElement.getName().equals("init_connection")) {
-//					message = ERROR_WRONG_RESPONE_FORMAT;
-//					return false;
-//				}
-//				ClientSettings cs = null;
-//				try {
-//					String username = responseElement.getChild("login").getChildText("username");
-//					userID = username+"::"+keyid;
-//					cs = clients.get(username+"::"+keyid);
-//				} catch (Exception ex) {
-//				}
-//				if (cs==null) {
-//					System.out.println("Client NOT FOUND!");
-//					message = ERROR_UNKNOWN_KEY_OR_USER;
-//					return false;
-//				}
-//				
-//				System.out.println("client: "+userID+" ->  local path: "+cs.getLocalRootPath().getAbsolutePath());
-//				Element eEnc = responseElement.getChild("session_encryption_key");
-//				if (eEnc==null || eEnc.getChildren("init_vector")==null || eEnc.getChildren("key_bytes")==null) {
-//					message = ERROR_MISSING_ENCRYTION_KEY;
-//					return false;
-//				}
-//				
-//				byte[] iv = SecurityHelper.HexDecoder.decode(eEnc.getChildText("init_vector"));
-//				byte[] key_bytes = SecurityHelper.HexDecoder.decode(eEnc.getChildText("key_bytes"));
-//				
-//				agreedEncryptionKey = new SymmetricKey(key_bytes, iv);
-//				receiver.setEncryptionKey(agreedEncryptionKey);
-//				//System.out.println("symmetric key init OK");
-//				return true;
-//			}
-//		} catch (Exception e1) {
-//			e1.printStackTrace();
-//		}
-//		message = "Unknown Error.";
-//		return false;
-//	}
-	
-//	private boolean sendBytes(byte[] data, String type) {
-//		if (socket!=null) {
-//			try {
-//				OutputStream out = socket.getOutputStream();
-//				out.write((type+data.length+":").getBytes("UTF-8"));
-//				out.write(data);
-//				return true;
-//			} catch (SocketException sex) {
-//				//sex.printStackTrace();
-//				message = sex.getMessage();
-//				if (receiver.isRunning()) {
-//					try {
-//						closeConnection();
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//					}
-//				}
-//			 }  catch (Exception ex) {
-//				ex.printStackTrace();
-//				message = ex.getMessage();
-//			}
-//		}
-//		return false;
-//	}
 	
 	private static byte TYPE_TEXT = 84;
 	private static byte TYPE_DATA = 68;

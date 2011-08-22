@@ -57,8 +57,17 @@ public class FileTransferLog {
 	private static Locale ml = new Locale("en", "DE");
 	private final static SimpleDateFormat dateme = new SimpleDateFormat(dateformat, ml);
 	
-	public static FileTransferLog getLog() {
+	public static FileTransferLog initTmpLog() {
 		return new FileTransferLog();
+	}
+	
+	public static FileTransferLog initLog(File logfile) {
+		logfile.getParentFile().mkdirs();
+		return new FileTransferLog(logfile);
+	}
+	
+	public static FileTransferLog initNoLogging() {
+		return new FileTransferLog(null);
 	}
 	
 	private File logfile = null;
@@ -71,6 +80,14 @@ public class FileTransferLog {
 				logfile = new File(tmppath,"osdxfiletransferserver_log.txt");
 				System.out.println("logging to: "+logfile.getAbsolutePath());
 			}
+		}
+	}
+	private FileTransferLog(File log) {
+		logfile = log;
+		if (log!=null) {
+			System.out.println("logging to: "+logfile.getAbsolutePath());
+		} else {
+			System.out.println("logging disabled.");
 		}
 	}
 	
@@ -130,19 +147,27 @@ public class FileTransferLog {
 	
 	// make the following methods abstract if other FileTransferLoggers are needed 
 	
-	public void logIncomingConnection(String id, String msg) {
-		appendToLogfile(new String[]{getTimestamp(),"INCOMING CONNECT",id,msg});
+	public void logServerStart(String addr, int port) {
+		appendToLogfile(new String[]{getTimestamp(),"","STARTING SERVER",addr,""+port});
 	}
 	
-	public void logConnectionClose(String id, String msg) {
-		appendToLogfile(new String[]{getTimestamp(),"CLOSE CONNECT",id,msg});
+	public void logIncomingConnection(String id, String addr, String msg) {
+		appendToLogfile(new String[]{getTimestamp(),addr,"INCOMING CONNECT",id,msg});
 	}
 	
-	public void logCommand(String id, String command, String param, String response) {
-		appendToLogfile(new String[]{getTimestamp(),"COMMAND",command,param,response});
+	public void logConnectionClose(String id, String addr, String msg) {
+		appendToLogfile(new String[]{getTimestamp(),addr,"CLOSE CONNECT",id,msg});
 	}
 	
-	public void logError(String id, String msg) {
-		appendToLogfile(new String[]{getTimestamp(),"ERROR",id,msg});
+	public void logCommand(String id, String addr, String command, String param, String response) {
+		appendToLogfile(new String[]{getTimestamp(),addr,"COMMAND",id,command,param,response});
+	}
+	
+	public void logError(String id, String addr, String msg) {
+		appendToLogfile(new String[]{getTimestamp(),addr,"ERROR",id,msg});
+	}
+	
+	public void logFiledataUpload(String id, String addr, String filename, long startPos, int length) {
+		appendToLogfile(new String[]{getTimestamp(),addr,"FILEDATA UPLOAD",id,filename,""+startPos,""+length});
 	}
 }

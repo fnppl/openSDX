@@ -111,6 +111,32 @@ public class FeedInfo extends BusinessObject {
 		return f;
 	}
 	
+	/**
+	 * @param onlytest
+	 * @param feedid
+	 * @param creationdatetime
+	 * @param effectivedatetime
+	 * @return
+	 */
+	public static FeedInfo make(
+			boolean onlytest, 
+			String feedid, 
+			long creationdatetime, 
+			long effectivedatetime) {
+		FeedInfo f = new FeedInfo();
+		f.onlytest = new BusinessBooleanItem("onlytest", onlytest);
+		f.feedid = new BusinessStringItem("feedid", feedid);
+		f.creationdatetime = new BusinessDatetimeItem("creationdatetime", creationdatetime);
+		f.effectivedatetime = new BusinessDatetimeItem("effectivedatetime", effectivedatetime);
+		f.creator = null;
+		f.receiver = null;
+		f.sender = null;
+		f.licensor = null;
+		f.licensee = null;
+		f.actions = null;
+		return f;
+	}
+	
 	public static FeedInfo fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(KEY_NAME)) {

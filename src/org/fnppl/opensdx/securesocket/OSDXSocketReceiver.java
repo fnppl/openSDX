@@ -89,7 +89,7 @@ public class OSDXSocketReceiver {
 						receiveData();
 					}
 				}
-				System.out.println("Receiver stopped");
+				//System.out.println("Receiver stopped");
 			}
 		};
 		t.start();

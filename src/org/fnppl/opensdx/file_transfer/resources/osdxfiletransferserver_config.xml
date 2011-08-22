@@ -54,6 +54,7 @@
 		<port>4221</port>
 		<ipv4>127.0.0.1</ipv4>
       	<ipv6>127.0.0.1</ipv6>
+      	<logfile>/tmp/osdx_ftserver_log.txt</logfile>
 	</osdxfiletransferserver>
 	<clients>
 		<client> <!--  testkey in OSDXFielTransferClient main() -->

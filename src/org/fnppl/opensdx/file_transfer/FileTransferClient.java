@@ -51,7 +51,7 @@ import java.io.File;
 public interface FileTransferClient {
 
 	//public String pwd() throws Exception;
-	public void mkdir(String directory);
+	public void mkdir(String directory) throws Exception;
 	public void cd(String directory) throws Exception;
 	public void cd_up() throws Exception;
 	public void uploadFile(File localFile, String remoteFilename) throws Exception;

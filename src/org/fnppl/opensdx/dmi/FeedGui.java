@@ -450,10 +450,14 @@ public class FeedGui extends JFrame implements MyObserver {
 	}
 	
 	private void sendFeedToOSDXFileserver() {
-		String servername = currentFeed.getFeedinfo().getReceiver().getServername();
-		String keystore = currentFeed.getFeedinfo().getReceiver().getFileKeystore();
-		String keyid = currentFeed.getFeedinfo().getReceiver().getKeyID();
-		String username = currentFeed.getFeedinfo().getReceiver().getUsername();
+		Receiver receiver = currentFeed.getFeedinfo().getReceiver();
+		String servername =receiver.getServername();
+		int port = receiver.getPort();
+		if (port <= 0) port = 4221;
+		String prepath = receiver.getPrepath();
+		String keystore = receiver.getFileKeystore();
+		String keyid = receiver.getKeyID();
+		String username = receiver.getUsername();
 		
 		if (username==null || username.length()==0) {
 			Dialogs.showMessage("Missing parameter: username");
@@ -504,15 +508,14 @@ public class FeedGui extends JFrame implements MyObserver {
 			return;
 		}
 		
-		/* TODO: Commented out because it makes compilation errors
-		OSDXFileTransferClient s = new OSDXFileTransferClient(servername, 4221, "/");
-		Result r = currentFeed.upload(s, username, mysigning);
+		
+		Result r = currentFeed.upload(servername, port, prepath, username, mysigning);
 		if (r.succeeded) {
 			Dialogs.showMessage("Upload of Feed successful.");
 		} else {
 			Dialogs.showMessage(r.errorMessage);
 		}
-		*/
+	
 		
 	}
 	
