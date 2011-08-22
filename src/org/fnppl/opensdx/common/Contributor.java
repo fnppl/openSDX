@@ -60,7 +60,7 @@ public class Contributor extends BusinessObject {
 	public static String TYPE_TEXTER = "texter";
 	public static String TYPE_EDITOR = "editor";
 	public static String TYPE_CONDUCTOR = "conductor";	
-	public static String TYPE_ARTIST = "artist";
+	public static String TYPE_DISPLAY_ARTIST = "display_artist";
 	public static String TYPE_SINGER = "singer";
 	public static String TYPE_COMPOSER = "composer";
 	public static String TYPE_MIXER = "mixer";
@@ -86,7 +86,7 @@ public class Contributor extends BusinessObject {
 		TYPES.add(TYPE_TEXTER);
 		TYPES.add(TYPE_EDITOR);
 		TYPES.add(TYPE_CONDUCTOR);
-		TYPES.add(TYPE_ARTIST);
+		TYPES.add(TYPE_DISPLAY_ARTIST);
 		TYPES.add(TYPE_SINGER);
 		TYPES.add(TYPE_COMPOSER);
 		TYPES.add(TYPE_MIXER);

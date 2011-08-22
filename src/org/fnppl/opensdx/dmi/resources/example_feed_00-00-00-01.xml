@@ -245,7 +245,7 @@
 			</contributor><!-- MUST -->
 			<contributor num="2">
 				<name></name><!-- could be artistname -->
-				<type>artist</type><!-- e.g. display_artist -->
+				<type>display_artist</type><!-- e.g. display_artist -->
 				<year></year><!-- SHOULD for copyright/production -->
 				<ids>
 					<finetunes></finetunes><!-- finetunes-strange-id -->
@@ -478,7 +478,7 @@
 		<tags>
 			<genres>
 				<genre>Rock</genre>
-				<genre>Surf</genre>
+				<genre>Surf Rock</genre>
 			</genres>
 			<bundle_only>false</bundle_only> <!--  true|false -->
 			<explicit_lyrics>cleaned</explicit_lyrics> <!--  true|false|cleaned -->
@@ -506,7 +506,7 @@
 				<contributors>
 					<contributor num="1">
 						<name></name><!-- could be artistname -->
-						<type>artist</type><!-- e.g. display_artist -->
+						<type>display_artist</type><!-- e.g. display_artist -->
 						<year></year><!-- SHOULD for copyright/production -->
 						<ids>
 							<finetunes></finetunes><!-- finetunes-strange-id -->
@@ -569,7 +569,7 @@
 				<tags>
 					<genres>
 						<genre>Rock</genre>
-						<genre>Surf</genre>
+						<genre>Surf Rock</genre>
 					</genres>
 					<bundle_only>false</bundle_only>
 					<explicit_lyrics>false</explicit_lyrics>
