@@ -596,7 +596,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 		String role = "[NOT SET]";
 
     	if(text.equals("performer")) {
-    		role = Contributor.TYPE_ARTIST;
+    		role = Contributor.TYPE_DISPLAY_ARTIST;
     	}
     	else if(text.equals("lyricist")) {
     		role = Contributor.TYPE_TEXTER; 

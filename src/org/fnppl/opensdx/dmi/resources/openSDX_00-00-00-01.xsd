@@ -934,7 +934,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
             <xsd:enumeration value="texter"/>
             <xsd:enumeration value="editor"/>
             <xsd:enumeration value="conductor"/>
-            <xsd:enumeration value="artist"/>
+            <xsd:enumeration value="display_artist"/>
             <xsd:enumeration value="singer"/>
             <xsd:enumeration value="composer"/>
             <xsd:enumeration value="mixer"/>
