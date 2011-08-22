@@ -88,6 +88,7 @@ public class Dialogs {
 	public static File lastDir = new File(System.getProperty("user.home"));
 	public static Vector<File> lastDirs = new Vector<File>();
 	public static boolean saveLastDir = true;
+	private static JFrame fst = null;
 	
 	public static int showYES_NO_Dialog(String title, String message) {
 		if (message.contains("\n")) {
@@ -111,6 +112,71 @@ public class Dialogs {
 		f.setSize(500,600);
 		f.setVisible(true);
 	}
+	
+	public static void showTextFlex(String title, String message, int width, int height) {
+		if(fst==null) { 
+			fst = new JFrame(title);
+			fst.setSize(width,height);
+		
+			GridBagLayout gbl = new GridBagLayout();
+			fst.setLayout(gbl);
+			GridBagConstraints gbc = new GridBagConstraints();
+			
+			fst.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			JTextArea text = new JTextArea(message);
+			
+			JScrollPane sp = new JScrollPane(text);
+			sp.setPreferredSize(new Dimension(width, height-50));
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.gridwidth = 2;
+			gbc.gridheight = 1;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.anchor = GridBagConstraints.CENTER;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.ipadx = 0;
+			gbc.ipady = 0;
+			gbc.insets = new Insets(2,2,2,2);
+			gbl.setConstraints(sp,gbc);
+			fst.add(sp);
+			
+			JButton btn = new JButton("Close");
+			
+			btn.addActionListener( new ActionListener() {
+				  	public void actionPerformed(ActionEvent e) {
+				  		closeWindow();
+					}
+			      	
+				  	private void closeWindow(){
+				  		fst.dispose();
+				  		fst = null;
+			      	}				  
+			  });
+			
+			gbc.gridx = 1;
+			gbc.gridy = 1;
+			gbc.gridwidth = 1;
+			gbc.gridheight = 1;
+			gbc.weightx = 0.0;
+			gbc.weighty = 0.0;
+			gbc.anchor = GridBagConstraints.CENTER;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.ipadx = 0;
+			gbc.ipady = 0;
+			gbl.setConstraints(btn,gbc);
+			fst.add(btn);		
+			
+			fst.setVisible(true);
+		}
+		else {
+			fst.dispose();
+	  		fst = null;
+	  		
+	  		// dirty, but worth it...
+	  		showTextFlex(title, message, width, height);
+		}
+	}	
 	
 	public static String showInputDialog(String title, String message) {
 		return JOptionPane.showInputDialog(null, message, title, JOptionPane.PLAIN_MESSAGE);

@@ -886,7 +886,7 @@ public class FeedGui extends JFrame implements MyObserver {
 				msg = "Yehaw. Feed is valid.";
 			}
 
-			Dialogs.showText("Feed validation", msg);
+			Dialogs.showTextFlex("Feed validation", msg, 700, 350);
 		}
 		catch(Exception ex) {
 			Dialogs.showMessage(ex.getMessage());	
@@ -903,7 +903,7 @@ public class FeedGui extends JFrame implements MyObserver {
 					msg = "Yehaw. Feed is valid.";
 				}
 				
-				Dialogs.showText("File validation", msg);
+				Dialogs.showTextFlex("File validation", msg, 700, 350);
 			}
 			catch(Exception ex) {
 				Dialogs.showMessage(ex.getMessage());	
