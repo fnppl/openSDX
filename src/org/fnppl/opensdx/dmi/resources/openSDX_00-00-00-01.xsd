@@ -138,7 +138,7 @@
             A contributor can be a label, performer, texter, editor, conductor, artist, singer,
             composer, mixer, remixer, producer, featuring-Artist, with-Artist, DJ, versus-Artist,
             meets-Artist, presents-Artist, compilator, copyright, production or clearinghouse.
-            A Year should be provided in case the type equals copyright or production.</xsd:documentation>
+            A year should be provided in case the type equals copyright or production.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="name" type="xsd:string"/>
@@ -152,17 +152,17 @@
     <xsd:complexType name="ids">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This Element is a container for all IDs which are available for 
-            the associated element.</xsd:documentation>
+            the associated element. </xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="grid" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="upc" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="isrc" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="upc" type="upc" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="isrc" type="isrc" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="contentauth" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="labelordernum" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="amzn" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="isbn" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="finetunes" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="finetunes" type="finetunes" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="licensor" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="licensee" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="gvl" type="xsd:string" maxOccurs="1" minOccurs="0"/>
@@ -290,7 +290,7 @@
     </xsd:complexType>
     <xsd:complexType name="utube">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">Contains information about youtube url und channel.</xsd:documentation>
+            <xsd:documentation xml:lang="en">Contains optional information about youtube url und channel.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="url" type="xsd:string" maxOccurs="1" minOccurs="0"/>
@@ -309,7 +309,7 @@
     <xsd:complexType name="license_basis">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element includes the basic rules and information under which 
-            this bundle is provided.</xsd:documentation>
+            this bundle is provided. The optional element ""streaming_allowed" tells if streaming is allowed or not. </xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="territorial" type="territorial" maxOccurs="1" minOccurs="0"/>
@@ -922,10 +922,51 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
         <xsd:restriction base="xsd:string"> 
         </xsd:restriction>
     </xsd:simpleType>
+    <xsd:simpleType name="upc">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="((\d{10,13})*)?">
+            	<xsd:annotation >
+            		<xsd:documentation xml:lang="en">The Universal Product Code (UPC) is a barcode symbology (i.e., a specific type of barcode), that is widely used in North America, and in countries including the UK, Australia, and New Zealand for tracking trade items in stores. 
+            		Its most common form, the UPC-A, consists of 12 numerical digits, which are uniquely assigned to each trade item. Along with the related EAN barcode, the UPC is the only barcode allowed for scanning trade items at the point of sale, per GS1 standards.</xsd:documentation>
+            	</xsd:annotation>
+            </xsd:pattern>
+        </xsd:restriction>
+    </xsd:simpleType>   
+    <xsd:simpleType name="isbn">
+        <xsd:restriction base="xsd:string">
+			<xsd:pattern value="((\d{1}-\d{5}-\d{3}-\d{1}|\d{1}-\d{3}-\d{5}-\d{1}|\d{1}-\d{2}-\d{6}-\d{1})*)?">
+				<xsd:annotation >
+            		<xsd:documentation xml:lang="en">The International Standard Book Number (ISBN) is a unique numeric commercial book identifier based upon the 9-digit Standard Book Numbering (SBN) code.</xsd:documentation>
+            	</xsd:annotation>			
+			</xsd:pattern>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="isrc">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="((/^[a-zA-Z]{2}\- [0-9a-zA-Z]{3}\- \d{2}\- \d{5}/)*)?">
+				<xsd:annotation >
+            		<xsd:documentation xml:lang="en">The International Standard Recording Code (ISRC), defined by ISO 3901, is an international standard code for uniquely identifying sound recordings and music video recordings.</xsd:documentation>
+            	</xsd:annotation>			
+			</xsd:pattern>            
+        </xsd:restriction>
+    </xsd:simpleType>  
+    <xsd:simpleType name="finetunes">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="((\d{13})*)?" >
+				<xsd:annotation >
+            		<xsd:documentation xml:lang="en">The 13 digits long identifier of a item at finetunes.</xsd:documentation>
+            	</xsd:annotation>			
+			</xsd:pattern>             
+        </xsd:restriction>
+    </xsd:simpleType>      
     <xsd:simpleType name="ipv4">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern
-            	value="(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[0-9]{1,2})(\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[0-9]{1,2})){3}" />
+            <xsd:pattern value="(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[0-9]{1,2})(\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[0-9]{1,2})){3}" >
+				<xsd:annotation >
+            		<xsd:documentation xml:lang="en">Internet Protocol version 4 (IPv4) is the fourth revision in the development of the Internet Protocol (IP) and the first version of the protocol to be widely deployed. 
+            		Valide ipv4-addresses includes four dotted separated blocks with digits between 0 and 255.</xsd:documentation>
+            	</xsd:annotation>			
+			</xsd:pattern>             
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="ipv6">
