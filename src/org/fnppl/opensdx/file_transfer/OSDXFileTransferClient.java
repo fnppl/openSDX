@@ -533,6 +533,10 @@ public class OSDXFileTransferClient implements FileTransferClient {
 
 	}
 	
+	public RightsAndDuties getRightsAndDuties() {
+		return rights_duties;
+	}
+	
 	public void downloadFile(String filename, File localFile) {
 		if (!rights_duties.allowsDownload()) return;
 		if (localFile.isDirectory()) {

@@ -480,7 +480,12 @@ public class KeyServerMain extends HTTPServer {
 			resp.setHTML(html);
 			return resp;
 		} else {
-			return errorMessage("id "+id+" not recognized");
+			//return errorMessage("id "+id+" not recognized");
+			//send error response
+			KeyServerResponse resp = new KeyServerResponse(serverid);
+			String html = "<HTML><BODY>Sorry, id "+id+" not recognized. In most cases this is not your fault. Please contact the adminstrator of the keyserver for more information.</BODY></HTML>";
+			resp.setHTML(html);
+			return resp;
 		}
 	}
 	
