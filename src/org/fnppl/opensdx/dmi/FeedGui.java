@@ -864,16 +864,16 @@ public class FeedGui extends JFrame implements MyObserver {
 		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
 			.servername("localhost")
 			.serveripv4("127.0.0.1")
+			.username("testuser")
 			.authtype(Receiver.AUTH_TYPE_KEYFILE);
 		currentFeed.getFeedinfo().receiver(receiver);
 		currentFeed.getBundle(0).addItem(
 				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
-						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)
+						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(), LicenseSpecifics.make())
 						.addFile(ItemFile.make(new File("fnppl_contributor_license.pdf")))
 					.tags(ItemTags.make()
 						.addGenre("Rock")
-					)
-						
+					)	
 		);
 		currentFeed.getBundle(0).getLicense_basis().getTerritorial()
 		.allow("DE")

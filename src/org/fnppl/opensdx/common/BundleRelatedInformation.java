@@ -60,15 +60,13 @@ public class BundleRelatedInformation extends BusinessObject {
 	public static String KEY_NAME = "related";
 
 	private BusinessStringItem physical_distributor;					//COULD
-	private BusinessStringItem youtube_url;								//COULD
-	private BusinessStringItem youtube_channel;							//COULD
+	private InfoUtube utube;											//COULD
 	private Vector<BusinessObject> related_bundles; 					//COULD
 
 	public static BundleRelatedInformation make() {
 		BundleRelatedInformation related = new BundleRelatedInformation();
 		related.physical_distributor = null;
-		related.youtube_url = null;
-		related.youtube_channel = null;
+		related.utube = null;
 		related.related_bundles = new Vector<BusinessObject>();
 		return related;
 	}
@@ -95,8 +93,7 @@ public class BundleRelatedInformation extends BusinessObject {
 		related.initFromBusinessObject(bo);
 		
 		related.physical_distributor = BusinessStringItem.fromBusinessObject(bo, "physical_distributor");
-		related.youtube_url = BusinessStringItem.fromBusinessObject(bo, "youtube_url");
-		related.youtube_channel = BusinessStringItem.fromBusinessObject(bo, "youtube_channel");
+		related.utube = InfoUtube.fromBusinessObject(bo);
 		related.related_bundles = new Vector<BusinessObject>();
 		new ChildElementIterator(bo, "bundle") {
 			public void processBusinessObject(BusinessObject bo) {
@@ -122,13 +119,8 @@ public class BundleRelatedInformation extends BusinessObject {
 		return this;
 	}
 
-	public BundleRelatedInformation youtube_url(String youtube_url) {
-		this.youtube_url = new BusinessStringItem("youtube_url", youtube_url);
-		return this;
-	}
-
-	public BundleRelatedInformation youtube_channel(String youtube_channel) {
-		this.youtube_channel = new BusinessStringItem("youtube_channel", youtube_channel);
+	public BundleRelatedInformation utube(InfoUtube utube) {
+		this.utube =  utube;
 		return this;
 	}
 
@@ -144,15 +136,10 @@ public class BundleRelatedInformation extends BusinessObject {
 		return Boolean.parseBoolean(pb);
 	}
 
-	public String getYoutubeUrl() {
-		if (youtube_url==null) return null;
-		return youtube_url.getString();
+	public InfoUtube getUtube() {
+		return utube;
 	}
 
-	public String getYoutubeChannel() {
-		if (youtube_channel==null) return null;
-		return youtube_channel.getString();
-	}
 	public String getKeyname() {
 		return KEY_NAME;
 	}

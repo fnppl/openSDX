@@ -161,8 +161,8 @@
 					</addparams>
 				</http>
 			</oninitialreceive><!-- SHOULD when the *machine* picks up this delivery (aka pulls it away from *inbox*) -->
-			<onprocesstart></onprocesstart><!-- SHOULD when the *machine* start processing this feed -->
-			<onprocesend></onprocesend><!-- SHOULD when *machine* has ended working on this -->
+			<onprocessstart></onprocessstart><!-- SHOULD when the *machine* start processing this feed -->
+			<onprocessend></onprocessend><!-- SHOULD when *machine* has ended working on this -->
 			<onfullsuccess>
 				<fax>
 					<number>+44 77 919191919</number>

@@ -195,7 +195,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	Element cover = root.getChild("cover");
         	if(cover != null) {
         		ItemFile itemfile = ItemFile.make(); 
-        		itemfile.type("cover");
+        		itemfile.type("frontcover");
         		// check if file exist at path
         		String filename = cover.getChildTextNN("file_name");
         		File f = new File(path+filename);
@@ -282,7 +282,20 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	            		        if(streamable_from.length()>0) {
 	            		        	cal.setTime(ymd.parse(streamable_from));
 	            		        	track_license_basis.timeframe_from_datetime(cal.getTimeInMillis());
-	            		        }	        
+	            		        }
+	            		        
+	            		        // stremable_to is a "Must" but is not delivered
+	            		        String streamable_to = track_right.getChildTextNN("streamable_to");
+	            		        if(streamable_to.length()>0) {
+	            		        	cal.setTime(ymd.parse(streamable_to));
+	            		        	track_license_basis.timeframe_to_datetime(cal.getTimeInMillis());
+	            		        }
+	            		        else {
+	            		        	// 20 year from now
+	            		        	cal = Calendar.getInstance();
+	            		        	cal.add(Calendar.YEAR, 20);
+	            		        	track_license_basis.timeframe_to_datetime(cal.getTimeInMillis());
+	            		        }
 	            		        
 	            	        	if(track_right.getChild("allows_streaming")!=null) {
 	            	        		track_license_basis.streaming_allowed(Boolean.parseBoolean(track_right.getChildText("allows_streaming")));
