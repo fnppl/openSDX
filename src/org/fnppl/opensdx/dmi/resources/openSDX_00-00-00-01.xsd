@@ -88,7 +88,7 @@
             <xsd:element name="feedid" type="xsd:string"/>
             <xsd:element name="creationdatetime" type="datetimeGMT"/>
             <xsd:element name="effectivedatetime" type="datetimeGMT"/>
-            <xsd:element name="creator" type="creator"/>
+            <xsd:element name="creator" type="creator" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="receiver" type="receiver"/>
             <xsd:element name="sender" type="sender"/>
             <xsd:element name="licensor" type="licensor"/>
