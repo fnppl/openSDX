@@ -79,6 +79,7 @@ import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.LicenseSpecifics;
 import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.common.Territorial;
+import org.fnppl.opensdx.file_transfer.Beamer;
 import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
@@ -402,8 +403,8 @@ public class FeedGui extends JFrame implements MyObserver {
 	}
 	
 	
-	//AKA beam me up
-	public void sendFeedToReceiver() {
+	
+	public void sendFeedToReceiver() { //AKA beam me up
 		if (currentFeed!=null) {
 			Receiver receiver = currentFeed.getFeedinfo().getReceiver();
 			if (receiver==null) {
@@ -415,7 +416,9 @@ public class FeedGui extends JFrame implements MyObserver {
 			if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER) || type.equals(Receiver.TRANSFER_TYPE_FTP)) {
 				int ans = Dialogs.showYES_NO_Dialog("Sending Feed", "Do you really want to send the current feed to "+servername+"?");
 				if (ans==Dialogs.YES) {
-					Result result  = currentFeed.sendToReceiver(new DefaultMessageHandler(), null);
+					//Result result  = currentFeed.sendToReceiver(new DefaultMessageHandler(), null);
+					OSDXKey signatureKey = null;
+					Result result = Beamer.beamUpFeed(currentFeed, signatureKey, new DefaultMessageHandler());
 					if (result.succeeded) {
 						Dialogs.showMessage("Feed successfully send.");
 					} else {
