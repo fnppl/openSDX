@@ -80,13 +80,13 @@
         <name>Krautrock</name>
       </subgenre>
       <subgenre>
-        <name>Progressive</name>
+        <name>Progressive Rock</name>
       </subgenre>
       <subgenre>
         <name>Psychedelic Rock</name>
       </subgenre>
       <subgenre>
-        <name>Psychobilly</name>
+        <name>Psychobilly Rock</name>
       </subgenre>
       <subgenre>
         <name>Rockabilly</name>
@@ -262,6 +262,9 @@
       <subgenre>
         <name>Irish Folk</name>
       </subgenre>
+	  <subgenre>
+        <name>German Folk</name>
+      </subgenre>
     </subgenres>
   </genre>
   <genre>
@@ -315,7 +318,7 @@
     </subgenres>
   </genre>
   <genre>
-    <name>HipHop</name>
+    <name>Hip Hop</name>
     <subgenres>
       <subgenre>
         <name>Alternative Hip Hop</name>
@@ -339,7 +342,7 @@
         <name>Hyphy</name>
       </subgenre>
       <subgenre>
-        <name>Instrumental</name>
+        <name>Instrumental Hip Hop</name>
       </subgenre>
       <subgenre>
         <name>New School</name>
@@ -477,7 +480,7 @@
         <name>Breakbeat</name>
       </subgenre>
       <subgenre>
-        <name>Drum´n´Bass</name>
+        <name>Drum'n'Bass</name>
       </subgenre>
       <subgenre>
         <name>Dubstep</name>
@@ -620,7 +623,10 @@
         <name>Symphonic Music / Orchestral Music</name>
       </subgenre>
       <subgenre>
-        <name>Symphonies</name>
+        <name>Symphony</name>
+      </subgenre>
+	  <subgenre>
+        <name>a cappella</name>
       </subgenre>
       <subgenre>
         <name>Vocal Ensemble</name>
@@ -651,6 +657,18 @@
       </subgenre>
       <subgenre>
         <name>Mixed Choir</name>
+      </subgenre>
+	  <subgenre>
+        <name>Choral</name>
+      </subgenre>
+	  <subgenre>
+        <name>Cantata</name>
+      </subgenre>
+	  <subgenre>
+        <name>Suite</name>
+      </subgenre>
+	  <subgenre>
+        <name>Sonata</name>
       </subgenre>
       <subgenre>
         <name>Flute</name>
@@ -733,7 +751,7 @@
     <name>Reggae</name>
     <subgenres>
       <subgenre>
-        <name>Contemporary</name>
+        <name>Contemporary Reggae</name>
       </subgenre>
       <subgenre>
         <name>Dancehall</name>
@@ -765,7 +783,10 @@
         <name>Afrobeat</name>
       </subgenre>
       <subgenre>
-        <name>Asian and Middle Eastern Music</name>
+        <name>Asian Music</name>
+      </subgenre>
+	  <subgenre>
+        <name>Middle Eastern Music</name>
       </subgenre>
       <subgenre>
         <name>Calypso</name>
@@ -802,6 +823,9 @@
       </subgenre>
       <subgenre>
         <name>North American Music</name>
+      </subgenre>
+	  <subgenre>
+        <name>South American Music</name>
       </subgenre>
       <subgenre>
         <name>Parang</name>
@@ -1013,13 +1037,13 @@
         <name>Children's Audiobooks</name>
       </subgenre>
       <subgenre>
-        <name>age</name>
+        <name>Age: up to 6 years</name>
       </subgenre>
       <subgenre>
-        <name>Age</name>
+        <name>Age: 6 years +</name>
       </subgenre>
-      <subgenre>
-        <name>Age</name>
+	  <subgenre>
+        <name>Age: 8 years +</name>
       </subgenre>
       <subgenre>
         <name>Popular Characters</name>
