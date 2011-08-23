@@ -217,8 +217,8 @@
             <xsd:element name="ids" type="ids" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="contributors" type="contributors"/>
             <xsd:element name="information" type="information"/>
-            <xsd:element name="license_basis" type="license_basis"/>
-            <xsd:element name="license_specifics" type="license_specifics"/>
+            <xsd:element name="license_basis" type="license_basis_item"/>
+            <xsd:element name="license_specifics" type="license_specifics_item"/>
             <xsd:element name="tags" type="tags" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="fingerprint" type="fingerprint" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="reporting" type="reporting" maxOccurs="1" minOccurs="0"/>
@@ -317,6 +317,19 @@
             <xsd:element name="pricing" type="pricing" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="streaming_allowed" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="channels" type="channels" maxOccurs="1" minOccurs="0"/>
+        </xsd:all>
+    </xsd:complexType>
+    <xsd:complexType name="license_basis_item">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">This element includes the basic rules and information under which 
+            this bundle is provided.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:all>
+            <xsd:element name="territorial" type="territorial" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="timeframe" type="timeframe" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="pricing" type="pricing" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="streaming_allowed" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="channels" type="channels" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="as_on_bundle" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
@@ -386,9 +399,19 @@
             <xsd:documentation xml:lang="en">This element includes specific rules which should be applied. 
             This can be achieved by given rules.</xsd:documentation>
         </xsd:annotation>
-        <xsd:sequence>
-            <xsd:element name="rules" type="rules"/>
-        </xsd:sequence>
+        <xsd:all>
+            <xsd:element name="rules" type="rules" maxOccurs="1" minOccurs="0"/>
+        </xsd:all>
+    </xsd:complexType>
+    <xsd:complexType name="license_specifics_item">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">This element includes specific rules which should be applied. 
+            This can be achieved by given rules.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:choice minOccurs="1" maxOccurs="1">
+            <xsd:element name="rules" type="rules" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="as_on_bundle" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
+        </xsd:choice>
     </xsd:complexType>
     <xsd:complexType name="rules">
         <xsd:annotation>

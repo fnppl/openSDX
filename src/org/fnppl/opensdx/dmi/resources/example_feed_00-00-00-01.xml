@@ -444,7 +444,7 @@
 						<echo>YOU CANNOT EVEN REACH ME - since RULE1 breaks and DE is in EU</echo>					
 					</then>				
 				</rule>
-			</rules>
+			</rules><!-- if no specific rules should be applied: no rules-node - dont use empty-rules-node! -->
 		</license_specifics><!-- MUST ; if no specific rules should be applied: empty node -->
 		
 		<reporting>
@@ -561,10 +561,34 @@
 						<pricecode>LOW</pricecode><!-- COULD ; arbitrary-info ; mainly agreed in  -->
 						<wholesale>EUR 0.99</wholesale><!-- COULD ; an explicitly given wholesale-price overrides the basic pricecode-given-wp ; most probably either one of pricecode OR wholesaleprice should be given -->
 					</pricing><!--  given the "as_on_bunlde"-tag, but giving also tags here would override those in effect ... - should also check for "nullable" -->
-				</license_basis>
-				<license_specifics>
-					<rules /><!-- MUST ; no rules -> empty -->
-				</license_specifics>
+				</license_basis><!-- MUST ; must not be empty. -->
+				<license_specifics>					
+					<as_on_bundle>true</as_on_bundle><!-- COULD ; if as_on_bundle 'true', this means to take the enclosing bundle's license-specifics; could also be omitted ; could otherwise be the same rules as above -->
+					<rules><!-- COULD; MUST not be empty -->
+						<rule num="1"><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
+							<if>
+								<what>territory</what>
+								<operator>containedin</operator><!-- equals/before/after/contains/containedin -->
+								<value>EU</value>
+							</if>
+							<then>
+								<echo>me is debugging output for happy programmers...</echo><!-- HT 14.02.2011 - much appreciated... -->
+								<break /><!-- this means to not process any more rules...; just leave it away to "continue" -->
+							</then>
+							<else><!-- HT 14.02.2011 we should not cascade this now..., but could easily do -->
+								<proclaim>
+									<what>price</what>
+									<for>EUR 9.99</for>
+								</proclaim>
+								<proclaim>
+									<what>pricelevel</what>
+									<for>medium</for>
+								</proclaim>
+								<break />
+							</else>
+						</rule><!-- numbered since we need an ordered mode here - first come first match -->
+					</rules>		
+				</license_specifics><!-- MUST ; must not be empty. -->
 
 				<tags>
 					<genres>

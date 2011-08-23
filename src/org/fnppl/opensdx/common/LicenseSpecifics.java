@@ -52,6 +52,8 @@ public class LicenseSpecifics extends BusinessObject {
 	public static String KEY_NAME = "license_specifics";
 	
 	private BusinessCollection<LicenseRule> rules;  //MUST, if no rules -> empty
+	private BusinessBooleanItem asOnBundle; //MUST if no rules are given
+	
 	
 	private LicenseSpecifics() {
 		
@@ -59,13 +61,16 @@ public class LicenseSpecifics extends BusinessObject {
 	
 	public static LicenseSpecifics make() {
 		LicenseSpecifics b = new LicenseSpecifics();
-		b.rules = new BusinessCollection<LicenseRule>() {
-			public String getKeyname() {
-				return "rules";
-			}
-		};
 		return b;
 	}
+	
+	public static LicenseSpecifics makeAsOnBundle() {
+		LicenseSpecifics b = new LicenseSpecifics();
+		b.rules = null;
+		b.asOnBundle = new BusinessBooleanItem("as_on_bundle", true);
+		return b;
+	}
+	
 	
 	public static LicenseSpecifics fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
@@ -86,10 +91,18 @@ public class LicenseSpecifics extends BusinessObject {
 				b.addRule(LicenseRule.fromBusinessObject(bo));
 			}
 		};
+		b.asOnBundle = BusinessBooleanItem.fromBusinessObject(b, "as_on_bundle");
 		return b;
 	}
 	
 	public LicenseSpecifics addRule(LicenseRule rule) {
+		if (rules == null) {
+			rules = new BusinessCollection<LicenseRule>() {
+				public String getKeyname() {
+					return "rules";
+				}
+			};
+		}
 		rules.add(rule);
 		return this;
 	}
@@ -98,6 +111,23 @@ public class LicenseSpecifics extends BusinessObject {
 		return KEY_NAME;
 	}
 	
+	public LicenseSpecifics as_on_bundle(boolean value) {
+		if (value) {
+			asOnBundle = new BusinessBooleanItem("as_on_bundle", value);
+		} else {
+			asOnBundle = null;
+		}
+		return this;
+	}
+	
+	public boolean isAsOnBundle() {
+		if (asOnBundle == null) {
+			return false;
+		}
+		else {
+			return asOnBundle.getBoolean();
+		}
+	}
 	
 	
 }
