@@ -458,8 +458,6 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 		notifyChanges();
 	}
 
-
-
 	//observable
 	private Vector<MyObserver> observers = new Vector<MyObserver>();
 	public void addObserver(MyObserver observer) {

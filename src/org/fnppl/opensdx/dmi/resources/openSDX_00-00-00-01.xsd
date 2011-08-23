@@ -408,7 +408,7 @@
             <xsd:documentation xml:lang="en">This element includes specific rules which should be applied. 
             This can be achieved by given rules.</xsd:documentation>
         </xsd:annotation>
-        <xsd:choice minOccurs="1" maxOccurs="1">
+        <xsd:choice minOccurs="1" maxOccurs="2">
             <xsd:element name="rules" type="rules" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="as_on_bundle" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
         </xsd:choice>

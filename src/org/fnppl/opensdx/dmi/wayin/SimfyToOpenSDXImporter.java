@@ -160,7 +160,8 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	// license specifics -> empty!
         	LicenseSpecifics license_specifics = LicenseSpecifics.make();  
         	
-        	
+        	// receiver -> "MUST" -> empty!
+        	feedinfo.receiver(Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER));
         	
         	Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artistname, info, license_basis, license_specifics);
         	

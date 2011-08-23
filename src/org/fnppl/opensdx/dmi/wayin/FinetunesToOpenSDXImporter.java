@@ -109,6 +109,9 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        ContractPartner licensee = ContractPartner.make(ContractPartner.ROLE_LICENSEE,"","");
 	        FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor, licensee);
 
+        	// receiver -> "MUST" -> empty!
+        	feedinfo.receiver(Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER));	        
+	        
 	        // path to importfile
 	        String path = this.importFile.getParent()+File.separator;	        
 	        
