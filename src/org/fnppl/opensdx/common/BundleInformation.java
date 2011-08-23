@@ -70,13 +70,13 @@ public class BundleInformation extends BusinessObject {
 
 	public static BundleInformation make(long physical_release_datetime, long digital_release_datetime) {
 		BundleInformation information = new BundleInformation();
-		information.texts = BundleTexts.make();
+		information.texts = null; //BundleTexts.make();
 		information.physical_release_datetime = new BusinessDatetimeItem("physical_release_datetime", physical_release_datetime);
 		information.digital_release_datetime = new BusinessDatetimeItem("digital_release_datetime", digital_release_datetime);
 		information.playlength = null;
 		information.num = null;
 		information.setnum = null;
-		information.related = BundleRelatedInformation.make();
+		information.related = null; 
 		information.origin_country = null;
 		information.main_language = null;
 		information.suggested_prelistening_offset = null;
