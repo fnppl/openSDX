@@ -117,8 +117,7 @@
             <xsd:element name="contributors" type="contributors" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="information" type="information" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="license_basis" type="license_basis" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="license_specifics" type="license_specifics" maxOccurs="1"
-                minOccurs="0"/>
+            <xsd:element name="license_specifics" type="license_specifics" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="reporting" type="reporting" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="tags" type="tags" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="files" type="files" maxOccurs="1" minOccurs="0"/>
@@ -130,7 +129,7 @@
             <xsd:documentation xml:lang="en">This element contains a list of contributor.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="contributor" type="contributor" maxOccurs="unbounded" minOccurs="1"/>
+            <xsd:element name="contributor" type="contributor" maxOccurs="unbounded" minOccurs="0"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="contributor">
@@ -242,8 +241,7 @@
             <xsd:element name="playlength" type="xsd:integer" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="num" type="xsd:integer" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="setnum" type="xsd:integer" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="suggested_prelistening_offset" type="xsd:integer" maxOccurs="1"
-                minOccurs="0"/>
+            <xsd:element name="suggested_prelistening_offset" type="xsd:integer" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="origin_country" type="cc:countryCode" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="main_language" type="l:language" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="related" type="related" maxOccurs="1" minOccurs="0"/>
@@ -278,8 +276,7 @@
             to the bundle of the actual feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="physical_distributor" type="physical_distributor"
-                maxOccurs="unbounded" minOccurs="0"/>
+            <xsd:element name="physical_distributor" type="physical_distributor" maxOccurs="unbounded" minOccurs="0"/>
             <xsd:element name="utube" type="utube" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="bundle" type="bundle" maxOccurs="unbounded" minOccurs="0"/>
         </xsd:sequence>
@@ -568,7 +565,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
             <xsd:element name="serveripv4" type="ipv4"/>
             <xsd:element name="serveripv6" type="ipv6" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="authtype" type="authtype"/>
-            <xsd:element name="username" type="xsd:string"/>
+            <xsd:element name="username" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="crypto" type="crypto" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
@@ -621,11 +618,11 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
             <xsd:documentation xml:lang="en">This element contains information about possible actions with the feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="oninitialreceive" type="event"/>
-            <xsd:element name="onprocesstart" type="event"/>
-            <xsd:element name="onprocesend" type="event"/>
-            <xsd:element name="onfullsuccess" type="event"/>
-            <xsd:element name="onerror" type="event"/>
+            <xsd:element name="oninitialreceive" type="event" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="onprocessstart" type="event" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="onprocessend" type="event" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="onfullsuccess" type="event" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="onerror" type="event" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="oninitialreceive">
@@ -637,7 +634,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
             <xsd:extension base="event"/>
         </xsd:complexContent>
     </xsd:complexType>
-    <xsd:complexType name="onprocesstart">
+    <xsd:complexType name="onprocessstart">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element contains information about what should be done on the 
             start of processing the feed.</xsd:documentation>
