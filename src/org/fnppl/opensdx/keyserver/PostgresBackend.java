@@ -589,8 +589,10 @@ public class PostgresBackend implements KeyServerBackend {
 			ex.printStackTrace();
 		}
 	}
-
 	public void addKeyLog(KeyLog log) {
+		addKeyLogWithIdResult(log);
+	}
+	public long addKeyLogWithIdResult(KeyLog log) {
 		Signature asig = log.getActionSignature();
 		Signature sig = log.getSignature();
 		
@@ -620,9 +622,11 @@ public class PostgresBackend implements KeyServerBackend {
 			Statement stmt = con.createStatement();
 			stmt.executeUpdate(sql.toString());
 			stmt.close();
+			return ts;
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		return -1L;
 	}
 	
 //	public void addKeyLog(KeyLog log) {
@@ -711,9 +715,8 @@ public class PostgresBackend implements KeyServerBackend {
 	
 	public void addOpenToken(String token, KeyLog log) {
 		long klIndex = getKeylogIndex(log);
-		if (klIndex==0) {
-			addKeyLog(log);
-			klIndex = getKeylogIndex(log);
+		if (klIndex<=0) {
+			klIndex = addKeyLogWithIdResult(log);
 		}
 		try {
 			SQLStatement sql = new SQLStatement("INSERT INTO approval_token (approvalid, token, keylogid) VALUES (?,?,?)");
