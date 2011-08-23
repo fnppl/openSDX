@@ -237,7 +237,7 @@
 		<xsd:enumeration value="String Quartet"/>
 		<xsd:enumeration value="String Trio"/>
 		<xsd:enumeration value="Symphonic Music / Orchestral Music"/>
-		<xsd:enumeration value="Symphonies"/>
+		<xsd:enumeration value="Symphony"/>
 		<xsd:enumeration value="a cappella"/>
 		<xsd:enumeration value="Vocal Ensemble"/>
 		<xsd:enumeration value="Vocal Music"/>
@@ -371,7 +371,7 @@
 		<xsd:enumeration value="Skills"/>
 		<xsd:enumeration value="Small Business &amp; Entrepeneurship"/>
 		<xsd:enumeration value="Children's Audiobooks"/>
-		<xsd:enumeration value="age: up to 6 years"/>
+		<xsd:enumeration value="Age: up to 6 years"/>
 		<xsd:enumeration value="Age: 6 years +"/>
 		<xsd:enumeration value="Age: 8 years +"/>
 		<xsd:enumeration value="Popular Characters"/>
