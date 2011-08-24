@@ -161,7 +161,7 @@ public class Beamer {
 		} catch (Exception ex) {}
 		
 		//norm feedid
-		String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,19);
+		String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,19).replace(' ', '_');
 		dir = Util.filterCharactersFile(dir);
 		
 		//build file structure, SOMEONE might want to change this
@@ -215,12 +215,13 @@ public class Beamer {
 						try {
 							ItemFile nextItemFile = item.getFile(j);
 							File nextFile = new File(nextItemFile.getLocationPath());
-							String ending = nextFile.getName();
-							if (ending.contains(".")) {
-								ending = ending.substring(ending.lastIndexOf('.'));
-							} else {
-								ending = "";
-							}
+//							String ending = nextFile.getName();
+//							if (ending.contains(".")) {
+//								ending = ending.substring(ending.lastIndexOf('.'));
+//							} else {
+//								ending = "";
+//							}
+							String ending = "";
 							String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
 							String filename = normFeedid+"_"+(i+1)+(subIndex?"_"+(j+1):"")+"_"+md5+ending;
 							nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
