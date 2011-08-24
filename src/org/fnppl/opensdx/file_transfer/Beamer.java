@@ -144,13 +144,126 @@ public class Beamer {
 		return Result.error("unknown error");
 	}
 	
-	public static Result uploadFeed(Feed feed, FileTransferClient client, OSDXKey signaturekey) throws Exception {
+	public static Vector<String[]> getUploadExtraFiles(Feed feed) {
+		Vector<ExtraFile> files = getUploadExtraFile(feed);
+		Vector<String[]> sfiles = new Vector<String[]>();
+		for (ExtraFile f : files) {
+			sfiles.add(new String[] {f.file.getAbsolutePath(), f.new_filename});
+		}	
+		return sfiles;
+	}
+	
+	private static Vector<ExtraFile> getUploadExtraFile(Feed feed) {
+		Vector<ExtraFile> files = new Vector<ExtraFile>();
+		
+		String normFeedid = getNormFeedID(feed);
+		int num = 1;
+		for (int b=0;b<feed.getBundleCount();b++) {
+			Bundle bundle = feed.getBundle(b);
+			if (bundle!=null) {
+				//bundle files (cover, booklet, ..)
+				for (int j=0;j<bundle.getFilesCount();j++) {
+					try {
+						ItemFile nextItemFile = bundle.getFile(j);
+						File nextFile = new File(nextItemFile.getLocationPath());
+						String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+						String filename = normFeedid+"_"+num+"_"+md5;
+						num++;
+						files.add(new ExtraFile(nextItemFile, nextFile, filename));
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+				
+				//item files
+				for (int i=0;i<bundle.getItemsCount();i++) {
+					Item item = bundle.getItem(i);
+					if (item.getFilesCount()>0) {
+						boolean subIndex = (item.getFilesCount()>1);
+						for (int j=0;j<item.getFilesCount();j++) {
+							try {
+								ItemFile nextItemFile = item.getFile(j);
+								File nextFile = new File(nextItemFile.getLocationPath());
+								String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+								String filename = normFeedid+"_"+num+"_"+md5;
+								num++;
+								files.add(new ExtraFile(nextItemFile, nextFile, filename));
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
+						}
+					}
+				}
+			}
+		}
+		return files;
+	}
+			
+			//old
+//			if (bundle!=null) {
+//				//bundle files (cover, booklet, ..)
+//				for (int j=0;j<bundle.getFilesCount();j++) {
+//					try {
+//						ItemFile nextItemFile = bundle.getFile(j);
+//						File nextFile = new File(nextItemFile.getLocationPath());
+////						String ending = nextFile.getName();
+////						if (ending.contains(".")) {
+////							ending = ending.substring(ending.lastIndexOf('.'));
+////						} else {
+////							ending = "";
+////						}
+//						String ending = "";
+//						String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+//						String filename = normFeedid+"_0_"+j+"_"+md5+ending;
+//						nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
+//						client.uploadFile(nextFile, filename);
+//					} catch (Exception ex) {
+//						ex.printStackTrace();
+//					}
+//				}
+//				
+//				//item files
+//				for (int i=0;i<bundle.getItemsCount();i++) {
+//					Item item = bundle.getItem(i);
+//					if (item.getFilesCount()>0) {
+//						boolean subIndex = (item.getFilesCount()>1);
+//						for (int j=0;j<item.getFilesCount();j++) {
+//							try {
+//								ItemFile nextItemFile = item.getFile(j);
+//								File nextFile = new File(nextItemFile.getLocationPath());
+////								String ending = nextFile.getName();
+////								if (ending.contains(".")) {
+////									ending = ending.substring(ending.lastIndexOf('.'));
+////								} else {
+////									ending = "";
+////								}
+//								String ending = "";
+//								String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+//								String filename = normFeedid+"_"+(i+1)+(subIndex?"_"+(j+1):"")+"_"+md5+ending;
+//								nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
+//								client.uploadFile(nextFile, filename);
+//							} catch (Exception ex) {
+//								ex.printStackTrace();
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+		
+	
+	public static String getNormFeedID(Feed feed) {
 		String feedid = feed.getFeedinfo().getFeedID();
 		String normFeedid = Util.filterCharactersFile(feedid.toLowerCase());
 		System.out.println("norm feedid: "+normFeedid);
 		if (normFeedid.length()==0) {
 			normFeedid = "unnamed_feed";
 		}
+		return normFeedid;
+	}
+	
+	public static Result uploadFeed(Feed feed, FileTransferClient client, OSDXKey signaturekey) throws Exception {
+		String normFeedid = getNormFeedID(feed);
 		
 		//make a copy to remove private information and change to relative file paths  
 		Feed copyOfFeed = Feed.fromBusinessObject(BusinessObject.fromElement(feed.toElement()));
@@ -161,10 +274,11 @@ public class Beamer {
 		} catch (Exception ex) {}
 		
 		//norm feedid
-		String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,19).replace(' ', '_');
-		dir = Util.filterCharactersFile(dir);
+		String dir = normFeedid;
+		//String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,19).replace(' ', '_');
+		//dir = Util.filterCharactersFile(dir);
 		
-		//build file structure, SOMEONE might want to change this
+		//build file structure
 		client.mkdir(dir);
 		client.cd(dir);
 		
@@ -183,60 +297,73 @@ public class Beamer {
 		client.uploadFile(normFeedid+".osdx.sig",bOut.toByteArray());
 		
 		//upload all bundle and item files
-		Bundle bundle = copyOfFeed.getBundle(0);
-		if (bundle!=null) {
-			//bundle files (cover, booklet, ..)
-			for (int j=0;j<bundle.getFilesCount();j++) {
-				try {
-					ItemFile nextItemFile = bundle.getFile(j);
-					File nextFile = new File(nextItemFile.getLocationPath());
-//					String ending = nextFile.getName();
-//					if (ending.contains(".")) {
-//						ending = ending.substring(ending.lastIndexOf('.'));
-//					} else {
-//						ending = "";
-//					}
-					String ending = "";
-					String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-					String filename = normFeedid+"_0_"+j+"_"+md5+ending;
-					nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
-					client.uploadFile(nextFile, filename);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-			
-			//item files
-			for (int i=0;i<bundle.getItemsCount();i++) {
-				Item item = bundle.getItem(i);
-				if (item.getFilesCount()>0) {
-					boolean subIndex = (item.getFilesCount()>1);
-					for (int j=0;j<item.getFilesCount();j++) {
-						try {
-							ItemFile nextItemFile = item.getFile(j);
-							File nextFile = new File(nextItemFile.getLocationPath());
-//							String ending = nextFile.getName();
-//							if (ending.contains(".")) {
-//								ending = ending.substring(ending.lastIndexOf('.'));
-//							} else {
-//								ending = "";
-//							}
-							String ending = "";
-							String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-							String filename = normFeedid+"_"+(i+1)+(subIndex?"_"+(j+1):"")+"_"+md5+ending;
-							nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
-							client.uploadFile(nextFile, filename);
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
+		Vector<ExtraFile> files = getUploadExtraFile(copyOfFeed);
+		for (ExtraFile f : files) {
+			try {
+				ItemFile nextItemFile = f.itemFile;
+				File nextFile = f.file;
+				String filename = f.new_filename;
+				nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
+				client.uploadFile(nextFile, filename);
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
 		}
 		
 		//upload feed finished file
 		client.uploadFile(normFeedid+".finished",new byte[]{0});
 		return Result.succeeded();
+		
+//		Bundle bundle = copyOfFeed.getBundle(0);
+//		if (bundle!=null) {
+//			//bundle files (cover, booklet, ..)
+//			for (int j=0;j<bundle.getFilesCount();j++) {
+//				try {
+//					ItemFile nextItemFile = bundle.getFile(j);
+//					File nextFile = new File(nextItemFile.getLocationPath());
+////					String ending = nextFile.getName();
+////					if (ending.contains(".")) {
+////						ending = ending.substring(ending.lastIndexOf('.'));
+////					} else {
+////						ending = "";
+////					}
+//					String ending = "";
+//					String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+//					String filename = normFeedid+"_0_"+j+"_"+md5+ending;
+//					nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
+//					client.uploadFile(nextFile, filename);
+//				} catch (Exception ex) {
+//					ex.printStackTrace();
+//				}
+//			}
+//			
+//			//item files
+//			for (int i=0;i<bundle.getItemsCount();i++) {
+//				Item item = bundle.getItem(i);
+//				if (item.getFilesCount()>0) {
+//					boolean subIndex = (item.getFilesCount()>1);
+//					for (int j=0;j<item.getFilesCount();j++) {
+//						try {
+//							ItemFile nextItemFile = item.getFile(j);
+//							File nextFile = new File(nextItemFile.getLocationPath());
+////							String ending = nextFile.getName();
+////							if (ending.contains(".")) {
+////								ending = ending.substring(ending.lastIndexOf('.'));
+////							} else {
+////								ending = "";
+////							}
+//							String ending = "";
+//							String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+//							String filename = normFeedid+"_"+(i+1)+(subIndex?"_"+(j+1):"")+"_"+md5+ending;
+//							nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
+//							client.uploadFile(nextFile, filename);
+//						} catch (Exception ex) {
+//							ex.printStackTrace();
+//						}
+//					}
+//				}
+//			}
+//		}
 	}
 	
 	
@@ -363,8 +490,14 @@ public class Beamer {
 		
 		try {
 			OSDXFileTransferClient c = new OSDXFileTransferClient();
-			boolean ok = c.connect(servername, port, prepath, mysigning, username);
-			if (!ok) {
+			
+			try {
+				boolean ok = c.connect(servername, port, prepath, mysigning, username);
+				if (!ok) {
+					return Result.error("ERROR: Connection to server could not be established.");
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
 				return Result.error("ERROR: Connection to server could not be established.");
 			}
 			Result res = Result.succeeded();
@@ -460,5 +593,18 @@ public class Beamer {
 			System.out.println("error in beaming: "+result.errorMessage);
 		}
 	}
+}
 
+class ExtraFile {
+	
+	ItemFile itemFile = null;
+	File file = null;
+	String new_filename = null;
+	
+	public ExtraFile(ItemFile itemFile, File file, String new_filename) {
+		this.itemFile = itemFile;
+		this.file = file;
+		this.new_filename = new_filename;
+	}
+	
 }

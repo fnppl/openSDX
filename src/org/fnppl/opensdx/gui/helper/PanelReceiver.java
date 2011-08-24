@@ -125,6 +125,12 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		text_keystore.setEditable(false);
 		text_keyid.setEditable(false);
 		text_username.setEditable(false);
+		
+		bu_keyid_select.setVisible(false);
+		bu_keyid_remove.setVisible(false);
+		bu_keystore_select.setVisible(false);
+		bu_keystore_remove.setVisible(false);
+		
 		bu_beam_me_up.setVisible(false);
 	}
 
@@ -325,7 +331,8 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		GridBagLayout gbl = new GridBagLayout();
 		setLayout(gbl);
 		GridBagConstraints gbc = new GridBagConstraints();
-
+		int insets = 5;
+		if (gui==null) insets = 2;
 		// Component: label_type
 		gbc.gridx = 0;
 		gbc.gridy = 0;
@@ -337,7 +344,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+		gbc.insets = new Insets(insets,insets,insets,insets);
 		gbl.setConstraints(label_type,gbc);
 		add(label_type);
 
@@ -352,7 +359,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+	//	gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(select_type,gbc);
 		add(select_type);
 
@@ -367,7 +374,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+	//	gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(label_servername,gbc);
 		add(label_servername);
 
@@ -382,7 +389,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+	//	gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(text_servername,gbc);
 		add(text_servername);
 
@@ -397,7 +404,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+	//	gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(label_serveripv4,gbc);
 		add(label_serveripv4);
 
@@ -412,7 +419,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+	//	gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(text_serveripv4,gbc);
 		add(text_serveripv4);
 
@@ -427,7 +434,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+	//	gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(label_auth_type,gbc);
 		add(label_auth_type);
 
@@ -442,7 +449,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+	//	gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(select_auth_type,gbc);
 		add(select_auth_type);
 
@@ -457,7 +464,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+	//	gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(label_keystore,gbc);
 		add(label_keystore);
 
@@ -472,7 +479,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+//		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(text_keystore,gbc);
 		add(text_keystore);
 
@@ -487,7 +494,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+//		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(bu_keystore_select,gbc);
 		add(bu_keystore_select);
 
@@ -502,7 +509,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+//		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(bu_keystore_remove,gbc);
 		add(bu_keystore_remove);
 
@@ -517,7 +524,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+//		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(label_keyid,gbc);
 		add(label_keyid);
 
@@ -532,7 +539,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+//		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(text_keyid,gbc);
 		add(text_keyid);
 
@@ -547,7 +554,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+//		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(bu_keyid_select,gbc);
 		add(bu_keyid_select);
 
@@ -562,7 +569,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+//		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(bu_keyid_remove,gbc);
 		add(bu_keyid_remove);
 
@@ -577,7 +584,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+//		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(label_username,gbc);
 		add(label_username);
 
@@ -592,7 +599,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+//		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(text_username,gbc);
 		add(text_username);
 				
@@ -608,7 +615,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+//		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(filler,gbc);
 		add(filler);
 		
