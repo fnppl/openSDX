@@ -54,11 +54,11 @@ public class DefaultMessageHandler implements MessageHandler {
 		return Dialogs.YES == Dialogs.showYES_NO_Dialog("OVERWRITE?", "File \""+file.getName()+"\" exits?\nDo you really want to overwrite?");
 	}
 	
-	public String requestPasswordTitleAndMessage(String title, String message) {
+	public char[] requestPasswordTitleAndMessage(String title, String message) {
 		return Dialogs.showPasswordDialog(title, message);
 	}
 
-	public String requestPassword(String keyid, String mantra) {
+	public char[] requestPassword(String keyid, String mantra) {
 		return Dialogs.showPasswordDialog("UNLOCK PRIVATE KEY", "KeyID: "+keyid+"\nPlease enter passphrase for mantra: \""+mantra+"\"");
 	}
 

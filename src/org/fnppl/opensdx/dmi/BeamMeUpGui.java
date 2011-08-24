@@ -451,7 +451,7 @@ public class BeamMeUpGui extends JFrame {
         }
         
         try {
-        	signatureKey.unlockPrivateKey(text_pw.getText()); 
+        	signatureKey.unlockPrivateKey(text_pw.getPassword()); 
         } catch (Exception ex) {
         	//ex.printStackTrace();
         	Dialogs.showMessage("Sorry, wrong password for signature key.");

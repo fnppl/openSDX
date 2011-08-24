@@ -394,11 +394,11 @@ public class FileTransferGui extends JFrame implements MyObserver {
 				FileTransferAccount a = accounts.get(sel);
 				System.out.println("account: "+a.type+" :: "+a.username);
 				if (a.type.equals(a.TYPE_FTP)) {
-					String pw = Dialogs.showPasswordDialog("Enter Password","Please enter password for ftp account:\nhost: "+a.host+"\nusername: "+a.username);
+					char[] pw = Dialogs.showPasswordDialog("Enter Password","Please enter password for ftp account:\nhost: "+a.host+"\nusername: "+a.username);
 					if (pw==null) {
 						return;
 					}
-					fsRemote = RemoteFileSystem.initFTPFileSystem(a.host, a.username, pw);
+					fsRemote = RemoteFileSystem.initFTPFileSystem(a.host, a.username, pw.toString());
 					if (!fsRemote.isConnected()) {
 						try {
 							fsRemote.connect();

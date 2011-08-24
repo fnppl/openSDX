@@ -522,14 +522,14 @@ public class Beamer {
 		if (username==null || username.length()==0) {
 			return Result.error("Missing parameter: username"); 
 		}
-		String password = mh.requestPasswordTitleAndMessage("Enter password", "Please enter password for user account:");
+		char[] password = mh.requestPasswordTitleAndMessage("Enter password", "Please enter password for user account:");
 		if (password == null) {
 			Result.error("ERROR: No password.");
 		}
 		try {
 			FTPClient client = null;
 			try {
-				client = FTPClient.connect(host, username, password);
+				client = FTPClient.connect(host, username, password.toString());
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				return Result.error("ERROR: Connection to server could not be established.");

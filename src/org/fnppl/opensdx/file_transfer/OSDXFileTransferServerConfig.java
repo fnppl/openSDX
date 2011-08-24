@@ -483,15 +483,11 @@ public class OSDXFileTransferServerConfig extends OSDXFileTransferClient {
 			}
 			//message handler
 			MessageHandler mh = new MessageHandler() {
-				public String requestPassword(String keyid, String mantra) {
+				public char[] requestPassword(String keyid, String mantra) {
 					System.out.println("please enter password for keyid: "+keyid+", mantra: "+mantra);
 					System.out.print("password: ");
 					char[] pw = System.console().readPassword();
-					String p = "";
-					for (int i=0;i<pw.length;i++) {
-						p += pw[i];
-					}
-					return p;
+					return pw;
 				}
 				
 				public boolean requestOverwriteFile(File file) {
@@ -523,7 +519,7 @@ public class OSDXFileTransferServerConfig extends OSDXFileTransferClient {
 				public File requestOpenKeystore() {
 					return null;
 				}
-				public String requestPasswordTitleAndMessage(String title, String message) {
+				public char[] requestPasswordTitleAndMessage(String title, String message) {
 					return null;
 				}
 			};

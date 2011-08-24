@@ -16,11 +16,11 @@ public interface MessageHandler {
 	public boolean requestIgnoreKeyLogVerificationFailure();
 	public MasterKey requestMasterSigningKey(KeyApprovingStore keystore) throws Exception;
 	public boolean requestOverwriteFile(File file);
-	public String requestPassword(String keyid, String mantra);
+	public char[] requestPassword(String keyid, String mantra);
 	public String[] requestNewPasswordAndMantra(String message);
 	public void fireWrongPasswordMessage();
 	public File chooseOriginalFileForSignature(File dir, String selectFile);
-	public String requestPasswordTitleAndMessage(String title, String message);
+	public char[] requestPasswordTitleAndMessage(String title, String message);
 	public File requestOpenKeystore();
 	
 }

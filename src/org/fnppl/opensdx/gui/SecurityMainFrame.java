@@ -1929,10 +1929,10 @@ public class SecurityMainFrame extends JFrame {
 
 					if (e.getChild("encrypted_symmetric_key")==null) {
 						String mantra = e.getChildTextNN("mantraname");
-						String p = Dialogs.showPasswordDialog("Enter password", "Please enter password for mantra:\n"+mantra);
+						char[] p = Dialogs.showPasswordDialog("Enter password", "Please enter password for mantra:\n"+mantra);
 						if (p != null) {
 							if (!Arrays.equals(
-									SecurityHelper.getSHA256(p.getBytes()),
+									SecurityHelper.getSHA256(p.toString().getBytes()),
 									SecurityHelper.HexDecoder.decode(e.getChildText("pass_sha256"))
 							)) {
 								Dialogs.showMessage("Sorry, wrong password.");
@@ -1940,7 +1940,7 @@ public class SecurityMainFrame extends JFrame {
 							}
 
 							byte[] initv = SecurityHelper.HexDecoder.decode(e.getChildText("initvector"));
-							symkey = SymmetricKey.getKeyFromPass(p.toCharArray(), initv);
+							symkey = SymmetricKey.getKeyFromPass(p.toString().toCharArray(), initv);
 						}
 					} else {
 						Vector<Element> eEncKeys = e.getChildren("encrypted_symmetric_key");

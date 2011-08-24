@@ -278,7 +278,7 @@ public class Dialogs {
 	    return null;
 	}
 	
-	public static final String showPasswordDialog(String head, String message) {
+	public static final char[] showPasswordDialog(String head, String message) {
 		JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 		if (message.contains("\n")) {
@@ -293,7 +293,7 @@ public class Dialogs {
 	    int ans = JOptionPane.showConfirmDialog(null,p,head,JOptionPane.OK_CANCEL_OPTION);
 	    //JOptionPane.showMessageDialog(null,p,head,JOptionPane.OK_OPTION);
 	    if (ans == JOptionPane.OK_OPTION && pf.getPassword()!=null) {
-	    	return new String(pf.getPassword());
+	    	return pf.getPassword();
 	    }
 	    return null;
 	}

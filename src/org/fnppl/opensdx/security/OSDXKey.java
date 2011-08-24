@@ -481,7 +481,7 @@ public class OSDXKey {
 			}
 			
 			try {
-				String pp = mh.requestPassword(getKeyID(), mantraname);
+				char[] pp = mh.requestPassword(getKeyID(), mantraname);
 				unlockPrivateKey(pp);
 			} catch(Exception ex) {
 				if (ex.getMessage().startsWith("pad block corrupted")) {
@@ -519,18 +519,22 @@ public class OSDXKey {
 		}
 	}
 	
-	public void unlockPrivateKey(String password) throws Exception{
+	public void unlockPrivateKey(char[] password) throws Exception{
 		if (password!=null) {
 			String Sinitv = lockedPrivateKey.getChildText("initvector");
 			String Sbytes = lockedPrivateKey.getChildText("bytes");
 			byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
 			
-			SymmetricKey sk = SymmetricKey.getKeyFromPass(password.toCharArray(), SecurityHelper.HexDecoder.decode(Sinitv));
+			SymmetricKey sk = SymmetricKey.getKeyFromPass(password, SecurityHelper.HexDecoder.decode(Sinitv));
 			byte[] exponent = sk.decrypt(bytes);
 			byte[] modulus = akp.getModulus();
 			byte[] pubkey_exponent = akp.getPublicExponent();
 			akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
 		}
+	}
+	
+	public void unlockPrivateKey(String password) throws Exception{
+		unlockPrivateKey(password.toCharArray());
 	}
 	
 	public Element toElement(MessageHandler mh) throws Exception {
