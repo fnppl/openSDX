@@ -76,7 +76,9 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 	
 	private File configFile = new File("osdxserver_config.xml"); 
 	private File alterConfigFile = new File("src/org/fnppl/opensdx/file_transfer/resources/osdxfiletransferserver_config.xml"); 
-
+	private File clients_config_file = null;
+	private boolean backupClientsConfigOnUpdate = true;
+	
 	protected int port = -1;
 	
 	protected InetAddress address = null;
@@ -226,6 +228,24 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			} else {
 				log = FileTransferLog.initLog(new File(logFile));
 			}
+
+			String extraClients = ks.getChildText("clients_config_file");
+			if (extraClients==null || extraClients.length()==0) {
+				clients_config_file = null;
+			} else {
+				clients_config_file = new File(extraClients);
+				new File(clients_config_file.getAbsolutePath()).getParentFile().mkdirs();
+				Element ecf = ks.getChild("clients_config_file");
+				String doBackup = ecf.getAttribute("backup");
+				if (doBackup!=null) {
+					try {
+						backupClientsConfigOnUpdate = Boolean.parseBoolean(doBackup);
+					} catch (Exception ex) {
+						backupClientsConfigOnUpdate = true;
+						ex.printStackTrace();
+					}
+				}
+			}
 			
 			///Clients
 			clients = new HashMap<String, ClientSettings>();
@@ -242,6 +262,26 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 					
 				} catch (Exception ex) {
 					ex.printStackTrace();
+				}
+			}
+			
+			//clients from clients config file
+			if (clients_config_file!=null && clients_config_file.exists()) {
+				try {
+					eClients = Document.fromFile(clients_config_file).getRootElement();
+					ecClients = eClients.getChildren("client");
+					for (Element e : ecClients) {
+						try {
+							ClientSettings cs = ClientSettings.fromElement(e);
+							clients.put(cs.getSettingsID(),cs);
+							System.out.println("adding extra client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath());							
+							cs.getLocalRootPath().mkdirs();
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+				} catch (Exception ex2) {
+					ex2.printStackTrace();
 				}
 			}
 				
@@ -859,6 +899,36 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			ClientSettings newcs = ClientSettings.fromElement(Document.fromString(param).getRootElement());
 			clients.put(newcs.getSettingsID(),newcs);
 			resp = "ACK PUTCLIENT";
+			
+			//save clients config to file
+			try {
+				if (clients_config_file!=null) {
+					if (backupClientsConfigOnUpdate && clients_config_file.exists()) {
+						//do backup
+						String backup_name = clients_config_file.getAbsolutePath();
+						String date = Util.filterCharactersFile(SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,19)).replace(' ', '_');
+						int ind = backup_name.lastIndexOf('.');
+						if (ind>0) {
+							backup_name = backup_name.substring(0,ind)+"_backup_"+date+".xml";
+						} else {
+							backup_name += "_backup_"+date+".xml";
+						}
+						System.out.println("Backup of clients in "+backup_name);
+						clients_config_file.renameTo(new File(backup_name));
+					}
+					//save clients to file
+					Element ec = new Element("clients");
+					Collection<ClientSettings> settings = clients.values();
+					for (ClientSettings c : settings) {
+						ec.addContent(c.toElement());
+					}
+					System.out.println("Saving clients to "+clients_config_file.getAbsolutePath());
+					Document.buildDocument(ec).writeToFile(clients_config_file);
+				}
+			} catch (Exception ex2) {
+				resp = "ERROR IN PUTCLIENT :: client config file could not be saved.";
+				ex2.printStackTrace();
+			}
 		} catch (Exception ex) {
 			resp = "ERROR IN PUTCLIENT :: WRONG FORMAT";
 			ex.printStackTrace();

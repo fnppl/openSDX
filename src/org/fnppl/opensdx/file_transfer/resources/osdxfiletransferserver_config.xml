@@ -55,6 +55,7 @@
 		<ipv4>127.0.0.1</ipv4>
       	<ipv6>127.0.0.1</ipv6>
       	<logfile>/tmp/osdx_ftserver_log.txt</logfile>
+      	<clients_config_file backup="true">filetransfer_config_clients.xml</clients_config_file>
 	</osdxfiletransferserver>
 	<clients>
 		<client> <!--  testkey in OSDXFielTransferClient main() -->
