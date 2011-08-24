@@ -179,13 +179,24 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable, M
         Dimension dMax = new Dimension(450,600);
         Dimension dPref = new Dimension(450, (int)pSender.getPreferredSize().getHeight());
         
-        pSender.setMinimumSize(dMin);
-        pSender.setMaximumSize(dMax);
-        pSender.setPreferredSize(dPref);
+        setSizes(pCreator,dMin,dMax,dPref);
+        setSizes(pSender,dMin,dMax,dPref);
+        setSizes(pLicensor,dMin,dMax,dPref);
+        setSizes(pLicensee,dMin,dMax,dPref);
+
         
-        pCreator.setMinimumSize(dMin);
-        pCreator.setMaximumSize(dMax);
-        pCreator.setPreferredSize(dPref);
+       // setSizes(pBasis,dMin,dMax,dPref);
+        
+        dPref = new Dimension(450, 350);
+        setSizes(pTriggeredActions,dMin,dMax,dPref);
+        setSizes(pReceiver,dMin,dMax,dPref);
+        
+    }
+    private void setSizes(JPanel p, Dimension dMin, Dimension dMax, Dimension dPref) {
+    	p.setMinimumSize(dMin);
+        p.setMaximumSize(dMax);
+        p.setPreferredSize(dPref);
+        
     }
      
     private void initLayout() {
@@ -278,7 +289,7 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable, M
     	gbc.gridy = 4;
     	gbc.gridwidth = 2;
     	gbc.gridheight = 1;
-    	gbc.weightx = 0.0;
+    	gbc.weightx = 100.0;
     	gbc.weighty = 100.0;
     	gbc.anchor = GridBagConstraints.CENTER;
     	gbc.fill = GridBagConstraints.BOTH;

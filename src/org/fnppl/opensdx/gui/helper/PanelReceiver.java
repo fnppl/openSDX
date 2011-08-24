@@ -45,6 +45,7 @@ package org.fnppl.opensdx.gui.helper;
  * 
  */
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -95,6 +96,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 	private JButton bu_keyid_remove;
 	private JLabel label_username;
 	private JTextField text_username;
+	private JButton bu_beam_me_up;
 	
 	private FeedGui gui = null;
 	private Receiver receiver = null;
@@ -123,6 +125,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		text_keystore.setEditable(false);
 		text_keyid.setEditable(false);
 		text_username.setEditable(false);
+		bu_beam_me_up.setVisible(false);
 	}
 
 
@@ -258,6 +261,15 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		map.put("text_username", text_username);
 		texts.add(text_username);
 
+	
+		bu_beam_me_up = new JButton("<html><b>beam me up!</b></html>");
+		map.put("bu_beam_me_up", bu_beam_me_up);
+		bu_beam_me_up.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				bu_beam_me_up_clicked();
+			}
+		});
+		
 		documentListener = new DocumentChangeListener(texts);
 		for (JTextComponent text : texts) {
 			text.getDocument().addDocumentListener(documentListener);
@@ -583,7 +595,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(text_username,gbc);
 		add(text_username);
-		
+				
 		// Component: filler
 		JLabel filler = new JLabel();
 		gbc.gridx = 1;
@@ -599,6 +611,26 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(filler,gbc);
 		add(filler);
+		
+		// Component: bu_beam_me_up
+		Dimension dim = new Dimension(450,45);
+		bu_beam_me_up.setMinimumSize(dim);
+		bu_beam_me_up.setMaximumSize(dim);
+		bu_beam_me_up.setPreferredSize(dim);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 8;
+		gbc.gridwidth = 4;
+		gbc.gridheight = 1;
+		gbc.weightx = 50.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(5,5,5,5);
+		gbl.setConstraints(bu_beam_me_up,gbc);
+		add(bu_beam_me_up);
 	}
 	public static void main(String[] args) {
 		try {
@@ -796,6 +828,12 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		notifyChanges();		
 	}
 	
+	public void bu_beam_me_up_clicked() {
+		if(gui!=null) {
+			gui.sendFeedToReceiver();
+		}
+	}
+	
 	public void text_changed(String name) {
 		Receiver r = getReceiver();
 		if (r==null) return;
@@ -808,7 +846,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		}
 		notifyChanges();
 	}
-
+	
 	//observable
 	private Vector<MyObserver> observers = new Vector<MyObserver>();
 	public void addObserver(MyObserver observer) {

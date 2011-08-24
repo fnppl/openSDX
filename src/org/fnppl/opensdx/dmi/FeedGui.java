@@ -861,12 +861,12 @@ public class FeedGui extends JFrame implements MyObserver {
 	public void init_example_feed() {
 		currentFeed = FeedCreator.makeExampleFeed();
 		long now = System.currentTimeMillis();
-		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
-			.servername("localhost")
-			.serveripv4("127.0.0.1")
-			.username("testuser")
-			.authtype(Receiver.AUTH_TYPE_KEYFILE);
-		currentFeed.getFeedinfo().receiver(receiver);
+//		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
+//			.servername("localhost")
+//			.serveripv4("127.0.0.1")
+//			.username("testuser")
+//			.authtype(Receiver.AUTH_TYPE_KEYFILE);
+//		currentFeed.getFeedinfo().receiver(receiver);
 		currentFeed.getBundle(0).addItem(
 				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
 						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(), LicenseSpecifics.make())

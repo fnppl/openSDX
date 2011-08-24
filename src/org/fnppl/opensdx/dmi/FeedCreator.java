@@ -62,15 +62,13 @@ import java.util.*;
 public class FeedCreator {
 	private ContractPartner sender;
 	private ContractPartner licensor;
-	private String creator_email;
-	private String creator_userid;
+	private Creator creator;
 	
 	
-	public FeedCreator(ContractPartner sender, ContractPartner licensor, String creator_email, String creator_userid) {
+	public FeedCreator(ContractPartner sender, ContractPartner licensor, Creator creator) {
 		this.sender = sender;
 		this.licensor = licensor;
-		this.creator_userid = creator_userid;
-		this.creator_email = creator_email;
+		this.creator = creator;
 	}
 	
 	public static Feed makeExampleFeed() {
@@ -81,7 +79,8 @@ public class FeedCreator {
 				"contractpartnerid",
 				"ourcontractpartnerid"
 			)
-			.email("sender@example.org");
+			.email("sender@example.org")
+			.keyid("00:11:33:44:55:66:77:88:99:00:11:22:33:44:55:66:77:88:99:00@keyserver.fnppl.org");
 		
 		ContractPartner licensor
 			= ContractPartner.make(
@@ -89,12 +88,16 @@ public class FeedCreator {
 				"contractpartnerid",
 				"ourcontractpartnerid"
 			)
-			.email("licensor@example.org");
+			.email("licensor@example.org")
+			.keyid("22:11:33:44:55:66:77:88:99:00:11:22:33:44:55:66:77:88:99:00@keyserver.fnppl.org");
 		
 		String creator_email = "creator@example.org";
 		String creator_userid = "creator_userid";
+		String creator_keyid = "22:11:33:44:55:66:77:88:99:00:11:22:33:44:55:66:77:88:99:00@keyserver.fnppl.org";
+		Creator creator = Creator.make(creator_email, creator_userid, creator_keyid);
 		
-		FeedCreator fc = new FeedCreator(sender, licensor, creator_email, creator_userid);
+		FeedCreator fc = new FeedCreator(sender, licensor, creator);
+		
 		
 		Feed feed = Feed.make(
 				fc.makeExampleFeedInfo()
@@ -139,10 +142,18 @@ public class FeedCreator {
 	private FeedInfo makeExampleFeedInfo() {
 		
 		boolean onlytest =true;
-		String feedid = "example feedid";
+		String feedid = UUID.randomUUID().toString();
 		long creationdatetime = System.currentTimeMillis();
 		long effectivedatetime = System.currentTimeMillis();
-		ContractPartner licensee = ContractPartner.make(ContractPartner.ROLE_LICENSEE,"","");
+		ContractPartner licensee
+				= ContractPartner.make(
+					ContractPartner.ROLE_LICENSEE,
+					"licenseeid",
+					"ourlicenseeid"
+				)
+				.email("licensee@fnppl.org")
+				.keyid("11:22:33:44:55:66:77:88:99:00:11:22:33:44:55:66:77:88:99:00@keyserver.fnppl.org");
+		
 		FeedInfo feedinfo
 			= FeedInfo.make(
 				onlytest,
@@ -153,7 +164,7 @@ public class FeedCreator {
 				licensor,
 				licensee
 			)
-			.creator(Creator.make(creator_email, creator_userid, null))
+			.creator(creator)
 			.receiver(
 				Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
 						.servername("localhost")
@@ -188,8 +199,8 @@ public class FeedCreator {
 		= Bundle.make(
 			IDs.make()
 				.amzn("amazon")
-				.finetunes("fineid")
-				.upc("a2312")
+				.finetunes("123456789123")
+				.upc("1234567890")
 			,
 			"displayname",
 			"name",
