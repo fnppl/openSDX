@@ -273,12 +273,18 @@ public class Beamer {
 			copyOfFeed.getFeedinfo().getReceiver().file_keystore(null);
 		} catch (Exception ex) {}
 		
+		//directory for date
+		String datedir = Util.filterCharactersFile(SecurityHelper.getFormattedDateDay(System.currentTimeMillis()));
+		
 		//norm feedid
 		String dir = normFeedid;
 		//String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,19).replace(' ', '_');
 		//dir = Util.filterCharactersFile(dir);
 		
 		//build file structure
+		client.mkdir(datedir);
+		client.cd(datedir);
+		
 		client.mkdir(dir);
 		client.cd(dir);
 		
