@@ -882,7 +882,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     <xsd:complexType name="action_instruction"/>
     <xsd:simpleType name="email">
         <xsd:restriction base="xsd:string">
-        	<xsd:pattern value="(([a-zA-Z0-9_\-\.]+)@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})*)?" />
+        	<xsd:pattern value="(([a-zA-Z0-9_\-\.]+)@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3}))?" />
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="emaillist">
@@ -924,7 +924,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     </xsd:simpleType>
     <xsd:simpleType name="upc">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern value="((\d{10,13})*)?">
+            <xsd:pattern value="(\d{10,13})?">
             	<xsd:annotation >
             		<xsd:documentation xml:lang="en">The Universal Product Code (UPC) is a barcode symbology (i.e., a specific type of barcode), that is widely used in North America, and in countries including the UK, Australia, and New Zealand for tracking trade items in stores. 
             		Its most common form, the UPC-A, consists of 12 numerical digits, which are uniquely assigned to each trade item. Along with the related EAN barcode, the UPC is the only barcode allowed for scanning trade items at the point of sale, per GS1 standards.</xsd:documentation>
@@ -934,7 +934,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     </xsd:simpleType>   
     <xsd:simpleType name="isbn">
         <xsd:restriction base="xsd:string">
-			<xsd:pattern value="((\d{1}-\d{5}-\d{3}-\d{1}|\d{1}-\d{3}-\d{5}-\d{1}|\d{1}-\d{2}-\d{6}-\d{1})*)?">
+			<xsd:pattern value="(\d{1}-\d{5}-\d{3}-\d{1}|\d{1}-\d{3}-\d{5}-\d{1}|\d{1}-\d{2}-\d{6}-\d{1})?">
 				<xsd:annotation >
             		<xsd:documentation xml:lang="en">The International Standard Book Number (ISBN) is a unique numeric commercial book identifier based upon the 9-digit Standard Book Numbering (SBN) code.</xsd:documentation>
             	</xsd:annotation>			
@@ -943,7 +943,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     </xsd:simpleType>
     <xsd:simpleType name="isrc">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern value="((/^[a-zA-Z]{2}\- [0-9a-zA-Z]{3}\- \d{2}\- \d{5}/)*)?">
+            <xsd:pattern value="(/^[a-zA-Z]{2}\- [0-9a-zA-Z]{3}\- \d{2}\- \d{5}/)?">
 				<xsd:annotation >
             		<xsd:documentation xml:lang="en">The International Standard Recording Code (ISRC), defined by ISO 3901, is an international standard code for uniquely identifying sound recordings and music video recordings.</xsd:documentation>
             	</xsd:annotation>			
@@ -952,7 +952,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     </xsd:simpleType>  
     <xsd:simpleType name="finetunes">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern value="((\d{13})*)?" >
+            <xsd:pattern value="(\d{13})?" >
 				<xsd:annotation >
             		<xsd:documentation xml:lang="en">The 13 digits long identifier of a item at finetunes.</xsd:documentation>
             	</xsd:annotation>			
