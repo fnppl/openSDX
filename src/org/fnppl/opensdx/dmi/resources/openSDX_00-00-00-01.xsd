@@ -273,7 +273,8 @@
     <xsd:complexType name="related">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element contains informations of bundles which are related 
-            to the bundle of the actual feed.</xsd:documentation>
+            to the bundle of the actual feed. It may includes one or more physical distributors and one element "utube" 
+            which could include information about channel and url at youtube.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="physical_distributor" type="physical_distributor" maxOccurs="unbounded" minOccurs="0"/>
@@ -309,7 +310,7 @@
     <xsd:complexType name="license_basis">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element includes the basic rules and information under which 
-            this bundle is provided. The optional element ""streaming_allowed" tells if streaming is allowed or not. </xsd:documentation>
+            this bundle is provided. The optional element "streaming_allowed" tells if streaming is allowed or not.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="territorial" type="territorial" maxOccurs="1" minOccurs="0"/>
@@ -322,7 +323,7 @@
     <xsd:complexType name="license_basis_item">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element includes the basic rules and information under which 
-            this bundle is provided.</xsd:documentation>
+            this bundle is provided. The optional element "streaming_allowed" tells if streaming is allowed or not</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="territorial" type="territorial" maxOccurs="1" minOccurs="0"/>
@@ -377,7 +378,8 @@
     <xsd:complexType name="territorial">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This Element is a container for territories. There should be a entry 
-            for all territories with a attribute if distribution is allowed or not.</xsd:documentation>
+            for all territories (ISO 3166-1 country code) with a attribute if distribution is allowed or not. "WW" means "World Wide"
+            and is a wildcard for all territories.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="territory" type="territory" maxOccurs="unbounded" minOccurs="0"/>
@@ -386,7 +388,7 @@
     <xsd:complexType name="territory">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">A territory includes one country code an the required attribute "type". 
-            Type can be "allow" or "disallow".</xsd:documentation>
+            Type can be "allow" or "disallow" and tells about the allowance of corresponding territory.</xsd:documentation>
         </xsd:annotation>
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
@@ -396,8 +398,7 @@
     </xsd:complexType>
     <xsd:complexType name="license_specifics">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element includes specific rules which should be applied. 
-            This can be achieved by given rules.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element includes specific rules which should be applied.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="rules" type="rules" maxOccurs="1" minOccurs="0"/>
@@ -405,8 +406,7 @@
     </xsd:complexType>
     <xsd:complexType name="license_specifics_item">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element includes specific rules which should be applied. 
-            This can be achieved by given rules.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element includes specific rules which should be applied.</xsd:documentation>
         </xsd:annotation>
         <xsd:choice minOccurs="1" maxOccurs="2">
             <xsd:element name="rules" type="rules" maxOccurs="1" minOccurs="0"/>
@@ -508,31 +508,67 @@
     </xsd:complexType>
     <xsd:complexType name="file">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains information and location of a file.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information and location of a file. </xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="location" type="fileLocation"/>
-            <xsd:element name="type" type="fileType" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="filetype" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="samplerate" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="type" type="fileType" maxOccurs="1" minOccurs="0">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Type tells about the type of the file and MUST be "prelistining", "full", "frontcover", "backcover" or "booklet".</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>            
+            <xsd:element name="filetype" type="xsd:string" maxOccurs="1" minOccurs="0">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Filetype should accept e.g. "MP3" also as "MPEG-1 Audio Layer III".</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
+            <xsd:element name="samplerate" type="xsd:string" maxOccurs="1" minOccurs="0">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Samplerate in khz.</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>            
             <xsd:element minOccurs="0" name="prelistening_offset" type="xsd:int">
                 <xsd:annotation>
-                    <xsd:documentation>prelistening_offset is in seconds. prelistening_offset is a "SHOULD" for filetype "prelistening".
-prelistening_offset is a MUST NOT for any other filetype.</xsd:documentation>
+                    <xsd:documentation xml:lang="en">prelistening_offset is in seconds. prelistening_offset is a "SHOULD" for filetype "prelistening".
+							prelistening_offset is a MUST NOT for any other filetype.</xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
             <xsd:element minOccurs="0" name="prelistening_length" type="xsd:int">
                 <xsd:annotation>
-                    <xsd:documentation>prelistening_length is in seconds. prelistening_offset is a "SHOULD" for filetype "prelistening".
-prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
+                    <xsd:documentation xml:lang="en">prelistening_length is in seconds. prelistening_offset is a "SHOULD" for filetype "prelistening".
+								prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
-            <xsd:element name="samplesize" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="bitrate" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="bitratetype" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="codec" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="codecsettings" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="bytes" type="xsd:integer" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="samplesize" type="xsd:string" maxOccurs="1" minOccurs="0">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Samplesize in bit.</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>             
+            <xsd:element name="bitrate" type="xsd:string" maxOccurs="1" minOccurs="0">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Bitrate in kilobitpersecond e.g. 256 (on VBR) or 96/320 on (MBR).</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
+            <xsd:element name="bitratetype" type="xsd:string" maxOccurs="1" minOccurs="0">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Type of bidrate such as CBR/VBR/MBR.</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
+            <xsd:element name="codec" type="xsd:string" maxOccurs="1" minOccurs="0">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Name of used codec.</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
+            <xsd:element name="codecsettings" type="xsd:string" maxOccurs="1" minOccurs="0">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Some arbitrary settings info in reference to codec - such as "insane" or "quality=9".</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
+            <xsd:element name="bytes" type="xsd:integer" maxOccurs="1" minOccurs="0">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Length of file in bytes.</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
             <xsd:element name="checksums" type="checksums"/>
             <xsd:element name="channels" type="fileChannels" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="dimension" type="dimension" maxOccurs="1" minOccurs="0"/>
@@ -551,7 +587,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     </xsd:complexType>
     <xsd:complexType name="dimension">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains entries for width and height of the file.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains entries for the dimension (width and height) of the file.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="width" type="xsd:integer"/>
@@ -560,7 +596,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     </xsd:complexType>
     <xsd:complexType name="fileLocation">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains the path to the corresponding file.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains the path to the corresponding file. File can be accessible via path, http or ftp</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="path" type="xsd:string" maxOccurs="1" minOccurs="0"/>
@@ -570,17 +606,25 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     </xsd:complexType>
     <xsd:complexType name="creator">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about the creator of that feed.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about the creator of that feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="email" type="email"/>
-            <xsd:element name="userid" type="userid" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="email" type="email">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Content should be an email-address of the *user* on the sending side.</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
+            <xsd:element name="userid" type="userid" maxOccurs="1" minOccurs="0">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">This should be an unique id of the *user* on the sending side.</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
             <xsd:element name="keyid" type="xsd:string" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="receiver">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains  information about the receiver of that feed.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about the receiver of that feed.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="type" type="receivertypes"/>
@@ -751,7 +795,8 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     </xsd:complexType>
     <xsd:complexType name="fileFtp">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains information about ftp access to file.</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information about ftp access to file just like server, port, 
+            	path to file and credentials (user / password). The expiredate tells until when this file is definitely available to be called.</xsd:documentation>
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="action">
@@ -798,9 +843,17 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
             <xsd:documentation xml:lang="en">This element contains information about the letter event.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="registered" type="xsd:boolean"/>
+            <xsd:element name="registered" type="xsd:boolean">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">This tells if letter must be registered or not.</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
             <xsd:element name="to" type="to"/>
-            <xsd:element name="text" type="xsd:string"/>
+            <xsd:element name="text" type="xsd:string">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">This contains the content/text of letter.</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
             <xsd:element name="costscoveredby" type="costscoveredby"/>
         </xsd:all>
     </xsd:complexType>
@@ -826,7 +879,11 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
         <xsd:all>
             <xsd:element name="contractpartnerid" type="xsd:string"/>
             <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
-            <xsd:element name="maxcostscovered" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="maxcostscovered" type="xsd:string" minOccurs="0" maxOccurs="1">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">This contains the max amount that will be covered.</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="purchase">
@@ -859,7 +916,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
     <xsd:complexType name="postponed">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element contains some info on reporting when doing the "usual" 
-            time-gap-reporting.</xsd:documentation>
+            time-gap-reporting. Id is a ID of a reporting or similar.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="id" type="xsd:string"/>
@@ -871,7 +928,11 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
             file.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="cipher" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="cipher" type="xsd:string" minOccurs="0" maxOccurs="1">
+                 <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Contains info about the cipher for decryption like AES, RIJNDAEL, XOR, Arcfour, whatever - should be "convenient".</xsd:documentation>
+                </xsd:annotation>           
+            </xsd:element>
             <xsd:element name="initvector" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="key" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="bytes" type="xsd:string" minOccurs="0" maxOccurs="1"/>
@@ -916,7 +977,7 @@ prelistening_length is a MUST NOT for any other filetype.</xsd:documentation>
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="iporhostname">
-        <xsd:restriction base="xsd:string"> </xsd:restriction>
+        <xsd:restriction base="xsd:string" />
     </xsd:simpleType>
     <xsd:simpleType name="keyid">
         <xsd:restriction base="xsd:string"> 

@@ -1260,6 +1260,11 @@
 	          <xsd:documentation>SAMOA</xsd:documentation>
 	        </xsd:annotation>
 	      </xsd:enumeration>
+	      <xsd:enumeration value="WW">
+	        <xsd:annotation>
+	          <xsd:documentation>WORLD WIDE</xsd:documentation>
+	        </xsd:annotation>
+	      </xsd:enumeration>	      
 	      <xsd:enumeration value="YE">
 	        <xsd:annotation>
 	          <xsd:documentation>YEMEN</xsd:documentation>
