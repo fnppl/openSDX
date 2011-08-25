@@ -75,6 +75,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	private OSDXSocketDataHandler dataHandler = null;
 	private String username = null;
 	private OSDXKey key = null;
+	private String lastPWD = null;
 	
 	private Vector<DownloadFile> nextDownloadFile = new Vector<DownloadFile>();
 	protected Vector<String> textQueue = new Vector<String>();
@@ -223,6 +224,28 @@ public class OSDXFileTransferClient implements FileTransferClient {
 			}
 		}
 		return false;
+	}
+	
+	public RemoteFile file(String filename) {
+		sendEncryptedText("FILE "+filename);
+		String rfile = null;
+		long timeout = System.currentTimeMillis()+2000;
+		while (rfile==null && System.currentTimeMillis()<timeout) {
+			for (int i=0;i<textQueue.size();i++) {
+				if (textQueue.get(i).startsWith("ACK FILE :: ")) {
+					rfile = textQueue.remove(i).substring(12);
+					System.out.println("FILE: "+rfile);
+					try {
+						String[] att = rfile.split(",,");
+						RemoteFile f = new RemoteFile(RemoteFileSystem.resolveEscapeChars(att[0]), RemoteFileSystem.resolveEscapeChars(att[1]), Long.parseLong(att[2]), Long.parseLong(att[3]), Boolean.parseBoolean(att[4]));
+						return f;
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			}
+		}
+		return null;
 	}
 	
 	public String pwd() {

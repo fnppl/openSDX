@@ -517,6 +517,50 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		sender.sendEncryptedText("ACK PWD :: "+state.getRelativPath());
 	}
 	
+	public void handle_file(String param, OSDXSocketServerThread sender) {
+		try {
+		System.out.println("handle_file: "+param);
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN FILE :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsList()) {
+			sender.sendEncryptedText("ERROR IN FILE :: NOT ALLOWED");
+			return;
+		}
+		FileTransferState state = getState(sender);
+		File f = null;
+		if (param!=null) {
+			if (param.equals("/")) {
+				f = state.getRootPath();
+			}
+			else if (param.startsWith("/")) {
+				f = new File(state.getRootPath()+param);
+			}
+			else {
+				f = new File(state.getCurrentPath(),param);
+			}
+		} else {
+			f = state.getCurrentPath();
+		}
+		if (!f.exists()) {
+			sender.sendEncryptedText("ERROR IN FILE :: FILE \""+param+"\" DOES NOT EXIST.");
+		} else {
+			String path = "";
+			String name = "/";
+			if (!f.equals(state.getRootPath())) {
+				path = RemoteFileSystem.makeEscapeChars(state.getRelativPath(f.getParentFile()));
+				name = RemoteFileSystem.makeEscapeChars(f.getName());
+			}
+			String rfile = path+",,"+name+",,"+f.length()+",,"+f.lastModified()+",,"+f.isDirectory();
+			sender.sendEncryptedText("ACK FILE :: "+rfile);
+		}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
 	public void handle_list(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
