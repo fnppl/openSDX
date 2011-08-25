@@ -46,75 +46,19 @@ import org.fnppl.opensdx.security.SecurityHelper;
  * Free Documentation License" resp. in the file called "FDL.txt".
  *
  */
-public class RemoteFile {
-
-	private String path;
-	private String name;
-	private long length;
-	private long lastModified;
-	private boolean directory;
-	
-	
-	public RemoteFile(String path, String name, long length, long lastModified, boolean directory) {
-		this.path = path;
-		this.name = name;
-		this.length = length;
-		this.lastModified = lastModified;
-		this.directory = directory;
-	}
-
-	public String getFilnameWithPath() {
-		String filename = ""+path;
-		if (!filename.endsWith("/")) filename += "/";
-		if (!name.equals("/")) {
-			filename += name;
-		}
-		return filename;
-	}
-	
-	public String getPath() {
-		return path;
-	}
-
-	public void setPath(String path) {
-		this.path = path;
-	}
-	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public long getLength() {
-		return length;
-	}
-
-	public void setLength(long length) {
-		this.length = length;
-	}
-
-	public long getLastModified() {
-		return lastModified;
-	}
-
-	public void setLastModified(long lastModified) {
-		this.lastModified = lastModified;
+public class NonExistingRemoteFile extends RemoteFile {
+		
+	public NonExistingRemoteFile(String path, String name) {
+		super(path, name, 0L, System.currentTimeMillis(), false);
 	}
 
 	public boolean isDirectory() {
-		return directory;
+		return false;
 	}
+
 	public boolean isFile() {
-		return !directory;
+		return false;
 	}
-	
-	public String toString() {
-		return String.format("%-20s | %8dkB  %-6s  %s",name,(length/1000),(directory?"[DIR]":"[FILE]"),SecurityHelper.getFormattedDate(lastModified));
-	}
-	
 	
 	
 }
