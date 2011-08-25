@@ -70,6 +70,10 @@ public class BusinessDatetimeItem extends BusinessItem {
 		super(name,datetime);
 	}
 	
+	public BusinessDatetimeItem(String name, String datetime) throws ParseException {
+		super(name,datemeGMT.parse(datetime).getTime());
+	}
+	
 	public static BusinessDatetimeItem fromBusinessObject(BusinessObject bo, String name) {
 		BusinessStringItem item = bo.handleBusinessStringItem(name);
 		if (item==null) {
@@ -89,6 +93,7 @@ public class BusinessDatetimeItem extends BusinessItem {
 	public void setDatetime(long datetime) {
 		super.set(datetime);
 	}
+	
 	
 	public long getDatetime() {
 		Object o = super.get();
