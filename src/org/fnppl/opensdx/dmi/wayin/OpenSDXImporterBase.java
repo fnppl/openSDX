@@ -1,6 +1,9 @@
 package org.fnppl.opensdx.dmi.wayin;
 
 import java.io.File;
+import java.sql.Savepoint;
+
+import org.fnppl.opensdx.dmi.FeedValidator;
 import org.fnppl.opensdx.security.*;
 
 /*
@@ -70,9 +73,9 @@ public class OpenSDXImporterBase {
 				System.exit(0);
 			}
 			
-			ImportType impType = ImportType.getImportType(args[0]);
-			File impFile = new File(args[1]);
-			File savFile = new File(args[2]);
+			ImportType impType = ImportType.getImportType(args[0].toLowerCase().trim());
+			File impFile = new File(args[1].trim());
+			File savFile = new File(args[2].trim());
 			
 			if(!impFile.exists()) {
 				System.out.println("ERROR: File to import not exist! Please check and try again.");
@@ -89,11 +92,20 @@ public class OpenSDXImporterBase {
 					SimfyToOpenSDXImporter impSimfy = new SimfyToOpenSDXImporter(impType, impFile, savFile);
 					ir = impSimfy.formatToOpenSDXFile();		
 					break;
+				case ImportType.FUDGE:
+					FudgeToOpenSDXImporter impFudge = new FudgeToOpenSDXImporter(impType, impFile, savFile);
+					ir = impFudge.formatToOpenSDXFile();		
+					break;					
 				default:
 					break;
 			}
 			if(ir.succeeded) {
 				System.out.println("Import succeeded! Nice!");
+				System.out.println("But what about validation? Lets have a look.\n");
+				System.out.println("#+++++++++++++++++++++++++++++++++++++++++++++++++++#\n");
+				System.out.println(new FeedValidator().validateOSDX_0_0_1(savFile));
+				System.out.println("#+++++++++++++++++++++++++++++++++++++++++++++++++++#\n");
+				
 			}
 			else {
 				System.out.println("Import NOT succeeded! ERROR: "+ir.errorMessage);
