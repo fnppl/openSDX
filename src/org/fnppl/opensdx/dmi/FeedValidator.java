@@ -62,8 +62,9 @@ import org.xml.sax.*;
 
 public class FeedValidator {
 	public final static URL FILE_OSDX_0_0_1 = FeedValidator.class.getResource("resources/openSDX_00-00-00-01.xsd");
-	public String message = "";
-	public int errorCount = 0;
+	private String message = "";
+	private int errorCount = 0;
+	private int errorLengthToShow = 200; // set to "-1" to show all
 	
 	public String validateOSDX_0_0_1(String s) throws Exception { //validate against oSDX 0.0.1 (mayor minor sub)
 		File file = new File(FILE_OSDX_0_0_1.toURI());
@@ -109,10 +110,10 @@ public class FeedValidator {
 			
 			if(errorCount>0) {
 				if(errorCount==1) {
-					message = "Validation error! "+errorCount+" error occurred!\n"+ message;
+					message = "Validation error! "+errorCount+" error occurred!\n"+ message+"\nPlease check.\n";
 				}
 				else {
-					message = "Validation error! "+errorCount+" errors occurred!\n"+ message;
+					message = "Validation error! "+errorCount+" errors occurred!\n\n"+ message+"\nPlease check.\n";
 				}
 			}
 		    
@@ -173,7 +174,12 @@ public class FeedValidator {
 			reader.parse(is); // try to parse and validate
 			
 			if(errorCount>0) {
-				message = "Validation error! "+errorCount+" errors occurred!\n"+ message;
+				if(errorCount==1) {
+					message = "Validation error! "+errorCount+" error occurred!\n\n"+ message+"\nPlease check.\n";
+				}
+				else {
+					message = "Validation error! "+errorCount+" errors occurred!\n\n"+ message+"\nPlease check.\n";
+				}
 			}			
 
 		}
@@ -216,20 +222,34 @@ public class FeedValidator {
     public class ValidationErrorHandler implements ErrorHandler {
         public void warning(SAXParseException e) throws SAXException {
         	errorCount++;
-        	message += errorCount +". ["+e.getLineNumber() + "::"+e.getColumnNumber()+"] Message: "+e.getMessage()+"\n"; 
+        	String msg = e.getMessage();
+        	if(errorLengthToShow!=-1 && msg.length()>errorLengthToShow) msg = msg.substring(0, errorLengthToShow)+"...";
+        	message += errorCount +". ["+e.getLineNumber() + "::"+e.getColumnNumber()+"] Message: "+msg+"\n"; 
         }
 
         public void error(SAXParseException e) throws SAXException {
-        	errorCount++;        	
-        	message += errorCount +". ["+e.getLineNumber() + "::"+e.getColumnNumber()+"] Message: "+e.getMessage()+"\n"; 
+        	errorCount++;  
+        	String msg = e.getMessage();
+        	if(errorLengthToShow!=-1 && msg.length()>errorLengthToShow) msg = msg.substring(0, errorLengthToShow)+"...";        	
+        	message += errorCount +". ["+e.getLineNumber() + "::"+e.getColumnNumber()+"] Message: "+msg+"\n"; 
         }
 
         public void fatalError(SAXParseException e) throws SAXException {
-        	errorCount++;        	
-        	message += errorCount +". ["+e.getLineNumber() + "::"+e.getColumnNumber()+"] Message: "+e.getMessage()+"\n"; 
+        	errorCount++;
+        	String msg = e.getMessage();
+        	if(errorLengthToShow!=-1 && msg.length()>errorLengthToShow) msg = msg.substring(0, errorLengthToShow)+"...";        	
+        	message += errorCount +". ["+e.getLineNumber() + "::"+e.getColumnNumber()+"] Message: "+msg+"\n"; 
         }
     }    
 	
+	public int getErrorLengthToShow() {
+		return errorLengthToShow;
+	}
+
+	public void setErrorLengthToShow(int errorLengthToShow) {
+		this.errorLengthToShow = errorLengthToShow;
+	}    
+    
 	public static void main(String[] args) {
 		
 	}

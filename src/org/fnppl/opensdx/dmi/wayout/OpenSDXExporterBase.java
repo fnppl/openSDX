@@ -75,9 +75,9 @@ public class OpenSDXExporterBase {
 				System.exit(0);
 			}
 			
-			ExportType expType = ExportType.getExportType(args[0]);
-			File expFile = new File(args[1]);
-			File savFile = new File(args[2]);
+			ExportType expType = ExportType.getExportType(args[0].toLowerCase().trim());
+			File expFile = new File(args[1].trim());
+			File savFile = new File(args[2].trim());
 			
 			if(!expFile.exists()) {
 				System.out.println("ERROR: File to export not exist! Please check and try again.");
