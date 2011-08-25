@@ -48,6 +48,7 @@ package org.fnppl.opensdx.dmi.wayin;
 public class ImportType {
 	public static final int FINETUNES = 1;
 	public static final int SIMFY = 2;
+	public static final int FUDGE = 3;
 	
 	private int type;
 	
@@ -60,8 +61,11 @@ public class ImportType {
 		if(type.equals("finetunes")) {
 			it.setType(FINETUNES);
 		}
-		if(type.equals("simfy")) {
+		else if(type.equals("simfy")) {
 			it.setType(SIMFY);
+		}	
+		else if(type.equals("fudge")) {
+			it.setType(FUDGE);
 		}		
 		return it;
 	}

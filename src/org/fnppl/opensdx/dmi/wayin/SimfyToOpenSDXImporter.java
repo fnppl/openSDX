@@ -112,8 +112,8 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	        String lic = root.getChildTextNN("licensor");
 	        if (lic.length()==0) lic = "[NOT SET]";
 	        
-	        ContractPartner sender = ContractPartner.make(0, lic , "");
-	        ContractPartner licensor = ContractPartner.make(1, lic, "");
+	        ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER, lic , "");
+	        ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR, lic, "");
 	        ContractPartner licensee = ContractPartner.make(ContractPartner.ROLE_LICENSEE,"","");
 	        
 	        FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor, licensee);

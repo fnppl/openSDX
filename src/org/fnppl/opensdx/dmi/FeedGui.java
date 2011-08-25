@@ -233,6 +233,9 @@ public class FeedGui extends JFrame implements MyObserver {
 				else if(cmd.equalsIgnoreCase("import simfy feed")) {
 					import_feed("simfy");
 				}
+				else if(cmd.equalsIgnoreCase("import fudge feed")) {
+					import_feed("fudge");
+				}				
 				else if(cmd.equalsIgnoreCase("export finetunes feed")) {
 					export_feed("finetunes");
 				}				
@@ -296,11 +299,16 @@ public class FeedGui extends JFrame implements MyObserver {
 		jmi.setActionCommand("import finetunes feed");
 		jmi.addActionListener(ja);
 		jm2.add(jmi);
+
+		jmi = new JMenuItem("Fudge Feed");
+		jmi.setActionCommand("import fudge feed");
+		jmi.addActionListener(ja);
+		jm2.add(jmi);		
 		
 		jmi = new JMenuItem("Simfy Feed");
 		jmi.setActionCommand("import simfy feed");
 		jmi.addActionListener(ja);
-		jm2.add(jmi);
+		jm2.add(jmi);	
 		
 		JMenu jm3 = new JMenu("Export");
 		jb.add(jm3);
@@ -935,6 +943,11 @@ public class FeedGui extends JFrame implements MyObserver {
 					feed = imp.getFormatedFeedFromImport();	
 					ir = imp.getIr();
 				}
+				else if(type.equals("fudge")) {
+					FudgeToOpenSDXImporter imp = new FudgeToOpenSDXImporter(f);				
+					feed = imp.getFormatedFeedFromImport();	
+					ir = imp.getIr();
+				}				
 				else if(type.equals("simfy")) {
 					SimfyToOpenSDXImporter imp = new SimfyToOpenSDXImporter(f);				
 					feed = imp.getFormatedFeedFromImport();	
