@@ -259,7 +259,7 @@ public class OSDXSocketReceiver {
 			
 				if (data[0] == TYPE_TEXT) {
 					String text = new String(Arrays.copyOfRange(data, 1, data.length), "UTF-8");
-					System.out.println("RECEIVED MESSAGE::"+text);
+					//System.out.println("RECEIVED MESSAGE::"+text);
 					if (dataHandler!=null) {
 						dataHandler.handleNewText(text, sender);
 					}
