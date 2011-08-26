@@ -68,6 +68,12 @@
         <name>Classic Rock</name>
       </subgenre>
       <subgenre>
+        <name>Deutschrock</name>
+      </subgenre>
+      <subgenre>
+        <name>Emo</name>
+      </subgenre>
+      <subgenre>
         <name>Experimental Rock</name>
       </subgenre>
       <subgenre>
@@ -131,6 +137,9 @@
         <name>Punk</name>
       </subgenre>
       <subgenre>
+        <name>Funpunk</name>
+      </subgenre>
+      <subgenre>
         <name>Black Metal</name>
       </subgenre>
       <subgenre>
@@ -157,6 +166,9 @@
     <name>Pop</name>
     <subgenres>
       <subgenre>
+        <name>Britpop</name>
+      </subgenre>
+      <subgenre>
         <name>Dance Pop</name>
       </subgenre>
       <subgenre>
@@ -164,6 +176,9 @@
       </subgenre>
       <subgenre>
         <name>Disco</name>
+      </subgenre>
+      <subgenre>
+        <name>Easy Listening</name>
       </subgenre>
       <subgenre>
         <name>Electropop</name>
@@ -191,6 +206,9 @@
       </subgenre>
       <subgenre>
         <name>Neue Deutsche Welle</name>
+      </subgenre>
+      <subgenre>
+        <name>New Age</name>
       </subgenre>
       <subgenre>
         <name>Pop Rock</name>
@@ -283,13 +301,16 @@
         <name>Big Band</name>
       </subgenre>
       <subgenre>
-        <name>Cajun / Zydeco</name>
+        <name>schlager</name>
       </subgenre>
       <subgenre>
-        <name>Classic</name>
+        <name>Classic Jazz</name>
       </subgenre>
       <subgenre>
         <name>Cool Jazz</name>
+      </subgenre>
+      <subgenre>
+        <name>Dixieland music</name>
       </subgenre>
       <subgenre>
         <name>Free jazz</name>
@@ -327,6 +348,9 @@
         <name>Crunk</name>
       </subgenre>
       <subgenre>
+        <name>Dirty South</name>
+      </subgenre>
+      <subgenre>
         <name>G-Funk</name>
       </subgenre>
       <subgenre>
@@ -343,6 +367,9 @@
       </subgenre>
       <subgenre>
         <name>Instrumental Hip Hop</name>
+      </subgenre>
+      <subgenre>
+        <name>Miami Bass</name>
       </subgenre>
       <subgenre>
         <name>New School</name>
@@ -411,6 +438,9 @@
       <subgenre>
         <name>Contemporary R&amp;B</name>
       </subgenre>
+	  <subgenre>
+        <name>Doo-wop</name>
+      </subgenre>
     </subgenres>
   </genre>
   <genre>
@@ -447,7 +477,13 @@
         <name>Electro</name>
       </subgenre>
       <subgenre>
+        <name>Glitch hop</name>
+      </subgenre>
+      <subgenre>
         <name>House</name>
+      </subgenre>
+      <subgenre>
+        <name>Acid House</name>
       </subgenre>
       <subgenre>
         <name>Deep House</name>
@@ -457,6 +493,9 @@
       </subgenre>
       <subgenre>
         <name>Electro House</name>
+      </subgenre>
+      <subgenre>
+        <name>Fidget House</name>
       </subgenre>
       <subgenre>
         <name>Hard House</name>
@@ -469,6 +508,9 @@
       </subgenre>
       <subgenre>
         <name>Tech House</name>
+      </subgenre>
+      <subgenre>
+        <name>Tribal</name>
       </subgenre>
       <subgenre>
         <name>Vocal House</name>
@@ -566,22 +608,28 @@
         <name>Serialism</name>
       </subgenre>
       <subgenre>
-        <name>Waltz</name>
+        <name>Anthem</name>
       </subgenre>
       <subgenre>
         <name>Ballet</name>
       </subgenre>
       <subgenre>
-        <name>Brass Ensemble</name>
+        <name>Cantata</name>
       </subgenre>
       <subgenre>
-        <name>Concerto / Solo Instrument with Orchestra</name>
+        <name>Choral</name>
       </subgenre>
       <subgenre>
-        <name>Mixed Ensemble (Strings / Wind)</name>
+        <name>Madrigal</name>
       </subgenre>
       <subgenre>
-        <name>Mixed Wind Ensemble (Woodwind / Brass)</name>
+        <name>Marches</name>
+      </subgenre>
+      <subgenre>
+        <name>Motet</name>
+      </subgenre>
+      <subgenre>
+        <name>Musical</name>
       </subgenre>
       <subgenre>
         <name>Opera Arias</name>
@@ -602,6 +650,45 @@
         <name>Operettas</name>
       </subgenre>
       <subgenre>
+        <name>Oratorio</name>
+      </subgenre>
+      <subgenre>
+        <name>Passion</name>
+      </subgenre>
+      <subgenre>
+        <name>Requiem</name>
+      </subgenre>
+      <subgenre>
+        <name>Sonata</name>
+      </subgenre>
+      <subgenre>
+        <name>Suite</name>
+      </subgenre>
+      <subgenre>
+        <name>Suite</name>
+      </subgenre>
+      <subgenre>
+        <name>Symphonic Music / Orchestral Music</name>
+      </subgenre>
+      <subgenre>
+        <name>Symphony</name>
+      </subgenre>
+      <subgenre>
+        <name>Waltz</name>
+      </subgenre>
+      <subgenre>
+        <name>Brass Ensemble</name>
+      </subgenre>
+      <subgenre>
+        <name>Concerto / Solo Instrument with Orchestra</name>
+      </subgenre>
+      <subgenre>
+        <name>Mixed Ensemble (Strings / Wind)</name>
+      </subgenre>
+      <subgenre>
+        <name>Mixed Wind Ensemble (Woodwind / Brass)</name>
+      </subgenre>
+      <subgenre>
         <name>Several Solo Instruments</name>
       </subgenre>
       <subgenre>
@@ -620,12 +707,9 @@
         <name>String Trio</name>
       </subgenre>
       <subgenre>
-        <name>Symphonic Music / Orchestral Music</name>
+        <name>Woodwind Ensemble</name>
       </subgenre>
       <subgenre>
-        <name>Symphony</name>
-      </subgenre>
-	  <subgenre>
         <name>a cappella</name>
       </subgenre>
       <subgenre>
@@ -633,9 +717,6 @@
       </subgenre>
       <subgenre>
         <name>Vocal Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Woodwind Ensemble</name>
       </subgenre>
       <subgenre>
         <name>Choir</name>
@@ -650,97 +731,106 @@
         <name>Choir with Orchestra</name>
       </subgenre>
       <subgenre>
-        <name>Female Choir</name>
+        <name>Women's Choir</name>
       </subgenre>
       <subgenre>
-        <name>Male Choir</name>
+        <name>Men's Choir</name>
       </subgenre>
       <subgenre>
         <name>Mixed Choir</name>
       </subgenre>
-	  <subgenre>
-        <name>Choral</name>
-      </subgenre>
-	  <subgenre>
-        <name>Cantata</name>
-      </subgenre>
-	  <subgenre>
-        <name>Suite</name>
-      </subgenre>
-	  <subgenre>
-        <name>Sonata</name>
+      <subgenre>
+        <name>Soprano</name>
       </subgenre>
       <subgenre>
-        <name>Flute</name>
+        <name>Mezzosoprano</name>
       </subgenre>
       <subgenre>
-        <name>Recorder / English Flute</name>
+        <name>Alto</name>
       </subgenre>
       <subgenre>
-        <name>Oboe</name>
+        <name>Tenor</name>
       </subgenre>
       <subgenre>
-        <name>Clarinet</name>
+        <name>Baritone</name>
       </subgenre>
       <subgenre>
-        <name>Bassoon</name>
-      </subgenre>
-      <subgenre>
-        <name>Saxophone</name>
-      </subgenre>
-      <subgenre>
-        <name>Horn</name>
-      </subgenre>
-      <subgenre>
-        <name>Trumpet</name>
-      </subgenre>
-      <subgenre>
-        <name>Trombone</name>
-      </subgenre>
-      <subgenre>
-        <name>Tuba</name>
-      </subgenre>
-      <subgenre>
-        <name>Violin</name>
-      </subgenre>
-      <subgenre>
-        <name>Viola</name>
-      </subgenre>
-      <subgenre>
-        <name>Violoncello</name>
-      </subgenre>
-      <subgenre>
-        <name>Double Bass</name>
-      </subgenre>
-      <subgenre>
-        <name>Guitar</name>
-      </subgenre>
-      <subgenre>
-        <name>Mandolin</name>
-      </subgenre>
-      <subgenre>
-        <name>Lute</name>
-      </subgenre>
-      <subgenre>
-        <name>Harp</name>
-      </subgenre>
-      <subgenre>
-        <name>Piano</name>
-      </subgenre>
-      <subgenre>
-        <name>Harpsichord</name>
+        <name>Basso</name>
       </subgenre>
       <subgenre>
         <name>Accordion</name>
       </subgenre>
       <subgenre>
-        <name>Organ</name>
-      </subgenre>
-      <subgenre>
         <name>Ancient Instruments</name>
       </subgenre>
       <subgenre>
+        <name>Bassoon</name>
+      </subgenre>
+      <subgenre>
+        <name>Cembalo</name>
+      </subgenre>
+      <subgenre>
+        <name>Clarinet</name>
+      </subgenre>
+      <subgenre>
+        <name>Double Bass</name>
+      </subgenre>
+      <subgenre>
+        <name>Flute</name>
+      </subgenre>
+      <subgenre>
+        <name>Guitar</name>
+      </subgenre>
+      <subgenre>
+        <name>Harp</name>
+      </subgenre>
+      <subgenre>
+        <name>Harpsichord</name>
+      </subgenre>
+      <subgenre>
+        <name>Horn</name>
+      </subgenre>
+      <subgenre>
+        <name>Lute</name>
+      </subgenre>
+      <subgenre>
+        <name>Mandolin</name>
+      </subgenre>
+      <subgenre>
+        <name>Oboe</name>
+      </subgenre>
+      <subgenre>
+        <name>Organ</name>
+      </subgenre>
+      <subgenre>
         <name>Percussion (Vibraphone etc.)</name>
+      </subgenre>
+      <subgenre>
+        <name>Piano</name>
+      </subgenre>
+      <subgenre>
+        <name>Recorder / English Flute</name>
+      </subgenre>
+      <subgenre>
+        <name>Saxophone</name>
+      </subgenre>
+      <subgenre>
+        <name>Trombone</name>
+      </subgenre>
+      <subgenre>
+        <name>Trumpet</name>
+      </subgenre>
+      <subgenre>
+        <name>Tuba</name>
+      </subgenre>
+      <subgenre>
+        <name>Viola</name>
+      </subgenre>
+      <subgenre>
+        <name>Violin</name>
+      </subgenre>
+      <subgenre>
+        <name>Violoncello</name>
       </subgenre>
       <subgenre>
         <name>Miscellaneous Lead Instrument</name>
@@ -780,13 +870,16 @@
         <name>African Music</name>
       </subgenre>
       <subgenre>
-        <name>Afrobeat</name>
+        <name>Afro Beat</name>
+      </subgenre>
+      <subgenre>
+        <name>Afro Pop</name>
       </subgenre>
       <subgenre>
         <name>Asian Music</name>
       </subgenre>
-	  <subgenre>
-        <name>Middle Eastern Music</name>
+      <subgenre>
+        <name>Austropop</name>
       </subgenre>
       <subgenre>
         <name>Calypso</name>
@@ -795,16 +888,31 @@
         <name>Caribbean Music</name>
       </subgenre>
       <subgenre>
-        <name>Celtic, European and Judaica Music</name>
+        <name>Celtic Music</name>
+      </subgenre>
+      <subgenre>
+        <name>Chanson</name>
       </subgenre>
       <subgenre>
         <name>Coupé Decalé</name>
       </subgenre>
       <subgenre>
+        <name>European Music</name>
+      </subgenre>
+      <subgenre>
+        <name>Ghazal</name>
+      </subgenre>
+      <subgenre>
         <name>Griot</name>
       </subgenre>
       <subgenre>
+        <name>Gypsy</name>
+      </subgenre>
+      <subgenre>
         <name>Highlife</name>
+      </subgenre>
+      <subgenre>
+        <name>Judaica Music/Yiddish/Klezmer</name>
       </subgenre>
       <subgenre>
         <name>Kuduro</name>
@@ -822,9 +930,15 @@
         <name>Mento</name>
       </subgenre>
       <subgenre>
+        <name>Middle Eastern Music</name>
+      </subgenre>
+      <subgenre>
+        <name>Nordic/Scandinavia</name>
+      </subgenre>
+      <subgenre>
         <name>North American Music</name>
       </subgenre>
-	  <subgenre>
+      <subgenre>
         <name>South American Music</name>
       </subgenre>
       <subgenre>
@@ -845,13 +959,22 @@
       <subgenre>
         <name>Zouk</name>
       </subgenre>
+      <subgenre>
+        <name>Zulu</name>
+      </subgenre>
     </subgenres>
   </genre>
   <genre>
     <name>Latin</name>
     <subgenres>
       <subgenre>
+        <name>Bachata</name>
+      </subgenre>
+      <subgenre>
         <name>Banda</name>
+      </subgenre>
+      <subgenre>
+        <name>Bhangra</name>
       </subgenre>
       <subgenre>
         <name>Bolero</name>
@@ -931,6 +1054,9 @@
         <name>Gospel</name>
       </subgenre>
       <subgenre>
+        <name>Gregorian Music</name>
+      </subgenre>
+      <subgenre>
         <name>Hymn</name>
       </subgenre>
       <subgenre>
@@ -957,6 +1083,21 @@
         <name>Instrumental</name>
       </subgenre>
       <subgenre>
+        <name>Vocal</name>
+      </subgenre>
+      <subgenre>
+        <name>Acoustic</name>
+      </subgenre>
+      <subgenre>
+        <name>Unplugged</name>
+      </subgenre>
+      <subgenre>
+        <name>Live</name>
+      </subgenre>
+      <subgenre>
+        <name>Traditional</name>
+      </subgenre>
+      <subgenre>
         <name>Karaoke</name>
       </subgenre>
       <subgenre>
@@ -975,13 +1116,16 @@
         <name>TV Soundtrack</name>
       </subgenre>
       <subgenre>
-        <name>unclassifiable</name>
-      </subgenre>
-      <subgenre>
         <name>Wedding Music</name>
       </subgenre>
       <subgenre>
         <name>Holiday</name>
+      </subgenre>
+      <subgenre>
+        <name>Mashup</name>
+      </subgenre>
+      <subgenre>
+        <name>unclassifiable</name>
       </subgenre>
     </subgenres>
   </genre>
@@ -1131,6 +1275,9 @@
       </subgenre>
       <subgenre>
         <name>Creativity</name>
+      </subgenre>
+	  <subgenre>
+        <name>Esoteric</name>
       </subgenre>
       <subgenre>
         <name>Fitness</name>
@@ -1477,6 +1624,67 @@
       </subgenre>
       <subgenre>
         <name>Youth</name>
+      </subgenre>
+    </subgenres>
+  </genre>
+  <genre>
+    <name>Time</name>
+    <subgenres>
+      <subgenre>
+        <name>Middle Ages</name>
+      </subgenre>
+      <subgenre>
+        <name>20's</name>
+      </subgenre>
+      <subgenre>
+        <name>30's</name>
+      </subgenre>
+      <subgenre>
+        <name>40's</name>
+      </subgenre>
+      <subgenre>
+        <name>50's</name>
+      </subgenre>
+      <subgenre>
+        <name>60's</name>
+      </subgenre>
+      <subgenre>
+        <name>70'</name>
+      </subgenre>
+      <subgenre>
+        <name>80's</name>
+      </subgenre>
+      <subgenre>
+        <name>90's</name>
+      </subgenre>
+      <subgenre>
+        <name>2000's</name>
+      </subgenre>
+      <subgenre>
+        <name>2010's</name>
+      </subgenre>
+      <subgenre>
+        <name>2020's</name>
+      </subgenre>
+    </subgenres>
+  </genre>
+  <genre>
+    <name>Adult</name>
+  </genre>
+  <genre>
+    <name>Children</name>
+    <subgenres>
+      <subgenre>
+        <name>Age: up to 6 years</name>
+      </subgenre>
+      <subgenre>
+        <name>Age: 6 years +</name>
+      </subgenre>
+      <subgenre>
+        <name>Age: 8 years +</name>
+      </subgenre>
+      <subgenre>
+        <name>Kids &amp; Family</name>
       </subgenre>
     </subgenres>
   </genre>
