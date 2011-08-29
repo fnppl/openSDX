@@ -120,7 +120,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor, licensee);
 	        
 	        // path to importfile
-	        String path = this.importFile.getParent()+File.separator;
+	        String path = this.importFile.getParent();
 	        
 	        // (3) create new feed with feedinfo
 	        feed = Feed.make(feedinfo);              
@@ -192,6 +192,16 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	ItemTags tags = ItemTags.make();   		
         	tags.addGenre(root.getChildTextNN("main_genre"));
         	
+        	// explicit_lyrics
+        	if(root.getChildTextNN("parental_advisory").length()>0) {
+        		if(root.getChildTextNN("parental_advisory").toLowerCase().equals("false")) {
+        			tags.explicit_lyrics(ItemTags.EXPLICIT_LYRICS_FALSE);  
+        		}
+        		else if(root.getChildTextNN("parental_advisory").toLowerCase().equals("true")) {
+        			tags.explicit_lyrics(ItemTags.EXPLICIT_LYRICS_TRUE);  
+        		}            		
+        	}        	
+        	
     		bundle.tags(tags);        	
         	
         	Contributor contributor = Contributor.make(root.getChildTextNN("label"), Contributor.TYPE_LABEL, IDs.make());
@@ -205,89 +215,82 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         		bundle.addContributor(contributor);
         	}
          	
-         	String copyright = root.getChildTextNN("c_line_text");
-         	String production = root.getChildTextNN("p_line_text");
+         	String copyright = "";
+         	if(root.getChild("c_line_text")!=null) { copyright = root.getChildTextNN("c_line_text"); }
+         	String production = null;
+         	if(root.getChild("p_line_text")!=null) { production = root.getChildTextNN("p_line_text"); }
          	
          	if(copyright.length()>0) {
-	         		contributor = Contributor.make(copyright.substring(5), Contributor.TYPE_COPYRIGHT, IDs.make());
-	         		contributor.year(root.getChildTextNN("c_line_year"));
+	         		contributor = Contributor.make(copyright, Contributor.TYPE_COPYRIGHT, IDs.make());
+	         		if(root.getChild("c_line_year")!=null) {
+	         			contributor.year(root.getChildTextNN("c_line_year"));
+	         		}
 	         		bundle.addContributor(contributor);  
          	}
          	
          	if(production.length()>0) {
-	         		contributor = Contributor.make(production.substring(5), Contributor.TYPE_PRODUCTION, IDs.make());
-	         		contributor.year(root.getChildTextNN("p_line_year"));
+	         		contributor = Contributor.make(production, Contributor.TYPE_PRODUCTION, IDs.make());
+	         		if(root.getChild("p_line_year")!=null) {
+	         			contributor.year(root.getChildTextNN("p_line_year"));
+	         		}
 	         		bundle.addContributor(contributor);  
          	}         	
-        	
-         	/* Here we goooooooo!!!
-         	
-        	// cover: license_basis & license_specifics from bundle, right?
-        	Element cover = root.getChild("cover");
+        	        	
+        	// cover
+        	Element cover = root.getChild("cover_art").getChild("image");
         	if(cover != null) {
         		ItemFile itemfile = ItemFile.make(); 
         		itemfile.type("frontcover");
+        		itemfile.filetype(cover.getChildTextNN("file_format"));
         		// check if file exist at path
-        		String filename = cover.getChildTextNN("file_name");
-        		File f = new File(path+filename);
+        		String filename = cover.getChild("file").getChildTextNN("name");
+        		String fpath = cover.getChild("file").getChildTextNN("path")+File.separator;
+        		File f = new File(path+fpath+filename);
         		if(f!=null && f.exists()) {
         			itemfile.setFile(f);
         			
         			// set delivered path to file 
-        			itemfile.setLocation(FileLocation.make(filename));
+        			itemfile.setLocation(FileLocation.make(fpath+filename));
         		} else {
         			//file does not exist -> so we have to set the values "manually"
         			
         			//-> use filename for location
-        			itemfile.setLocation(FileLocation.make(filename));
+        			itemfile.setLocation(FileLocation.make(fpath+filename));
         		
         			//file size
-        			if(cover.getChild("file_size")!=null) {
-            			itemfile.bytes(Integer.parseInt(cover.getChildText("file_size")));
+        			if(cover.getChild("file").getChild("size")!=null) {
+            			itemfile.bytes(Integer.parseInt(cover.getChild("file").getChildTextNN("size")));
             		}        		
             		
-            		// checksum md5
-            		if(cover.getChild("file_checksum")!=null) {
-            			String sMd5 =  cover.getChildText("file_checksum");
-            			if (sMd5!=null) {
-            				byte[] md5 = SecurityHelper.HexDecoder.decode(sMd5);
-            				itemfile.checksums(Checksums.make().md5(md5));
-            			}
-            		}
         		}
         		
-        		// set dimension of cover
-        		String width = cover.getChildTextNN("width");
-        		String height = cover.getChildTextNN("height");
-        		if(width.length()>0 && height.length()>0) itemfile.dimension(Integer.parseInt(width), Integer.parseInt(height));
-       
         		bundle.addFile(itemfile);
         	}
         	
-        	Vector<Element> tracks = root.getChild("tracks").getChildren("track");
+        	Vector<Element> tracks = root.getChild("assets").getChild("tracks").getChildren("track");
         	for (Iterator<Element> itTracks = tracks.iterator(); itTracks.hasNext();) {
         		Element track = itTracks.next();
 
         		IDs trackids = IDs.make();
-            	if(track.getChild("upc")!=null) trackids.upc(track.getChildTextNN("upc"));
-            	if(track.getChild("isrc")!=null) trackids.isrc(track.getChildTextNN("isrc"));
+            	if(track.getChild("upc_code")!=null) trackids.upc(track.getChildTextNN("upc"));
+            	if(track.getChild("isrc_code")!=null) trackids.isrc(track.getChildTextNN("isrc_code"));
         		
 	        	// displayname
-	        	String track_displayname = track.getChildTextNN("title");  
+	        	String track_displayname = track.getChildTextNN("name");  
 	        	
 	        	// display_artistname
-	        	String track_display_artistname = track.getChildTextNN("artist_name");
+	        	String track_display_artistname = track.getChildTextNN("display_artist");
 	        	
 	        	BundleInformation track_info = BundleInformation.make(srd, prd);		        	
 	        	
 	        	// num
-	        	if(track.getChildTextNN("track_number").length()>0) {
-	        		track_info.num(Integer.parseInt(track.getChildText("track_number")));
+	        	if(track.getChildTextNN("sequence_number").length()>0) {
+	        		track_info.num(Integer.parseInt(track.getChildText("sequence_number")));
 	        	}
 	        	
 	        	// setnum
-	        	if(track.getChildTextNN("disk_number").length()>0) {
-	        		track_info.setnum(Integer.parseInt(track.getChildText("disk_number")));
+	        	if(track.getChildTextNN("on_disc").length()>0) {
+	        		track_info.setnum(Integer.parseInt(track.getChildText("on_disc")));
 	        	} 
 	        	
 	        	// tracklength
@@ -297,50 +300,11 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         		
         		// track license basis
         		LicenseBasis track_license_basis = LicenseBasis.make();
-        		
-        		Territorial track_territorial = Territorial.make();
-        		
-        		if(track.getChild("rights")!=null) {
-	            	Vector<Element> tracks_rights = track.getChild("rights").getChildren("right");
-	            	for (Iterator<Element> itRights = tracks_rights.iterator(); itRights.hasNext();) {
-	            		Element track_right = itRights.next();
-	            		String r = track_right.getChildText("country_code");
-	            		if(r.length()>0) {
-	            			if(r.equals("**")) { 
-	            				r="WW";
-	            				// if worldwide then add streamable information -> keep an eye on these (!)
-	            	        	String streamable_from = track_right.getChildTextNN("streamable_from");	        
-	            		        if(streamable_from.length()>0) {
-	            		        	cal.setTime(ymd.parse(streamable_from));
-	            		        	track_license_basis.timeframe_from_datetime(cal.getTimeInMillis());
-	            		        }
-	            		        
-	            		        // stremable_to is a "Must" but is not delivered
-	            		        String streamable_to = track_right.getChildTextNN("streamable_to");
-	            		        if(streamable_to.length()>0) {
-	            		        	cal.setTime(ymd.parse(streamable_to));
-	            		        	track_license_basis.timeframe_to_datetime(cal.getTimeInMillis());
-	            		        }
-	            		        else {
-	            		        	// 20 year from now
-	            		        	cal = Calendar.getInstance();
-	            		        	cal.add(Calendar.YEAR, 20);
-	            		        	track_license_basis.timeframe_to_datetime(cal.getTimeInMillis());
-	            		        }
-	            		        
-	            	        	if(track_right.getChild("allows_streaming")!=null) {
-	            	        		track_license_basis.streaming_allowed(Boolean.parseBoolean(track_right.getChildText("allows_streaming")));
-	            	        	}
-	            			}
-	            			track_territorial.allow(r);
-	            		}
-	            	} 
-        		}
-	        	
-            	track_license_basis.setTerritorial(track_territorial);
+        		track_license_basis.as_on_bundle(true);
             	
 	        	// license specifics -> empty!
-	        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make();         	
+	        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make(); 
+	        	track_license_specifics.as_on_bundle(true);
 	        	
         		// license_basis of Bundle / license_specifics of Bundle / others (?)
 	        	Item item = Item.make(trackids, track_displayname, track_displayname, "", "audio", track_display_artistname, track_info, track_license_basis, track_license_specifics);
@@ -351,14 +315,14 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
              	
             	// add Tags
             	ItemTags track_tags = ItemTags.make();   		
-            	track_tags.addGenre(track.getChildTextNN("genre"));            	
+            	track_tags.addGenre(track.getChildTextNN("main_genre")); 
             	
             	// explicit_lyrics
-            	if(track.getChildTextNN("explicit_lyrics").length()>0) {
-            		if(track.getChildTextNN("explicit_lyrics").toLowerCase().equals("false")) {
+            	if(track.getChildTextNN("parental_advisory").length()>0) {
+            		if(track.getChildTextNN("parental_advisory").toLowerCase().equals("false")) {
             			track_tags.explicit_lyrics(ItemTags.EXPLICIT_LYRICS_FALSE);  
             		}
-            		else if(track.getChildTextNN("explicit_lyrics").toLowerCase().equals("true")) {
+            		else if(track.getChildTextNN("parental_advisory").toLowerCase().equals("true")) {
             			track_tags.explicit_lyrics(ItemTags.EXPLICIT_LYRICS_TRUE);  
             		}            		
             	}
@@ -367,41 +331,67 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        	
         		ItemFile itemfile = ItemFile.make();
         		itemfile.type("full");
+        		
+        		if(track.getChild("suggested_preview_length")!=null) { itemfile.setPrelistening_length(Integer.parseInt(track.getChildTextNN("suggested_preview_length"))); }
+        		if(track.getChild("suggested_preview_start")!=null) { itemfile.setPrelistening_offset(Integer.parseInt(track.getChildTextNN("suggested_preview_start"))); }
+        		
+            	Vector<Element> track_artists = track.getChild("artists").getChildren("artist");
+            	for (Iterator<Element> itTrackArtists = track_artists.iterator(); itTrackArtists.hasNext();) {
+            		Element track_artist = itTrackArtists.next();        	
+            	
+            		contributor = Contributor.make(track_artist.getChildTextNN("name"), Contributor.TYPE_DISPLAY_ARTIST, IDs.make().licensor(track_artist.getChildTextNN("id")));
+            		item.addContributor(contributor);
+            	}        		
+        		
+             	String track_copyright = "";
+             	if(track.getChild("c_line_text")!=null) { track_copyright = track.getChildTextNN("c_line_text"); }
+             	String track_production = null;
+             	if(track.getChild("p_line_text")!=null) { track_production = track.getChildTextNN("p_line_text"); }
+             	
+             	if(track_copyright.length()>0) {
+    	         		contributor = Contributor.make(track_copyright, Contributor.TYPE_COPYRIGHT, IDs.make());
+    	         		if(track.getChild("c_line_year")!=null) {
+    	         			contributor.year(track.getChildTextNN("c_line_year"));
+    	         		}
+    	         		item.addContributor(contributor);  
+             	}
+             	
+             	if(track_production.length()>0) {
+    	         		contributor = Contributor.make(track_production, Contributor.TYPE_PRODUCTION, IDs.make());
+    	         		if(track.getChild("p_line_year")!=null) {
+    	         			contributor.year(track.getChildTextNN("p_line_year"));
+    	         		}
+    	         		item.addContributor(contributor);  
+             	}
+             	
+             	// ToDo: set all contributors!
+            	
         		// check if file exist at path
-        		String filename = track.getChildTextNN("file_name");
-        		File f = new File(path+filename);      		
+        		String filename = track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("name");
+        		String fpath = track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("path")+File.separator;
+        		File f = new File(path+fpath+filename);      		
         		if(f!=null && f.exists()) {
         			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
         			
         			// set delivered path to file 
-        			itemfile.setLocation(FileLocation.make(filename));        			
+        			itemfile.setLocation(FileLocation.make(fpath+filename));
+        			
         		} else {
         			//file does not exist -> so we have to set the values "manually"
         			
         			//-> use filename as location
-        			itemfile.setLocation(FileLocation.make(filename));
+        			itemfile.setLocation(FileLocation.make(fpath+filename));
         		
         			//file size
-        			if(track.getChild("file_size")!=null) {
-            			itemfile.bytes(Integer.parseInt(track.getChildText("file_size")));
+        			if(track.getChild("resources").getChild("audio")!=null && track.getChild("resources").getChild("audio").getChild("file")!=null && track.getChild("resources").getChild("audio").getChild("file").getChild("size")!=null) {
+            			itemfile.bytes(Integer.parseInt(track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("size")));
             		}        		
-            		
-            		// checksum md5
-            		if(track.getChild("file_checksum")!=null) {
-            			String sMd5 =  track.getChildText("file_checksum");
-            			if (sMd5!=null) {
-            				byte[] md5 = SecurityHelper.HexDecoder.decode(sMd5);
-            				itemfile.checksums(Checksums.make().md5(md5));
-            			}
-            		}
         		}        		
         		
 	        	item.addFile(itemfile);
 	        	
 	        	bundle.addItem(item);
         	}
-        	
-        	*/
          	
         	feed.addBundle(bundle);
 	        

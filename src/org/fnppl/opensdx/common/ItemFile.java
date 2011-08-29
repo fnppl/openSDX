@@ -326,7 +326,13 @@ public class ItemFile extends BusinessObject {
 		return this;
 	}
 
+	public void setPrelistening_offset(int prelistening_offset) {
+		this.prelistening_offset = new BusinessIntegerItem("prelistening_offset", prelistening_offset);
+	}
 
+	public void setPrelistening_length(int prelistening_length) {
+		this.prelistening_length = new BusinessIntegerItem("prelistening_length", prelistening_length);
+	}
 
 	public String getType() {
 		if (type==null) return null;
@@ -382,6 +388,16 @@ public class ItemFile extends BusinessObject {
 		if (bytes==null) return -1;
 		return bytes.getLongValue();
 	}
+	
+	public int getPrelistening_length() {
+		if (prelistening_length==null) return -1;
+		return prelistening_length.getIntValue();		
+	}
+	
+	public int getPrelistening_offset() {
+		if (prelistening_offset==null) return -1;
+		return prelistening_offset.getIntValue();		
+	}	
 
 	public String getKeyname() {
 		return KEY_NAME;
