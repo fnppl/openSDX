@@ -85,14 +85,19 @@ public class OSDXSocketServer {
 		dataHandler = handler;
 	}
 	
+	private Object o = new Object();
+	
 	public void startService() throws Exception {
 		//System.out.println("Starting Server at "+address.getHostAddress()+" on port " + port +"  at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
 		ServerSocket so = new ServerSocket(port);
 		while (true) {
+			
 			try {
-				final Socket me = so.accept();
-				OSDXSocketServerThread t = new OSDXSocketServerThread(me, mySigningKey, dataHandler);
-				t.start();
+				synchronized (o) {
+					final Socket me = so.accept();
+					OSDXSocketServerThread t = new OSDXSocketServerThread(me, mySigningKey, dataHandler);
+					t.start();	
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				Thread.sleep(250);// cooldown...

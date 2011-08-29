@@ -78,7 +78,8 @@
 			  <allow_upload>true</allow_upload>     <!--  default true -->
 			  <allow_download>true</allow_download> <!--  default true -->
 			  <signature_needed>*.pdf</signature_needed> <!--  default no signatures needed -->
-			  <signature_needed>*.xls</signature_needed>
+			  <signature_needed>*.xml</signature_needed>
+			  <signature_needed>*.jar</signature_needed>
 			</rights_and_duties> 
 		</client>
 		<client>

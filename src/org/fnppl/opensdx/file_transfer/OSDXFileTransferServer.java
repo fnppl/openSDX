@@ -6,7 +6,7 @@ package org.fnppl.opensdx.file_transfer;
  * 							Henning Thieß <ht@fnppl.org>
  * 
  * 							http://fnppl.org
-*/
+ */
 
 /*
  * Software license
@@ -73,22 +73,22 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 
 	private OSDXSocketServer serverSocket;
 	private FileTransferLog log = null;
-	
+
 	private File configFile = new File("osdxserver_config.xml"); 
 	private File alterConfigFile = new File("src/org/fnppl/opensdx/file_transfer/resources/osdxfiletransferserver_config.xml"); 
 	private File clients_config_file = null;
 	private boolean backupClientsConfigOnUpdate = true;
-	
+
 	protected int port = -1;
-	
+
 	protected InetAddress address = null;
 
 	private OSDXKey mySigningKey = null;
-	
+
 	private HashMap<OSDXSocketServerThread, FileTransferState> states = null;
 	private HashMap<String, ClientSettings> clients = null; //client id := username::keyid
 	private int maxByteLength = 4*1024*1024;
-	
+
 	public OSDXFileTransferServer(String pwSigning) {
 		readConfig();
 		try {
@@ -100,10 +100,10 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void handleNewText(String text, OSDXSocketSender sender) {
 		OSDXSocketServerThread serverThread = (OSDXSocketServerThread)sender;
-		
+
 		String command = text;
 		String param = null;
 		int ind = text.indexOf(' ');
@@ -117,7 +117,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		try {
 			Method commandHandler = getClass().getMethod("handle_"+command, String.class, OSDXSocketServerThread.class);
 			commandHandler.invoke(this, param, sender);
-			
+
 		} catch (NoSuchMethodException ex) {
 			handle_command_not_implemented(command, param, serverThread);
 		} catch (InvocationTargetException ex) {
@@ -125,7 +125,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		} catch (IllegalAccessException ex) {
 			handle_command_not_implemented(command, param, serverThread);
 		}
-		
+
 	}
 
 	private FileTransferState getState(OSDXSocketServerThread serverThread) {
@@ -143,7 +143,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		}
 		return s;
 	}
-	
+
 	public void handleNewData(byte[] data, OSDXSocketSender sender) {
 		//if data arrives, it must be a file
 		FileTransferState state = getState((OSDXSocketServerThread)sender);
@@ -153,7 +153,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		else {
 			try {
 				File save = state.getWriteFile();
-				
+
 				if (state.getNextFilePartStart()<0) {
 					//one part upload
 					System.out.println("Saving to file: "+save.getAbsolutePath());
@@ -180,7 +180,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			}
 		}
 	}
-	
+
 	public void startService() {
 		System.out.println("Starting Server at "+address.getHostAddress()+" on port " + port +"  at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
 		log.logServerStart(address.getHostAddress(), port);
@@ -191,7 +191,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void readConfig() {
 		try {
 			if (!configFile.exists()) {
@@ -202,10 +202,10 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 				System.exit(0);
 			}
 			Element root = Document.fromFile(configFile).getRootElement();
-			
+
 			//uploadserver base
 			Element ks = root.getChild("osdxfiletransferserver");
-//			host = ks.getChildText("host");
+			//			host = ks.getChildText("host");
 			port = ks.getChildInt("port");
 			String ip4 = ks.getChildText("ipv4");
 			try {
@@ -221,7 +221,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 				System.out.println("CAUTION: error while parsing ip adress");
 				ex.printStackTrace();
 			}
-			
+
 			String logFile = ks.getChildText("logfile");
 			if (logFile==null) {
 				log = FileTransferLog.initNoLogging();
@@ -246,7 +246,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 					}
 				}
 			}
-			
+
 			///Clients
 			clients = new HashMap<String, ClientSettings>();
 			//System.out.println("init clients");
@@ -257,14 +257,14 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 					ClientSettings cs = ClientSettings.fromElement(e);
 					clients.put(cs.getSettingsID(),cs);
 					System.out.println("adding client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath());
-					
+
 					cs.getLocalRootPath().mkdirs();
-					
+
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			}
-			
+
 			//clients from clients config file
 			if (clients_config_file!=null && clients_config_file.exists()) {
 				try {
@@ -284,8 +284,8 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 					ex2.printStackTrace();
 				}
 			}
-				
-	
+
+
 			//SigningKey
 			try {
 				OSDXKey k = OSDXKey.fromElement(root.getChild("rootsigningkey").getChild("keypair"));
@@ -303,87 +303,87 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	private static void makeConfig() {
-//		Console console = System.console();
-//	    if (console == null) {
-//	      return;
-//	    }
-//	    String host = console.readLine("host: ");
-//	    String port = console.readLine("port: ");
-//	    String prepath = console.readLine("prepath: ");
-//	    String ipv4 = console.readLine("ipv4: ");
-//	    String ipv6 = console.readLine("ipv6: ");
-//	    String mail_user = console.readLine("mail user: ");
-//	    String mail_sender = console.readLine("mail sender: ");
-//	    String mail_smtp_host = console.readLine("mail smtp host: ");
-//	    String id_email = console.readLine("id email: ");
-//	    String id_mnemonic = console.readLine("id mnemonic: ");
-//	    String pass = console.readLine("key password: ");
-//	    
-//	    Element root = new Element("opensdxkeyserver");
-//	    Element eKeyServer = new Element("keyserver");
-//	    eKeyServer.addContent("port", port);
-//	    eKeyServer.addContent("prepath",prepath);
-//	    eKeyServer.addContent("ipv4",ipv4);
-//	    eKeyServer.addContent("ipv6",ipv6);
-//	    Element eMail = new Element("mail");
-//	    eMail.addContent("user", mail_user);
-//	    eMail.addContent("sender", mail_sender);
-//	    eMail.addContent("smtp_host", mail_smtp_host);
-//	    eKeyServer.addContent(eMail);
-//	    root.addContent(eKeyServer);
-//	    
-//	    try {
-//	    	Element eSig = new Element("rootsigningkey");
-//	    	MasterKey key = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
-//			Identity id = Identity.newEmptyIdentity();
-//			id.setIdentNum(1);
-//			id.setEmail(id_email);
-//			id.setMnemonic(id_mnemonic);
-//			key.addIdentity(id);
-//			key.setAuthoritativeKeyServer(host);
-//			key.createLockedPrivateKey("", pass);
-//			eSig.addContent(key.toElement(null));
-//			root.addContent(eSig);
-//			Document.buildDocument(root).writeToFile(new File("keyserver_config.xml"));
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
+		//		Console console = System.console();
+		//	    if (console == null) {
+		//	      return;
+		//	    }
+		//	    String host = console.readLine("host: ");
+		//	    String port = console.readLine("port: ");
+		//	    String prepath = console.readLine("prepath: ");
+		//	    String ipv4 = console.readLine("ipv4: ");
+		//	    String ipv6 = console.readLine("ipv6: ");
+		//	    String mail_user = console.readLine("mail user: ");
+		//	    String mail_sender = console.readLine("mail sender: ");
+		//	    String mail_smtp_host = console.readLine("mail smtp host: ");
+		//	    String id_email = console.readLine("id email: ");
+		//	    String id_mnemonic = console.readLine("id mnemonic: ");
+		//	    String pass = console.readLine("key password: ");
+		//	    
+		//	    Element root = new Element("opensdxkeyserver");
+		//	    Element eKeyServer = new Element("keyserver");
+		//	    eKeyServer.addContent("port", port);
+		//	    eKeyServer.addContent("prepath",prepath);
+		//	    eKeyServer.addContent("ipv4",ipv4);
+		//	    eKeyServer.addContent("ipv6",ipv6);
+		//	    Element eMail = new Element("mail");
+		//	    eMail.addContent("user", mail_user);
+		//	    eMail.addContent("sender", mail_sender);
+		//	    eMail.addContent("smtp_host", mail_smtp_host);
+		//	    eKeyServer.addContent(eMail);
+		//	    root.addContent(eKeyServer);
+		//	    
+		//	    try {
+		//	    	Element eSig = new Element("rootsigningkey");
+		//	    	MasterKey key = MasterKey.buildNewMasterKeyfromKeyPair(AsymmetricKeyPair.generateAsymmetricKeyPair());
+		//			Identity id = Identity.newEmptyIdentity();
+		//			id.setIdentNum(1);
+		//			id.setEmail(id_email);
+		//			id.setMnemonic(id_mnemonic);
+		//			key.addIdentity(id);
+		//			key.setAuthoritativeKeyServer(host);
+		//			key.createLockedPrivateKey("", pass);
+		//			eSig.addContent(key.toElement(null));
+		//			root.addContent(eSig);
+		//			Document.buildDocument(root).writeToFile(new File("keyserver_config.xml"));
+		//		} catch (Exception e) {
+		//			e.printStackTrace();
+		//		}
 	}
-	
-	
-	
+
+
+
 	public static void main(String[] args) throws Exception {
 		if (args!=null && args.length==1 && args[0].equals("--makeconfig")) {
 			makeConfig();
 			return;
 		}
-		
+
 		String pwS = null;
 		if(args.length > 0 ) {
 			pwS = args[0];
 		}
 		else {
 			Console console = System.console();
-		    pwS = console.readLine("Please enter password for unlocking private-key: ");
+			pwS = console.readLine("Please enter password for unlocking private-key: ");
 		}
-		
+
 		OSDXFileTransferServer s = new OSDXFileTransferServer(pwS);
 		s.startService();
 	}
-	
+
 	public void handle_command_not_implemented(String command, String param, OSDXSocketServerThread sender) {
-		
+
 		log.logCommand(sender.getID(),sender.getRemoteIP(), command, param, "COMMAND \""+command+"\" NOT IMPLEMENTED");
 		sender.sendEncryptedText("COMMAND \""+command+"\" NOT IMPLEMENTED");
 	}
-	
-	
-	// -- implementation of commands starts here --------------------------------------------
-	
 
-	
+
+	// -- implementation of commands starts here --------------------------------------------
+
+
+
 	public void handle_login(String username, OSDXSocketServerThread sender) {
 		if (sender instanceof OSDXSocketServerThread) {
 			OSDXSocketServerThread sst = (OSDXSocketServerThread)sender;
@@ -407,8 +407,8 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			sender.sendEncryptedText(resp);
 		}
 	}
-	
-	
+
+
 	//echo command for testing
 	public void handle_echo(String param, OSDXSocketServerThread sender) {
 		if (param!=null) {
@@ -416,7 +416,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			sender.sendEncryptedText(param);
 		}
 	}
-	
+
 	//change working directory: CWD directory_name
 	public void handle_cd(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
@@ -450,7 +450,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			}
 		}
 	}
-	
+
 	public void handle_mkdir(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
@@ -481,7 +481,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			}
 		}
 	}
-	
+
 	//change directory up
 	public void handle_cdup(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
@@ -501,7 +501,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			sender.sendEncryptedText("ERROR IN CDUP :: PWD is "+state.getRelativPath());
 		}
 	}
-	
+
 	public void handle_pwd(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
@@ -513,54 +513,63 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			return;
 		}
 		FileTransferState state = getState(sender);
-		System.out.println("ACK PWD :: "+state.getRelativPath());
+		//System.out.println("ACK PWD :: "+state.getRelativPath());
 		sender.sendEncryptedText("ACK PWD :: "+state.getRelativPath());
 	}
-	
+
 	public void handle_file(String param, OSDXSocketServerThread sender) {
 		try {
-		System.out.println("handle_file: "+param);
-		ClientSettings cs = clients.get(sender.getID());
-		if (cs==null) {
-			sender.sendEncryptedText("ERROR IN FILE :: PLEASE LOGIN");
-			return;
-		}
-		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsList()) {
-			sender.sendEncryptedText("ERROR IN FILE :: NOT ALLOWED");
-			return;
-		}
-		FileTransferState state = getState(sender);
-		File f = null;
-		if (param!=null) {
-			if (param.equals("/")) {
-				f = state.getRootPath();
+			//System.out.println("handle_file: "+param);
+			ClientSettings cs = clients.get(sender.getID());
+			if (cs==null) {
+				sender.sendEncryptedText("ERROR IN FILE :: PLEASE LOGIN");
+				return;
 			}
-			else if (param.startsWith("/")) {
-				f = new File(state.getRootPath()+param);
+			if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsList()) {
+				sender.sendEncryptedText("ERROR IN FILE :: NOT ALLOWED");
+				return;
 			}
-			else {
-				f = new File(state.getCurrentPath(),param);
+			FileTransferState state = getState(sender);
+			File f = null;
+			if (param!=null) {
+				if (param.equals("/")) {
+					f = state.getRootPath();
+				}
+				else if (param.startsWith("/")) {
+					f = new File(state.getRootPath()+param);
+				}
+				else if (param.equals(".")) {
+					f = state.getCurrentPath();
+				}
+				else {
+					f = new File(state.getCurrentPath(),param);
+				}
+			} else {
+				f = state.getCurrentPath();
 			}
-		} else {
-			f = state.getCurrentPath();
-		}
-		if (!f.exists()) {
-			sender.sendEncryptedText("ERROR IN FILE :: FILE \""+param+"\" DOES NOT EXIST.");
-		} else {
-			String path = "";
-			String name = "/";
-			if (!f.equals(state.getRootPath())) {
-				path = RemoteFileSystem.makeEscapeChars(state.getRelativPath(f.getParentFile()));
-				name = RemoteFileSystem.makeEscapeChars(f.getName());
+			if (!f.exists()) {
+				sender.sendEncryptedText("ERROR IN FILE :: FILE \""+param+"\" DOES NOT EXIST.");
+			} else {
+				String path = "";
+				String name = "/";
+				if (!f.equals(state.getRootPath())) {
+					if (f.getName().equals(".")) {
+						path = RemoteFileSystem.makeEscapeChars(state.getRelativPath(f.getParentFile().getParentFile()));
+						name = RemoteFileSystem.makeEscapeChars(f.getParentFile().getName());
+					} else {
+						path = RemoteFileSystem.makeEscapeChars(state.getRelativPath(f.getParentFile()));
+						name = RemoteFileSystem.makeEscapeChars(f.getName());
+					}
+
+				}
+				String rfile = path+",,"+name+",,"+f.length()+",,"+f.lastModified()+",,"+f.isDirectory();
+				sender.sendEncryptedText("ACK FILE :: "+rfile);
 			}
-			String rfile = path+",,"+name+",,"+f.length()+",,"+f.lastModified()+",,"+f.isDirectory();
-			sender.sendEncryptedText("ACK FILE :: "+rfile);
-		}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	public void handle_list(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
@@ -579,7 +588,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			} else {
 				f = new File(state.getCurrentPath(),param);
 			}
-			
+
 		} else {
 			f = state.getCurrentPath();
 		}
@@ -598,7 +607,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			sender.sendEncryptedText("ACK LIST :: "+files);
 		}
 	}
-	
+
 	public void handle_delete(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
@@ -639,7 +648,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			}
 		}
 	}
-	
+
 	public static boolean deleteDirectory(File path) {
 		if( path.exists() ) {
 			File[] list = path.listFiles();
@@ -654,10 +663,10 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		}
 		return(path.delete());
 	}
-	
-	
-	
-	
+
+
+
+
 	public void handle_put(String param, OSDXSocketServerThread sender) {
 		//System.out.println("PUT "+param);
 		ClientSettings cs = clients.get(sender.getID());
@@ -676,27 +685,32 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		FileTransferState state = getState(sender);
 		if (param!=null) {
 			String[] params = Util.getParams(param);
-			
+
 			File f = null;
 			if (params[0].startsWith("/")) {
 				f = new File(state.getRootPath()+params[0]);
 			} else {
 				f = new File(state.getCurrentPath(),params[0]);
 			}
+			//System.out.println("filename : "+f.getAbsolutePath());
 			if (f.exists()) {
 				String resp = "ERROR IN PUT :: FILE ALREADY EXISTS";
 				log.logCommand(sender.getID(), sender.getRemoteIP(), "PUT", param, resp);
+				//System.out.println(resp);
 				sender.sendEncryptedText(resp);
 			} else {
+				//System.out.println("checking for signature");
 				//check if signature in param, extract and save
 				boolean hasSignature = false;
-				if (params.length>=2 && params[1].startsWith("<?xml")) {
+				if (params.length>2 && params[2].startsWith("<?xml")) {
 					//parse signature
+					//System.out.println("parsing signature");
 					try {
-						Document docSig = Document.fromString(params[1]); 
+						Document docSig = Document.fromString(params[2]); 
 						Signature sig = Signature.fromElement(docSig.getRootElement());					
 						//parsing successful without exception -> save signature 
-						File fsig = new File(f.getAbsolutePath()+"_signature.xml");
+						File fsig = new File(f.getAbsolutePath()+"_osdx.sig");
+						//System.out.println("writing signature to "+fsig.getAbsolutePath());
 						docSig.writeToFile(fsig);
 						//only if no error occurred -> hasSignature = true;
 						hasSignature = true;
@@ -705,9 +719,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 						ex.printStackTrace();
 					}
 				}
+				//System.out.println("preparing resp");
 				boolean needsSignature = cs.getRightsAndDuties().needsSignature(f.getName());
 				if (needsSignature && !hasSignature) {
 					String resp = "ERROR IN PUT :: FILE NEEDS SIGNATURE";
+					//System.out.println(resp);
 					log.logCommand(sender.getID(), sender.getRemoteIP(), "PUT", param, resp);
 					sender.sendEncryptedText(resp);
 				} else {
@@ -715,13 +731,14 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 					state.setNextFilePartStart(-1L); //this is only set by PUTPART
 					state.setNextFilePartLength(-1); //this is only set by PUTPART
 					String resp = "ACK PUT :: WAITING FOR DATA";
+					//System.out.println(resp);
 					log.logCommand(sender.getID(), sender.getRemoteIP(), "PUT", param, resp);
 					sender.sendEncryptedText(resp);
 				}
 			}
 		}
 	}
-	
+
 	public void handle_putpart(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
@@ -731,13 +748,13 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			return;
 		}
 		FileTransferState state = getState(sender);
-		
+
 		if (param!=null) {
 			String[] params = Util.getParams(param);
 			String filename = null; 
 			long start = -1;
 			int length = -1;
-			
+
 			try {
 				filename = params[0];
 				start = Long.parseLong(params[1]);
@@ -753,7 +770,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 				log.logCommand(sender.getID(), sender.getRemoteIP(), "PUTPART", param, resp);
 				sender.sendEncryptedText(resp);
 			}
-			
+
 			if (f.exists()) {
 				if (f.length()==start) {
 					//append
@@ -776,7 +793,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			}
 		}
 	}
-	
+
 	public void handle_resumeput(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
@@ -813,11 +830,11 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			}
 		}
 	}
-	
+
 	public void handle_noop(String param, OSDXSocketServerThread sender) {
 		//DO NO OPERATION
 	}
-	
+
 	public void handle_get(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
@@ -902,12 +919,12 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			pClients[i] = ci.getSettingsID();
 			i++;
 		}
-		
+
 		String resp;
 		resp = "ACK LISTCLIENTS :: "+Util.makeParamsString(pClients);
 		sender.sendEncryptedText(resp);
 	}
-	
+
 	public void handle_getclient(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
@@ -927,7 +944,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 		}
 		sender.sendEncryptedText(resp);
 	}
-	
+
 	public void handle_putclient(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
 		if (cs==null) {
@@ -943,7 +960,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			ClientSettings newcs = ClientSettings.fromElement(Document.fromString(param).getRootElement());
 			clients.put(newcs.getSettingsID(),newcs);
 			resp = "ACK PUTCLIENT";
-			
+
 			//save clients config to file
 			try {
 				if (clients_config_file!=null) {

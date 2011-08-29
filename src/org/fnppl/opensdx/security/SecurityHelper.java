@@ -57,6 +57,8 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.fnppl.opensdx.xml.Element;
 
+import com.sun.xml.internal.ws.util.ByteArrayBuffer;
+
 /*
  * @author Henning Thieß <ht@fnppl.org>
  * @author Bertram Boedeker <bboedeker@gmx.de>
@@ -414,6 +416,7 @@ public class SecurityHelper {
 		
 		return ret;
 	}
+
 	
 	public static byte[] getMD5(File f) throws Exception {
 		FileInputStream fin_ = new FileInputStream(f);

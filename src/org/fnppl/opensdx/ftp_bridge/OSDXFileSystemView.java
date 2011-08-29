@@ -46,6 +46,8 @@ package org.fnppl.opensdx.ftp_bridge;
  */
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 import org.apache.ftpserver.ftplet.FileSystemView;
@@ -65,6 +67,7 @@ public class OSDXFileSystemView implements FileSystemView {
 	private OSDXFile pwd = null;
 	private OSDXUser user = null;
 	
+	private Object o = new Object();
 	
 	public OSDXFileSystemView(OSDXUser user) {
 		this.user = user;
@@ -73,9 +76,12 @@ public class OSDXFileSystemView implements FileSystemView {
 			transfer.connect(user.host, user.port, user.prepath, user.signingKey, user.username);
 			Thread t = new Thread() {
 				public void run() {
-					while (true) {
+					boolean goon = true;
+					while (goon) {
 						try {
 						 	sleep(5000);
+						 	goon = isConnected();
+						 	System.out.println("noop");
 						 	transfer.noop();
 						} catch (Exception ex) {
 							ex.printStackTrace();
@@ -88,7 +94,7 @@ public class OSDXFileSystemView implements FileSystemView {
 			e.printStackTrace();
 		}
 		transfer.cd("/");
-		RemoteFile froot = transfer.file("./");
+		RemoteFile froot = transfer.file("/");
 		if (froot==null) { 
 			System.out.println("root could not be resolved.");
 		} else {
@@ -96,62 +102,136 @@ public class OSDXFileSystemView implements FileSystemView {
 		}
 		root = new OSDXFile(froot, transfer);
 		pwd = root;
-		
+
 	}
 	
 	public boolean changeWorkingDirectory(String dir) throws FtpException {
-		System.out.println("dir: "+dir);
-		transfer.cd(dir);
-		String spwd = transfer.pwd();
-		int ind = spwd.lastIndexOf('/');
-		RemoteFile rpwd = new RemoteFile(spwd.substring(0,ind), spwd.substring(ind+1), 0L, 0L, true);
-		pwd = new OSDXFile(rpwd, transfer);
-		System.out.println("new pwd: "+pwd.getAbsolutePath()+"/"+pwd.getName());
+		synchronized (o) {
+			System.out.println("dir: "+dir);
+			transfer.cd(dir);
+			String spwd = transfer.pwd();
+			int ind = spwd.lastIndexOf('/');
+			RemoteFile rpwd = new RemoteFile(spwd.substring(0,ind), spwd.substring(ind+1), 0L, 0L, true);
+			pwd = new OSDXFile(rpwd, transfer);
+			System.out.println("new pwd: "+pwd.getAbsolutePath()+"/"+pwd.getName());
+		}
 		return true;
+		
 	}
 
 	public void dispose() {
+
+		System.out.println("dispose");
 		try {
 			transfer.closeConnection();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		
 	}
 
 	public FtpFile getFile(String filename) throws FtpException {
-		System.out.println("get file: "+filename);
-		while (filename.endsWith("/")) {
-			filename = filename.substring(0,filename.length()-1);
-		}
-		if (filename.equals("")) filename = "/";
-		RemoteFile f = transfer.file(filename);
-		if (f==null) {
-			//make new virtual file / directory
-			if (filename.startsWith("/")) {
-				int ind = filename.lastIndexOf('/');
-				f = new NonExistingRemoteFile(filename.substring(0,ind), filename.substring(ind+1));
-			} else {
-				f = new NonExistingRemoteFile(pwd.getAbsolutePath()+"/"+pwd.getName(), filename);
+		synchronized (o) {
+			System.out.println("get file: "+filename);
+			while (filename.endsWith("/")) {
+				filename = filename.substring(0,filename.length()-1);
 			}
+			if (filename.equals("")) filename = "/";
+			RemoteFile f = transfer.file(filename);
+			if (f==null) {
+				//make new virtual file / directory
+				if (filename.startsWith("/")) {
+					int ind = filename.lastIndexOf('/');
+					f = new NonExistingRemoteFile(filename.substring(0,ind), filename.substring(ind+1));
+				} else {
+					if (pwd!=null) {
+						f = new NonExistingRemoteFile(pwd.getPathOnly()+"/"+pwd.getName(), filename);
+					}
+				}
+			}
+			
+			FtpFile ftpf = new OSDXFile(f, transfer);
+			System.out.println("get file: |"+ftpf.getAbsolutePath()+"|"+ftpf.getName()+"| exist: "+ftpf.doesExist());
+			if (!ftpf.doesExist()) {
+				System.out.println("isDir="+ftpf.isDirectory()+", isFile="+ftpf.isFile()+", isReadable="+ftpf.isReadable()+", isWriteable="+ftpf.isWritable()+", isHidden="+ftpf.isHidden()+", isRemoveable="+ftpf.isRemovable());
+			}
+			return ftpf;
 		}
-		return new OSDXFile(f, transfer);
 	}
 
 
 	public FtpFile getHomeDirectory() throws FtpException {
+
+		FtpFile f = root;
+		System.out.println("get home dir: |"+f.getAbsolutePath()+"|"+f.getName()+"|");
 		return root;
+		
 	}
 
 
 	public FtpFile getWorkingDirectory() throws FtpException {
+
+		FtpFile f = pwd;
+		System.out.println("get working dir: |"+f.getAbsolutePath()+"|"+f.getName()+"|");
 		return pwd;
+		
 	}
 
+
+	public boolean reconnect() {
+		synchronized (o) {
+			try {
+				return transfer.reconnect();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			return false;
+		}
+	}
 
 	public boolean isRandomAccessible() throws FtpException {
 		return false;
 	}
 
+	public boolean isConnected() {
+		if (transfer==null) return false;
+		return transfer.isConnected();
+	}
+	
+	public boolean noop() {
+	
+		try {
+			return transfer.noop();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+		
+//		if (transfer.isConnected()) {
+//			System.out.println("noops");
+//			Thread t = new Thread() {
+//				public void run() {
+//					try {
+//						System.out.println("noop 1");
+//						transfer.noop();
+//						sleep(5000);
+//						System.out.println("noop 2");
+//						transfer.noop();
+//						sleep(5000);
+//						System.out.println("noop 3");
+//						transfer.noop();
+//						sleep(5000);
+//						System.out.println("noop 4");
+//						transfer.noop();
+//					} catch (Exception ex) {
+//						ex.printStackTrace();
+//					}
+//				}
+//			};
+//			t.start();
+//			transfer.noop();
+//		}
+	}
 	
 	public static void main(String[] args) {
 		//only for testing
@@ -182,6 +262,18 @@ public class OSDXFileSystemView implements FileSystemView {
 			dir.mkdir();
 			dir = fs.getFile("/test-dir/bla");
 			System.out.println("exist: "+dir.doesExist());
+			
+			FtpFile testfile = fs.getFile("/test-dir/bla/text.pdf");
+			
+			FileInputStream fin = new FileInputStream(new File("test.pdf"));
+			OutputStream out = testfile.createOutputStream(0);
+			byte[] buffer = new byte[1024];
+			int read;
+			while((read=fin.read(buffer))>0) {
+				out.write(buffer, 0, read);
+			}
+			fin.close();
+			out.close();
 			
 			Thread.sleep(1000);
 			fs.dispose();

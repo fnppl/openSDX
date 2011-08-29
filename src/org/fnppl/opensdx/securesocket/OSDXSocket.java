@@ -232,6 +232,9 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 	private static byte TYPE_NULL = 0;
 	private Object o = new Object();
 	private boolean sendBytesPacket(byte[] data, byte type, boolean encrypt) {
+		if (encrypt && !secureConnectionEstablished) {
+			return false;
+		}
 		synchronized (o) {
 			try {
 				OutputStream out = socket.getOutputStream();
@@ -251,7 +254,11 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 				}
 				return true;
 			} catch (Exception ex) {
-				ex.printStackTrace();
+				System.out.println("ERROR in sendBytesPacket: "+ex.getMessage());
+				if (!ex.getMessage().equals("Broken pipe")) {
+					secureConnectionEstablished = false;
+					ex.printStackTrace();
+				}
 				message = ex.getMessage();
 			}
 		}
@@ -313,6 +320,7 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 			sendEncryptedText("Connection closed.");
 			socket.close();
 		}
+		secureConnectionEstablished = false;
 		mySigningKey = null;
 		//myEncryptionKey = null;
 		agreedEncryptionKey = null;

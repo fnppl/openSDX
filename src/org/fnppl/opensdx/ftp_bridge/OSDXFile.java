@@ -44,6 +44,7 @@ package org.fnppl.opensdx.ftp_bridge;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -66,21 +67,31 @@ public class OSDXFile implements FtpFile{
 		this.file = file;
 		this.client = client;
 		this.rights_duties = client.getRightsAndDuties();
-		System.out.println("new osdxfile: path:: |"+file.getPath()+"|  filename:: |"+file.getName()+"|");
+		//System.out.println("new osdxfile: path:: |"+file.getPath()+"|  filename:: |"+file.getName()+"|");
 	}
 	
 	public InputStream createInputStream(long offset) throws IOException {
+		System.out.println("create inputstream: "+getAbsolutePath());
 		if (offset>0) {
-			throw new IOException("offset not implmented");
+			throw new IOException("offset not implemented");
 		}
 		throw new IOException("create input stream not implmented");
 	}
 	
 	public OutputStream createOutputStream(long offset) throws IOException {
+		System.out.println("create outputstream: "+getAbsolutePath());
 		if (offset>0) {
-			throw new IOException("offset not implmented");
+			throw new IOException("offset not implemented");
 		}
-		throw new IOException("create input stream not implmented");
+		ByteArrayOutputStream bout = new ByteArrayOutputStream() {
+			public void close() throws IOException {
+				byte[] data = this.toByteArray();
+				System.out.println("output stream closed: data size = "+data.length);
+				client.uploadFile(getAbsolutePath(), data);
+				super.close();
+			}
+		};
+		return bout;
 	}
 
 	public boolean delete() {
@@ -96,13 +107,19 @@ public class OSDXFile implements FtpFile{
 	}
 
 	public String getAbsolutePath() {
-		if (file.getPath().equals("/")) {
-			return null;
+		String path = file.getFilnameWithPath();
+		if (path.equals("/.")) {
+			return "/";
 		}
-		if (file.getPath().equals(" ")) {
-			return "";
+		return path;
+	}
+	
+	public String getPathOnly() {
+		String path = file.getPath();
+		if (path.equals("/.")) {
+			return "/";
 		}
-		return file.getPath();
+		return path;
 	}
 
 	public String getGroupName() {
@@ -126,13 +143,14 @@ public class OSDXFile implements FtpFile{
 	}
 
 	public String getName() {
-		if (file.getName().equals("/")) {
+		String name = file.getName();
+		if (name.equals("/")) {
 			return "";
 		}
-		if (file.getName().equals(" ")) {
+		if (name.equals(".")) {
 			return "";
 		}
-		return file.getName();
+		return name;
 	}
 	
 	public long getSize() {
@@ -160,7 +178,7 @@ public class OSDXFile implements FtpFile{
 	}
 
 	public boolean isWritable() {
-		return false;
+		return !doesExist();
 	}
 
 	public List<FtpFile> listFiles() {

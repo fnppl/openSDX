@@ -45,6 +45,7 @@ package org.fnppl.opensdx.file_transfer;
  * 
  */
 import java.io.File;
+import java.io.IOException;
 
 public class FileTransferState {
 	
@@ -71,7 +72,12 @@ public class FileTransferState {
 
 	public void setCurrentPath(File currentPath) {
 		if (isAllowed(currentPath)) {
-			this.currentPath = currentPath;	
+			try {
+				this.currentPath = currentPath.getCanonicalFile();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				this.currentPath = currentPath;
+			}
 		} else {
 			System.out.println("ALERT ::  TRYING TO SET PATH OUT OF ROOT DIRECTORY");
 		}
@@ -110,7 +116,7 @@ public class FileTransferState {
 	
 	public boolean isAllowed(File f) {
 		try {
-			if (f.getCanonicalPath().startsWith(rootPath.getAbsolutePath())) {
+			if (f.getCanonicalPath().startsWith(rootPath.getCanonicalPath())) {
 				return true;
 			} else {
 				return false;
@@ -126,10 +132,17 @@ public class FileTransferState {
 	}
 	
 	public String getRelativPath(File f) {
-		String rp = f.getAbsolutePath().substring(rootPath.getAbsolutePath().length());
-		if (rp.length()==0) rp = "/";
-		if (rp.startsWith("//")) rp = rp.substring(1);
-		return rp;
+		try {
+			String rp = f.getCanonicalPath().substring(rootPath.getCanonicalPath().length());
+			if (rp.length()==0) rp = "/";
+			if (rp.startsWith("//")) rp = rp.substring(1);
+			return rp;
+		} catch (Exception ex) {
+			System.out.println(f.getAbsolutePath());
+			System.out.println(rootPath.getAbsolutePath());
+			ex.printStackTrace();
+			return "/";
+		}
 	}
 	
 	public boolean cdup() {

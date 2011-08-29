@@ -74,7 +74,7 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	public final static String ERROR_WRONG_RESPONE_FORMAT = "ERROR: Wrong format in uploadserver's response.";
 	public final static String ERROR_UNKNOWN_KEY_OR_USER = "ERROR: login failed: unknown signature key or wrong username.";
 	public final static String ERROR_MISSING_ENCRYTION_KEY = "ERROR: missing encryption key";
-	private long timeout = 10000;
+	private long timeout = 30000;
 	
 	private Socket socket;
 	private String remoteIP = null;
@@ -174,10 +174,11 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	public void handleNewText(String text, OSDXSocketSender sender) {
 		//System.out.println("handle text: "+text);
 		nextTimeOut = System.currentTimeMillis()+timeout;
+		//System.out.println("next timeout = "+SecurityHelper.getFormattedDate(nextTimeOut));
 		if (secure_connection_established) {
 			if (text.equals("Connection closed.")) {
 				try {
-					closeConnection();
+				//	closeConnection();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -211,6 +212,7 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	
 	public void handleNewData(byte[] data, OSDXSocketSender sender) {
 		nextTimeOut = System.currentTimeMillis()+timeout;
+		//System.out.println("next timeout = "+SecurityHelper.getFormattedDate(nextTimeOut));
 		if (secure_connection_established && dataHandler!=null) {
 			dataHandler.handleNewData(data, this);
 		} else {
@@ -220,15 +222,19 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	
 	public void run() {
 		try {
+			
 			InetAddress addr = socket.getInetAddress();
 			remoteIP = addr.getHostAddress();
 			remotePort = socket.getPort();
 			receiver =OSDXSocketReceiver.initServerReceiver(socket.getInputStream(),this,this);
+			System.out.println(FileTransferLog.getDateString()+" :: serverthread started, remote_ip="+remoteIP+", remote_port="+remotePort);
 			
 			nextTimeOut = System.currentTimeMillis()+timeout;
 			while (System.currentTimeMillis()<nextTimeOut) {
-				sleep(100);
+				//System.out.println("next timeout = "+SecurityHelper.getFormattedDate(nextTimeOut)+"\t"+this.toString());
+				sleep(200);
 			}
+			System.out.println(FileTransferLog.getDateString()+" :: timeout, closing connection");
 			closeConnection();
 			
 		} catch(Exception ex) {
@@ -248,8 +254,8 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 		receiver.stop();
 		if (socket != null) {
 			socket.close();
-		}
-		System.out.println("Connection closed.");
+		} 
+		System.out.println(FileTransferLog.getDateString()+" :: Connection closed.");
 		remoteIP = null;
 		remotePort = -1;
 	}

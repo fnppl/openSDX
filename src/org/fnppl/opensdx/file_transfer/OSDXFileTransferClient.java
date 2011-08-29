@@ -77,11 +77,17 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	private OSDXKey key = null;
 	private String lastPWD = null;
 	
+	private String host = null;
+	private int port = -1;
+	private String prepath = null;
+	
 	private Vector<DownloadFile> nextDownloadFile = new Vector<DownloadFile>();
 	protected Vector<String> textQueue = new Vector<String>();
 	protected Vector<Element> xmlQueue = new Vector<Element>();
 	protected RightsAndDuties rights_duties = null;
 	private int maxByteLength = 4*1024*1024;
+	private long timeout_ms = 2000;
+	private boolean connected = false;
 	
 	public OSDXFileTransferClient() {
 		//super(host, port, prepath);
@@ -133,47 +139,75 @@ public class OSDXFileTransferClient implements FileTransferClient {
 			}
 		};
 	}
-	
-	
-	
-	
+
 	public boolean connect(String host, int port, String prepath, OSDXKey mySigningKey, String username) throws Exception {
-		socket = new OSDXSocket();
 		this.key = mySigningKey;
 		this.username = username;
-		socket.connect(host, port, prepath, mySigningKey);
-		socket.setDataHandler(dataHandler);
-		if (socket.isConnected()) {
-			return login(username);
-		} else {
-			System.out.println("ERROR: Connection to server could NOT be established!");
-			return false;
+		this.host = host;
+		this.port = port;
+		this.prepath = prepath;
+		return reconnect();
+	}
+	
+	private int reconnectCount = 0;
+	private int maxReconnectTries = 3;
+	
+	public boolean reconnect() throws Exception {
+		if (reconnectCount<maxReconnectTries) {
+			reconnectCount++;
+			socket = new OSDXSocket();
+			socket.setDataHandler(dataHandler);
+			socket.connect(host, port, prepath, key);
+			if (socket.isConnected()) {
+				connected = login(username); 
+				if (!connected) {
+					System.out.println("ERROR: Connection to server could NOT be established!");
+				} else {
+					//connection establushed
+					reconnectCount = 0;
+				}
+				return connected;
+			} else {
+				System.out.println("ERROR: Connection to server could NOT be established!");
+				connected = false;
+				return false;
+			}
 		}
+		return false;
+	}
+	
+	public boolean isConnected() {
+		return connected && socket.isConnected();
 	}
 	
 	public void closeConnection() throws Exception {
 		if (socket != null) {
 			socket.closeConnection();
 		}
-		socket = null;
-		username = null;
-		key = null;
+		connected = false;
+		//socket = null;
+		//username = null;
+		//key = null;
 		nextDownloadFile = new Vector<DownloadFile>();
 		textQueue = new Vector<String>();
 		xmlQueue = new Vector<Element>();
 		rights_duties = new RightsAndDuties();
 	}
 	
-	protected void sendEncryptedText(String text) {
+	protected boolean sendEncryptedText(String text) {
 		if (socket!=null) {
-			socket.sendEncryptedText(text);
+			connected = socket.sendEncryptedText(text); 
+			return connected;
 		}
+		return false;
 	}
 	
-	protected void sendEncryptedData(byte[] data) {
+	protected boolean sendEncryptedData(byte[] data) {
 		if (socket!=null) {
-			socket.sendEncryptedData(data);
+			connected = socket.sendEncryptedData(data);
+			return connected;
 		}
+		return false;
 	}
 	
 	public void cd(String dir) {
@@ -201,7 +235,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	
 	public boolean login(String username) {
 		sendEncryptedText("LOGIN "+username);
-		long timeout = System.currentTimeMillis()+2000;
+		long timeout = System.currentTimeMillis()+timeout_ms;
 		while (System.currentTimeMillis()<timeout) {
 			for (int i=0;i<textQueue.size();i++) {
 				if (textQueue.get(i).startsWith("ACK LOGIN :: ")) {
@@ -229,7 +263,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	public RemoteFile file(String filename) {
 		sendEncryptedText("FILE "+filename);
 		String rfile = null;
-		long timeout = System.currentTimeMillis()+2000;
+		long timeout = System.currentTimeMillis()+timeout_ms;
 		while (rfile==null && System.currentTimeMillis()<timeout) {
 			for (int i=0;i<textQueue.size();i++) {
 				if (textQueue.get(i).startsWith("ACK FILE :: ")) {
@@ -259,7 +293,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		}
 		sendEncryptedText("PWD");
 		String pwd = null;
-		long timeout = System.currentTimeMillis()+2000;
+		long timeout = System.currentTimeMillis()+timeout_ms;
 		while (pwd==null && System.currentTimeMillis()<timeout) {
 			for (int i=0;i<textQueue.size();i++) {
 				if (textQueue.get(i).startsWith("ACK PWD :: ")) {
@@ -272,8 +306,8 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		return null;
 	}
 	
-	public void noop() {
-		sendEncryptedText("NOOP");
+	public boolean noop() {
+		return sendEncryptedText("NOOP");
 	}
 	
 	
@@ -291,7 +325,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		if (!rights_duties.allowsList()) return null;
 		sendEncryptedText("LIST");
 		String list = null;
-		long timeout = System.currentTimeMillis()+2000;
+		long timeout = System.currentTimeMillis()+timeout_ms;
 		while (list==null && System.currentTimeMillis()<timeout) {
 			for (int i=0;i<textQueue.size();i++) {
 				if (textQueue.get(i).startsWith("ACK LIST :: ")) {
@@ -348,7 +382,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 				sendEncryptedText("PUT "+param);
 				//wait for ACK or ERROR of PUT
 				String msg = null;
-				long timeout = System.currentTimeMillis()+2000;
+				long timeout = System.currentTimeMillis()+timeout_ms;
 				while (msg==null && System.currentTimeMillis()<timeout) {
 					for (int i=0;i<textQueue.size();i++) {
 						if (textQueue.get(i).startsWith("ACK PUT :: ") || textQueue.get(i).startsWith("ERROR IN PUT :: ")) {
@@ -416,7 +450,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 				
 				//wait for ACK or ERROR of PUT
 				String msg = null;
-				long timeout = System.currentTimeMillis()+2000;
+				long timeout = System.currentTimeMillis()+timeout_ms;
 				while (msg==null && System.currentTimeMillis()<timeout) {
 					for (int i=0;i<textQueue.size();i++) {
 						if (textQueue.get(i).startsWith("ACK RESUMEPUT :: ") || textQueue.get(i).startsWith("ERROR IN RESUMEPUT :: ")) {
@@ -473,31 +507,20 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	
 	public void uploadFile(String filename, byte[] data) {
 		if (!rights_duties.allowsUpload()) return;
-//		sendEncryptedText("PUT "+filename);
-//		//wait for ACK or ERROR of PUT
-//		String msg = null;
-//		long timeout = System.currentTimeMillis()+2000;
-//		while (msg==null && System.currentTimeMillis()<timeout) {
-//			for (int i=0;i<textQueue.size();i++) {
-//				if (textQueue.get(i).startsWith("ACK PUT :: ") || textQueue.get(i).startsWith("ERROR IN PUT :: ")) {
-//					msg = textQueue.remove(i);
-//				}
-//			}
-//		}
-//		if (msg.startsWith("ACK")) {
-//			sendEncryptedData(data);
-//		} else {
-//			System.out.println("ERROR uploading file: "+filename+" :: "+msg.substring(msg.indexOf(" :: ")+4));
-//		}
-		if (!rights_duties.allowsUpload()) return;
 		long filelenght = data.length;
 		String param = null;
 		
 		if (rights_duties.needsSignature(filename)) {
 			try {
-//						Signature sig = null; //TODO
-//						String sigText = Document.buildDocument(sig.toElement()).toStringCompact();
-						param = Util.makeParamsString(new String[]{filename, ""+filelenght});
+				String fname = ""+filename;
+				int lc = fname.lastIndexOf('/');
+				if (lc>=0 && lc < fname.length()-1) {
+					fname = fname.substring(lc+1);
+				}
+				Signature sig = Signature.createSignature(data, fname, key);
+				String sigText = Document.buildDocument(sig.toElement()).toStringCompact();
+				//System.out.println("signature: "+sigText);
+				param = Util.makeParamsString(new String[]{filename, ""+filelenght, sigText});
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				param = Util.makeParamsString(new String[]{filename,""+filelenght});
@@ -506,10 +529,17 @@ public class OSDXFileTransferClient implements FileTransferClient {
 			param = Util.makeParamsString(new String[]{filename,""+filelenght});
 		}
 		
+		//remove earlier acks or errors in put
+		for (int i=0;i<textQueue.size();i++) {
+			if (textQueue.get(i).startsWith("ACK PUT :: ") || textQueue.get(i).startsWith("ERROR IN PUT :: ")) {
+				textQueue.remove(i);
+				i--;
+			}
+		}
 		sendEncryptedText("PUT "+param);
 		//wait for ACK or ERROR of PUT
 		String msg = null;
-		long timeout = System.currentTimeMillis()+2000;
+		long timeout = System.currentTimeMillis()+timeout_ms;
 		while (msg==null && System.currentTimeMillis()<timeout) {
 			for (int i=0;i<textQueue.size();i++) {
 				if (textQueue.get(i).startsWith("ACK PUT :: ") || textQueue.get(i).startsWith("ERROR IN PUT :: ")) {
@@ -527,20 +557,18 @@ public class OSDXFileTransferClient implements FileTransferClient {
 				}
 			} else {
 				//send in multiple data packages
-				long nextStart = 0;
 				try {
 					int pos = 0;
 					int read;
 					while (pos < data.length) {
-						read = pos + maxByteLength;
+						read = maxByteLength;
 						if (pos+maxByteLength>data.length) {
-							read = maxByteLength-pos; 
+							read = data.length-pos; 
 						}
-						param = Util.makeParamsString(new String[]{filename, ""+nextStart, ""+read});
+						param = Util.makeParamsString(new String[]{filename, ""+pos, ""+read});
 						sendEncryptedText("PUTPART "+param);
-						sendEncryptedData(Arrays.copyOfRange(data, pos, read));
-						nextStart += read;
-						//if (Math.random()>0.5) return; //BB random errors to test resumeupload
+						sendEncryptedData(Arrays.copyOfRange(data, pos, pos+read));
+						pos += read;
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
@@ -572,7 +600,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		sendEncryptedText("GET "+filename);
 		//wait for ACK or ERROR of GET
 		String msg = null;
-		long timeout = System.currentTimeMillis()+2000;
+		long timeout = System.currentTimeMillis()+timeout_ms;
 		while (msg==null && System.currentTimeMillis()<timeout) {
 			for (int i=0;i<textQueue.size();i++) {
 				if (textQueue.get(i).startsWith("ACK GET :: ") || textQueue.get(i).startsWith("ERROR IN GET :: ")) {

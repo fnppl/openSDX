@@ -152,10 +152,18 @@ public class Signature {
 		return s;
 	}
 	
-	
+	public static Signature createSignature(byte[] data, String filename, OSDXKey key) throws Exception {
+		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(data);
+	//	byte[] md5sha1sha256 = kk[0];
+		byte[] md5 = kk[1];
+		byte[] sha1 = kk[2];
+		byte[] sha256 = kk[3];
+		
+		return createSignature(md5, sha1, sha256, filename, key);
+	}
 	public static Signature createSignature(File toSign, OSDXKey key) throws Exception {
 		byte[][] kk = SecurityHelper.getMD5SHA1SHA256(toSign);
-		byte[] md5sha1sha256 = kk[0];
+	//	byte[] md5sha1sha256 = kk[0];
 		byte[] md5 = kk[1];
 		byte[] sha1 = kk[2];
 		byte[] sha256 = kk[3];

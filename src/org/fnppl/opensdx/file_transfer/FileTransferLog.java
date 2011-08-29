@@ -57,6 +57,11 @@ public class FileTransferLog {
 	private static Locale ml = new Locale("en", "DE");
 	private final static SimpleDateFormat dateme = new SimpleDateFormat(dateformat, ml);
 	
+	
+	public static String getDateString() {
+		return dateme.format(System.currentTimeMillis());
+	}
+	
 	public static FileTransferLog initTmpLog() {
 		return new FileTransferLog();
 	}
