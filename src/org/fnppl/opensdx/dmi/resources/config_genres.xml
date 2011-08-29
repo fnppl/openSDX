@@ -620,7 +620,7 @@
         <name>Madrigal</name>
       </subgenre>
       <subgenre>
-        <name>Marches</name>
+        <name>March</name>
       </subgenre>
       <subgenre>
         <name>Motet</name>
@@ -644,7 +644,7 @@
         <name>Opera Romantic</name>
       </subgenre>
       <subgenre>
-        <name>Operettas</name>
+        <name>Operetta</name>
       </subgenre>
       <subgenre>
         <name>Oratorio</name>
@@ -657,9 +657,6 @@
       </subgenre>
       <subgenre>
         <name>Sonata</name>
-      </subgenre>
-      <subgenre>
-        <name>Suite</name>
       </subgenre>
       <subgenre>
         <name>Suite</name>
@@ -707,7 +704,7 @@
         <name>Woodwind Ensemble</name>
       </subgenre>
       <subgenre>
-        <name>a cappella</name>
+        <name>A cappella</name>
       </subgenre>
       <subgenre>
         <name>Vocal Ensemble</name>
