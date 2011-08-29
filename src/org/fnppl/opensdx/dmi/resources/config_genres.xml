@@ -220,7 +220,7 @@
         <name>Schlager</name>
       </subgenre>
       <subgenre>
-        <name>Singer/Songwriter</name>
+        <name>Singer / Songwriter</name>
       </subgenre>
       <subgenre>
         <name>Synthpop</name>
@@ -299,9 +299,6 @@
       </subgenre>
       <subgenre>
         <name>Big Band</name>
-      </subgenre>
-      <subgenre>
-        <name>schlager</name>
       </subgenre>
       <subgenre>
         <name>Classic Jazz</name>
@@ -912,7 +909,7 @@
         <name>Highlife</name>
       </subgenre>
       <subgenre>
-        <name>Judaica Music/Yiddish/Klezmer</name>
+        <name>Judaica Music / Yiddish / Klezmer</name>
       </subgenre>
       <subgenre>
         <name>Kuduro</name>
@@ -933,7 +930,7 @@
         <name>Middle Eastern Music</name>
       </subgenre>
       <subgenre>
-        <name>Nordic/Scandinavia</name>
+        <name>Nordic / Scandinavia</name>
       </subgenre>
       <subgenre>
         <name>North American Music</name>
@@ -1423,7 +1420,7 @@
         <name>Bulgarian</name>
       </subgenre>
       <subgenre>
-        <name>Cantonese/Yue</name>
+        <name>Cantonese / Yue</name>
       </subgenre>
       <subgenre>
         <name>Croatian</name>
@@ -1456,7 +1453,7 @@
         <name>Hebrew</name>
       </subgenre>
       <subgenre>
-        <name>Hindi/Urdu</name>
+        <name>Hindi / Urdu</name>
       </subgenre>
       <subgenre>
         <name>Hungarian</name>

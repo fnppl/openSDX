@@ -109,7 +109,7 @@
 		<xsd:enumeration value="Pop Rock"/>
 		<xsd:enumeration value="Power Pop"/>
 		<xsd:enumeration value="Schlager"/>
-		<xsd:enumeration value="Singer/Songwriter"/>
+		<xsd:enumeration value="Singer / Songwriter"/>
 		<xsd:enumeration value="Synthpop"/>
 		<xsd:enumeration value="Teen Pop"/>
 		<xsd:enumeration value="Country"/>
@@ -134,7 +134,6 @@
 		<xsd:enumeration value="Avantgarde"/>
 		<xsd:enumeration value="Bebop"/>
 		<xsd:enumeration value="Big Band"/>
-		<xsd:enumeration value="schlager"/>
 		<xsd:enumeration value="Classic Jazz"/>
 		<xsd:enumeration value="Cool Jazz"/>
 		<xsd:enumeration value="Dixieland music"/>
@@ -332,14 +331,14 @@
 		<xsd:enumeration value="Griot"/>
 		<xsd:enumeration value="Gypsy"/>
 		<xsd:enumeration value="Highlife"/>
-		<xsd:enumeration value="Judaica Music/Yiddish/Klezmer"/>
+		<xsd:enumeration value="Judaica Music / Yiddish / Klezmer"/>
 		<xsd:enumeration value="Kuduro"/>
 		<xsd:enumeration value="Kwaito"/>
 		<xsd:enumeration value="Makossa"/>
 		<xsd:enumeration value="Marching Band"/>
 		<xsd:enumeration value="Mento"/>
 		<xsd:enumeration value="Middle Eastern Music"/>
-		<xsd:enumeration value="Nordic/Scandinavia"/>
+		<xsd:enumeration value="Nordic / Scandinavia"/>
 		<xsd:enumeration value="North American Music"/>
 		<xsd:enumeration value="South American Music"/>
 		<xsd:enumeration value="Parang"/>
@@ -496,7 +495,7 @@
 		<xsd:enumeration value="Bengali"/>
 		<xsd:enumeration value="Bosnian"/>
 		<xsd:enumeration value="Bulgarian"/>
-		<xsd:enumeration value="Cantonese/Yue"/>
+		<xsd:enumeration value="Cantonese / Yue"/>
 		<xsd:enumeration value="Croatian"/>
 		<xsd:enumeration value="Czech"/>
 		<xsd:enumeration value="Danish"/>
@@ -507,7 +506,7 @@
 		<xsd:enumeration value="German"/>
 		<xsd:enumeration value="Greek"/>
 		<xsd:enumeration value="Hebrew"/>
-		<xsd:enumeration value="Hindi/Urdu"/>
+		<xsd:enumeration value="Hindi / Urdu"/>
 		<xsd:enumeration value="Hungarian"/>
 		<xsd:enumeration value="Italian"/>
 		<xsd:enumeration value="Japanese"/>
