@@ -264,7 +264,7 @@
 		<xsd:enumeration value="String Quartet"/>
 		<xsd:enumeration value="String Trio"/>
 		<xsd:enumeration value="Woodwind Ensemble"/>
-		<xsd:enumeration value="a cappella"/>
+		<xsd:enumeration value="A cappella"/>
 		<xsd:enumeration value="Vocal Ensemble"/>
 		<xsd:enumeration value="Vocal Music"/>
 		<xsd:enumeration value="Choir"/>
