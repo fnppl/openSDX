@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.apache.ftpserver.ftplet.FtpFile;
+import org.fnppl.opensdx.file_transfer.FileTransferProgress;
 import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.file_transfer.RemoteFile;
 import org.fnppl.opensdx.file_transfer.RightsAndDuties;
@@ -84,11 +85,21 @@ public class OSDXFile implements FtpFile{
 			throw new IOException("offset not implemented");
 		}
 		ByteArrayOutputStream bout = new ByteArrayOutputStream() {
+			boolean sended = false;
 			public void close() throws IOException {
-				byte[] data = this.toByteArray();
-				System.out.println("output stream closed: data size = "+data.length);
-				client.uploadFile(getAbsolutePath(), data);
-				super.close();
+				if (!sended) {
+					sended = true;
+					byte[] data = this.toByteArray();
+					System.out.println("output stream closed: data size = "+data.length);
+					final long len = data.length;
+					FileTransferProgress progress = new FileTransferProgress() {
+						public void onUpdate() {
+							System.out.println(" - upload progress: "+(this.getProgress()*100/len)+"%");
+						}
+					};
+					client.uploadFile(getAbsolutePath(), data, progress);
+					super.close();
+				}
 			}
 		};
 		return bout;

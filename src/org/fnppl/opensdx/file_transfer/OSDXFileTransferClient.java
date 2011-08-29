@@ -69,6 +69,8 @@ import org.fnppl.opensdx.security.Signature;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
+import com.sun.java.swing.plaf.windows.WindowsBorders.ProgressBarBorder;
+
 public class OSDXFileTransferClient implements FileTransferClient {
 
 	private OSDXSocket socket = null;
@@ -310,15 +312,24 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		return sendEncryptedText("NOOP");
 	}
 	
+	public void uploadFile(File f, FileTransferProgress progress) {
+		if (!rights_duties.allowsUpload()) return;
+		uploadFile(f, null, false, progress);
+	}
 	
 	public void uploadFile(File f) {
 		if (!rights_duties.allowsUpload()) return;
-		uploadFile(f, null, false);
+		uploadFile(f, null, false, null);
+	}
+	
+	public void resumeuploadFile(File f, FileTransferProgress progress) {
+		if (!rights_duties.allowsUpload()) return;
+		resumeuploadFile(f, null, progress);
 	}
 	
 	public void resumeuploadFile(File f) {
 		if (!rights_duties.allowsUpload()) return;
-		resumeuploadFile(f, null);
+		resumeuploadFile(f, null, null);
 	}
 	
 	public Vector<RemoteFile> list() {
@@ -353,11 +364,15 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		}
 		return null;
 	}
+	
+	public void uploadFile(File f, String new_filename, FileTransferProgress progress) {
+		uploadFile(f, new_filename, false, progress);
+	}
 	public void uploadFile(File f, String new_filename) {
-		uploadFile(f, new_filename, false);
+		uploadFile(f, new_filename, false,null);
 	}
 	
-	public void uploadFile(File f, String new_filename, boolean sign) {
+	public void uploadFile(File f, String new_filename, boolean sign, FileTransferProgress progress) {
 		if (!rights_duties.allowsUpload()) return;
 		if (f.exists()) {
 			if (!f.isDirectory()) {
@@ -401,7 +416,11 @@ public class OSDXFileTransferClient implements FileTransferClient {
 							while ((read = fin.read(buffer))>0) {
 								bOut.write(buffer, 0, read);
 							}
-							sendEncryptedData(bOut.toByteArray());
+							byte[] data = bOut.toByteArray();
+							boolean ok = sendEncryptedData(data);
+							if (progress!=null && ok) {
+								progress.setProgress(data.length);
+							}
 						} catch (Exception ex) {
 							ex.printStackTrace();
 						}
@@ -417,7 +436,11 @@ public class OSDXFileTransferClient implements FileTransferClient {
 								sendEncryptedText("PUTPART "+param);
 								ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 								bOut.write(buffer, 0, read);
-								sendEncryptedData(bOut.toByteArray());
+								byte[] data = bOut.toByteArray();
+								boolean ok = sendEncryptedData(data);
+								if (progress!=null && ok) {
+									progress.addProgress(data.length);
+								}
 								nextStart += read;
 								//if (Math.random()>0.5) return; //BB random errors to test resumeupload
 							}
@@ -436,7 +459,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		}
 	}
 	
-	public void resumeuploadFile(File f, String new_filename) {
+	public void resumeuploadFile(File f, String new_filename, FileTransferProgress progress) {
 		if (!rights_duties.allowsUpload()) return;
 		if (f.exists()) {
 			if (!f.isDirectory()) {
@@ -472,6 +495,9 @@ public class OSDXFileTransferClient implements FileTransferClient {
 						return;
 					}
 					try {
+						if (progress!=null) {
+							progress.setProgress(nextStart);
+						}
 						FileInputStream fin = new FileInputStream(f);
 						if (nextStart>0) fin.skip(nextStart);
 						
@@ -482,8 +508,11 @@ public class OSDXFileTransferClient implements FileTransferClient {
 							sendEncryptedText("PUTPART "+param);
 							ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 							bOut.write(buffer, 0, read);
-							sendEncryptedData(bOut.toByteArray());
+							boolean ok = sendEncryptedData(bOut.toByteArray());
 							nextStart += read;
+							if (progress!=null && ok) {
+								progress.addProgress(nextStart);
+							}
 						}
 						
 						fin.close();
@@ -492,7 +521,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 					}
 				}
 				else if (msg!=null && msg.equals("ERROR IN RESUMEPUT :: FILE DOES NOT EXIST, PLEASE USE PUT INSTEAD")) {
-					uploadFile(f, new_filename);
+					uploadFile(f, new_filename, progress);
 				}
 				else {
 					if (msg==null) {
@@ -506,6 +535,10 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	}
 	
 	public void uploadFile(String filename, byte[] data) {
+		uploadFile(filename, data, null);
+	}
+	
+	public void uploadFile(String filename, byte[] data, FileTransferProgress progress) {
 		if (!rights_duties.allowsUpload()) return;
 		long filelenght = data.length;
 		String param = null;
@@ -551,7 +584,10 @@ public class OSDXFileTransferClient implements FileTransferClient {
 			if (filelenght<=maxByteLength) {
 				//send in one data package
 				try {
-					sendEncryptedData(data);
+					boolean ok = sendEncryptedData(data);
+					if (progress!=null && ok) {
+						progress.setProgress(data.length);
+					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
@@ -567,7 +603,10 @@ public class OSDXFileTransferClient implements FileTransferClient {
 						}
 						param = Util.makeParamsString(new String[]{filename, ""+pos, ""+read});
 						sendEncryptedText("PUTPART "+param);
-						sendEncryptedData(Arrays.copyOfRange(data, pos, pos+read));
+						boolean ok = sendEncryptedData(Arrays.copyOfRange(data, pos, pos+read));
+						if (progress!=null && ok) {
+							progress.addProgress(read);
+						}
 						pos += read;
 					}
 				} catch (Exception ex) {
