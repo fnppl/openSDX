@@ -236,7 +236,7 @@
 		<xsd:enumeration value="Cantata"/>
 		<xsd:enumeration value="Choral"/>
 		<xsd:enumeration value="Madrigal"/>
-		<xsd:enumeration value="Marches"/>
+		<xsd:enumeration value="March"/>
 		<xsd:enumeration value="Motet"/>
 		<xsd:enumeration value="Musical"/>
 		<xsd:enumeration value="Opera Arias"/>
@@ -244,12 +244,11 @@
 		<xsd:enumeration value="Opera Classical"/>
 		<xsd:enumeration value="Opera Renaissance"/>
 		<xsd:enumeration value="Opera Romantic"/>
-		<xsd:enumeration value="Operettas"/>
+		<xsd:enumeration value="Operetta"/>
 		<xsd:enumeration value="Oratorio"/>
 		<xsd:enumeration value="Passion"/>
 		<xsd:enumeration value="Requiem"/>
 		<xsd:enumeration value="Sonata"/>
-		<xsd:enumeration value="Suite"/>
 		<xsd:enumeration value="Suite"/>
 		<xsd:enumeration value="Symphonic Music / Orchestral Music"/>
 		<xsd:enumeration value="Symphony"/>
