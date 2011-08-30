@@ -177,7 +177,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	
         	// Release
         	LicenseBasis license_basis = LicenseBasis.make(territorial, srd, prd);
-        	
+
         	// license specifics -> empty!
         	LicenseSpecifics license_specifics = LicenseSpecifics.make();
         	
@@ -191,7 +191,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	// add Tags
         	ItemTags tags = ItemTags.make();   		
         	tags.addGenre(root.getChildTextNN("main_genre"));
-        	
+
         	// explicit_lyrics
         	if(root.getChildTextNN("parental_advisory").length()>0) {
         		if(root.getChildTextNN("parental_advisory").toLowerCase().equals("false")) {
@@ -364,7 +364,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
     	         		item.addContributor(contributor);  
              	}
              	
-             	// ToDo: set all contributors!
+             	// ToDo: set all contributors! "rights_holder" & "rights_ownership"?!
             	
         		// check if file exist at path
         		String filename = track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("name");
@@ -387,7 +387,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
             			itemfile.bytes(Integer.parseInt(track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("size")));
             		}        		
         		}        		
-        		
+            	license_basis. 		
 	        	item.addFile(itemfile);
 	        	
 	        	bundle.addItem(item);
