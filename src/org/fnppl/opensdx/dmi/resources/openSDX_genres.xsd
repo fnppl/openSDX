@@ -325,6 +325,7 @@
 		<xsd:enumeration value="Celtic Music"/>
 		<xsd:enumeration value="Chanson"/>
 		<xsd:enumeration value="Coupé Decalé"/>
+		<xsd:enumeration value="Enka"/>
 		<xsd:enumeration value="European Music"/>
 		<xsd:enumeration value="Ghazal"/>
 		<xsd:enumeration value="Griot"/>
