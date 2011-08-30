@@ -279,7 +279,7 @@
 		<xsd:enumeration value="Alto"/>
 		<xsd:enumeration value="Tenor"/>
 		<xsd:enumeration value="Baritone"/>
-		<xsd:enumeration value="Basso"/>
+		<xsd:enumeration value="Bass"/>
 		<xsd:enumeration value="Accordion"/>
 		<xsd:enumeration value="Ancient Instruments"/>
 		<xsd:enumeration value="Bassoon"/>
