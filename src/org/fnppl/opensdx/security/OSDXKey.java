@@ -48,12 +48,13 @@ package org.fnppl.opensdx.security;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.fnppl.opensdx.security.PGPKeyStore;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLHelper;
 
 
 public class OSDXKey {
@@ -62,7 +63,7 @@ public class OSDXKey {
 	
 	private static final Vector<String> algo_name = new Vector<String>();
 	static {
-		algo_name.addElement("RSA");		
+		algo_name.addElement("RSA");
 	};
 	
 	public static final int USAGE_SIGN = 0;
@@ -335,13 +336,17 @@ public class OSDXKey {
 		
 		if (level == LEVEL_SUB || level == LEVEL_REVOKE) {
 			String parentkeyid = kp.getChildText("parentkeyid");
-			int iAt = parentkeyid.indexOf('@');
-			if (iAt>0) {
-				byte[] parentid = SecurityHelper.HexDecoder.decode(parentkeyid.substring(0,iAt));
-				((SubKey)ret).parentkeyid = SecurityHelper.HexDecoder.encode(parentid,':',-1)+parentkeyid.substring(iAt);
+			if (parentkeyid==null) {
+				((SubKey)ret).parentkeyid = null;
 			} else {
-				byte[] parentid = SecurityHelper.HexDecoder.decode(parentkeyid);
-				((SubKey)ret).parentkeyid = SecurityHelper.HexDecoder.encode(parentid,':',-1);
+				int iAt = parentkeyid.indexOf('@');
+				if (iAt>0) {
+					byte[] parentid = SecurityHelper.HexDecoder.decode(parentkeyid.substring(0,iAt));
+					((SubKey)ret).parentkeyid = SecurityHelper.HexDecoder.encode(parentid,':',-1)+parentkeyid.substring(iAt);
+				} else {
+					byte[] parentid = SecurityHelper.HexDecoder.decode(parentkeyid);
+					((SubKey)ret).parentkeyid = SecurityHelper.HexDecoder.encode(parentid,':',-1);
+				}
 			}
 		}
 		
@@ -364,7 +369,12 @@ public class OSDXKey {
 			if(eExponent.getChild("locked") != null) {
 				//only ask for password when key is used for the first time -> see unlockPrivateKey
 				ret.lockedPrivateKey = eExponent.getChild("locked");		
-			} else {
+			}
+			else if(eExponent.getChild("pgp") != null) {
+				//only ask for password when key is used for the first time -> see unlockPrivateKey
+				ret.lockedPrivateKey = eExponent.getChild("pgp");		
+			}
+			else {
 				//never should go here!!!
 				System.err.println("You should never see me - there seems to be a private key unlocked in your keystore: "+Sshafp+"@"+authoritativekeyserver);
 				exponent = SecurityHelper.HexDecoder.decode(eExponent.getText());
@@ -471,23 +481,37 @@ public class OSDXKey {
 	
 	public final void unlockPrivateKey(MessageHandler mh) {
 		if (!akp.hasPrivateKey() && lockedPrivateKey != null) { //only once
-			String mantraname = lockedPrivateKey.getChildText("mantraname");
-			
-			//check algo and padding
-			String Slock_algo = lockedPrivateKey.getChildText("algo");
-			String Spadding = lockedPrivateKey.getChildText("padding");
-			if (!Slock_algo.equals("AES@256")||!Spadding.equals("CBC/PKCS#5")) {
-				throw new RuntimeException("UNLOCKING METHOD NOT IMPLEMENTED, please use AES@265 encryption with CBC/PKCS#7 padding");
+			if (lockedPrivateKey.getName().equals("locked")) {
+				String mantraname = lockedPrivateKey.getChildText("mantraname");
+				
+				//check algo and padding
+				String Slock_algo = lockedPrivateKey.getChildText("algo");
+				String Spadding = lockedPrivateKey.getChildText("padding");
+				if (!Slock_algo.equals("AES@256")||!Spadding.equals("CBC/PKCS#5")) {
+					throw new RuntimeException("UNLOCKING METHOD NOT IMPLEMENTED, please use AES@265 encryption with CBC/PKCS#7 padding");
+				}
+				
+				try {
+					char[] pp = mh.requestPassword(getKeyID(), mantraname);
+					unlockPrivateKey(pp);
+				} catch(Exception ex) {
+					if (ex.getMessage().startsWith("pad block corrupted")) {
+						mh.fireWrongPasswordMessage();
+					} else {
+						ex.printStackTrace();
+					}
+				}
 			}
-			
-			try {
-				char[] pp = mh.requestPassword(getKeyID(), mantraname);
-				unlockPrivateKey(pp);
-			} catch(Exception ex) {
-				if (ex.getMessage().startsWith("pad block corrupted")) {
-					mh.fireWrongPasswordMessage();
-				} else {
-					ex.printStackTrace();
+			else if (lockedPrivateKey.getName().equals("pgp")) {
+				try {
+					char[] pp = mh.requestPassword(getKeyID(), "pgp/gpg key import");
+					unlockPrivateKey(pp);
+				} catch(Exception ex) {
+					if (ex.getMessage().startsWith("pad block corrupted")) {
+						mh.fireWrongPasswordMessage();
+					} else {
+						ex.printStackTrace();
+					}
 				}
 			}
 		}
@@ -521,15 +545,24 @@ public class OSDXKey {
 	
 	public void unlockPrivateKey(char[] password) throws Exception{
 		if (password!=null) {
-			String Sinitv = lockedPrivateKey.getChildText("initvector");
-			String Sbytes = lockedPrivateKey.getChildText("bytes");
-			byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
-			
-			SymmetricKey sk = SymmetricKey.getKeyFromPass(password, SecurityHelper.HexDecoder.decode(Sinitv));
-			byte[] exponent = sk.decrypt(bytes);
-			byte[] modulus = akp.getModulus();
-			byte[] pubkey_exponent = akp.getPublicExponent();
-			akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
+			if (lockedPrivateKey.getName().equals("locked")) {
+				String Sinitv = lockedPrivateKey.getChildText("initvector");
+				String Sbytes = lockedPrivateKey.getChildText("bytes");
+				byte[] bytes = SecurityHelper.HexDecoder.decode(Sbytes);
+				
+				SymmetricKey sk = SymmetricKey.getKeyFromPass(password, SecurityHelper.HexDecoder.decode(Sinitv));
+				byte[] exponent = sk.decrypt(bytes);
+				byte[] modulus = akp.getModulus();
+				byte[] pubkey_exponent = akp.getPublicExponent();
+				akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
+			}
+			else if (lockedPrivateKey.getName().equals("pgp")) {
+				byte[] exponent = PGPKeyStore.getExponentFromSecretKey(SecurityHelper.HexDecoder.decode(lockedPrivateKey.getText()), password);
+				if (exponent == null) throw new Exception("wrong password");
+				byte[] modulus = akp.getModulus();
+				byte[] pubkey_exponent = akp.getPublicExponent();
+				akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
+			}
 		}
 	}
 	
@@ -599,20 +632,28 @@ public class OSDXKey {
 			if (lockedPrivateKey == null) {
 				createLockedPrivateKey(mh);
 			}
-			
 			if (lockedPrivateKey != null) {
-				Element el = new Element("locked");
-				el.addContent("mantraname",lockedPrivateKey.getChildText("mantraname"));
-				el.addContent("algo",lockedPrivateKey.getChildText("algo"));
-				el.addContent("initvector", lockedPrivateKey.getChildText("initvector"));
-				el.addContent("padding",lockedPrivateKey.getChildText("padding"));
-				el.addContent("bytes",lockedPrivateKey.getChildText("bytes"));
-				
-				Element eexp = new Element("exponent");
-				eexp.addContent(el);
-				Element esk = new Element("privkey");
-				esk.addContent(eexp);
-				ekp.addContent(esk);
+				if (lockedPrivateKey.getName().equals("locked")) {
+					Element el = new Element("locked");
+					el.addContent("mantraname",lockedPrivateKey.getChildText("mantraname"));
+					el.addContent("algo",lockedPrivateKey.getChildText("algo"));
+					el.addContent("initvector", lockedPrivateKey.getChildText("initvector"));
+					el.addContent("padding",lockedPrivateKey.getChildText("padding"));
+					el.addContent("bytes",lockedPrivateKey.getChildText("bytes"));
+					
+					Element eexp = new Element("exponent");
+					eexp.addContent(el);
+					Element esk = new Element("privkey");
+					esk.addContent(eexp);
+					ekp.addContent(esk);
+				}
+				else if (lockedPrivateKey.getName().equals("pgp")) {
+					Element eexp = new Element("exponent");
+					eexp.addContent(XMLHelper.cloneElement(lockedPrivateKey));
+					Element esk = new Element("privkey");
+					esk.addContent(eexp);
+					ekp.addContent(esk);
+				}
 			} else if (akp.hasPrivateKey()) {
 				System.out.println("CAUTION: private key NOT saved.");
 			}// -- end privkey

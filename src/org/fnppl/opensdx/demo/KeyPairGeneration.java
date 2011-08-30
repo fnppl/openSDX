@@ -49,6 +49,8 @@ package org.fnppl.opensdx.demo;
 import java.io.*;
 import java.util.*;
 
+import org.bouncycastle.openpgp.PGPKeyRingGenerator;
+
 
 /**
  * Demonstrates a simple Key Pair Generation
@@ -62,6 +64,7 @@ public class KeyPairGeneration {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		
 		/*
 		// PGPKeyPairGenerator
 		try {
