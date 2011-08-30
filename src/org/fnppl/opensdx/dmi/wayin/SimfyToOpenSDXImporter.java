@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.fnppl.opensdx.common.*;
+import org.fnppl.opensdx.dmi.GenreConverter;
 import org.fnppl.opensdx.xml.*;
 import org.fnppl.opensdx.security.*;
 
@@ -164,6 +165,11 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	feedinfo.receiver(Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER));
         	
         	Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artistname, info, license_basis, license_specifics);
+        	
+        	// GenreConverter
+        	GenreConverter gc = GenreConverter.getInstance(GenreConverter.SIMFY_TO_OPENSDX);
+        	
+        	// ToDo: Test to convert genres!
         	
         	// add Tags
         	ItemTags tags = ItemTags.make();   		
