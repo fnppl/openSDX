@@ -184,8 +184,12 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 		}
 		this.mySigningKey = mySigningKey;
 		//this.myEncryptionKey = myEncryptionKey;
+		secureConnectionEstablished = false;
+		client_nonce = null;
+		server_nonce = null;
 		agreedEncryptionKey = null;
 		socket = new Socket(host, port);
+		//System.out.println("inner connect ok: "+socket.isConnected());
 		if (socket.isConnected()) {
 			//System.out.println("socket connected");
 			receiver = OSDXSocketReceiver.initClientReceiver(socket.getInputStream(),this,this);
@@ -310,7 +314,7 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 //	}
 	
 	public boolean isConnected() {
-		return secureConnectionEstablished;
+		return (secureConnectionEstablished && receiver!=null && receiver.isRunning());
 	}
 	
 

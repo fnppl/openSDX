@@ -91,7 +91,6 @@ public class OSDXSocketServer {
 		//System.out.println("Starting Server at "+address.getHostAddress()+" on port " + port +"  at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
 		ServerSocket so = new ServerSocket(port);
 		while (true) {
-			
 			try {
 				synchronized (o) {
 					final Socket me = so.accept();

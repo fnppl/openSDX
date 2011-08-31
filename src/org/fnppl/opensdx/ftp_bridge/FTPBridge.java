@@ -170,22 +170,20 @@ public class FTPBridge {
 		Ftplet hook = new DefaultFtplet() {
 			public FtpletResult beforeCommand(FtpSession session, FtpRequest request) throws FtpException, IOException {
 				System.out.println("beforeCommand: "+request.getCommand());
-				if (session.getFileSystemView() instanceof OSDXFileSystemView) {
-					OSDXFileSystemView v = (OSDXFileSystemView)session.getFileSystemView();
-					v.noop(); //THIS WILL TEST IF THE CONNECTION IS STILL ALIVE
-					if (!v.isConnected()) {
-						System.out.println("osdx filetransfer client NOT connected.");
-						System.out.println("trying to reconnect...");
-						boolean ok = v.reconnect();
-						if (ok)  {
-							System.out.println("re-connected.");
-						} else {
-							System.out.println("re-connection failed.");
+				if (!request.getCommand().equals("NOOP")) { //dont reconnect on noop
+					if (session.getFileSystemView() instanceof OSDXFileSystemView) {
+						OSDXFileSystemView v = (OSDXFileSystemView)session.getFileSystemView();
+						v.noop(); //THIS WILL TEST IF THE CONNECTION IS STILL ALIVE
+						if (!v.isConnected()) {
+							System.out.println("osdx filetransfer client NOT connected.");
+							System.out.println("trying to reconnect...");
+							boolean ok = v.reconnect();
+							if (ok)  {
+								System.out.println("re-connected.");
+							} else {
+								System.out.println("re-connection failed.");
+							}
 						}
-					} else {
-//						if (request.getCommand().equals("NOOP")) {
-//							boolean ok = v.noop();
-//						}
 					}
 				}
 				return super.beforeCommand(session, request);

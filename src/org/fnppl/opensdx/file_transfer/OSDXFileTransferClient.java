@@ -77,7 +77,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	private OSDXSocketDataHandler dataHandler = null;
 	private String username = null;
 	private OSDXKey key = null;
-	private String lastPWD = null;
+	//private String lastPWD = null;
 	
 	private String host = null;
 	private int port = -1;
@@ -148,6 +148,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 		this.host = host;
 		this.port = port;
 		this.prepath = prepath;
+		reconnectCount = 0;
 		return reconnect();
 	}
 	
@@ -157,10 +158,16 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	public boolean reconnect() throws Exception {
 		if (reconnectCount<maxReconnectTries) {
 			reconnectCount++;
+			
+			nextDownloadFile = new Vector<DownloadFile>();
+			textQueue = new Vector<String>();
+			xmlQueue = new Vector<Element>();
+			rights_duties = null;
+			
 			socket = new OSDXSocket();
 			socket.setDataHandler(dataHandler);
-			socket.connect(host, port, prepath, key);
-			if (socket.isConnected()) {
+			boolean ok = socket.connect(host, port, prepath, key);
+			if (ok) {
 				connected = login(username); 
 				if (!connected) {
 					System.out.println("ERROR: Connection to server could NOT be established!");
@@ -677,13 +684,20 @@ public class OSDXFileTransferClient implements FileTransferClient {
 //			s.mkdir("test-dir");
 //			s.cd("test-dir");
 			s.pwd();
+			s.list();
 //			s.uploadFile(new File("README"));
 //			s.downloadFile("README", downloadPath);
 			
-			s.downloadFile("test.data", downloadPath);
+			//s.downloadFile("test.data", downloadPath);
 			
-			Thread.sleep(10000);
-			s.closeConnection();
+			Thread.sleep(40000);
+			s.list();
+			boolean recon = s.reconnect();
+			System.out.println("re-connect: "+recon);
+			s.pwd();
+			s.list();
+			
+			//s.closeConnection();
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -739,7 +753,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	}
 	
 	public static void main(String[] args) {
-		//test(); if (2 == 1+1) return;
+		test(); if (2 == 1+1) return;
 		
 		//System.out.println("args: "+Arrays.toString(args));
 		OSDXKey key = null;

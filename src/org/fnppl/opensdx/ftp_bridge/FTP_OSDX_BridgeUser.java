@@ -1,5 +1,4 @@
 package org.fnppl.opensdx.ftp_bridge;
-
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -46,8 +45,10 @@ package org.fnppl.opensdx.ftp_bridge;
  */
 import org.fnppl.opensdx.security.OSDXKey;
 
-public class OSDXUser {
-
+public class FTP_OSDX_BridgeUser {
+	
+	public String ftpusername = null;
+	public String ftppassword = null;
 	public String host = null;
 	public int port = 4221;
 	public String prepath = "/";

@@ -96,7 +96,9 @@ public class OSDXFileSystemManager {
 				v = new OSDXFileSystemView(client);
 				views.put(user, v);
 			} else {
+				((OSDXFileSystemView)v).noop();
 				if (!((OSDXFileSystemView)v).isConnected()) {
+					v.dispose();
 					System.out.println("user re-login: "+user.getName());
 					OSDXUser client = getUserClient(user.getName());
 					v = new OSDXFileSystemView(client);

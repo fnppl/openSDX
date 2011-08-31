@@ -204,9 +204,9 @@ public class OSDXSocketReceiver {
 		try {
 			final StringBuffer commandBuffer = new StringBuffer();
 			byte[] b = new byte[1];
-			int read;
+			int read = 1;
 			boolean commandNotComplete = true;
-			while (commandNotComplete) {
+			while (commandNotComplete && read>0) {
 				read = intputStream.read(b); //this one blocks
 				if (read>0) {
 					if (b[0] == '\n') { // data starts after :
@@ -215,6 +215,11 @@ public class OSDXSocketReceiver {
 						commandBuffer.append((char)b[0]);
 					}
 				}
+			}
+			if (read<=0){
+				//System.out.println("input stream closed -> stopping receiver");
+				stop();
+				return;
 			}
 			String command = commandBuffer.toString();
 			//System.out.println("receiving bytes: "+command);

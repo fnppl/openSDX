@@ -45,6 +45,8 @@ package org.fnppl.opensdx.ftp_bridge;
  * 
  */
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -84,25 +86,46 @@ public class OSDXFile implements FtpFile{
 		if (offset>0) {
 			throw new IOException("offset not implemented");
 		}
-		ByteArrayOutputStream bout = new ByteArrayOutputStream() {
+		final File tempFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
+		tempFile.deleteOnExit();
+		FileOutputStream fout = new FileOutputStream(tempFile) {
 			boolean sended = false;
 			public void close() throws IOException {
 				if (!sended) {
 					sended = true;
-					byte[] data = this.toByteArray();
-					System.out.println("output stream closed: data size = "+data.length);
-					final long len = data.length;
+					final long len = tempFile.length();
 					FileTransferProgress progress = new FileTransferProgress() {
 						public void onUpdate() {
 							System.out.println(" - upload progress: "+(this.getProgress()*100/len)+"%");
 						}
 					};
-					client.uploadFile(getAbsolutePath(), data, progress);
+					System.out.println("uploading file "+tempFile.getAbsolutePath());
+					client.uploadFile(tempFile, getAbsolutePath(), progress);
+					tempFile.delete();
 					super.close();
 				}
 			}
 		};
-		return bout;
+		return fout;
+//		ByteArrayOutputStream bout = new ByteArrayOutputStream() {
+//			boolean sended = false;
+//			public void close() throws IOException {
+//				if (!sended) {
+//					sended = true;
+//					byte[] data = this.toByteArray();
+//					System.out.println("output stream closed: data size = "+data.length);
+//					final long len = data.length;
+//					FileTransferProgress progress = new FileTransferProgress() {
+//						public void onUpdate() {
+//							System.out.println(" - upload progress: "+(this.getProgress()*100/len)+"%");
+//						}
+//					};
+//					client.uploadFile(getAbsolutePath(), data, progress);
+//					super.close();
+//				}
+//			}
+//		};
+//		return bout;
 	}
 
 	public boolean delete() {

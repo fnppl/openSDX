@@ -222,10 +222,10 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	
 	public void run() {
 		try {
-			
 			InetAddress addr = socket.getInetAddress();
 			remoteIP = addr.getHostAddress();
 			remotePort = socket.getPort();
+			//int localPort = socket.getLocalPort();
 			receiver =OSDXSocketReceiver.initServerReceiver(socket.getInputStream(),this,this);
 			System.out.println(FileTransferLog.getDateString()+" :: serverthread started, remote_ip="+remoteIP+", remote_port="+remotePort);
 			
@@ -234,7 +234,7 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 				//System.out.println("next timeout = "+SecurityHelper.getFormattedDate(nextTimeOut)+"\t"+this.toString());
 				sleep(200);
 			}
-			System.out.println(FileTransferLog.getDateString()+" :: timeout, closing connection");
+			System.out.println(FileTransferLog.getDateString()+" :: timeout, closing connection for remote port "+remotePort);
 			closeConnection();
 			
 		} catch(Exception ex) {

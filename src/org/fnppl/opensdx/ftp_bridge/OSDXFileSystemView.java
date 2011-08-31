@@ -74,34 +74,38 @@ public class OSDXFileSystemView implements FileSystemView {
 		try {
 			transfer = new OSDXFileTransferClient();
 			transfer.connect(user.host, user.port, user.prepath, user.signingKey, user.username);
-			Thread t = new Thread() {
-				public void run() {
-					boolean goon = true;
-					while (goon) {
-						try {
-						 	sleep(5000);
-						 	goon = isConnected();
-						 	System.out.println("noop");
-						 	transfer.noop();
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
-			};
+//			Thread t = new Thread() {
+//				public void run() {
+//					boolean goon = true;
+//					while (goon) {
+//						try {
+//						 	sleep(5000);
+//						 	goon = isConnected();
+//						 	System.out.println("noop");
+//						 	transfer.noop();
+//						} catch (Exception ex) {
+//							ex.printStackTrace();
+//						}
+//					}
+//				}
+//			};
 			//t.start();
+			
+			transfer.cd("/");
+			RemoteFile froot = transfer.file("/");
+			if (froot==null) { 
+				System.out.println("root could not be resolved.");
+			} else {
+				System.out.println("root: "+froot.getFilnameWithPath());
+			}
+			root = new OSDXFile(froot, transfer);
+			pwd = root;
+			
 		} catch (Exception e) {
+			root = null;
+			pwd = null;
 			e.printStackTrace();
 		}
-		transfer.cd("/");
-		RemoteFile froot = transfer.file("/");
-		if (froot==null) { 
-			System.out.println("root could not be resolved.");
-		} else {
-			System.out.println("root: "+froot.getFilnameWithPath());
-		}
-		root = new OSDXFile(froot, transfer);
-		pwd = root;
 
 	}
 	
@@ -116,7 +120,6 @@ public class OSDXFileSystemView implements FileSystemView {
 			System.out.println("new pwd: "+pwd.getAbsolutePath()+"/"+pwd.getName());
 		}
 		return true;
-		
 	}
 
 	public void dispose() {
@@ -179,14 +182,14 @@ public class OSDXFileSystemView implements FileSystemView {
 
 
 	public boolean reconnect() {
-		synchronized (o) {
+		//synchronized (o) {
 			try {
 				return transfer.reconnect();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			return false;
-		}
+		//}
 	}
 
 	public boolean isRandomAccessible() throws FtpException {
