@@ -50,6 +50,7 @@
 -->
 
 <ftpbridge_config>
+    <ftp_server_port>2221</ftp_server_port>
  	<user>
  		<ftp_username>test</ftp_username>
  		<ftp_password>abcdefghi</ftp_password>

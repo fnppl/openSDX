@@ -73,10 +73,83 @@ import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.apache.ftpserver.usermanager.SaltedPasswordEncryptor;
 import org.apache.ftpserver.usermanager.impl.BaseUser;
 import org.apache.ftpserver.usermanager.impl.WritePermission;
+import org.fnppl.opensdx.security.OSDXKey;
+import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.xml.Element;
 
 public class FTPBridge {
 
-	public static void startFTPBridge() {
+	private File configFile = new File("ftp_bridge_config.xml"); 
+	private File alterConfigFile = new File("src/org/fnppl/opensdx/ftp_bridge/resources/ftp_bridge_config.xml"); 
+	private int port = 2221;
+	
+	public FTPBridge() {
+		
+	}
+	
+	public HashMap<String, OSDXUser> readConfig(UserManager userManager) {
+		HashMap<String, OSDXUser> users = new HashMap<String, OSDXUser>();
+		try {
+			if (!configFile.exists()) {
+				configFile = alterConfigFile;
+			}
+			if (!configFile.exists()) {
+				System.out.println("Sorry, uploadserver_config.xml not found.");
+				System.exit(0);
+			}
+			Element root = Document.fromFile(configFile).getRootElement();
+			String sPort  = root.getChildText("ftp_server_port");
+			if (sPort!=null) {
+				try {
+					port = Integer.parseInt(sPort); 
+				} catch (Exception ex) {
+					System.out.println("error in config: could not parse ftp_server_port: "+sPort);
+				}
+			}
+			
+			Vector<Element> userConfig =  root.getChildren("user");
+			if (userConfig == null) return null;
+		
+			for (Element e : userConfig) {
+				try {
+					BaseUser user = new BaseUser();
+					String ftp_username = e.getChildTextNN("ftp_username"); 
+					user.setName(ftp_username);
+					user.setPassword(e.getChildTextNN("ftp_password"));
+					user.setHomeDirectory(new File(System.getProperty("user.home")).getAbsolutePath());
+					List<Authority> auths = new ArrayList<Authority>();
+					auths.add(new WritePermission());
+					user.setAuthorities(auths);
+					
+					OSDXKey mysigning = OSDXKey.fromElement(e.getChild("keypair"));
+					mysigning.unlockPrivateKey(e.getChildTextNN("password"));
+					String username = e.getChildTextNN("username");
+					
+					OSDXUser c = new OSDXUser();
+					c.host = e.getChildTextNN("host");
+					c.port = Integer.parseInt(e.getChildTextNN("port"));
+					c.prepath = e.getChildTextNN("prepath");
+					c.signingKey = mysigning;
+					c.username = username;
+					
+					System.out.println("adding user: "+ftp_username+" -> "+username+"::"+mysigning.getKeyID());
+					users.put(ftp_username, c);
+					try {
+						userManager.save(user);
+					} catch (FtpException e1) { 
+						e1.printStackTrace();
+					}					
+				} catch (Exception exIn) {
+					exIn.printStackTrace();
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return users;
+	}
+	
+	public void startFTPBridge() {
 		
 		FtpServerFactory serverFactory = new FtpServerFactory(); 
 				
@@ -84,36 +157,15 @@ public class FTPBridge {
 		PropertiesUserManagerFactory userManagerFactory = new PropertiesUserManagerFactory();
 		userManagerFactory.setPasswordEncryptor(new SaltedPasswordEncryptor());
 		UserManager userManager = userManagerFactory.createUserManager();
-
-		//add test user
-//		BaseUser user = new BaseUser();
-//		user.setName("test");
-//		user.setPassword("abcdefghi");
-//		user.setHomeDirectory(new File(System.getProperty("user.home")).getAbsolutePath());
-//		List<Authority> auths = new ArrayList<Authority>();
-//		auths.add(new WritePermission());
-//		user.setAuthorities(auths);
-//		try {
-//			userManager.save(user);
-//		} catch (FtpException e1) { 
-//			e1.printStackTrace();
-//		}
 		
 		ListenerFactory listenerFactory = new ListenerFactory();
-		listenerFactory.setPort(2221);
+		listenerFactory.setPort(port);
 		serverFactory.addListener("default", listenerFactory.createListener());
 		serverFactory.setUserManager(userManager);
-
-		final OSDXFileSystemManager fsManager = new OSDXFileSystemManager();
-		Vector<User> users = fsManager.readConfig();
-		for (User user : users) {
-			try {
-				userManager.save(user);
-			} catch (FtpException e1) { 
-				e1.printStackTrace();
-			}
-		}
+		HashMap<String, OSDXUser> users = readConfig(userManager);
 		
+		final OSDXFileSystemManager fsManager = new OSDXFileSystemManager(users);
+	
 		//hook in via Ftplet
 		Ftplet hook = new DefaultFtplet() {
 			public FtpletResult beforeCommand(FtpSession session, FtpRequest request) throws FtpException, IOException {
@@ -156,6 +208,7 @@ public class FTPBridge {
 		FtpServer server = serverFactory.createServer();
 		
 		try {
+			System.out.println("Starting FTP Bridge on port: "+port);
 			server.start();
 		} catch (FtpException ex) { 
 			ex.printStackTrace();
@@ -216,7 +269,7 @@ public class FTPBridge {
 		
 		try {
 			server.start();
-		} catch (FtpException ex) { 
+		} catch (FtpException ex) {
 			ex.printStackTrace();
 		}
 	}
@@ -224,9 +277,12 @@ public class FTPBridge {
 	
 	public static void main(String[] args) {
 		try {
-			//startFTPServer();
-			startFTPBridge();
 			
+			FTPBridge instance = new FTPBridge();
+			instance.startFTPBridge();
+			
+			
+			//startFTPServer();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

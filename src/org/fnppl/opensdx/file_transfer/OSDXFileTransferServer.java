@@ -714,6 +714,7 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 						docSig.writeToFile(fsig);
 						//only if no error occurred -> hasSignature = true;
 						hasSignature = true;
+						
 					} catch (Exception ex) {
 						log.logError(sender.getID(), sender.getRemoteIP(), "ERROR parsing signature during PUT file command :: "+ex.getMessage());
 						ex.printStackTrace();

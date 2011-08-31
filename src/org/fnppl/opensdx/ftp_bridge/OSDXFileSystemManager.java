@@ -63,69 +63,13 @@ import org.fnppl.opensdx.xml.Element;
 
 public class OSDXFileSystemManager {
 
-	private File configFile = new File("ftp_bridge_config.xml"); 
-	private File alterConfigFile = new File("src/org/fnppl/opensdx/ftp_bridge/resources/ftp_bridge_config.xml"); 
-	
 	private HashMap<String, OSDXUser> users = new HashMap<String, OSDXUser>();
 	private HashMap<User,FileSystemView> views = new HashMap<User, FileSystemView>();
 	
-	public OSDXFileSystemManager() {
-		
-			
-		
+	public OSDXFileSystemManager(HashMap<String, OSDXUser> users) {
+		this.users = users;
 	}
 	
-	public Vector<User> readConfig() {
-		Vector<User> userlist = new Vector<User>();
-		
-		try {
-			if (!configFile.exists()) {
-				configFile = alterConfigFile;
-			}
-			if (!configFile.exists()) {
-				System.out.println("Sorry, uploadserver_config.xml not found.");
-				System.exit(0);
-			}
-			Element root = Document.fromFile(configFile).getRootElement();
-			
-			Vector<Element> userConfig =  root.getChildren("user");
-			if (users == null) return null;
-		
-			for (Element e : userConfig) {
-				try {
-					BaseUser user = new BaseUser();
-					String ftp_username = e.getChildTextNN("ftp_username"); 
-					user.setName(ftp_username);
-					user.setPassword(e.getChildTextNN("ftp_password"));
-					user.setHomeDirectory(new File(System.getProperty("user.home")).getAbsolutePath());
-					List<Authority> auths = new ArrayList<Authority>();
-					auths.add(new WritePermission());
-					user.setAuthorities(auths);
-					
-					OSDXKey mysigning = OSDXKey.fromElement(e.getChild("keypair"));
-					mysigning.unlockPrivateKey(e.getChildTextNN("password"));
-					String username = e.getChildTextNN("username");
-					
-					OSDXUser c = new OSDXUser();
-					c.host = e.getChildTextNN("host");
-					c.port = Integer.parseInt(e.getChildTextNN("port"));
-					c.prepath = e.getChildTextNN("prepath");
-					c.signingKey = mysigning;
-					c.username = username;
-					
-					System.out.println("adding user: "+ftp_username+" -> "+username+"::"+mysigning.getKeyID());
-					users.put(ftp_username, c);
-					userlist.add(user);
-					
-				} catch (Exception exIn) {
-					exIn.printStackTrace();
-				}
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return userlist;
-	}
 	
 	public void closeSession(User user) {
 		synchronized (o) {
