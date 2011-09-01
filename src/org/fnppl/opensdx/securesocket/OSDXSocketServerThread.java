@@ -44,6 +44,7 @@ package org.fnppl.opensdx.securesocket;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -62,9 +63,10 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	public final static String ERROR_WRONG_RESPONE_FORMAT = "ERROR: Wrong format in uploadserver's response.";
 	public final static String ERROR_UNKNOWN_KEY_OR_USER = "ERROR: login failed: unknown signature key or wrong username.";
 	public final static String ERROR_MISSING_ENCRYTION_KEY = "ERROR: missing encryption key";
-	private long timeout = 10000;
+	private long timeout = 30000;
 	
 	private Socket socket;
+	private BufferedOutputStream socketOut = null;
 	private String remoteIP = null;
 	private int remotePort = -1;
 	private OSDXKey mySigningKey = null;
@@ -83,6 +85,11 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	
 	public OSDXSocketServerThread(Socket socket, OSDXKey mySigningKey, OSDXSocketDataHandler dataHandler) {
 		this.socket = socket;
+		try {
+			socketOut = new BufferedOutputStream(socket.getOutputStream());
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 		this.mySigningKey = mySigningKey;
 		this.dataHandler = dataHandler;
 	}
@@ -110,28 +117,29 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 			if (verifySig) {
 				//generate response
 				server_nonce = SecurityHelper.getRandomBytes(32);
-				
-				String msg = version+" 200\n";
-				msg += host+"\n";
-				msg += mySigningKey.getKeyID()+"\n";
-				msg += SecurityHelper.HexDecoder.encode(mySigningKey.getPublicModulusBytes(),':',-1)+"\n";
-				msg += SecurityHelper.HexDecoder.encode(mySigningKey.getPublicExponentBytes(),':',-1)+"\n";
+				StringBuffer msg = new StringBuffer();
+				msg.append(" 200\n");
+				msg.append(host+"\n");
+				msg.append(mySigningKey.getKeyID()+"\n");
+				msg.append(SecurityHelper.HexDecoder.encode(mySigningKey.getPublicModulusBytes(),':',-1)+"\n");
+				msg.append(SecurityHelper.HexDecoder.encode(mySigningKey.getPublicExponentBytes(),':',-1)+"\n");
 				
 				//encrypted part
-				String encmsg = SecurityHelper.HexDecoder.encode(client_nonce,':',-1)+"\n";
-				encmsg += SecurityHelper.HexDecoder.encode(server_nonce,':',-1)+"\n";
-				encmsg += lines[3]+"\n";
-				encmsg += lines[4]+"\n";
-				encmsg += lines[5]+"\n";
-				byte[] enc = client_pubkey.encryptBlocks(encmsg.getBytes("UTF-8"));
+				StringBuffer encmsg = new StringBuffer();
+				encmsg.append(SecurityHelper.HexDecoder.encode(client_nonce,':',-1)+"\n");
+				encmsg.append(SecurityHelper.HexDecoder.encode(server_nonce,':',-1)+"\n");
+				encmsg.append(lines[3]+"\n");
+				encmsg.append(lines[4]+"\n");
+				encmsg.append(lines[5]+"\n");
+				byte[] enc = client_pubkey.encryptBlocks(encmsg.toString().getBytes("UTF-8"));
 
 				//sign enc part
 				checks = SecurityHelper.getMD5SHA1SHA256(enc);				
 				byte[] sigOfEnc = mySigningKey.sign(checks[1],checks[2],checks[3],0L);
 				
 				//add signature bytes and enc part
-				msg += SecurityHelper.HexDecoder.encode(sigOfEnc,':',-1)+"\n";
-				msg += "ENC "+enc.length+"\n";
+				msg.append(SecurityHelper.HexDecoder.encode(sigOfEnc,':',-1)+"\n");
+				msg.append("ENC "+enc.length+"\n");
 				
 				//build sym key of client_nonce and server nonce
 				byte[] concat_nonce = SecurityHelper.concat(client_nonce, server_nonce);
@@ -141,7 +149,7 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 				receiver.setEncryptionKey(agreedEncryptionKey);
 				
 				//send packet
-				sendBytesPacket(msg.getBytes("UTF-8"), TYPE_NULL,false);
+				sendBytesPacket(msg.toString().getBytes("UTF-8"), TYPE_NULL,false);
 				sendBytesPacket(enc, TYPE_NULL,false);
 				
 			} else {
@@ -260,29 +268,31 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	private static byte TYPE_TEXT = 84;
 	private static byte TYPE_DATA = 68;
 	private static byte TYPE_NULL = 0;
-	private Object o = new Object();
+	private Object sync_obj = new Object();
+	
 	private boolean sendBytesPacket(byte[] data, byte type, boolean encrypt) {
-		synchronized (o) {
-			try {
-				OutputStream out = socket.getOutputStream();
-				if (type==TYPE_NULL) {
-					out.write(data);
-					out.flush();
-				} else {
-					byte[] send = new byte[data.length+1];
-					send[0] = type;
-					System.arraycopy(data, 0, send, 1, data.length);;
-					if (encrypt && agreedEncryptionKey!=null) {
-						send = agreedEncryptionKey.encrypt(send);
+		synchronized (sync_obj) {
+			if (socketOut!=null) {
+				try {
+					if (type==TYPE_NULL) {
+						socketOut.write(data);
+						socketOut.flush();
+					} else {
+						byte[] send = new byte[data.length+1];
+						send[0] = type;
+						System.arraycopy(data, 0, send, 1, data.length);;
+						if (encrypt && agreedEncryptionKey!=null) {
+							send = agreedEncryptionKey.encrypt(send);
+						}
+						socketOut.write((send.length+"\n").getBytes("UTF-8"));
+						socketOut.write(send);
+						socketOut.flush();
 					}
-					out.write((send.length+"\n").getBytes("UTF-8"));
-					out.write(send);
-					out.flush();
+					return true;
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					message = ex.getMessage();
 				}
-				return true;
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				message = ex.getMessage();
 			}
 		}
 		return false;

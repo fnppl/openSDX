@@ -45,10 +45,12 @@ package org.fnppl.opensdx.ftp_bridge;
  */
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -71,7 +73,6 @@ public class FTP_OSDX_BridgeThread extends Thread {
 	
 	private OSDXFileTransferClient osdxclient = null;
 	private FTP_OSDX_BridgeUser user = null;
-	private boolean connected = false;
 	
 	public FTP_OSDX_BridgeThread(Socket ftpsocket, FTP_OSDX_Bridge control) {
 		this.ftpsocket = ftpsocket;
@@ -127,16 +128,18 @@ public class FTP_OSDX_BridgeThread extends Thread {
 				}
 			}
 			ftpsocket.close();
+			osdxclient.closeConnection();
 		} catch (Exception e) { // System.out.println(e);
 			e.printStackTrace();
 		}
 	}
 	
-	public boolean connection() {
+	public boolean ensureConnection() {
+		boolean connected = osdxclient.isConnected();
 		if (!connected) {
 			try {
-				connected = false;
 				connected = osdxclient.connect(user.host, user.port, user.prepath, user.signingKey, user.username);
+				
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				try {
@@ -145,82 +148,104 @@ public class FTP_OSDX_BridgeThread extends Thread {
 					osdxclient.closeConnection();
 				} catch (Exception ex2) {
 					ex2.printStackTrace();
-				}
-				out.println("426 Connection closed; transfer aborted.");
+				}				
 			}
+		}
+		if (!connected) {
+			System.out.println("ensureConnection -> false");
+			out.println("426 Connection closed; transfer aborted.");
 		}
 		return connected;
 	}
 	
-	public void handle_RETR(String param) {
-		out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
-		
-//		try {
-//			out.println("150 Binary data connection");
-//			
-//			//loading file data to tmp file
-//			String filename = param;
-//			
-//			System.out.println("downloading file: "+filename);
-//			File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
-//			tmpFile.delete();
-//			
-//			osdxclient.downloadFile(filename, tmpFile);
-//			
-//			//TODO wait for download completed
-//			
-//			FileInputStream fin = new FileInputStream(tmpFile);
-//			
-//			Socket t = new Socket(host, next_port);
-//			OutputStream out2 = t.getOutputStream();
-//			byte buffer[] = new byte[1024];
-//			int read;
-//			try {
-//				while ((read = fin.read(buffer)) != -1) {
-//					out2.write(buffer, 0, read);
-//				}
-//				out2.close();
-//				out.println("226 transfer complete");
-//				fin.close();
-//				//tmpFile.delete();
-//				t.close();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		} catch (Exception ex) {
-//			ex.printStackTrace();
-//		}
+	public void handle_RETR(final String param) {
+		Thread t = new Thread() {
+			public void run() {
+				try {
+					if (ensureConnection()) {
+						//loading file data to tmp file
+						String filename = param;
+						
+						System.out.println("downloading file: "+filename);
+						File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
+						tmpFile.delete();
+						long len = osdxclient.downloadFile(filename, tmpFile);
+						
+						//wait for complete download 
+						while (tmpFile.length()<len) {
+							Thread.sleep(250);
+						}
+						if (tmpFile.exists() && tmpFile.length()==len) {
+							out.println("150 Binary data connection");
+							
+							//transfer downloaded file to ftp client
+							FileInputStream fin = new FileInputStream(tmpFile);
+							
+							Socket t = new Socket(host, next_port);
+							OutputStream out2 = t.getOutputStream();
+							byte buffer[] = new byte[1024];
+							int read;
+							try {
+								while ((read = fin.read(buffer)) != -1) {
+									out2.write(buffer, 0, read);
+								}
+								out2.close();
+								out.println("226 transfer complete");
+								fin.close();
+								tmpFile.delete();
+								t.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						} else {
+							out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
+						}
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		};
+		t.start();
 	}
 	
-	public void handle_STOR(String param) {
-		try {
-			out.println("150 Binary data connection");
-			
-			File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
-			tmpFile.deleteOnExit();
-			FileOutputStream fout = new FileOutputStream(tmpFile);
-			
-			Socket t = new Socket(host, next_port);
-			InputStream in2 = t.getInputStream();
-			byte buffer[] = new byte[1024];
-			int read;
-			try {
-				while ((read = in2.read(buffer)) != -1) {
-					fout.write(buffer, 0, read);
+	public void handle_STOR(final String param) { //upload file to osdx server
+		Thread t = new Thread() {
+			public void run() {
+				try {
+					if (ensureConnection()) {
+						out.println("150 Binary data connection");
+						
+						File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
+						tmpFile.deleteOnExit();
+						FileOutputStream fout = new FileOutputStream(tmpFile);
+						
+						Socket t = new Socket(host, next_port);
+						InputStream in2 = t.getInputStream();
+						byte buffer[] = new byte[1024];
+						int read;
+						try {
+							while ((read = in2.read(buffer)) != -1) {
+								fout.write(buffer, 0, read);
+							}
+							in2.close();
+							fout.close();
+							t.close();
+							osdxclient.uploadFile(tmpFile, param);
+							out.println("226 transfer complete");
+							tmpFile.delete();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
-				in2.close();
-				fout.close();
-				t.close();
-				osdxclient.uploadFile(tmpFile, param);
-				out.println("226 transfer complete");
-				tmpFile.delete();
-			} catch (IOException e) {
 			}
-			
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
+		};
+		t.start();
 	}
+		
 	
 	public void handle_TYPE(String str) {
 		out.println("200 type set");
@@ -232,7 +257,7 @@ public class FTP_OSDX_BridgeThread extends Thread {
 	}
 	public void handle_CDUP(String str) {
 		try {
-			if (connection()) {
+			if (ensureConnection()) {
 				osdxclient.cd_up();
 				out.println("250 CWD command succesful");
 			}
@@ -242,7 +267,7 @@ public class FTP_OSDX_BridgeThread extends Thread {
 	}
 	public void handle_CWD(String param) {
 		try {
-			if (connection()) {
+			if (ensureConnection()) {
 				osdxclient.cd(param);
 				out.println("250 CWD command succesful");
 			}
@@ -251,7 +276,7 @@ public class FTP_OSDX_BridgeThread extends Thread {
 		}
 	}
 	public void handle_QUIT(String param) {
-		running = false;	
+		running = false;
 		out.println("221 Goodbye");
 	}
 	public void handle_USER(String param) {
@@ -260,10 +285,8 @@ public class FTP_OSDX_BridgeThread extends Thread {
 	}
 	
 	public void handle_PASS(String param) {
-		if (user!=null && user.ftppassword.equals(param)) {
-			if (connection()) {
-				out.println("230 User " + user.ftpusername + " logged in.");	
-			}
+		if (user!=null && user.ftppassword.equals(param) && ensureConnection()) {
+			out.println("230 User " + user.ftpusername + " logged in.");	
 		} else {
 			out.println("430 Invalid username or password");
 		}
@@ -271,12 +294,23 @@ public class FTP_OSDX_BridgeThread extends Thread {
 	
 	public void handle_PWD(String str) {
 		try {
-			if (connection()) {
+			if (ensureConnection()) {
 				String pwd = osdxclient.pwd();
 				out.println("257 \""+pwd+"\" is current directory");
 			}
 		} catch (Exception ex) {
 			
+			ex.printStackTrace();
+		}
+	}
+	
+	public void handle_MKD(String param) {
+		try {
+			if (ensureConnection()) {
+				osdxclient.mkdir(param);
+				out.println("250 MKD command succesful");
+			}
+		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
@@ -302,7 +336,7 @@ public class FTP_OSDX_BridgeThread extends Thread {
 			int ip1 = Integer.parseInt(a1);
 			int ip2 = Integer.parseInt(a2);
 			next_port = ip1 * 16 * 16 + ip2;
-			System.out.println("next port = "+next_port);	
+			//System.out.println("next port = "+next_port);	
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -310,7 +344,7 @@ public class FTP_OSDX_BridgeThread extends Thread {
 
 	public void handle_LIST(String param) {
 		try {
-			if (connection()) {
+			if (ensureConnection()) {
 				out.println("150 ASCII data");
 				Socket t = new Socket(host, next_port);
 				PrintWriter out2 = new PrintWriter(t.getOutputStream(),	true);
@@ -333,14 +367,13 @@ public class FTP_OSDX_BridgeThread extends Thread {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			try {
-				System.out.println("Closing connection to osdx server ...");	
-				connected = false;
-				osdxclient.closeConnection();
-			} catch (Exception ex2) {
-				ex2.printStackTrace();
-			}
-			out.println("426 Connection closed; transfer aborted.");
+//			try {
+//				System.out.println("Closing connection to osdx server ...");	
+//				osdxclient.closeConnection();
+//			} catch (Exception ex2) {
+//				ex2.printStackTrace();
+//			}
+//			out.println("426 Connection closed; transfer aborted.");
 		}
 	}
 	
