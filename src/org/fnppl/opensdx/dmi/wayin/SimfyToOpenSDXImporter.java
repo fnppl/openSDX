@@ -166,14 +166,12 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	
         	Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artistname, info, license_basis, license_specifics);
         	
-        	// GenreConverter
+        	// init GenreConverter
         	GenreConverter gc = GenreConverter.getInstance(GenreConverter.SIMFY_TO_OPENSDX);
-        	
-        	// ToDo: Test to convert genres!
-        	
+        	       	
         	// add Tags
         	ItemTags tags = ItemTags.make();   		
-        	tags.addGenre(root.getChildTextNN("genre"));
+        	tags.addGenre(gc.convert(root.getChildTextNN("genre")));
         	
     		bundle.tags(tags);        	
         	
@@ -327,7 +325,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
              	
             	// add Tags
             	ItemTags track_tags = ItemTags.make();   		
-            	track_tags.addGenre(track.getChildTextNN("genre"));            	
+            	track_tags.addGenre(gc.convert(track.getChildTextNN("genre")));            	
             	
             	// explicit_lyrics
             	if(track.getChildTextNN("explicit_lyrics").length()>0) {

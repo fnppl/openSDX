@@ -103,7 +103,7 @@ import org.fnppl.opensdx.dmi.wayout.*;
 @SuppressWarnings("serial")
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
-	private URL configGenres = FeedCreator.class.getResource("resources/config_genres.xml");
+	private URL configGenres = FeedGui.class.getResource("resources/config_genres.xml");
 	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
 	private XMLTree tree;
 	

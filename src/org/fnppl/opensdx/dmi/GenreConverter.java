@@ -1,12 +1,9 @@
 package org.fnppl.opensdx.dmi;
 
-import java.io.File;
 import java.net.URL;
 import java.util.*;
 
-import javax.xml.parsers.*;
-
-import org.w3c.dom.*;
+import org.fnppl.opensdx.xml.*;
 
 
 /*
@@ -56,9 +53,9 @@ import org.w3c.dom.*;
 
 public class GenreConverter {
 	public static final int SIMFY_TO_OPENSDX = 1;
-	private final static URL SIMFY_TO_OPENSDX_XML = FeedValidator.class.getResource("resources/genreConverter_simfyToOpenSDX.xml");
+	private final static URL SIMFY_TO_OPENSDX_XML = GenreConverter.class.getResource("resources/genreConverterList.xml");
 	private int type;
-	private HashMap<String, String> matchMap = null;
+	private HashMap<String, String> matchMap = new HashMap<String, String>();
 	
 	private GenreConverter() {
 		this.setType(0);
@@ -75,35 +72,33 @@ public class GenreConverter {
 		return gc;
 	}
 
-	public String convertGenre(String genre) {
+	public String convert(String genre) {
 		String convertedGenre = null;
 		
-		if(matchMap.containsKey(genre)) {
+		if(genre.length()>0 && matchMap.containsKey(genre)) {
 			convertedGenre = matchMap.get(genre);	
 		}
-		
+		else {
+			convertedGenre = genre;
+		}
 		return convertedGenre;
 	}
 	
 	private void initMatchMap(URL url) {
 		try {
-			DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-			Document doc = docBuilder.parse(new File(url.toURI()));
+			Document doc = Document.fromURL(url);
 			
-			// normalize text representation
-			doc.getDocumentElement().normalize();
-			
-			NodeList listOfMatches = doc.getElementsByTagName("matches");
-
-            for(int i=0; i<listOfMatches.getLength() ; i++){
-            	String key = listOfMatches.item(i).getChildNodes().item(0).getNodeValue().trim();
-            	String value = listOfMatches.item(i).getChildNodes().item(1).getNodeValue().trim();
-            	matchMap.put(key, value);
+			Vector<Element> matches = doc.getRootElement().getChildren("matches");
+        	for (Iterator<Element> itMatches = matches.iterator(); itMatches.hasNext();) {
+        		Element match = itMatches.next();
+        		if(this.type==SIMFY_TO_OPENSDX) {
+	        		String key = match.getChildTextNN("simfy");
+	        		String value = match.getChildTextNN("opensdx");
+	        		matchMap.put(key, value);
+        		}        		
             }
             
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
 	}
