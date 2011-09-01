@@ -125,13 +125,13 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 			//only process if requested
 			try {
 				DownloadFile f = nextDownloadFile.get(0);
-				System.out.println("Saving to file: "+f.file.getAbsolutePath());
 				f.file.getParentFile().mkdirs();
 				FileOutputStream fout = new FileOutputStream(f.file,true);
 				fout.write(data);
 				fout.close();
 				//remove from download list if complete length has arrived
 				if (f.file.length()==f.length) {
+					System.out.println("Download complete: file = "+f.file.getAbsolutePath());
 					nextDownloadFile.remove(0);
 				}
 			} catch (Exception e) {
@@ -146,41 +146,29 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 		this.host = host;
 		this.port = port;
 		this.prepath = prepath;
-		reconnectCount = 0;
-		return reconnect();
-	}
-	
-	private int reconnectCount = 0;
-	private int maxReconnectTries = 3;
-	
-	public boolean reconnect() throws Exception {
-		if (reconnectCount<maxReconnectTries) {
-			reconnectCount++;
-			
-			nextDownloadFile = new Vector<DownloadFile>();
-			textQueue = new Vector<String>();
-			xmlQueue = new Vector<Element>();
-			rights_duties = null;
-			
-			socket = new OSDXSocket();
-			socket.setDataHandler(this);
-			boolean ok = socket.connect(host, port, prepath, key);
-			if (ok) {
-				connected = login(username); 
-				if (!connected) {
-					System.out.println("ERROR: Connection to server could NOT be established!");
-				} else {
-					//connection establushed
-					reconnectCount = 0;
-				}
-				return connected;
-			} else {
+		
+		nextDownloadFile = new Vector<DownloadFile>();
+		textQueue = new Vector<String>();
+		xmlQueue = new Vector<Element>();
+		rights_duties = null;
+		
+		socket = new OSDXSocket();
+		socket.setDataHandler(this);
+		boolean ok = socket.connect(host, port, prepath, key);
+		if (ok) {
+			connected = login(username); 
+			if (!connected) {
 				System.out.println("ERROR: Connection to server could NOT be established!");
-				connected = false;
-				return false;
+			} else {
+				//connection established
+				
 			}
+			return connected;
+		} else {
+			System.out.println("ERROR: Connection to server could NOT be established!");
+			connected = false;
+			return false;
 		}
-		return false;
 	}
 	
 	public boolean isConnected() {
@@ -346,7 +334,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 			for (int i=0;i<textQueue.size();i++) {
 				if (textQueue.get(i).startsWith("ACK LIST :: ")) {
 					list = textQueue.remove(i).substring(12);
-					System.out.println("list :: "+list);					
+					//System.out.println("list :: "+list);					
 					//parse list
 					Vector<RemoteFile> fl = new Vector<RemoteFile>();
 					if (!list.contains(",,")) { //empty dir
@@ -357,7 +345,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 						try {
 							String[] att = p.split(",,");
 							RemoteFile f = new RemoteFile(RemoteFileSystem.resolveEscapeChars(att[0]), RemoteFileSystem.resolveEscapeChars(att[1]), Long.parseLong(att[2]), Long.parseLong(att[3]), Boolean.parseBoolean(att[4]));
-							System.out.println(f.toString());
+						//	System.out.println(f.toString());
 							fl.add(f);
 						} catch (Exception ex) {
 							ex.printStackTrace();
@@ -632,14 +620,22 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 		return rights_duties;
 	}
 	
-	public void downloadFile(String filename, File localFile) {
-		if (!rights_duties.allowsDownload()) return;
+	public long downloadFile(String filename, File localFile) {
+		long length = -1L;
+		if (!rights_duties.allowsDownload()) return length;
 		if (localFile.isDirectory()) {
 			localFile = new File(localFile,filename);
 		}
 		if (localFile.exists()) {
 			System.out.println("Error downloading file: "+filename+" :: local file: "+localFile.getAbsolutePath()+" exists.");
-			return;
+			return length;
+		}
+		//remove previous ACK GET or ERROR IN GET
+		for (int i=0;i<textQueue.size();i++) {
+			if (textQueue.get(i).startsWith("ACK GET :: ") || textQueue.get(i).startsWith("ERROR IN GET :: ")) {
+				textQueue.remove(i);
+				i--;
+			}
 		}
 		sendEncryptedText("GET "+filename);
 		//wait for ACK or ERROR of GET
@@ -653,11 +649,11 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 			}
 		}
 		if (msg!=null && msg.startsWith("ACK")) {
-			long length = 0;
 			try {
 				length = Long.parseLong(msg.substring(msg.lastIndexOf('=')+1));
 			} catch (Exception ex) {
 				ex.printStackTrace();
+				length = -1L;
 			}
 			nextDownloadFile.add(new DownloadFile(localFile, length));
 		} else if (msg!=null) {
@@ -665,6 +661,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 		} else {
 			System.out.println("Error downloading file: "+filename+" :: TIMEOUT");
 		}
+		return length;
 	}
 	
 	
@@ -690,8 +687,8 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 			
 			Thread.sleep(40000);
 			s.list();
-			boolean recon = s.reconnect();
-			System.out.println("re-connect: "+recon);
+		//	boolean recon = s.reconnect();
+		//	System.out.println("re-connect: "+recon);
 			s.pwd();
 			s.list();
 			
@@ -751,7 +748,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 	}
 	
 	public static void main(String[] args) {
-		test(); if (2 == 1+1) return;
+		//test(); if (2 == 1+1) return;
 		
 		//System.out.println("args: "+Arrays.toString(args));
 		OSDXKey key = null;

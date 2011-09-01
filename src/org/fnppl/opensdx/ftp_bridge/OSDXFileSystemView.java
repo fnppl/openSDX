@@ -184,7 +184,7 @@ public class OSDXFileSystemView implements FileSystemView {
 	public boolean reconnect() {
 		//synchronized (o) {
 			try {
-				return transfer.reconnect();
+				return transfer.connect(user.host, user.port, user.prepath, user.signingKey, user.username);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}

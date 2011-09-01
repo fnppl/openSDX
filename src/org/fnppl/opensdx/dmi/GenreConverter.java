@@ -74,12 +74,11 @@ public class GenreConverter {
 
 	public String convert(String genre) {
 		String convertedGenre = null;
-		
-		if(genre.length()>0 && matchMap.containsKey(genre)) {
-			convertedGenre = matchMap.get(genre);	
+		if(genre.length()>0 && matchMap.containsKey(genre.trim().toLowerCase())) {
+			convertedGenre = matchMap.get(genre.trim().toLowerCase());	
 		}
 		else {
-			convertedGenre = genre;
+			convertedGenre = "[unknown genre] "+genre;
 		}
 		return convertedGenre;
 	}
@@ -92,9 +91,13 @@ public class GenreConverter {
         	for (Iterator<Element> itMatches = matches.iterator(); itMatches.hasNext();) {
         		Element match = itMatches.next();
         		if(this.type==SIMFY_TO_OPENSDX) {
-	        		String key = match.getChildTextNN("simfy");
+	        		String key = match.getChildTextNN("simfy").toLowerCase();
 	        		String value = match.getChildTextNN("opensdx");
-	        		matchMap.put(key, value);
+	        		if(!matchMap.containsKey(key)) {
+	        			// first entry in xml delivers the value for a key - important if matching the other way
+	        			matchMap.put(key, value);
+	        		}
+	        		
         		}        		
             }
             

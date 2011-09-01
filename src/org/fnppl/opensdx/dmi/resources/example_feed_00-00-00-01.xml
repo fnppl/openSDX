@@ -210,12 +210,12 @@
 		<ids>
 			<grid></grid><!-- COULD grid -->
 			<upc></upc><!-- SHOULD ean/upc -->
-			<isrc></isrc><!-- SHOULD isrc - not applicable on bundle-level, but for  -->
+			<isrc>DE3DF1104333</isrc><!-- SHOULD isrc - not applicable on bundle-level, but for  -->
 			<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
 			<labelordernum></labelordernum><!-- COULD -->
 			<amzn></amzn><!-- COULD ; amazon-id-stuff -->
 			<isbn></isbn><!-- COULD -->
-			<finetunes></finetunes><!-- COULD -->
+			<finetunes>1234567890123</finetunes><!-- COULD -->
 			<licensor>ourid</licensor><!-- COULD -->
 			<licensee></licensee><!-- COULD -->
 		</ids><!-- MUST -->
@@ -230,7 +230,7 @@
 				<year></year><!-- SHOULD for copyright/production -->
 				<ids>
 					<gvl></gvl><!-- gvl -->
-					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
 					<licensor></licensor><!-- must be unique for that contributor/sender/licensor -->
 					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
 					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
@@ -248,7 +248,7 @@
 				<type>display_artist</type><!-- e.g. display_artist -->
 				<year></year><!-- SHOULD for copyright/production -->
 				<ids>
-					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
 					<licensor></licensor><!-- must be unique for that contributor/licensor -->
 					<licensee></licensee><!-- if given some kind of "your" id: thats it -->					
 					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
@@ -266,7 +266,7 @@
 				<type>compilator</type><!-- e.g. compilator -->
 				<year></year><!-- SHOULD for copyright/production -->
 				<ids>
-					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
 					<licensor></licensor><!-- must be unique for that contributor/licensor -->
 					<licensee></licensee><!-- if given some kind of "your" id: thats it -->					
 					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
@@ -284,7 +284,7 @@
 				<type>singer</type><!-- e.g. vocals -->
 				<year></year><!-- SHOULD for copyright/production -->
 				<ids>
-					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
 					<licensor></licensor><!-- must be unique for that contributor/licensor -->
 					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
 					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
@@ -302,7 +302,7 @@
 				<type>copyright</type><!-- e.g. vocals -->
 				<year>2005</year><!-- SHOULD for copyright/production -->
 				<ids>
-					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
 					<licensor></licensor><!-- must be unique for that contributor/licensor -->
 					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
 					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
@@ -320,7 +320,7 @@
 				<type>production</type><!-- e.g. vocals -->
 				<year>2004</year><!-- SHOULD for copyright/production -->
 				<ids>
-					<finetunes></finetunes><!-- finetunes-strange-id -->
+					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
 					<licensor></licensor><!-- must be unique for that contributor/licensor -->
 					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
 					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
@@ -499,7 +499,7 @@
 					<grid></grid><!-- COULD grid -->
 					<isrc>DE3DF1212345</isrc><!-- SHOULD isrc - not applicable on bundle-level, but for. If present it must match the following schema: AAXXX0000000 or AA-XXX-00-00000 (A = chars, 0 = numbers, X = alphanumeric)-->
 					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com -->
-					<finetunes></finetunes><!-- strange finetunes id -->
+					<finetunes>1234567890123</finetunes><!-- strange finetunes id -->
 				</ids><!-- MUST -->
 				<fingerprint>
 					<echoprint></echoprint><!-- see http://echoprint.me | https://github.com/echonest/echoprint-codegen -->
@@ -510,7 +510,7 @@
 						<type>display_artist</type><!-- e.g. display_artist -->
 						<year></year><!-- SHOULD for copyright/production -->
 						<ids>
-							<finetunes></finetunes><!-- finetunes-strange-id -->
+							<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
 							<licensor></licensor><!-- must be unique for that contributor/licensor -->
 							<licensee></licensee><!-- if given some kind of "your" id: thats it -->					
 							<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->

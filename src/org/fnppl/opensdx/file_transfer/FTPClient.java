@@ -177,8 +177,9 @@ public class FTPClient implements FileTransferClient{
 		}
 	}
 	
-	public void downloadFile(String filename, File localFile) throws Exception {
+	public long downloadFile(String filename, File localFile) throws Exception {
 		client.download(filename, localFile);
+		return -1L;
 	}
 	
 	public Vector<RemoteFile> list() throws Exception {
