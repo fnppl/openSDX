@@ -349,6 +349,13 @@ public class LicenseBasis extends BusinessObject {
 		return false;
 	}
 	
+	public boolean getChannelDisallowed(int index) {
+		if (channels==null) return false;
+		String type = channels.get(index).getAttribute("type");
+		if (type.equalsIgnoreCase("disallow")) return true;
+		return false;
+	}
+	
 	public void removeChannel(int index) {
 		if (channels==null) return;
 		channels.remove(index);

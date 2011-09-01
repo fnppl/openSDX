@@ -403,6 +403,7 @@
 			<streaming_allowed>true</streaming_allowed>
 	        <channels>
 	          <channel type="allow">ad supported</channel>  <!-- all | ad supported | premium -->
+			  <channel type="disallow">Shop XYZ</channel>  <!-- if specific channels (or shops) should be excluded from further use -->
 	        </channels>
 		</license_basis><!-- these are the basic rules under which this bundle is provided to u (of course on basis of those agreed on in the contracting phase) -->
 		
