@@ -1004,7 +1004,7 @@
     </xsd:simpleType>
     <xsd:simpleType name="isrc">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern value="(/^[a-zA-Z]{2}\- [0-9a-zA-Z]{3}\- \d{2}\- \d{5}/)?">
+            <xsd:pattern value="([a-zA-Z]{2}(\-)?[0-9a-zA-Z]{3}(\-)?\d{2}(\-)?\d{5})">
 				<xsd:annotation >
             		<xsd:documentation xml:lang="en">The International Standard Recording Code (ISRC), defined by ISO 3901, is an international standard code for uniquely identifying sound recordings and music video recordings.</xsd:documentation>
             	</xsd:annotation>			
@@ -1012,13 +1012,11 @@
         </xsd:restriction>
     </xsd:simpleType>  
     <xsd:simpleType name="finetunes">
-        <xsd:restriction base="xsd:string">
-            <xsd:pattern value="(\d{13})?" >
-				<xsd:annotation >
-            		<xsd:documentation xml:lang="en">The 13 digits long identifier of a item at finetunes.</xsd:documentation>
+        <xsd:restriction base="xsd:long">
+            	<xsd:annotation >
+            		<xsd:documentation xml:lang="en">The 1-13 digits long identifier of a item at finetunes.</xsd:documentation>
             	</xsd:annotation>			
-			</xsd:pattern>             
-        </xsd:restriction>
+	    </xsd:restriction>
     </xsd:simpleType>      
     <xsd:simpleType name="ipv4">
         <xsd:restriction base="xsd:string">
