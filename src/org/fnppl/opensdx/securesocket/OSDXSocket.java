@@ -314,7 +314,7 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 //	}
 	
 	public boolean isConnected() {
-		return (secureConnectionEstablished && receiver!=null && receiver.isRunning());
+		return (socket!=null && socket.isConnected() && secureConnectionEstablished && receiver!=null && receiver.isRunning());
 	}
 	
 

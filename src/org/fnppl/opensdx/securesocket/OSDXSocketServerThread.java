@@ -44,28 +44,16 @@ package org.fnppl.opensdx.securesocket;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.Arrays;
-import java.util.HashMap;
 
 import org.fnppl.opensdx.file_transfer.FileTransferLog;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.OSDXKey;
-import org.fnppl.opensdx.security.OSDXMessage;
-import org.fnppl.opensdx.security.PublicKey;
-import org.fnppl.opensdx.security.Result;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
-import org.fnppl.opensdx.xml.Document;
-import org.fnppl.opensdx.xml.Element;
 
 public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, OSDXSocketLowLevelDataHandler {
 
@@ -74,7 +62,7 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	public final static String ERROR_WRONG_RESPONE_FORMAT = "ERROR: Wrong format in uploadserver's response.";
 	public final static String ERROR_UNKNOWN_KEY_OR_USER = "ERROR: login failed: unknown signature key or wrong username.";
 	public final static String ERROR_MISSING_ENCRYTION_KEY = "ERROR: missing encryption key";
-	private long timeout = 30000;
+	private long timeout = 10000;
 	
 	private Socket socket;
 	private String remoteIP = null;
@@ -230,11 +218,16 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 			System.out.println(FileTransferLog.getDateString()+" :: serverthread started, remote_ip="+remoteIP+", remote_port="+remotePort);
 			
 			nextTimeOut = System.currentTimeMillis()+timeout;
-			while (System.currentTimeMillis()<nextTimeOut) {
+			while (System.currentTimeMillis()<nextTimeOut && isConnected()) {
 				//System.out.println("next timeout = "+SecurityHelper.getFormattedDate(nextTimeOut)+"\t"+this.toString());
-				sleep(200);
+				sleep(250);
+				//System.out.println("connected: "+isConnected());
 			}
-			System.out.println(FileTransferLog.getDateString()+" :: timeout, closing connection for remote port "+remotePort);
+			if (isConnected()) {
+				System.out.println(FileTransferLog.getDateString()+" :: timeout, closing connection for remote port "+remotePort);
+			} else {
+				System.out.println(FileTransferLog.getDateString()+" :: connection closed by remote socket, remote port "+remotePort);
+			}
 			closeConnection();
 			
 		} catch(Exception ex) {
@@ -248,6 +241,10 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 	
 	public int getRemotePort() {
 		return remotePort;
+	}
+	
+	public boolean isConnected() {
+		return (socket.isConnected() && receiver!=null && receiver.isRunning());
 	}
 	
 	private void closeConnection() throws Exception { 

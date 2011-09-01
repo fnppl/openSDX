@@ -71,10 +71,9 @@ import org.fnppl.opensdx.xml.Element;
 
 import com.sun.java.swing.plaf.windows.WindowsBorders.ProgressBarBorder;
 
-public class OSDXFileTransferClient implements FileTransferClient {
+public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDataHandler {
 
 	private OSDXSocket socket = null;
-	private OSDXSocketDataHandler dataHandler = null;
 	private String username = null;
 	private OSDXKey key = null;
 	//private String lastPWD = null;
@@ -94,52 +93,51 @@ public class OSDXFileTransferClient implements FileTransferClient {
 	public OSDXFileTransferClient() {
 		//super(host, port, prepath);
 		rights_duties = new RightsAndDuties();
-		dataHandler = new OSDXSocketDataHandler() {
-			public void handleNewText(String text, OSDXSocketSender sender) {
-				//System.out.println("RECEIVED TEXT: "+text);
-				if (text.startsWith("<?xml")) {
-					try {
-						Element e = Document.fromString(text).getRootElement();
-						if (e.getName().equals("rights_and_duties")) {
-							rights_duties = RightsAndDuties.fromElement(e);
-						} else {
-							xmlQueue.add(e);
-							while (xmlQueue.size()>100) {
-								xmlQueue.remove(0);
-							}
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
+	}
+	
+	public void handleNewText(String text, OSDXSocketSender sender) {
+		//System.out.println("RECEIVED TEXT: "+text);
+		if (text.startsWith("<?xml")) {
+			try {
+				Element e = Document.fromString(text).getRootElement();
+				if (e.getName().equals("rights_and_duties")) {
+					rights_duties = RightsAndDuties.fromElement(e);
 				} else {
-					textQueue.add(text);
-					while (textQueue.size()>1000) {
-						textQueue.remove(0);
+					xmlQueue.add(e);
+					while (xmlQueue.size()>100) {
+						xmlQueue.remove(0);
 					}
 				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
+		} else {
+			textQueue.add(text);
+			while (textQueue.size()>1000) {
+				textQueue.remove(0);
+			}
+		}
+	}
 
-			public void handleNewData(byte[] data, OSDXSocketSender sender) {
-				//if data arrives, it must be a file
-				if (nextDownloadFile!=null && nextDownloadFile.size()>0) {
-					//only process if requested
-					try {
-						DownloadFile f = nextDownloadFile.get(0);
-						System.out.println("Saving to file: "+f.file.getAbsolutePath());
-						f.file.getParentFile().mkdirs();
-						FileOutputStream fout = new FileOutputStream(f.file,true);
-						fout.write(data);
-						fout.close();
-						//remove from download list if complete length has arrived
-						if (f.file.length()==f.length) {
-							nextDownloadFile.remove(0);
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+	public void handleNewData(byte[] data, OSDXSocketSender sender) {
+		//if data arrives, it must be a file
+		if (nextDownloadFile!=null && nextDownloadFile.size()>0) {
+			//only process if requested
+			try {
+				DownloadFile f = nextDownloadFile.get(0);
+				System.out.println("Saving to file: "+f.file.getAbsolutePath());
+				f.file.getParentFile().mkdirs();
+				FileOutputStream fout = new FileOutputStream(f.file,true);
+				fout.write(data);
+				fout.close();
+				//remove from download list if complete length has arrived
+				if (f.file.length()==f.length) {
+					nextDownloadFile.remove(0);
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		};
+		}
 	}
 
 	public boolean connect(String host, int port, String prepath, OSDXKey mySigningKey, String username) throws Exception {
@@ -165,7 +163,7 @@ public class OSDXFileTransferClient implements FileTransferClient {
 			rights_duties = null;
 			
 			socket = new OSDXSocket();
-			socket.setDataHandler(dataHandler);
+			socket.setDataHandler(this);
 			boolean ok = socket.connect(host, port, prepath, key);
 			if (ok) {
 				connected = login(username); 

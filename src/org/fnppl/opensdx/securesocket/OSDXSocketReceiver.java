@@ -114,9 +114,9 @@ public class OSDXSocketReceiver {
 			while (count<7) {
 				final StringBuffer lineBuffer = new StringBuffer();
 				byte[] b = new byte[1];
-				int read;
+				int read = 1;
 				boolean lineNotComplete = true;
-				while (lineNotComplete) {
+				while (lineNotComplete && read>0) { //don't block, if socket is closed
 					read = intputStream.read(b); //this one blocks
 					if (read>0) {
 						if (b[0] == '\n') { // data starts after :
@@ -125,7 +125,12 @@ public class OSDXSocketReceiver {
 							lineBuffer.append((char)b[0]);
 						}
 					}
-				}	
+				}
+				if (read<=0){
+					System.out.println("socket stream closed -> stopping receiver");
+					stop();
+					return;
+				}
 				lines[count] = lineBuffer.toString();
 				//System.out.println((count+1)+" :: "+lines[count]);
 				count++;
@@ -175,9 +180,9 @@ public class OSDXSocketReceiver {
 		while (count<8) {
 			final StringBuffer lineBuffer = new StringBuffer();
 			byte[] b = new byte[1];
-			int read;
+			int read = 1;
 			boolean lineNotComplete = true;
-			while (lineNotComplete) {
+			while (lineNotComplete && read>0) {//don't block, if socket is closed
 				read = intputStream.read(b); //this one blocks
 				if (read>0) {
 					if (b[0] == '\n') { // data starts after :
@@ -186,7 +191,12 @@ public class OSDXSocketReceiver {
 						lineBuffer.append((char)b[0]);
 					}
 				}
-			}	
+			}
+			if (read<=0){
+				System.out.println("socket stream closed -> stopping receiver");
+				stop();
+				return;
+			}
 			lines[count] = lineBuffer.toString();
 			count++;
 		}
@@ -206,7 +216,7 @@ public class OSDXSocketReceiver {
 			byte[] b = new byte[1];
 			int read = 1;
 			boolean commandNotComplete = true;
-			while (commandNotComplete && read>0) {
+			while (commandNotComplete && read>0) {//don't block, if socket is closed
 				read = intputStream.read(b); //this one blocks
 				if (read>0) {
 					if (b[0] == '\n') { // data starts after :
@@ -217,7 +227,7 @@ public class OSDXSocketReceiver {
 				}
 			}
 			if (read<=0){
-				//System.out.println("input stream closed -> stopping receiver");
+				System.out.println("socket stream closed -> stopping receiver");
 				stop();
 				return;
 			}
