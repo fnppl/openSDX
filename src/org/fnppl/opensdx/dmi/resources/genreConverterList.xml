@@ -1,0 +1,5684 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+/*
+ * Copyright (C) 2010-2011 
+ * 							fine people e.V. <opensdx@fnppl.org> 
+ * 							Henning Thieß <ht@fnppl.org>
+ * 
+ * 							http://fnppl.org
+*/
+
+/*
+ * Software license
+ *
+ * For those parts of this file, which are identified as software, rather than documentation, this software-license applies / shall be applied. 
+ * 
+ * This file is part of openSDX
+ * openSDX is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * openSDX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * and GNU General Public License along with openSDX.
+ * If not, see <http://www.gnu.org/licenses/>.
+ *      
+ */
+
+/*
+ * Documentation license
+ * 
+ * For those parts of this file, which are identified as documentation, rather than software, this documentation-license applies / shall be applied.
+ * 
+ * This file is part of openSDX.
+ * Permission is granted to copy, distribute and/or modify this document 
+ * under the terms of the GNU Free Documentation License, Version 1.3 
+ * or any later version published by the Free Software Foundation; 
+ * with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. 
+ * A copy of the license is included in the section entitled "GNU 
+ * Free Documentation License" resp. in the file called "FDL.txt".
+ * 
+ */
+
+/*
+ * Convert simfy genres to opensdx genres
+ *
+ */
+ -->
+ 
+<root>
+	<matches>
+		<simfy>Rock</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Beat</simfy>
+		<opensdx>Beat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Blues Rock</simfy>
+		<opensdx>Blues Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rock'n'Roll</simfy>
+		<opensdx>Rock'n'Roll</opensdx>
+	</matches>
+	<matches>
+		<simfy>Art Rock</simfy>
+		<opensdx>Art Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic Rock</simfy>
+		<opensdx>Classic Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Deutsch Rock</simfy>
+		<opensdx>Deutschrock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Emo</simfy>
+		<opensdx>Emo</opensdx>
+	</matches>
+	<matches>
+		<simfy>Experimental</simfy>
+		<opensdx>Experimental Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Glam Rock</simfy>
+		<opensdx>Glam Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hard Rock</simfy>
+		<opensdx>Hard Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Krautrock</simfy>
+		<opensdx>Krautrock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Progressive</simfy>
+		<opensdx>Progressive Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Psychedelic Rock</simfy>
+		<opensdx>Psychedelic Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rockabilly</simfy>
+		<opensdx>Rockabilly</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soft Rock / Pop Rock</simfy>
+		<opensdx>Soft Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Surf</simfy>
+		<opensdx>Surf Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Alternative</simfy>
+		<opensdx>Alternative</opensdx>
+	</matches>
+	<matches>
+		<simfy>Crossover</simfy>
+		<opensdx>Crossover</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dark Wave</simfy>
+		<opensdx>Dark Wave</opensdx>
+	</matches>
+	<matches>
+		<simfy>Goth</simfy>
+		<opensdx>Goth / Industrial</opensdx>
+	</matches>
+	<matches>
+		<simfy>Grunge</simfy>
+		<opensdx>Grunge</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hardcore</simfy>
+		<opensdx>Hardcore</opensdx>
+	</matches>
+	<matches>
+		<simfy>Indie Rock</simfy>
+		<opensdx>Indie Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>New Wave</simfy>
+		<opensdx>New Wave</opensdx>
+	</matches>
+	<matches>
+		<simfy>Punk</simfy>
+		<opensdx>Punk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Funpunk</simfy>
+		<opensdx>Funpunk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Black Metal</simfy>
+		<opensdx>Black Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Death Metal</simfy>
+		<opensdx>Death Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Heavy Metal</simfy>
+		<opensdx>Heavy Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Power Metal</simfy>
+		<opensdx>Power Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Thrash/Speedmetal</simfy>
+		<opensdx>Thrash / Speed Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Doom Metal</simfy>
+		<opensdx>Doom Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Grind Core</simfy>
+		<opensdx>Grind Core</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Brit Pop</simfy>
+		<opensdx>Britpop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dance/Pop</simfy>
+		<opensdx>Dance Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Deutsch Pop</simfy>
+		<opensdx>Deutschpop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Disco</simfy>
+		<opensdx>Disco</opensdx>
+	</matches>
+	<matches>
+		<simfy>Easy Listening</simfy>
+		<opensdx>Easy Listening</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electropop</simfy>
+		<opensdx>Electropop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dancepop (Dance/Eurodance/Dancepop)</simfy>
+		<opensdx>Euro Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Euro Pop</simfy>
+		<opensdx>Euro Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>French Pop</simfy>
+		<opensdx>French Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Indie Dance</simfy>
+		<opensdx>Indie Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Italo Pop</simfy>
+		<opensdx>Italo Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>J-Pop</simfy>
+		<opensdx>J-Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop</simfy>
+		<opensdx>K-Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Neue Deutsche Welle</simfy>
+		<opensdx>Neue Deutsche Welle</opensdx>
+	</matches>
+	<matches>
+		<simfy>New Age</simfy>
+		<opensdx>New Age</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop Rock</simfy>
+		<opensdx>Pop Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop</simfy>
+		<opensdx>Power Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Schlager</simfy>
+		<opensdx>Schlager</opensdx>
+	</matches>
+	<matches>
+		<simfy>Singer/Songwriter</simfy>
+		<opensdx>Singer / Songwriter</opensdx>
+	</matches>
+	<matches>
+		<simfy>Synthi Pop</simfy>
+		<opensdx>Synthpop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop</simfy>
+		<opensdx>Teen Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country</simfy>
+		<opensdx>Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Alternative Country</simfy>
+		<opensdx>Alternative Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bluegrass</simfy>
+		<opensdx>Bluegrass</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country (Contemporary)</simfy>
+		<opensdx>Contemporary Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country</simfy>
+		<opensdx>Country Gospel</opensdx>
+	</matches>
+	<matches>
+		<simfy>Honkytonk (Hillbilly / Honkytonk / Bluegrass)</simfy>
+		<opensdx>Honky-Tonk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Yiddish / Klezmer</simfy>
+		<opensdx>Jewish / Yiddish Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country</simfy>
+		<opensdx>Nashville Sound</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country</simfy>
+		<opensdx>Outlaw / Progressive Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country</simfy>
+		<opensdx>Texas Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country (Traditional)</simfy>
+		<opensdx>Traditional Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Western Swing</simfy>
+		<opensdx>Western Swing</opensdx>
+	</matches>
+	<matches>
+		<simfy>Folk</simfy>
+		<opensdx>Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Americana</simfy>
+		<opensdx>Americana</opensdx>
+	</matches>
+	<matches>
+		<simfy>Folksy Rock</simfy>
+		<opensdx>Folk Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Irish Traditional</simfy>
+		<opensdx>Irish Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Volksmusik</simfy>
+		<opensdx>German Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jazz</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Acid Jazz</simfy>
+		<opensdx>Acid Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Avantgarde</simfy>
+		<opensdx>Avantgarde</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bebop</simfy>
+		<opensdx>Bebop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Big Band</simfy>
+		<opensdx>Big Band</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical-Jazz Compositions</simfy>
+		<opensdx>Classic Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Cool</simfy>
+		<opensdx>Cool Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dixieland (Revival)</simfy>
+		<opensdx>Dixieland music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jazz (Contemporary)</simfy>
+		<opensdx>Free jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hard Bop</simfy>
+		<opensdx>Hard Bop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jazz Rock / Fusion</simfy>
+		<opensdx>Jazz Fusion</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jazz</simfy>
+		<opensdx>New Orleans Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Nu-Jazz</simfy>
+		<opensdx>Nu-Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop Jazz / Smooth Jazz</simfy>
+		<opensdx>Smooth Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Swing</simfy>
+		<opensdx>Swing</opensdx>
+	</matches>
+	<matches>
+		<simfy>Vocal Jazz</simfy>
+		<opensdx>Vocal Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>hiphop</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hiphop</simfy>
+		<opensdx>Alternative Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Crunk</simfy>
+		<opensdx>Crunk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dirty South</simfy>
+		<opensdx>Dirty South</opensdx>
+	</matches>
+	<matches>
+		<simfy>G-Funk</simfy>
+		<opensdx>G-Funk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gangsta Rap</simfy>
+		<opensdx>Gangsta Rap</opensdx>
+	</matches>
+	<matches>
+		<simfy>hiphop</simfy>
+		<opensdx>Golden Era</opensdx>
+	</matches>
+	<matches>
+		<simfy>Grime</simfy>
+		<opensdx>Grime</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hiphop</simfy>
+		<opensdx>Hyphy</opensdx>
+	</matches>
+	<matches>
+		<simfy>Instrumental</simfy>
+		<opensdx>Instrumental Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miami Bass</simfy>
+		<opensdx>Miami Bass</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hiphop</simfy>
+		<opensdx>New School</opensdx>
+	</matches>
+	<matches>
+		<simfy>Old School</simfy>
+		<opensdx>Old School</opensdx>
+	</matches>
+	<matches>
+		<simfy>Turntablism</simfy>
+		<opensdx>Turntablism</opensdx>
+	</matches>
+	<matches>
+		<simfy>East Coast Rap/Hip-Hop</simfy>
+		<opensdx>US Eastcoast</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hiphop</simfy>
+		<opensdx>US Midwest</opensdx>
+	</matches>
+	<matches>
+		<simfy>Southern Rap/Hip-Hop</simfy>
+		<opensdx>US Southern</opensdx>
+	</matches>
+	<matches>
+		<simfy>West Coast Rap/Hip-Hop</simfy>
+		<opensdx>US Westcoast</opensdx>
+	</matches>
+	<matches>
+		<simfy>Blues</simfy>
+		<opensdx>Blues</opensdx>
+	</matches>
+	<matches>
+		<simfy>Blues</simfy>
+		<opensdx>Boogie-Woogie</opensdx>
+	</matches>
+	<matches>
+		<simfy>Blues</simfy>
+		<opensdx>Electric Blues Guitar</opensdx>
+	</matches>
+	<matches>
+		<simfy>Blues (Contemporary)</simfy>
+		<opensdx>Modern Blues</opensdx>
+	</matches>
+	<matches>
+		<simfy>Blues</simfy>
+		<opensdx>Regional Blues</opensdx>
+	</matches>
+	<matches>
+		<simfy>Blues (Traditional)</simfy>
+		<opensdx>Traditional Blues</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soul</simfy>
+		<opensdx>Soul</opensdx>
+	</matches>
+	<matches>
+		<simfy>Motown</simfy>
+		<opensdx>Motown Sound</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soul</simfy>
+		<opensdx>Neo Soul</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soul</simfy>
+		<opensdx>Philly Sound</opensdx>
+	</matches>
+	<matches>
+		<simfy>Funk</simfy>
+		<opensdx>Funk</opensdx>
+	</matches>
+	<matches>
+		<simfy>R&amp;B</simfy>
+		<opensdx>R&amp;B</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contemporary R&amp;B</simfy>
+		<opensdx>Contemporary R&amp;B</opensdx>
+	</matches>
+	<matches>
+		<simfy>Doo Wop</simfy>
+		<opensdx>Doo-wop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electronic</simfy>
+		<opensdx>Electronic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ambient</simfy>
+		<opensdx>Ambient</opensdx>
+	</matches>
+	<matches>
+		<simfy>Chillout</simfy>
+		<opensdx>Chill Out</opensdx>
+	</matches>
+	<matches>
+		<simfy>Lounge</simfy>
+		<opensdx>Lounge</opensdx>
+	</matches>
+	<matches>
+		<simfy>Downbeat</simfy>
+		<opensdx>Downbeat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electronica</simfy>
+		<opensdx>Electronica</opensdx>
+	</matches>
+	<matches>
+		<simfy>Indie Dance</simfy>
+		<opensdx>Indie Disco</opensdx>
+	</matches>
+	<matches>
+		<simfy>Industrial</simfy>
+		<opensdx>Industrial / EBM</opensdx>
+	</matches>
+	<matches>
+		<simfy>Techno</simfy>
+		<opensdx>Techno</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dance &amp; Electronic (Dance/Techno/Disco)</simfy>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electro</simfy>
+		<opensdx>Electro</opensdx>
+	</matches>
+	<matches>
+		<simfy>House</simfy>
+		<opensdx>Glitch hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Deep House</simfy>
+		<opensdx>House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Acid House</simfy>
+		<opensdx>Acid House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electro House</simfy>
+		<opensdx>Deep House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hard House</simfy>
+		<opensdx>Disco House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Progressive House</simfy>
+		<opensdx>Electro House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Fidget House</simfy>
+		<opensdx>Fidget House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Tech House</simfy>
+		<opensdx>Hard House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Vocal House</simfy>
+		<opensdx>Progressive House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Big Beat</simfy>
+		<opensdx>Soulful House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Breakbeat</simfy>
+		<opensdx>Tech House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Tribal</simfy>
+		<opensdx>Tribal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dubstep</simfy>
+		<opensdx>Vocal House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electronic</simfy>
+		<opensdx>Big Beat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Breakbeat / Drum N Bass</simfy>
+		<opensdx>Breakbeat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Drum'n'Bass</simfy>
+		<opensdx>Drum'n'Bass</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dub/Raggamuffin</simfy>
+		<opensdx>Dubstep</opensdx>
+	</matches>
+	<matches>
+		<simfy>Garage</simfy>
+		<opensdx>Garage / UK Funky</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electronic</simfy>
+		<opensdx>IDM</opensdx>
+	</matches>
+	<matches>
+		<simfy>Trip Hop</simfy>
+		<opensdx>Trip-Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Trance</simfy>
+		<opensdx>Trance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Trance</simfy>
+		<opensdx>Goa Trance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Trance</simfy>
+		<opensdx>Hard Trance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Psychedelic Trance</simfy>
+		<opensdx>Psychedelic Trance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gabba</simfy>
+		<opensdx>Gabba</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hardstyle</simfy>
+		<opensdx>Jumpstyle / Hardstyle</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic</simfy>
+		<opensdx>Classic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Modern Classical</simfy>
+		<opensdx>12-Tone Composition</opensdx>
+	</matches>
+	<matches>
+		<simfy>Baroque</simfy>
+		<opensdx>Baroque</opensdx>
+	</matches>
+	<matches>
+		<simfy>Chamber Music</simfy>
+		<opensdx>Chamber Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>CROSSOVER / POPULAR CLASSICS</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Elektronische Musik / Computermusik</simfy>
+		<opensdx>Electronic Music / Computer Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Minimal Music</simfy>
+		<opensdx>Minimal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Modern Classical</simfy>
+		<opensdx>Modern, 20th / 21st Century</opensdx>
+	</matches>
+	<matches>
+		<simfy>Musik und andere Medien / Künste</simfy>
+		<opensdx>Music and other Media / Arts</opensdx>
+	</matches>
+	<matches>
+		<simfy>Musik und Wort</simfy>
+		<opensdx>Music and Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic</simfy>
+		<opensdx>Neo-Romanticism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Neoclassical</simfy>
+		<opensdx>Neoclassicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contemporary Classic</simfy>
+		<opensdx>New Music / Contemporary Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Postmodern</simfy>
+		<opensdx>Postmodern Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic</simfy>
+		<opensdx>Renaissance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic</simfy>
+		<opensdx>Romantic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic</simfy>
+		<opensdx>Serialism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Anthem</simfy>
+		<opensdx>Anthem</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ballet</simfy>
+		<opensdx>Ballet</opensdx>
+	</matches>
+	<matches>
+		<simfy>Cantata</simfy>
+		<opensdx>Cantata</opensdx>
+	</matches>
+	<matches>
+		<simfy>Choral</simfy>
+		<opensdx>Choral</opensdx>
+	</matches>
+	<matches>
+		<simfy>Madrigal</simfy>
+		<opensdx>Madrigal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Marches</simfy>
+		<opensdx>March</opensdx>
+	</matches>
+	<matches>
+		<simfy>Motet</simfy>
+		<opensdx>Motet</opensdx>
+	</matches>
+	<matches>
+		<simfy>Musical</simfy>
+		<opensdx>Musical</opensdx>
+	</matches>
+	<matches>
+		<simfy>Opera</simfy>
+		<opensdx>Opera Arias</opensdx>
+	</matches>
+	<matches>
+		<simfy>Opera</simfy>
+		<opensdx>Opera Baroque</opensdx>
+	</matches>
+	<matches>
+		<simfy>Opera</simfy>
+		<opensdx>Opera Classical</opensdx>
+	</matches>
+	<matches>
+		<simfy>Opera</simfy>
+		<opensdx>Opera Renaissance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Opera</simfy>
+		<opensdx>Opera Romantic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Operetta</simfy>
+		<opensdx>Operetta</opensdx>
+	</matches>
+	<matches>
+		<simfy>Oratorio</simfy>
+		<opensdx>Oratorio</opensdx>
+	</matches>
+	<matches>
+		<simfy>Passion</simfy>
+		<opensdx>Passion</opensdx>
+	</matches>
+	<matches>
+		<simfy>Requiem</simfy>
+		<opensdx>Requiem</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic</simfy>
+		<opensdx>Sonata</opensdx>
+	</matches>
+	<matches>
+		<simfy>Suite</simfy>
+		<opensdx>Suite</opensdx>
+	</matches>
+	<matches>
+		<simfy>Symphonic Music/ Orchestral Music</simfy>
+		<opensdx>Symphonic Music / Orchestral Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Symphonic / Orchestral</simfy>
+		<opensdx>Symphony</opensdx>
+	</matches>
+	<matches>
+		<simfy>Waltzes</simfy>
+		<opensdx>Waltz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Brass Ensemble</simfy>
+		<opensdx>Brass Ensemble</opensdx>
+	</matches>
+	<matches>
+		<simfy>Concert/ Soloinstrument with Orchestra</simfy>
+		<opensdx>Concerto / Solo Instrument with Orchestra</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mixed Ensemble (Strings + Wind)</simfy>
+		<opensdx>Mixed Ensemble (Strings / Wind)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mixed Woodwind and Brass</simfy>
+		<opensdx>Mixed Wind Ensemble (Woodwind / Brass)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Several Solo Instruments</simfy>
+		<opensdx>Several Solo Instruments</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soloinstr</simfy>
+		<opensdx>Solo Instrument</opensdx>
+	</matches>
+	<matches>
+		<simfy>String Ensemble</simfy>
+		<opensdx>String Ensemble</opensdx>
+	</matches>
+	<matches>
+		<simfy>String Orchestra</simfy>
+		<opensdx>String Orchestra</opensdx>
+	</matches>
+	<matches>
+		<simfy>String Quartet</simfy>
+		<opensdx>String Quartet</opensdx>
+	</matches>
+	<matches>
+		<simfy>String Trio</simfy>
+		<opensdx>String Trio</opensdx>
+	</matches>
+	<matches>
+		<simfy>woodwind ensemble</simfy>
+		<opensdx>Woodwind Ensemble</opensdx>
+	</matches>
+	<matches>
+		<simfy>Acapella</simfy>
+		<opensdx>A cappella</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic - Vocal</simfy>
+		<opensdx>Vocal Ensemble</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic - Vocal</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Choir (Choir-Music)</simfy>
+		<opensdx>Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Boys Choir</simfy>
+		<opensdx>Boy's Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Children's Choir</simfy>
+		<opensdx>Children's Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Choir and Orchestra</simfy>
+		<opensdx>Choir with Orchestra</opensdx>
+	</matches>
+	<matches>
+		<simfy>Women's Choir</simfy>
+		<opensdx>Women's Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Men's Choir</simfy>
+		<opensdx>Men's Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mixed Choir</simfy>
+		<opensdx>Mixed Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soprano</simfy>
+		<opensdx>Soprano</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mezzosoprano</simfy>
+		<opensdx>Mezzosoprano</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic - Vocal</simfy>
+		<opensdx>Alto</opensdx>
+	</matches>
+	<matches>
+		<simfy>Tenor</simfy>
+		<opensdx>Tenor</opensdx>
+	</matches>
+	<matches>
+		<simfy>Baritone</simfy>
+		<opensdx>Baritone</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic - Vocal</simfy>
+		<opensdx>Basso</opensdx>
+	</matches>
+	<matches>
+		<simfy>Accordion</simfy>
+		<opensdx>Accordion</opensdx>
+	</matches>
+	<matches>
+		<simfy>Early Musical Instruments</simfy>
+		<opensdx>Ancient Instruments</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bassoon</simfy>
+		<opensdx>Bassoon</opensdx>
+	</matches>
+	<matches>
+		<simfy>Cembalo</simfy>
+		<opensdx>Cembalo</opensdx>
+	</matches>
+	<matches>
+		<simfy>Clarinet</simfy>
+		<opensdx>Clarinet</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contrabass</simfy>
+		<opensdx>Double Bass</opensdx>
+	</matches>
+	<matches>
+		<simfy>Flute</simfy>
+		<opensdx>Flute</opensdx>
+	</matches>
+	<matches>
+		<simfy>Guitar</simfy>
+		<opensdx>Guitar</opensdx>
+	</matches>
+	<matches>
+		<simfy>Harp</simfy>
+		<opensdx>Harp</opensdx>
+	</matches>
+	<matches>
+		<simfy>Harpsichord</simfy>
+		<opensdx>Harpsichord</opensdx>
+	</matches>
+	<matches>
+		<simfy>horn</simfy>
+		<opensdx>Horn</opensdx>
+	</matches>
+	<matches>
+		<simfy>Lute</simfy>
+		<opensdx>Lute</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mandolin</simfy>
+		<opensdx>Mandolin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Oboe</simfy>
+		<opensdx>Oboe</opensdx>
+	</matches>
+	<matches>
+		<simfy>Organ</simfy>
+		<opensdx>Organ</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical Music Instrumental</simfy>
+		<opensdx>Percussion (Vibraphone etc.)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Piano</simfy>
+		<opensdx>Piano</opensdx>
+	</matches>
+	<matches>
+		<simfy>Flute</simfy>
+		<opensdx>Recorder / English Flute</opensdx>
+	</matches>
+	<matches>
+		<simfy>Saxophone</simfy>
+		<opensdx>Saxophone</opensdx>
+	</matches>
+	<matches>
+		<simfy>trombone</simfy>
+		<opensdx>Trombone</opensdx>
+	</matches>
+	<matches>
+		<simfy>Trumpet</simfy>
+		<opensdx>Trumpet</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical Music Instrumental</simfy>
+		<opensdx>Tuba</opensdx>
+	</matches>
+	<matches>
+		<simfy>Violin</simfy>
+		<opensdx>Viola</opensdx>
+	</matches>
+	<matches>
+		<simfy>Viola</simfy>
+		<opensdx>Violin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Cello</simfy>
+		<opensdx>Violoncello</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical Music Instrumental</simfy>
+		<opensdx>Miscellaneous Lead Instrument</opensdx>
+	</matches>
+	<matches>
+		<simfy>Reggae</simfy>
+		<opensdx>Reggae</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contemporary</simfy>
+		<opensdx>Contemporary Reggae</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dancehall</simfy>
+		<opensdx>Dancehall</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dub</simfy>
+		<opensdx>Dub</opensdx>
+	</matches>
+	<matches>
+		<simfy>Reggae</simfy>
+		<opensdx>Lover's Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Reggaeton</simfy>
+		<opensdx>Reggaeton</opensdx>
+	</matches>
+	<matches>
+		<simfy>Roots</simfy>
+		<opensdx>Roots</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ska</simfy>
+		<opensdx>Ska</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>African</simfy>
+		<opensdx>African Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Afro Beat</simfy>
+		<opensdx>Afro Beat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Afro Pop</simfy>
+		<opensdx>Afro Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Asian</simfy>
+		<opensdx>Asian Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Austro Pop</simfy>
+		<opensdx>Austropop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Calypso</simfy>
+		<opensdx>Calypso</opensdx>
+	</matches>
+	<matches>
+		<simfy>Caribbean</simfy>
+		<opensdx>Caribbean Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Caribbean</simfy>
+		<opensdx>Celtic Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>France / Chanson</simfy>
+		<opensdx>Chanson</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Coupé Decalé</opensdx>
+	</matches>
+	<matches>
+		<simfy>Europe</simfy>
+		<opensdx>European Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ghazal</simfy>
+		<opensdx>Ghazal</opensdx>
+	</matches>
+	<matches>
+		<simfy>African</simfy>
+		<opensdx>Griot</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gypsy music/ Sinti</simfy>
+		<opensdx>Gypsy</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Highlife</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jewish</simfy>
+		<opensdx>Judaica Music / Yiddish / Klezmer</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Kuduro</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Kwaito</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Makossa</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Marching Band</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Mento</opensdx>
+	</matches>
+	<matches>
+		<simfy>Arabia</simfy>
+		<opensdx>Middle Eastern Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Nordic/Scandinavia</simfy>
+		<opensdx>Nordic / Scandinavia</opensdx>
+	</matches>
+	<matches>
+		<simfy>North America</simfy>
+		<opensdx>North American Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>South America</simfy>
+		<opensdx>South American Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Parang</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Polka</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Rai</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Soca</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Soukous</opensdx>
+	</matches>
+	<matches>
+		<simfy>World</simfy>
+		<opensdx>Zouk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Zulu Traditional</simfy>
+		<opensdx>Zulu</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bacheta</simfy>
+		<opensdx>Bachata</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin</simfy>
+		<opensdx>Banda</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bhangra</simfy>
+		<opensdx>Bhangra</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin</simfy>
+		<opensdx>Bolero</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bossa Nova</simfy>
+		<opensdx>Bossa Nova</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin Music / Corridos</simfy>
+		<opensdx>Corridos</opensdx>
+	</matches>	
+	<matches>
+		<simfy>Latin</simfy>
+		<opensdx>Corridos</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin</simfy>
+		<opensdx>Cumbia</opensdx>
+	</matches>
+	<matches>
+		<simfy>Fado</simfy>
+		<opensdx>Fado</opensdx>
+	</matches>
+	<matches>
+		<simfy>Flamenco</simfy>
+		<opensdx>Flamenco</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin</simfy>
+		<opensdx>Grupero</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mambo</simfy>
+		<opensdx>Mambo</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mariachi</simfy>
+		<opensdx>Mariachi</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ranchera, Merengue</simfy>
+		<opensdx>Merengue</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin</simfy>
+		<opensdx>Norteno</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ranchera, Merengue</simfy>
+		<opensdx>Ranchero</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin</simfy>
+		<opensdx>Rock En Espanol</opensdx>
+	</matches>
+	<matches>
+		<simfy>Salsa</simfy>
+		<opensdx>Salsa</opensdx>
+	</matches>
+	<matches>
+		<simfy>Samba</simfy>
+		<opensdx>Samba</opensdx>
+	</matches>
+	<matches>
+		<simfy>Cuba/Son</simfy>
+		<opensdx>Son Cubana</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin</simfy>
+		<opensdx>Sonidero</opensdx>
+	</matches>
+	<matches>
+		<simfy>Tango</simfy>
+		<opensdx>Tango</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin</simfy>
+		<opensdx>Tejano</opensdx>
+	</matches>
+	<matches>
+		<simfy>Religious</simfy>
+		<opensdx>Religious</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christian Rock</simfy>
+		<opensdx>Christian Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Religious</simfy>
+		<opensdx>Christian Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christian Pop</simfy>
+		<opensdx>Christian Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Religious</simfy>
+		<opensdx>Chants</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gospel</simfy>
+		<opensdx>Gospel</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gregorian</simfy>
+		<opensdx>Gregorian Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Religious</simfy>
+		<opensdx>Hymn</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mass</simfy>
+		<opensdx>Mass</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spiritual</simfy>
+		<opensdx>Spiritual</opensdx>
+	</matches>
+	<matches>
+		<simfy>Religious</simfy>
+		<opensdx>Worship</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soundtrack</simfy>
+		<opensdx>Anime / Video Game Soundtracks</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bollywood</opensdx>
+	</matches>
+	<matches>
+		<simfy>Instrumental</simfy>
+		<opensdx>Instrumental</opensdx>
+	</matches>
+	<matches>
+		<simfy>Vocal</simfy>
+		<opensdx>Vocal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Acoustic</simfy>
+		<opensdx>Acoustic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Unplugged</opensdx>
+	</matches>
+	<matches>
+		<simfy>Live Events</simfy>
+		<opensdx>Live</opensdx>
+	</matches>
+	<matches>
+		<simfy>Traditional</simfy>
+		<opensdx>Traditional</opensdx>
+	</matches>
+	<matches>
+		<simfy>Karaoke</simfy>
+		<opensdx>Karaoke</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soundtracks (Scores / Soundtracks / Musicals)</simfy>
+		<opensdx>Movie Scores</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soundtrack / Filmmusik</simfy>
+		<opensdx>Movie Soundtracks</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sound-Effects</simfy>
+		<opensdx>Sound Effects</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soundtrack</simfy>
+		<opensdx>Soundtrack</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soundtrack</simfy>
+		<opensdx>TV Soundtrack</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Wedding Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Holiday</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mashup</simfy>
+		<opensdx>Mashup</opensdx>
+	</matches>
+	<matches>
+		<simfy>Unclassifiable</simfy>
+		<opensdx>unclassifiable</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Business &amp; Career</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Abstracts &amp; Dossiers</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Accounting</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Business &amp; Investing</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Communication</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Computers &amp; Internet</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Economics</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Finance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Management &amp; Leadership</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Marketing &amp; Sales</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Politics</opensdx>
+	</matches>
+	<matches>
+		<simfy>Self-Help</simfy>
+		<opensdx>Self-Help</opensdx>
+	</matches>
+	<matches>
+		<simfy>Self Development</simfy>
+		<opensdx>Self-Organization</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Skills</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Small Business &amp; Entrepeneurship</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kindererzählungen (Lesungen / Hörbuch)</simfy>
+		<opensdx>Children's Audiobooks</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Popular Characters</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Animal Stories</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Children's Book Classics</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Detective Stories</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Fairy Tales</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Fantasy &amp; Spook</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Knowledge for Children</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Pirates, Knights &amp; Historical</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Poems &amp; Song</opensdx>
+	</matches>
+	<matches>
+		<simfy>Comedy / Humor</simfy>
+		<opensdx>Comedy &amp; Humour</opensdx>
+	</matches>
+	<matches>
+		<simfy>Cabaret</simfy>
+		<opensdx>Comedy &amp; Cabaret</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Humoristic Novel</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Crime</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Detective Stories</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Detective Stories „Noir“</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Classic Detective Stories</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Scandinavian Detective Stories</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Temporary Detective Stories</opensdx>
+	</matches>
+	<matches>
+		<simfy>Education</simfy>
+		<opensdx>Education &amp; Knowledge</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Art &amp; Culture</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Biography &amp; Memento</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Foreign Language</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>History</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Pilosophy</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Politics &amp; Current Affairs</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Science &amp; Technology</opensdx>
+	</matches>
+	<matches>
+		<simfy>Health and Fitness</simfy>
+		<opensdx>Health, Mind &amp; Body</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Autogenous Training</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Creativity</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Esoteric</opensdx>
+	</matches>
+	<matches>
+		<simfy>Fitness</simfy>
+		<opensdx>Fitness</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Health</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Lifestyle</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Love &amp; Erotic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Meditation / Yoga</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Memory Training</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Mental Training</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Motivation</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Philosophy</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Positive Thinking &amp; Attitude</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Psychology</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Spirituality &amp; Religion</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Sports</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Wellness &amp; Beauty</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sci-Fi &amp; Fantasy</simfy>
+		<opensdx>Science Fiction &amp; Fantasy</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Ancient World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Fantasy-Romance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Historical Thriller</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Horror Classics</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Medieval Times &amp; Early Modern Era</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mysteries &amp; Thrillers</simfy>
+		<opensdx>Thriller</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Mystery &amp; Conspiracy</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Psychological Thriller</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Espionage, Politics &amp; Justice</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Vatican &amp; Secret Societies</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Science &amp; Medicine</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Novels</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Erotica</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Contemporary German Literature</opensdx>
+	</matches>
+	<matches>
+		<simfy>Romance</simfy>
+		<opensdx>Romance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Entertainment</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Contemporary Literature</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kids- and Youthprogramm (Children)</simfy>
+		<opensdx>Youth</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Detective Stories</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Fantasy</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>For Girls</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Knowledge for Teenagers</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Mystery</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Pirates, Knights &amp; Historical</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Youth Classics</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word</simfy>
+		<opensdx>Youth Today</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Language</opensdx>
+	</matches>
+	<matches>
+		<simfy>Afrikaans</simfy>
+		<opensdx>Afrikaans</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Albanian</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Arabic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bengali</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bosnian</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bulgarian</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Cantonese / Yue</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Croatian</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Czech</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Danish</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Dutch</opensdx>
+	</matches>
+	<matches>
+		<simfy>Englisch</simfy>
+		<opensdx>English</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Finnish</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>French</opensdx>
+	</matches>
+	<matches>
+		<simfy>German</simfy>
+		<opensdx>German</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Greek</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Hebrew</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Hindi / Urdu</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Hungarian</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Italian</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Japanese</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Korean</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Macedonian</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Mandarin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Norwegian</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Patois</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Portuguese</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Russian</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Serbian</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Spanish</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Swedish</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Tamil</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Turkish</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Vietnamese</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Film</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Action</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>3D</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Adventure</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Animation</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Author's Film</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Biography</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Cartoon</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Children</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Comedy</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Crime &amp; Gangster</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Disaster</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Documentary</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Drama</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Epic / Historical</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Erotic</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Expressionism</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Family</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Fantasy</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Film-Noir</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>GLBT</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Horror</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Independent Film</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Martial-Arts / Eastern</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Monumental</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Musical / Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Mystery</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Reality-TV</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Romantic</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Science Fiction</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Silent Movie</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Sport</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Thriller</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>TV-Series</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Tragicomedy</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>War / Anti-War</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Western</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Youth</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Time</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Middle Ages</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>20's</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>30's</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>40's</opensdx>
+	</matches>
+	<matches>
+		<simfy>50's</simfy>
+		<opensdx>50's</opensdx>
+	</matches>
+	<matches>
+		<simfy>60's</simfy>
+		<opensdx>60's</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>70'</opensdx>
+	</matches>
+	<matches>
+		<simfy>80's</simfy>
+		<opensdx>80's</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>90's</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>2000's</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>2010's</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>2020's</opensdx>
+	</matches>
+	<matches>
+		<simfy>Adult</simfy>
+		<opensdx>Adult</opensdx>
+	</matches>
+	<matches>
+		<simfy>Childrens</simfy>
+		<opensdx>Children</opensdx>
+	</matches>
+	<matches>
+		<simfy>Childrens</simfy>
+		<opensdx>Age: up to 6 years</opensdx>
+	</matches>
+	<matches>
+		<simfy>Childrens</simfy>
+		<opensdx>Age: 6 years +</opensdx>
+	</matches>
+	<matches>
+		<simfy>Childrens</simfy>
+		<opensdx>Age: 8 years +</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kids &amp; Family</simfy>
+		<opensdx>Kids &amp; Family</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>United Arab Emirates (AE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Afghanistan (AF)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Antigua and Barbuda (AG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Anguilla (AI)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Albania (AL)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Armenia (AM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Angola (AO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Antarctica (AQ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Argentina (AR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>American Samoa (AS)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Austria (AT)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Australia (AU)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Aruba (AW)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Åland Islands (AX)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Azerbaijan (AZ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bosnia and Herzegovina (BA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Barbados (BB)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bangladesh (BD)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Belgium (BE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Burkina Faso (BF)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bulgaria (BG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bahrain (BH)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Burundi (BI)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Benin (BJ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Saint Barthélemy (BL)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bermuda (BM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Brunei Darussalam (BN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bolivia Plurinational State of (BO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bonaire Saint Eustatius and Saba (BQ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Brazil (BR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bahamas (BS)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bhutan (BT)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Bouvet Island (BV)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Botswana (BW)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Belarus (BY)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Belize (BZ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Canada (CA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Cocos (Keeling) Islands (CC)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Congo the Democratic Republic of the (CD)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Central African Republic (CF)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Congo (CG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Switzerland (CH)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Côte d'Ivoire (CI)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Cook Islands (CK)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Chile (CL)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Cameroon (CM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>China (CN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Colombia (CO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Costa Rica (CR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Cuba (CU)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Cape Verde (CV)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Curaçao (CW)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Christmas Island (CX)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Cyprus (CY)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Czech Republic (CZ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Germany (DE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Djibouti (DJ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Denmark (DK)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Dominica (DM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Dominican Republic (DO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Algeria (DZ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Ecuador (EC)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Estonia (EE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Egypt (EG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Western Sahara (EH)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Eritrea (ER)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Spain (ES)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Ethiopia (ET)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Finland (FI)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Fiji (FJ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Falkland Islands (Malvinas) (FK)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Micronesia Federated States of (FM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Faroe Islands (FO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>France (FR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Gabon (GA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>United Kingdom (GB)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Grenada (GD)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Georgia (GE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>French Guiana (GF)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Guernsey (GG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Ghana (GH)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Gibraltar (GI)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Greenland (GL)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Gambia (GM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Guinea (GN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Guadeloupe (GP)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Equatorial Guinea (GQ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Greece</simfy>
+		<opensdx>Greece (GR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>South Georgia and the South Sandwich Islands (GS)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Guatemala (GT)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Guam (GU)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Guinea-Bissau (GW)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Guyana (GY)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Hong Kong (HK)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Heard Island and McDonald Islands (HM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Honduras (HN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Croatia (HR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Haiti (HT)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Hungary (HU)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Indonesia (ID)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ireland</simfy>
+		<opensdx>Ireland (IE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Israel (IL)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Isle of Man (IM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>India (IN)</simfy>
+		<opensdx>India (IN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>British Indian Ocean Territory (IO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Iraq (IQ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Iran Islamic Republic of (IR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Iceland (IS)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Italy</simfy>
+		<opensdx>Italy (IT)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Jersey (JE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Jamaica (JM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Jordan (JO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Japan (JP)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Kenya (KE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Kyrgyzstan (KG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Cambodia (KH)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Kiribati (KI)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Comoros (KM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Saint Kitts and Nevis (KN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Korea Democratic People's Republic of (KP)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Korea Republic of (KR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Kuwait (KW)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Cayman Islands (KY)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Kazakhstan (KZ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Lao People's Democratic Republic (LA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Lebanon (LB)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Saint Lucia (LC)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Liechtenstein (LI)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Sri Lanka (LK)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Liberia (LR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Lesotho (LS)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Lithuania (LT)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Luxembourg (LU)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Latvia (LV)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Libyan Arab Jamahiriya (LY)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Morocco (MA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Monaco (MC)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Moldova Republic of (MD)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Montenegro (ME)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Saint Martin (French part) (MF)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Madagascar (MG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Marshall Islands (MH)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Macedonia the former Yugoslav Republic of (MK)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Mali (ML)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Myanmar (MM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Mongolia (MN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Macao (MO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Northern Mariana Islands (MP)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Martinique (MQ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Mauritania (MR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Montserrat (MS)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Malta (MT)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Mauritius (MU)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Maldives (MV)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Malawi (MW)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Mexico (MX)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Malaysia (MY)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Mozambique (MZ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Namibia (NA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>New Caledonia (NC)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Niger (NE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Norfolk Island (NF)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Nigeria (NG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Nicaragua (NI)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Netherlands (NL)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Norway (NO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Nepal (NP)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Nauru (NR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Niue (NU)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>New Zealand (NZ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Oman (OM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Panama (PA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Peru (PE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>French Polynesia (PF)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Papua New Guinea (PG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Philippines (PH)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Pakistan (PK)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Poland (PL)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Saint Pierre and Miquelon (PM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Pitcairn (PN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Puerto Rico (PR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Palestinian Territory Occupied (PS)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Portugal (PT)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Palau (PW)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Paraguay (PY)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Qatar (QA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Réunion (RE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Romania (RO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Serbia (RS)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Russia</simfy>
+		<opensdx>Russian Federation (RU)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Rwanda (RW)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Saudi Arabia (SA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Solomon Islands (SB)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Seychelles (SC)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Sudan (SD)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Sweden (SE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Singapore (SG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Saint Helena Ascension and Tristan da Cunha (SH)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Slovenia (SI)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Svalbard and Jan Mayen (SJ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Slovakia (SK)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Sierra Leone (SL)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>San Marino (SM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Senegal (SN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Somalia (SO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Suriname (SR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Sao Tome and Principe (ST)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>El Salvador (SV)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Sint Maarten (Dutch part) (SX)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Syrian Arab Republic (SY)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Swaziland (SZ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Turks and Caicos Islands (TC)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Chad (TD)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>French Southern Territories (TF)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Togo (TG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Thailand (TH)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Tajikistan (TJ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Tokelau (TK)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Timor-Leste (TL)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Turkmenistan (TM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Tunisia (TN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Tonga (TO)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Turkey (TR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Trinidad and Tobago (TT)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Tuvalu (TV)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Taiwan Province of China (TW)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Tanzania United Republic of (TZ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Ukraine (UA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Uganda (UG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>United States Minor Outlying Islands (UM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>United States (US)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Uruguay (UY)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Uzbekistan (UZ)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Holy See (Vatican City State) (VA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Saint Vincent and the Grenadines (VC)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Venezuela Bolivarian Republic of (VE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Virgin Islands British (VG)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Virgin Islands U.S. (VI)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Viet Nam (VN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Vanuatu (VU)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Wallis and Futuna (WF)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Samoa (WS)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Yemen (YE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Mayotte (YT)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>South Africa (ZA)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Zambia (ZM)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous</simfy>
+		<opensdx>Zimbabwe (ZW)</opensdx>
+	</matches>
+	<matches>
+		<simfy>2 Step</simfy>
+		<opensdx>Garage / UK</opensdx>
+	</matches>
+	<matches>
+		<simfy>A Capella</simfy>
+		<opensdx>A cappella</opensdx>
+	</matches>
+	<matches>
+		<simfy>Acapella</simfy>
+		<opensdx>A cappella</opensdx>
+	</matches>
+	<matches>
+		<simfy>Accordian</simfy>
+		<opensdx>Accordion</opensdx>
+	</matches>
+	<matches>
+		<simfy>Acid</simfy>
+		<opensdx>Acid House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Acid Jazz / Dancefloor Jazz</simfy>
+		<opensdx>Acid Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Action Adventure</simfy>
+		<opensdx>Action</opensdx>
+	</matches>
+	<matches>
+		<simfy>Adult Alternative</simfy>
+		<opensdx>Adult</opensdx>
+	</matches>
+	<matches>
+		<simfy>Adult Contemporary</simfy>
+		<opensdx>Adult</opensdx>
+	</matches>
+	<matches>
+		<simfy>Adult Contemporary (Singer/Songwriter)</simfy>
+		<opensdx>Adult</opensdx>
+	</matches>
+	<matches>
+		<simfy>African</simfy>
+		<opensdx>African Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>African Traditional</simfy>
+		<opensdx>Africa</opensdx>
+	</matches>
+	<matches>
+		<simfy>Alt. Country</simfy>
+		<opensdx>Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Altafonte</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Alternativ</simfy>
+		<opensdx>Alternative</opensdx>
+	</matches>
+	<matches>
+		<simfy>Alternative Rock</simfy>
+		<opensdx>Alternative</opensdx>
+	</matches>
+	<matches>
+		<simfy>Alternative/Folk</simfy>
+		<opensdx>Alternative</opensdx>
+	</matches>
+	<matches>
+		<simfy>Alternative/Pop</simfy>
+		<opensdx>Alternative</opensdx>
+	</matches>
+	<matches>
+		<simfy>Alternative/Punk</simfy>
+		<opensdx>Alternative</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ambient / New Age</simfy>
+		<opensdx>Ambient</opensdx>
+	</matches>
+	<matches>
+		<simfy>American</simfy>
+		<opensdx>North American Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Andes</simfy>
+		<opensdx>South American Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Arabia</simfy>
+		<opensdx>Middle Eastern Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Art Punk</simfy>
+		<opensdx>Punk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Arts &amp; Entertainment</simfy>
+		<opensdx>Entertainment</opensdx>
+	</matches>
+	<matches>
+		<simfy>Asia</simfy>
+		<opensdx>Asian Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Asian</simfy>
+		<opensdx>Asian Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Audio Book</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Audio Books</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Audio books (excluding children´s programmes)</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Audiobooks</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Austro Pop</simfy>
+		<opensdx>Austropop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Avantgarde / Free</simfy>
+		<opensdx>Avantgarde</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bacheta</simfy>
+		<opensdx>Bachata</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ballroom dance music</simfy>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bar Jazz / Cocktail</simfy>
+		<opensdx>Smooth Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Baritone</simfy>
+		<opensdx>Baritone</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bassline</simfy>
+		<opensdx>Garage / UK</opensdx>
+	</matches>
+	<matches>
+		<simfy>Beat-Music (German Beat-Music)</simfy>
+		<opensdx>Beat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Beats &amp; Breaks</simfy>
+		<opensdx>Breakbeat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Beats &amp; Breaks / Electronica</simfy>
+		<opensdx>Breakbeat</opensdx>
+	</matches>
+	<matches>
+		<simfy>BeBop/HardBop</simfy>
+		<opensdx>Bebop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bhangda</simfy>
+		<opensdx>Bhangra</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bigband Swing</simfy>
+		<opensdx>Big Band</opensdx>
+	</matches>
+	<matches>
+		<simfy>Bios &amp; Memoirs</simfy>
+		<opensdx>Biography &amp; Memento</opensdx>
+	</matches>
+	<matches>
+		<simfy>Black Music (Black Music / HipHop)</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Blues (Contemporary)</simfy>
+		<opensdx>Blues</opensdx>
+	</matches>
+	<matches>
+		<simfy>Blues (Traditional)</simfy>
+		<opensdx>Traditional Blues</opensdx>
+	</matches>
+	<matches>
+		<simfy>Blues/Jazz</simfy>
+		<opensdx>Blues</opensdx>
+	</matches>
+	<matches>
+		<simfy>BombastRock / Power Rock</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Boys Choir</simfy>
+		<opensdx>Boy's Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Brazilian</simfy>
+		<opensdx>Brazil (BR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Breakbeat / Drum N Bass</simfy>
+		<opensdx>Breakbeat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Breaks</simfy>
+		<opensdx>Breakbeat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Brit Pop</simfy>
+		<opensdx>Britpop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Broken Beat</simfy>
+		<opensdx>Tech House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Broken Beats</simfy>
+		<opensdx>Tech House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Cabaret</simfy>
+		<opensdx>Comedy &amp; Cabaret</opensdx>
+	</matches>
+	<matches>
+		<simfy>Cajun/Zydeco</simfy>
+		<opensdx>Cajun / Zydeco</opensdx>
+	</matches>
+	<matches>
+		<simfy>Caribbean</simfy>
+		<opensdx>Caribbean Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Cello</simfy>
+		<opensdx>Violoncello</opensdx>
+	</matches>
+	<matches>
+		<simfy>Celtic</simfy>
+		<opensdx>Celtic, European And Judaica Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Chanson/Liedermacher</simfy>
+		<opensdx>Chanson</opensdx>
+	</matches>
+	<matches>
+		<simfy>Childrens</simfy>
+		<opensdx>Children</opensdx>
+	</matches>
+	<matches>
+		<simfy>Children's</simfy>
+		<opensdx>Chrildren</opensdx>
+	</matches>
+	<matches>
+		<simfy>Children's Music</simfy>
+		<opensdx>Children</opensdx>
+	</matches>
+	<matches>
+		<simfy>Chillout</simfy>
+		<opensdx>Chill Out</opensdx>
+	</matches>
+	<matches>
+		<simfy>Choir (Choir-Music)</simfy>
+		<opensdx>Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Choir and Orchestra</simfy>
+		<opensdx>Choir With Orchestra</opensdx>
+	</matches>
+	<matches>
+		<simfy>Chor und Orchester</simfy>
+		<opensdx>Choir With Orchestra</opensdx>
+	</matches>
+	<matches>
+		<simfy>Choral Music</simfy>
+		<opensdx>Choral</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christian</simfy>
+		<opensdx>Religious</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christian Rap/Hip-Hop</simfy>
+		<opensdx>Christian Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christian/Gospel</simfy>
+		<opensdx>Gospel</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christmas</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christmas Classics</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christmas songs</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christmas-Klassiks</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christmas-Pop</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christmas-Repetoire</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Christmas-Songs</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>City Blues</simfy>
+		<opensdx>Blues</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic - Vocal</simfy>
+		<opensdx>Vocal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic Blues</simfy>
+		<opensdx>Blues</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic Lounge</simfy>
+		<opensdx>Lounge</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic Rock &amp; Pop</simfy>
+		<opensdx>Classic Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classic Soul</simfy>
+		<opensdx>Soul</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical Christmas Music</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical Crossover</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical Guitar</simfy>
+		<opensdx>Guitar</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical Music Instrumental</simfy>
+		<opensdx>Instrumental</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical Musical</simfy>
+		<opensdx>Musical / Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical, Opera</simfy>
+		<opensdx>Opera</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical-Jazz Compositions</simfy>
+		<opensdx>Classic Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical-Jazz Crossover</simfy>
+		<opensdx>Classic Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical-Pop Crossover</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical-Rock Crossover</simfy>
+		<opensdx>Classic Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classical-World Crossover</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classics</simfy>
+		<opensdx>Classic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classics Blues</simfy>
+		<opensdx>Blues</opensdx>
+	</matches>
+	<matches>
+		<simfy>Classics in Jazz style</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>coffee house music</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Comedy (Comedy / Carnival / Ski party songs)</simfy>
+		<opensdx>Comedy &amp; Humour</opensdx>
+	</matches>
+	<matches>
+		<simfy>Comedy (Comedy / Karneval / Stimmung)</simfy>
+		<opensdx>Comedy &amp; Humour</opensdx>
+	</matches>
+	<matches>
+		<simfy>Comedy / Humor</simfy>
+		<opensdx>Comedy &amp; Humour</opensdx>
+	</matches>
+	<matches>
+		<simfy>Comedy / Jokes</simfy>
+		<opensdx>Comedy &amp; Humour</opensdx>
+	</matches>
+	<matches>
+		<simfy>Comedy / Stand-Up Comedy / Jokes</simfy>
+		<opensdx>Comedy &amp; Humour</opensdx>
+	</matches>
+	<matches>
+		<simfy>Comedy/Spoken Word</simfy>
+		<opensdx>Comedy &amp; Humour</opensdx>
+	</matches>
+	<matches>
+		<simfy>Commercial</simfy>
+		<opensdx>Business &amp; Career</opensdx>
+	</matches>
+	<matches>
+		<simfy>Concert/ Soloinstrument with Orchestra</simfy>
+		<opensdx>Concerto / Solo Instrument With Orchestra</opensdx>
+	</matches>
+	<matches>
+		<simfy>Concerto</simfy>
+		<opensdx>Concerto / Solo Instrument With Orchestra</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contemporary Christian</simfy>
+		<opensdx>Religious</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contemporary Christmas pop</simfy>
+		<opensdx>Christian Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contemporary Classic</simfy>
+		<opensdx>New Music / Contemporary Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contemporary Classical</simfy>
+		<opensdx>New Music / Contemporary Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contemporary Jazz</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contemporary Musik</simfy>
+		<opensdx>New Music / Contemporary Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contemporary Reggae</simfy>
+		<opensdx>Contemporary Reggae</opensdx>
+	</matches>
+	<matches>
+		<simfy>Contrabass</simfy>
+		<opensdx>Double Bass</opensdx>
+	</matches>
+	<matches>
+		<simfy>Cool</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country (Contemporary)</simfy>
+		<opensdx>Contemporary Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country (Country and Western)</simfy>
+		<opensdx>Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country (Traditional)</simfy>
+		<opensdx>Traditional Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country Rock</simfy>
+		<opensdx>Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Country/Folk</simfy>
+		<opensdx>Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Credible / Hardcore</simfy>
+		<opensdx>Hardcore</opensdx>
+	</matches>
+	<matches>
+		<simfy>CROSSOVER / POPULAR CLASSICS</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Cuba/Son</simfy>
+		<opensdx>Son Cubana</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dance &amp; Electronic (Dance/Techno/Disco)</simfy>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dance Floor, Hip Hop</simfy>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dance Party</simfy>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dance/Pop</simfy>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dance-Orchestra (Dance-music / -orchestra)</simfy>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dance-Party</simfy>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dancepop (Dance/Eurodance/Dancepop)</simfy>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dance-Rock</simfy>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Death Metal / Gothic</simfy>
+		<opensdx>Death Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Deep</simfy>
+		<opensdx>Deep House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Delta / Country Blues</simfy>
+		<opensdx>Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Detroit</simfy>
+		<opensdx>Techno</opensdx>
+	</matches>
+	<matches>
+		<simfy>Deutsch Pop</simfy>
+		<opensdx>Deutschpop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Deutsch Rock</simfy>
+		<opensdx>Deutschrock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Deutsche Schlager</simfy>
+		<opensdx>Schlager</opensdx>
+	</matches>
+	<matches>
+		<simfy>Devotional</simfy>
+		<opensdx>Religious</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dialect-Pop</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Disco/Dance</simfy>
+		<opensdx>Disco</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dixieland (Revival)</simfy>
+		<opensdx>Dixieland Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>DJ Tool</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>DO NOT USE</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Doo Wop</simfy>
+		<opensdx>Doo-wop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Down Beat / Trip Hop</simfy>
+		<opensdx>Downbeat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Downtempo</simfy>
+		<opensdx>Downbeat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Drama &amp; Poetry</simfy>
+		<opensdx>Drama</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dramatic Music</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Drone</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Drum &amp; Bass</simfy>
+		<opensdx>Drum'n'Bass</opensdx>
+	</matches>
+	<matches>
+		<simfy>Drum &amp; Bass / Jungle</simfy>
+		<opensdx>Drum'n'Bass</opensdx>
+	</matches>
+	<matches>
+		<simfy>Dub/Raggamuffin</simfy>
+		<opensdx>Dub</opensdx>
+	</matches>
+	<matches>
+		<simfy>Early Musical Instruments</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>East Coast Rap/Hip-Hop</simfy>
+		<opensdx>US Eastcoast</opensdx>
+	</matches>
+	<matches>
+		<simfy>East German Rock</simfy>
+		<opensdx>Deutschrock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Eastern Europe</simfy>
+		<opensdx>European Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Easy Listening (traditional / entertainers /</simfy>
+		<opensdx>Easy Listening</opensdx>
+	</matches>
+	<matches>
+		<simfy>EBM/Industrial</simfy>
+		<opensdx>Industrial / EBM</opensdx>
+	</matches>
+	<matches>
+		<simfy>Education</simfy>
+		<opensdx>Education &amp; Knowledge</opensdx>
+	</matches>
+	<matches>
+		<simfy>Educational</simfy>
+		<opensdx>Education &amp; Knowledge</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electro Punk</simfy>
+		<opensdx>Electro</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electro Rock</simfy>
+		<opensdx>Electro</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electro/Ambient</simfy>
+		<opensdx>Electro</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electronic / Experimental</simfy>
+		<opensdx>Electronic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electronic Lounge</simfy>
+		<opensdx>Electronic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electronic Music</simfy>
+		<opensdx>Electronic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electrónica</simfy>
+		<opensdx>Electronica</opensdx>
+	</matches>
+	<matches>
+		<simfy>Electronica/Dance</simfy>
+		<opensdx>Electronica</opensdx>
+	</matches>
+	<matches>
+		<simfy>Elektronische Musik / Computermusik</simfy>
+		<opensdx>Electronic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Englisch</simfy>
+		<opensdx>English</opensdx>
+	</matches>
+	<matches>
+		<simfy>English / UK</simfy>
+		<opensdx>English</opensdx>
+	</matches>
+	<matches>
+		<simfy>Entertainer (Traditionell / Entertainer / Cha</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Entire Work</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Esotericism</simfy>
+		<opensdx>Esoteric</opensdx>
+	</matches>
+	<matches>
+		<simfy>Europe</simfy>
+		<opensdx>European Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>European/Mediterranean</simfy>
+		<opensdx>European Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Experimental</simfy>
+		<opensdx>Experimental Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Experiments in Sound</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Factual Issue Topics</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Feature Film</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Fidget House</simfy>
+		<opensdx>Fidget House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Film music</simfy>
+		<opensdx>Movie Soundtracks</opensdx>
+	</matches>
+	<matches>
+		<simfy>Film Scores</simfy>
+		<opensdx>Movie Soundtracks</opensdx>
+	</matches>
+	<matches>
+		<simfy>Flamenco / Sevillanas</simfy>
+		<opensdx>Flamenco</opensdx>
+	</matches>
+	<matches>
+		<simfy>Flamenco/Folk</simfy>
+		<opensdx>Flamenco</opensdx>
+	</matches>
+	<matches>
+		<simfy>Flamenco/Vocal</simfy>
+		<opensdx>Flamenco</opensdx>
+	</matches>
+	<matches>
+		<simfy>Folk (Singer/Songwriter)</simfy>
+		<opensdx>Singer/Songwriter</opensdx>
+	</matches>
+	<matches>
+		<simfy>Folk Music (Germany Folksy)</simfy>
+		<opensdx>German Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Folk/Folklore</simfy>
+		<opensdx>Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Folk/World</simfy>
+		<opensdx>Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Folk-style Schlager</simfy>
+		<opensdx>Schlager</opensdx>
+	</matches>
+	<matches>
+		<simfy>Folksy Beat Music</simfy>
+		<opensdx>Beat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Folksy Rock</simfy>
+		<opensdx>Folk Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Football</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>France</simfy>
+		<opensdx>France</opensdx>
+	</matches>
+	<matches>
+		<simfy>France / Chanson</simfy>
+		<opensdx>Chanson</opensdx>
+	</matches>
+	<matches>
+		<simfy>French / chansons</simfy>
+		<opensdx>Chanson</opensdx>
+	</matches>
+	<matches>
+		<simfy>French Horn</simfy>
+		<opensdx>Horn</opensdx>
+	</matches>
+	<matches>
+		<simfy>Funk &amp; Soul</simfy>
+		<opensdx>Funk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Funky</simfy>
+		<opensdx>Funk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Funky Breaks</simfy>
+		<opensdx>Funk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Funky House</simfy>
+		<opensdx>Funk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Garage</simfy>
+		<opensdx>Garage / UK</opensdx>
+	</matches>
+	<matches>
+		<simfy>Garage House</simfy>
+		<opensdx>Garage / UK</opensdx>
+	</matches>
+	<matches>
+		<simfy>Geistliche Chore</simfy>
+		<opensdx>Mixed Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gemischter Chor</simfy>
+		<opensdx>Mixed Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Germal Folk</simfy>
+		<opensdx>German Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>German Folk</simfy>
+		<opensdx>German Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>German Folk Music</simfy>
+		<opensdx>German Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>German Heavy Metal</simfy>
+		<opensdx>Heavy Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>German Hip Hop</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>German HipHop /- Rap</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>German New Wave</simfy>
+		<opensdx>New Wave</opensdx>
+	</matches>
+	<matches>
+		<simfy>German Pop</simfy>
+		<opensdx>Deutschpop</opensdx>
+	</matches>
+	<matches>
+		<simfy>German Pop with traditional elements</simfy>
+		<opensdx>Deutschpop</opensdx>
+	</matches>
+	<matches>
+		<simfy>German Punk</simfy>
+		<opensdx>Punk</opensdx>
+	</matches>
+	<matches>
+		<simfy>German Rock &amp; Pop</simfy>
+		<opensdx>Deutschrock</opensdx>
+	</matches>
+	<matches>
+		<simfy>German Scene</simfy>
+		<opensdx>Germany</opensdx>
+	</matches>
+	<matches>
+		<simfy>German singer/songwriter (Liedermacher)</simfy>
+		<opensdx>Singer/Songwriter</opensdx>
+	</matches>
+	<matches>
+		<simfy>German Underground</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>German-language</simfy>
+		<opensdx>German</opensdx>
+	</matches>
+	<matches>
+		<simfy>German-language Pop</simfy>
+		<opensdx>Deutschpop</opensdx>
+	</matches>
+	<matches>
+		<simfy>German-Punk</simfy>
+		<opensdx>Punk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Germany Country</simfy>
+		<opensdx>Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gitarre</simfy>
+		<opensdx>Guitar</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gitch hop</simfy>
+		<opensdx>Glitch Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Glamrock</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Glitch</simfy>
+		<opensdx>Electronic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Goth</simfy>
+		<opensdx>Goth / Industrial</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gothic</simfy>
+		<opensdx>Goth / Industrial</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gothic Metal</simfy>
+		<opensdx>Goth / Industrial</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gregorian</simfy>
+		<opensdx>Gregorian Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Grindcore</simfy>
+		<opensdx>Grind Core</opensdx>
+	</matches>
+	<matches>
+		<simfy>Grungecore</simfy>
+		<opensdx>Grunge</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gypsy / Sinti</simfy>
+		<opensdx>Gypsy</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gypsy music/ Sinti</simfy>
+		<opensdx>Gypsy</opensdx>
+	</matches>
+	<matches>
+		<simfy>Gypsy Punk</simfy>
+		<opensdx>Gypsy</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hardstyle</simfy>
+		<opensdx>Jumpstyle / Hardstyle</opensdx>
+	</matches>
+	<matches>
+		<simfy>Health and Fitness</simfy>
+		<opensdx>Health, Mind &amp; Body</opensdx>
+	</matches>
+	<matches>
+		<simfy>Heavy Metal, New Rock, Alterna</simfy>
+		<opensdx>Heavy Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hip Hop Deutsch</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hip Hop International</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hip hop/R&amp;B</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hip Hop/R&amp;B/Soul</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hip Hop/Rap</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hip-Hop</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>HipHop / Rap</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hip-Hop/R&amp;B</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Hip-Hop/Rap</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Historic</simfy>
+		<opensdx>Epic / Historical</opensdx>
+	</matches>
+	<matches>
+		<simfy>Holiday Music</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Honkytonk (Hillbilly / Honkytonk / Bluegrass)</simfy>
+		<opensdx>Honky-Tonk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Horbucher</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Horror/Suspense</simfy>
+		<opensdx>Horror Classics</opensdx>
+	</matches>
+	<matches>
+		<simfy>Horspiel</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>House (Garage+Vocal)</simfy>
+		<opensdx>House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Independent</simfy>
+		<opensdx>Independent Film</opensdx>
+	</matches>
+	<matches>
+		<simfy>India</simfy>
+		<opensdx>India (IN)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Indian Classical</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Indie Dance</simfy>
+		<opensdx>Indie Disco</opensdx>
+	</matches>
+	<matches>
+		<simfy>Indie Rock /Alternative Rock</simfy>
+		<opensdx>Indie Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Industrial</simfy>
+		<opensdx>Industrial / EBM</opensdx>
+	</matches>
+	<matches>
+		<simfy>Inspirational</simfy>
+		<opensdx>Health, Mind &amp; Body</opensdx>
+	</matches>
+	<matches>
+		<simfy>Instructional</simfy>
+		<opensdx>Education &amp; Knowledge</opensdx>
+	</matches>
+	<matches>
+		<simfy>instrumental orchestra and group music</simfy>
+		<opensdx>Instrumental</opensdx>
+	</matches>
+	<matches>
+		<simfy>Instrumental Rock</simfy>
+		<opensdx>Instrumental</opensdx>
+	</matches>
+	<matches>
+		<simfy>instrumental solo artists</simfy>
+		<opensdx>Instrumental</opensdx>
+	</matches>
+	<matches>
+		<simfy>instrumental synthesizer music</simfy>
+		<opensdx>Instrumental</opensdx>
+	</matches>
+	<matches>
+		<simfy>Int. HipHop / Rap</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Internat. Punk</simfy>
+		<opensdx>Punk</opensdx>
+	</matches>
+	<matches>
+		<simfy>International Punk</simfy>
+		<opensdx>Punk</opensdx>
+	</matches>
+	<matches>
+		<simfy>International Rap/Hip-Hop</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ireland</simfy>
+		<opensdx>Ireland (IE)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Irish Traditional</simfy>
+		<opensdx>Irish Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Italy</simfy>
+		<opensdx>Italy (IT)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jam Rock</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jazz (Contemporary)</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jazz (Traditional)</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jazz Funk</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jazz Rock / Fusion</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jazz/Latin</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jazz/Rock</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jewish</simfy>
+		<opensdx>Judaica Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Jungle</simfy>
+		<opensdx>Drum'n'Bass</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kabarett</simfy>
+		<opensdx>Comedy &amp; Cabaret</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kammermusik</simfy>
+		<opensdx>Chamber Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kids</simfy>
+		<opensdx>Children</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kids- and Youthprogramm (Children)</simfy>
+		<opensdx>Youth</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kinderchor</simfy>
+		<opensdx>Children's Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kindererzählungen (Lesungen / Hörbuch)</simfy>
+		<opensdx>Children's Audiobooks</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kinderhörspiele</simfy>
+		<opensdx>Children's Audiobooks</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kinderklassik</simfy>
+		<opensdx>Children</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kinderlieder</simfy>
+		<opensdx>Children</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kinderlieder modern</simfy>
+		<opensdx>Children</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kinderlieder traditionell</simfy>
+		<opensdx>Children</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kindermärchen</simfy>
+		<opensdx>Fairy Tales</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kinderpop</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Klassik - Neue / Zeitgenössische Musik</simfy>
+		<opensdx>New Music / Contemporary Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Klassik Crossover</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Klassik Crossover / Populärklassik</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Klassik-Ethno-Crossover</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Klassik-Jazz-Crossover</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Klassik-Jazz-Kompositionen</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Klassik-Pop-Crossover</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Klassik-Rock-Crossover</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Klassische Musicals</simfy>
+		<opensdx>Musical</opensdx>
+	</matches>
+	<matches>
+		<simfy>Klassische Weihnachtsmusik</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kuba/Son</simfy>
+		<opensdx>Son Cubana</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kunstlied Alt</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kunstlied Bariton</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kunstlied Knabensopran/Knabenalt</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kunstlied Mehrere Solostimmen</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kunstlied Sopran</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Kunstlied Tenor</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin / Pop</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin / Regional Mexican</simfy>
+		<opensdx>Mariachi</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin / Rock</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin / Urban</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin America</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin Jazz</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin Pop</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin Reg Mexic</simfy>
+		<opensdx>Mariachi</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin Tropical</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin Urban / Reggaeton</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin/Folk</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin-America (Middle- &amp; South-America</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latin-American</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Latino</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Leftfield</simfy>
+		<opensdx>House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Leftfield/IDM</simfy>
+		<opensdx>IDM</opensdx>
+	</matches>
+	<matches>
+		<simfy>Lied (Kunstlied)</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Lieder</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Lieder/Klassische Balladen</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Literatur / Dokumentationen</simfy>
+		<opensdx>Contemporary Literature</opensdx>
+	</matches>
+	<matches>
+		<simfy>Literature</simfy>
+		<opensdx>Contemporary Literature</opensdx>
+	</matches>
+	<matches>
+		<simfy>Live Events</simfy>
+		<opensdx>Live</opensdx>
+	</matches>
+	<matches>
+		<simfy>Lo-Fi</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>M.O.R. Int./Easy Listening</simfy>
+		<opensdx>Easy Listening</opensdx>
+	</matches>
+	<matches>
+		<simfy>Magnificat</simfy>
+		<opensdx>Classic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mainstream</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mainstream International pop</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mainstream Jazz</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Männerchor</simfy>
+		<opensdx>Men's Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Märchen/Kinderlieder/Saison Wo</simfy>
+		<opensdx>Fairy Tales</opensdx>
+	</matches>
+	<matches>
+		<simfy>Marches</simfy>
+		<opensdx>March</opensdx>
+	</matches>
+	<matches>
+		<simfy>Marches (military music / national anthems)</simfy>
+		<opensdx>March</opensdx>
+	</matches>
+	<matches>
+		<simfy>Math Rock</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Melody Core</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Men's Choir</simfy>
+		<opensdx>Men's Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Metal (Hard 'n' Heavy)</simfy>
+		<opensdx>Heavy Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Metalcore</simfy>
+		<opensdx>Heavy Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mexican</simfy>
+		<opensdx>Mexico (MX)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miami Bass</simfy>
+		<opensdx>Miami Bass</opensdx>
+	</matches>
+	<matches>
+		<simfy>Middle East</simfy>
+		<opensdx>Middle Eastern Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Military Marches</simfy>
+		<opensdx>March</opensdx>
+	</matches>
+	<matches>
+		<simfy>Minimal</simfy>
+		<opensdx>Minimal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Minimal / Tech</simfy>
+		<opensdx>Minimal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Minimal Techno</simfy>
+		<opensdx>Minimal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Miscellaneous Chamber Ensemble</simfy>
+		<opensdx>Chamber Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mixed Ensemble (Strings + Wind)</simfy>
+		<opensdx>Mixed Ensemble (Strings / Wind)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mixed Strings and Wind</simfy>
+		<opensdx>Mixed Ensemble (Strings / Wind)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mixed Wind Instruments Ensemble (Wood + Brass</simfy>
+		<opensdx>Mixed Wind Ensemble (Woodwind / Brass)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mixed Woodwind and Brass</simfy>
+		<opensdx>Mixed Wind Ensemble (Woodwind / Brass)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Modern</simfy>
+		<opensdx>Modern, 20th / 21st Century</opensdx>
+	</matches>
+	<matches>
+		<simfy>Modern Classical</simfy>
+		<opensdx>Modern, 20th / 21st Century</opensdx>
+	</matches>
+	<matches>
+		<simfy>Modern Music (Other Styles)</simfy>
+		<opensdx>Modern, 20th / 21st Century</opensdx>
+	</matches>
+	<matches>
+		<simfy>Modern Rock</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Moderne Musik (weitere Stile)</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>MOR (Middle of the Road)</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Morth-America</simfy>
+		<opensdx>North American Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Motet</simfy>
+		<opensdx>Motet</opensdx>
+	</matches>
+	<matches>
+		<simfy>Motown</simfy>
+		<opensdx>Motown Sound</opensdx>
+	</matches>
+	<matches>
+		<simfy>Movie</simfy>
+		<opensdx>Film</opensdx>
+	</matches>
+	<matches>
+		<simfy>Multiple Soloinstruments</simfy>
+		<opensdx>Several Solo Instruments</opensdx>
+	</matches>
+	<matches>
+		<simfy>Music - Classical</simfy>
+		<opensdx>Classic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Music - Country</simfy>
+		<opensdx>Country</opensdx>
+	</matches>
+	<matches>
+		<simfy>Music - Folk</simfy>
+		<opensdx>Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Music - Jazz</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Music - Latin</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Music - Pop</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Music and Speech</simfy>
+		<opensdx>Music And Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Music for Chamber Ensemble</simfy>
+		<opensdx>Chamber Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Music from the Middle Ages</simfy>
+		<opensdx>Middle Ages</opensdx>
+	</matches>
+	<matches>
+		<simfy>Musicals</simfy>
+		<opensdx>Musical</opensdx>
+	</matches>
+	<matches>
+		<simfy>Musik Kinder- u. Jugendprogram</simfy>
+		<opensdx>Children</opensdx>
+	</matches>
+	<matches>
+		<simfy>Musik und andere Medien / Künste</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Musik und Wort</simfy>
+		<opensdx>Music And Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Musique Francophone</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Mysteries &amp; Thrillers</simfy>
+		<opensdx>Thriller</opensdx>
+	</matches>
+	<matches>
+		<simfy>Native American</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Neoclassical</simfy>
+		<opensdx>Neoclassicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Neue Deutsche HÃ¤rte</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>New Age</simfy>
+		<opensdx>New Age</opensdx>
+	</matches>
+	<matches>
+		<simfy>New Age (New Age / Entspannung / Meditation)</simfy>
+		<opensdx>New Age</opensdx>
+	</matches>
+	<matches>
+		<simfy>New Age (New Age / Relaxation / Meditation)</simfy>
+		<opensdx>New Age</opensdx>
+	</matches>
+	<matches>
+		<simfy>New Dances/Novelty Dances</simfy>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<simfy>New Metal</simfy>
+		<opensdx>Heavy Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>New Soul</simfy>
+		<opensdx>Soul</opensdx>
+	</matches>
+	<matches>
+		<simfy>NewAge / Meditation</simfy>
+		<opensdx>New Age</opensdx>
+	</matches>
+	<matches>
+		<simfy>Nordic/Scandinavia</simfy>
+		<opensdx>Nordic/Scandinavia</opensdx>
+	</matches>
+	<matches>
+		<simfy>North America</simfy>
+		<opensdx>North American Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Nu Disco</simfy>
+		<opensdx>Disco</opensdx>
+	</matches>
+	<matches>
+		<simfy>Nu Skool Breaks</simfy>
+		<opensdx>Breakbeat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Nujazz</simfy>
+		<opensdx>Nu-Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>OBSOLETE - DO NOT USE</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Old School Rap/Hip-Hop</simfy>
+		<opensdx>Old School</opensdx>
+	</matches>
+	<matches>
+		<simfy>Oldies</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Oldtime Jazz</simfy>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Oper</simfy>
+		<opensdx>Opera Classical</opensdx>
+	</matches>
+	<matches>
+		<simfy>Opera</simfy>
+		<opensdx>Opera Classical</opensdx>
+	</matches>
+	<matches>
+		<simfy>Operetta/Popular Songs</simfy>
+		<opensdx>Operetta</opensdx>
+	</matches>
+	<matches>
+		<simfy>Operette</simfy>
+		<opensdx>Operetta</opensdx>
+	</matches>
+	<matches>
+		<simfy>Operette/Schlager</simfy>
+		<opensdx>Operetta</opensdx>
+	</matches>
+	<matches>
+		<simfy>Oratorium</simfy>
+		<opensdx>Oratorio</opensdx>
+	</matches>
+	<matches>
+		<simfy>Orchester/Combos</simfy>
+		<opensdx>Symphonic Music / Orchestral Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Orchestral</simfy>
+		<opensdx>Symphonic Music / Orchestral Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Orgel</simfy>
+		<opensdx>Organ</opensdx>
+	</matches>
+	<matches>
+		<simfy>Original Soundtrack</simfy>
+		<opensdx>Soundtrack</opensdx>
+	</matches>
+	<matches>
+		<simfy>Original Soundtrack (O.S.T.)</simfy>
+		<opensdx>Soundtrack</opensdx>
+	</matches>
+	<matches>
+		<simfy>Other</simfy>
+		<opensdx>Unclassifiable</opensdx>
+	</matches>
+	<matches>
+		<simfy>Other Chamber Ensemble</simfy>
+		<opensdx>Chamber Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Other Contemporary Music</simfy>
+		<opensdx>New Music / Contemporary Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Other Lead Instrument</simfy>
+		<opensdx>Solo Instrument</opensdx>
+	</matches>
+	<matches>
+		<simfy>Other Melody Instruments</simfy>
+		<opensdx>Solo Instrument</opensdx>
+	</matches>
+	<matches>
+		<simfy>Other Popular Classics</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Other World</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Others</simfy>
+		<opensdx>Unclassifiable</opensdx>
+	</matches>
+	<matches>
+		<simfy>Party</simfy>
+		<opensdx>Miami Bass</opensdx>
+	</matches>
+	<matches>
+		<simfy>Passion</simfy>
+		<opensdx>Passion</opensdx>
+	</matches>
+	<matches>
+		<simfy>Period Instruments</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Piano Classical</simfy>
+		<opensdx>Piano</opensdx>
+	</matches>
+	<matches>
+		<simfy>Playbacks (all Genres Pop and Classical)</simfy>
+		<opensdx>Karaoke</opensdx>
+	</matches>
+	<matches>
+		<simfy>Playbacks (all styles pop and classic)</simfy>
+		<opensdx>Karaoke</opensdx>
+	</matches>
+	<matches>
+		<simfy>Poetry</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Political Satire</simfy>
+		<opensdx>Comedy &amp; Cabaret</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop (Singer/Songwriter)</simfy>
+		<opensdx>Singer/Songwriter</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop allgemein</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop Alternative</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop Dance</simfy>
+		<opensdx>Dance Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop German-speaking</simfy>
+		<opensdx>Deutschpop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop instrumental (Pop Instrumental / NewAge /</simfy>
+		<opensdx>New Age</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop International</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop Jazz / Smooth Jazz</simfy>
+		<opensdx>Smooth Jazz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop Punk</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop R&amp;B</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop Rap/Hip-Hop</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop/Dance</simfy>
+		<opensdx>Dance Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop/Electronic</simfy>
+		<opensdx>Electropop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Pop/Rock</simfy>
+		<opensdx>Pop Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Postmodern</simfy>
+		<opensdx>Postmodern Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Prog Rock</simfy>
+		<opensdx>Progressive</opensdx>
+	</matches>
+	<matches>
+		<simfy>Progressive Breaks</simfy>
+		<opensdx>Breakbeat</opensdx>
+	</matches>
+	<matches>
+		<simfy>Progressive Electro House</simfy>
+		<opensdx>Progressive House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Progressive Rock</simfy>
+		<opensdx>Progressive</opensdx>
+	</matches>
+	<matches>
+		<simfy>Progressive Trance</simfy>
+		<opensdx>Trance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Psy Trance</simfy>
+		<opensdx>Psychedelic Trance</opensdx>
+	</matches>
+	<matches>
+		<simfy>Qawwali</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>R &amp; B/Soul</simfy>
+		<opensdx>R&amp;B</opensdx>
+	</matches>
+	<matches>
+		<simfy>R&amp;B/Hip-Hop</simfy>
+		<opensdx>R&amp;B</opensdx>
+	</matches>
+	<matches>
+		<simfy>R&amp;B/Soul</simfy>
+		<opensdx>R&amp;B</opensdx>
+	</matches>
+	<matches>
+		<simfy>Radio drama (no Children!)</simfy>
+		<opensdx>Drama</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ragga</simfy>
+		<opensdx>Reggae</opensdx>
+	</matches>
+	<matches>
+		<simfy>Raggamuffin</simfy>
+		<opensdx>Reggae</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ragtime</simfy>
+		<opensdx>Classic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Ranchera, Merengue</simfy>
+		<opensdx>Ranchero</opensdx>
+	</matches>
+	<matches>
+		<simfy>RAP</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rap/Hip Hop</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rap/Hip-Hop</simfy>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Readings</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Recital / Solo Instrument with Orchestra</simfy>
+		<opensdx>Concerto / Solo Instrument With Orchestra</opensdx>
+	</matches>
+	<matches>
+		<simfy>Recorder</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Religion &amp; Spirituality</simfy>
+		<opensdx>Religious</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rhythm and Blues</simfy>
+		<opensdx>R&amp;B</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rock &amp; Pop</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rock (Rock / Rockpop)</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rock (Singer/Songwriter)</simfy>
+		<opensdx>Singer/Songwriter</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rock/Alternative</simfy>
+		<opensdx>Alternative</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rock/Electronic</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rock/Folk/Flamenco</simfy>
+		<opensdx>Folk Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rock/Latin</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rock/Pop</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Rockabilly / Psychobilly</simfy>
+		<opensdx>Rockabilly</opensdx>
+	</matches>
+	<matches>
+		<simfy>Romanische Musik</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Russia</simfy>
+		<opensdx>Russian Federation (RU)</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sacred Cantata</simfy>
+		<opensdx>Cantata</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sacred Madrigal</simfy>
+		<opensdx>Madrigal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sacred Music</simfy>
+		<opensdx>Religious</opensdx>
+	</matches>
+	<matches>
+		<simfy>Samba/Brasil</simfy>
+		<opensdx>Samba</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sammelprogramme der Klassik</simfy>
+		<opensdx>Classic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sänger (Sängerportraits)</simfy>
+		<opensdx>Documentary</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sängerportrait Bariton</simfy>
+		<opensdx>Baritone</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sängerportrait Sopran</simfy>
+		<opensdx>Soprano</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sängerportrait Tenor</simfy>
+		<opensdx>Tenor</opensdx>
+	</matches>
+	<matches>
+		<simfy>Scandinavia</simfy>
+		<opensdx>Nordic / Scandinavia</opensdx>
+	</matches>
+	<matches>
+		<simfy>Schlager (German easy listening pop)</simfy>
+		<opensdx>Schlager</opensdx>
+	</matches>
+	<matches>
+		<simfy>Schlager (Schlager-Party)</simfy>
+		<opensdx>Schlager</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sci-Fi &amp; Fantasy</simfy>
+		<opensdx>Science Fiction &amp; Fantasy</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sci-Fi Fantasy</simfy>
+		<opensdx>Science Fiction &amp; Fantasy</opensdx>
+	</matches>
+	<matches>
+		<simfy>Scotland</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Screamo</simfy>
+		<opensdx>Emo</opensdx>
+	</matches>
+	<matches>
+		<simfy>Secular Cantata</simfy>
+		<opensdx>Cantata</opensdx>
+	</matches>
+	<matches>
+		<simfy>Secular Music</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Select Works</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Self Development</simfy>
+		<opensdx>Self-Organization</opensdx>
+	</matches>
+	<matches>
+		<simfy>Self Help</simfy>
+		<opensdx>Self-Help</opensdx>
+	</matches>
+	<matches>
+		<simfy>Shoegazing</simfy>
+		<opensdx>Alternative</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sinfonische Musik</simfy>
+		<opensdx>Symphonic Music / Orchestral Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Singer / Songwriter</simfy>
+		<opensdx>Singer / Songwriter</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soccer</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soft Rock / Pop Rock</simfy>
+		<opensdx>Soft Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soft Rock / PopRock</simfy>
+		<opensdx>Soft Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Solo Instrumental (without Orchestra or Accom</simfy>
+		<opensdx>Solo Instrument</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soloinstr</simfy>
+		<opensdx>Solo Instrument</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soloinstrument (Instr. without Orchestra or A</simfy>
+		<opensdx>Solo Instrument</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soloinstrument mit Orchester</simfy>
+		<opensdx>Concerto / Solo Instrument With Orchestra</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soloinstrument ohne Orchester</simfy>
+		<opensdx>Solo Instrument</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soloists</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Songwriter</simfy>
+		<opensdx>Singer / Songwriter</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sonstige Klassik</simfy>
+		<opensdx>Classic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sonstige Neue / Zeitgenössische Musik</simfy>
+		<opensdx>New Music / Contemporary Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sonstige Populäre Klassik</simfy>
+		<opensdx>Crossover / Popular Classicism</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soul/Funk</simfy>
+		<opensdx>Funk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soul/R&amp;B</simfy>
+		<opensdx>Soul</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soulful</simfy>
+		<opensdx>Soulful House</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sound-Effects</simfy>
+		<opensdx>Sound Effects</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soundtrack (Original Soundtrack (O.S.T.) / mo</simfy>
+		<opensdx>Soundtrack</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soundtrack / Filmmusik</simfy>
+		<opensdx>Movie Soundtracks</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soundtracks</simfy>
+		<opensdx>Soundtrack</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soundtracks (Scores / Soundtracks / Musicals)</simfy>
+		<opensdx>Soundtrack</opensdx>
+	</matches>
+	<matches>
+		<simfy>Soundtracks/Musicals</simfy>
+		<opensdx>Soundtrack</opensdx>
+	</matches>
+	<matches>
+		<simfy>South America</simfy>
+		<opensdx>South American Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>South Seas</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Southern Rap/Hip-Hop</simfy>
+		<opensdx>US Southern</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spain/Portugal</simfy>
+		<opensdx>European Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spanin / Portugal</simfy>
+		<opensdx>European Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spanish / Latin Rock</simfy>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<simfy>Special Effects</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Special Interest</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Special Interest Non-Fiction</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Specialised</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Specialty</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spectacle Music</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Speeches</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spiritual / Gospel</simfy>
+		<opensdx>Spiritual</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spiritual Music</simfy>
+		<opensdx>Spiritual</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spoken Word</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spoken Word - Comedy</simfy>
+		<opensdx>Comedy &amp; Humour</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spoken Word - Edutainment</simfy>
+		<opensdx>Education &amp; Knowledge</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spoken Word - Literature</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spoken Word - Radio Play</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spoken Word (Spoken Word / Other)</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spoken Word (Word / Other)</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Spoken word drama/play (excluding children´s</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Square-/ Line Dance</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Stabat Mater</simfy>
+		<opensdx>Classic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Staging / Theatre</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Standard</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Standards</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Standards &amp; Showtunes</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Steelband</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Stimmungsrepertoire</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Stoner Metal</simfy>
+		<opensdx>Heavy Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Sudamerikanische Musik</simfy>
+		<opensdx>South American Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Swing Combos</simfy>
+		<opensdx>Swing</opensdx>
+	</matches>
+	<matches>
+		<simfy>Swingbeat</simfy>
+		<opensdx>Swing</opensdx>
+	</matches>
+	<matches>
+		<simfy>Symphonic / Orchestral</simfy>
+		<opensdx>Symphonic Music / Orchestral Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Symphonic Music/ Orchestral Music</simfy>
+		<opensdx>Symphonic Music / Orchestral Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Synthi instrumental</simfy>
+		<opensdx>Instrumental</opensdx>
+	</matches>
+	<matches>
+		<simfy>Synthi Pop</simfy>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Te Deum</simfy>
+		<opensdx>Classic</opensdx>
+	</matches>
+	<matches>
+		<simfy>Tech / Minimal</simfy>
+		<opensdx>Minimal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Television</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>TexMex</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Theatre</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Thrash Metal</simfy>
+		<opensdx>Thrash / Speed Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Thrash/Speedmetal</simfy>
+		<opensdx>Thrash / Speed Metal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Traditinal</simfy>
+		<opensdx>Traditional</opensdx>
+	</matches>
+	<matches>
+		<simfy>Traditional / Swing</simfy>
+		<opensdx>Traditional</opensdx>
+	</matches>
+	<matches>
+		<simfy>Traditional German Folk</simfy>
+		<opensdx>German Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Traditional R&amp;B</simfy>
+		<opensdx>R&amp;B</opensdx>
+	</matches>
+	<matches>
+		<simfy>Tribal House</simfy>
+		<opensdx>Tribal</opensdx>
+	</matches>
+	<matches>
+		<simfy>Trip Hop</simfy>
+		<opensdx>Trip-Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>TripHop</simfy>
+		<opensdx>Trip-Hop</opensdx>
+	</matches>
+	<matches>
+		<simfy>Turkey</simfy>
+		<opensdx>Turkey (TR)</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV</simfy>
+		<opensdx>Film</opensdx>
+	</matches>
+	<matches>
+		<simfy>TV/Film</simfy>
+		<opensdx>Film</opensdx>
+	</matches>
+	<matches>
+		<simfy>Underground</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>unknown</simfy>
+		<opensdx>Unclassifiable</opensdx>
+	</matches>
+	<matches>
+		<simfy>Urban</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Urban Latino</simfy>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<simfy>Various Soloists</simfy>
+		<opensdx>Miscellaneous</opensdx>
+	</matches>
+	<matches>
+		<simfy>Vocal</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Vocal Music with Chamber Ensemble</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Vocal Music with Chamber Ensembles</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Vocal Recital</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Vocal/Easy Listening</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Vocal/Nostalgia</simfy>
+		<opensdx>Vocal Music</opensdx>
+	</matches>
+	<matches>
+		<simfy>Vokalensemble</simfy>
+		<opensdx>Vocal Ensemble</opensdx>
+	</matches>
+	<matches>
+		<simfy>Volksmusik</simfy>
+		<opensdx>German Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Volkstumliche Musik</simfy>
+		<opensdx>German Folk</opensdx>
+	</matches>
+	<matches>
+		<simfy>Waltzes</simfy>
+		<opensdx>Waltz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Walzer</simfy>
+		<opensdx>Waltz</opensdx>
+	</matches>
+	<matches>
+		<simfy>Weihnachtsrep. (dt.)</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Weihnachtsrep. (intern.)</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Wellness</simfy>
+		<opensdx>Health, Mind &amp; Body</opensdx>
+	</matches>
+	<matches>
+		<simfy>Weltliche Chore</simfy>
+		<opensdx>Mixed Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>West Coast</simfy>
+		<opensdx>US Westcoast</opensdx>
+	</matches>
+	<matches>
+		<simfy>West Coast Rap/Hip-Hop</simfy>
+		<opensdx>US Westcoast</opensdx>
+	</matches>
+	<matches>
+		<simfy>Westcoast</simfy>
+		<opensdx>US Westcoast</opensdx>
+	</matches>
+	<matches>
+		<simfy>Westerns</simfy>
+		<opensdx>Western</opensdx>
+	</matches>
+	<matches>
+		<simfy>Women's Choir</simfy>
+		<opensdx>Women's Choir</opensdx>
+	</matches>
+	<matches>
+		<simfy>Word &amp; Music</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>Words &amp; Music</simfy>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<simfy>World (Worldmusic / Folk / Local Music)</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>World (Worldmusic / Folklore / Folk Music)</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>World Music</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>World/Folk</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>World/Jazz</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>World/Reggae</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Worldbeat</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>World-Jazz / Ethno-Jazz</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Worldmusic</simfy>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<simfy>Wort-Kinderserien</simfy>
+		<opensdx>Children's Audiobooks</opensdx>
+	</matches>
+	<matches>
+		<simfy>Xmas repertoire</simfy>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<simfy>Yiddish / Klemzer</simfy>
+		<opensdx>Judaica Music / Yiddish / Klezmer</opensdx>
+	</matches>
+	<matches>
+		<simfy>Yiddish / Klezmer</simfy>
+		<opensdx>Judaica Music / Yiddish / Klezmer</opensdx>
+	</matches>
+	<matches>
+		<simfy>Zulu Traditional</simfy>
+		<opensdx>Zulu</opensdx>
+	</matches>		
+</root>
