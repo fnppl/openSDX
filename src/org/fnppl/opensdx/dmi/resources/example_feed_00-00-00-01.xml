@@ -496,7 +496,7 @@
 				<display_artistname>Artist</display_artistname>
 				<ids>
 					<grid></grid><!-- COULD grid -->
-					<isrc></isrc><!-- SHOULD isrc - not applicable on bundle-level, but for -->
+					<isrc>DE3DF1212345</isrc><!-- SHOULD isrc - not applicable on bundle-level, but for. If present it must match the following schema: AAXXX0000000 or AA-XXX-00-00000 (A = chars, 0 = numbers, X = alphanumeric)-->
 					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com -->
 					<finetunes></finetunes><!-- strange finetunes id -->
 				</ids><!-- MUST -->
