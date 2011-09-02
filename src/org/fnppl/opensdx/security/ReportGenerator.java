@@ -57,21 +57,34 @@ import org.fnppl.opensdx.keyserver.PostgresBackend;
 import org.fnppl.opensdx.pdf.PDFUtil;
 import org.fnppl.opensdx.xml.Element;
 
+import com.sun.corba.se.impl.transport.ReadTCPTimeoutsImpl;
 import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 public class ReportGenerator {
 	
+	
 	public static void buildFileSignatureVerificationReport(Element report, File outputPDF) {
 		URL html_template = ReportGenerator.class.getResource("resources/file_verification_report_DE.html");
 		try {
-		    BufferedReader in = new BufferedReader(new InputStreamReader(html_template.openStream()));
-            StringBuffer textBuffer = new StringBuffer();
-            String line = null;
-            while ((line = in.readLine())!=null) {
-            	textBuffer.append(line+"\n");
-            }
-             
-            String text = textBuffer.toString();
+		    String text = readTemplate(html_template);
+		    //structue of report:
+	        //preSig
+	        //for all signatures : sig {
+	        //	preID
+	        //  for all identity fields : id field {
+	        //		idTemplate
+	        //	}
+	        //  postID
+	        //  keylogsTemplatePre
+	        //  for all keylogs : kl {
+	        //  	for all identity fields : id field {
+	        //			keylogTemplate
+	        //		}
+	        //	}
+	        //  keylogsTemplatePost
+	        //}
+	        //postSig
+		    
 	        int sigStart = text.indexOf("<!-- signature start -->");
 	        int sigEnd = text.indexOf("<!-- signature end -->");
             
@@ -93,7 +106,7 @@ public class ReportGenerator {
 	        
 	        String keylogsTemplatePre = postID.substring(keylogsStart, keylogStart);
 	        String keylogTemplate = postID.substring(keylogStart, keylogEnd);
-	        String keylogsTemplatePost = postID.substring(keylogEnd, keylogsEnd);
+	        String keylogsTemplatePost = postID.substring(keylogsEnd);
 	        
 	        preSig = preSig.replace("[check_datetime]", report.getChildTextNN("check_datetime"));
 	        preSig = preSig.replace("[orig_filename]", report.getChildTextNN("signed_filename"));
@@ -117,6 +130,8 @@ public class ReportGenerator {
 	            sig = sig.replace("[sig_key_valid_until]", es.getChildTextNN("key_valid_until"));
 	            sig = sig.replace("[sig_keyserver]", keyid.substring(keyid.indexOf('@')+1));
 	           
+	            tb.append(sig);
+	            
 	            Element eID = es.getChild("identity");
 	            if (eID!=null) {
 	            	Vector<Element> eIDparts = eID.getChildren();
@@ -125,12 +140,35 @@ public class ReportGenerator {
 	            		if (!name.equals("photo") && !name.equals("sha256")) {
 		            		String part = idTemplate.replace("[id_name]", name);
 		            		part = part.replace("[id_value]", ep.getText());
-		            		sig += part;
+		            		tb.append(part);
 	            		}
 	            	}
 	            }
 	            
 	            String sigAppend = ""+keylogsTemplatePost;
+	           
+	            Element eKeylogs = es.getChild("keylogs_report");
+	            if (eKeylogs!=null) {
+	            	Vector<Element> ekls = eKeylogs.getChildren("keylog_entry");
+	            	if (ekls!=null && ekls.size()>0) {
+		            	StringBuffer klTemp = new StringBuffer();
+		            	klTemp.append(keylogsTemplatePre);
+		            	for (Element ec : ekls) {
+		 	            	String keyid_from = ec.getChildTextNN("keyid_from");
+		 	            	String action = ec.getChildTextNN("action");
+		 	            	String email = ec.getChildTextNN("email");
+		 	            	String date =  ec.getChildTextNN("date");
+		 	            	String tmp = keylogTemplate.replace("[keylog_action]", action);
+		 	            	tmp = tmp.replace("[keylog_date]", date);
+		 	            	tmp = tmp.replace("[keylog_id_from]", keyid_from);
+		 	            	tmp = tmp.replace("[keylog_email]", email);
+		 	            	klTemp.append(tmp);
+		 	            }
+		            	klTemp.append(keylogsTemplatePost);
+		            	sigAppend = klTemp.toString();
+	            	}
+	            }
+	            
 	            Vector<Element> checks = es.getChildren("check");
 	            boolean md5ok = false, sha1ok = false, sha256ok = false;
 	            for (Element ec : checks) {
@@ -187,40 +225,37 @@ public class ReportGenerator {
 	            sigAppend = sigAppend.replace("[check_key_keyserver]", keyMatch);
 	            
 	            
-	            
 	            //key verificator report and keylogs
-//	            Element eVerify = es.getChild("key_verification_report");
-//	            if (eVerify!=null) {
-//	            	checks = eVerify.getChildren("check");
-//	 	            for (Element ec : checks) {
-//	 	            	String msg = ec.getChildTextNN("message");
-//	 	            	String value = ec.getChildTextNN("result");
-//	 	            	if (msg.equals("")) {
-//	 	            		
-//	 	            	}
-//	 	            }
-//	            }
-	            Element eKeylogs = es.getChild("keylogs_report");
-	            if (eKeylogs!=null) {
-	            	Vector<Element> ekls = eKeylogs.getChildren("keylog_entry");
-	            	if (ekls!=null && ekls.size()>0) {
-		            	String klTemp = ""+keylogsTemplatePre;
-		            	for (Element ec : ekls) {
-		 	            	String keyid_from = ec.getChildTextNN("keyid_from");
-		 	            	String action = ec.getChildTextNN("action");
-		 	            	String email = ec.getChildTextNN("email");
-		 	            	String date =  ec.getChildTextNN("date");
-		 	            	String tmp = keylogTemplate.replace("[keylog_action]", action);
-		 	            	tmp = tmp.replace("[keylog_date]", date);
-		 	            	tmp = tmp.replace("[keylog_id_from]", keyid_from);
-		 	            	tmp = tmp.replace("[keylog_email]", email);
-		 	            	klTemp += tmp;
-		 	            }
-		 	            klTemp += keylogsTemplatePost;
-		 	            sig += klTemp;
-	            	}
+	            Element eVerify = es.getChild("key_verification_report");
+	            if (eVerify!=null) {
+	            	checks = eVerify.getChildren("check");
+	 	            for (Element ec : checks) {
+	 	            	String msg = ec.getChildTextNN("message");
+	 	            	String value = ec.getChildTextNN("result");
+	 	            	if (msg.equals("")) {
+	 	            		
+	 	            	}
+	 	            	else if (msg.equals("key is directly trusted")) {
+		            		sigAppend = sigAppend.replace("[check_direct_trust]", getStatusMsg(value));
+		            	}
+	 	            }
+	 	           Element ekt = es.getChild("key_trustings_report");
+		           String appByDirTrustedKey = sUNKNOWN;
+		           if (ekt!=null) {
+		            	checks = es.getChildren("check");
+		  	            for (Element ec : checks) {
+		  	            	String msg = ec.getChildTextNN("message");
+		  	            	String value = ec.getChildTextNN("result");
+		  	            	if (msg.equals("key is approved by a directly trusted key")) {
+		  	            		appByDirTrustedKey = getStatusMsg(value);		
+		  	            	}
+		  	            }
+		            }
+		  	        sigAppend = sigAppend.replace("[check_approved_by_directly_trusted_key]",appByDirTrustedKey);
+	            } else {
+	            	sigAppend = sigAppend.replace("[check_direct_trust]", getStatusMsg(sUNKNOWN));
 	            }
-	            tb.append(sig);
+	           
 	            tb.append(sigAppend);
 	            tb.append("\n");
             }
@@ -244,4 +279,23 @@ public class ReportGenerator {
 			return sUNKNOWN;
 		}
 	}
+	
+	private static String readTemplate(URL html_template) {
+		try {
+		    BufferedReader in = new BufferedReader(new InputStreamReader(html_template.openStream()));
+            StringBuffer textBuffer = new StringBuffer();
+            String line = null;
+            while ((line = in.readLine())!=null) {
+            	textBuffer.append(line+"\n");
+            }
+             
+            String text = textBuffer.toString();
+            return text;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
 }
+
+
