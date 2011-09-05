@@ -253,6 +253,14 @@ public class FTP_OSDX_BridgeThread extends Thread {
 	
 	public void handle_DELE(String str) {
 		//TODO
+		try {
+			if (ensureConnection()) {
+				osdxclient.delete(str);
+				out.println("250 CWD command succesful");
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 		
 	}
 	public void handle_CDUP(String str) {

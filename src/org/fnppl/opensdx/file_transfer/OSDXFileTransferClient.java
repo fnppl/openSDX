@@ -175,9 +175,14 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 		return connected && socket.isConnected();
 	}
 	
-	public void closeConnection() throws Exception {
+	public void closeConnection() throws FileTransferException {
 		if (socket != null) {
-			socket.closeConnection();
+			try {
+				socket.closeConnection();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			socket = null;
 		}
 		connected = false;
 		//socket = null;
@@ -205,79 +210,110 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 		return false;
 	}
 	
-	public void cd(String dir) {
-		if (!rights_duties.allowsCD())  return;
-		sendEncryptedText("CD "+dir);
-	}
-	
-	public void cd_up() {
-		if (!rights_duties.allowsCD()) return;
-		sendEncryptedText("CDUP");
-	}
-	
-	public void mkdir(String dir) throws Exception {
-		if (!rights_duties.allowsMkdir()) {
-			throw new Exception("MKDIR NOT ALLOWED");
-//			return;
-		}
-		sendEncryptedText("MKDIR "+dir);
-	}
-	
-	public void delete(String file) {
-		if (!rights_duties.allowsDelete()) return;
-		sendEncryptedText("DELETE "+file);
-	}
-	
-	public boolean login(String username) {
-		sendEncryptedText("LOGIN "+username);
+	private String checkResponseOrTimeout(String command) throws FileTransferException {
 		long timeout = System.currentTimeMillis()+timeout_ms;
 		while (System.currentTimeMillis()<timeout) {
 			for (int i=0;i<textQueue.size();i++) {
-				if (textQueue.get(i).startsWith("ACK LOGIN :: ")) {
-					String txt = textQueue.remove(i).substring(13);
-					//System.out.println("LOGIN: "+txt);
-					String[] param = Util.getParams(txt);
-					try {
-						rights_duties = RightsAndDuties.fromElement(Document.fromString(param[1]).getRootElement());
-						return true;
-					} catch (Exception ex) {
-						ex.printStackTrace();
-						return false;
-					}
+				if (textQueue.get(i).startsWith("ACK "+command+" :: ")) {
+					return textQueue.remove(i);
 				}
 				if (textQueue.get(i).startsWith("ERROR IN LOGIN :: ")) {
-					String txt = textQueue.remove(i);
-					System.out.println("LOGIN: "+txt);
+					return textQueue.remove(i);
+				}
+			}
+		}
+		throw new FileTransferException("TIMEOUT for command: "+command);
+	}
+	
+	public void cd(String dir) throws FileTransferException {
+		if (!rights_duties.allowsCD()) {
+			throw new FileTransferException("CD NOT ALLOWED");
+		}
+		sendEncryptedText("CD "+dir);
+		String resp = checkResponseOrTimeout("CD");
+		if (resp.startsWith("ERROR")) {
+			throw new FileTransferException(resp);
+		}
+	}
+	
+	public void cd_up() throws FileTransferException {
+		if (!rights_duties.allowsCD()) {
+			throw new FileTransferException("CD NOT ALLOWED");
+		}
+		sendEncryptedText("CDUP");
+		String resp = checkResponseOrTimeout("CDUP");
+		if (resp.startsWith("ERROR")) {
+			throw new FileTransferException(resp);
+		}
+	}
+	
+	public void mkdir(String dir) throws FileTransferException {
+		if (!rights_duties.allowsMkdir()) {
+			throw new FileTransferException("MKDIR NOT ALLOWED");
+		}
+		sendEncryptedText("MKDIR "+dir);
+		String resp = checkResponseOrTimeout("MKDIR");
+		if (resp.startsWith("ERROR")) {
+			throw new FileTransferException(resp);
+		}
+	}
+	
+	public void delete(String file) throws FileTransferException {
+		if (!rights_duties.allowsDelete()) {
+			throw new FileTransferException("DELETE NOT ALLOWED");
+		}
+		sendEncryptedText("DELETE "+file);
+		String resp = checkResponseOrTimeout("DELETE");
+		if (resp.startsWith("ERROR")) {
+			throw new FileTransferException(resp);
+		}
+	}
+	
+	public boolean login(String username) { //throws FileTransferException {
+		sendEncryptedText("LOGIN "+username);
+		try {
+			String resp = checkResponseOrTimeout("LOGIN");
+			if (resp.startsWith("ERROR")) {
+				return false;
+				//throw new FileTransferException(resp);
+			} else {
+				String txt = resp.substring(13);
+				//System.out.println("LOGIN: "+txt);
+				String[] param = Util.getParams(txt);
+				try {
+					rights_duties = RightsAndDuties.fromElement(Document.fromString(param[1]).getRootElement());
+					return true;
+				} catch (Exception ex) {
+					ex.printStackTrace();
 					return false;
 				}
 			}
+		} catch (FileTransferException ex) {
+			//timeout
+			return false;
 		}
-		return false;
 	}
 	
-	public RemoteFile file(String filename) {
+	public RemoteFile file(String filename) throws FileTransferException {
 		sendEncryptedText("FILE "+filename);
-		String rfile = null;
-		long timeout = System.currentTimeMillis()+timeout_ms;
-		while (rfile==null && System.currentTimeMillis()<timeout) {
-			for (int i=0;i<textQueue.size();i++) {
-				if (textQueue.get(i).startsWith("ACK FILE :: ")) {
-					rfile = textQueue.remove(i).substring(12);
-					System.out.println("FILE: "+rfile);
-					try {
-						String[] att = rfile.split(",,");
-						RemoteFile f = new RemoteFile(RemoteFileSystem.resolveEscapeChars(att[0]), RemoteFileSystem.resolveEscapeChars(att[1]), Long.parseLong(att[2]), Long.parseLong(att[3]), Boolean.parseBoolean(att[4]));
-						return f;
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
+		String resp = checkResponseOrTimeout("FILE");
+		if (resp.startsWith("ERROR")) {
+			throw new FileTransferException(resp);
+		} else {
+			String rfile = resp.substring(12);
+			System.out.println("FILE: "+rfile);
+			try {
+				String[] att = rfile.split(",,");
+				RemoteFile f = new RemoteFile(RemoteFileSystem.resolveEscapeChars(att[0]), RemoteFileSystem.resolveEscapeChars(att[1]), Long.parseLong(att[2]), Long.parseLong(att[3]), Boolean.parseBoolean(att[4]));
+				return f;
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				return null;
 			}
 		}
-		return null;
 	}
 	
-	public String pwd() {
+	public String pwd() throws FileTransferException {
 		if (!rights_duties.allowsPWD()) return null;
 		//remove all previous ACK PWD from queue
 		for (int i=0;i<textQueue.size();i++) {
@@ -287,86 +323,91 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 			}
 		}
 		sendEncryptedText("PWD");
-		String pwd = null;
-		long timeout = System.currentTimeMillis()+timeout_ms;
-		while (pwd==null && System.currentTimeMillis()<timeout) {
-			for (int i=0;i<textQueue.size();i++) {
-				if (textQueue.get(i).startsWith("ACK PWD :: ")) {
-					pwd = textQueue.remove(i).substring(11);
-					System.out.println("PWD: "+pwd);
-					return pwd;
-				}
-			}
+		String resp = checkResponseOrTimeout("PWD");
+		if (resp.startsWith("ERROR")) {
+			throw new FileTransferException(resp);
+		} else {
+			String pwd = resp.substring(11);
+			System.out.println("PWD: "+pwd);
+			return pwd;
 		}
-		return null;
 	}
 	
 	public boolean noop() {
 		return sendEncryptedText("NOOP");
 	}
 	
-	public void uploadFile(File f, FileTransferProgress progress) {
-		if (!rights_duties.allowsUpload()) return;
+	public void uploadFile(File f, FileTransferProgress progress) throws FileTransferException  {
+		if (!rights_duties.allowsUpload()) {
+			throw new FileTransferException("UPLOAD NOT ALLOWED");
+		}
 		uploadFile(f, null, false, progress);
 	}
 	
-	public void uploadFile(File f) {
-		if (!rights_duties.allowsUpload()) return;
+	public void uploadFile(File f) throws FileTransferException {
+		if (!rights_duties.allowsUpload()) {
+			throw new FileTransferException("UPLOAD NOT ALLOWED");
+		}
 		uploadFile(f, null, false, null);
 	}
 	
-	public void resumeuploadFile(File f, FileTransferProgress progress) {
-		if (!rights_duties.allowsUpload()) return;
+	public void resumeuploadFile(File f, FileTransferProgress progress) throws FileTransferException {
+		if (!rights_duties.allowsUpload()) {
+			throw new FileTransferException("UPLOAD NOT ALLOWED");
+		}
 		resumeuploadFile(f, null, progress);
 	}
 	
-	public void resumeuploadFile(File f) {
-		if (!rights_duties.allowsUpload()) return;
+	public void resumeuploadFile(File f) throws FileTransferException {
+		if (!rights_duties.allowsUpload()) {
+			throw new FileTransferException("UPLOAD NOT ALLOWED");
+		}
 		resumeuploadFile(f, null, null);
 	}
 	
-	public Vector<RemoteFile> list() {
-		if (!rights_duties.allowsList()) return null;
+	public Vector<RemoteFile> list() throws FileTransferException {
+		if (!rights_duties.allowsList()) {
+			throw new FileTransferException("LIST NOT ALLOWED");
+		}
 		sendEncryptedText("LIST");
-		String list = null;
-		long timeout = System.currentTimeMillis()+timeout_ms;
-		while (list==null && System.currentTimeMillis()<timeout) {
-			for (int i=0;i<textQueue.size();i++) {
-				if (textQueue.get(i).startsWith("ACK LIST :: ")) {
-					list = textQueue.remove(i).substring(12);
-					//System.out.println("list :: "+list);					
-					//parse list
-					Vector<RemoteFile> fl = new Vector<RemoteFile>();
-					if (!list.contains(",,")) { //empty dir
-						return fl;
-					}
-					String[] parts = list.split(";;");
-					for (String p : parts) {
-						try {
-							String[] att = p.split(",,");
-							RemoteFile f = new RemoteFile(RemoteFileSystem.resolveEscapeChars(att[0]), RemoteFileSystem.resolveEscapeChars(att[1]), Long.parseLong(att[2]), Long.parseLong(att[3]), Boolean.parseBoolean(att[4]));
-						//	System.out.println(f.toString());
-							fl.add(f);
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-					return fl;
+		String resp = checkResponseOrTimeout("LIST");
+		if (resp.startsWith("ERROR")) {
+			throw new FileTransferException(resp);
+		} else {
+			String list = resp.substring(12);
+			//System.out.println("list :: "+list);					
+			//parse list
+			Vector<RemoteFile> fl = new Vector<RemoteFile>();
+			if (!list.contains(",,")) { //empty dir
+				return fl;
+			}
+			String[] parts = list.split(";;");
+			for (String p : parts) {
+				try {
+					String[] att = p.split(",,");
+					RemoteFile f = new RemoteFile(RemoteFileSystem.resolveEscapeChars(att[0]), RemoteFileSystem.resolveEscapeChars(att[1]), Long.parseLong(att[2]), Long.parseLong(att[3]), Boolean.parseBoolean(att[4]));
+				//	System.out.println(f.toString());
+					fl.add(f);
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
 			}
+			return fl;
 		}
-		return null;
+		
 	}
 	
-	public void uploadFile(File f, String new_filename, FileTransferProgress progress) {
+	public void uploadFile(File f, String new_filename, FileTransferProgress progress) throws FileTransferException {
 		uploadFile(f, new_filename, false, progress);
 	}
-	public void uploadFile(File f, String new_filename) {
+	public void uploadFile(File f, String new_filename) throws FileTransferException {
 		uploadFile(f, new_filename, false,null);
 	}
 	
-	public void uploadFile(File f, String new_filename, boolean sign, FileTransferProgress progress) {
-		if (!rights_duties.allowsUpload()) return;
+	public void uploadFile(File f, String new_filename, boolean sign, FileTransferProgress progress) throws FileTransferException {
+		if (!rights_duties.allowsUpload()) {
+			throw new FileTransferException("UPLOAD NOT ALLOWED");
+		}
 		if (f.exists()) {
 			if (!f.isDirectory()) {
 				long filelenght = f.length();
@@ -388,17 +429,12 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 				}
 				
 				sendEncryptedText("PUT "+param);
-				//wait for ACK or ERROR of PUT
-				String msg = null;
-				long timeout = System.currentTimeMillis()+timeout_ms;
-				while (msg==null && System.currentTimeMillis()<timeout) {
-					for (int i=0;i<textQueue.size();i++) {
-						if (textQueue.get(i).startsWith("ACK PUT :: ") || textQueue.get(i).startsWith("ERROR IN PUT :: ")) {
-							msg = textQueue.remove(i);
-						}
-					}
-				}
-				if (msg!=null && msg.startsWith("ACK")) {
+				
+				String resp = checkResponseOrTimeout("PUT");
+				if (resp.startsWith("ERROR")) {
+					System.out.println("ERROR uploading file: "+f.getName()+" :: "+resp.substring(resp.indexOf(" :: ")+4));
+					throw new FileTransferException(resp);
+				} else {
 					if (filelenght<=maxByteLength) {
 						//send in one data package
 						try {
@@ -441,18 +477,12 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 							ex.printStackTrace();
 						}
 					}
-				} else {
-					if (msg==null) {
-						System.out.println("ERROR uploading file: "+f.getName()+" :: TIMEOUT");
-					} else {
-						System.out.println("ERROR uploading file: "+f.getName()+" :: "+msg.substring(msg.indexOf(" :: ")+4));
-					}
 				}
 			}
 		}
 	}
 	
-	public void resumeuploadFile(File f, String new_filename, FileTransferProgress progress) {
+	public void resumeuploadFile(File f, String new_filename, FileTransferProgress progress) throws FileTransferException {
 		if (!rights_duties.allowsUpload()) return;
 		if (f.exists()) {
 			if (!f.isDirectory()) {
@@ -465,21 +495,20 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 				sendEncryptedText("RESUMEPUT "+param);
 				
 				//wait for ACK or ERROR of PUT
-				String msg = null;
-				long timeout = System.currentTimeMillis()+timeout_ms;
-				while (msg==null && System.currentTimeMillis()<timeout) {
-					for (int i=0;i<textQueue.size();i++) {
-						if (textQueue.get(i).startsWith("ACK RESUMEPUT :: ") || textQueue.get(i).startsWith("ERROR IN RESUMEPUT :: ")) {
-							msg = textQueue.remove(i);
-						}
+				String resp = checkResponseOrTimeout("RESUMEPUT");
+				if (resp.startsWith("ERROR")) {
+					if (resp!=null && resp.equals("ERROR IN RESUMEPUT :: FILE DOES NOT EXIST, PLEASE USE PUT INSTEAD")) {
+						uploadFile(f, new_filename, progress);
+					} else {
+						System.out.println("ERROR uploading file: "+f.getName()+" :: "+resp.substring(resp.indexOf(" :: ")+4));
+						throw new FileTransferException(resp);
 					}
-				}
-				if (msg!=null && msg.startsWith("ACK")) {
+				} else {
 					//send in multiple data packages
 					long nextStart = -1;
 					try {
 						//parse next start
-						nextStart = Long.parseLong(msg.substring(msg.lastIndexOf('=')+1));
+						nextStart = Long.parseLong(resp.substring(resp.lastIndexOf('=')+1));
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
@@ -513,25 +542,15 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 						ex.printStackTrace();
 					}
 				}
-				else if (msg!=null && msg.equals("ERROR IN RESUMEPUT :: FILE DOES NOT EXIST, PLEASE USE PUT INSTEAD")) {
-					uploadFile(f, new_filename, progress);
-				}
-				else {
-					if (msg==null) {
-						System.out.println("ERROR uploading file: "+f.getName()+" :: TIMEOUT");
-					} else {
-						System.out.println("ERROR uploading file: "+f.getName()+" :: "+msg.substring(msg.indexOf(" :: ")+4));
-					}
-				}
 			}
 		}
 	}
 	
-	public void uploadFile(String filename, byte[] data) {
+	public void uploadFile(String filename, byte[] data) throws FileTransferException {
 		uploadFile(filename, data, null);
 	}
 	
-	public void uploadFile(String filename, byte[] data, FileTransferProgress progress) {
+	public void uploadFile(String filename, byte[] data, FileTransferProgress progress) throws FileTransferException {
 		if (!rights_duties.allowsUpload()) return;
 		long filelenght = data.length;
 		String param = null;
@@ -563,17 +582,13 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 			}
 		}
 		sendEncryptedText("PUT "+param);
+		
 		//wait for ACK or ERROR of PUT
-		String msg = null;
-		long timeout = System.currentTimeMillis()+timeout_ms;
-		while (msg==null && System.currentTimeMillis()<timeout) {
-			for (int i=0;i<textQueue.size();i++) {
-				if (textQueue.get(i).startsWith("ACK PUT :: ") || textQueue.get(i).startsWith("ERROR IN PUT :: ")) {
-					msg = textQueue.remove(i);
-				}
-			}
-		}
-		if (msg!=null && msg.startsWith("ACK")) {
+		String resp = checkResponseOrTimeout("PUT");
+		if (resp.startsWith("ERROR")) {
+			System.out.println("ERROR uploading file: "+filename+" :: "+resp.substring(resp.indexOf(" :: ")+4));
+			throw new FileTransferException(resp);
+		} else {
 			if (filelenght<=maxByteLength) {
 				//send in one data package
 				try {
@@ -606,21 +621,14 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 					ex.printStackTrace();
 				}
 			}
-		} else {
-			if (msg==null) {
-				System.out.println("ERROR uploading file: "+filename+" :: TIMEOUT");
-			} else {
-				System.out.println("ERROR uploading file: "+filename+" :: "+msg.substring(msg.indexOf(" :: ")+4));
-			}
 		}
-
 	}
 	
 	public RightsAndDuties getRightsAndDuties() {
 		return rights_duties;
 	}
 	
-	public long downloadFile(String filename, File localFile) {
+	public long downloadFile(String filename, File localFile) throws FileTransferException {
 		long length = -1L;
 		if (!rights_duties.allowsDownload()) return length;
 		if (localFile.isDirectory()) {
@@ -638,28 +646,19 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 			}
 		}
 		sendEncryptedText("GET "+filename);
-		//wait for ACK or ERROR of GET
-		String msg = null;
-		long timeout = System.currentTimeMillis()+timeout_ms;
-		while (msg==null && System.currentTimeMillis()<timeout) {
-			for (int i=0;i<textQueue.size();i++) {
-				if (textQueue.get(i).startsWith("ACK GET :: ") || textQueue.get(i).startsWith("ERROR IN GET :: ")) {
-					msg = textQueue.remove(i);
-				}
-			}
-		}
-		if (msg!=null && msg.startsWith("ACK")) {
+		
+		String resp = checkResponseOrTimeout("GET");
+		if (resp.startsWith("ERROR")) {
+			System.out.println("Error downloading file: "+filename+" :: "+resp);
+			throw new FileTransferException(resp);
+		} else {
 			try {
-				length = Long.parseLong(msg.substring(msg.lastIndexOf('=')+1));
+				length = Long.parseLong(resp.substring(resp.lastIndexOf('=')+1));
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				length = -1L;
 			}
 			nextDownloadFile.add(new DownloadFile(localFile, length));
-		} else if (msg!=null) {
-			System.out.println("Error downloading file: "+filename+" :: "+msg);
-		} else {
-			System.out.println("Error downloading file: "+filename+" :: TIMEOUT");
 		}
 		return length;
 	}

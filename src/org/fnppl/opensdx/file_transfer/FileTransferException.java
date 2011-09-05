@@ -1,5 +1,4 @@
-package org.fnppl.opensdx.ftp_bridge;
-
+package org.fnppl.opensdx.file_transfer;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -44,13 +43,15 @@ package org.fnppl.opensdx.ftp_bridge;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
-import org.fnppl.opensdx.security.OSDXKey;
+public class FileTransferException extends Exception {
 
-public class OSDXUser {
-
-	public String host = null;
-	public int port = 4221;
-	public String prepath = "/";
-	public String username = null;
-	public OSDXKey signingKey = null;
+	private static final long serialVersionUID = 1L;
+	
+	public FileTransferException() {
+		super();
+	}
+	public FileTransferException(String msg) {
+		super(msg);
+	}
+	
 }

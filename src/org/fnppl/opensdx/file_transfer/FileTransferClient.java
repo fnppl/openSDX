@@ -50,13 +50,14 @@ import java.io.File;
 
 public interface FileTransferClient {
 
-	//public String pwd() throws Exception;
-	public void mkdir(String directory) throws Exception;
-	public void cd(String directory) throws Exception;
-	public void cd_up() throws Exception;
-	public void uploadFile(File localFile, String remoteFilename) throws Exception;
-	public void uploadFile(String remoteFilename, byte[] data) throws Exception;
-	public long downloadFile(String filename, File localFile) throws Exception;
-	public void closeConnection() throws Exception;
+	public String pwd() throws FileTransferException;
+	public void mkdir(String directory) throws FileTransferException;
+	public void cd(String directory) throws FileTransferException;
+	public void cd_up() throws FileTransferException;
+	//public void delete(String remoteFilename) throws FileTransferException;
+	public void uploadFile(File localFile, String remoteFilename) throws FileTransferException;
+	public void uploadFile(String remoteFilename, byte[] data) throws FileTransferException;
+	public long downloadFile(String filename, File localFile) throws FileTransferException;
+	public void closeConnection() throws FileTransferException;
 	
 }
