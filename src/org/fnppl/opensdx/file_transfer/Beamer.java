@@ -293,14 +293,14 @@ public class Beamer {
 		Element eFeed = copyOfFeed.toElement();
 		Document.buildDocument(eFeed).output(bOut);
 		byte[] feedbytes = bOut.toByteArray();
-		client.uploadFile(normFeedid+".xml",feedbytes);
+		client.uploadFile(normFeedid+".xml",feedbytes, null);
 		
 		//upload feed signature
 		byte[][] checks  = SecurityHelper.getMD5SHA1SHA256(feedbytes);
 		Signature feed_sig = Signature.createSignature(checks[1], checks[2], checks[3], normFeedid+".xml",signaturekey);
 		bOut = new ByteArrayOutputStream();
 		Document.buildDocument(feed_sig.toElement()).output(bOut);
-		client.uploadFile(normFeedid+".osdx.sig",bOut.toByteArray());
+		client.uploadFile(normFeedid+".osdx.sig",bOut.toByteArray(),null);
 		
 		//upload all bundle and item files
 		Vector<ExtraFile> files = getUploadExtraFile(copyOfFeed);
@@ -310,14 +310,14 @@ public class Beamer {
 				File nextFile = f.file;
 				String filename = f.new_filename;
 				nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
-				client.uploadFile(nextFile, filename);
+				client.uploadFile(nextFile, filename, null);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 		}
 		
 		//upload feed finished file
-		client.uploadFile(normFeedid+".finished",new byte[]{0});
+		client.uploadFile(normFeedid+".finished",new byte[]{0},null);
 		return Result.succeeded();
 		
 //		Bundle bundle = copyOfFeed.getBundle(0);

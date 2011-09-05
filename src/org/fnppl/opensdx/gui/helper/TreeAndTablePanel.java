@@ -67,6 +67,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.fnppl.opensdx.file_transfer.FileTransferException;
 import org.fnppl.opensdx.file_transfer.RemoteFile;
 import org.fnppl.opensdx.file_transfer.RemoteFileSystem;
 import org.fnppl.opensdx.gui.Dialogs;
@@ -218,7 +219,11 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 					if (name!=null) {
 						RemoteFile f = new RemoteFile(dir.getFilnameWithPath(), name, 0, System.currentTimeMillis(), true);
 						TreePath path = tree.getSelectionPath();
-						fs.mkdir(f);
+						try {
+							fs.mkdir(f);
+						} catch (FileTransferException ex) {
+							Dialogs.showMessage("Error, could not create directory:\n"+f.getFilnameWithPath());
+						}
 						refreshView(path);
 					}
 				}
@@ -237,7 +242,11 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 					int q = Dialogs.showYES_NO_Dialog("Remove Files", msg);
 					if (q == Dialogs.YES) {
 						for (RemoteFile f : files) {
-							fs.remove(f);
+							try {
+								fs.remove(f);
+							} catch (FileTransferException ex) {
+								Dialogs.showMessage("Error, could not remove:\n"+f.getFilnameWithPath());
+							}
 						}
 						try {
 							table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
@@ -255,7 +264,11 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 						int q = Dialogs.showYES_NO_Dialog("Remove Directory", msg);
 						if (q == Dialogs.YES) {
 							TreePath path = tree.getSelectionPath();
-							fs.remove(dir);
+							try {
+								fs.remove(dir);
+							} catch (FileTransferException ex) {
+								Dialogs.showMessage("Error, could not remove:\n"+dir.getFilnameWithPath());
+							}
 							refreshView(path.getParentPath());
 						}
 					}
@@ -275,7 +288,11 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 				String name = Dialogs.showInputDialog("Rename file", "Please enter new filename for file\n"+from.getName()+"\n",from.getName());
 				if (name!=null) {
 					RemoteFile to = new RemoteFile(from.getPath(), name, from.getLength(), from.getLastModified(), false);
-					fs.rename(from, to);
+					try {
+						fs.rename(from, to);
+					} catch (FileTransferException ex) {
+						Dialogs.showMessage("Error, could not rename:\n"+from.getFilnameWithPath());
+					}
 					table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
 					table.setModel(table_model);
 				}
@@ -301,6 +318,24 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
+		}
+	}
+	public void refreshView() {
+		try {
+			TreePath path = tree.getSelectionPath();
+			TreeAndTableNode node = (TreeAndTableNode)path.getLastPathComponent();
+			node.populateAgain();
+			tree.collapsePath(path);
+			tree.expandPath(path);
+			//tree.setSelectionPath(path);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		try {
+			table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
+			table.setModel(table_model);
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 	

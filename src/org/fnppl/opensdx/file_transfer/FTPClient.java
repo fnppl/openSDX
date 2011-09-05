@@ -162,16 +162,38 @@ public class FTPClient implements FileTransferClient{
 		}
 	}
 
-	public void uploadFile(File f) throws FileTransferException {
+	public void uploadFile(File f, final FileTransferProgress progress) throws FileTransferException {
 		try {
-			client.upload(f);
+			FTPDataTransferListener transferListener = new FTPDataTransferListener() {
+				public void transferred(int len) {
+					System.out.println("transfered: "+len);
+				}
+				public void started() {
+					System.out.println("transfer started");
+				}
+				public void failed() {
+					System.out.println("transfer failed");
+					//throw new FileTransferException("upload failed.");
+				}
+				public void completed() {
+					System.out.println("transfer completed");
+					if (progress!=null) {
+						progress.setComplete();
+					}
+				}
+				public void aborted() {
+					System.out.println("transfer aborted");
+					//throw new FileTransferException("upload aborted.");
+				}
+			};
+			client.upload(f,transferListener);
 		} catch (Exception ex) {
 			//ex.printStackTrace();
 			throw new FileTransferException(ex.getMessage());
 		}
 	}
 
-	public void uploadFile(File f, String new_filename) throws FileTransferException {
+	public void uploadFile(File f, String new_filename, final FileTransferProgress progress) throws FileTransferException {
 		try {
 			System.out.println("uploading file to: "+new_filename+"  length = "+f.length());
 
@@ -188,6 +210,9 @@ public class FTPClient implements FileTransferClient{
 				}
 				public void completed() {
 					System.out.println("transfer completed");
+					if (progress!=null) {
+						progress.setComplete();
+					}
 				}
 				public void aborted() {
 					System.out.println("transfer aborted");
@@ -200,7 +225,7 @@ public class FTPClient implements FileTransferClient{
 		}
 	}
 
-	public void uploadFile(String new_filename, byte[] data) throws FileTransferException {
+	public void uploadFile(String new_filename, byte[] data, final FileTransferProgress progress) throws FileTransferException {
 		if (data.length>0) {
 			try {
 				System.out.println("uploading file data to: "+new_filename+"  length = "+data.length);
@@ -218,12 +243,14 @@ public class FTPClient implements FileTransferClient{
 					}
 					public void completed() {
 						System.out.println("transfer completed");
+						if (progress!=null) {
+							progress.setComplete();
+						}
 					}
 					public void aborted() {
 						System.out.println("transfer aborted");
 					}
 				};
-
 				client.upload(new_filename, in, 0, 0, transferListener);
 			} catch (Exception ex) {
 				//ex.printStackTrace();
@@ -232,9 +259,29 @@ public class FTPClient implements FileTransferClient{
 		}
 	}
 
-	public long downloadFile(String filename, File localFile) throws FileTransferException {
+	public long downloadFile(String filename, File localFile, final FileTransferProgress progress) throws FileTransferException {
 		try {	
-			client.download(filename, localFile);
+			FTPDataTransferListener transferListener = new FTPDataTransferListener() {
+				public void transferred(int len) {
+					System.out.println("transfered: "+len);
+				}
+				public void started() {
+					System.out.println("transfer started");
+				}
+				public void failed() {
+					System.out.println("transfer failed");
+				}
+				public void completed() {
+					System.out.println("transfer completed");
+					if (progress!=null) {
+						progress.setComplete();
+					}
+				}
+				public void aborted() {
+					System.out.println("transfer aborted");
+				}
+			};
+			client.download(filename, localFile, transferListener);
 			return -1L;
 		} catch (Exception ex) {
 			//ex.printStackTrace();
