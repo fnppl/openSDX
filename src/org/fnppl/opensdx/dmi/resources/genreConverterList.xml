@@ -47,7 +47,7 @@
  */
 
 /*
- * Convert simfy genres to opensdx genres
+ * Convert simfy genres to opensdx and fudge to opensdx genres
  * Couls also be used for some other genre guys
  *
  */
@@ -125,6 +125,7 @@
 	<matches>
 		<simfy>Alternative</simfy>
 		<opensdx>Alternative</opensdx>
+		<fudge>Alternative</fudge>
 	</matches>
 	<matches>
 		<simfy>Crossover</simfy>
@@ -485,6 +486,7 @@
 	<matches>
 		<simfy>Blues</simfy>
 		<opensdx>Blues</opensdx>
+		<fudge>Blues</fudge>
 	</matches>
 	<matches>
 		<simfy>Blues</simfy>
@@ -3273,6 +3275,7 @@
 	<matches>
 		<simfy>Audiobooks</simfy>
 		<opensdx>Word</opensdx>
+		<fudge>Audiobooks</fudge>
 	</matches>
 	<matches>
 		<simfy>Austro Pop</simfy>
@@ -3413,6 +3416,7 @@
 	<matches>
 		<simfy>Children's Music</simfy>
 		<opensdx>Children</opensdx>
+		<fudge>Children's Music</fudge>
 	</matches>
 	<matches>
 		<simfy>Chillout</simfy>
@@ -3545,6 +3549,7 @@
 	<matches>
 		<simfy>Classics</simfy>
 		<opensdx>Classic</opensdx>
+		<fudge>Classical</fudge>
 	</matches>
 	<matches>
 		<simfy>Classics Blues</simfy>
@@ -3561,6 +3566,7 @@
 	<matches>
 		<simfy>Comedy (Comedy / Carnival / Ski party songs)</simfy>
 		<opensdx>Comedy &amp; Humour</opensdx>
+		<fudge>Comedy</fudge>
 	</matches>
 	<matches>
 		<simfy>Comedy (Comedy / Karneval / Stimmung)</simfy>
@@ -3637,6 +3643,7 @@
 	<matches>
 		<simfy>Country (Country and Western)</simfy>
 		<opensdx>Country</opensdx>
+		<fudge>Country</fudge>
 	</matches>
 	<matches>
 		<simfy>Country (Traditional)</simfy>
@@ -3665,6 +3672,7 @@
 	<matches>
 		<simfy>Dance &amp; Electronic (Dance/Techno/Disco)</simfy>
 		<opensdx>Dance</opensdx>
+		<fudge>Dance</fudge>
 	</matches>
 	<matches>
 		<simfy>Dance Floor, Hip Hop</simfy>
@@ -3829,6 +3837,7 @@
 	<matches>
 		<simfy>Electronic / Experimental</simfy>
 		<opensdx>Electronic</opensdx>
+		<fudge>Electronic</fudge>
 	</matches>
 	<matches>
 		<simfy>Electronic Lounge</simfy>
@@ -3929,6 +3938,7 @@
 	<matches>
 		<simfy>Folk/Folklore</simfy>
 		<opensdx>Folk</opensdx>
+		<fudge>Folk</fudge>
 	</matches>
 	<matches>
 		<simfy>Folk/World</simfy>
@@ -4153,6 +4163,7 @@
 	<matches>
 		<simfy>Hip Hop/Rap</simfy>
 		<opensdx>Hip Hop</opensdx>
+		<fudge>Hip Hop/Rap</fudge>
 	</matches>
 	<matches>
 		<simfy>Hip-Hop</simfy>
@@ -4177,6 +4188,7 @@
 	<matches>
 		<simfy>Holiday Music</simfy>
 		<opensdx>Holiday</opensdx>
+		<fudge>Holiday</fudge>
 	</matches>
 	<matches>
 		<simfy>Honkytonk (Hillbilly / Honkytonk / Bluegrass)</simfy>
@@ -4225,6 +4237,7 @@
 	<matches>
 		<simfy>Inspirational</simfy>
 		<opensdx>Health, Mind &amp; Body</opensdx>
+		<fudge>Inspirational</fudge>
 	</matches>
 	<matches>
 		<simfy>Instructional</simfy>
@@ -4301,6 +4314,7 @@
 	<matches>
 		<simfy>Jazz/Rock</simfy>
 		<opensdx>Jazz</opensdx>
+		<fudge>Jazz</fudge>
 	</matches>
 	<matches>
 		<simfy>Jewish</simfy>
@@ -4433,6 +4447,7 @@
 	<matches>
 		<simfy>Latin / Pop</simfy>
 		<opensdx>Latin</opensdx>
+		<fudge>Latin</fudge>
 	</matches>
 	<matches>
 		<simfy>Latin / Regional Mexican</simfy>
@@ -4745,6 +4760,7 @@
 	<matches>
 		<simfy>New Age</simfy>
 		<opensdx>New Age</opensdx>
+		<fudge>New Age</fudge>
 	</matches>
 	<matches>
 		<simfy>New Age (New Age / Entspannung / Meditation)</simfy>
@@ -4809,6 +4825,7 @@
 	<matches>
 		<simfy>Oper</simfy>
 		<opensdx>Opera Classical</opensdx>
+		<fudge>Opera</fudge>
 	</matches>
 	<matches>
 		<simfy>Opera</simfy>
@@ -4921,6 +4938,7 @@
 	<matches>
 		<simfy>Pop allgemein</simfy>
 		<opensdx>Pop</opensdx>
+		<fudge>Pop</fudge>
 	</matches>
 	<matches>
 		<simfy>Pop Alternative</simfy>
@@ -5021,6 +5039,7 @@
 	<matches>
 		<simfy>Ragga</simfy>
 		<opensdx>Reggae</opensdx>
+		<fudge>Reggae</fudge>
 	</matches>
 	<matches>
 		<simfy>Raggamuffin</simfy>
@@ -5073,6 +5092,7 @@
 	<matches>
 		<simfy>Rock (Rock / Rockpop)</simfy>
 		<opensdx>Rock</opensdx>
+		<fudge>Rock</fudge>
 	</matches>
 	<matches>
 		<simfy>Rock (Singer/Songwriter)</simfy>
@@ -5265,6 +5285,7 @@
 	<matches>
 		<simfy>Soul/R&amp;B</simfy>
 		<opensdx>Soul</opensdx>
+		<fudge>R&amp;B/Soul</fudge>
 	</matches>
 	<matches>
 		<simfy>Soulful</simfy>
@@ -5277,6 +5298,7 @@
 	<matches>
 		<simfy>Soundtrack (Original Soundtrack (O.S.T.) / mo</simfy>
 		<opensdx>Soundtrack</opensdx>
+		<fudge>Soundtrack</fudge>
 	</matches>
 	<matches>
 		<simfy>Soundtrack / Filmmusik</simfy>
@@ -5357,6 +5379,7 @@
 	<matches>
 		<simfy>Spoken Word</simfy>
 		<opensdx>Word</opensdx>
+		<fudge>Spoken Word</fudge>
 	</matches>
 	<matches>
 		<simfy>Spoken Word - Comedy</simfy>
@@ -5541,6 +5564,7 @@
 	<matches>
 		<simfy>Vocal</simfy>
 		<opensdx>Vocal Music</opensdx>
+		<fudge>Vocal</fudge>
 	</matches>
 	<matches>
 		<simfy>Vocal Music with Chamber Ensemble</simfy>
@@ -5629,6 +5653,7 @@
 	<matches>
 		<simfy>World (Worldmusic / Folk / Local Music)</simfy>
 		<opensdx>World</opensdx>
+		<fudge>World</fudge>
 	</matches>
 	<matches>
 		<simfy>World (Worldmusic / Folklore / Folk Music)</simfy>
