@@ -126,6 +126,7 @@
 		<simfy>Alternative</simfy>
 		<opensdx>Alternative</opensdx>
 		<fudge>Alternative</fudge>
+		<pie>Alternative</pie>
 	</matches>
 	<matches>
 		<simfy>Crossover</simfy>
@@ -194,6 +195,7 @@
 	<matches>
 		<simfy>Pop</simfy>
 		<opensdx>Pop</opensdx>
+		<pie>Pop</pie>
 	</matches>
 	<matches>
 		<simfy>Brit Pop</simfy>
@@ -230,6 +232,7 @@
 	<matches>
 		<simfy>French Pop</simfy>
 		<opensdx>French Pop</opensdx>
+		<pie>French Pop</pie>
 	</matches>
 	<matches>
 		<simfy>Indie Dance</simfy>
@@ -242,10 +245,16 @@
 	<matches>
 		<simfy>J-Pop</simfy>
 		<opensdx>J-Pop</opensdx>
+		<pie>J-Pop</pie>
+	</matches>
+	<matches>
+		<opensdx>J-Pop</opensdx>
+		<pie>Kayokyoku</pie>
 	</matches>
 	<matches>
 		<simfy>Pop</simfy>
 		<opensdx>K-Pop</opensdx>
+		<pie>K-Pop</pie>
 	</matches>
 	<matches>
 		<simfy>Neue Deutsche Welle</simfy>
@@ -270,6 +279,7 @@
 	<matches>
 		<simfy>Singer/Songwriter</simfy>
 		<opensdx>Singer / Songwriter</opensdx>
+		<pie>Singer/Songwriter</pie>
 	</matches>
 	<matches>
 		<simfy>Synthi Pop</simfy>
@@ -346,10 +356,12 @@
 	<matches>
 		<simfy>Volksmusik</simfy>
 		<opensdx>German Folk</opensdx>
+		<pie>German Folk</pie>
 	</matches>
 	<matches>
 		<simfy>Jazz</simfy>
 		<opensdx>Jazz</opensdx>
+		<pie>Jazz</pie>
 	</matches>
 	<matches>
 		<simfy>Acid Jazz</simfy>
@@ -1091,6 +1103,7 @@
 	<matches>
 		<simfy>World</simfy>
 		<opensdx>World</opensdx>
+		<pie>World</pie>
 	</matches>
 	<matches>
 		<simfy>African</simfy>
@@ -1223,7 +1236,12 @@
 	<matches>
 		<simfy>Latin</simfy>
 		<opensdx>Latin</opensdx>
+		<pie>Contemporary Latin</pie>
 	</matches>
+	<matches>
+		<opensdx>Latin</opensdx>
+		<pie>Latin</pie>
+	</matches>	
 	<matches>
 		<simfy>Bacheta</simfy>
 		<opensdx>Bachata</opensdx>
@@ -1239,6 +1257,7 @@
 	<matches>
 		<simfy>Latin</simfy>
 		<opensdx>Bolero</opensdx>
+		<pie>Baladas y Boleros</pie>
 	</matches>
 	<matches>
 		<simfy>Bossa Nova</simfy>
@@ -1295,6 +1314,7 @@
 	<matches>
 		<simfy>Salsa</simfy>
 		<opensdx>Salsa</opensdx>
+		<pie>Salsa y Tropical</pie>
 	</matches>
 	<matches>
 		<simfy>Samba</simfy>
@@ -1367,6 +1387,7 @@
 	<matches>
 		<simfy>Soundtrack</simfy>
 		<opensdx>Anime / Video Game Soundtracks</opensdx>
+		<pie>Anime</pie>
 	</matches>
 	<matches>
 		<simfy>Miscellaneous</simfy>
@@ -1379,6 +1400,7 @@
 	<matches>
 		<simfy>Vocal</simfy>
 		<opensdx>Vocal</opensdx>
+		<pie>Vocal</pie>
 	</matches>
 	<matches>
 		<simfy>Acoustic</simfy>
@@ -1399,6 +1421,7 @@
 	<matches>
 		<simfy>Karaoke</simfy>
 		<opensdx>Karaoke</opensdx>
+		<pie>Karaoke</pie>
 	</matches>
 	<matches>
 		<simfy>Soundtracks (Scores / Soundtracks / Musicals)</simfy>
@@ -1543,6 +1566,7 @@
 	<matches>
 		<simfy>Comedy / Humor</simfy>
 		<opensdx>Comedy &amp; Humour</opensdx>
+		<pie>Comedy</pie>
 	</matches>
 	<matches>
 		<simfy>Cabaret</simfy>
@@ -1627,6 +1651,7 @@
 	<matches>
 		<simfy>Fitness</simfy>
 		<opensdx>Fitness</opensdx>
+		<pie>Fitness & Workout</pie>
 	</matches>
 	<matches>
 		<simfy>Word</simfy>
@@ -3328,6 +3353,7 @@
 	<matches>
 		<simfy>Bigband Swing</simfy>
 		<opensdx>Big Band</opensdx>
+		<pie>Big Band</pie>
 	</matches>
 	<matches>
 		<simfy>Bios &amp; Memoirs</simfy>
@@ -3348,6 +3374,7 @@
 	<matches>
 		<simfy>Blues/Jazz</simfy>
 		<opensdx>Blues</opensdx>
+		<pie>Blues</pie>
 	</matches>
 	<matches>
 		<simfy>BombastRock / Power Rock</simfy>
@@ -3360,6 +3387,7 @@
 	<matches>
 		<simfy>Brazilian</simfy>
 		<opensdx>Brazil (BR)</opensdx>
+		<pie>Brazilian</pie>
 	</matches>
 	<matches>
 		<simfy>Breakbeat / Drum N Bass</simfy>
@@ -3417,6 +3445,7 @@
 		<simfy>Children's Music</simfy>
 		<opensdx>Children</opensdx>
 		<fudge>Children's Music</fudge>
+		<pie>Children’s Music</pie>
 	</matches>
 	<matches>
 		<simfy>Chillout</simfy>
@@ -3550,6 +3579,7 @@
 		<simfy>Classics</simfy>
 		<opensdx>Classic</opensdx>
 		<fudge>Classical</fudge>
+		<pie>Classical</pie>
 	</matches>
 	<matches>
 		<simfy>Classics Blues</simfy>
@@ -3644,6 +3674,7 @@
 		<simfy>Country (Country and Western)</simfy>
 		<opensdx>Country</opensdx>
 		<fudge>Country</fudge>
+		<pie>Country</pie>
 	</matches>
 	<matches>
 		<simfy>Country (Traditional)</simfy>
@@ -3673,6 +3704,7 @@
 		<simfy>Dance &amp; Electronic (Dance/Techno/Disco)</simfy>
 		<opensdx>Dance</opensdx>
 		<fudge>Dance</fudge>
+		<pie>Dance</pie>
 	</matches>
 	<matches>
 		<simfy>Dance Floor, Hip Hop</simfy>
@@ -3809,6 +3841,7 @@
 	<matches>
 		<simfy>Easy Listening (traditional / entertainers /</simfy>
 		<opensdx>Easy Listening</opensdx>
+		<pie>Easy Listening</pie>
 	</matches>
 	<matches>
 		<simfy>EBM/Industrial</simfy>
@@ -3838,6 +3871,7 @@
 		<simfy>Electronic / Experimental</simfy>
 		<opensdx>Electronic</opensdx>
 		<fudge>Electronic</fudge>
+		<pie>Electronic</pie>
 	</matches>
 	<matches>
 		<simfy>Electronic Lounge</simfy>
@@ -4039,6 +4073,7 @@
 	<matches>
 		<simfy>German Pop</simfy>
 		<opensdx>Deutschpop</opensdx>
+		<pie>German Pop</pie>		
 	</matches>
 	<matches>
 		<simfy>German Pop with traditional elements</simfy>
@@ -4143,6 +4178,7 @@
 	<matches>
 		<simfy>Heavy Metal, New Rock, Alterna</simfy>
 		<opensdx>Heavy Metal</opensdx>
+		<pie>Heavy Metal</pie>
 	</matches>
 	<matches>
 		<simfy>Hip Hop Deutsch</simfy>
@@ -4164,6 +4200,7 @@
 		<simfy>Hip Hop/Rap</simfy>
 		<opensdx>Hip Hop</opensdx>
 		<fudge>Hip Hop/Rap</fudge>
+		<pie>Hip Hop/Rap</pie>
 	</matches>
 	<matches>
 		<simfy>Hip-Hop</simfy>
@@ -4189,6 +4226,7 @@
 		<simfy>Holiday Music</simfy>
 		<opensdx>Holiday</opensdx>
 		<fudge>Holiday</fudge>
+		<pie>Holiday</pie>
 	</matches>
 	<matches>
 		<simfy>Honkytonk (Hillbilly / Honkytonk / Bluegrass)</simfy>
@@ -4238,6 +4276,7 @@
 		<simfy>Inspirational</simfy>
 		<opensdx>Health, Mind &amp; Body</opensdx>
 		<fudge>Inspirational</fudge>
+		<pie>Inspirational</pie>
 	</matches>
 	<matches>
 		<simfy>Instructional</simfy>
@@ -4246,6 +4285,7 @@
 	<matches>
 		<simfy>instrumental orchestra and group music</simfy>
 		<opensdx>Instrumental</opensdx>
+		<pie>Instrumental</pie>
 	</matches>
 	<matches>
 		<simfy>Instrumental Rock</simfy>
@@ -4310,6 +4350,7 @@
 	<matches>
 		<simfy>Jazz/Latin</simfy>
 		<opensdx>Jazz</opensdx>
+		<pie>Latin Jazz</pie>
 	</matches>
 	<matches>
 		<simfy>Jazz/Rock</simfy>
@@ -4452,10 +4493,12 @@
 	<matches>
 		<simfy>Latin / Regional Mexican</simfy>
 		<opensdx>Mariachi</opensdx>
+		<pie>Regional Mexicano</pie>
 	</matches>
 	<matches>
 		<simfy>Latin / Rock</simfy>
 		<opensdx>Latin</opensdx>
+		<pie>Alternativo & Rock Latino</pie>
 	</matches>
 	<matches>
 		<simfy>Latin / Urban</simfy>
@@ -4464,6 +4507,7 @@
 	<matches>
 		<simfy>Latin America</simfy>
 		<opensdx>Latin</opensdx>
+		<pie>Raíces</pie>
 	</matches>
 	<matches>
 		<simfy>Latin Jazz</simfy>
@@ -4484,6 +4528,7 @@
 	<matches>
 		<simfy>Latin Urban / Reggaeton</simfy>
 		<opensdx>Latin</opensdx>
+		<pie>Reggaeton y Hip-Hop</pie>
 	</matches>
 	<matches>
 		<simfy>Latin/Folk</simfy>
@@ -4656,6 +4701,7 @@
 	<matches>
 		<simfy>Modern Rock</simfy>
 		<opensdx>Rock</opensdx>
+		<pie>Rock</pie>
 	</matches>
 	<matches>
 		<simfy>Moderne Musik (weitere Stile)</simfy>
@@ -4761,6 +4807,7 @@
 		<simfy>New Age</simfy>
 		<opensdx>New Age</opensdx>
 		<fudge>New Age</fudge>
+		<pie>New Age</pie>
 	</matches>
 	<matches>
 		<simfy>New Age (New Age / Entspannung / Meditation)</simfy>
@@ -4826,6 +4873,7 @@
 		<simfy>Oper</simfy>
 		<opensdx>Opera Classical</opensdx>
 		<fudge>Opera</fudge>
+		<pie>Opera</pie>
 	</matches>
 	<matches>
 		<simfy>Opera</simfy>
@@ -5040,6 +5088,7 @@
 		<simfy>Ragga</simfy>
 		<opensdx>Reggae</opensdx>
 		<fudge>Reggae</fudge>
+		<pie>Reggae</pie>
 	</matches>
 	<matches>
 		<simfy>Raggamuffin</simfy>
@@ -5286,6 +5335,7 @@
 		<simfy>Soul/R&amp;B</simfy>
 		<opensdx>Soul</opensdx>
 		<fudge>R&amp;B/Soul</fudge>
+		<pie>R&amp;B/Soul</pie>
 	</matches>
 	<matches>
 		<simfy>Soulful</simfy>
@@ -5307,6 +5357,7 @@
 	<matches>
 		<simfy>Soundtracks</simfy>
 		<opensdx>Soundtrack</opensdx>
+		<pie>Soundtrack</pie>
 	</matches>
 	<matches>
 		<simfy>Soundtracks (Scores / Soundtracks / Musicals)</simfy>
@@ -5380,6 +5431,7 @@
 		<simfy>Spoken Word</simfy>
 		<opensdx>Word</opensdx>
 		<fudge>Spoken Word</fudge>
+		<pie>Spoken Word</pie>
 	</matches>
 	<matches>
 		<simfy>Spoken Word - Comedy</simfy>
@@ -5556,6 +5608,7 @@
 	<matches>
 		<simfy>Urban Latino</simfy>
 		<opensdx>Latin</opensdx>
+		<pie>Pop Latino</pie>
 	</matches>
 	<matches>
 		<simfy>Various Soloists</simfy>
@@ -5684,9 +5737,13 @@
 		<opensdx>World</opensdx>
 	</matches>
 	<matches>
+		<opensdx>Enka</opensdx>
+		<pie>Enka</pie>
+	</matches>	
+	<matches>
 		<simfy>Worldmusic</simfy>
 		<opensdx>World</opensdx>
-	</matches>
+	</matches>	
 	<matches>
 		<simfy>Wort-Kinderserien</simfy>
 		<opensdx>Children's Audiobooks</opensdx>

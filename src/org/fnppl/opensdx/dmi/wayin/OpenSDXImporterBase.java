@@ -95,6 +95,10 @@ public class OpenSDXImporterBase {
 				case ImportType.FUDGE:
 					FudgeToOpenSDXImporter impFudge = new FudgeToOpenSDXImporter(impType, impFile, savFile);
 					ir = impFudge.formatToOpenSDXFile();		
+					break;	
+				case ImportType.PIE:
+					PieToOpenSDXImporter impPie = new PieToOpenSDXImporter(impType, impFile, savFile);
+					ir = impPie.formatToOpenSDXFile();		
 					break;					
 				default:
 					break;

@@ -49,6 +49,7 @@ public class ImportType {
 	public static final int FINETUNES = 1;
 	public static final int SIMFY = 2;
 	public static final int FUDGE = 3;
+	public static final int PIE = 4;
 	
 	private int type;
 	
@@ -66,6 +67,9 @@ public class ImportType {
 		}	
 		else if(type.equals("fudge")) {
 			it.setType(FUDGE);
+		}
+		else if(type.equals("pie")) {
+			it.setType(PIE);
 		}		
 		return it;
 	}
