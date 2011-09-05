@@ -728,13 +728,29 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 					log.logCommand(sender.getID(), sender.getRemoteIP(), "PUT", param, resp);
 					sender.sendEncryptedText(resp);
 				} else {
-					state.setWriteFile(f);
-					state.setNextFilePartStart(-1L); //this is only set by PUTPART
-					state.setNextFilePartLength(-1); //this is only set by PUTPART
-					String resp = "ACK PUT :: WAITING FOR DATA";
-					//System.out.println(resp);
-					log.logCommand(sender.getID(), sender.getRemoteIP(), "PUT", param, resp);
-					sender.sendEncryptedText(resp);
+					//length
+					try {
+						long length = Long.parseLong(params[1]);
+						if (length==0L) {
+							String resp = "ACK PUT :: CREATED EMPTY FILE";
+							try {
+								f.createNewFile();
+							} catch (Exception e) {}
+							log.logCommand(sender.getID(), sender.getRemoteIP(), "PUT", param, resp);
+							sender.sendEncryptedText(resp);
+						} else {
+							state.setWriteFile(f);
+							state.setNextFilePartStart(-1L); //this is only set by PUTPART
+							state.setNextFilePartLength(-1); //this is only set by PUTPART
+							String resp = "ACK PUT :: WAITING FOR DATA";
+							log.logCommand(sender.getID(), sender.getRemoteIP(), "PUT", param, resp);
+							sender.sendEncryptedText(resp);
+						}
+					} catch (Exception ex) {
+						String resp = "ERROR IN PUT :: WRONG REQUEST FORMAT";
+						log.logCommand(sender.getID(), sender.getRemoteIP(), "PUT", param, resp);
+						sender.sendEncryptedText(resp);
+					}
 				}
 			}
 		}

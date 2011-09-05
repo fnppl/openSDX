@@ -68,12 +68,12 @@ public abstract class  RemoteFileSystem {
 	public abstract void connect() throws Exception;
 	public abstract void disconnect();
 	public abstract boolean isConnected();
-	public abstract void mkdir(RemoteFile dir);
-	public abstract void remove(RemoteFile file);
-	public abstract void rename(RemoteFile from, RemoteFile to);
-	public abstract Vector<RemoteFile> list(RemoteFile dir);
-	public abstract void upload(File local, RemoteFile remote);
-	public abstract void download(File local, RemoteFile remote);
+	public abstract void mkdir(RemoteFile dir) throws FileTransferException;
+	public abstract void remove(RemoteFile file) throws FileTransferException;
+	public abstract void rename(RemoteFile from, RemoteFile to) throws FileTransferException;
+	public abstract Vector<RemoteFile> list(RemoteFile dir) throws FileTransferException;
+	public abstract void upload(File local, RemoteFile remote, FileTransferProgress progress) throws FileTransferException;
+	public abstract void download(File local, RemoteFile remote, FileTransferProgress progress) throws FileTransferException;
 	public abstract void noop();
 	
 	public static RemoteFileSystem initLocalFileSystem() {
@@ -89,8 +89,10 @@ public abstract class  RemoteFileSystem {
 				File f = new File(dir.getPath(),dir.getName());
 				File[] l =  f.listFiles();
 				for (File a : l) {
-					RemoteFile r = new RemoteFile(a.getParent(), a.getName(), a.length(), a.lastModified(), a.isDirectory());
-					list.add(r);
+					if (!a.isHidden()) {
+						RemoteFile r = new RemoteFile(a.getParent(), a.getName(), a.length(), a.lastModified(), a.isDirectory());
+						list.add(r);
+					}
 				}
 				return list;
 			}
@@ -109,10 +111,10 @@ public abstract class  RemoteFileSystem {
 				File fTo = new File(to.getPath(),to.getName());
 				fFrom.renameTo(fTo);
 			}
-			public void upload(File local, RemoteFile remote) {
+			public void upload(File local, RemoteFile remote, FileTransferProgress progress) {
 				//NOTHING TO DO
 			}
-			public void download(File local, RemoteFile remote) {
+			public void download(File local, RemoteFile remote, FileTransferProgress progress) {
 				//NOTHING TO DO
 			}
 		};
@@ -194,18 +196,21 @@ public abstract class  RemoteFileSystem {
 				}
 				
 			}
-			public void upload(File local, RemoteFile remote) {
+			public void upload(File local, RemoteFile remote, FileTransferProgress progress) {
 				try {
 					System.out.println("upload file: "+local.getAbsolutePath()+" -> "+remote.getFilnameWithPath());
-					ftp.uploadFile(local, remote.getFilnameWithPath());
+					ftp.uploadFile(local, remote.getFilnameWithPath(),progress);
+					if (progress!=null) {
+						progress.setComplete();
+					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
 			}
-			public void download(File local, RemoteFile remote) {
+			public void download(File local, RemoteFile remote, FileTransferProgress progress) {
 				try {
 					System.out.println("download file: "+remote.getFilnameWithPath()+" -> "+local.getAbsolutePath());
-					ftp.downloadFile(remote.getFilnameWithPath(), local);
+					ftp.downloadFile(remote.getFilnameWithPath(), local,progress);
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
@@ -301,21 +306,14 @@ public abstract class  RemoteFileSystem {
 				}
 				
 			}
-			public void upload(File local, RemoteFile remote) {
-				try {
-					System.out.println("upload file: "+local.getAbsolutePath()+" -> "+remote.getFilnameWithPath());
-					client.uploadFile(local, remote.getFilnameWithPath());
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
+			public void upload(File local, RemoteFile remote, FileTransferProgress progress) throws FileTransferException {
+				System.out.println("upload file: "+local.getAbsolutePath()+" -> "+remote.getFilnameWithPath());
+				client.uploadFile(local, remote.getFilnameWithPath(),progress);
 			}
-			public void download(File local, RemoteFile remote) {
-				try {
-					System.out.println("download file: "+remote.getFilnameWithPath()+" -> "+local.getAbsolutePath());
-					client.downloadFile(remote.getFilnameWithPath(), local);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
+			
+			public void download(File local, RemoteFile remote, FileTransferProgress progress) throws FileTransferException {
+				System.out.println("download file: "+remote.getFilnameWithPath()+" -> "+local.getAbsolutePath());
+				client.downloadFile(remote.getFilnameWithPath(), local,progress);
 			}
 			
 		};

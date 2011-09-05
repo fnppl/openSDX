@@ -429,38 +429,66 @@ public class FileTransferGui extends JFrame implements MyObserver {
 				}
 				else if (a.type.equals(a.TYPE_OSDXFILESERVER)) {
 					
-					//get osdx key out of keystore
-					OSDXKey key = null;
-					File fKeyStore = new File(a.keystore_filename);
-					if (fKeyStore==null || !fKeyStore.exists()) {
-						Dialogs.showMessage("Could not open KeyStore:\n"+a.keystore_filename);
+					//check pre-conditions:
+					if (a.username==null || a.username.length()==0) {
+						Dialogs.showMessage("Sorry, missing username in account settings");
 						return;
 					}
-					try {
-						MessageHandler mh = new DefaultMessageHandler();
-						KeyApprovingStore keystore = KeyApprovingStore.fromFile(fKeyStore, mh);
-						key = keystore.getKey(a.keyid);
-						if (!key.hasPrivateKey()) {
-							Dialogs.showMessage("Sorry, no private key information for key id:\n"+a.keyid+" found in keystore");
-							return;
-						}
-						key.unlockPrivateKey(mh);
-						if (!key.isPrivateKeyUnlocked()) {
-							Dialogs.showMessage("Connection failed: private key is locked!");
-							return;
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace();
-						Dialogs.showMessage("Error while opening KeyStore");
+					if (a.host==null || a.host.length()==0) {
+						Dialogs.showMessage("Sorry, missing host in account settings");
 						return;
 					}
-					if (key==null) {
-						Dialogs.showMessage("Given keyid not found.");
+					if (a.keystore_filename==null || a.keystore_filename.length()==0) {
+						Dialogs.showMessage("Sorry, missing keystore filename in account settings");
+						return;
+					}
+					if (a.keyid==null || a.keyid.length()==0) {
+						Dialogs.showMessage("Sorry, missing key id in account settings");
 						return;
 					}
 					
-					
-					fsRemote = RemoteFileSystem.initOSDXFileServerConnection(a.host, a.port, a.prepath, a.username, key);
+					//get osdx key out of keystoreOSDXKey key = null;
+					MessageHandler mh = new DefaultMessageHandler();
+					if (a.key==null || !a.key.getKeyID().equals(a.keyid)) {
+						File fKeyStore = new File(a.keystore_filename);
+						if (fKeyStore==null || !fKeyStore.exists()) {
+							Dialogs.showMessage("Could not open KeyStore:\n"+a.keystore_filename);
+							return;
+						}
+						try {
+							KeyApprovingStore keystore = KeyApprovingStore.fromFile(fKeyStore, mh);
+							a.key = keystore.getKey(a.keyid);
+							if (!a.key.hasPrivateKey()) {
+								Dialogs.showMessage("Sorry, no private key information for key id:\n"+a.keyid+" found in keystore");
+								return;
+							}
+							if (!a.key.isPrivateKeyUnlocked()) {
+								a.key.unlockPrivateKey(mh);
+								if (!a.key.isPrivateKeyUnlocked()) {
+									Dialogs.showMessage("Connection failed: private key is locked!");
+									return;
+								}
+							}
+						} catch (Exception ex) {
+							ex.printStackTrace();
+							Dialogs.showMessage("Error while opening KeyStore");
+							return;
+						}
+						if (a.key==null) {
+							Dialogs.showMessage("Given keyid not found.");
+							return;
+						}
+					} else {
+						if (!a.key.isPrivateKeyUnlocked()) {
+							a.key.unlockPrivateKey(mh);
+							if (!a.key.isPrivateKeyUnlocked()) {
+								Dialogs.showMessage("Connection failed: private key is locked!");
+								return;
+							}
+						}
+					}
+						
+					fsRemote = RemoteFileSystem.initOSDXFileServerConnection(a.host, a.port, a.prepath, a.username, a.key);
 					
 					if (!fsRemote.isConnected()) {
 						try {
@@ -470,7 +498,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 						}
 					}
 					if (!fsRemote.isConnected()) {
-						addStatus("ERROR, could not connect to "+a.username+"@"+a.host+" established.");
+						addStatus("ERROR, could not connect to "+a.username+"@"+a.host+".");
 						Dialogs.showMessage("Sorry, could not connect to given account.");
 						return;
 					} else {
@@ -523,10 +551,22 @@ public class FileTransferGui extends JFrame implements MyObserver {
 	    	if (ans == JOptionPane.OK_OPTION) {
 	    		accounts.set(sel, pAcc.getAccount());
 	    		updateAccounts();
-	    		selectAccount.setSelectedIndex(accounts.size()+1);
+	    		selectAccount.setSelectedIndex(sel+2);
 		    }
 		} else {
 			PanelAccount pAcc = new PanelAccount();
+			FileTransferAccount a_new = new FileTransferAccount();
+			a_new.type = FileTransferAccount.TYPE_OSDXFILESERVER;
+			a_new.host = "simfy.finetunes.net";
+			a_new.port = 4221;
+			a_new.prepath = "/";
+			a_new.username = "";
+			a_new.keystore_filename = System.getProperty("user.home")+File.separator+"openSDX"+File.separator+"defaultKeyStore.xml";
+			if (!new File(a_new.keystore_filename).exists()) {
+				a_new.keystore_filename = "";
+			}
+			a_new.keyid = "";
+			pAcc.update(a_new);
 			int ans = JOptionPane.showConfirmDialog(null,pAcc,"New Account",JOptionPane.OK_CANCEL_OPTION);
 	    	if (ans == JOptionPane.OK_OPTION) {
 	    		accounts.add(pAcc.getAccount());
@@ -595,90 +635,126 @@ public class FileTransferGui extends JFrame implements MyObserver {
 	}
 	
 	private void button_upload_clicked() {
-		System.out.println("upload");
-		Vector<RemoteFile> localFiles = panelLocal.getSelectedFiles();
-		if (localFiles==null || localFiles.size()==0) {
-			Dialogs.showMessage("Please select files to upload on local side.");
-			return;
-		}
-		RemoteFile tragetDirectory = ttpanelRemote.getSelectedDir();
-		if (tragetDirectory==null) {
-			Dialogs.showMessage("Please select a target directory on remote side.");
-			return;
-		}
-		for (RemoteFile localFile : localFiles) {
-			File from = new File(localFile.getPath(), localFile.getName());
-			RemoteFile to = new RemoteFile(tragetDirectory.getFilnameWithPath(), from.getName(), from.length(), from.lastModified(), false);
-			addStatus("uploading "+from.getAbsolutePath()+" -> "+to.getFilnameWithPath());
-			fsRemote.upload(from, to);
-		}
+		Thread t = new Thread() { //dont block ui
+			public void run() {
+				System.out.println("upload");
+				Vector<RemoteFile> localFiles = panelLocal.getSelectedFiles();
+				if (localFiles==null || localFiles.size()==0) {
+					Dialogs.showMessage("Please select files to upload on local side.");
+					return;
+				}
+				RemoteFile tragetDirectory = ttpanelRemote.getSelectedDir();
+				if (tragetDirectory==null) {
+					Dialogs.showMessage("Please select a target directory on remote side.");
+					return;
+				}
+				for (RemoteFile localFile : localFiles) {
+					final File from = new File(localFile.getPath(), localFile.getName());
+					RemoteFile to = new RemoteFile(tragetDirectory.getFilnameWithPath(), from.getName(), from.length(), from.lastModified(), false);
+					final String msg = "uploading "+from.getAbsolutePath()+" -> "+to.getFilnameWithPath();
+					final int pos = addStatus("uploading "+from.getAbsolutePath()+" -> "+to.getFilnameWithPath());
+					FileTransferProgress progress = new FileTransferProgress(from.length()) {
+						public void onUpdate() {
+							setStatus(pos, msg+"   "+getProgressString());
+						}
+						public void onError() {
+							setStatus(pos, msg+"   ERROR");
+							String msg = getErrorMsg();
+							if (msg == null) {
+								Dialogs.showMessage("Error uploading file:\n"+from.getAbsolutePath());
+							} else {
+								Dialogs.showMessage("Error uploading file:\n"+from.getAbsolutePath()+"\n"+msg);
+							}
+						}
+					};
+					try {
+						fsRemote.upload(from, to, progress);
+					} catch (FileTransferException ex) {
+						progress.setError(ex.getMessage());
+					}
+				}
+				//update view
+				ttpanelRemote.refreshView();
+			}
+		};
+		t.start();
 	}
 	
 	private void button_download_clicked() {
 		System.out.println("download");
-		RemoteFile local = panelLocal.getSelectedDir();
+		final RemoteFile local = panelLocal.getSelectedDir();
 		if (local==null) {
 			Dialogs.showMessage("Please select a local directory.");
 			return;
 		}
-		Vector<RemoteFile> remote = ttpanelRemote.getSelectedFiles();
+		final Vector<RemoteFile> remote = ttpanelRemote.getSelectedFiles();
 		if (remote==null || remote.size()==0) {
 			Dialogs.showMessage("Please select files to download on remote side.");
 			return;
 		}
-		for (final RemoteFile remoteFile : remote) {
-			final File target = new File(local.getFilnameWithPath(),remoteFile.getName());
-			final String pre = "downloading "+remoteFile.getFilnameWithPath()+" -> "+target.getAbsolutePath(); 
-			addStatus(pre);
-			
-			final long fLength = remoteFile.getLength();
-			Thread t = new Thread() {
-				public void run() {
-					long len = target.length();
-					long timeout = System.currentTimeMillis()+10000;
-					while (len < fLength && timeout > System.currentTimeMillis()) {
-						try {
-							sleep(1500);
-						} catch (Exception ex) {
-							ex.printStackTrace();
+		//don't block ui
+		Thread tDownload = new Thread() {
+			public void run() {
+				for (final RemoteFile remoteFile : remote) {
+					final File target = new File(local.getFilnameWithPath(),remoteFile.getName());
+					final String pre = "downloading "+remoteFile.getFilnameWithPath()+" -> "+target.getAbsolutePath(); 
+					final int pos = addStatus(pre);
+					FileTransferProgress progress = new FileTransferProgress(remoteFile.getLength()) {
+						public void onUpdate() {
+							setStatus(pos, pre+"   "+getProgressString());
 						}
-						long nLen = target.length();
-						if (nLen>len) {
-							//refresh timeout
-							timeout = System.currentTimeMillis()+10000;
-							len = nLen;
+						public void onError() {
+							setStatus(pos, pre+"   ERROR");
+							String msg = getErrorMsg();
+							if (msg==null) {
+								Dialogs.showMessage("Error downloading file:\n"+remoteFile.getFilnameWithPath());
+							} else {
+								Dialogs.showMessage("Error downloading file:\n"+remoteFile.getFilnameWithPath()+"\n"+msg);
+							}
 						}
-						int proz = (int)(len*100L/fLength);
-						String prog = "Progress: "+proz+"%   ("+len+" / "+fLength+" bytes)";
-						System.out.println(prog);
-						String lastLog = getLastLogEntry();
-						if (lastLog.startsWith(pre)) {
-							setLastStatus(pre+"    "+prog);
-						}
+					};
+					try {
+						fsRemote.download(target, remoteFile, progress);
+					} catch (FileTransferException ex) {
+						progress.setError(ex.getMessage());
 					}
 				}
-			};
-			t.start();
-			
-			//don't block ui
-			Thread tDownload = new Thread() {
-				public void run() {
-					fsRemote.download(target, remoteFile);
-				}
-			};
-			tDownload.start();
-			
+			}
+		};
+		tDownload.start();
+		//update view
+		panelLocal.refreshView();
+	}
+	
+	Object sync_object = new Object();
+	public int addStatus(String message) {
+		synchronized (sync_object) {
+			log_model.addElement(message);
+			int pos = log_model.size()-1;
+			log.setSelectedIndex(pos);
+			log.repaint();	
+			return pos;
 		}
 	}
 	
-	public void addStatus(String message) {
-		log_model.addElement(message);
-		log.repaint();
+	public void setStatus(int pos, String message) {
+		synchronized (sync_object) {
+			log_model.set(pos, message);
+			log.setSelectedIndex(pos);
+			log.ensureIndexIsVisible(pos);
+			log.ensureIndexIsVisible(pos);
+			log.repaint();
+		}
 	}
 	
 	public void setLastStatus(String message) {
-		log_model.set(log_model.getSize()-1, message);
-		log.repaint();
+		synchronized (sync_object) {
+			int pos = log_model.getSize()-1;
+			log_model.set(pos, message);
+			log.setSelectedIndex(pos);
+			log.ensureIndexIsVisible(pos);
+			log.repaint();
+		}
 	}
 	
 	public String getLastLogEntry() {

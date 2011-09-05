@@ -47,8 +47,14 @@ package org.fnppl.opensdx.file_transfer;
 public class FileTransferProgress {
 
 	private long progress = 0L;
-	public FileTransferProgress() {
+	private long progressEnd = 100L;
+	private String errorMsg = null;
+	private boolean error = false;
+	
+	
+	public FileTransferProgress(long end) {
 		progress = 0L;
+		progressEnd = end;
 	}
 	
 	public void setProgress(long p) {
@@ -61,12 +67,45 @@ public class FileTransferProgress {
 		onUpdate();
 	}
 	
+	public void setComplete() {
+		progress = progressEnd;
+		onUpdate();
+	}
+	
 	public void onUpdate() {
 		//hook in here
+	}
+	
+	public void onError() {
+		//hook in here
+	}
+	
+	public void setError(String msg) {
+		error = true;
+		errorMsg = msg;
+		onError();
+	}
+	
+	public void setProgressEnd(long end) {
+		progressEnd = end;
+	}
+	
+	public long getProgressEnd(long end) {
+		return progressEnd;
 	}
 	
 	public long getProgress() {
 		return progress;
 	}
+	public String getErrorMsg() {
+		return errorMsg;
+	}
 	
+	public String getProgressString() {
+		return String.format("%3d%%", ((progress*100L)/progressEnd));
+	}
+	
+	public boolean hasFinished() {
+		return (progress==progressEnd || error);
+	}
 }

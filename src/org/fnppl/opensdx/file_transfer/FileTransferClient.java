@@ -55,9 +55,9 @@ public interface FileTransferClient {
 	public void cd(String directory) throws FileTransferException;
 	public void cd_up() throws FileTransferException;
 	//public void delete(String remoteFilename) throws FileTransferException;
-	public void uploadFile(File localFile, String remoteFilename) throws FileTransferException;
-	public void uploadFile(String remoteFilename, byte[] data) throws FileTransferException;
-	public long downloadFile(String filename, File localFile) throws FileTransferException;
+	public void uploadFile(File localFile, String remoteFilename, FileTransferProgress progress) throws FileTransferException;
+	public void uploadFile(String remoteFilename, byte[] data, FileTransferProgress progress) throws FileTransferException;
+	public long downloadFile(String filename, File localFile, FileTransferProgress progress) throws FileTransferException;
 	public void closeConnection() throws FileTransferException;
 	
 }
