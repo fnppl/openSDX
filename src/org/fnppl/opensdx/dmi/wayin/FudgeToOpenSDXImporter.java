@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.fnppl.opensdx.common.*;
+import org.fnppl.opensdx.dmi.GenreConverter;
 import org.fnppl.opensdx.xml.*;
 import org.fnppl.opensdx.security.*;
 
@@ -181,12 +182,16 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	// license specifics -> empty!
         	LicenseSpecifics license_specifics = LicenseSpecifics.make();
         	
+        	// init GenreConverter
+        	GenreConverter gc = GenreConverter.getInstance(GenreConverter.FUDGE_TO_OPENSDX);        	
+        	
         	// Translate territory_exceptions to rules
         	int num = 1;
         	Vector<Element> exceptions = root.getChild("territory_exceptions").getChildren("territory_exception");
         	for (Iterator<Element> itExceptions = exceptions.iterator(); itExceptions.hasNext();) {
         		Element exception = itExceptions.next();        	
-        	
+        		
+        		// rule for explicit physical release dates in territories
         		if(exception.getChild("territory")!=null && exception.getChild("consumer_release_date")!=null) {
 	        		LicenseRule rule = LicenseRule.make(num, "territory", LicenseRule.OPERATOR_EQUALS, exception.getChildTextNN("territory"));
 	        		String exception_physicalReleaseDate = exception.getChildTextNN("consumer_release_date");
@@ -204,8 +209,8 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	
         	// add Tags
         	ItemTags tags = ItemTags.make();   		
-        	tags.addGenre(root.getChildTextNN("main_genre"));
-        	if(root.getChild("main_subgenre")!=null) tags.addGenre(root.getChildTextNN("main_subgenre"));
+        	tags.addGenre(gc.convert(root.getChildTextNN("main_genre")));
+        	if(root.getChild("main_subgenre")!=null) tags.addGenre(gc.convert(root.getChildTextNN("main_subgenre")));
         	
         	// explicit_lyrics
         	if(root.getChildTextNN("parental_advisory").length()>0) {
@@ -340,8 +345,8 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
              	
             	// add Tags
             	ItemTags track_tags = ItemTags.make();   		
-            	track_tags.addGenre(track.getChildTextNN("main_genre")); 
-            	if(root.getChild("main_subgenre")!=null) tags.addGenre(root.getChildTextNN("main_subgenre"));
+            	track_tags.addGenre(gc.convert(track.getChildTextNN("main_genre"))); 
+            	if(track.getChild("main_subgenre")!=null) track_tags.addGenre(gc.convert(track.getChildTextNN("main_subgenre")));
             	
             	// explicit_lyrics
             	if(track.getChildTextNN("parental_advisory").length()>0) {
@@ -479,8 +484,8 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
              	
             	// add Tags
             	ItemTags track_tags = ItemTags.make();   		
-            	track_tags.addGenre(track.getChildTextNN("main_genre")); 
-            	if(root.getChild("main_subgenre")!=null) tags.addGenre(root.getChildTextNN("main_subgenre"));
+            	track_tags.addGenre(gc.convert(track.getChildTextNN("main_genre"))); 
+            	if(track.getChild("main_subgenre")!=null) track_tags.addGenre(gc.convert(track.getChildTextNN("main_subgenre")));
             	
             	// explicit_lyrics
             	if(track.getChildTextNN("parental_advisory").length()>0) {
@@ -627,8 +632,8 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
              	
             	// add Tags
             	ItemTags video_tags = ItemTags.make();   		
-            	video_tags.addGenre(video.getChildTextNN("main_genre")); 
-            	if(root.getChild("main_subgenre")!=null) tags.addGenre(root.getChildTextNN("main_subgenre"));
+            	video_tags.addGenre(gc.convert(video.getChildTextNN("main_genre"))); 
+            	if(video.getChild("main_subgenre")!=null) video_tags.addGenre(gc.convert(video.getChildTextNN("main_subgenre")));
             	
             	// explicit_lyrics
             	if(video.getChildTextNN("parental_advisory").length()>0) {

@@ -53,7 +53,8 @@ import org.fnppl.opensdx.xml.*;
 
 public class GenreConverter {
 	public static final int SIMFY_TO_OPENSDX = 1;
-	private final static URL SIMFY_TO_OPENSDX_XML = GenreConverter.class.getResource("resources/genreConverterList.xml");
+	public static final int FUDGE_TO_OPENSDX = 2;
+	private final static URL CONVERTER_LIST_XML = GenreConverter.class.getResource("resources/genreConverterList.xml");
 	private int type;
 	private HashMap<String, String> matchMap = new HashMap<String, String>();
 	
@@ -63,11 +64,8 @@ public class GenreConverter {
 	
 	public static GenreConverter getInstance(int type) {
 		GenreConverter gc = new GenreConverter();
-		gc.setType(type);
-		
-		if(type==SIMFY_TO_OPENSDX) {
-			gc.initMatchMap(SIMFY_TO_OPENSDX_XML);	
-		}		
+		gc.setType(type);		
+		gc.initMatchMap(CONVERTER_LIST_XML);		
 		
 		return gc;
 	}
@@ -91,14 +89,25 @@ public class GenreConverter {
         	for (Iterator<Element> itMatches = matches.iterator(); itMatches.hasNext();) {
         		Element match = itMatches.next();
         		if(this.type==SIMFY_TO_OPENSDX) {
-	        		String key = match.getChildTextNN("simfy").toLowerCase();
-	        		String value = match.getChildTextNN("opensdx");
-	        		if(!matchMap.containsKey(key)) {
-	        			// first entry in xml delivers the value for a key - important if matching the other way
-	        			matchMap.put(key, value);
-	        		}
-	        		
-        		}        		
+        			if(match.getChild("simfy")!=null && match.getChild("opensdx")!=null) {
+		        		String key = match.getChildTextNN("simfy").toLowerCase();
+		        		String value = match.getChildTextNN("opensdx");
+		        		if(!matchMap.containsKey(key)) {
+		        			// first entry in xml delivers the value for a key - important if matching the other way
+		        			matchMap.put(key, value);
+		        		}
+        			}
+        		}
+        		else if(this.type==FUDGE_TO_OPENSDX) {
+        			if(match.getChild("fudge")!=null && match.getChild("opensdx")!=null) {
+		        		String key = match.getChildTextNN("fudge").toLowerCase();
+		        		String value = match.getChildTextNN("opensdx");
+		        		if(!matchMap.containsKey(key)) {
+		        			// first entry in xml delivers the value for a key - important if matching the other way
+		        			matchMap.put(key, value);
+		        		}
+        			}
+        		}         		
             }
             
 		} catch (Exception e) {
