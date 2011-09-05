@@ -82,8 +82,8 @@ public class LicenseRule extends BusinessObject {
 		b.if_what = if_what;
 		b.if_operator = if_operator;
 		b.if_value = if_value;
-		b.thens = null;
-		b.elses = null;
+		b.thens = new Vector<Element>();
+		b.elses = new Vector<Element>();
 		return b;
 	}
 	
@@ -203,7 +203,6 @@ public class LicenseRule extends BusinessObject {
 	public Element toElement() {
 		Element e = new Element("rule");
 		e.setAttribute("num", ""+num);
-		
 		//IF
 		Element eIf = new Element("if");
 		eIf.addContent("what", if_what);
@@ -216,8 +215,8 @@ public class LicenseRule extends BusinessObject {
 			Element eThen = new Element("then");
 			for (Element c : thens) {
 				eThen.addContent(c);
-			}
-			e.addContent(eThen);
+			}		
+			e.addContent(eThen);			
 		}
 		
 		//ELSE
@@ -228,8 +227,6 @@ public class LicenseRule extends BusinessObject {
 			}
 			e.addContent(eElse);
 		}
-		
-		
 		
 		return e;
 	}

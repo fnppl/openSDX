@@ -186,7 +186,8 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	Vector<Element> exceptions = root.getChild("territory_exceptions").getChildren("territory_exception");
         	for (Iterator<Element> itExceptions = exceptions.iterator(); itExceptions.hasNext();) {
         		Element exception = itExceptions.next();        	
-        	
+        		
+        		// rule for explicit physical release dates in territories
         		if(exception.getChild("territory")!=null && exception.getChild("consumer_release_date")!=null) {
 	        		LicenseRule rule = LicenseRule.make(num, "territory", LicenseRule.OPERATOR_EQUALS, exception.getChildTextNN("territory"));
 	        		String exception_physicalReleaseDate = exception.getChildTextNN("consumer_release_date");
@@ -479,7 +480,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
              	
             	// add Tags
             	ItemTags track_tags = ItemTags.make();   		
-            	track_tags.addGenre(track.getChildTextNN("main_genre")); 
+            	track_tags.addGenre("Classic"); //track.getChildTextNN("main_genre")); 
             	if(root.getChild("main_subgenre")!=null) tags.addGenre(root.getChildTextNN("main_subgenre"));
             	
             	// explicit_lyrics

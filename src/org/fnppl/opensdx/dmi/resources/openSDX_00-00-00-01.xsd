@@ -450,9 +450,10 @@
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element must be the second in a rule and includes information 
             "echo" for debugging output and can include an element "break" which means to not process any more 
-            rules.</xsd:documentation>
+            rules. It also could include information "proclaim".</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
+        	<xsd:element name="proclaim" type="proclaim" maxOccurs="unbounded" minOccurs="0"/>
             <xsd:element name="echo" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="break" maxOccurs="1" minOccurs="0"/>
         </xsd:sequence>
