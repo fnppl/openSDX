@@ -144,7 +144,6 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         	// IDs of bundle -> more (?)
         	IDs bundleids = IDs.make();
         	if(root.getChild("upc")!=null) bundleids.upc(root.getChildTextNN("upc"));
-        	if(root.getChild("isrc")!=null) bundleids.isrc(root.getChildTextNN("isrc"));
 
         	// displayname
         	String displayname = root.getChildTextNN("title");
@@ -243,7 +242,6 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
         		Element track = itTracks.next();
 
         		IDs trackids = IDs.make();
-            	if(track.getChild("upc")!=null) trackids.upc(track.getChildTextNN("upc"));
             	if(track.getChild("isrc")!=null) trackids.isrc(track.getChildTextNN("isrc"));
         		
 	        	// displayname
