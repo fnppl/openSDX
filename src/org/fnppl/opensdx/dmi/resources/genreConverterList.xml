@@ -1651,7 +1651,7 @@
 	<matches>
 		<simfy>Fitness</simfy>
 		<opensdx>Fitness</opensdx>
-		<pie>Fitness & Workout</pie>
+		<pie>Fitness &amp; Workout</pie>
 	</matches>
 	<matches>
 		<simfy>Word</simfy>
@@ -4498,7 +4498,7 @@
 	<matches>
 		<simfy>Latin / Rock</simfy>
 		<opensdx>Latin</opensdx>
-		<pie>Alternativo & Rock Latino</pie>
+		<pie>Alternativo &amp; Rock Latino</pie>
 	</matches>
 	<matches>
 		<simfy>Latin / Urban</simfy>
