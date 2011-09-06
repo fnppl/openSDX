@@ -1354,23 +1354,26 @@
       <subgenre>
         <name>Science &amp; Medicine</name>
       </subgenre>
-      <subgenre>
+	  <subgenre>
+        <name>Literature</name>
+      </subgenre>
+	  <subgenre>
         <name>Novels</name>
       </subgenre>
-      <subgenre>
+	  <subgenre>
         <name>Erotica</name>
       </subgenre>
-      <subgenre>
-        <name>Contemporary German Literature</name>
-      </subgenre>
-      <subgenre>
+	  <subgenre>
         <name>Romance</name>
       </subgenre>
-      <subgenre>
-        <name>Entertainment</name>
-      </subgenre>
-      <subgenre>
+	  <subgenre>
         <name>Contemporary Literature</name>
+      </subgenre>
+	  <subgenre>
+        <name>Contemporary German Literature</name>
+      </subgenre>
+	  <subgenre>
+        <name>Entertainment</name>
       </subgenre>
       <subgenre>
         <name>Youth</name>

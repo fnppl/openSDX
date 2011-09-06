@@ -474,12 +474,13 @@
 		<xsd:enumeration value="Espionage, Politics &amp; Justice"/>
 		<xsd:enumeration value="Vatican &amp; Secret Societies"/>
 		<xsd:enumeration value="Science &amp; Medicine"/>
+		<xsd:enumeration value="Literature"/>
 		<xsd:enumeration value="Novels"/>
 		<xsd:enumeration value="Erotica"/>
-		<xsd:enumeration value="Contemporary German Literature"/>
 		<xsd:enumeration value="Romance"/>
-		<xsd:enumeration value="Entertainment"/>
 		<xsd:enumeration value="Contemporary Literature"/>
+		<xsd:enumeration value="Contemporary German Literature"/>
+		<xsd:enumeration value="Entertainment"/>
 		<xsd:enumeration value="Youth"/>
 		<xsd:enumeration value="Detective Stories"/>
 		<xsd:enumeration value="Fantasy"/>
