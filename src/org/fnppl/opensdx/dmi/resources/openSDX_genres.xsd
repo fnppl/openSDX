@@ -421,7 +421,7 @@
 		<xsd:enumeration value="Popular Characters"/>
 		<xsd:enumeration value="Animal Stories"/>
 		<xsd:enumeration value="Children&quot;s Book Classics"/>
-		<xsd:enumeration value="Detective Stories"/>
+		<xsd:enumeration value="Children&quot;s Detective Stories"/>
 		<xsd:enumeration value="Fairy Tales"/>
 		<xsd:enumeration value="Fantasy &amp; Spook"/>
 		<xsd:enumeration value="Knowledge for Children"/>
@@ -482,7 +482,7 @@
 		<xsd:enumeration value="Contemporary German Literature"/>
 		<xsd:enumeration value="Entertainment"/>
 		<xsd:enumeration value="Youth"/>
-		<xsd:enumeration value="Detective Stories"/>
+		<xsd:enumeration value="Youth Detective Stories"/>
 		<xsd:enumeration value="Fantasy"/>
 		<xsd:enumeration value="For Girls"/>
 		<xsd:enumeration value="Knowledge for Teenagers"/>
