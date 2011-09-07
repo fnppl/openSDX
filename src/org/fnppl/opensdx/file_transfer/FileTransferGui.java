@@ -47,8 +47,12 @@ package org.fnppl.opensdx.file_transfer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -192,7 +196,13 @@ public class FileTransferGui extends JFrame implements MyObserver {
 				selectAccount_model.addElement(a.type+" :: "+a.username+"@"+a.host);
 			} 
 			else if (a.type.equals(a.TYPE_OSDXFILESERVER)) {
-				String name = a.type+" :: "+a.username+", "+a.keyid+", "+a.host;
+				String keyidShort;
+				try {
+					keyidShort = a.keyid.substring(0,8)+" ... "+a.keyid.substring(51);
+				} catch (Exception e) {
+					keyidShort = a.keyid;
+				}
+				String name = a.type+" :: "+a.username+", "+keyidShort+", "+a.host;
 				selectAccount_model.addElement(name);	
 			}
 			else {
@@ -205,6 +215,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 	private void initComponents() {
 		panelNorth = new JPanel();
 		panelNorth.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
 		selectAccount_model = new DefaultComboBoxModel();
 		selectAccount = new JComboBox();
 		updateAccounts();
@@ -349,6 +360,40 @@ public class FileTransferGui extends JFrame implements MyObserver {
 	}
 	
 	private void initLayout() {
+		//panelNorth
+//		GridBagLayout gbl = new GridBagLayout();
+//		panelNorth.setLayout(gbl);
+//		GridBagConstraints gbc = new GridBagConstraints();
+//
+//		// selectAccount
+//		gbc.gridx = 0;
+//		gbc.gridy = 0;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 100.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//		gbc.insets = new Insets(2,2,2,2);
+//		gbl.setConstraints(selectAccount, gbc);
+//		panelNorth.add(selectAccount);
+//		
+//		//buttons
+//		gbc.gridx = 1;
+//		gbc.weightx = 0.0;
+//		gbl.setConstraints(buConnect, gbc);
+//		panelNorth.add(buConnect);
+//		
+//		gbc.gridx = 2;
+//		gbl.setConstraints(buEdit, gbc);
+//		panelNorth.add(buEdit);
+//		
+//		gbc.gridx = 3;
+//		gbl.setConstraints(buRemove, gbc);
+//		panelNorth.add(buRemove);
+		
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(panelNorth, BorderLayout.NORTH);
 		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,

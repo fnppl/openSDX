@@ -51,10 +51,8 @@
 
 <opensdx_tsaserver>
 	<tsaserver>
-		<host>localhost</host>
 		<port>8890</port>
 		<ipv4>127.0.0.1</ipv4>
-      	<ipv6>127.0.0.1</ipv6>
 	</tsaserver>
 	<rootsigningkey>
 		<keypair>

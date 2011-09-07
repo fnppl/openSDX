@@ -154,7 +154,11 @@ public class TSAServerMain extends HTTPServer {
 			//keyserver base
 			Element ks = root.getChild("tsaserver");
 //			host = ks.getChildText("host");
-			port = ks.getChildInt("port");
+			
+			port = 8890;
+			if (ks.getChildText("port")!=null) {
+				port = ks.getChildInt("port");
+			}
 			String ip4 = ks.getChildText("ipv4");
 			try {
 				byte[] addr = new byte[4];
@@ -257,7 +261,6 @@ public class TSAServerMain extends HTTPServer {
 			return;
 		}
 		TSAServerMain ss = new TSAServerMain(args[1]);
-		ss.port = 8890;
 		ss.servername = args[3];
 		
 		ss.startService();
