@@ -319,7 +319,9 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 	
 
 	public void closeConnection() throws Exception {
-		receiver.stop();
+		if (receiver!=null) {
+			receiver.stop();
+		}
 		if (socket != null) {
 			sendEncryptedText("Connection closed.");
 			socket.close();
