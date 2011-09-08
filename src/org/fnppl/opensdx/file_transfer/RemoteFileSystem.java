@@ -87,12 +87,19 @@ public abstract class  RemoteFileSystem {
 			public Vector<RemoteFile> list(RemoteFile dir) {
 				Vector<RemoteFile> list = new Vector<RemoteFile>();
 				File f = new File(dir.getPath(),dir.getName());
+				if (dir.getPath().length()==0) {
+					f = new File(dir.getName());
+				}
 				File[] l =  f.listFiles();
-				for (File a : l) {
-					if (!a.isHidden()) {
-						RemoteFile r = new RemoteFile(a.getParent(), a.getName(), a.length(), a.lastModified(), a.isDirectory());
-						list.add(r);
+				if (l!=null) {
+					for (File a : l) {
+						if (!a.isHidden()) {
+							RemoteFile r = new RemoteFile(a.getParent(), a.getName(), a.length(), a.lastModified(), a.isDirectory());
+							list.add(r);
+						}
 					}
+				} else {
+					System.out.println("error listing: path="+dir.getPath()+", name="+dir.getName()+", file="+f.getAbsolutePath());
 				}
 				return list;
 			}
