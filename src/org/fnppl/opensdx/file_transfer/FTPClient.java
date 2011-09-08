@@ -259,7 +259,7 @@ public class FTPClient implements FileTransferClient{
 		}
 	}
 
-	public long downloadFile(String filename, File localFile, final FileTransferProgress progress) throws FileTransferException {
+	public void downloadFile(String filename, File localFile, final FileTransferProgress progress) throws FileTransferException {
 		try {	
 			FTPDataTransferListener transferListener = new FTPDataTransferListener() {
 				public void transferred(int len) {
@@ -282,7 +282,6 @@ public class FTPClient implements FileTransferClient{
 				}
 			};
 			client.download(filename, localFile, transferListener);
-			return -1L;
 		} catch (Exception ex) {
 			//ex.printStackTrace();
 			throw new FileTransferException(ex.getMessage());

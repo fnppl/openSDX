@@ -57,7 +57,7 @@ public interface FileTransferClient {
 	//public void delete(String remoteFilename) throws FileTransferException;
 	public void uploadFile(File localFile, String remoteFilename, FileTransferProgress progress) throws FileTransferException;
 	public void uploadFile(String remoteFilename, byte[] data, FileTransferProgress progress) throws FileTransferException;
-	public long downloadFile(String filename, File localFile, FileTransferProgress progress) throws FileTransferException;
+	public void downloadFile(String filename, File localFile, FileTransferProgress progress) throws FileTransferException;
 	public void closeConnection() throws FileTransferException;
 	
 }

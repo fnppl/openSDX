@@ -698,9 +698,22 @@ public class FileTransferGui extends JFrame implements MyObserver {
 					RemoteFile to = new RemoteFile(tragetDirectory.getFilnameWithPath(), from.getName(), from.length(), from.lastModified(), false);
 					final String msg = "uploading "+from.getAbsolutePath()+" -> "+to.getFilnameWithPath();
 					final int pos = addStatus("uploading "+from.getAbsolutePath()+" -> "+to.getFilnameWithPath());
+					
 					FileTransferProgress progress = new FileTransferProgress(from.length()) {
+						private long time = -1L;
+						private long dataAtTime = 0L;
 						public void onUpdate() {
-							setStatus(pos, msg+"   "+getProgressString());
+							String transferRate = "";
+							if (time==-1L) {
+								time = System.currentTimeMillis();
+								dataAtTime = getProgress();
+							} else {
+								long now = System.currentTimeMillis();
+								long dataNow = getProgress();
+								long tr = ((dataNow-dataAtTime)*1000)/((now-time)*1024); //in kB / s
+								transferRate = String.format("  (%d kB/s)", tr);
+							}
+							setStatus(pos, msg+"   "+getProgressString()+transferRate);
 						}
 						public void onError() {
 							setStatus(pos, msg+"   ERROR");
@@ -743,10 +756,25 @@ public class FileTransferGui extends JFrame implements MyObserver {
 				for (final RemoteFile remoteFile : remote) {
 					final File target = new File(local.getFilnameWithPath(),remoteFile.getName());
 					final String pre = "downloading "+remoteFile.getFilnameWithPath()+" -> "+target.getAbsolutePath(); 
-					final int pos = addStatus(pre);
+					final int pos = addStatus(pre+"   (waiting)");
 					FileTransferProgress progress = new FileTransferProgress(remoteFile.getLength()) {
+						private long time = -1L;
+						private long dataAtTime = 0L;
 						public void onUpdate() {
-							setStatus(pos, pre+"   "+getProgressString());
+							String transferRate = "";
+							if (time==-1L) {
+								time = System.currentTimeMillis();
+								dataAtTime = getProgress();
+							} else {
+								long now = System.currentTimeMillis();
+								long dataNow = getProgress();
+								long tr = ((dataNow-dataAtTime)*1000)/((now-time)*1024); //in kB / s
+								transferRate = String.format("  (%d kB/s)", tr);
+							}
+							setStatus(pos, pre+"   "+getProgressString()+transferRate);
+							if (hasFinished()) {
+								panelLocal.refreshView();
+							}
 						}
 						public void onError() {
 							setStatus(pos, pre+"   ERROR");

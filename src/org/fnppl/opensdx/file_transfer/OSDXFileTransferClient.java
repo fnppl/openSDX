@@ -51,6 +51,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Collections;
@@ -82,12 +83,13 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 	private int port = -1;
 	private String prepath = null;
 	
-	private Vector<DownloadFile> nextDownloadFile = new Vector<DownloadFile>();
+	private DownloadFile nextDownloadFile = null;
+	private Vector<DownloadTask> downloadQueue = new Vector<DownloadTask>();
 	protected Vector<String> textQueue = new Vector<String>();
 	protected Vector<Element> xmlQueue = new Vector<Element>();
 	protected RightsAndDuties rights_duties = null;
 	private int maxByteLength = 4*1024*1024;
-	private long timeout_ms = 2000;
+	private long timeout_ms = 4000;
 	private boolean connected = false;
 	
 	public OSDXFileTransferClient() {
@@ -121,10 +123,10 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 
 	public void handleNewData(byte[] data, OSDXSocketSender sender) {
 		//if data arrives, it must be a file
-		if (nextDownloadFile!=null && nextDownloadFile.size()>0) {
+		if (nextDownloadFile!=null) {
 			//only process if requested
 			try {
-				DownloadFile f = nextDownloadFile.get(0);
+				DownloadFile f = nextDownloadFile;
 				f.file.getParentFile().mkdirs();
 				FileOutputStream fout = new FileOutputStream(f.file,true);
 				fout.write(data);
@@ -132,10 +134,11 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 				if (f.progress!=null) {
 					f.progress.addProgress(data.length);
 				}
-				//remove from download list if complete length has arrived
+				//remove if complete length has arrived
 				if (f.file.length()==f.length) {
 					System.out.println("Download complete: file = "+f.file.getAbsolutePath());
-					nextDownloadFile.remove(f);
+					nextDownloadFile = null;
+					processNextDownload();
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -150,7 +153,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 		this.port = port;
 		this.prepath = prepath;
 		
-		nextDownloadFile = new Vector<DownloadFile>();
+		nextDownloadFile = null;
 		textQueue = new Vector<String>();
 		xmlQueue = new Vector<Element>();
 		rights_duties = null;
@@ -191,7 +194,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 		//socket = null;
 		//username = null;
 		//key = null;
-		nextDownloadFile = new Vector<DownloadFile>();
+		nextDownloadFile = null;
 		textQueue = new Vector<String>();
 		xmlQueue = new Vector<Element>();
 		rights_duties = new RightsAndDuties();
@@ -443,6 +446,9 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 					}
 					else if (filelenght<=maxByteLength) {
 						//send in one data package
+						if (progress!=null) {
+							progress.start();
+						}
 						try {
 							ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 							FileInputStream fin = new FileInputStream(f);
@@ -461,6 +467,9 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 						}
 					} else {
 						//send in multiple data packages
+						if (progress!=null) {
+							progress.start();
+						}
 						long nextStart = 0;
 						try {
 							FileInputStream fin = new FileInputStream(f);
@@ -633,53 +642,90 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 	public RightsAndDuties getRightsAndDuties() {
 		return rights_duties;
 	}
-	public long downloadFile(String filename, File localFile) throws FileTransferException {
-		return downloadFile(filename, localFile, null);
-	}
-	public long downloadFile(String filename, File localFile, FileTransferProgress progress) throws FileTransferException {
-		long length = -1L;
-		if (!rights_duties.allowsDownload()) 
-			throw new FileTransferException("DOWNLOAD NOT ALLOWED");
-		if (localFile.isDirectory()) {
-			localFile = new File(localFile,filename);
-		}
-		if (localFile.exists()) {
-			System.out.println("Error downloading file: "+filename+" :: local file: "+localFile.getAbsolutePath()+" exists.");
-			throw new FileTransferException("FILE ALREADY EXISTS.");
-		}
-		//remove previous ACK GET or ERROR IN GET
-		for (int i=0;i<textQueue.size();i++) {
-			if (textQueue.get(i).startsWith("ACK GET :: ") || textQueue.get(i).startsWith("ERROR IN GET :: ")) {
-				textQueue.remove(i);
-				i--;
-			}
-		}
-		sendEncryptedText("GET "+filename);
-		
-		String resp = checkResponseOrTimeout("GET");
-		if (resp.startsWith("ERROR")) {
-			System.out.println("Error downloading file: "+filename+" :: "+resp);
-			throw new FileTransferException(resp);
-		} else {
-			try {
-				length = Long.parseLong(resp.substring(resp.lastIndexOf('=')+1));
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				length = -1L;
-			}
-			if (length==0) {
-				try {
-					localFile.createNewFile();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			} else {
-				nextDownloadFile.add(new DownloadFile(localFile, length, progress));
-			}
-		}
-		return length;
+	public void downloadFile(String filename, File localFile) throws FileTransferException {
+		downloadFile(filename, localFile, null);
 	}
 	
+	private Object sync_download = new Object();
+	
+	public void downloadFile(String filename, File localFile, FileTransferProgress progress) throws FileTransferException {
+		synchronized (sync_download) {
+			if (!rights_duties.allowsDownload()) 
+				throw new FileTransferException("DOWNLOAD NOT ALLOWED");
+			if (localFile.isDirectory()) {
+				localFile = new File(localFile,filename);
+			}
+			if (localFile.exists()) {
+				System.out.println("Error downloading file: "+filename+" :: local file: "+localFile.getAbsolutePath()+" exists.");
+				throw new FileTransferException("FILE ALREADY EXISTS.");
+			}
+			downloadQueue.add(new DownloadTask(localFile, filename, progress));
+			if (nextDownloadFile==null) {
+				processNextDownload();
+			}
+		}
+	}
+	private Object sync_download_queue = new Object();
+	private void processNextDownload() {
+		synchronized (sync_download_queue) {
+			Thread t = new Thread() {
+				public void run() {
+						if (downloadQueue.size()>0 && nextDownloadFile==null) {
+							DownloadTask task = downloadQueue.remove(0); 
+							String filename = task.remoteFilename;
+							long length = -1L;
+	//						//remove previous ACK GET or ERROR IN GET
+	//						for (int i=0;i<textQueue.size();i++) {
+	//							if (textQueue.get(i).startsWith("ACK GET :: ") || textQueue.get(i).startsWith("ERROR IN GET :: ")) {
+	//								textQueue.remove(i);
+	//								i--;
+	//							}
+	//						}
+							try {
+								sendEncryptedText("GET "+filename);
+								
+								String resp = checkResponseOrTimeout("GET");
+								if (resp.startsWith("ERROR")) {
+									System.out.println("Error downloading file: "+filename+" :: "+resp);
+									//throw new FileTransferException(resp);
+									if (task.progress!=null) {
+										task.progress.setError("Error downloading file: "+filename+" :: "+resp);
+									}
+								} else {
+									try {
+										length = Long.parseLong(resp.substring(resp.lastIndexOf('=')+1));
+									} catch (Exception ex) {
+										ex.printStackTrace();
+										length = -1L;
+									}
+									if (length==0) {
+										try {
+											task.file.createNewFile();
+										} catch (IOException e) {
+											e.printStackTrace();
+										}
+										processNextDownload();
+									} else {
+										if (task.progress!=null) {
+											if (task.progress.isEndUnknown()) {
+												task.progress.setProgressEnd(length);
+											}
+											task.progress.start();
+										}
+										nextDownloadFile = new DownloadFile(task.file, length, task.progress);
+									}
+								}
+							} catch (FileTransferException ex) {
+								if (task.progress!=null) {
+									task.progress.setError("Error downloading file: "+filename+" :: "+ex.getMessage());
+								}
+							}
+						}
+				}
+			};
+			t.start();
+		}
+	}
 	
 	public static void test() {
 		OSDXFileTransferClient s = new OSDXFileTransferClient();
@@ -975,6 +1021,17 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 		public DownloadFile(File file, long lenghth, FileTransferProgress progress) {
 			this.file = file;
 			this.length = lenghth;
+			this.progress = progress;
+		}
+	}
+	private class DownloadTask {
+		public File file;
+		public FileTransferProgress progress;
+		public String remoteFilename;
+		
+		public DownloadTask(File file, String remoteFilename, FileTransferProgress progress) {
+			this.file = file;
+			this.remoteFilename = remoteFilename;
 			this.progress = progress;
 		}
 	}

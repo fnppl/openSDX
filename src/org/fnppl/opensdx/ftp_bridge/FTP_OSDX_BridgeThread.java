@@ -58,6 +58,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Vector;
 
+import org.fnppl.opensdx.file_transfer.FileTransferProgress;
 import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.file_transfer.RemoteFile;
 
@@ -167,39 +168,47 @@ public class FTP_OSDX_BridgeThread extends Thread {
 						String filename = param;
 						
 						System.out.println("downloading file: "+filename);
-						File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
+						final File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
 						tmpFile.delete();
-						long len = osdxclient.downloadFile(filename, tmpFile);
 						
-						//wait for complete download 
-						while (tmpFile.length()<len) {
-							Thread.sleep(250);
-						}
-						if (tmpFile.exists() && tmpFile.length()==len) {
-							out.println("150 Binary data connection");
-							
-							//transfer downloaded file to ftp client
-							FileInputStream fin = new FileInputStream(tmpFile);
-							
-							Socket t = new Socket(host, next_port);
-							OutputStream out2 = t.getOutputStream();
-							byte buffer[] = new byte[1024];
-							int read;
-							try {
-								while ((read = fin.read(buffer)) != -1) {
-									out2.write(buffer, 0, read);
+						final FileTransferProgress progress = new FileTransferProgress(FileTransferProgress.END_UNKNOWN) {
+							public void onUpdate() {
+								super.onUpdate();
+								if (hasFinished()) {
+									try {
+										if (tmpFile.exists() && tmpFile.length()==getProgressEnd()) {
+											out.println("150 Binary data connection");
+											
+											//transfer downloaded file to ftp client
+											FileInputStream fin = new FileInputStream(tmpFile);
+											
+											Socket t = new Socket(host, next_port);
+											OutputStream out2 = t.getOutputStream();
+											byte buffer[] = new byte[1024];
+											int read;
+											try {
+												while ((read = fin.read(buffer)) != -1) {
+													out2.write(buffer, 0, read);
+												}
+												out2.close();
+												out.println("226 transfer complete");
+												fin.close();
+												tmpFile.delete();
+												t.close();
+											} catch (IOException e) {
+												e.printStackTrace();
+											}
+										} else {
+											out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
+										}
+									} catch (Exception ex) {
+										ex.printStackTrace();
+									}
 								}
-								out2.close();
-								out.println("226 transfer complete");
-								fin.close();
-								tmpFile.delete();
-								t.close();
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						} else {
-							out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
-						}
+							};
+						};
+						osdxclient.downloadFile(filename, tmpFile, progress);
+						
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
