@@ -89,6 +89,12 @@
 			<auth_type>keyfile</auth_type>  <!--  keyfile|login|token|... -->
 			<!--  no <rights_and_duties> means all rights, no duties --> 
 		</client>
+		<client>
+            <username>test</username>
+            <keyid>F0:BB:9F:32:FF:EB:92:A4:D4:85:94:CD:BB:5E:7A:D7:4C:DE:D3:78@keyserver.fnppl.org</keyid>
+            <local_path>/home/neo/openSDX/file_transfer_server/test</local_path>
+            <auth_type>keyfile</auth_type>
+        </client>
 	</clients>
 	<rootsigningkey>
 		 <keypair>

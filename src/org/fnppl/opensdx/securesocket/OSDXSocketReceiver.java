@@ -57,12 +57,14 @@ import org.fnppl.opensdx.security.SymmetricKey;
 
 public class OSDXSocketReceiver {
 
+	private static boolean debug = true;
 	private InputStream intputStream;
 	private SymmetricKey agreedEncryptionKey = null;
 	private OSDXSocketLowLevelDataHandler dataHandler = null;
 	private boolean isServerReceiver;
 	private OSDXSocketSender sender;
 	private boolean run = true;
+	private long lastReceivedBytesAt = Long.MAX_VALUE;
 	
 	public static OSDXSocketReceiver initServerReceiver(InputStream input, OSDXSocketSender sender, OSDXSocketLowLevelDataHandler dataHandler) {
 		return new OSDXSocketReceiver(input, sender, true, dataHandler);
@@ -250,12 +252,14 @@ public class OSDXSocketReceiver {
 						if (read>0) {
 							bout.write(buffer, 0, read);
 							sum += read;
+							lastReceivedBytesAt = System.currentTimeMillis();
 						}
 					} else { //avoid reading next command
 						read = intputStream.read(b);
 						if (read>0) {
 							bout.write(b, 0, read);
 							sum += read;
+							lastReceivedBytesAt = System.currentTimeMillis();
 						}
 					}
 				}
@@ -274,7 +278,7 @@ public class OSDXSocketReceiver {
 			
 				if (data[0] == TYPE_TEXT) {
 					String text = new String(Arrays.copyOfRange(data, 1, data.length), "UTF-8");
-					//System.out.println("RECEIVED MESSAGE::"+text);
+					if (debug) System.out.println("RECEIVED MESSAGE::"+text);
 					if (dataHandler!=null) {
 						dataHandler.handleNewText(text, sender);
 					}
@@ -293,6 +297,10 @@ public class OSDXSocketReceiver {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public long getLastReceivedBytesAt() {
+		return lastReceivedBytesAt;
 	}
 }
 

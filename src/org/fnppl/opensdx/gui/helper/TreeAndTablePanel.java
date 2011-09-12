@@ -76,6 +76,7 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 
 	private JSplitPane split;
 	private JTree tree;
+	private TreeAndTableNode root;
 	private DefaultTreeModel tree_model;
 	private JTable table;
 	private DefaultTableModel table_model;
@@ -148,7 +149,7 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 	private void initComponents() {
 		tree = new JTree();
 		RemoteFile f = fs.getRoot();
-		TreeAndTableNode root = new TreeAndTableNode(this, f.getName(), true, f);
+		root = new TreeAndTableNode(this, f.getName(), true, f);
 		root.populate();
 		tree_model = new DefaultTreeModel(root);
 		tree.setModel(tree_model);
@@ -252,7 +253,13 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 							table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
 							table.setModel(table_model);
 						} catch (Exception ex) {
-							ex.printStackTrace();
+							//ex.printStackTrace();
+							try {
+								table_model = updateTableModel(root);
+								table.setModel(table_model);
+							} catch (Exception ex2) {
+								ex2.printStackTrace();
+							}
 						}
 					}
 				} else {
@@ -323,7 +330,13 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 	public void refreshView() {
 		try {
 			TreePath path = tree.getSelectionPath();
-			TreeAndTableNode node = (TreeAndTableNode)path.getLastPathComponent();
+			
+			TreeAndTableNode node;
+			if (path==null) {
+				node = root;
+			} else {
+				node = (TreeAndTableNode)path.getLastPathComponent();
+			}
 			node.populateAgain();
 			tree.collapsePath(path);
 			tree.expandPath(path);
@@ -335,7 +348,13 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 			table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
 			table.setModel(table_model);
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			//ex.printStackTrace();
+			try {
+				table_model = updateTableModel(root);
+				table.setModel(table_model);
+			} catch (Exception ex2) {
+				ex2.printStackTrace();
+			}
 		}
 	}
 	

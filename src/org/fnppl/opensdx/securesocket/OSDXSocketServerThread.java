@@ -58,6 +58,7 @@ import org.fnppl.opensdx.security.SymmetricKey;
 
 public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, OSDXSocketLowLevelDataHandler {
 
+	private static boolean debug = true;
 	private static String version = "openSDX 0.2";
 	public final static String ERROR_NO_RESPONSE = "ERROR: server does not respond.";
 	public final static String ERROR_WRONG_RESPONE_FORMAT = "ERROR: Wrong format in uploadserver's response.";
@@ -226,10 +227,18 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 			System.out.println(FileTransferLog.getDateString()+" :: serverthread started, remote_ip="+remoteIP+", remote_port="+remotePort);
 			
 			nextTimeOut = System.currentTimeMillis()+timeout;
-			while (System.currentTimeMillis()<nextTimeOut && isConnected()) {
-				//System.out.println("next timeout = "+SecurityHelper.getFormattedDate(nextTimeOut)+"\t"+this.toString());
-				sleep(250);
-				//System.out.println("connected: "+isConnected());
+			boolean loop = true;
+			
+			while (loop) {
+				while (System.currentTimeMillis()<nextTimeOut && isConnected()) {
+					//System.out.println("next timeout = "+SecurityHelper.getFormattedDate(nextTimeOut)+"\t"+this.toString());
+					sleep(500);
+					//System.out.println("connected: "+isConnected());
+				}
+				//wrong timeout if receiving large files on slow connections
+				if (System.currentTimeMillis()>receiver.getLastReceivedBytesAt()+timeout) {
+					loop = false;
+				}
 			}
 			if (isConnected()) {
 				System.out.println(FileTransferLog.getDateString()+" :: timeout, closing connection for remote port "+remotePort);
@@ -277,10 +286,22 @@ public class OSDXSocketServerThread extends Thread implements OSDXSocketSender, 
 					if (type==TYPE_NULL) {
 						socketOut.write(data);
 						socketOut.flush();
+						if (debug) System.out.println("sending [NULL] :: "+(new String(data,"UTF-8")));
 					} else {
 						byte[] send = new byte[data.length+1];
 						send[0] = type;
 						System.arraycopy(data, 0, send, 1, data.length);;
+						
+						if (debug) { 
+							if (type==TYPE_TEXT) {
+								System.out.println("sending [TEXT] :: "+(new String(data,"UTF-8")));
+							} else if (type==TYPE_DATA) {
+								System.out.println("sending [DATA] :: length="+data.length);
+							} else {
+								System.out.println("sending [UNKNOWN TYPE] :: length="+data.length);
+							}
+						}
+						
 						if (encrypt && agreedEncryptionKey!=null) {
 							send = agreedEncryptionKey.encrypt(send);
 						}
