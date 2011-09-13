@@ -302,11 +302,11 @@ public abstract class  RemoteFileSystem {
 				}
 			}
 			public void rename(RemoteFile from, RemoteFile to) {
-				Dialogs.showMessage("not implemented");
+//				Dialogs.showMessage("not implemented");
 				try {
 					String oldname = from.getFilnameWithPath();
 					String newname = to.getFilnameWithPath();
-//					client.rename(oldname, newname);
+					client.rename(oldname, newname);
 //					System.out.println("rename: "+oldname+" -> "+newname);
 				} catch (Exception ex) {
 					ex.printStackTrace();

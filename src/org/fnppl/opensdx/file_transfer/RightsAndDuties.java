@@ -62,11 +62,13 @@ public class RightsAndDuties {
 	private boolean admin = false;
 	private boolean allow_mkdir = true;
 	private boolean allow_delete = true;
+	private boolean allow_rename = true;
 	private boolean allow_pwd = true;
 	private boolean allow_cd = true;
 	private boolean allow_list = true;
 	private boolean allow_upload = true;
 	private boolean allow_download = true;
+	
 	private Vector<String> signature_needed = null;
 	private Pattern signature_needed_pattern = null;
 	
@@ -79,6 +81,7 @@ public class RightsAndDuties {
 		r.admin = parse(e,"admin",false);
 		r.allow_mkdir = parse(e,"allow_mkdir",true);
 		r.allow_delete = parse(e,"allow_delete",true);
+		r.allow_rename = parse(e,"allow_rename",true);
 		r.allow_pwd = parse(e,"allow_pwd",true);
 		r.allow_cd = parse(e,"allow_cd",true);
 		r.allow_list = parse(e,"allow_list",true);
@@ -155,6 +158,10 @@ public class RightsAndDuties {
 		return allow_list;
 	}
 	
+	public boolean allowsRename() {
+		return allow_rename;
+	}
+	
 	public boolean allowsUpload() {
 		return allow_upload;
 	}
@@ -172,6 +179,7 @@ public class RightsAndDuties {
 		if (admin) e.addContent("admin", "true");
 		if (!allow_mkdir) e.addContent("allow_mkdir", "false");
 		if (!allow_delete) e.addContent("allow_delete", "false");
+		if (!allow_rename) e.addContent("allow_rename", "false");
 		if (!allow_pwd) e.addContent("allow_pwd", "false");
 		if (!allow_cd) e.addContent("allow_cd", "false");
 		if (!allow_list) e.addContent("allow_list", "false");
@@ -197,6 +205,10 @@ public class RightsAndDuties {
 		allow_delete = allowDelete;
 	}
 
+	public void setAllow_rename(boolean allowRename) {
+		allow_rename = allowRename;
+	}
+	
 	public void setAllow_pwd(boolean allowPwd) {
 		allow_pwd = allowPwd;
 	}
@@ -234,6 +246,7 @@ public class RightsAndDuties {
 //	<rights_and_duties>
 //	  <allow_mkdir>true</allow_mkdir>       <!--  default true -->
 //	  <allow_delete>true</allow_delete>     <!--  default true -->
+//	  <allow_rename>true</allow_rename>     <!--  default true -->
 //	  <allow_pwd>true</allow_pwd>           <!--  default true -->
 //	  <allow_cd>true</allow_cd>             <!--  default true -->
 //	  <allow_list>true</allow_list>         <!--  default true -->

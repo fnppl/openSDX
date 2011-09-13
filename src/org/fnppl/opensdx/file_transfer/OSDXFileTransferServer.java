@@ -607,6 +607,56 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 			sender.sendEncryptedText("ACK LIST :: "+files);
 		}
 	}
+	
+	public void handle_rename(String param, OSDXSocketServerThread sender) {
+		ClientSettings cs = clients.get(sender.getID());
+		if (cs==null) {
+			sender.sendEncryptedText("ERROR IN RENAME :: PLEASE LOGIN");
+			return;
+		}
+		if (cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().allowsRename()) {
+			sender.sendEncryptedText("ERROR IN RENAME :: NOT ALLOWED");
+			return;
+		}
+		FileTransferState state = getState(sender);
+		if (param==null) {
+			sender.sendEncryptedText("ERROR IN RENAME :: WRONG FORMAT");
+			return;
+		}
+		String[] p = Util.getParams(param);
+		
+		if (p!=null && p.length==2) {
+			File f = null;
+			if (p[0].startsWith("/")) {
+				f = new File(state.getRootPath()+p[0]);
+			} else {
+				f = new File(state.getCurrentPath(),p[0]);
+			}
+			
+			System.out.println("renaming "+f.getAbsolutePath());
+			if (f==null || !f.exists() || !state.isAllowed(f)) {
+				sender.sendEncryptedText("ERROR IN RENAME :: FILE \""+p[0]+"\" DOES NOT EXIST.");
+			} else {
+				File fTo = null;
+				if (p[1].startsWith("/")) {
+					fTo = new File(state.getRootPath()+p[1]);
+				} else {
+					fTo = new File(state.getCurrentPath(),p[1]);
+				}
+				if (fTo.exists()) {
+					sender.sendEncryptedText("ERROR IN RENAME :: FILE \""+p[1]+"\" ALREADY EXISTS.");
+					return;
+				}
+				System.out.println("renaming "+f.getAbsolutePath()+" to "+fTo.getAbsolutePath());
+				boolean ok = f.renameTo(fTo);
+				if (ok) {
+					sender.sendEncryptedText("ACK RENAME :: "+param);
+				} else {
+					sender.sendEncryptedText("ERROR IN RENAME :: FILE \""+p[0]+"\" COULD NOT BE RENAMED.");
+				}
+			}
+		}
+	}
 
 	public void handle_delete(String param, OSDXSocketServerThread sender) {
 		ClientSettings cs = clients.get(sender.getID());
@@ -782,10 +832,15 @@ public class OSDXFileTransferServer implements OSDXSocketDataHandler {
 				sender.sendEncryptedText(resp);
 			}
 			File f = state.getWriteFile();
+			int ind = filename.lastIndexOf('/');
+			if (ind>0 && ind < filename.length()-1) {
+				filename = filename.substring(ind+1);
+			}
 			if (f==null || !filename.equals(f.getName())) {
 				String resp = "ERROR IN PUTPART :: PLEASE SEND PUT OR RESUMEPUT COMMAND FIRST";
 				log.logCommand(sender.getID(), sender.getRemoteIP(), "PUTPART", param, resp);
 				sender.sendEncryptedText(resp);
+				return;
 			}
 
 			if (f.exists()) {

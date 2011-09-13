@@ -560,7 +560,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 							public void run() {
 								while (fsRemote.isConnected()) {
 									try {
-										sleep(8000);
+										sleep(20000);
 									} catch (Exception ex) {}
 									fsRemote.noop();
 								}
@@ -760,17 +760,17 @@ public class FileTransferGui extends JFrame implements MyObserver {
 				return;
 			} else {
 				addStatus("Connection to "+a.username+"@"+a.host+" established.");
-//				Thread t = new Thread() {
-//					public void run() {
-//						while (fsRemote.isConnected()) {
-//							try {
-//								sleep(8000);
-//							} catch (Exception ex) {}
-//							fsRemote.noop();
-//						}
-//					}
-//				};
-//				t.start();
+				Thread t = new Thread() {
+					public void run() {
+						while (fsRemote.isConnected()) {
+							try {
+								sleep(20000);
+							} catch (Exception ex) {}
+							fsRemote.noop();
+						}
+					}
+				};
+				t.start();
 			}
 			ttpanelRemote = new TreeAndTablePanel(fsRemote,false);
 			ttpanelRemote.addObserver(this);

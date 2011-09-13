@@ -58,6 +58,7 @@ import java.util.Collections;
 import java.util.Vector;
 
 import org.fnppl.opensdx.common.Util;
+import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.securesocket.OSDXSocket;
 import org.fnppl.opensdx.securesocket.OSDXSocketDataHandler;
@@ -88,7 +89,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 	protected Vector<String> textQueue = new Vector<String>();
 	protected Vector<Element> xmlQueue = new Vector<Element>();
 	protected RightsAndDuties rights_duties = null;
-	private int maxByteLength = 4*1024*1024;
+	private int maxByteLength = 4*1024*1024; // 4 MB
 	private long timeout_ms = 4000;
 	private boolean connected = false;
 	
@@ -208,9 +209,9 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 		return false;
 	}
 	
-	protected boolean sendEncryptedData(byte[] data) {
+	protected boolean sendEncryptedData(byte[] data, FileTransferProgress progress) {
 		if (socket!=null) {
-			connected = socket.sendEncryptedData(data);
+			connected = socket.sendEncryptedData(data, progress);
 			return connected;
 		}
 		return false;
@@ -274,6 +275,19 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 			throw new FileTransferException(resp);
 		}
 	}
+	
+	public void rename(String fileFrom, String fileTo) throws FileTransferException {
+		if (!rights_duties.allowsRename()) {
+			throw new FileTransferException("RENAME NOT ALLOWED");
+		}
+		String param = Util.makeParamsString(new String[]{fileFrom, fileTo});
+		sendEncryptedText("RENAME "+param);
+		String resp = checkResponseOrTimeout("RENAME");
+		if (resp.startsWith("ERROR")) {
+			throw new FileTransferException(resp);
+		}
+	}
+	
 	
 	public boolean login(String username) { //throws FileTransferException {
 		sendEncryptedText("LOGIN "+username);
@@ -410,7 +424,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 		uploadFile(f, new_filename, false,null);
 	}
 	
-	public void uploadFile(File f, String new_filename, boolean sign, FileTransferProgress progress) throws FileTransferException {
+	public void uploadFile(File f, String new_filename, boolean sign, final FileTransferProgress progress) throws FileTransferException {
 		if (!rights_duties.allowsUpload()) {
 			throw new FileTransferException("UPLOAD NOT ALLOWED");
 		}
@@ -458,7 +472,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 								bOut.write(buffer, 0, read);
 							}
 							byte[] data = bOut.toByteArray();
-							boolean ok = sendEncryptedData(data);
+							boolean ok = sendEncryptedData(data,null);
 							if (progress!=null && ok) {
 								progress.setProgress(data.length);
 							}
@@ -478,13 +492,39 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 							while ((read = fin.read(buffer))>0) {
 								param = Util.makeParamsString(new String[]{new_filename, ""+nextStart, ""+read});
 								sendEncryptedText("PUTPART "+param);
+								
+								
 								ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 								bOut.write(buffer, 0, read);
-								byte[] data = bOut.toByteArray();
-								boolean ok = sendEncryptedData(data);
-								if (progress!=null && ok) {
-									progress.addProgress(data.length);
+								final byte[] data = bOut.toByteArray();
+								
+								FileTransferProgress miniProgress = null;
+								if (progress!=null) {
+									miniProgress = new FileTransferProgress(-1L) {
+										long lastProgress = 0L;
+										long lastProgressTime = 0L;
+										public void onUpdate() {
+											long diff = this.getProgress()-lastProgress;
+											if (lastProgressTime<System.currentTimeMillis()-1000) { //update progress every second
+												lastProgress = this.getProgress();
+												progress.addProgress(diff-1);
+												lastProgressTime = System.currentTimeMillis();
+											}
+										}
+									};
 								}
+								if (progress!=null) {
+									long before = progress.getProgress();
+									boolean ok = sendEncryptedData(data, miniProgress);
+									if (ok) {
+										progress.setProgress(before+data.length);
+									} else {
+										progress.setProgress(before);
+									}
+								} else {
+									boolean ok = sendEncryptedData(data, miniProgress);
+								}
+								
 								nextStart += read;
 								//if (Math.random()>0.5) return; //BB random errors to test resumeupload
 							}
@@ -545,7 +585,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 							sendEncryptedText("PUTPART "+param);
 							ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 							bOut.write(buffer, 0, read);
-							boolean ok = sendEncryptedData(bOut.toByteArray());
+							boolean ok = sendEncryptedData(bOut.toByteArray(),null);
 							nextStart += read;
 							if (progress!=null && ok) {
 								progress.addProgress(nextStart);
@@ -607,7 +647,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 			if (filelenght<=maxByteLength) {
 				//send in one data package
 				try {
-					boolean ok = sendEncryptedData(data);
+					boolean ok = sendEncryptedData(data,null);
 					if (progress!=null && ok) {
 						progress.setProgress(data.length);
 					}
@@ -626,7 +666,7 @@ public class OSDXFileTransferClient implements FileTransferClient, OSDXSocketDat
 						}
 						param = Util.makeParamsString(new String[]{filename, ""+pos, ""+read});
 						sendEncryptedText("PUTPART "+param);
-						boolean ok = sendEncryptedData(Arrays.copyOfRange(data, pos, pos+read));
+						boolean ok = sendEncryptedData(Arrays.copyOfRange(data, pos, pos+read),null);
 						if (progress!=null && ok) {
 							progress.addProgress(read);
 						}

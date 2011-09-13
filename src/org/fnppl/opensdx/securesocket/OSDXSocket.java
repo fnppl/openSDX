@@ -45,11 +45,13 @@ package org.fnppl.opensdx.securesocket;
  * 
  */
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Arrays;
 
+import org.fnppl.opensdx.file_transfer.FileTransferProgress;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
@@ -220,7 +222,7 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 			byte[][] checks = SecurityHelper.getMD5SHA1SHA256(client_nonce);
 			init += SecurityHelper.HexDecoder.encode(key.sign(checks[1],checks[2],checks[3],0L),':',-1)+"\n";
 			init += "\n";
-			sendBytesPacket(init.getBytes("UTF-8"), TYPE_NULL, false);
+			sendBytesPacket(init.getBytes("UTF-8"), TYPE_NULL, false,null);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -230,7 +232,7 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 	private static byte TYPE_DATA = 68;
 	private static byte TYPE_NULL = 0;
 	private Object o = new Object();
-	private boolean sendBytesPacket(byte[] data, byte type, boolean encrypt) {
+	private boolean sendBytesPacket(byte[] data, byte type, boolean encrypt, FileTransferProgress progress) {
 		if (encrypt && !secureConnectionEstablished) {
 			return false;
 		}
@@ -238,8 +240,22 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 			try {
 				OutputStream out = socket.getOutputStream();
 				if (type==TYPE_NULL) {
-					out.write(data);
-					out.flush();
+					if (progress!=null) {
+						progress.setProgress(0L);
+						progress.start();
+						progress.setProgressEnd(data.length);
+						ByteArrayInputStream in = new ByteArrayInputStream(data);
+						byte[] buf = new byte[1000];
+						int read = 0;
+						while ((read = in.read(buf))>0) {
+							out.write(buf,0,read);
+							progress.addProgress(read);
+						}
+						out.flush();
+					} else {
+						out.write(data);
+						out.flush();
+					}
 					if (debug) System.out.println("sending [NULL] :: "+(new String(data,"UTF-8")));
 				} else {
 					byte[] send = new byte[data.length+1];
@@ -259,9 +275,26 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 					if (encrypt && agreedEncryptionKey!=null) {
 						send = agreedEncryptionKey.encrypt(send);
 					}
-					out.write((send.length+"\n").getBytes("UTF-8"));
-					out.write(send);
-					out.flush();
+					if (progress!=null) {
+						out.write((send.length+"\n").getBytes("UTF-8"));
+						progress.setProgress(0L);
+						progress.start();
+						progress.setProgressEnd(send.length);
+						ByteArrayInputStream in = new ByteArrayInputStream(send);
+						byte[] buf = new byte[1000];
+						int read = 0;
+						while ((read = in.read(buf))>0) {
+							out.write(buf,0,read);
+							progress.addProgress(read);
+						}
+						out.flush();
+					} else {
+						
+						out.write((send.length+"\n").getBytes("UTF-8"));
+						out.write(send);
+						out.flush();
+					}
+					
 				}
 				return true;
 			} catch (Exception ex) {
@@ -275,11 +308,14 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 		}
 		return false;
 	}
-	
 	public boolean sendEncryptedData(byte[] data) {
+		return sendEncryptedData(data, null);
+	}
+	
+	public boolean sendEncryptedData(byte[] data, FileTransferProgress progress) {
 		if (secureConnectionEstablished && agreedEncryptionKey!=null) {
 			try {
-				return sendBytesPacket(data,TYPE_DATA,true);
+				return sendBytesPacket(data,TYPE_DATA,true, progress);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				message = ex.getMessage();
@@ -291,7 +327,7 @@ public class OSDXSocket implements OSDXSocketSender, OSDXSocketLowLevelDataHandl
 	public boolean sendEncryptedText(String text) {
 		if (secureConnectionEstablished && agreedEncryptionKey!=null) {
 			try {
-				return sendBytesPacket(text.getBytes("UTF-8"),TYPE_TEXT,true);
+				return sendBytesPacket(text.getBytes("UTF-8"),TYPE_TEXT,true,null);
 			} catch (Exception e) {
 				e.printStackTrace();
 				message = e.getMessage();
