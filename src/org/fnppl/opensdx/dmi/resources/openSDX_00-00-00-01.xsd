@@ -509,7 +509,8 @@
     </xsd:complexType>
     <xsd:complexType name="file">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains information and location of a file. </xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains information and location of a file. 
+            In the case of an update or takedown with no extra file given, set "no_file_given" to "true"</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="location" type="fileLocation"/>
@@ -574,6 +575,7 @@
             <xsd:element name="channels" type="fileChannels" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="dimension" type="dimension" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="decryptinfo" type="decryptinfo" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="no_file_given" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="checksums">
@@ -597,7 +599,8 @@
     </xsd:complexType>
     <xsd:complexType name="fileLocation">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element contains the path to the corresponding file. File can be accessible via path, http or ftp</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element contains the path to the corresponding file. 
+            File can be accessible via path, http or ftp.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="path" type="xsd:string" maxOccurs="1" minOccurs="0"/>

@@ -70,6 +70,7 @@ public class ItemFile extends BusinessObject {
 	private Checksums checksums;								//COULD
 	private BusinessStringItem channels;						//COULD
 	private BusinessCollection<BusinessIntegerItem> dimension; 	//COULD
+	private BusinessBooleanItem no_file_given;			 		//COULD
 	
 	public static ItemFile make(File f) {
 		ItemFile file = make();
@@ -89,11 +90,12 @@ public class ItemFile extends BusinessObject {
 		file.codecsettings = null;
 		file.channels = null;
 		file.bytes = null;
-		file.location = null;
-		file.checksums = null;
+		file.location = FileLocation.make();
+		file.checksums = Checksums.make();
 		file.dimension = null;
 		file.prelistening_offset = null;
 		file.prelistening_offset = null;
+		file.no_file_given = null;
 		return file;
 	}
 	
@@ -411,6 +413,17 @@ public class ItemFile extends BusinessObject {
 	public Checksums getChecksums() {
 		return checksums;
 	}
+	
+	public ItemFile no_file_given(boolean no_file_given) {
+		this.no_file_given  = new BusinessBooleanItem("no_file_given", no_file_given);
+		return this;
+	}
+	
+	public boolean getNo_file_given() {
+		if (no_file_given==null) return false;
+		return no_file_given.getBoolean();
+	}
+	
 }
 
 
