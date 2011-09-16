@@ -701,6 +701,11 @@
 							<md5></md5><!-- SHOULD sha1-checksum of that file -->
 						</checksums><!-- MUST one checksum must be given; if encrypted file is referenced, those bytes/checksums are those of the encrypted file -->						
 					</file>
+					<file><!-- In the case of an update or takedown with no extra file given, set "no_file_given" to "true" -->
+			            <location />
+			            <checksums />
+			            <no_file_given>true</no_file_given>
+			         </file>
 				</files>
 			</item>
 		</items>
