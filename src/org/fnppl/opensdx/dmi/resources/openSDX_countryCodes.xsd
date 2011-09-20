@@ -1273,6 +1273,11 @@
 					<xsd:documentation>Wallis and Futuna</xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
+			<xsd:enumeration value="WW">
+				<xsd:annotation>
+					<xsd:documentation>WorldWide</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
 			<xsd:enumeration value="EH">
 				<xsd:annotation>
 					<xsd:documentation>Western Sahara</xsd:documentation>
@@ -1290,7 +1295,7 @@
 			</xsd:enumeration>
 			<xsd:enumeration value="ZW">
 				<xsd:annotation>
-					<xsd:documentation>Zimbabwe/xsd:documentation>
+					<xsd:documentation>Zimbabwe</xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 		</xsd:restriction>
