@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import javax.swing.table.DefaultTableModel;
 
+import org.fnppl.opensdx.file_transfer.FTPClient;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.xml.Document;

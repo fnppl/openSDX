@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.gui.helper;
+package org.fnppl.opensdx.file_transfer.gui;
 
 /*
  * Copyright (C) 2010-2011 
@@ -71,6 +71,8 @@ import org.fnppl.opensdx.file_transfer.FileTransferException;
 import org.fnppl.opensdx.file_transfer.RemoteFile;
 import org.fnppl.opensdx.file_transfer.RemoteFileSystem;
 import org.fnppl.opensdx.gui.Dialogs;
+import org.fnppl.opensdx.gui.helper.MyObservable;
+import org.fnppl.opensdx.gui.helper.MyObserver;
 
 public class TreeAndTablePanel extends JPanel implements MyObservable {
 

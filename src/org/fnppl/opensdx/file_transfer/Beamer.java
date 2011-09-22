@@ -84,7 +84,7 @@ public class Beamer {
 		
 		String type = receiver.getType();
 		
-		FileTransferClient client = null;
+		UploadClient client = null;
 		
 		if (!type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER) && !type.equals(Receiver.TRANSFER_TYPE_FTP)) {
 			return Result.error("Sorry, receiver type \""+type+"\" not implemented.");
@@ -106,7 +106,7 @@ public class Beamer {
 				if (!result.succeeded) {
 					return result;
 				}
-				client = (FileTransferClient)result.userobject;
+				client = (OSDXFileTransferClient)result.userobject;
 			} catch (Exception e) {
 				e.printStackTrace();
 				Result r = Result.error("ERROR: Upload of Feed failed.");
@@ -120,7 +120,7 @@ public class Beamer {
 				if (!result.succeeded) {
 					return result;
 				}
-				client = (FileTransferClient)result.userobject;
+				client = (UploadClient)result.userobject;
 			} catch (Exception e) {
 				e.printStackTrace();
 				Result r = Result.error("ERROR: Upload of Feed failed.");
@@ -262,7 +262,7 @@ public class Beamer {
 		return normFeedid;
 	}
 	
-	public static Result uploadFeed(Feed feed, FileTransferClient client, OSDXKey signaturekey) throws Exception {
+	public static Result uploadFeed(Feed feed, UploadClient client, OSDXKey signaturekey) throws Exception {
 		String normFeedid = getNormFeedID(feed);
 		
 		//make a copy to remove private information and change to relative file paths  
@@ -282,25 +282,27 @@ public class Beamer {
 		//dir = Util.filterCharactersFile(dir);
 		
 		//build file structure
-		client.mkdir(datedir);
-		client.cd(datedir);
-		
-		client.mkdir(dir);
-		client.cd(dir);
+//		client.mkdir(datedir);
+//		client.cd(datedir);
+//		
+//		client.mkdir(dir);
+//		client.cd(dir);
+		String absolutePath = "/"+datedir+"/"+dir+"/";
 		
 		//upload feed
 		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 		Element eFeed = copyOfFeed.toElement();
 		Document.buildDocument(eFeed).output(bOut);
 		byte[] feedbytes = bOut.toByteArray();
-		client.uploadFile(normFeedid+".xml",feedbytes, null);
+		client.uploadFile(feedbytes, absolutePath+normFeedid+".xml", null);
 		
 		//upload feed signature
 		byte[][] checks  = SecurityHelper.getMD5SHA1SHA256(feedbytes);
 		Signature feed_sig = Signature.createSignature(checks[1], checks[2], checks[3], normFeedid+".xml",signaturekey);
 		bOut = new ByteArrayOutputStream();
 		Document.buildDocument(feed_sig.toElement()).output(bOut);
-		client.uploadFile(normFeedid+".osdx.sig",bOut.toByteArray(),null);
+		
+		client.uploadFile(bOut.toByteArray(),absolutePath+normFeedid+".osdx.sig",null);
 		
 		//upload all bundle and item files
 		Vector<ExtraFile> files = getUploadExtraFile(copyOfFeed);
@@ -310,14 +312,14 @@ public class Beamer {
 				File nextFile = f.file;
 				String filename = f.new_filename;
 				nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
-				client.uploadFile(nextFile, filename, null);
+				client.uploadFile(nextFile, absolutePath+filename, null);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 		}
 		
 		//upload feed finished file
-		client.uploadFile(normFeedid+".finished",new byte[]{0},null);
+		client.uploadFile(new byte[]{0},absolutePath+normFeedid+".finished",null);
 		return Result.succeeded();
 		
 //		Bundle bundle = copyOfFeed.getBundle(0);

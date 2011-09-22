@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.gui.helper;
+package org.fnppl.opensdx.file_transfer.gui;
 
 /*
  * Copyright (C) 2010-2011 

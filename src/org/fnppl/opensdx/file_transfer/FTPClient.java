@@ -52,7 +52,7 @@ import java.io.InputStream;
 import java.util.Vector;
 
 
-public class FTPClient implements FileTransferClient{
+public class FTPClient implements UploadClient{
 
 	private it.sauronsoftware.ftp4j.FTPClient client = null;
 
@@ -82,12 +82,12 @@ public class FTPClient implements FileTransferClient{
 		return ftpc;
 	}
 
-	public void closeConnection() throws FileTransferException {
+	public void closeConnection() {
 		try {
 			client.disconnect(true); //send quit (false will close without sendind a message
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			//throw new FileTransferException(ex.getMessage());
 		}
 	}
 
@@ -162,7 +162,7 @@ public class FTPClient implements FileTransferClient{
 		}
 	}
 
-	public void uploadFile(File f, final FileTransferProgress progress) throws FileTransferException {
+	public void uploadFile(File f, final FileTransferCommandListener progress) throws FileTransferException {
 		try {
 			FTPDataTransferListener transferListener = new FTPDataTransferListener() {
 				public void transferred(int len) {

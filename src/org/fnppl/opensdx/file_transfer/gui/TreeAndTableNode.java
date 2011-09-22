@@ -1,4 +1,4 @@
-package org.fnppl.opensdx.gui.helper;
+package org.fnppl.opensdx.file_transfer.gui;
 
 /*
  * Copyright (C) 2010-2011 
@@ -47,6 +47,7 @@ package org.fnppl.opensdx.gui.helper;
 
 import java.util.Vector;
 import javax.swing.tree.DefaultMutableTreeNode;
+
 
 
 public class TreeAndTableNode extends DefaultMutableTreeNode {

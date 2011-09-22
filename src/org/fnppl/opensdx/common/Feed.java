@@ -1,25 +1,8 @@
 package org.fnppl.opensdx.common;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.util.Vector;
 
-import org.fnppl.opensdx.file_transfer.FTPClient;
-import org.fnppl.opensdx.file_transfer.FileTransferClient;
-import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
-import org.fnppl.opensdx.gui.DefaultMessageHandler;
-import org.fnppl.opensdx.gui.Dialogs;
-import org.fnppl.opensdx.gui.MessageHandler;
-import org.fnppl.opensdx.security.KeyApprovingStore;
-import org.fnppl.opensdx.security.MasterKey;
-import org.fnppl.opensdx.security.OSDXKey;
-import org.fnppl.opensdx.security.Result;
-import org.fnppl.opensdx.security.SecurityHelper;
-import org.fnppl.opensdx.security.Signature;
-import org.fnppl.opensdx.security.SubKey;
 import org.fnppl.opensdx.xml.ChildElementIterator;
-import org.fnppl.opensdx.xml.Document;
-import org.fnppl.opensdx.xml.Element;
 
 /*
  * Copyright (C) 2010-2011 
@@ -131,56 +114,6 @@ public class Feed extends BusinessObject {
 		}
 		return null;
 	}
-	
-	
-	
-//	public Result sendToReceiver(MessageHandler mh, OSDXKey signatureKey) {
-//		
-//	}
-	
-	
-//	public Result upload(String host, int port, String prepath, String username, OSDXKey mysigning) {
-//		try {
-//			OSDXFileTransferClient client = new OSDXFileTransferClient();
-//			boolean ok = client.connect(host, port, prepath, mysigning, username);
-//			if (!ok) {
-//				return Result.error("ERROR: Connection to server could not be established.");
-//			}
-//			uploadFeed(client);
-//			client.closeConnection();
-//			
-//			//Dialogs.showMessage("Upload of Feed successful.");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			Result.error("ERROR: Upload of Feed failed.");
-//			//Dialogs.showMessage("ERROR: Upload of Feed failed.");
-//		}
-//		return Result.succeeded();
-//	}
-	
-//	public Result uploadFTP(String host, String username, String password) {
-//		try {
-//			FTPClient client = null;
-//			try {
-//				client = FTPClient.connect(host, username, password);
-//			} catch (Exception ex) {
-//				ex.printStackTrace();
-//				return Result.error("ERROR: Connection to server could not be established.");
-//			}
-//			if (client==null) {
-//				return Result.error("ERROR: Connection to server could not be established.");
-//			}
-//			uploadFeed(client);			
-//			client.closeConnection();
-//			
-//			//Dialogs.showMessage("Upload of Feed successful.");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			Result.error("ERROR: Upload of Feed failed.");
-//			//Dialogs.showMessage("ERROR: Upload of Feed failed.");
-//		}
-//		return Result.succeeded();
-//	}
 	
 	public Feed addBundle(Bundle bundle) {
 		if (bundles == null) bundles = new Vector<Bundle>();

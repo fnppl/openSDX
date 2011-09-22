@@ -50,7 +50,7 @@ import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.Element;
 
 public class ClientSettings {
-	
+	 
 	private String username;
 	private String keyid;
 	private String auth_type = null;

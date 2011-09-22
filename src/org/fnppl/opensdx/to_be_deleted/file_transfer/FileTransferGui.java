@@ -78,14 +78,16 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 
+import org.fnppl.opensdx.file_transfer.RemoteFile;
+import org.fnppl.opensdx.file_transfer.RemoteFileSystem;
+import org.fnppl.opensdx.file_transfer_new.gui.PanelAccount;
+import org.fnppl.opensdx.file_transfer_new.gui.TreeAndTablePanel;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
-import org.fnppl.opensdx.gui.helper.PanelAccount;
-import org.fnppl.opensdx.gui.helper.TreeAndTablePanel;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
