@@ -84,6 +84,7 @@ import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
 import org.fnppl.opensdx.file_transfer.model.FileTransferAccount;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
+import org.fnppl.opensdx.file_transfer.model.Transfer;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.Helper;
@@ -1056,13 +1057,4 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 		}
 	}
 	
-	private class Transfer {
-		
-		public String type = "";
-		public long startTime = -1L;
-		public long dataAtTime = 0L;
-		public String msg = "";
-		public int pos = 0;
-		
-	}
 }
