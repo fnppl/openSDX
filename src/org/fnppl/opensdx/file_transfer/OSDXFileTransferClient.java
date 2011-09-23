@@ -1,5 +1,48 @@
 package org.fnppl.opensdx.file_transfer;
+/*
+ * Copyright (C) 2010-2011 
+ * 							fine people e.V. <opensdx@fnppl.org> 
+ * 							Henning Thieß <ht@fnppl.org>
+ * 
+ * 							http://fnppl.org
+ */
 
+/*
+ * Software license
+ *
+ * As far as this file or parts of this file is/are software, rather than documentation, this software-license applies / shall be applied.
+ *  
+ * This file is part of openSDX
+ * openSDX is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * openSDX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * and GNU General Public License along with openSDX.
+ * If not, see <http://www.gnu.org/licenses/>.
+ *      
+ */
+
+/*
+ * Documentation license
+ * 
+ * As far as this file or parts of this file is/are documentation, rather than software, this documentation-license applies / shall be applied.
+ * 
+ * This file is part of openSDX.
+ * Permission is granted to copy, distribute and/or modify this document 
+ * under the terms of the GNU Free Documentation License, Version 1.3 
+ * or any later version published by the Free Software Foundation; 
+ * with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. 
+ * A copy of the license is included in the section entitled "GNU 
+ * Free Documentation License" resp. in the file called "FDL.txt".
+ * 
+ */
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -9,10 +52,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
-import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
-import org.fnppl.opensdx.file_transfer.model.RemoteFile;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCloseConnectionCommand;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferDeleteCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferDownloadCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferFileInfoCommand;
@@ -21,15 +62,16 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferLoginCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferMkDirCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadCommand;
+import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
+import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.keyserver.helper.IdGenerator;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.OSDXKey;
-import org.fnppl.opensdx.security.Result;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
 import org.fnppl.opensdx.xml.Document;
 
-public class OSDXFileTransferClient implements FileTransferCommandListener, UploadClient {
+public class OSDXFileTransferClient implements UploadClient {
 	
 	
 	private static boolean DEBUG = false;
@@ -62,6 +104,10 @@ public class OSDXFileTransferClient implements FileTransferCommandListener, Uplo
 	private long commandBlockTimeout = 10000; //10 sec
 	private long nextCommandBlockTimeout = -1L;
 	
+	private Vector<CommandResponseListener> responseListener = new Vector<CommandResponseListener>();
+	
+	
+	private RemoteFile root = new RemoteFile("", "/", 0L, System.currentTimeMillis(), true);
 	
 	public OSDXFileTransferClient() {
 		try {
@@ -73,8 +119,14 @@ public class OSDXFileTransferClient implements FileTransferCommandListener, Uplo
 		}
 	}
 	
+	public void addResponseListener(CommandResponseListener listener) {
+		responseListener.add(listener);
+	}
+	
 	public void addCommand(OSDXFileTransferCommand command) {
-		command.addListener(this);
+		for (CommandResponseListener l : responseListener) {
+			command.addListener(l);
+		}
 		queueWaiting.add(command);
 	}
 	
@@ -96,6 +148,9 @@ public class OSDXFileTransferClient implements FileTransferCommandListener, Uplo
 			}
 			else if (c instanceof OSDXFileTransferFileInfoCommand) {
 				allowed = isAllowed(RightsAndDuties.ALLOW_LIST); 
+			}
+			else if (c instanceof OSDXFileTransferRenameCommand) {
+				allowed = isAllowed(RightsAndDuties.ALLOW_RENAME); 
 			}
 			if (allowed) {
 				commandsInProgress.put(c.getID(), c);
@@ -230,6 +285,10 @@ public class OSDXFileTransferClient implements FileTransferCommandListener, Uplo
 		}
 		return false;
 	}
+	
+	public RemoteFile getRoot() {
+		return root;
+	}
 
 	
 	private void login() {
@@ -248,16 +307,20 @@ public class OSDXFileTransferClient implements FileTransferCommandListener, Uplo
 		addCommand(new OSDXFileTransferRenameCommand(IdGenerator.getTimestamp(),absoluteDirectoryName,newfilename));
 	}
 	
-	public void list(String absoluteDirectoryName) {
-		addCommand(new OSDXFileTransferListCommand(IdGenerator.getTimestamp(),absoluteDirectoryName));
+	public void list(String absoluteDirectoryName, CommandResponseListener listener) {
+		addCommand(new OSDXFileTransferListCommand(IdGenerator.getTimestamp(),absoluteDirectoryName, listener));
 	}
 	
-	public void download(RemoteFile remote, File localFile) {
-		addCommand(new OSDXFileTransferDownloadCommand(IdGenerator.getTimestamp(),remote, localFile));
+	public long download(String absoluteRemoteFilename, File localFile) {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferDownloadCommand(id,absoluteRemoteFilename, localFile,this));
+		return id;
 	}
 
-	public void upload(File localFile, String absoluteRemotePath) {
-		addCommand(new OSDXFileTransferUploadCommand(IdGenerator.getTimestamp(),localFile, absoluteRemotePath));
+	public long upload(File localFile, String absoluteRemotePath) {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferUploadCommand(id,localFile, absoluteRemotePath,this));
+		return id;
 	}
 	
 	public void fileinfo(String absoluteDirectoryName) {
@@ -302,22 +365,24 @@ public class OSDXFileTransferClient implements FileTransferCommandListener, Uplo
 		try {
 			if (DEBUG) {
 				System.out.println("RESPONSE commandid="+commandid);
-				if (code == SecureConnection.TYPE_DATA) {
-					System.out.println("DATA: len="+content.length);
+			}
+			if (code == SecureConnection.TYPE_DATA) {
+				System.out.println("DATA: len="+content.length);
+			} else {
+				if (content!=null) { //if (code == SecureConnection.TYPE_TEXT) {
+					String txt = new String(content,"UTF-8");
+					System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: MSG: "+txt);
 				} else {
-					if (content!=null) { //if (code == SecureConnection.TYPE_TEXT) {
-						String txt = new String(content,"UTF-8");
-						System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: MSG: "+txt);
-					} else {
-						System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: NO MSG");
-					}
+					System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: NO MSG");
 				}
 			}
+		
 			
 			OSDXFileTransferCommand command = commandsInProgress.get(commandid);
 			
 			if (command!=null) {
 				if (DEBUG) System.out.println("command found");
+				
 				//forward response to right command
 				command.onResponseReceived(num, code, content);
 				
@@ -331,48 +396,60 @@ public class OSDXFileTransferClient implements FileTransferCommandListener, Uplo
 						System.out.println("Error in login :: "+getMessageFromContentNN(content));
 					}
 				}
-				else if (command instanceof OSDXFileTransferMkDirCommand) {
-					if (code == SecureConnection.TYPE_ACK) {
-						System.out.println("MkDir successful.");
-					}
-					else if (SecureConnection.isError(code)) {
-						System.out.println("Error in MkDir :: "+getMessageFromContentNN(content));
-					}
-				}
-				else if (command instanceof OSDXFileTransferDeleteCommand) {
-					if (code == SecureConnection.TYPE_ACK) {
-						System.out.println("Delete successful.");
-					}
-					else if (SecureConnection.isError(code)) {
-						System.out.println("Error in delete :: "+getMessageFromContentNN(content));
-					}
-				}
-				else if (command instanceof OSDXFileTransferFileInfoCommand) {
-					if (code == SecureConnection.TYPE_ACK) {
-						RemoteFile rf = ((OSDXFileTransferFileInfoCommand)command).getRemoteFile();
-						if (rf!=null) {
-							System.out.println("FileInfo: "+rf.toString());
-						} else {
-							System.out.println("Error in FileInfo");
+				
+				//handle only for debugging
+				if (DEBUG) {
+					if (command instanceof OSDXFileTransferMkDirCommand) {
+						if (code == SecureConnection.TYPE_ACK) {
+							System.out.println("MkDir successful.");
+						}
+						else if (SecureConnection.isError(code)) {
+							System.out.println("Error in MkDir :: "+getMessageFromContentNN(content));
 						}
 					}
-					else if (SecureConnection.isError(code)) {
-						System.out.println("Error in delete :: "+getMessageFromContentNN(content));
+					else if (command instanceof OSDXFileTransferDeleteCommand) {
+						if (code == SecureConnection.TYPE_ACK) {
+							System.out.println("Delete successful.");
+						}
+						else if (SecureConnection.isError(code)) {
+							System.out.println("Error in delete :: "+getMessageFromContentNN(content));
+						}
 					}
-				}
-				else if (command instanceof OSDXFileTransferListCommand) {
-					if (code == SecureConnection.TYPE_ACK) {
-						Vector<RemoteFile> list = ((OSDXFileTransferListCommand)command).getList();
-						if (list!=null) {
-							for (int i=0;i<list.size();i++) {
-								System.out.println(list.get(i).toString());
+					else if (command instanceof OSDXFileTransferRenameCommand) {
+						if (code == SecureConnection.TYPE_ACK) {
+							System.out.println("Rename successful.");
+						}
+						else if (SecureConnection.isError(code)) {
+							System.out.println("Error in rename :: "+getMessageFromContentNN(content));
+						}
+					}
+					else if (command instanceof OSDXFileTransferFileInfoCommand) {
+						if (code == SecureConnection.TYPE_ACK) {
+							RemoteFile rf = ((OSDXFileTransferFileInfoCommand)command).getRemoteFile();
+							if (rf!=null) {
+								System.out.println("FileInfo: "+rf.toString());
+							} else {
+								System.out.println("Error in FileInfo");
 							}
-						} else {
-							System.out.println("Error in List");
+						}
+						else if (SecureConnection.isError(code)) {
+							System.out.println("Error in delete :: "+getMessageFromContentNN(content));
 						}
 					}
-					else if (SecureConnection.isError(code)) {
-						System.out.println("Error in delete :: "+getMessageFromContentNN(content));
+					else if (command instanceof OSDXFileTransferListCommand) {
+						if (code == SecureConnection.TYPE_ACK) {
+							Vector<RemoteFile> list = ((OSDXFileTransferListCommand)command).getList();
+							if (list!=null) {
+								for (int i=0;i<list.size();i++) {
+									System.out.println(list.get(i).toString());
+								}
+							} else {
+								System.out.println("Error in List");
+							}
+						}
+						else if (SecureConnection.isError(code)) {
+							System.out.println("Error in delete :: "+getMessageFromContentNN(content));
+						}
 					}
 				}
 				
@@ -384,7 +461,9 @@ public class OSDXFileTransferClient implements FileTransferCommandListener, Uplo
 			if (commandIdBlocks == commandid) {
 				nextCommandBlockTimeout = -1L;
 			}
-			removeCommandFromInProgress(commandid);
+			if (!(command instanceof OSDXFileTransferDownloadCommand || command instanceof OSDXFileTransferUploadCommand)) {
+				removeCommandFromInProgress(commandid);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -398,32 +477,27 @@ public class OSDXFileTransferClient implements FileTransferCommandListener, Uplo
 		}
 		return "";
 	}
-
-	public void onProcessingStarts(OSDXFileTransferCommand command) {
-		// TODO Auto-generated method stub
-		
-	}
 	
-	public void onProcessingEnds(OSDXFileTransferCommand command) {
-		if (command instanceof OSDXFileTransferLoginCommand) {
-			//rights_duties = command
-		}	
-	}
-
-	public void onUpdateStatus(OSDXFileTransferCommand command) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	
 	
 	//Methods from UploadClient
 	
-	public void uploadFile(File f, String remoteAbsoluteFilename, FileTransferCommandListener listener) {
-		
+	public void uploadFile(File f, String remoteAbsoluteFilename, CommandResponseListener listener) {
+		long id = IdGenerator.getTimestamp();
+		OSDXFileTransferUploadCommand c = new OSDXFileTransferUploadCommand(id,f, remoteAbsoluteFilename,this);
+		if (listener!=null) {
+			c.addListener(listener);
+		}
+		addCommand(c);
 	}
 
-	public void  uploadFile(byte[] data, String remoteAbsoluteFilename, FileTransferCommandListener listener) {
-		
+	public void  uploadFile(byte[] data, String remoteAbsoluteFilename, CommandResponseListener listener) {
+		long id = IdGenerator.getTimestamp();
+		OSDXFileTransferUploadCommand c = new OSDXFileTransferUploadCommand(id,data, remoteAbsoluteFilename,this);
+		if (listener!=null) {
+			c.addListener(listener);
+		}
+		addCommand(c);
 	}
 	
 	
@@ -440,10 +514,13 @@ public class OSDXFileTransferClient implements FileTransferCommandListener, Uplo
 
 			client.connect("localhost", 4221,"/", mysigning, username);
 			//client.mkdir("/blub");
-			client.fileinfo("/blub");
+			//client.fileinfo("/blub");
 			client.delete("/FDL.txt");
+			
 			client.upload(new File("FDL.txt"), "/FDL.txt");
-			client.list("/");
+			//client.rename("/FDL.txt", "blablub");
+			//client.list("/");
+			client.download("/FDL2.txt", new File("/tmp/FDL2.txt"));
 			
 			Thread.sleep(1000);
 			client.closeConnection();

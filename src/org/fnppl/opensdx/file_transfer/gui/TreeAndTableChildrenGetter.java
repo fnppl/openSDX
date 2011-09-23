@@ -1,11 +1,11 @@
-package org.fnppl.opensdx.file_transfer;
+package org.fnppl.opensdx.file_transfer.gui;
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
  * 							http://fnppl.org
-*/
+ */
 
 /*
  * Software license
@@ -43,15 +43,10 @@ package org.fnppl.opensdx.file_transfer;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
-public class FileTransferException extends Exception {
+import java.util.Vector;
 
-	private static final long serialVersionUID = 1L;
-	
-	public FileTransferException() {
-		super();
-	}
-	public FileTransferException(String msg) {
-		super(msg);
-	}
+public interface TreeAndTableChildrenGetter {
+
+	Vector<TreeAndTableNode> getChildren(TreeAndTableNode node);
 	
 }

@@ -67,15 +67,19 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import org.fnppl.opensdx.file_transfer.FileTransferException;
-import org.fnppl.opensdx.file_transfer.RemoteFile;
-import org.fnppl.opensdx.file_transfer.RemoteFileSystem;
+import org.fnppl.opensdx.file_transfer.CommandResponseListener;
+import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferListCommand;
+import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
 
-public class TreeAndTablePanel extends JPanel implements MyObservable {
+public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable, TreeAndTableChildrenGetter {
 
+	
+	private long timeoutDuration = 4000;
 	private JSplitPane split;
 	private JTree tree;
 	private TreeAndTableNode root;
@@ -84,7 +88,6 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 	private DefaultTableModel table_model;
 	private Vector<RemoteFile> currentFiles = null;
 	
-	private RemoteFileSystem fs = null;
 	
 	private JPanel buttons;
 	private JButton buTransfer;
@@ -92,42 +95,71 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 	private JButton buRemove;
 	private JButton buRename;
 	
-	private boolean canUpload = true;
+
+	private OSDXFileTransferClient client = null;
 	
-	public TreeAndTablePanel(RemoteFileSystem fs, boolean canUpload) {
-		this.canUpload = canUpload;
-		this.fs = fs;
-		if (!fs.isConnected()) {
-			try {
-				fs.connect();
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		}
+	public TreeAndTablePanelOSDXClient(OSDXFileTransferClient client) {
+		this.client = client;
 		initComponents();
 		initLayout();
 	}
 	
 	public void closeConnection() {
-		fs.disconnect();
+		client.closeConnection();
+	}
+	
+	private Vector<RemoteFile> nextList = null;
+	private boolean hasAnswer = false;
+	
+	private Vector<RemoteFile> list(String absolutPath) {
+		nextList = null;
+		hasAnswer = false;
+		client.list(absolutPath,new CommandResponseListener() {
+			public void onError(OSDXFileTransferCommand command, String msg) {
+				System.out.println("END OF LIST COMMAND :: ERROR");
+				nextList = null;
+				hasAnswer = true;
+			}
+			public void onStatusUpdate(OSDXFileTransferCommand command,long progress, long maxProgress, String msg) {}
+			public void onSuccess(OSDXFileTransferCommand command) {
+				System.out.println("END OF LIST COMMAND :: SUCCESS");
+				nextList = ((OSDXFileTransferListCommand)command).getList();
+				hasAnswer = true;
+			}
+		});
+		
+		//block until answer or timeout
+		long timeout = System.currentTimeMillis()+timeoutDuration;
+		while (!hasAnswer && timeout > System.currentTimeMillis()) {
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		if (!hasAnswer) {
+			Dialogs.showMessage("Error: Timeout when requesting list for directory: "+absolutPath);
+		}
+		return nextList;
 	}
 	
 	public Vector<TreeAndTableNode> getChildren(TreeAndTableNode node) {
-		Vector<TreeAndTableNode> children = new Vector<TreeAndTableNode>();
 		RemoteFile file = (RemoteFile) node.getUserObject();
+		Vector<TreeAndTableNode> children = new Vector<TreeAndTableNode>();
 		try {
-			Vector<RemoteFile> list = fs.list(file);
-			if (list == null)
-				return children;
-			for (RemoteFile f : list) {
-				String name = f.getName();
-				try {
-					if (f.isDirectory()) {
-						TreeAndTableNode n = new TreeAndTableNode(this, name, true, f);
-						children.add(n);
+			Vector<RemoteFile> list = list(file.getFilnameWithPath());
+			if (list!=null) {
+				//build list
+				for (RemoteFile f : list) {
+					String name = f.getName();
+					try {
+						if (f.isDirectory()) {
+							TreeAndTableNode n = new TreeAndTableNode(this, name, true, f);
+							children.add(n);
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
 					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
 				}
 			}
 		} catch (Exception ex) {
@@ -150,7 +182,7 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 	
 	private void initComponents() {
 		tree = new JTree();
-		RemoteFile f = fs.getRoot();
+		RemoteFile f = client.getRoot();
 		root = new TreeAndTableNode(this, f.getName(), true, f);
 		root.populate();
 		tree_model = new DefaultTreeModel(root);
@@ -201,11 +233,7 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 		split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(tree), new JScrollPane(table));
 		split.setDividerLocation(230);
 		buttons = new JPanel();
-		if (canUpload) {
-			buTransfer = new JButton("upload");
-		} else {
-			buTransfer = new JButton("download");
-		}
+		buTransfer = new JButton("download");
 		buTransfer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				notifyChanges();
@@ -220,13 +248,14 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 				} else {
 					String name = Dialogs.showInputDialog("Make Directory", "Make a new Directory in:\n"+dir.getFilnameWithPath()+"\n\nEnter new directory name:");
 					if (name!=null) {
-						RemoteFile f = new RemoteFile(dir.getFilnameWithPath(), name, 0, System.currentTimeMillis(), true);
+						//RemoteFile f = new RemoteFile(dir.getFilnameWithPath(), name, 0, System.currentTimeMillis(), true);
 						TreePath path = tree.getSelectionPath();
-						try {
-							fs.mkdir(f);
-						} catch (FileTransferException ex) {
-							Dialogs.showMessage("Error, could not create directory:\n"+f.getFilnameWithPath());
+						String newDir = dir.getFilnameWithPath();
+						if (newDir.endsWith("/")) {
+							newDir += "/";
 						}
+						newDir += name;
+						client.mkdir(newDir);
 						refreshView(path);
 					}
 				}
@@ -245,11 +274,7 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 					int q = Dialogs.showYES_NO_Dialog("Remove Files", msg);
 					if (q == Dialogs.YES) {
 						for (RemoteFile f : files) {
-							try {
-								fs.remove(f);
-							} catch (FileTransferException ex) {
-								Dialogs.showMessage("Error, could not remove:\n"+f.getFilnameWithPath());
-							}
+							client.delete(f.getFilnameWithPath());
 						}
 						try {
 							table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
@@ -273,11 +298,7 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 						int q = Dialogs.showYES_NO_Dialog("Remove Directory", msg);
 						if (q == Dialogs.YES) {
 							TreePath path = tree.getSelectionPath();
-							try {
-								fs.remove(dir);
-							} catch (FileTransferException ex) {
-								Dialogs.showMessage("Error, could not remove:\n"+dir.getFilnameWithPath());
-							}
+							client.delete(dir.getFilnameWithPath());
 							refreshView(path.getParentPath());
 						}
 					}
@@ -287,25 +308,28 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 		buRename = new JButton("rename");
 		buRename.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				RemoteFile from = null;
+				
 				Vector<RemoteFile> files = getSelectedFiles();
-				if (files==null || files.size()!=1) {
+				if (files == null || files.size()==0) {
+					from = getSelectedDir();
+				} else {
+					if (files.size()==1) {
+						from = files.get(0);
+					}
+				}
+				if (from==null) {
 					Dialogs.showMessage("Please select one file");
 					return;
 				}
-				
-				RemoteFile from = files.get(0);
+
 				String name = Dialogs.showInputDialog("Rename file", "Please enter new filename for file\n"+from.getName()+"\n",from.getName());
 				if (name!=null) {
-					RemoteFile to = new RemoteFile(from.getPath(), name, from.getLength(), from.getLastModified(), false);
-					try {
-						fs.rename(from, to);
-					} catch (FileTransferException ex) {
-						Dialogs.showMessage("Error, could not rename:\n"+from.getFilnameWithPath());
-					}
+					//RemoteFile to = new RemoteFile(from.getPath(), name, from.getLength(), from.getLastModified(), false);
+					client.rename(from.getFilnameWithPath(), name);
 					table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
 					table.setModel(table_model);
 				}
-				
 			}
 		});	
 	}
@@ -361,13 +385,14 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 	}
 	
 	private String[] header = new String[] { "name", "type","size"};
+	
 	private DefaultTableModel updateTableModel(TreeAndTableNode node) {
 		if (node == null) {
 			return new DefaultTableModel(new String[0][header.length],header);
 		}
 		try {
 			RemoteFile file = (RemoteFile) node.getUserObject();
-			Vector<RemoteFile> list = fs.list(file);
+			Vector<RemoteFile> list = list(file.getFilnameWithPath());
 			currentFiles = new Vector<RemoteFile>();
 			Vector<String[]> data = new Vector<String[]>();
 
@@ -427,19 +452,12 @@ public class TreeAndTablePanel extends JPanel implements MyObservable {
 		this.setLayout(new BorderLayout());
 		this.add(split, BorderLayout.CENTER);
 		
-		if (canUpload) {
-			buttons.setLayout(new FlowLayout(FlowLayout.RIGHT));
-			buttons.add(buMkdir);
-			buttons.add(buRename);
-			buttons.add(buRemove);
-			buttons.add(buTransfer);
-		} else {
-			buttons.setLayout(new FlowLayout(FlowLayout.LEFT));
-			buttons.add(buTransfer);
-			buttons.add(buMkdir);
-			buttons.add(buRename);
-			buttons.add(buRemove);
-		}
+		buttons.setLayout(new FlowLayout(FlowLayout.LEFT));
+		buttons.add(buTransfer);
+		buttons.add(buMkdir);
+		buttons.add(buRename);
+		buttons.add(buRemove);
+		
 		this.add(buttons, BorderLayout.SOUTH);
 	}
 	

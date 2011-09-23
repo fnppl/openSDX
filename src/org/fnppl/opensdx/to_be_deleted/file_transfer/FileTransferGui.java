@@ -106,11 +106,11 @@ public class FileTransferGui extends JFrame implements MyObserver {
 	
 
 	private DefaultComboBoxModel selectAccount_model;
-	private TreeAndTablePanel panelLocal;
+	private TreeAndTablePanelOSDXClient panelLocal;
 	private RemoteFileSystem fsLocal;
 	
 	private JPanel panelRemote;
-	private TreeAndTablePanel ttpanelRemote;
+	private TreeAndTablePanelOSDXClient ttpanelRemote;
 	private RemoteFileSystem fsRemote;
 	
 	private TableCellRenderer leftRenderer;
@@ -280,7 +280,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 		
 
 		fsLocal = RemoteFileSystem.initLocalFileSystem();
-		panelLocal = new TreeAndTablePanel(fsLocal,true);
+		panelLocal = new TreeAndTablePanelOSDXClient(fsLocal,true);
 		panelLocal.setPreferredColumnWidth(1, 20);
 		panelLocal.setPreferredColumnWidth(2, 30);
 
@@ -467,7 +467,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 					} else {
 						addStatus("Connection to "+a.username+"@"+a.host+" established.");
 					}
-					ttpanelRemote = new TreeAndTablePanel(fsRemote,false);
+					ttpanelRemote = new TreeAndTablePanelOSDXClient(fsRemote,false);
 					ttpanelRemote.addObserver(this);
 					ttpanelRemote.setPreferredColumnWidth(1, 20);
 					ttpanelRemote.setPreferredColumnWidth(2, 30);
@@ -570,7 +570,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 						};
 						t.start();
 					}
-					ttpanelRemote = new TreeAndTablePanel(fsRemote,false);
+					ttpanelRemote = new TreeAndTablePanelOSDXClient(fsRemote,false);
 					ttpanelRemote.addObserver(this);
 					ttpanelRemote.setPreferredColumnWidth(1, 20);
 					ttpanelRemote.setPreferredColumnWidth(2, 30);
@@ -774,7 +774,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 				};
 				t.start();
 			}
-			ttpanelRemote = new TreeAndTablePanel(fsRemote,false);
+			ttpanelRemote = new TreeAndTablePanelOSDXClient(fsRemote,false);
 			ttpanelRemote.addObserver(this);
 			ttpanelRemote.setPreferredColumnWidth(1, 20);
 			ttpanelRemote.setPreferredColumnWidth(2, 30);

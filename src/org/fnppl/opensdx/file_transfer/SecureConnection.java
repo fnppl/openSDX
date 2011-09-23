@@ -75,7 +75,10 @@ public class SecureConnection {
 					header[12] = (byte)0;
 					len = bytesToInt(header, 12);
 					
-					if (DEBUG) header[12] = type; System.out.println("header = "+SecurityHelper.HexDecoder.encode(header)+" :: id="+id+"\ttype="+SecurityHelper.HexDecoder.encode(new byte[]{type})+"\tlen="+len);
+					if (DEBUG) {
+						header[12] = type;
+						System.out.println("header = "+SecurityHelper.HexDecoder.encode(header)+" :: id="+id+"\ttype="+SecurityHelper.HexDecoder.encode(new byte[]{type})+"\tlen="+len);
+					}
 	
 					headerNotComplete = false;
 				}

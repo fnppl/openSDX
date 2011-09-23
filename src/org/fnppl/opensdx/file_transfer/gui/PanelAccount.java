@@ -57,7 +57,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.fnppl.opensdx.dmi.FeedGui;
-import org.fnppl.opensdx.file_transfer.FileTransferAccount;
+import org.fnppl.opensdx.file_transfer.model.FileTransferAccount;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.SecurityMainFrame;
@@ -551,7 +551,7 @@ public class PanelAccount extends JPanel {
 	// ----- action methods --------------------------------
 	public void init_select_type_model() {
 		select_type_model.addElement(FileTransferAccount.TYPE_OSDXFILESERVER);
-		select_type_model.addElement(FileTransferAccount.TYPE_FTP);
+		//select_type_model.addElement(FileTransferAccount.TYPE_FTP);
 	}
 	public void select_type_changed(int selected) {
 		if (selected==0) {

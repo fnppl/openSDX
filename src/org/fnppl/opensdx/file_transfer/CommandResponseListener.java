@@ -43,12 +43,12 @@ package org.fnppl.opensdx.file_transfer;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
-import java.io.File;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
 
-public interface UploadClient {
+public interface CommandResponseListener {
 
-	public void uploadFile(File f, String remoteAbsoluteFilename, CommandResponseListener listener);
-	public void uploadFile(byte[] data, String remoteAbsoluteFilename, CommandResponseListener listener);
-	public void closeConnection();
+	public void onSuccess(OSDXFileTransferCommand command);
+	public void onError(OSDXFileTransferCommand command, String msg);
+	public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg);
 	
 }

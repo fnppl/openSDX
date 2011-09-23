@@ -57,6 +57,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
@@ -78,10 +79,11 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 
-import org.fnppl.opensdx.file_transfer.FileTransferException;
+import org.fnppl.opensdx.file_transfer.CommandResponseListener;
+import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
 import org.fnppl.opensdx.file_transfer.model.FileTransferAccount;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
-import org.fnppl.opensdx.file_transfer.model.RemoteFileSystem;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.Helper;
@@ -94,9 +96,11 @@ import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
-public class FileTransferGui extends JFrame implements MyObserver {
+public class FileTransferGui extends JFrame implements MyObserver, CommandResponseListener {
 
 	private Vector<FileTransferAccount> accounts = new Vector<FileTransferAccount>();
+	private Vector<FileTransferAccount> supportedAccounts = new Vector<FileTransferAccount>();
+	
 	private JPanel panelNorth;
 	private JComboBox selectAccount;
 	private JButton buConnect;
@@ -104,14 +108,16 @@ public class FileTransferGui extends JFrame implements MyObserver {
 	private JButton buRemove;
 	private JButton buTest;
 	
-
-	private DefaultComboBoxModel selectAccount_model;
-	private TreeAndTablePanel panelLocal;
-	private RemoteFileSystem fsLocal;
+	private HashMap<Long,Transfer> transfersInProgress = new HashMap<Long, Transfer>();
 	
+	private DefaultComboBoxModel selectAccount_model;
+	
+	private OSDXFileTransferClient client = null;
 	private JPanel panelRemote;
-	private TreeAndTablePanel ttpanelRemote;
-	private RemoteFileSystem fsRemote;
+	private TreeAndTablePanelOSDXClient ttpanelRemote;
+	
+	private TreeAndTablePanelLocal panelLocal;
+	
 	
 	private TableCellRenderer leftRenderer;
 	private TableCellRenderer centerRenderer;
@@ -156,11 +162,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 				try {
 					FileTransferAccount a = new FileTransferAccount();
 					a.type = e.getChildText("type");
-					if (a.type.equals(a.TYPE_FTP)) {
-						a.username = e.getChildText("username");
-						a.host = e.getChildText("host");
-						accounts.add(a);
-					} else if (a.type.equals(a.TYPE_OSDXFILESERVER)) {
+					if (a.type.equals(a.TYPE_OSDXFILESERVER)) {
 						a.username = e.getChildText("username");
 						a.host = e.getChildText("host");
 						a.port = Integer.parseInt(e.getChildTextNN("port"));
@@ -168,8 +170,15 @@ public class FileTransferGui extends JFrame implements MyObserver {
 						a.keyid = e.getChildText("keyid");
 						a.keystore_filename = e.getChildTextNN("keystore");
 						accounts.add(a);
-					} else {
-						a.type += "[NOT SUPPORTED]";
+						supportedAccounts.add(a);
+					}
+					else if (a.type.equals(a.TYPE_FTP)) {
+						a.username = e.getChildText("username");
+						a.host = e.getChildText("host");
+						accounts.add(a);
+					}
+					else {
+						a.type += " [NOT SUPPORTED]";
 						accounts.add(a);
 					}
 				} catch (Exception ex) {
@@ -191,11 +200,8 @@ public class FileTransferGui extends JFrame implements MyObserver {
 		selectAccount_model.removeAllElements();
 		selectAccount_model.addElement("Create new account ...");
 		selectAccount_model.addElement("[separator]");
-		for (FileTransferAccount a : accounts) {
-			if (a.type.equals(a.TYPE_FTP)) {
-				selectAccount_model.addElement(a.type+" :: "+a.username+"@"+a.host);
-			} 
-			else if (a.type.equals(a.TYPE_OSDXFILESERVER)) {
+		for (FileTransferAccount a : supportedAccounts) {
+			if (a.type.equals(a.TYPE_OSDXFILESERVER)) {
 				String keyidShort;
 				try {
 					keyidShort = a.keyid.substring(0,8)+" ... "+a.keyid.substring(51);
@@ -205,8 +211,11 @@ public class FileTransferGui extends JFrame implements MyObserver {
 				String name = a.type+" :: "+a.username+", "+keyidShort+", "+a.host;
 				selectAccount_model.addElement(name);	
 			}
+//			else if (a.type.equals(a.TYPE_FTP)) {
+//				selectAccount_model.addElement(a.type+" :: "+a.username+"@"+a.host);
+//			}
 			else {
-				selectAccount_model.addElement(a.type+" :: "+a.username+"@"+a.host);
+				System.out.println("accout type not supported: "+a.type);
 			}
 		}
 		selectAccount.setModel(selectAccount_model);
@@ -279,8 +288,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 		panelNorth.add(buTest);
 		
 
-		fsLocal = RemoteFileSystem.initLocalFileSystem();
-		panelLocal = new TreeAndTablePanel(fsLocal,true);
+		panelLocal = new TreeAndTablePanelLocal();
 		panelLocal.setPreferredColumnWidth(1, 20);
 		panelLocal.setPreferredColumnWidth(2, 30);
 
@@ -444,44 +452,10 @@ public class FileTransferGui extends JFrame implements MyObserver {
 			if (sel<0) {
 				button_edit_clicked();
 			}
-			else if (sel>=0 && sel < accounts.size()) {
-				FileTransferAccount a = accounts.get(sel);
+			else if (sel>=0 && sel < supportedAccounts.size()) {
+				FileTransferAccount a = supportedAccounts.get(sel);
 				System.out.println("account: "+a.type+" :: "+a.username);
-				if (a.type.equals(a.TYPE_FTP)) {
-					char[] pw = Dialogs.showPasswordDialog("Enter Password","Please enter password for ftp account:\nhost: "+a.host+"\nusername: "+a.username);
-					if (pw==null) {
-						return;
-					}
-					fsRemote = RemoteFileSystem.initFTPFileSystem(a.host, a.username, pw.toString());
-					if (!fsRemote.isConnected()) {
-						try {
-							fsRemote.connect();
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-					if (!fsRemote.isConnected()) {
-						addStatus("ERROR, could not connect to "+a.username+"@"+a.host+".");
-						Dialogs.showMessage("Sorry, could not connect to given account.");
-						return;
-					} else {
-						addStatus("Connection to "+a.username+"@"+a.host+" established.");
-					}
-					ttpanelRemote = new TreeAndTablePanel(fsRemote,false);
-					ttpanelRemote.addObserver(this);
-					ttpanelRemote.setPreferredColumnWidth(1, 20);
-					ttpanelRemote.setPreferredColumnWidth(2, 30);
-					ttpanelRemote.setColumnRenderer(0, leftRenderer);
-					ttpanelRemote.setColumnRenderer(1, centerRenderer);		
-					ttpanelRemote.setColumnRenderer(2, rightRenderer);
-					
-					panelRemote.removeAll();
-					panelRemote.add(ttpanelRemote, BorderLayout.CENTER);
-					buConnect.setText("disconnect");
-					this.validate();
-					this.repaint();
-				}
-				else if (a.type.equals(a.TYPE_OSDXFILESERVER)) {
+				if (a.type.equals(a.TYPE_OSDXFILESERVER)) {
 					
 					//check pre-conditions:
 					if (a.username==null || a.username.length()==0) {
@@ -541,36 +515,36 @@ public class FileTransferGui extends JFrame implements MyObserver {
 							}
 						}
 					}
-						
-					fsRemote = RemoteFileSystem.initOSDXFileServerConnection(a.host, a.port, a.prepath, a.username, a.key);
-					if (!fsRemote.isConnected()) {
-						try {
-							fsRemote.connect();
-							//give it a seconds
-							Thread.sleep(1000);
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-					if (!fsRemote.isConnected()) {
+					client = new OSDXFileTransferClient();
+					try {
+						client.connect(a.host, a.port, a.prepath, a.key, a.username);
+						client.addResponseListener(this);
+					} catch (Exception e) {
+						e.printStackTrace();
 						addStatus("ERROR, could not connect to "+a.username+"@"+a.host+".");
-						Dialogs.showMessage("Sorry, could not connect to given account.");
-						return;
-					} else {
-						addStatus("Connection to "+a.username+"@"+a.host+" established.");
-						Thread t = new Thread() {
-							public void run() {
-								while (fsRemote.isConnected()) {
-									try {
-										sleep(20000);
-									} catch (Exception ex) {}
-									fsRemote.noop();
-								}
-							}
-						};
-						t.start();
+//						Dialogs.showMessage("Sorry, could not connect to given account.");
+//						return;
 					}
-					ttpanelRemote = new TreeAndTablePanel(fsRemote,false);
+					
+//					if (client.isConnected()) {
+//						addStatus("ERROR, could not connect to "+a.username+"@"+a.host+".");
+//						Dialogs.showMessage("Sorry, could not connect to given account.");
+//						return;
+//					} else {
+//						addStatus("Connection to "+a.username+"@"+a.host+" established.");
+//						Thread t = new Thread() {
+//							public void run() {
+//								while (fsRemote.isConnected()) {
+//									try {
+//										sleep(20000);
+//									} catch (Exception ex) {}
+//									fsRemote.noop();
+//								}
+//							}
+//						};
+//						t.start();
+//					}
+					ttpanelRemote = new TreeAndTablePanelOSDXClient(client);
 					ttpanelRemote.addObserver(this);
 					ttpanelRemote.setPreferredColumnWidth(1, 20);
 					ttpanelRemote.setPreferredColumnWidth(2, 30);
@@ -598,13 +572,13 @@ public class FileTransferGui extends JFrame implements MyObserver {
 
 	private void button_edit_clicked() {
 		int sel = selectAccount.getSelectedIndex()-2;
-		if (sel>=0 && sel < accounts.size()) {
-			FileTransferAccount a = accounts.get(sel);
+		if (sel>=0 && sel < supportedAccounts.size()) {
+			FileTransferAccount a = supportedAccounts.get(sel);
 			PanelAccount pAcc = new PanelAccount();
 			pAcc.update(a);
 			int ans = JOptionPane.showConfirmDialog(null,pAcc,"Edit Account",JOptionPane.OK_CANCEL_OPTION);
 	    	if (ans == JOptionPane.OK_OPTION) {
-	    		accounts.set(sel, pAcc.getAccount());
+	    		supportedAccounts.set(sel, pAcc.getAccount());
 	    		updateAccounts();
 	    		selectAccount.setSelectedIndex(sel+2);
 		    }
@@ -624,7 +598,9 @@ public class FileTransferGui extends JFrame implements MyObserver {
 			pAcc.update(a_new);
 			int ans = JOptionPane.showConfirmDialog(null,pAcc,"New Account",JOptionPane.OK_CANCEL_OPTION);
 	    	if (ans == JOptionPane.OK_OPTION) {
-	    		accounts.add(pAcc.getAccount());
+	    		FileTransferAccount addA = pAcc.getAccount(); 
+	    		accounts.add(addA);
+	    		supportedAccounts.add(addA);
 	    		updateAccounts();
 	    		selectAccount.setSelectedIndex(sel+2);
 		    }
@@ -745,36 +721,44 @@ public class FileTransferGui extends JFrame implements MyObserver {
 			a.key = OSDXKey.fromElement(Document.fromString(b.toString()).getRootElement());
 			a.key.unlockPrivateKey("test");
 			
-			fsRemote = RemoteFileSystem.initOSDXFileServerConnection(a.host, a.port, a.prepath, a.username, a.key);
+			client = new OSDXFileTransferClient();
 			
-			if (!fsRemote.isConnected()) {
-				try {
-					fsRemote.connect();
-					//give it a seconds
-					Thread.sleep(1000);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-			if (!fsRemote.isConnected()) {
+			try {
+				client.connect(a.host, a.port, a.prepath, a.key, a.username);
+				client.addResponseListener(this);
+			} catch (Exception ex) {
 				addStatus("ERROR, could not connect to "+a.username+"@"+a.host+".");
-				Dialogs.showMessage("Sorry, could not connect to given account.");
+				Dialogs.showMessage("Sorry, could not connect to "+a.username+"@"+a.host+".");
 				return;
-			} else {
-				addStatus("Connection to "+a.username+"@"+a.host+" established.");
-				Thread t = new Thread() {
-					public void run() {
-						while (fsRemote.isConnected()) {
-							try {
-								sleep(20000);
-							} catch (Exception ex) {}
-							fsRemote.noop();
-						}
-					}
-				};
-				t.start();
 			}
-			ttpanelRemote = new TreeAndTablePanel(fsRemote,false);
+//			if (!fsRemote.isConnected()) {
+//				try {
+//					fsRemote.connect();
+//					//give it a seconds
+//					Thread.sleep(1000);
+//				} catch (Exception ex) {
+//					ex.printStackTrace();
+//				}
+//			}
+//			if (!fsRemote.isConnected()) {
+//				addStatus("ERROR, could not connect to "+a.username+"@"+a.host+".");
+//				Dialogs.showMessage("Sorry, could not connect to given account.");
+//				return;
+//			} else {
+//				addStatus("Connection to "+a.username+"@"+a.host+" established.");
+//				Thread t = new Thread() {
+//					public void run() {
+//						while (fsRemote.isConnected()) {
+//							try {
+//								sleep(20000);
+//							} catch (Exception ex) {}
+//							fsRemote.noop();
+//						}
+//					}
+//				};
+//				t.start();
+//			}
+			ttpanelRemote = new TreeAndTablePanelOSDXClient(client);
 			ttpanelRemote.addObserver(this);
 			ttpanelRemote.setPreferredColumnWidth(1, 20);
 			ttpanelRemote.setPreferredColumnWidth(2, 30);
@@ -789,7 +773,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 			this.repaint();
 			
 			//test upload
-			if (fsRemote.isConnected()) {
+			//if (fsRemote.isConnected()) {
 				int ant = Dialogs.showYES_NO_Dialog("Test connection", "Test connection established.\nTry to upload / download a file?");
 				if (ant==Dialogs.YES) {
 					long now = System.currentTimeMillis();
@@ -803,7 +787,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 					
 					RemoteFile remote = new RemoteFile("/",local.getName(), local.length(), System.currentTimeMillis(), false);
 					System.out.println("uploading: "+local.getAbsolutePath()+" -> "+remote.getFilnameWithPath());
-					fsRemote.upload(local, remote, null);
+					client.upload(local, remote.getFilnameWithPath());
 					ttpanelRemote.refreshView();
 					local.delete();
 					
@@ -812,9 +796,9 @@ public class FileTransferGui extends JFrame implements MyObserver {
 						File local2 = File.createTempFile("test_download_"+now, ".tmp");
 						local2.delete();
 						System.out.println("downloading: "+local2.getAbsolutePath()+" <- "+remote.getFilnameWithPath());
-						fsRemote.download(local2, remote, null);
+						client.download(remote.getFilnameWithPath(),local2);
 						Thread.sleep(3000);
-						fsRemote.remove(remote);
+						client.delete(remote.getFilnameWithPath());
 						FileInputStream fin = new FileInputStream(local2);
 						byte[] data2 = new byte[3000];
 						int read = fin.read(data2);
@@ -827,7 +811,7 @@ public class FileTransferGui extends JFrame implements MyObserver {
 					}
 				}
 				return;
-			}
+			//}
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -835,10 +819,10 @@ public class FileTransferGui extends JFrame implements MyObserver {
 	}
 	
 	private void button_upload_clicked() {
-		Thread t = new Thread() { //dont block ui
-			public void run() {
+//		Thread t = new Thread() { //dont block ui
+//			public void run() {
 				System.out.println("upload");
-				Vector<RemoteFile> localFiles = panelLocal.getSelectedFiles();
+				Vector<File> localFiles = panelLocal.getSelectedFiles();
 				if (localFiles==null || localFiles.size()==0) {
 					Dialogs.showMessage("Please select files to upload on local side.");
 					return;
@@ -848,54 +832,66 @@ public class FileTransferGui extends JFrame implements MyObserver {
 					Dialogs.showMessage("Please select a target directory on remote side.");
 					return;
 				}
-				for (RemoteFile localFile : localFiles) {
+				for (File localFile : localFiles) {
 					final File from = new File(localFile.getPath(), localFile.getName());
-					RemoteFile to = new RemoteFile(tragetDirectory.getFilnameWithPath(), from.getName(), from.length(), from.lastModified(), false);
-					final String msg = "uploading "+from.getAbsolutePath()+" -> "+to.getFilnameWithPath();
-					final int pos = addStatus("uploading "+from.getAbsolutePath()+" -> "+to.getFilnameWithPath());
-					
-					FileTransferProgress progress = new FileTransferProgress(from.length()) {
-						private long time = -1L;
-						private long dataAtTime = 0L;
-						public void onUpdate() {
-							String transferRate = "";
-							if (time==-1L) {
-								time = System.currentTimeMillis();
-								dataAtTime = getProgress();
-							} else {
-								long now = System.currentTimeMillis();
-								long dataNow = getProgress();
-								long tr = ((dataNow-dataAtTime)*1000)/((now-time)*1024); //in kB / s
-								transferRate = String.format("  (%d kB/s)", tr);
-							}
-							setStatus(pos, msg+"   "+getProgressString()+transferRate);
-						}
-						public void onError() {
-							setStatus(pos, msg+"   ERROR");
-							String msg = getErrorMsg();
-							if (msg == null) {
-								Dialogs.showMessage("Error uploading file:\n"+from.getAbsolutePath());
-							} else {
-								Dialogs.showMessage("Error uploading file:\n"+from.getAbsolutePath()+"\n"+msg);
-							}
-						}
-					};
-					try {
-						fsRemote.upload(from, to, progress);
-					} catch (FileTransferException ex) {
-						progress.setError(ex.getMessage());
+					String filenameTo = tragetDirectory.getFilnameWithPath();
+					if (!filenameTo.endsWith("/")) {
+						filenameTo += "/";
 					}
+					filenameTo += from.getName();
+					//RemoteFile to = new RemoteFile(tragetDirectory.getFilnameWithPath(), from.getName(), from.length(), from.lastModified(), false);
+							
+					long id = client.upload(localFile, filenameTo);
+					Transfer t = new Transfer();
+					t.msg = "uploading "+from.getAbsolutePath()+" -> "+filenameTo;
+					t.pos = addStatus("uploading "+from.getAbsolutePath()+" -> "+filenameTo);
+					t.type = "upload";
+					t.startTime = -1L;
+					transfersInProgress.put(id,t);
+					
+					//TODO
+//					FileTransferProgress progress = new FileTransferProgress(from.length()) {
+//						private long time = -1L;
+//						private long dataAtTime = 0L;
+//						public void onUpdate() {
+//							String transferRate = "";
+//							if (time==-1L) {
+//								time = System.currentTimeMillis();
+//								dataAtTime = getProgress();
+//							} else {
+//								long now = System.currentTimeMillis();
+//								long dataNow = getProgress();
+//								long tr = ((dataNow-dataAtTime)*1000)/((now-time)*1024); //in kB / s
+//								transferRate = String.format("  (%d kB/s)", tr);
+//							}
+//							setStatus(pos, msg+"   "+getProgressString()+transferRate);
+//						}
+//						public void onError() {
+//							setStatus(pos, msg+"   ERROR");
+//							String msg = getErrorMsg();
+//							if (msg == null) {
+//								Dialogs.showMessage("Error uploading file:\n"+from.getAbsolutePath());
+//							} else {
+//								Dialogs.showMessage("Error uploading file:\n"+from.getAbsolutePath()+"\n"+msg);
+//							}
+//						}
+//					};
+//					try {
+//						fsRemote.upload(from, to, progress);
+//					} catch (FileTransferException ex) {
+//						progress.setError(ex.getMessage());
+//					}
 				}
 				//update view
-				ttpanelRemote.refreshView();
-			}
-		};
-		t.start();
+				//ttpanelRemote.refreshView();
+//			}
+//		};
+//		t.start();
 	}
 	
 	private void button_download_clicked() {
 		System.out.println("download");
-		final RemoteFile local = panelLocal.getSelectedDir();
+		final File local = panelLocal.getSelectedDir();
 		if (local==null) {
 			Dialogs.showMessage("Please select a local directory.");
 			return;
@@ -906,52 +902,62 @@ public class FileTransferGui extends JFrame implements MyObserver {
 			return;
 		}
 		//don't block ui
-		Thread tDownload = new Thread() {
-			public void run() {
+//		Thread tDownload = new Thread() {
+//			public void run() {
 				for (final RemoteFile remoteFile : remote) {
-					final File target = new File(local.getFilnameWithPath(),remoteFile.getName());
-					final String pre = "downloading "+remoteFile.getFilnameWithPath()+" -> "+target.getAbsolutePath(); 
-					final int pos = addStatus(pre+"   (waiting)");
-					FileTransferProgress progress = new FileTransferProgress(remoteFile.getLength()) {
-						private long time = -1L;
-						private long dataAtTime = 0L;
-						public void onUpdate() {
-							String transferRate = "";
-							if (time==-1L) {
-								time = System.currentTimeMillis();
-								dataAtTime = getProgress();
-							} else {
-								long now = System.currentTimeMillis();
-								long dataNow = getProgress();
-								long tr = ((dataNow-dataAtTime)*1000)/((now-time)*1024); //in kB / s
-								transferRate = String.format("  (%d kB/s)", tr);
-							}
-							setStatus(pos, pre+"   "+getProgressString()+transferRate);
-							if (hasFinished()) {
-								panelLocal.refreshView();
-							}
-						}
-						public void onError() {
-							setStatus(pos, pre+"   ERROR");
-							String msg = getErrorMsg();
-							if (msg==null) {
-								Dialogs.showMessage("Error downloading file:\n"+remoteFile.getFilnameWithPath());
-							} else {
-								Dialogs.showMessage("Error downloading file:\n"+remoteFile.getFilnameWithPath()+"\n"+msg);
-							}
-						}
-					};
-					try {
-						fsRemote.download(target, remoteFile, progress);
-					} catch (FileTransferException ex) {
-						progress.setError(ex.getMessage());
-					}
+					final File target = new File(local,remoteFile.getName());
+					
+					String pre = "downloading "+remoteFile.getFilnameWithPath()+" -> "+target.getAbsolutePath(); 
+					
+					long id = client.download(remoteFile.getFilnameWithPath(), target);
+					
+					Transfer t = new Transfer();
+					t.msg = pre;
+					t.pos = addStatus(pre+"   (waiting)");
+					t.type = "download";
+					t.startTime = -1L;
+					transfersInProgress.put(id,t);
+					
+//					FileTransferProgress progress = new FileTransferProgress(remoteFile.getLength()) {
+//						private long time = -1L;
+//						private long dataAtTime = 0L;
+//						public void onUpdate() {
+//							String transferRate = "";
+//							if (time==-1L) {
+//								time = System.currentTimeMillis();
+//								dataAtTime = getProgress();
+//							} else {
+//								long now = System.currentTimeMillis();
+//								long dataNow = getProgress();
+//								long tr = ((dataNow-dataAtTime)*1000)/((now-time)*1024); //in kB / s
+//								transferRate = String.format("  (%d kB/s)", tr);
+//							}
+//							setStatus(pos, pre+"   "+getProgressString()+transferRate);
+//							if (hasFinished()) {
+//								panelLocal.refreshView();
+//							}
+//						}
+//						public void onError() {
+//							setStatus(pos, pre+"   ERROR");
+//							String msg = getErrorMsg();
+//							if (msg==null) {
+//								Dialogs.showMessage("Error downloading file:\n"+remoteFile.getFilnameWithPath());
+//							} else {
+//								Dialogs.showMessage("Error downloading file:\n"+remoteFile.getFilnameWithPath()+"\n"+msg);
+//							}
+//						}
+//					};
+//					try {
+//						fsRemote.download(target, remoteFile, progress);
+//					} catch (FileTransferException ex) {
+//						progress.setError(ex.getMessage());
+//					}
 				}
-			}
-		};
-		tDownload.start();
+//			}
+//		};
+//		tDownload.start();
 		//update view
-		panelLocal.refreshView();
+	//	panelLocal.refreshView();
 	}
 	
 	Object sync_object = new Object();
@@ -995,5 +1001,68 @@ public class FileTransferGui extends JFrame implements MyObserver {
 		} else if (changedIn == panelLocal) {
 			button_upload_clicked();
 		}
+	}
+
+
+	public void onError(OSDXFileTransferCommand command, String msg) {
+		//show Error Message
+		if (msg==null) {
+			Dialogs.showMessage("Unknown error in command : "+command.getClass().getSimpleName());
+		} else {
+			Dialogs.showMessage(msg);
+		}
+		Transfer t  = transfersInProgress.get(command.getID());
+		if (t!=null) {
+			setStatus(t.pos, t.msg+ "    ERROR "+msg);
+			transfersInProgress.remove(command.getID());
+			if (t.type.equals("download")) {
+				panelLocal.refreshView();
+			}
+			if (t.type.equals("upload")) {
+				ttpanelRemote.refreshView();
+			}
+		}
+	}
+
+	public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+		System.out.println("ON STATUS UPDATE "+command.getID());
+
+		Transfer t  = transfersInProgress.get(command.getID());
+		if (t!=null) {
+			//calc transfer Rate 
+			String transferRate = "";
+			if (t.startTime == -1L) {
+				t.startTime = System.currentTimeMillis();
+				t.dataAtTime = progress;
+			} else {
+				long now = System.currentTimeMillis();
+				long tr = ((progress-t.dataAtTime)*1000)/((now-t.startTime)*1024); //in kB / s
+				transferRate = String.format("  (%d kB/s)", tr);
+			}
+			String proz = "";
+			if (maxProgress>0) {
+				proz = String.format("  (%d", progress*100L/maxProgress)+" %)";
+			}
+			setStatus(t.pos, t.msg+proz+transferRate);
+		}
+		
+	}
+
+	public void onSuccess(OSDXFileTransferCommand command) {
+		System.out.println("Command successful: "+command.getClass().getSimpleName());
+		Transfer t  = transfersInProgress.get(command.getID());
+		if (t!=null) {
+			transfersInProgress.remove(command.getID());
+		}
+	}
+	
+	private class Transfer {
+		
+		public String type = "";
+		public long startTime = -1L;
+		public long dataAtTime = 0L;
+		public String msg = "";
+		public int pos = 0;
+		
 	}
 }

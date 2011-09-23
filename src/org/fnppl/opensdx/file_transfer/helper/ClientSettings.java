@@ -168,10 +168,10 @@ public class ClientSettings {
 					path = "/";
 				}
 			}
-			System.out.println("REQUEST : "+f.getAbsolutePath());
-			System.out.println("LOCAL   : "+local_path.getAbsolutePath());
-			System.out.println("-> PATH : "+path);
-			System.out.println("-> NAME : "+name);
+//			System.out.println("REQUEST : "+f.getAbsolutePath());
+//			System.out.println("LOCAL   : "+local_path.getAbsolutePath());
+//			System.out.println("-> PATH : "+path);
+//			System.out.println("-> NAME : "+name);
 			
 			RemoteFile rf = new RemoteFile(path, name, f.length(), f.lastModified(), f.isDirectory());
 			return rf;

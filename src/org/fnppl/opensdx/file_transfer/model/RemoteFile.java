@@ -130,7 +130,7 @@ public class RemoteFile {
 	public static RemoteFile fromParamString(String param) {
 		try {
 			String[] p = Util.getParams(param);
-			System.out.println("FROM PARAM: "+param+"   dir="+p[4]+"|");
+			//System.out.println("FROM PARAM: "+param+"   dir=|"+p[4]+"|");
 			RemoteFile rf = new RemoteFile(p[0], p[1], Long.parseLong(p[2]), Long.parseLong(p[3]), Boolean.parseBoolean(p[4]));
 			return rf;
 		} catch (Exception ex) {

@@ -51,13 +51,13 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 
 public class TreeAndTableNode extends DefaultMutableTreeNode {
-	private TreeAndTablePanel main;
+	private TreeAndTableChildrenGetter main;
 	private String name;
 	private boolean populated;
 	private boolean interim;
 	private boolean canPopulate;
 	
-	public TreeAndTableNode(TreeAndTablePanel main, String name, boolean canPopulate, Object userObject) {
+	public TreeAndTableNode(TreeAndTableChildrenGetter main, String name, boolean canPopulate, Object userObject) {
 		this.main = main;
 		this.name = name;
 		this.canPopulate = canPopulate;

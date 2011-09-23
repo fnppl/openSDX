@@ -49,8 +49,6 @@ package org.fnppl.opensdx.file_transfer.helper;
  * @author Bertram Bödeker <bboedeker@gmx.de>
  */
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

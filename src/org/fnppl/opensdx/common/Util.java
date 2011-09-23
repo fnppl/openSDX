@@ -190,7 +190,11 @@ public class Util {
 		String[] params = param.split("\",\"");
 		params[0] = params[0].substring(1);
 		int last = params.length-1;
-		params[last] = params[last].substring(0,params[last].length()-2);
+		if (params[last].endsWith("\"\n")) {
+			params[last] = params[last].substring(0,params[last].length()-2);
+		} else {
+			params[last] = params[last].substring(0,params[last].length()-1);
+		}
 		for (int i=0;i<params.length;i++) {
 			params[i] = resolveEscapeChars(params[i]);
 			//System.out.println("PARAMS ("+i+") "+params[i]);
