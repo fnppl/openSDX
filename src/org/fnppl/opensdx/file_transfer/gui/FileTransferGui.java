@@ -843,8 +843,8 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 							
 					long id = client.upload(localFile, filenameTo);
 					Transfer t = new Transfer();
-					t.msg = "uploading "+from.getAbsolutePath()+" -> "+filenameTo;
-					t.pos = addStatus("uploading "+from.getAbsolutePath()+" -> "+filenameTo);
+					t.msg = "uploading "+from.getAbsolutePath()+" -> "+filenameTo+ " ("+String.format("%8dkB",(localFile.length()/1000))+")";
+					t.pos = addStatus(t.msg);
 					t.type = "upload";
 					t.startTime = -1L;
 					transfersInProgress.put(id,t);

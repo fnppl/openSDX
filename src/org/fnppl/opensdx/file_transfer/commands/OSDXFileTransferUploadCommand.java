@@ -121,7 +121,7 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	public void onProcessStart() throws Exception {
 		if (DEBUG) System.out.println("Command upload start.");
 		hasNext = true;
-		if (fileLen>0 && data!=null) {
+		if (fileLen>0 && data==null) {
 			fileIn = new FileInputStream(file);
 		}
 	}
@@ -144,10 +144,14 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 				System.out.println("ACK upload of file: "+file.getAbsolutePath()+" -> "+remoteName);
 			}
 			else if (code == SecureConnection.TYPE_ACK_COMPLETE) {
-				try {
-					fileIn.close();
-				} catch (Exception ex) {
-					ex.printStackTrace();
+				if (data==null) {
+					try {
+						fileIn.close();
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				} else {
+					data = null;
 				}
 				notifySucces();
 			}
@@ -157,12 +161,14 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 			if (client!=null) {
 				client.removeCommandFromInProgress(id);
 			}
-			if (data!=null) {
+			if (data==null) {
 				try {
 					fileIn.close();
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
+			} else {
+				data = null;
 			}
 			notifyError(getMessageFromContent(content));
 		}
@@ -180,7 +186,8 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 			}
 		} else {
 			byte[] content = new byte[maxPacketSize];
-			if (data!=null) {
+			if (data==null) {
+				//read from file
 				int read = fileIn.read(content);
 				if (read<maxPacketSize) {
 					con.setData(id, num, Arrays.copyOf(content, read));
@@ -194,7 +201,18 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 				}
 				num++;
 			} else {
-				//TODO 
+				//read from data
+				int nextPackSize = (int)(fileLen-filePos);
+				if (nextPackSize>maxPacketSize) {
+					nextPackSize = maxPacketSize;
+				}
+				con.setData(id, num, Arrays.copyOfRange(data, (int)filePos, nextPackSize));
+				filePos += nextPackSize;
+				notifyUpdate(filePos, fileLen, null);
+				if (filePos>=fileLen) {
+					hasNext = false;
+				}
+				num++;
 			}
 			
 		}
