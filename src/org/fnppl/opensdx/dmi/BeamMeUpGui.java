@@ -108,6 +108,42 @@ public class BeamMeUpGui extends JFrame {
 	private JButton bu_beam;
 
 
+	public BeamMeUpGui(Feed feed) {
+		super("fnppl.org :: openSDX :: Beam me up");		
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				returnToFeedGui();
+			}
+		});
+		setSize(700, 768);
+		Helper.centerMe(this, null);
+		currentFeed = feed;
+		
+		buildUi();
+		
+		//set values to gui
+		label_feed.setText("Feed ID:");
+		text_feed.setText(feed.getFeedinfo().getFeedID());
+		bu_feed_open.setVisible(false);
+		
+		pReceiver.removeAll();
+		pReceiver.add(new PanelReceiver(feed.getFeedinfo().getReceiver()));
+
+		Vector<String[]> extrafiles = Beamer.getUploadExtraFiles(currentFeed);
+		String ef = "";
+		if (extrafiles.size()==0) {
+			ef = "[no bundle / item file uploads]";
+		} else {
+			ef = "bundle / item file uploads:\n";
+			for (String[] s : extrafiles) {
+				ef += s[0]+"\n";
+			}
+		}
+		text_summary.setText(ef);
+		pSummary.setVisible(true);
+	}
+	
 	private BeamMeUpGui() {
 		super("fnppl.org :: openSDX :: Beam me up");		
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -122,6 +158,10 @@ public class BeamMeUpGui extends JFrame {
 
 	public void quit() {
 		System.exit(0);
+	}
+	
+	public void returnToFeedGui() {
+		this.dispose();
 	}
 
 	private void buildUi() {

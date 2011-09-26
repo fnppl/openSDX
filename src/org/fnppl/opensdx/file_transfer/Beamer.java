@@ -60,6 +60,7 @@ import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.dmi.FeedCreator;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.MessageHandler;
@@ -131,7 +132,7 @@ public class Beamer {
 		
 		if (client!=null) {
 			try {
-				Result result = uploadFeed(feed, client, signatureKey);
+				Result result = uploadFeed(feed, client, signatureKey,mh);
 				client.closeConnection();
 				return result;
 			} catch (Exception ex) {
@@ -262,8 +263,11 @@ public class Beamer {
 		return normFeedid;
 	}
 	
-	public static Result uploadFeed(Feed feed, UploadClient client, OSDXKey signaturekey) throws Exception {
-		String normFeedid = getNormFeedID(feed);
+	//private Result currentUploadResult = null; 
+	public static Result uploadFeed(Feed feed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh) throws Exception {
+		final String normFeedid = getNormFeedID(feed);
+		
+		final Result[] result = new Result[] {Result.succeeded()};
 		
 		//make a copy to remove private information and change to relative file paths  
 		Feed copyOfFeed = Feed.fromBusinessObject(BusinessObject.fromElement(feed.toElement()));
@@ -282,11 +286,13 @@ public class Beamer {
 		//dir = Util.filterCharactersFile(dir);
 		
 		//build file structure
-//		client.mkdir(datedir);
-//		client.cd(datedir);
-//		
-//		client.mkdir(dir);
-//		client.cd(dir);
+		if (client instanceof FTPClient) {
+			((FTPClient)client).mkdir(datedir);
+			((FTPClient)client).cd(datedir);
+			((FTPClient)client).mkdir(dir);
+			((FTPClient)client).cd(dir);
+		}
+		
 		String absolutePath = "/"+datedir+"/"+dir+"/";
 		
 		//upload feed
@@ -294,7 +300,31 @@ public class Beamer {
 		Element eFeed = copyOfFeed.toElement();
 		Document.buildDocument(eFeed).output(bOut);
 		byte[] feedbytes = bOut.toByteArray();
-		client.uploadFile(feedbytes, absolutePath+normFeedid+".xml", null);
+		
+		try {
+			System.out.println("\nUploading "+normFeedid+".xml ...");
+			client.uploadFile(feedbytes, absolutePath+normFeedid+".xml", new CommandResponseListener() {
+				public void onSuccess(OSDXFileTransferCommand command) {
+					System.out.println("Upload of "+normFeedid+".xml successful.");
+				}
+				
+				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+					
+				}
+				public void onError(OSDXFileTransferCommand command, String msg) {
+					if (mh!=null) {
+						mh.showErrorMessage("Upload failed", "Upload of feed xml failed.");
+					}
+					result[0] = Result.error("Upload of feed xml failed.");
+				}
+			});
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			if (mh!=null) {
+				mh.showErrorMessage("Upload failed", "Upload of feed xml failed.");
+			}
+			result[0] = Result.error("Upload of feed xml failed.");
+		}
 		
 		//upload feed signature
 		byte[][] checks  = SecurityHelper.getMD5SHA1SHA256(feedbytes);
@@ -302,7 +332,31 @@ public class Beamer {
 		bOut = new ByteArrayOutputStream();
 		Document.buildDocument(feed_sig.toElement()).output(bOut);
 		
-		client.uploadFile(bOut.toByteArray(),absolutePath+normFeedid+".osdx.sig",null);
+		try {
+			System.out.println("\nUploading signature ...");
+			client.uploadFile(bOut.toByteArray(), absolutePath+normFeedid+".osdx.sig", new CommandResponseListener() {
+				public void onSuccess(OSDXFileTransferCommand command) {
+					System.out.println("Upload of signature successful.");
+				}
+				
+				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+					
+				}
+				public void onError(OSDXFileTransferCommand command, String msg) {
+					if (mh!=null) {
+						mh.showErrorMessage("Upload failed", "Upload of signature failed.");
+					}
+					result[0] = Result.error("Upload of signature failed.");
+				}
+			});
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			if (mh!=null) {
+				mh.showErrorMessage("Upload failed", "Upload of signature failed.");
+			}
+			result[0] = Result.error("Upload of signature failed.");
+		}
+		
 		
 		//upload all bundle and item files
 		Vector<ExtraFile> files = getUploadExtraFile(copyOfFeed);
@@ -310,17 +364,65 @@ public class Beamer {
 			try {
 				ItemFile nextItemFile = f.itemFile;
 				File nextFile = f.file;
-				String filename = f.new_filename;
+				final String filename = f.new_filename;
 				nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
-				client.uploadFile(nextFile, absolutePath+filename, null);
+				
+				try {
+					System.out.println("\nUploading "+filename+" ...");
+					client.uploadFile(nextFile, absolutePath+filename, new CommandResponseListener() {
+						public void onSuccess(OSDXFileTransferCommand command) {
+							System.out.println("Upload of "+filename+" successful.");
+						}
+						
+						public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+							
+						}
+						public void onError(OSDXFileTransferCommand command, String msg) {
+							if (mh!=null) {
+								mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed.");
+							}
+							result[0] = Result.error("Upload of "+filename+" failed.");
+						}
+					});
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					if (mh!=null) {
+						mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed.");
+					}
+					result[0] = Result.error("Upload of "+filename+" failed.");
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 		}
 		
 		//upload feed finished file
-		client.uploadFile(new byte[]{0},absolutePath+normFeedid+".finished",null);
-		return Result.succeeded();
+		try {
+			System.out.println("\nUploading finish token ...");
+			client.uploadFile(new byte[]{0},absolutePath+normFeedid+".finished", new CommandResponseListener() {
+				public void onSuccess(OSDXFileTransferCommand command) {
+					System.out.println("Upload of finish token successful.");
+				}
+				
+				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+					
+				}
+				public void onError(OSDXFileTransferCommand command, String msg) {
+					if (mh!=null) {
+						mh.showErrorMessage("Upload failed", "Upload of finish token failed.");
+					}
+					result[0] = Result.error("Upload of finish token failed.");
+				}
+			});
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			if (mh!=null) {
+				mh.showErrorMessage("Upload failed", "Upload of finish token failed.");
+			}
+			result[0] = Result.error("Upload of finish token failed.");
+		}
+		
+		return result[0];
 		
 //		Bundle bundle = copyOfFeed.getBundle(0);
 //		if (bundle!=null) {
@@ -537,7 +639,7 @@ public class Beamer {
 		try {
 			FTPClient client = null;
 			try {
-				client = FTPClient.connect(host, username, password.toString());
+				client = FTPClient.connect(host, username, String.valueOf(password));
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				return Result.error("ERROR: Connection to server could not be established.");
@@ -563,6 +665,7 @@ public class Beamer {
 		// init example feed
 		Feed currentFeed = FeedCreator.makeExampleFeed();
 		long now = System.currentTimeMillis();
+		
 		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
 			.servername("localhost")
 			.serveripv4("127.0.0.1")
@@ -570,11 +673,15 @@ public class Beamer {
 			.file_keystore("/home/neo/openSDX/defaultKeyStore.xml")
 			.keyid("AF:08:7F:7E:92:D8:48:98:24:7B:56:00:71:F8:47:65:62:8A:46:EA@localhost")
 			.username("user_1");
+		
 		Receiver receiver2 = Receiver.make(Receiver.TRANSFER_TYPE_FTP)
 		.servername("it-is-awesome.de")
 		.authtype(Receiver.AUTH_TYPE_LOGIN)
 		.username("baumbach");
+		
+		
 		currentFeed.getFeedinfo().receiver(receiver2);
+		
 		currentFeed.getBundle(0).addItem(
 				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
 						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)

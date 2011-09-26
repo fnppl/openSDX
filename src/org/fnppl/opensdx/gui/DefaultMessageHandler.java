@@ -10,6 +10,10 @@ import org.fnppl.opensdx.security.OSDXKey;
 
 public class DefaultMessageHandler implements MessageHandler {
 
+	public void showErrorMessage(String title, String message) {
+		Dialogs.showMessage(message);
+	}
+	
 	public boolean requestIgnoreVerificationFailure() {
 		int a = Dialogs.showYES_NO_Dialog("Verification failed", "KeyStore:  localproof and signoff of keypairs failed.\nIgnore?");
 		if (a==Dialogs.YES) return true;

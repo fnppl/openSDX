@@ -59,7 +59,8 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	private long filePos = 0;
 	private long fileLen = 0;
 	private FileInputStream fileIn = null;
-
+	private byte[] data = null;
+	
 	private long maxFilelengthForMD5 = 10*1024*1024L; //10 MB
 	private boolean hasNext = true;
 	private OSDXFileTransferClient client = null;
@@ -90,17 +91,18 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 		this.id = id;
 	}
 	
-	private byte[] data = null;
+	
 	
 	public OSDXFileTransferUploadCommand(long id,byte[] data, String absolutePathname, OSDXFileTransferClient client) {
 		super();
+		this.data = data;
 		fileLen = data.length;
 		byte[] md5 = null;
 		if (fileLen<maxFilelengthForMD5) {
 			try {
 				md5 = SecurityHelper.getMD5(data);
 			} catch (Exception e) {
-				System.out.println("Error calculating md5 hash of "+file.getAbsolutePath());
+				System.out.println("Error calculating md5 hash of "+absolutePathname);
 				e.printStackTrace();
 				md5 = null;
 			}
@@ -141,7 +143,7 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	public void onResponseReceived(int num, byte code, byte[] content) throws Exception {
 		if (!SecureConnection.isError(code)) {
 			if (code == SecureConnection.TYPE_ACK) {
-				System.out.println("ACK upload of file: "+file.getAbsolutePath()+" -> "+remoteName);
+				System.out.println("ACK upload of file: "+remoteName);
 			}
 			else if (code == SecureConnection.TYPE_ACK_COMPLETE) {
 				if (data==null) {

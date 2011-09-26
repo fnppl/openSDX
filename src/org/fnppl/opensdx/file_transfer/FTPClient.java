@@ -51,6 +51,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Vector;
 
+import org.fnppl.opensdx.file_transfer.model.RemoteFile;
+
 
 public class FTPClient implements UploadClient{
 
@@ -69,6 +71,8 @@ public class FTPClient implements UploadClient{
 		ftpc.client = new it.sauronsoftware.ftp4j.FTPClient();
 		ftpc.client.connect(host);
 		ftpc.client.login(username, password);
+		
+
 
 		//BB_2011-07-18: set the file transfer encoding parameter:
 		//default transfer is "auto" that re-encodes text files to target system encoding
@@ -91,12 +95,12 @@ public class FTPClient implements UploadClient{
 		}
 	}
 
-	public String pwd() throws FileTransferException {
+	public String pwd() {
 		try {
 			return client.currentDirectory();
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 
@@ -104,69 +108,78 @@ public class FTPClient implements UploadClient{
 		try {
 			client.createDirectory(dir);
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			//ex.printStackTrace();
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 
-	public void cd(String newPath) throws FileTransferException {
+	public void cd(String newPath) {
 		try {
 			client.changeDirectory(newPath);
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 
-	public void cd_up() throws FileTransferException {
+	public void cd_up() {
 		try {
 			client.changeDirectoryUp();
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 
-	public void rename(String oldname, String newname) throws FileTransferException {
+	public void rename(String oldname, String newname) {
 		try {
 			client.rename(oldname, newname);
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 
-	public void move(String oldLocation, String newLocation) throws FileTransferException {
+	public void move(String oldLocation, String newLocation) {
 		try {
 			client.rename(oldLocation, newLocation);
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 
-	public void deleteFile(String filename) throws FileTransferException {
+	public void deleteFile(String filename) {
 		try {
 			client.deleteFile(filename);
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 
-	public void deleteDirectory(String dirname) throws FileTransferException {
+	public void deleteDirectory(String dirname) {
 		try {
 			client.deleteDirectory(dirname);
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 
-	public void uploadFile(File f, final FileTransferCommandListener progress) throws FileTransferException {
+	
+	public void uploadFile(File f, String remoteAbsoluteFilename, final CommandResponseListener listener) {
 		try {
+			final long maxProgress = f.length();
+			FileInputStream fileIn = new FileInputStream(f);
 			FTPDataTransferListener transferListener = new FTPDataTransferListener() {
+				long transfered = 0L;
 				public void transferred(int len) {
 					System.out.println("transfered: "+len);
+					if (listener!=null) {
+						transfered += len;
+						listener.onStatusUpdate(null, transfered, maxProgress, null);
+					}
 				}
 				public void started() {
 					System.out.println("transfer started");
@@ -174,11 +187,14 @@ public class FTPClient implements UploadClient{
 				public void failed() {
 					System.out.println("transfer failed");
 					//throw new FileTransferException("upload failed.");
+					if (listener!=null) {
+						listener.onError(null, null);
+					}
 				}
 				public void completed() {
 					System.out.println("transfer completed");
-					if (progress!=null) {
-						progress.setComplete();
+					if (listener!=null) {
+						listener.onSuccess(null);
 					}
 				}
 				public void aborted() {
@@ -186,112 +202,96 @@ public class FTPClient implements UploadClient{
 					//throw new FileTransferException("upload aborted.");
 				}
 			};
-			client.upload(f,transferListener);
+			
+			//client.upload(f,transferListener);
+			client.upload(remoteAbsoluteFilename, fileIn, 0, 0, transferListener);
+			
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 
-	public void uploadFile(File f, String new_filename, final FileTransferProgress progress) throws FileTransferException {
+	public void uploadFile(byte[] data, String remoteAbsoluteFilename, final CommandResponseListener listener) {
 		try {
-			System.out.println("uploading file to: "+new_filename+"  length = "+f.length());
-
-			FileInputStream fileIn = new FileInputStream(f);
+			final long maxProgress = data.length;
+			System.out.println("uploading file data to: "+remoteAbsoluteFilename+"  length = "+maxProgress);
+			InputStream in = new ByteArrayInputStream(data);
+			
 			FTPDataTransferListener transferListener = new FTPDataTransferListener() {
+				long transfered = 0L;
 				public void transferred(int len) {
 					System.out.println("transfered: "+len);
+					if (listener!=null) {
+						transfered += len;
+						listener.onStatusUpdate(null, transfered, maxProgress, null);
+					}
 				}
 				public void started() {
 					System.out.println("transfer started");
 				}
 				public void failed() {
 					System.out.println("transfer failed");
+					//throw new FileTransferException("upload failed.");
+					if (listener!=null) {
+						listener.onError(null, null);
+					}
 				}
 				public void completed() {
 					System.out.println("transfer completed");
-					if (progress!=null) {
-						progress.setComplete();
+					if (listener!=null) {
+						listener.onSuccess(null);
 					}
 				}
 				public void aborted() {
 					System.out.println("transfer aborted");
+					//throw new FileTransferException("upload aborted.");
 				}
 			};
-			client.upload(new_filename, fileIn, 0, 0, transferListener);
+			
+			//client.upload(f,transferListener);
+			client.upload(remoteAbsoluteFilename, in, 0, 0, transferListener);
+			
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage());
 		}
+		
 	}
 
-	public void uploadFile(String new_filename, byte[] data, final FileTransferProgress progress) throws FileTransferException {
-		if (data.length>0) {
-			try {
-				System.out.println("uploading file data to: "+new_filename+"  length = "+data.length);
-				InputStream in = new ByteArrayInputStream(data);
-
-				FTPDataTransferListener transferListener = new FTPDataTransferListener() {
-					public void transferred(int len) {
-						System.out.println("transfered: "+len);
-					}
-					public void started() {
-						System.out.println("transfer started");
-					}
-					public void failed() {
-						System.out.println("transfer failed");
-					}
-					public void completed() {
-						System.out.println("transfer completed");
-						if (progress!=null) {
-							progress.setComplete();
-						}
-					}
-					public void aborted() {
-						System.out.println("transfer aborted");
-					}
-				};
-				client.upload(new_filename, in, 0, 0, transferListener);
-			} catch (Exception ex) {
-				//ex.printStackTrace();
-				throw new FileTransferException(ex.getMessage());
-			}
-		}
-	}
-
-	public void downloadFile(String filename, File localFile, final FileTransferProgress progress) throws FileTransferException {
-		try {	
-			FTPDataTransferListener transferListener = new FTPDataTransferListener() {
-				public void transferred(int len) {
-					System.out.println("transfered: "+len);
-				}
-				public void started() {
-					System.out.println("transfer started");
-				}
-				public void failed() {
-					System.out.println("transfer failed");
-				}
-				public void completed() {
-					System.out.println("transfer completed");
-					if (progress!=null) {
-						progress.setComplete();
-					}
-				}
-				public void aborted() {
-					System.out.println("transfer aborted");
-				}
-			};
-			client.download(filename, localFile, transferListener);
-		} catch (Exception ex) {
-			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
-		}
-	}
+//	public void downloadFile(String filename, File localFile, final FileTransferProgress progress) {
+//		try {	
+//			FTPDataTransferListener transferListener = new FTPDataTransferListener() {
+//				public void transferred(int len) {
+//					System.out.println("transfered: "+len);
+//				}
+//				public void started() {
+//					System.out.println("transfer started");
+//				}
+//				public void failed() {
+//					System.out.println("transfer failed");
+//				}
+//				public void completed() {
+//					System.out.println("transfer completed");
+//					if (progress!=null) {
+//						progress.setComplete();
+//					}
+//				}
+//				public void aborted() {
+//					System.out.println("transfer aborted");
+//				}
+//			};
+//			client.download(filename, localFile, transferListener);
+//		} catch (Exception ex) {
+//			//ex.printStackTrace();
+//			throw new RuntimeException(ex.getMessage());
+//		}
+//	}
 
 	public Vector<RemoteFile> list() throws Exception {
 		return list(null);
 	}
-	public Vector<RemoteFile> list(String filter) throws FileTransferException {
+	public Vector<RemoteFile> list(String filter) {
 		try {
 			Vector<RemoteFile> files = new Vector<RemoteFile>();
 			it.sauronsoftware.ftp4j.FTPFile[] list = null;
@@ -312,7 +312,7 @@ public class FTPClient implements UploadClient{
 			return files;
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 
@@ -320,12 +320,12 @@ public class FTPClient implements UploadClient{
 	 * sends a noop command to keep connection alive
 	 * @throws Exception
 	 */
-	public void noop() throws FileTransferException{
+	public void noop() {
 		try {
 			client.noop();
 		} catch (Exception ex) {
 			//ex.printStackTrace();
-			throw new FileTransferException(ex.getMessage());
+			throw new RuntimeException(ex.getMessage());
 		}
 	}
 
@@ -336,4 +336,5 @@ public class FTPClient implements UploadClient{
 	public void noop(long time_intervall_milliseconds) {
 		client.setAutoNoopTimeout(time_intervall_milliseconds);
 	}
+
 }

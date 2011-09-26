@@ -427,30 +427,74 @@ public class FeedGui extends JFrame implements MyObserver {
 				Dialogs.showMessage("Please enter complete receiver information in FeedInfo tab first.");
 				return;
 			}
-			String type = receiver.getType();
-			String servername = receiver.getServername();
-			if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER) || type.equals(Receiver.TRANSFER_TYPE_FTP)) {
-				int ans = Dialogs.showYES_NO_Dialog("Sending Feed", "Do you really want to send the current feed to "+servername+"?");
-				if (ans==Dialogs.YES) {
-					//Result result  = currentFeed.sendToReceiver(new DefaultMessageHandler(), null);
-					OSDXKey signatureKey = null;
-					Result result = Beamer.beamUpFeed(currentFeed, signatureKey, new DefaultMessageHandler());
-					if (result.succeeded) {
-						Dialogs.showMessage("Feed successfully send.");
-					} else {
-						String msg = "Error sending feed";
-						if (result.errorMessage!=null) {
-							msg += ": "+result.errorMessage;
-						} else {
-							msg += ".";
-						}
-						Dialogs.showMessage(msg);
+			else {
+				String type = receiver.getType();
+				if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
+					String host = receiver.getServername();
+					if (host==null || host.length()==0) {
+						Dialogs.showMessage("Please set a valid servername first.");
+						return;
 					}
+					String ks = receiver.getFileKeystore();
+					if (ks==null || ks.length()==0 || !(new File(ks)).exists()) {
+						Dialogs.showMessage("Please select a valid keystore filename first.");
+						return;
+					}
+					String keyid = receiver.getKeyID();
+					if (keyid==null || keyid.length()<10) {
+						Dialogs.showMessage("Please select a valid key first.");
+						return;
+					}
+					String username = receiver.getUsername();
+					if (username==null || username.length()==0) {
+						Dialogs.showMessage("Please set a username first.");
+						return;
+					}
+				} else if (type.equals(Receiver.TRANSFER_TYPE_FTP)) {
+					String host = receiver.getServername();
+					if (host==null || host.length()==0) {
+						Dialogs.showMessage("Please set a valid servername first.");
+						return;
+					}
+					String username = receiver.getUsername();
+					if (username==null || username.length()==0) {
+						Dialogs.showMessage("Please set a username first.");
+						return;
+					}
+				} else {
+					Dialogs.showMessage("Receiver type \""+type+"\" not implemented.");
+					return;
 				}
 			}
-			else {
-				Dialogs.showMessage("Sorry, sending type \""+type+"\" not implemented.");
-			}
+			
+			BeamMeUpGui beameGUI = new BeamMeUpGui(currentFeed);
+			beameGUI.setVisible(true);
+			
+			//old version
+//			String type = receiver.getType();
+//			String servername = receiver.getServername();
+//			if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER) || type.equals(Receiver.TRANSFER_TYPE_FTP)) {
+//				int ans = Dialogs.showYES_NO_Dialog("Sending Feed", "Do you really want to send the current feed to "+servername+"?");
+//				if (ans==Dialogs.YES) {
+//					//Result result  = currentFeed.sendToReceiver(new DefaultMessageHandler(), null);
+//					OSDXKey signatureKey = null;
+//					Result result = Beamer.beamUpFeed(currentFeed, signatureKey, new DefaultMessageHandler());
+//					if (result.succeeded) {
+//						Dialogs.showMessage("Feed successfully send.");
+//					} else {
+//						String msg = "Error sending feed";
+//						if (result.errorMessage!=null) {
+//							msg += ": "+result.errorMessage;
+//						} else {
+//							msg += ".";
+//						}
+//						Dialogs.showMessage(msg);
+//					}
+//				}
+//			}
+//			else {
+//				Dialogs.showMessage("Sorry, sending type \""+type+"\" not implemented.");
+//			}
 		}
 	}
 	

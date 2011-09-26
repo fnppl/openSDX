@@ -22,5 +22,5 @@ public interface MessageHandler {
 	public File chooseOriginalFileForSignature(File dir, String selectFile);
 	public char[] requestPasswordTitleAndMessage(String title, String message);
 	public File requestOpenKeystore();
-	
+	public void showErrorMessage(String title, String message);
 }

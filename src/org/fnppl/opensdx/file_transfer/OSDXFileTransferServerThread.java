@@ -582,6 +582,9 @@ public class OSDXFileTransferServerThread extends Thread {
 						data.setError(commandid, num, "file already exists");
 						data.sendPackage();
 					} else {
+						//ensure directories exists
+						file.getParentFile().mkdirs();
+						
 						//ack -> ready for upload
 						data.setAck(commandid, num);
 						data.sendPackage();
