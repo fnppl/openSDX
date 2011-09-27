@@ -49,6 +49,9 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -57,6 +60,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
+import javax.swing.RowSorter;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -64,6 +69,8 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
@@ -94,14 +101,24 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 	private JButton buMkdir;
 	private JButton buRemove;
 	private JButton buRename;
+	private JButton buRefresh;
 	
+	private Comparator<TreeAndTableNode> compareNodes;
 
 	private OSDXFileTransferClient client = null;
 	
 	public TreeAndTablePanelOSDXClient(OSDXFileTransferClient client) {
 		this.client = client;
+		
+		compareNodes = new Comparator<TreeAndTableNode>() {
+			public int compare(TreeAndTableNode n1, TreeAndTableNode n2) {
+				return n1.toString().compareTo(n2.toString());
+			}
+		};
 		initComponents();
 		initLayout();
+		
+		
 	}
 	
 	public void closeConnection() {
@@ -114,15 +131,16 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 	private Vector<RemoteFile> list(String absolutPath) {
 		nextList = null;
 		hasAnswer = false;
+		System.out.println("list :: "+absolutPath);
 		client.list(absolutPath,new CommandResponseListener() {
 			public void onError(OSDXFileTransferCommand command, String msg) {
-				System.out.println("END OF LIST COMMAND :: ERROR");
+				//System.out.println("END OF LIST COMMAND :: ERROR");
 				nextList = null;
 				hasAnswer = true;
 			}
 			public void onStatusUpdate(OSDXFileTransferCommand command,long progress, long maxProgress, String msg) {}
 			public void onSuccess(OSDXFileTransferCommand command) {
-				System.out.println("END OF LIST COMMAND :: SUCCESS");
+				//System.out.println("END OF LIST COMMAND :: SUCCESS");
 				nextList = ((OSDXFileTransferListCommand)command).getList();
 				hasAnswer = true;
 			}
@@ -145,10 +163,12 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 	
 	public Vector<TreeAndTableNode> getChildren(TreeAndTableNode node) {
 		RemoteFile file = (RemoteFile) node.getUserObject();
-		Vector<TreeAndTableNode> children = new Vector<TreeAndTableNode>();
+		System.out.println("getChildren :: "+file.getFilnameWithPath());
 		try {
 			Vector<RemoteFile> list = list(file.getFilnameWithPath());
+			currentFiles = new Vector<RemoteFile>();
 			if (list!=null) {
+				Vector<TreeAndTableNode> children = new Vector<TreeAndTableNode>();
 				//build list
 				for (RemoteFile f : list) {
 					String name = f.getName();
@@ -156,16 +176,21 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 						if (f.isDirectory()) {
 							TreeAndTableNode n = new TreeAndTableNode(this, name, true, f);
 							children.add(n);
+						} else {
+							currentFiles.add(f);
 						}
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
 				}
+				//sort
+				Collections.sort(children, compareNodes);
+				return children;
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		return children;
+		return null;
 	}
 	
 	public void setPreferredColumnWidth(int colNo, int width) {
@@ -217,8 +242,7 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 					width[i] = colModel.getColumn(i).getWidth();
 					render[i] = colModel.getColumn(i).getCellRenderer();
 				}
-				table_model = updateTableModel(node);
-				table.setModel(table_model);
+				updateTable(node);
 				for (int i=0;i<colCount;i++) {
 					colModel.getColumn(i).setPreferredWidth(width[i]);
 					colModel.getColumn(i).setCellRenderer(render[i]);
@@ -227,8 +251,7 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 		});
 		
 		table = new JTable();
-		table_model = updateTableModel(null);
-		table.setModel(table_model);
+		updateTable(null);
 		
 		split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(tree), new JScrollPane(table));
 		split.setDividerLocation(230);
@@ -248,15 +271,20 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 				} else {
 					String name = Dialogs.showInputDialog("Make Directory", "Make a new Directory in:\n"+dir.getFilnameWithPath()+"\n\nEnter new directory name:");
 					if (name!=null) {
+						if (name.startsWith("/")) {
+							Dialogs.showMessage("Directory name has to be relative.");
+							return;
+						}
 						//RemoteFile f = new RemoteFile(dir.getFilnameWithPath(), name, 0, System.currentTimeMillis(), true);
-						TreePath path = tree.getSelectionPath();
+						
+						final TreePath path = tree.getSelectionPath();
 						String newDir = dir.getFilnameWithPath();
-						if (newDir.endsWith("/")) {
+						if (!newDir.endsWith("/")) {
 							newDir += "/";
 						}
 						newDir += name;
 						client.mkdir(newDir);
-						refreshView(path);
+						//refreshView(path);					
 					}
 				}
 			}
@@ -276,18 +304,16 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 						for (RemoteFile f : files) {
 							client.delete(f.getFilnameWithPath());
 						}
-						try {
-							table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
-							table.setModel(table_model);
-						} catch (Exception ex) {
-							//ex.printStackTrace();
-							try {
-								table_model = updateTableModel(root);
-								table.setModel(table_model);
-							} catch (Exception ex2) {
-								ex2.printStackTrace();
-							}
-						}
+//						try {
+//							updateTable((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
+//						} catch (Exception ex) {
+//							//ex.printStackTrace();
+//							try {
+//								updateTable(root);
+//							} catch (Exception ex2) {
+//								ex2.printStackTrace();
+//							}
+//						}
 					}
 				} else {
 					RemoteFile dir = getSelectedDir();
@@ -298,8 +324,9 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 						int q = Dialogs.showYES_NO_Dialog("Remove Directory", msg);
 						if (q == Dialogs.YES) {
 							TreePath path = tree.getSelectionPath();
+							tree.setSelectionPath(path.getParentPath());
 							client.delete(dir.getFilnameWithPath());
-							refreshView(path.getParentPath());
+//							refreshView(path.getParentPath());
 						}
 					}
 				}
@@ -309,10 +336,11 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 		buRename.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				RemoteFile from = null;
-				
+				boolean isDir = false;
 				Vector<RemoteFile> files = getSelectedFiles();
 				if (files == null || files.size()==0) {
 					from = getSelectedDir();
+					isDir = true;
 				} else {
 					if (files.size()==1) {
 						from = files.get(0);
@@ -326,78 +354,98 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 				String name = Dialogs.showInputDialog("Rename file", "Please enter new filename for file\n"+from.getName()+"\n",from.getName());
 				if (name!=null) {
 					//RemoteFile to = new RemoteFile(from.getPath(), name, from.getLength(), from.getLastModified(), false);
+					if (isDir) {
+						tree.setSelectionPath(tree.getSelectionPath().getParentPath());
+					}
 					client.rename(from.getFilnameWithPath(), name);
-					table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
-					table.setModel(table_model);
+//					updateTable((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
 				}
 			}
-		});	
+		});
+		
+		buRefresh = new JButton("refresh");
+		buRefresh.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				refreshView(true);
+			}
+		});
 	}
 	
-	public void refreshView(TreePath path) {
-		if (path!=null) {
-			try {
-				TreeAndTableNode node = (TreeAndTableNode)path.getLastPathComponent();
-				node.populateAgain();
-				tree.collapsePath(path);
-				tree.expandPath(path);
-				//tree.setSelectionPath(path);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-			try {
-				table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
-				table.setModel(table_model);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		}
+	public void refreshView(boolean updateTableFromServer) {
+		refreshView(tree.getSelectionPath(),updateTableFromServer);
 	}
-	public void refreshView() {
-		try {
-			TreePath path = tree.getSelectionPath();
-			
-			TreeAndTableNode node;
-			if (path==null) {
-				node = root;
-			} else {
-				node = (TreeAndTableNode)path.getLastPathComponent();
+	
+	public void refreshView(final TreePath path, final boolean updateTableFromServer) {
+		Thread t = new Thread() {
+			public void run() {
+				TreeAndTableNode node = root;
+				if (path!=null) {
+					node = (TreeAndTableNode)path.getLastPathComponent();
+					System.out.println("refreshView :: "+Arrays.toString(path.getPath())); //TODO
+				}
+				try {
+					if (updateTableFromServer) {
+						node.files = null;
+					}
+					node.populateAgain();
+					
+					tree.collapsePath(path);
+					tree.expandPath(path);
+					tree.setSelectionPath(path);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				try {
+					//updateTable((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
+					updateTable(node);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
 			}
-			node.populateAgain();
-			tree.collapsePath(path);
-			tree.expandPath(path);
-			//tree.setSelectionPath(path);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		try {
-			table_model = updateTableModel((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
-			table.setModel(table_model);
-		} catch (Exception ex) {
-			//ex.printStackTrace();
-			try {
-				table_model = updateTableModel(root);
-				table.setModel(table_model);
-			} catch (Exception ex2) {
-				ex2.printStackTrace();
-			}
-		}
+		};
+		t.start();
+		
+//		TreeAndTableNode node = root;
+//		if (path!=null) {
+//			node = (TreeAndTableNode)path.getLastPathComponent();
+//			System.out.println("refreshView :: "+Arrays.toString(path.getPath())); //TODO
+//		}
+//		try {
+//			node.populateAgain();
+//			tree.collapsePath(path);
+//			tree.expandPath(path);
+//			//tree.setSelectionPath(path);
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
+//		try {
+//			//updateTable((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent());
+//			updateTable(node);
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
 	}
+
 	
 	private String[] header = new String[] { "name", "type","size"};
 	
 	private DefaultTableModel updateTableModel(TreeAndTableNode node) {
+		return new DefaultTableModel(buildTableModelData(node),header);
+	}
+	
+	private String[][] buildTableModelData(TreeAndTableNode node) {
 		if (node == null) {
-			return new DefaultTableModel(new String[0][header.length],header);
+			return new String[0][header.length];
 		}
 		try {
 			RemoteFile file = (RemoteFile) node.getUserObject();
-			Vector<RemoteFile> list = list(file.getFilnameWithPath());
-			currentFiles = new Vector<RemoteFile>();
+			if (node.files==null) {
+				node.files = list(file.getFilnameWithPath());
+			}
+			currentFiles = node.files;
 			Vector<String[]> data = new Vector<String[]>();
-
-			for (int i = 0; i < list.size(); i++) {
-				RemoteFile f = list.get(i);
+			for (int i = 0; i < currentFiles.size(); i++) {
+				RemoteFile f = currentFiles.get(i);
 				String[] d  = new String[header.length];
 				d[0] = f.getName();
 				if (f.isDirectory()) {
@@ -412,17 +460,66 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 						d[1] = d[0].substring(ind + 1);
 					}
 					data.add(d);
-					currentFiles.add(f);
 				}
 			}
 			String[][] tdata = new String[data.size()][header.length];
 			for (int i=0;i<data.size();i++) {
 				tdata[i] = data.get(i);
 			}
-			DefaultTableModel model = new DefaultTableModel(tdata, header);
-			return model;
+			return tdata;
 		} catch (Exception ex) {
-			return new DefaultTableModel(new String[0][header.length],header);
+			return new String[0][header.length];
+		}
+	}
+	
+	public void updateTable() {
+		Thread t = new Thread() {
+			public void run() {
+				try {
+					TreeAndTableNode node = (TreeAndTableNode)tree.getSelectionPath().getLastPathComponent();
+					node.files = null; //fetch from server
+					updateTable(node);
+				} catch (Exception ex) {
+					ex.printStackTrace();	
+				}
+			}
+		};
+		t.start();
+	}
+	
+	private void updateTable(TreeAndTableNode node) {
+		if (table_model == null) {
+			table_model = updateTableModel(node);
+			RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table_model) {
+				private Comparator colSizeComparator = new Comparator<String>() {
+					public int compare(String s1, String s2) {
+						int i1 = Integer.parseInt(s1.substring(0,s1.length()-2).trim());
+						int i2 = Integer.parseInt(s2.substring(0,s2.length()-2).trim());
+						return i1-i2;
+					}
+				};
+				@Override
+				public Comparator<?> getComparator(int column) {
+					if (column==2) {
+						return colSizeComparator;
+					}
+					return super.getComparator(column);
+				}
+			};
+			table.setRowSorter(sorter);
+			table.setModel(table_model);
+		} else {
+			java.util.List<? extends SortKey> sortkeys = null;
+			
+			if (table.getRowSorter()!=null) {
+				sortkeys = table.getRowSorter().getSortKeys();
+			}
+			
+			table_model.setDataVector(buildTableModelData(node), header);
+			
+			if (table.getRowSorter()!=null) {
+				table.getRowSorter().setSortKeys(sortkeys);
+			}
 		}
 	}
 	
@@ -431,7 +528,8 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 			RemoteFile f = (RemoteFile)((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent()).getUserObject();
 			return f;
 		} catch (Exception ex)	{
-			ex.printStackTrace();
+			//null pointer -> nothing selected
+			//ex.printStackTrace();
 		}
 		return null;
 	}
@@ -441,8 +539,8 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 		int[] select = table.getSelectedRows();
 		if (select!=null && select.length>0) {
 			for (int i=0;i<select.length;i++) {
-				//sel.add(currentFiles.get(table.getRowSorter().convertRowIndexToModel(select[i])));
-				sel.add(currentFiles.get(select[i]));
+				sel.add(currentFiles.get(table.getRowSorter().convertRowIndexToModel(select[i])));
+				//sel.add(currentFiles.get(select[i]));
 			}
 		}
 		return sel;
@@ -457,6 +555,8 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 		buttons.add(buMkdir);
 		buttons.add(buRename);
 		buttons.add(buRemove);
+		buttons.add(buRefresh);
+		
 		
 		this.add(buttons, BorderLayout.SOUTH);
 	}

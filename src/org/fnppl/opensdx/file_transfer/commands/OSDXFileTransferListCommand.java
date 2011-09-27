@@ -82,7 +82,7 @@ public class OSDXFileTransferListCommand extends OSDXFileTransferCommand {
 			//parse list
 			list = new Vector<RemoteFile>();
 			String s = getMessageFromContentNN(content);
-			System.out.println("RECEIVED LIST: "+s);
+			if (DEBUG) System.out.println("RECEIVED LIST: "+s);
 			if (s.length()>0) {
 				String[] files = s.split("\n");
 				for (int i=0;i<files.length;i++) {

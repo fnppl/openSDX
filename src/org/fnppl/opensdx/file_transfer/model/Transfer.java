@@ -52,7 +52,7 @@ public class Transfer {
 	public String type = "";
 	public long startTime = -1L;
 	public long dataAtTime = 0L;
-	public String msg = "";
+	public String[] msg = null;
 	public int pos = 0;
 	
 }

@@ -49,10 +49,12 @@ public class OSDXFileTransferMkDirCommand extends OSDXFileTransferCommand {
 
 
 	private boolean hasNext = true;
+	public String absolutePathname;
 
 	public OSDXFileTransferMkDirCommand(long id, String absolutePathname) {
 		super();
 		this.command = "MKDIR "+absolutePathname;
+		this.absolutePathname = absolutePathname;
 		this.id = id;
 	}
 	

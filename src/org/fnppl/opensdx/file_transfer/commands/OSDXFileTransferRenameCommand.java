@@ -50,11 +50,15 @@ public class OSDXFileTransferRenameCommand extends OSDXFileTransferCommand {
 
 
 	private boolean hasNext = true;
-
+	public String newfilename;
+	public String absolutePathname;
+	
 	public OSDXFileTransferRenameCommand(long id, String absolutePathname, String newfilename) {
 		super();
 		String[] params = new String[] {absolutePathname,newfilename};
 		this.command = "RENAME "+Util.makeParamsString(params);
+		this.newfilename = newfilename;
+		this.absolutePathname = absolutePathname;
 		this.id = id;
 	}
 	

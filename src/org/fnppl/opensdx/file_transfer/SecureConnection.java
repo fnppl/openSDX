@@ -188,7 +188,7 @@ public class SecureConnection {
 	}
 
 	public void setData(long id, int num, byte[] content) {
-		System.out.println("SETTING DATA:: len="+content.length);
+		//System.out.println("SETTING DATA:: len="+content.length);
 		this.id = id;
 		this.num = num;
 		this.type = TYPE_DATA;

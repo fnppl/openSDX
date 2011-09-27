@@ -138,6 +138,16 @@ public class OSDXFileTransferClient implements UploadClient {
 		if (queueWaiting.size()>0 && System.currentTimeMillis()>nextCommandBlockTimeout) {
 			OSDXFileTransferCommand c = queueWaiting.remove(0);
 			if (DEBUG) System.out.println("command: "+c.getClass().getName());
+			
+			//check connected
+		//	System.out.println("established="+secureConnectionEstablished+"    socket_connected="+socket.isConnected()+"    socket_closed="+socket.isClosed());
+			if (!(c instanceof OSDXFileTransferCloseConnectionCommand || c instanceof OSDXFileTransferLoginCommand) && !isConnected()) {
+				System.out.println("No connection to server.");
+				for (CommandResponseListener l : responseListener) {
+					l.onError(c, "No connection to server.");
+				}
+				return null;
+			}
 			//check allowed
 			boolean allowed = true;
 			if (c instanceof OSDXFileTransferDeleteCommand) {
@@ -161,6 +171,9 @@ public class OSDXFileTransferClient implements UploadClient {
 				return c;
 			} else {
 				System.out.println("Command not allowed!");
+				for (CommandResponseListener l : responseListener) {
+					l.onError(c, "Command not allowed!");
+				}
 				return null;
 			}
 		}
@@ -169,6 +182,13 @@ public class OSDXFileTransferClient implements UploadClient {
 	
 	public void removeCommandFromInProgress(long id) {
 		commandsInProgress.remove(id);
+	}
+	
+	public void alertBrokenPipe() {
+		secureConnectionEstablished = false;
+		for (CommandResponseListener l : responseListener) {
+			l.onError(null, "Connection to server terminated.");
+		}
 	}
 	
 	public boolean connect(String host, int port, String prepath, OSDXKey mySigningKey, String username) throws Exception {
@@ -195,8 +215,8 @@ public class OSDXFileTransferClient implements UploadClient {
 			out = new BufferedOutputStream(socket.getOutputStream());
 			dataOut = new SecureConnection(null, null, out);
 			dataIn = new SecureConnection(null, in, null);
-			secureConnectionEstablished = initSecureConnection(host, mySigningKey);
-			
+			//secureConnectionEstablished =
+			initSecureConnection(host, mySigningKey);
 			return true;
 		} else {
 //			System.out.println("ERROR: Connection to server could NOT be established!");
@@ -204,8 +224,11 @@ public class OSDXFileTransferClient implements UploadClient {
 		}
 	}
 	
+	public boolean isConnected() {
+		return socket.isConnected() && secureConnectionEstablished;
+	}
 	
-	private boolean initSecureConnection(String host, OSDXKey key) {
+	private void initSecureConnection(String host, OSDXKey key) {
 		try {
 			
 			//send request
@@ -283,7 +306,6 @@ public class OSDXFileTransferClient implements UploadClient {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		return false;
 	}
 	
 	public RemoteFile getRoot() {
@@ -365,18 +387,17 @@ public class OSDXFileTransferClient implements UploadClient {
 		try {
 			if (DEBUG) {
 				System.out.println("RESPONSE commandid="+commandid);
-			}
-			if (code == SecureConnection.TYPE_DATA) {
-				System.out.println("DATA: len="+content.length);
-			} else {
-				if (content!=null) { //if (code == SecureConnection.TYPE_TEXT) {
-					String txt = new String(content,"UTF-8");
-					System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: MSG: "+txt);
+				if (code == SecureConnection.TYPE_DATA) {
+					//System.out.println("DATA: len="+content.length);
 				} else {
-					System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: NO MSG");
+					if (content!=null) { //if (code == SecureConnection.TYPE_TEXT) {
+						String txt = new String(content,"UTF-8");
+						System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: MSG: "+txt);
+					} else {
+						System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: NO MSG");
+					}
 				}
 			}
-		
 			
 			OSDXFileTransferCommand command = commandsInProgress.get(commandid);
 			
@@ -390,6 +411,7 @@ public class OSDXFileTransferClient implements UploadClient {
 				if (command instanceof OSDXFileTransferLoginCommand) {
 					if (code == SecureConnection.TYPE_ACK) {
 						rights_duties = ((OSDXFileTransferLoginCommand)command).getRightsAndDuties();
+						secureConnectionEstablished = true;
 						System.out.println("Login successful.");
 					}
 					else if (SecureConnection.isError(code)) {

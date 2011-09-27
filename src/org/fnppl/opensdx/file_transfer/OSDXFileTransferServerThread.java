@@ -406,7 +406,7 @@ public class OSDXFileTransferServerThread extends Thread {
 		}
 	}
 	
-	private static boolean deleteDirectory(File path) {
+	private boolean deleteDirectory(File path) {
 		if( path.exists() ) {
 			File[] list = path.listFiles();
 			for(int i=0; i<list.length; i++) {
@@ -418,7 +418,11 @@ public class OSDXFileTransferServerThread extends Thread {
 				}
 			}
 		}
-		return(path.delete());
+		if (!path.equals(cs.getLocalRootPath())) {
+			return(path.delete());	
+		} else {
+			return true;
+		}
 	}
 	
 	public void handle_rename(long commandid, int num, byte code, String param) throws Exception {

@@ -49,6 +49,8 @@ import java.util.Vector;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.fnppl.opensdx.file_transfer.model.RemoteFile;
+
 
 
 public class TreeAndTableNode extends DefaultMutableTreeNode {
@@ -57,6 +59,7 @@ public class TreeAndTableNode extends DefaultMutableTreeNode {
 	private boolean populated;
 	private boolean interim;
 	private boolean canPopulate;
+	public Vector<RemoteFile> files = null;
 	
 	public TreeAndTableNode(TreeAndTableChildrenGetter main, String name, boolean canPopulate, Object userObject) {
 		this.main = main;
@@ -84,25 +87,25 @@ public class TreeAndTableNode extends DefaultMutableTreeNode {
 	}
 	
 	public boolean populate() {
-		boolean addedNodes = false;
 		if (!populated) {
+			System.out.println("populate "+name);
 			if (interim) {
 				removeAllChildren(); //remove dummy node
 				interim = false;
 			}
 			Vector<TreeAndTableNode> nodes = main.getChildren(this);
-			if (nodes.size()>0) {
-				addedNodes = true;
-				for (TreeAndTableNode n : nodes) {
-					this.add(n);
-				}
-			}
-			if (!addedNodes) {
+			if (nodes!=null) {
 				populated = true;
+				if (nodes.size()>0) {
+					for (TreeAndTableNode n : nodes) {
+						this.add(n);
+					}
+				}
 			} else {
 				interim = true;
 			}
 		}
-		return addedNodes;
+		return populated;
 	}
+	
 }

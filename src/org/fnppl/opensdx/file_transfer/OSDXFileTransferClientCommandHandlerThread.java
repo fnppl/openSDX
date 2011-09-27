@@ -81,13 +81,21 @@ public class OSDXFileTransferClientCommandHandlerThread extends Thread {
 					// -- run command end -- 
 					if (command instanceof OSDXFileTransferCloseConnectionCommand) {
 						client.closeConnectionDirectly();
+						close();
 					}
 				} catch (Exception exCommand) {
-					exCommand.printStackTrace();
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
+					String msg = exCommand.getMessage().toLowerCase(); 
+					if (msg.startsWith("broken pipe") || msg.startsWith("socket closed")) {
+						System.out.println("Bropen Pipe :: closing connection.");
+						client.alertBrokenPipe();
+						close();
+					} else {
+						exCommand.printStackTrace();
+						try {
+							Thread.sleep(100);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			} else {

@@ -49,10 +49,12 @@ public class OSDXFileTransferDeleteCommand extends OSDXFileTransferCommand {
 
 
 	private boolean hasNext = true;
+	public String absolutePathname = null;
 
 	public OSDXFileTransferDeleteCommand(long id, String absolutePathname) {
 		super();
 		this.command = "DELETE "+absolutePathname;
+		this.absolutePathname = absolutePathname;
 		this.id = id;
 	}
 	
