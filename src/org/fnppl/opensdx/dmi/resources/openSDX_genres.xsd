@@ -792,6 +792,7 @@
 		<xsd:enumeration value="Senegal (SN)"/>
 		<xsd:enumeration value="Somalia (SO)"/>
 		<xsd:enumeration value="Suriname (SR)"/>
+		<xsd:enumeration value="South Sudan (SS)"/>
 		<xsd:enumeration value="Sao Tome and Principe (ST)"/>
 		<xsd:enumeration value="El Salvador (SV)"/>
 		<xsd:enumeration value="Sint Maarten (Dutch part) (SX)"/>
