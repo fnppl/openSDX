@@ -23,7 +23,7 @@
  * openSDX is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU General Public License for more details.	
  * 
  * You should have received a copy of the GNU Lesser General Public License
  * and GNU General Public License along with openSDX.
@@ -48,2390 +48,2396 @@
  -->
 
 <genres>
-  <name>Genres</name>
-  <genre>
-    <name>Rock</name>
-    <subgenres>
-      <subgenre>
-        <name>Beat</name>
-      </subgenre>
-      <subgenre>
-        <name>Blues Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Rock'n'Roll</name>
-      </subgenre>
-      <subgenre>
-        <name>Art Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Classic Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Deutschrock</name>
-      </subgenre>
-      <subgenre>
-        <name>Emo</name>
-      </subgenre>
-      <subgenre>
-        <name>Experimental Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Glam Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Hard Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Krautrock</name>
-      </subgenre>
-      <subgenre>
-        <name>Progressive Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Psychedelic Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Psychobilly Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Rockabilly</name>
-      </subgenre>
-      <subgenre>
-        <name>Soft Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Southern Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Surf Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Alternative</name>
-      </subgenre>
-      <subgenre>
-        <name>Crossover</name>
-      </subgenre>
-      <subgenre>
-        <name>Dark Wave</name>
-      </subgenre>
-      <subgenre>
-        <name>Garage Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Goth / Industrial</name>
-      </subgenre>
-      <subgenre>
-        <name>Grunge</name>
-      </subgenre>
-      <subgenre>
-        <name>Hardcore</name>
-      </subgenre>
-      <subgenre>
-        <name>Indie Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>New Wave</name>
-      </subgenre>
-      <subgenre>
-        <name>Punk</name>
-      </subgenre>
-      <subgenre>
-        <name>Funpunk</name>
-      </subgenre>
-      <subgenre>
-        <name>Black Metal</name>
-      </subgenre>
-      <subgenre>
-        <name>Death Metal</name>
-      </subgenre>
-      <subgenre>
-        <name>Heavy Metal</name>
-      </subgenre>
-      <subgenre>
-        <name>Power Metal</name>
-      </subgenre>
-      <subgenre>
-        <name>Thrash / Speed Metal</name>
-      </subgenre>
-      <subgenre>
-        <name>Doom Metal</name>
-      </subgenre>
-      <subgenre>
-        <name>Grind Core</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Pop</name>
-    <subgenres>
-      <subgenre>
-        <name>Britpop</name>
-      </subgenre>
-      <subgenre>
-        <name>Dance Pop</name>
-      </subgenre>
-      <subgenre>
-        <name>Deutschpop</name>
-      </subgenre>
-      <subgenre>
-        <name>Disco</name>
-      </subgenre>
-      <subgenre>
-        <name>Easy Listening</name>
-      </subgenre>
-      <subgenre>
-        <name>Electropop</name>
-      </subgenre>
-      <subgenre>
-        <name>Euro Dance</name>
-      </subgenre>
-      <subgenre>
-        <name>Euro Pop</name>
-      </subgenre>
-      <subgenre>
-        <name>French Pop</name>
-      </subgenre>
-      <subgenre>
-        <name>Indie Pop</name>
-      </subgenre>
-      <subgenre>
-        <name>Italo Pop</name>
-      </subgenre>
-      <subgenre>
-        <name>J-Pop</name>
-      </subgenre>
-      <subgenre>
-        <name>K-Pop</name>
-      </subgenre>
-      <subgenre>
-        <name>Neue Deutsche Welle</name>
-      </subgenre>
-      <subgenre>
-        <name>New Age</name>
-      </subgenre>
-      <subgenre>
-        <name>Pop Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Power Pop</name>
-      </subgenre>
-      <subgenre>
-        <name>Schlager</name>
-      </subgenre>
-      <subgenre>
-        <name>Singer / Songwriter</name>
-      </subgenre>
-      <subgenre>
-        <name>Synthpop</name>
-      </subgenre>
-      <subgenre>
-        <name>Teen Pop</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Country</name>
-    <subgenres>
-      <subgenre>
-        <name>Alternative Country</name>
-      </subgenre>
-      <subgenre>
-        <name>Bluegrass</name>
-      </subgenre>
-      <subgenre>
-        <name>Contemporary Folk</name>
-      </subgenre>
-      <subgenre>
-        <name>Country Gospel</name>
-      </subgenre>
-      <subgenre>
-        <name>Honky-Tonk</name>
-      </subgenre>
-      <subgenre>
-        <name>Jewish / Yiddish Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Nashville Sound</name>
-      </subgenre>
-      <subgenre>
-        <name>Outlaw / Progressive Country</name>
-      </subgenre>
-      <subgenre>
-        <name>Texas Country</name>
-      </subgenre>
-      <subgenre>
-        <name>Traditional Country</name>
-      </subgenre>
-      <subgenre>
-        <name>Western Swing</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Folk</name>
-    <subgenres>
-      <subgenre>
-        <name>Americana</name>
-      </subgenre>
-      <subgenre>
-        <name>Folk Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Irish Folk</name>
-      </subgenre>
-	  <subgenre>
-        <name>German Folk</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Jazz</name>
-    <subgenres>
-      <subgenre>
-        <name>Acid Jazz</name>
-      </subgenre>
-      <subgenre>
-        <name>Avantgarde</name>
-      </subgenre>
-      <subgenre>
-        <name>Bebop</name>
-      </subgenre>
-      <subgenre>
-        <name>Big Band</name>
-      </subgenre>
-      <subgenre>
-        <name>Classic Jazz</name>
-      </subgenre>
-      <subgenre>
-        <name>Cool Jazz</name>
-      </subgenre>
-      <subgenre>
-        <name>Dixieland music</name>
-      </subgenre>
-      <subgenre>
-        <name>Free jazz</name>
-      </subgenre>
-      <subgenre>
-        <name>Hard Bop</name>
-      </subgenre>
-      <subgenre>
-        <name>Jazz Fusion</name>
-      </subgenre>
-      <subgenre>
-        <name>New Orleans Jazz</name>
-      </subgenre>
-      <subgenre>
-        <name>Nu-Jazz</name>
-      </subgenre>
-      <subgenre>
-        <name>Smooth Jazz</name>
-      </subgenre>
-      <subgenre>
-        <name>Swing</name>
-      </subgenre>
-      <subgenre>
-        <name>Vocal Jazz</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Hip Hop</name>
-    <subgenres>
-      <subgenre>
-        <name>Alternative Hip Hop</name>
-      </subgenre>
-      <subgenre>
-        <name>Crunk</name>
-      </subgenre>
-      <subgenre>
-        <name>Dirty South</name>
-      </subgenre>
-      <subgenre>
-        <name>G-Funk</name>
-      </subgenre>
-      <subgenre>
-        <name>Gangsta Rap</name>
-      </subgenre>
-      <subgenre>
-        <name>Golden Era</name>
-      </subgenre>
-      <subgenre>
-        <name>Grime</name>
-      </subgenre>
-      <subgenre>
-        <name>Hyphy</name>
-      </subgenre>
-      <subgenre>
-        <name>Instrumental Hip Hop</name>
-      </subgenre>
-      <subgenre>
-        <name>Miami Bass</name>
-      </subgenre>
-      <subgenre>
-        <name>New School</name>
-      </subgenre>
-      <subgenre>
-        <name>Old School</name>
-      </subgenre>
-      <subgenre>
-        <name>Turntablism</name>
-      </subgenre>
-      <subgenre>
-        <name>US Eastcoast</name>
-      </subgenre>
-      <subgenre>
-        <name>US Midwest</name>
-      </subgenre>
-      <subgenre>
-        <name>US Southern</name>
-      </subgenre>
-      <subgenre>
-        <name>US Westcoast</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Blues</name>
-    <subgenres>
-      <subgenre>
-        <name>Boogie-Woogie</name>
-      </subgenre>
-      <subgenre>
-        <name>Electric Blues Guitar</name>
-      </subgenre>
-      <subgenre>
-        <name>Modern Blues</name>
-      </subgenre>
-      <subgenre>
-        <name>Regional Blues</name>
-      </subgenre>
-      <subgenre>
-        <name>Traditional Blues</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Soul</name>
-    <subgenres>
-      <subgenre>
-        <name>Motown Sound</name>
-      </subgenre>
-      <subgenre>
-        <name>Neo Soul</name>
-      </subgenre>
-      <subgenre>
-        <name>Philly Sound</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Funk</name>
-    <subgenres />
-  </genre>
-  <genre>
-    <name>R&amp;B</name>
-    <subgenres>
-      <subgenre>
-        <name>Contemporary R&amp;B</name>
-      </subgenre>
-	  <subgenre>
-        <name>Doo-wop</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Electronic</name>
-    <subgenres>
-      <subgenre>
-        <name>Ambient</name>
-      </subgenre>
-      <subgenre>
-        <name>Chill Out</name>
-      </subgenre>
-      <subgenre>
-        <name>Lounge</name>
-      </subgenre>
-      <subgenre>
-        <name>Downbeat</name>
-      </subgenre>
-      <subgenre>
-        <name>Electronica</name>
-      </subgenre>
-      <subgenre>
-        <name>Indie Disco</name>
-      </subgenre>
-      <subgenre>
-        <name>Industrial / EBM</name>
-      </subgenre>
-      <subgenre>
-        <name>Techno</name>
-      </subgenre>
-      <subgenre>
-        <name>Dance</name>
-      </subgenre>
-      <subgenre>
-        <name>Electro</name>
-      </subgenre>
-      <subgenre>
-        <name>Glitch hop</name>
-      </subgenre>
-      <subgenre>
-        <name>House</name>
-      </subgenre>
-      <subgenre>
-        <name>Acid House</name>
-      </subgenre>
-      <subgenre>
-        <name>Deep House</name>
-      </subgenre>
-      <subgenre>
-        <name>Disco House</name>
-      </subgenre>
-      <subgenre>
-        <name>Electro House</name>
-      </subgenre>
-      <subgenre>
-        <name>Fidget House</name>
-      </subgenre>
-      <subgenre>
-        <name>Hard House</name>
-      </subgenre>
-      <subgenre>
-        <name>Progressive House</name>
-      </subgenre>
-      <subgenre>
-        <name>Soulful House</name>
-      </subgenre>
-      <subgenre>
-        <name>Tech House</name>
-      </subgenre>
-      <subgenre>
-        <name>Tribal</name>
-      </subgenre>
-      <subgenre>
-        <name>Vocal House</name>
-      </subgenre>
-      <subgenre>
-        <name>Big Beat</name>
-      </subgenre>
-      <subgenre>
-        <name>Breakbeat</name>
-      </subgenre>
-      <subgenre>
-        <name>Drum'n'Bass</name>
-      </subgenre>
-      <subgenre>
-        <name>Dubstep</name>
-      </subgenre>
-      <subgenre>
-        <name>Garage / UK Funky</name>
-      </subgenre>
-      <subgenre>
-        <name>IDM</name>
-      </subgenre>
-      <subgenre>
-        <name>Trip-Hop</name>
-      </subgenre>
-      <subgenre>
-        <name>Trance</name>
-      </subgenre>
-      <subgenre>
-        <name>Goa Trance</name>
-      </subgenre>
-      <subgenre>
-        <name>Hard Trance</name>
-      </subgenre>
-      <subgenre>
-        <name>Psychedelic Trance</name>
-      </subgenre>
-      <subgenre>
-        <name>Gabba</name>
-      </subgenre>
-      <subgenre>
-        <name>Jumpstyle / Hardstyle</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Classic</name>
-    <subgenres>
-      <subgenre>
-        <name>12-Tone Composition</name>
-      </subgenre>
-      <subgenre>
-        <name>Baroque</name>
-      </subgenre>
-      <subgenre>
-        <name>Chamber Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Crossover / Popular Classicism</name>
-      </subgenre>
-      <subgenre>
-        <name>Electronic Music / Computer Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Minimal Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Modern, 20th / 21st Century</name>
-      </subgenre>
-      <subgenre>
-        <name>Music and other Media / Arts</name>
-      </subgenre>
-      <subgenre>
-        <name>Music and Word</name>
-      </subgenre>
-      <subgenre>
-        <name>Neo-Romanticism</name>
-      </subgenre>
-      <subgenre>
-        <name>Neoclassicism</name>
-      </subgenre>
-      <subgenre>
-        <name>New Music / Contemporary Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Postmodern Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Renaissance</name>
-      </subgenre>
-      <subgenre>
-        <name>Romantic</name>
-      </subgenre>
-      <subgenre>
-        <name>Serialism</name>
-      </subgenre>
-      <subgenre>
-        <name>Anthem</name>
-      </subgenre>
-      <subgenre>
-        <name>Ballet</name>
-      </subgenre>
-      <subgenre>
-        <name>Cantata</name>
-      </subgenre>
-      <subgenre>
-        <name>Choral</name>
-      </subgenre>
-      <subgenre>
-        <name>Madrigal</name>
-      </subgenre>
-      <subgenre>
-        <name>March</name>
-      </subgenre>
-      <subgenre>
-        <name>Motet</name>
-      </subgenre>
-      <subgenre>
-        <name>Musical</name>
-      </subgenre>
-      <subgenre>
-        <name>Opera Arias</name>
-      </subgenre>
-      <subgenre>
-        <name>Opera Baroque</name>
-      </subgenre>
-      <subgenre>
-        <name>Opera Classical</name>
-      </subgenre>
-      <subgenre>
-        <name>Opera Renaissance</name>
-      </subgenre>
-      <subgenre>
-        <name>Opera Romantic</name>
-      </subgenre>
-      <subgenre>
-        <name>Operetta</name>
-      </subgenre>
-      <subgenre>
-        <name>Oratorio</name>
-      </subgenre>
-      <subgenre>
-        <name>Passion</name>
-      </subgenre>
-      <subgenre>
-        <name>Requiem</name>
-      </subgenre>
-      <subgenre>
-        <name>Sonata</name>
-      </subgenre>
-      <subgenre>
-        <name>Suite</name>
-      </subgenre>
-      <subgenre>
-        <name>Symphonic Music / Orchestral Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Symphony</name>
-      </subgenre>
-      <subgenre>
-        <name>Waltz</name>
-      </subgenre>
-      <subgenre>
-        <name>Brass Ensemble</name>
-      </subgenre>
-      <subgenre>
-        <name>Concerto / Solo Instrument with Orchestra</name>
-      </subgenre>
-      <subgenre>
-        <name>Mixed Ensemble (Strings / Wind)</name>
-      </subgenre>
-      <subgenre>
-        <name>Mixed Wind Ensemble (Woodwind / Brass)</name>
-      </subgenre>
-      <subgenre>
-        <name>Several Solo Instruments</name>
-      </subgenre>
-      <subgenre>
-        <name>Solo Instrument</name>
-      </subgenre>
-      <subgenre>
-        <name>String Ensemble</name>
-      </subgenre>
-      <subgenre>
-        <name>String Orchestra</name>
-      </subgenre>
-      <subgenre>
-        <name>String Quartet</name>
-      </subgenre>
-      <subgenre>
-        <name>String Trio</name>
-      </subgenre>
-      <subgenre>
-        <name>Woodwind Ensemble</name>
-      </subgenre>
-      <subgenre>
-        <name>A cappella</name>
-      </subgenre>
-      <subgenre>
-        <name>Vocal Ensemble</name>
-      </subgenre>
-      <subgenre>
-        <name>Vocal Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Choir</name>
-      </subgenre>
-      <subgenre>
-        <name>Boy's Choir</name>
-      </subgenre>
-      <subgenre>
-        <name>Children's Choir</name>
-      </subgenre>
-      <subgenre>
-        <name>Choir with Orchestra</name>
-      </subgenre>
-      <subgenre>
-        <name>Women's Choir</name>
-      </subgenre>
-      <subgenre>
-        <name>Men's Choir</name>
-      </subgenre>
-      <subgenre>
-        <name>Mixed Choir</name>
-      </subgenre>
-      <subgenre>
-        <name>Soprano</name>
-      </subgenre>
-      <subgenre>
-        <name>Mezzosoprano</name>
-      </subgenre>
-      <subgenre>
-        <name>Alto</name>
-      </subgenre>
-      <subgenre>
-        <name>Tenor</name>
-      </subgenre>
-      <subgenre>
-        <name>Baritone</name>
-      </subgenre>
-      <subgenre>
-        <name>Bass</name>
-      </subgenre>
-      <subgenre>
-        <name>Accordion</name>
-      </subgenre>
-      <subgenre>
-        <name>Ancient Instruments</name>
-      </subgenre>
-      <subgenre>
-        <name>Bassoon</name>
-      </subgenre>
-      <subgenre>
-        <name>Cembalo</name>
-      </subgenre>
-      <subgenre>
-        <name>Clarinet</name>
-      </subgenre>
-      <subgenre>
-        <name>Double Bass</name>
-      </subgenre>
-      <subgenre>
-        <name>Flute</name>
-      </subgenre>
-      <subgenre>
-        <name>Guitar</name>
-      </subgenre>
-      <subgenre>
-        <name>Harp</name>
-      </subgenre>
-      <subgenre>
-        <name>Harpsichord</name>
-      </subgenre>
-      <subgenre>
-        <name>Horn</name>
-      </subgenre>
-      <subgenre>
-        <name>Lute</name>
-      </subgenre>
-      <subgenre>
-        <name>Mandolin</name>
-      </subgenre>
-      <subgenre>
-        <name>Oboe</name>
-      </subgenre>
-      <subgenre>
-        <name>Organ</name>
-      </subgenre>
-      <subgenre>
-        <name>Percussion (Vibraphone etc.)</name>
-      </subgenre>
-      <subgenre>
-        <name>Piano</name>
-      </subgenre>
-      <subgenre>
-        <name>Recorder / English Flute</name>
-      </subgenre>
-      <subgenre>
-        <name>Saxophone</name>
-      </subgenre>
-      <subgenre>
-        <name>Trombone</name>
-      </subgenre>
-      <subgenre>
-        <name>Trumpet</name>
-      </subgenre>
-      <subgenre>
-        <name>Tuba</name>
-      </subgenre>
-      <subgenre>
-        <name>Viola</name>
-      </subgenre>
-      <subgenre>
-        <name>Violin</name>
-      </subgenre>
-      <subgenre>
-        <name>Violoncello</name>
-      </subgenre>
-      <subgenre>
-        <name>Miscellaneous Lead Instrument</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Reggae</name>
-    <subgenres>
-      <subgenre>
-        <name>Contemporary Reggae</name>
-      </subgenre>
-      <subgenre>
-        <name>Dancehall</name>
-      </subgenre>
-      <subgenre>
-        <name>Dub</name>
-      </subgenre>
-      <subgenre>
-        <name>Lover's Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Reggaeton</name>
-      </subgenre>
-      <subgenre>
-        <name>Roots</name>
-      </subgenre>
-      <subgenre>
-        <name>Ska</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>World</name>
-    <subgenres>
-      <subgenre>
-        <name>African Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Afro Beat</name>
-      </subgenre>
-      <subgenre>
-        <name>Afro Pop</name>
-      </subgenre>
-      <subgenre>
-        <name>Asian Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Austropop</name>
-      </subgenre>
-      <subgenre>
-        <name>Calypso</name>
-      </subgenre>
-      <subgenre>
-        <name>Caribbean Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Celtic Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Chanson</name>
-      </subgenre>
-      <subgenre>
-        <name>Coupé Decalé</name>
-      </subgenre>
-	  <subgenre>
-        <name>Enka</name>
-      </subgenre>
-	  <subgenre>
-        <name>European Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Ghazal</name>
-      </subgenre>
-      <subgenre>
-        <name>Griot</name>
-      </subgenre>
-      <subgenre>
-        <name>Gypsy</name>
-      </subgenre>
-      <subgenre>
-        <name>Highlife</name>
-      </subgenre>
-      <subgenre>
-        <name>Judaica Music / Yiddish / Klezmer</name>
-      </subgenre>
-      <subgenre>
-        <name>Kuduro</name>
-      </subgenre>
-      <subgenre>
-        <name>Kwaito</name>
-      </subgenre>
-      <subgenre>
-        <name>Makossa</name>
-      </subgenre>
-      <subgenre>
-        <name>Marching Band</name>
-      </subgenre>
-      <subgenre>
-        <name>Mento</name>
-      </subgenre>
-      <subgenre>
-        <name>Middle Eastern Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Nordic / Scandinavia</name>
-      </subgenre>
-      <subgenre>
-        <name>North American Music</name>
-      </subgenre>
-      <subgenre>
-        <name>South American Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Parang</name>
-      </subgenre>
-      <subgenre>
-        <name>Polka</name>
-      </subgenre>
-      <subgenre>
-        <name>Rai</name>
-      </subgenre>
-      <subgenre>
-        <name>Soca</name>
-      </subgenre>
-      <subgenre>
-        <name>Soukous</name>
-      </subgenre>
-      <subgenre>
-        <name>Zouk</name>
-      </subgenre>
-      <subgenre>
-        <name>Zulu</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Latin</name>
-    <subgenres>
-      <subgenre>
-        <name>Bachata</name>
-      </subgenre>
-      <subgenre>
-        <name>Banda</name>
-      </subgenre>
-      <subgenre>
-        <name>Bhangra</name>
-      </subgenre>
-      <subgenre>
-        <name>Bolero</name>
-      </subgenre>
-      <subgenre>
-        <name>Bossa Nova</name>
-      </subgenre>
-      <subgenre>
-        <name>Corridos</name>
-      </subgenre>
-      <subgenre>
-        <name>Cumbia</name>
-      </subgenre>
-      <subgenre>
-        <name>Fado</name>
-      </subgenre>
-      <subgenre>
-        <name>Flamenco</name>
-      </subgenre>
-      <subgenre>
-        <name>Grupero</name>
-      </subgenre>
-      <subgenre>
-        <name>Mambo</name>
-      </subgenre>
-      <subgenre>
-        <name>Mariachi</name>
-      </subgenre>
-      <subgenre>
-        <name>Merengue</name>
-      </subgenre>
-      <subgenre>
-        <name>Norteno</name>
-      </subgenre>
-      <subgenre>
-        <name>Ranchero</name>
-      </subgenre>
-      <subgenre>
-        <name>Rock En Espanol</name>
-      </subgenre>
-      <subgenre>
-        <name>Salsa</name>
-      </subgenre>
-      <subgenre>
-        <name>Samba</name>
-      </subgenre>
-      <subgenre>
-        <name>Son Cubana</name>
-      </subgenre>
-      <subgenre>
-        <name>Sonidero</name>
-      </subgenre>
-      <subgenre>
-        <name>Tango</name>
-      </subgenre>
-      <subgenre>
-        <name>Tejano</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Religious</name>
-    <subgenres>
-      <subgenre>
-        <name>Christian Rock</name>
-      </subgenre>
-      <subgenre>
-        <name>Christian Hip Hop</name>
-      </subgenre>
-      <subgenre>
-        <name>Christian Pop</name>
-      </subgenre>
-      <subgenre>
-        <name>Chants</name>
-      </subgenre>
-      <subgenre>
-        <name>Gospel</name>
-      </subgenre>
-      <subgenre>
-        <name>Gregorian Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Hymn</name>
-      </subgenre>
-      <subgenre>
-        <name>Mass</name>
-      </subgenre>
-      <subgenre>
-        <name>Spiritual</name>
-      </subgenre>
-      <subgenre>
-        <name>Worship</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Miscellaneous</name>
-    <subgenres>
-      <subgenre>
-        <name>Anime / Video Game Soundtracks</name>
-      </subgenre>
-      <subgenre>
-        <name>Bollywood</name>
-      </subgenre>
-      <subgenre>
-        <name>Instrumental</name>
-      </subgenre>
-      <subgenre>
-        <name>Vocal</name>
-      </subgenre>
-      <subgenre>
-        <name>Acoustic</name>
-      </subgenre>
-      <subgenre>
-        <name>Unplugged</name>
-      </subgenre>
-      <subgenre>
-        <name>Live</name>
-      </subgenre>
-      <subgenre>
-        <name>Traditional</name>
-      </subgenre>
-      <subgenre>
-        <name>Karaoke</name>
-      </subgenre>
-      <subgenre>
-        <name>Movie Scores</name>
-      </subgenre>
-      <subgenre>
-        <name>Movie Soundtracks</name>
-      </subgenre>
-      <subgenre>
-        <name>Sound Effects</name>
-      </subgenre>
-      <subgenre>
-        <name>Soundtrack</name>
-      </subgenre>
-      <subgenre>
-        <name>TV Soundtrack</name>
-      </subgenre>
-      <subgenre>
-        <name>Wedding Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Holiday</name>
-      </subgenre>
-      <subgenre>
-        <name>Mashup</name>
-      </subgenre>
-      <subgenre>
-        <name>unclassifiable</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Word</name>
-    <subgenres>
-      <subgenre>
-        <name>Business &amp; Career</name>
-      </subgenre>
-      <subgenre>
-        <name>Abstracts &amp; Dossiers</name>
-      </subgenre>
-      <subgenre>
-        <name>Accounting</name>
-      </subgenre>
-      <subgenre>
-        <name>Business &amp; Investing</name>
-      </subgenre>
-      <subgenre>
-        <name>Communication</name>
-      </subgenre>
-      <subgenre>
-        <name>Computers &amp; Internet</name>
-      </subgenre>
-      <subgenre>
-        <name>Economics</name>
-      </subgenre>
-      <subgenre>
-        <name>Finance</name>
-      </subgenre>
-      <subgenre>
-        <name>Management &amp; Leadership</name>
-      </subgenre>
-      <subgenre>
-        <name>Marketing &amp; Sales</name>
-      </subgenre>
-      <subgenre>
-        <name>Politics</name>
-      </subgenre>
-      <subgenre>
-        <name>Self-Help</name>
-      </subgenre>
-      <subgenre>
-        <name>Self-Organzation</name>
-      </subgenre>
-      <subgenre>
-        <name>Skills</name>
-      </subgenre>
-      <subgenre>
-        <name>Small Business &amp; Entrepeneurship</name>
-      </subgenre>
-      <subgenre>
-        <name>Children's Audiobooks</name>
-      </subgenre>
-      <subgenre>
-        <name>Age: up to 6 years</name>
-      </subgenre>
-      <subgenre>
-        <name>Age: 6 years +</name>
-      </subgenre>
-	  <subgenre>
-        <name>Age: 8 years +</name>
-      </subgenre>
-      <subgenre>
-        <name>Popular Characters</name>
-      </subgenre>
-      <subgenre>
-        <name>Animal Stories</name>
-      </subgenre>
-      <subgenre>
-        <name>Children's Book Classics</name>
-      </subgenre>
-      <subgenre>
-        <name>Children's Detective Stories</name>
-      </subgenre>
-      <subgenre>
-        <name>Fairy Tales</name>
-      </subgenre>
-      <subgenre>
-        <name>Fantasy &amp; Spook</name>
-      </subgenre>
-      <subgenre>
-        <name>Knowledge for Children</name>
-      </subgenre>
-      <subgenre>
-        <name>Pirates, Knights &amp; Historical</name>
-      </subgenre>
-      <subgenre>
-        <name>Poems &amp; Song</name>
-      </subgenre>
-      <subgenre>
-        <name>Comedy &amp; Humour</name>
-      </subgenre>
-      <subgenre>
-        <name>Comedy &amp; Cabaret</name>
-      </subgenre>
-      <subgenre>
-        <name>Humoristic Novel</name>
-      </subgenre>
-      <subgenre>
-        <name>Crime</name>
-      </subgenre>
-      <subgenre>
-        <name>Detective Stories</name>
-      </subgenre>
-      <subgenre>
-        <name>Detective Stories „Noir“</name>
-      </subgenre>
-      <subgenre>
-        <name>Classic Detective Stories</name>
-      </subgenre>
-      <subgenre>
-        <name>Scandinavian Detective Stories</name>
-      </subgenre>
-      <subgenre>
-        <name>Temporary Detective Stories</name>
-      </subgenre>
-      <subgenre>
-        <name>Education &amp; Knowledge</name>
-      </subgenre>
-      <subgenre>
-        <name>Art &amp; Culture</name>
-      </subgenre>
-      <subgenre>
-        <name>Biography &amp; Memento</name>
-      </subgenre>
-      <subgenre>
-        <name>Foreign Language</name>
-      </subgenre>
-      <subgenre>
-        <name>History</name>
-      </subgenre>
-      <subgenre>
-        <name>Pilosophy</name>
-      </subgenre>
-      <subgenre>
-        <name>Politics &amp; Current Affairs</name>
-      </subgenre>
-      <subgenre>
-        <name>Science &amp; Technology</name>
-      </subgenre>
-      <subgenre>
-        <name>Health, Mind &amp; Body</name>
-      </subgenre>
-      <subgenre>
-        <name>Autogenous Training</name>
-      </subgenre>
-      <subgenre>
-        <name>Creativity</name>
-      </subgenre>
-	  <subgenre>
-        <name>Esoteric</name>
-      </subgenre>
-      <subgenre>
-        <name>Fitness</name>
-      </subgenre>
-      <subgenre>
-        <name>Health</name>
-      </subgenre>
-      <subgenre>
-        <name>Lifestyle</name>
-      </subgenre>
-      <subgenre>
-        <name>Love &amp; Erotic</name>
-      </subgenre>
-      <subgenre>
-        <name>Meditation / Yoga</name>
-      </subgenre>
-      <subgenre>
-        <name>Memory Training</name>
-      </subgenre>
-      <subgenre>
-        <name>Mental Training</name>
-      </subgenre>
-      <subgenre>
-        <name>Motivation</name>
-      </subgenre>
-      <subgenre>
-        <name>Philosophy</name>
-      </subgenre>
-      <subgenre>
-        <name>Positive Thinking &amp; Attitude</name>
-      </subgenre>
-      <subgenre>
-        <name>Psychology</name>
-      </subgenre>
-      <subgenre>
-        <name>Spirituality &amp; Religion</name>
-      </subgenre>
-      <subgenre>
-        <name>Sports</name>
-      </subgenre>
-      <subgenre>
-        <name>Wellness &amp; Beauty</name>
-      </subgenre>
-      <subgenre>
-        <name>Science Fiction &amp; Fantasy</name>
-      </subgenre>
-      <subgenre>
-        <name>Ancient World</name>
-      </subgenre>
-      <subgenre>
-        <name>Fantasy-Romance</name>
-      </subgenre>
-      <subgenre>
-        <name>Historical Thriller</name>
-      </subgenre>
-      <subgenre>
-        <name>Horror Classics</name>
-      </subgenre>
-      <subgenre>
-        <name>Medieval Times &amp; Early Modern Era</name>
-      </subgenre>
-      <subgenre>
-        <name>Thriller</name>
-      </subgenre>
-      <subgenre>
-        <name>Mystery &amp; Conspiracy</name>
-      </subgenre>
-      <subgenre>
-        <name>Psychological Thriller</name>
-      </subgenre>
-      <subgenre>
-        <name>Espionage, Politics &amp; Justice</name>
-      </subgenre>
-      <subgenre>
-        <name>Vatican &amp; Secret Societies</name>
-      </subgenre>
-      <subgenre>
-        <name>Science &amp; Medicine</name>
-      </subgenre>
-	  <subgenre>
-        <name>Literature</name>
-      </subgenre>
-	  <subgenre>
-        <name>Novels</name>
-      </subgenre>
-	  <subgenre>
-        <name>Erotica</name>
-      </subgenre>
-	  <subgenre>
-        <name>Romance</name>
-      </subgenre>
-	  <subgenre>
-        <name>Contemporary Literature</name>
-      </subgenre>
-	  <subgenre>
-        <name>Contemporary German Literature</name>
-      </subgenre>
-	  <subgenre>
-        <name>Entertainment</name>
-      </subgenre>
-      <subgenre>
-        <name>Youth</name>
-      </subgenre>
-      <subgenre>
-        <name>Youth Detective Stories</name>
-      </subgenre>
-      <subgenre>
-        <name>Fantasy</name>
-      </subgenre>
-      <subgenre>
-        <name>For Girls</name>
-      </subgenre>
-      <subgenre>
-        <name>Knowledge for Teenagers</name>
-      </subgenre>
-      <subgenre>
-        <name>Mystery</name>
-      </subgenre>
-      <subgenre>
-        <name>Youth Classics</name>
-      </subgenre>
-      <subgenre>
-        <name>Youth Today</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Language</name>
-    <subgenres>
-      <subgenre>
-        <name>Albanian</name>
-      </subgenre>
-      <subgenre>
-        <name>Arabic</name>
-      </subgenre>
-      <subgenre>
-        <name>Bengali</name>
-      </subgenre>
-      <subgenre>
-        <name>Bosnian</name>
-      </subgenre>
-      <subgenre>
-        <name>Bulgarian</name>
-      </subgenre>
-      <subgenre>
-        <name>Cantonese / Yue</name>
-      </subgenre>
-      <subgenre>
-        <name>Croatian</name>
-      </subgenre>
-      <subgenre>
-        <name>Czech</name>
-      </subgenre>
-      <subgenre>
-        <name>Danish</name>
-      </subgenre>
-      <subgenre>
-        <name>Dutch</name>
-      </subgenre>
-      <subgenre>
-        <name>English</name>
-      </subgenre>
-      <subgenre>
-        <name>Finnish</name>
-      </subgenre>
-      <subgenre>
-        <name>French</name>
-      </subgenre>
-      <subgenre>
-        <name>German</name>
-      </subgenre>
-      <subgenre>
-        <name>Greek</name>
-      </subgenre>
-      <subgenre>
-        <name>Hebrew</name>
-      </subgenre>
-      <subgenre>
-        <name>Hindi / Urdu</name>
-      </subgenre>
-      <subgenre>
-        <name>Hungarian</name>
-      </subgenre>
-      <subgenre>
-        <name>Italian</name>
-      </subgenre>
-      <subgenre>
-        <name>Japanese</name>
-      </subgenre>
-      <subgenre>
-        <name>Korean</name>
-      </subgenre>
-      <subgenre>
-        <name>Macedonian</name>
-      </subgenre>
-      <subgenre>
-        <name>Mandarin</name>
-      </subgenre>
-      <subgenre>
-        <name>Norwegian</name>
-      </subgenre>
-      <subgenre>
-        <name>Patois</name>
-      </subgenre>
-      <subgenre>
-        <name>Portuguese</name>
-      </subgenre>
-      <subgenre>
-        <name>Russian</name>
-      </subgenre>
-      <subgenre>
-        <name>Serbian</name>
-      </subgenre>
-      <subgenre>
-        <name>Spanish</name>
-      </subgenre>
-      <subgenre>
-        <name>Swedish</name>
-      </subgenre>
-      <subgenre>
-        <name>Tamil</name>
-      </subgenre>
-      <subgenre>
-        <name>Turkish</name>
-      </subgenre>
-      <subgenre>
-        <name>Vietnamese</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Film</name>
-    <subgenres>
-      <subgenre>
-        <name>Action</name>
-      </subgenre>
-      <subgenre>
-        <name>3D</name>
-      </subgenre>
-      <subgenre>
-        <name>Adventure</name>
-      </subgenre>
-      <subgenre>
-        <name>Animation</name>
-      </subgenre>
-      <subgenre>
-        <name>Author's Film</name>
-      </subgenre>
-      <subgenre>
-        <name>Biography</name>
-      </subgenre>
-      <subgenre>
-        <name>Cartoon</name>
-      </subgenre>
-      <subgenre>
-        <name>Children</name>
-      </subgenre>
-      <subgenre>
-        <name>Comedy</name>
-      </subgenre>
-      <subgenre>
-        <name>Crime &amp; Gangster</name>
-      </subgenre>
-      <subgenre>
-        <name>Disaster</name>
-      </subgenre>
-      <subgenre>
-        <name>Documentary</name>
-      </subgenre>
-      <subgenre>
-        <name>Drama</name>
-      </subgenre>
-      <subgenre>
-        <name>Epic / Historical</name>
-      </subgenre>
-      <subgenre>
-        <name>Erotic</name>
-      </subgenre>
-      <subgenre>
-        <name>Expressionism</name>
-      </subgenre>
-      <subgenre>
-        <name>Family</name>
-      </subgenre>
-      <subgenre>
-        <name>Fantasy</name>
-      </subgenre>
-      <subgenre>
-        <name>Film-Noir</name>
-      </subgenre>
-      <subgenre>
-        <name>GLBT</name>
-      </subgenre>
-      <subgenre>
-        <name>Horror</name>
-      </subgenre>
-      <subgenre>
-        <name>Independent Film</name>
-      </subgenre>
-      <subgenre>
-        <name>Martial-Arts / Eastern</name>
-      </subgenre>
-      <subgenre>
-        <name>Monumental</name>
-      </subgenre>
-      <subgenre>
-        <name>Musical / Dance</name>
-      </subgenre>
-      <subgenre>
-        <name>Music</name>
-      </subgenre>
-      <subgenre>
-        <name>Mystery</name>
-      </subgenre>
-      <subgenre>
-        <name>Reality-TV</name>
-      </subgenre>
-      <subgenre>
-        <name>Romantic</name>
-      </subgenre>
-      <subgenre>
-        <name>Science Fiction</name>
-      </subgenre>
-      <subgenre>
-        <name>Silent Movie</name>
-      </subgenre>
-      <subgenre>
-        <name>Sport</name>
-      </subgenre>
-      <subgenre>
-        <name>Thriller</name>
-      </subgenre>
-      <subgenre>
-        <name>TV-Series</name>
-      </subgenre>
-      <subgenre>
-        <name>Tragicomedy</name>
-      </subgenre>
-      <subgenre>
-        <name>War / Anti-War</name>
-      </subgenre>
-      <subgenre>
-        <name>Western</name>
-      </subgenre>
-      <subgenre>
-        <name>Youth</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Time</name>
-    <subgenres>
-      <subgenre>
-        <name>Middle Ages</name>
-      </subgenre>
-      <subgenre>
-        <name>20's</name>
-      </subgenre>
-      <subgenre>
-        <name>30's</name>
-      </subgenre>
-      <subgenre>
-        <name>40's</name>
-      </subgenre>
-      <subgenre>
-        <name>50's</name>
-      </subgenre>
-      <subgenre>
-        <name>60's</name>
-      </subgenre>
-      <subgenre>
-        <name>70'</name>
-      </subgenre>
-      <subgenre>
-        <name>80's</name>
-      </subgenre>
-      <subgenre>
-        <name>90's</name>
-      </subgenre>
-      <subgenre>
-        <name>2000's</name>
-      </subgenre>
-      <subgenre>
-        <name>2010's</name>
-      </subgenre>
-      <subgenre>
-        <name>2020's</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Adult</name>
-  </genre>
-  <genre>
-    <name>Children</name>
-    <subgenres>
-      <subgenre>
-        <name>Age: up to 6 years</name>
-      </subgenre>
-      <subgenre>
-        <name>Age: 6 years +</name>
-      </subgenre>
-      <subgenre>
-        <name>Age: 8 years +</name>
-      </subgenre>
-      <subgenre>
-        <name>Kids &amp; Family</name>
-      </subgenre>
-    </subgenres>
-  </genre>
-  <genre>
-    <name>Country</name>
-    <subgenres>
-      <subgenre>
-        <name>United Arab Emirates (AE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Afghanistan (AF)</name>
-      </subgenre>
-      <subgenre>
-        <name>Antigua and Barbuda (AG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Anguilla (AI)</name>
-      </subgenre>
-      <subgenre>
-        <name>Albania (AL)</name>
-      </subgenre>
-      <subgenre>
-        <name>Armenia (AM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Angola (AO)</name>
-      </subgenre>
-      <subgenre>
-        <name>Antarctica (AQ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Argentina (AR)</name>
-      </subgenre>
-      <subgenre>
-        <name>American Samoa (AS)</name>
-      </subgenre>
-      <subgenre>
-        <name>Austria (AT)</name>
-      </subgenre>
-      <subgenre>
-        <name>Australia (AU)</name>
-      </subgenre>
-      <subgenre>
-        <name>Aruba (AW)</name>
-      </subgenre>
-      <subgenre>
-        <name>Åland Islands (AX)</name>
-      </subgenre>
-      <subgenre>
-        <name>Azerbaijan (AZ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Bosnia and Herzegovina (BA)</name>
-      </subgenre>
-      <subgenre>
-        <name>Barbados (BB)</name>
-      </subgenre>
-      <subgenre>
-        <name>Bangladesh (BD)</name>
-      </subgenre>
-      <subgenre>
-        <name>Belgium (BE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Burkina Faso (BF)</name>
-      </subgenre>
-      <subgenre>
-        <name>Bulgaria (BG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Bahrain (BH)</name>
-      </subgenre>
-      <subgenre>
-        <name>Burundi (BI)</name>
-      </subgenre>
-      <subgenre>
-        <name>Benin (BJ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Saint Barthélemy (BL)</name>
-      </subgenre>
-      <subgenre>
-        <name>Bermuda (BM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Brunei Darussalam (BN)</name>
-      </subgenre>
-      <subgenre>
-        <name>Bolivia  Plurinational State of (BO)</name>
-      </subgenre>
-      <subgenre>
-        <name>Bonaire  Saint Eustatius and Saba (BQ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Brazil (BR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Bahamas (BS)</name>
-      </subgenre>
-      <subgenre>
-        <name>Bhutan (BT)</name>
-      </subgenre>
-      <subgenre>
-        <name>Bouvet Island (BV)</name>
-      </subgenre>
-      <subgenre>
-        <name>Botswana (BW)</name>
-      </subgenre>
-      <subgenre>
-        <name>Belarus (BY)</name>
-      </subgenre>
-      <subgenre>
-        <name>Belize (BZ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Canada (CA)</name>
-      </subgenre>
-      <subgenre>
-        <name>Cocos (Keeling) Islands (CC)</name>
-      </subgenre>
-      <subgenre>
-        <name>Congo  the Democratic Republic of the (CD)</name>
-      </subgenre>
-      <subgenre>
-        <name>Central African Republic (CF)</name>
-      </subgenre>
-      <subgenre>
-        <name>Congo (CG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Switzerland (CH)</name>
-      </subgenre>
-      <subgenre>
-        <name>Côte d'Ivoire (CI)</name>
-      </subgenre>
-      <subgenre>
-        <name>Cook Islands (CK)</name>
-      </subgenre>
-      <subgenre>
-        <name>Chile (CL)</name>
-      </subgenre>
-      <subgenre>
-        <name>Cameroon (CM)</name>
-      </subgenre>
-      <subgenre>
-        <name>China (CN)</name>
-      </subgenre>
-      <subgenre>
-        <name>Colombia (CO)</name>
-      </subgenre>
-      <subgenre>
-        <name>Costa Rica (CR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Cuba (CU)</name>
-      </subgenre>
-      <subgenre>
-        <name>Cape Verde (CV)</name>
-      </subgenre>
-      <subgenre>
-        <name>Curaçao (CW)</name>
-      </subgenre>
-      <subgenre>
-        <name>Christmas Island (CX)</name>
-      </subgenre>
-      <subgenre>
-        <name>Cyprus (CY)</name>
-      </subgenre>
-      <subgenre>
-        <name>Czech Republic (CZ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Germany (DE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Djibouti (DJ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Denmark (DK)</name>
-      </subgenre>
-      <subgenre>
-        <name>Dominica (DM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Dominican Republic (DO)</name>
-      </subgenre>
-      <subgenre>
-        <name>Algeria (DZ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Ecuador (EC)</name>
-      </subgenre>
-      <subgenre>
-        <name>Estonia (EE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Egypt (EG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Western Sahara (EH)</name>
-      </subgenre>
-      <subgenre>
-        <name>Eritrea (ER)</name>
-      </subgenre>
-      <subgenre>
-        <name>Spain (ES)</name>
-      </subgenre>
-      <subgenre>
-        <name>Ethiopia (ET)</name>
-      </subgenre>
-      <subgenre>
-        <name>Finland (FI)</name>
-      </subgenre>
-      <subgenre>
-        <name>Fiji (FJ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Falkland Islands (Malvinas) (FK)</name>
-      </subgenre>
-      <subgenre>
-        <name>Micronesia  Federated States of (FM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Faroe Islands (FO)</name>
-      </subgenre>
-      <subgenre>
-        <name>France (FR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Gabon (GA)</name>
-      </subgenre>
-      <subgenre>
-        <name>United Kingdom (GB)</name>
-      </subgenre>
-      <subgenre>
-        <name>Grenada (GD)</name>
-      </subgenre>
-      <subgenre>
-        <name>Georgia (GE)</name>
-      </subgenre>
-      <subgenre>
-        <name>French Guiana (GF)</name>
-      </subgenre>
-      <subgenre>
-        <name>Guernsey (GG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Ghana (GH)</name>
-      </subgenre>
-      <subgenre>
-        <name>Gibraltar (GI)</name>
-      </subgenre>
-      <subgenre>
-        <name>Greenland (GL)</name>
-      </subgenre>
-      <subgenre>
-        <name>Gambia (GM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Guinea (GN)</name>
-      </subgenre>
-      <subgenre>
-        <name>Guadeloupe (GP)</name>
-      </subgenre>
-      <subgenre>
-        <name>Equatorial Guinea (GQ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Greece (GR)</name>
-      </subgenre>
-      <subgenre>
-        <name>South Georgia and the South Sandwich Islands (GS)</name>
-      </subgenre>
-      <subgenre>
-        <name>Guatemala (GT)</name>
-      </subgenre>
-      <subgenre>
-        <name>Guam (GU)</name>
-      </subgenre>
-      <subgenre>
-        <name>Guinea-Bissau (GW)</name>
-      </subgenre>
-      <subgenre>
-        <name>Guyana (GY)</name>
-      </subgenre>
-      <subgenre>
-        <name>Hong Kong (HK)</name>
-      </subgenre>
-      <subgenre>
-        <name>Heard Island and McDonald Islands (HM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Honduras (HN)</name>
-      </subgenre>
-      <subgenre>
-        <name>Croatia (HR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Haiti (HT)</name>
-      </subgenre>
-      <subgenre>
-        <name>Hungary (HU)</name>
-      </subgenre>
-      <subgenre>
-        <name>Indonesia (ID)</name>
-      </subgenre>
-      <subgenre>
-        <name>Ireland (IE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Israel (IL)</name>
-      </subgenre>
-      <subgenre>
-        <name>Isle of Man (IM)</name>
-      </subgenre>
-      <subgenre>
-        <name>India (IN)</name>
-      </subgenre>
-      <subgenre>
-        <name>British Indian Ocean Territory (IO)</name>
-      </subgenre>
-      <subgenre>
-        <name>Iraq (IQ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Iran  Islamic Republic of (IR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Iceland (IS)</name>
-      </subgenre>
-      <subgenre>
-        <name>Italy (IT)</name>
-      </subgenre>
-      <subgenre>
-        <name>Jersey (JE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Jamaica (JM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Jordan (JO)</name>
-      </subgenre>
-      <subgenre>
-        <name>Japan (JP)</name>
-      </subgenre>
-      <subgenre>
-        <name>Kenya (KE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Kyrgyzstan (KG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Cambodia (KH)</name>
-      </subgenre>
-      <subgenre>
-        <name>Kiribati (KI)</name>
-      </subgenre>
-      <subgenre>
-        <name>Comoros (KM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Saint Kitts and Nevis (KN)</name>
-      </subgenre>
-      <subgenre>
-        <name>Korea  Democratic People's Republic of (KP)</name>
-      </subgenre>
-      <subgenre>
-        <name>Korea  Republic of (KR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Kuwait (KW)</name>
-      </subgenre>
-      <subgenre>
-        <name>Cayman Islands (KY)</name>
-      </subgenre>
-      <subgenre>
-        <name>Kazakhstan (KZ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Lao People's Democratic Republic (LA)</name>
-      </subgenre>
-      <subgenre>
-        <name>Lebanon (LB)</name>
-      </subgenre>
-      <subgenre>
-        <name>Saint Lucia (LC)</name>
-      </subgenre>
-      <subgenre>
-        <name>Liechtenstein (LI)</name>
-      </subgenre>
-      <subgenre>
-        <name>Sri Lanka (LK)</name>
-      </subgenre>
-      <subgenre>
-        <name>Liberia (LR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Lesotho (LS)</name>
-      </subgenre>
-      <subgenre>
-        <name>Lithuania (LT)</name>
-      </subgenre>
-      <subgenre>
-        <name>Luxembourg (LU)</name>
-      </subgenre>
-      <subgenre>
-        <name>Latvia (LV)</name>
-      </subgenre>
-      <subgenre>
-        <name>Libyan Arab Jamahiriya (LY)</name>
-      </subgenre>
-      <subgenre>
-        <name>Morocco (MA)</name>
-      </subgenre>
-      <subgenre>
-        <name>Monaco (MC)</name>
-      </subgenre>
-      <subgenre>
-        <name>Moldova  Republic of (MD)</name>
-      </subgenre>
-      <subgenre>
-        <name>Montenegro (ME)</name>
-      </subgenre>
-      <subgenre>
-        <name>Saint Martin (French part) (MF)</name>
-      </subgenre>
-      <subgenre>
-        <name>Madagascar (MG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Marshall Islands (MH)</name>
-      </subgenre>
-      <subgenre>
-        <name>Macedonia  the former Yugoslav Republic of (MK)</name>
-      </subgenre>
-      <subgenre>
-        <name>Mali (ML)</name>
-      </subgenre>
-      <subgenre>
-        <name>Myanmar (MM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Mongolia (MN)</name>
-      </subgenre>
-      <subgenre>
-        <name>Macao (MO)</name>
-      </subgenre>
-      <subgenre>
-        <name>Northern Mariana Islands (MP)</name>
-      </subgenre>
-      <subgenre>
-        <name>Martinique (MQ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Mauritania (MR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Montserrat (MS)</name>
-      </subgenre>
-      <subgenre>
-        <name>Malta (MT)</name>
-      </subgenre>
-      <subgenre>
-        <name>Mauritius (MU)</name>
-      </subgenre>
-      <subgenre>
-        <name>Maldives (MV)</name>
-      </subgenre>
-      <subgenre>
-        <name>Malawi (MW)</name>
-      </subgenre>
-      <subgenre>
-        <name>Mexico (MX)</name>
-      </subgenre>
-      <subgenre>
-        <name>Malaysia (MY)</name>
-      </subgenre>
-      <subgenre>
-        <name>Mozambique (MZ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Namibia (NA)</name>
-      </subgenre>
-      <subgenre>
-        <name>New Caledonia (NC)</name>
-      </subgenre>
-      <subgenre>
-        <name>Niger (NE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Norfolk Island (NF)</name>
-      </subgenre>
-      <subgenre>
-        <name>Nigeria (NG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Nicaragua (NI)</name>
-      </subgenre>
-      <subgenre>
-        <name>Netherlands (NL)</name>
-      </subgenre>
-      <subgenre>
-        <name>Norway (NO)</name>
-      </subgenre>
-      <subgenre>
-        <name>Nepal (NP)</name>
-      </subgenre>
-      <subgenre>
-        <name>Nauru (NR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Niue (NU)</name>
-      </subgenre>
-      <subgenre>
-        <name>New Zealand (NZ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Oman (OM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Panama (PA)</name>
-      </subgenre>
-      <subgenre>
-        <name>Peru (PE)</name>
-      </subgenre>
-      <subgenre>
-        <name>French Polynesia (PF)</name>
-      </subgenre>
-      <subgenre>
-        <name>Papua New Guinea (PG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Philippines (PH)</name>
-      </subgenre>
-      <subgenre>
-        <name>Pakistan (PK)</name>
-      </subgenre>
-      <subgenre>
-        <name>Poland (PL)</name>
-      </subgenre>
-      <subgenre>
-        <name>Saint Pierre and Miquelon (PM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Pitcairn (PN)</name>
-      </subgenre>
-      <subgenre>
-        <name>Puerto Rico (PR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Palestinian Territory  Occupied (PS)</name>
-      </subgenre>
-      <subgenre>
-        <name>Portugal (PT)</name>
-      </subgenre>
-      <subgenre>
-        <name>Palau (PW)</name>
-      </subgenre>
-      <subgenre>
-        <name>Paraguay (PY)</name>
-      </subgenre>
-      <subgenre>
-        <name>Qatar (QA)</name>
-      </subgenre>
-      <subgenre>
-        <name>Réunion (RE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Romania (RO)</name>
-      </subgenre>
-      <subgenre>
-        <name>Serbia (RS)</name>
-      </subgenre>
-      <subgenre>
-        <name>Russian Federation (RU)</name>
-      </subgenre>
-      <subgenre>
-        <name>Rwanda (RW)</name>
-      </subgenre>
-      <subgenre>
-        <name>Saudi Arabia (SA)</name>
-      </subgenre>
-      <subgenre>
-        <name>Solomon Islands (SB)</name>
-      </subgenre>
-      <subgenre>
-        <name>Seychelles (SC)</name>
-      </subgenre>
-      <subgenre>
-        <name>Sudan (SD)</name>
-      </subgenre>
-      <subgenre>
-        <name>Sweden (SE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Singapore (SG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Saint Helena  Ascension and Tristan da Cunha (SH)</name>
-      </subgenre>
-      <subgenre>
-        <name>Slovenia (SI)</name>
-      </subgenre>
-      <subgenre>
-        <name>Svalbard and Jan Mayen (SJ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Slovakia (SK)</name>
-      </subgenre>
-      <subgenre>
-        <name>Sierra Leone (SL)</name>
-      </subgenre>
-      <subgenre>
-        <name>San Marino (SM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Senegal (SN)</name>
-      </subgenre>
-      <subgenre>
-        <name>Somalia (SO)</name>
-      </subgenre>
-      <subgenre>
-        <name>Suriname (SR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Sao Tome and Principe (ST)</name>
-      </subgenre>
-      <subgenre>
-        <name>El Salvador (SV)</name>
-      </subgenre>
-      <subgenre>
-        <name>Sint Maarten (Dutch part) (SX)</name>
-      </subgenre>
-      <subgenre>
-        <name>Syrian Arab Republic (SY)</name>
-      </subgenre>
-      <subgenre>
-        <name>Swaziland (SZ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Turks and Caicos Islands (TC)</name>
-      </subgenre>
-      <subgenre>
-        <name>Chad (TD)</name>
-      </subgenre>
-      <subgenre>
-        <name>French Southern Territories (TF)</name>
-      </subgenre>
-      <subgenre>
-        <name>Togo (TG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Thailand (TH)</name>
-      </subgenre>
-      <subgenre>
-        <name>Tajikistan (TJ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Tokelau (TK)</name>
-      </subgenre>
-      <subgenre>
-        <name>Timor-Leste (TL)</name>
-      </subgenre>
-      <subgenre>
-        <name>Turkmenistan (TM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Tunisia (TN)</name>
-      </subgenre>
-      <subgenre>
-        <name>Tonga (TO)</name>
-      </subgenre>
-      <subgenre>
-        <name>Turkey (TR)</name>
-      </subgenre>
-      <subgenre>
-        <name>Trinidad and Tobago (TT)</name>
-      </subgenre>
-      <subgenre>
-        <name>Tuvalu (TV)</name>
-      </subgenre>
-      <subgenre>
-        <name>Taiwan  Province of China (TW)</name>
-      </subgenre>
-      <subgenre>
-        <name>Tanzania  United Republic of (TZ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Ukraine (UA)</name>
-      </subgenre>
-      <subgenre>
-        <name>Uganda (UG)</name>
-      </subgenre>
-      <subgenre>
-        <name>United States Minor Outlying Islands (UM)</name>
-      </subgenre>
-      <subgenre>
-        <name>United States (US)</name>
-      </subgenre>
-      <subgenre>
-        <name>Uruguay (UY)</name>
-      </subgenre>
-      <subgenre>
-        <name>Uzbekistan (UZ)</name>
-      </subgenre>
-      <subgenre>
-        <name>Holy See (Vatican City State) (VA)</name>
-      </subgenre>
-      <subgenre>
-        <name>Saint Vincent and the Grenadines (VC)</name>
-      </subgenre>
-      <subgenre>
-        <name>Venezuela  Bolivarian Republic of (VE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Virgin Islands  British (VG)</name>
-      </subgenre>
-      <subgenre>
-        <name>Virgin Islands  U.S. (VI)</name>
-      </subgenre>
-      <subgenre>
-        <name>Viet Nam (VN)</name>
-      </subgenre>
-      <subgenre>
-        <name>Vanuatu (VU)</name>
-      </subgenre>
-      <subgenre>
-        <name>Wallis and Futuna (WF)</name>
-      </subgenre>
-      <subgenre>
-        <name>Samoa (WS)</name>
-      </subgenre>
-      <subgenre>
-        <name>Yemen (YE)</name>
-      </subgenre>
-      <subgenre>
-        <name>Mayotte (YT)</name>
-      </subgenre>
-      <subgenre>
-        <name>South Africa (ZA)</name>
-      </subgenre>
-      <subgenre>
-        <name>Zambia (ZM)</name>
-      </subgenre>
-      <subgenre>
-        <name>Zimbabwe (ZW)</name>
-      </subgenre>
-    </subgenres>
-  </genre>
+	<name>Genres</name>
+	<genre>
+	<name>Rock</name>
+	<subgenres>
+	<subgenre>
+	<name>Beat</name>
+	</subgenre>
+	<subgenre>
+	<name>Blues Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Rock'n'Roll</name>
+	</subgenre>
+	<subgenre>
+	<name>Art Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Classic Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Deutschrock</name>
+	</subgenre>
+	<subgenre>
+	<name>Emo</name>
+	</subgenre>
+	<subgenre>
+	<name>Experimental Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Glam Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Hard Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Krautrock</name>
+	</subgenre>
+	<subgenre>
+	<name>Progressive Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Psychedelic Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Psychobilly Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Rockabilly</name>
+	</subgenre>
+	<subgenre>
+	<name>Soft Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Southern Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Surf Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Alternative</name>
+	</subgenre>
+	<subgenre>
+	<name>Crossover</name>
+	</subgenre>
+	<subgenre>
+	<name>Dark Wave</name>
+	</subgenre>
+	<subgenre>
+	<name>Garage Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Goth / Industrial</name>
+	</subgenre>
+	<subgenre>
+	<name>Grunge</name>
+	</subgenre>
+	<subgenre>
+	<name>Hardcore</name>
+	</subgenre>
+	<subgenre>
+	<name>Indie Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>New Wave</name>
+	</subgenre>
+	<subgenre>
+	<name>Punk</name>
+	</subgenre>
+	<subgenre>
+	<name>Funpunk</name>
+	</subgenre>
+	<subgenre>
+	<name>Black Metal</name>
+	</subgenre>
+	<subgenre>
+	<name>Death Metal</name>
+	</subgenre>
+	<subgenre>
+	<name>Heavy Metal</name>
+	</subgenre>
+	<subgenre>
+	<name>Power Metal</name>
+	</subgenre>
+	<subgenre>
+	<name>Thrash / Speed Metal</name>
+	</subgenre>
+	<subgenre>
+	<name>Doom Metal</name>
+	</subgenre>
+	<subgenre>
+	<name>Grind Core</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Pop</name>
+	<subgenres>
+	<subgenre>
+	<name>Britpop</name>
+	</subgenre>
+	<subgenre>
+	<name>Dance Pop</name>
+	</subgenre>
+	<subgenre>
+	<name>Deutschpop</name>
+	</subgenre>
+	<subgenre>
+	<name>Disco</name>
+	</subgenre>
+	<subgenre>
+	<name>Easy Listening</name>
+	</subgenre>
+	<subgenre>
+	<name>Electropop</name>
+	</subgenre>
+	<subgenre>
+	<name>Euro Dance</name>
+	</subgenre>
+	<subgenre>
+	<name>Euro Pop</name>
+	</subgenre>
+	<subgenre>
+	<name>French Pop</name>
+	</subgenre>
+	<subgenre>
+	<name>Indie Pop</name>
+	</subgenre>
+	<subgenre>
+	<name>Italo Pop</name>
+	</subgenre>
+	<subgenre>
+	<name>J-Pop</name>
+	</subgenre>
+	<subgenre>
+	<name>K-Pop</name>
+	</subgenre>
+	<subgenre>
+	<name>Neue Deutsche Welle</name>
+	</subgenre>
+	<subgenre>
+	<name>New Age</name>
+	</subgenre>
+	<subgenre>
+	<name>Pop Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Power Pop</name>
+	</subgenre>
+	<subgenre>
+	<name>Schlager</name>
+	</subgenre>
+	<subgenre>
+	<name>Singer / Songwriter</name>
+	</subgenre>
+	<subgenre>
+	<name>Synthpop</name>
+	</subgenre>
+	<subgenre>
+	<name>Teen Pop</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Country</name>
+	<subgenres>
+	<subgenre>
+	<name>Alternative Country</name>
+	</subgenre>
+	<subgenre>
+	<name>Bluegrass</name>
+	</subgenre>
+	<subgenre>
+	<name>Contemporary Folk</name>
+	</subgenre>
+	<subgenre>
+	<name>Country Gospel</name>
+	</subgenre>
+	<subgenre>
+	<name>Honky-Tonk</name>
+	</subgenre>
+	<subgenre>
+	<name>Jewish / Yiddish Music</name>
+	</subgenre>
+	<subgenre>
+	<name>Nashville Sound</name>
+	</subgenre>
+	<subgenre>
+	<name>Outlaw / Progressive Country</name>
+	</subgenre>
+	<subgenre>
+	<name>Texas Country</name>
+	</subgenre>
+	<subgenre>
+	<name>Traditional Country</name>
+	</subgenre>
+	<subgenre>
+	<name>Western Swing</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Folk</name>
+	<subgenres>
+	<subgenre>
+	<name>Americana</name>
+	</subgenre>
+	<subgenre>
+	<name>Folk Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Irish Folk</name>
+	</subgenre>
+	<subgenre>
+	<name>German Folk</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Jazz</name>
+	<subgenres>
+	<subgenre>
+	<name>Acid Jazz</name>
+	</subgenre>
+	<subgenre>
+	<name>Avantgarde</name>
+	</subgenre>
+	<subgenre>
+	<name>Bebop</name>
+	</subgenre>
+	<subgenre>
+	<name>Big Band</name>
+	</subgenre>
+	<subgenre>
+	<name>Classic Jazz</name>
+	</subgenre>
+	<subgenre>
+	<name>Cool Jazz</name>
+	</subgenre>
+	<subgenre>
+	<name>Dixieland music</name>
+	</subgenre>
+	<subgenre>
+	<name>Free jazz</name>
+	</subgenre>
+	<subgenre>
+	<name>Hard Bop</name>
+	</subgenre>
+	<subgenre>
+	<name>Jazz Fusion</name>
+	</subgenre>
+	<subgenre>
+	<name>New Orleans Jazz</name>
+	</subgenre>
+	<subgenre>
+	<name>Nu-Jazz</name>
+	</subgenre>
+	<subgenre>
+	<name>Smooth Jazz</name>
+	</subgenre>
+	<subgenre>
+	<name>Swing</name>
+	</subgenre>
+	<subgenre>
+	<name>Vocal Jazz</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Hip Hop</name>
+	<subgenres>
+	<subgenre>
+	<name>Alternative Hip Hop</name>
+	</subgenre>
+	<subgenre>
+	<name>Crunk</name>
+	</subgenre>
+	<subgenre>
+	<name>Dirty South</name>
+	</subgenre>
+	<subgenre>
+	<name>G-Funk</name>
+	</subgenre>
+	<subgenre>
+	<name>Gangsta Rap</name>
+	</subgenre>
+	<subgenre>
+	<name>Golden Era</name>
+	</subgenre>
+	<subgenre>
+	<name>Grime</name>
+	</subgenre>
+	<subgenre>
+	<name>Hyphy</name>
+	</subgenre>
+	<subgenre>
+	<name>Instrumental Hip Hop</name>
+	</subgenre>
+	<subgenre>
+	<name>Miami Bass</name>
+	</subgenre>
+	<subgenre>
+	<name>New School</name>
+	</subgenre>
+	<subgenre>
+	<name>Old School</name>
+	</subgenre>
+	<subgenre>
+	<name>Turntablism</name>
+	</subgenre>
+	<subgenre>
+	<name>US Eastcoast</name>
+	</subgenre>
+	<subgenre>
+	<name>US Midwest</name>
+	</subgenre>
+	<subgenre>
+	<name>US Southern</name>
+	</subgenre>
+	<subgenre>
+	<name>US Westcoast</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Blues</name>
+	<subgenres>
+	<subgenre>
+	<name>Boogie-Woogie</name>
+	</subgenre>
+	<subgenre>
+	<name>Electric Blues Guitar</name>
+	</subgenre>
+	<subgenre>
+	<name>Modern Blues</name>
+	</subgenre>
+	<subgenre>
+	<name>Regional Blues</name>
+	</subgenre>
+	<subgenre>
+	<name>Traditional Blues</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Soul</name>
+	<subgenres>
+	<subgenre>
+	<name>Motown Sound</name>
+	</subgenre>
+	<subgenre>
+	<name>Neo Soul</name>
+	</subgenre>
+	<subgenre>
+	<name>Philly Sound</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Funk</name>
+	<subgenres />
+	</genre>
+	<genre>
+	<name>R&amp;B</name>
+	<subgenres>
+	<subgenre>
+	<name>Contemporary R&amp;B</name>
+	</subgenre>
+	<subgenre>
+	<name>Doo-wop</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Electronic</name>
+	<subgenres>
+	<subgenre>
+	<name>Ambient</name>
+	</subgenre>
+	<subgenre>
+	<name>Chill Out</name>
+	</subgenre>
+	<subgenre>
+	<name>Lounge</name>
+	</subgenre>
+	<subgenre>
+	<name>Downbeat</name>
+	</subgenre>
+	<subgenre>
+	<name>Electronica</name>
+	</subgenre>
+	<subgenre>
+	<name>Indie Disco</name>
+	</subgenre>
+	<subgenre>
+	<name>Industrial / EBM</name>
+	</subgenre>
+	<subgenre>
+	<name>Techno</name>
+	</subgenre>
+	<subgenre>
+	<name>Dance</name>
+	</subgenre>
+	<subgenre>
+	<name>Electro</name>
+	</subgenre>
+	<subgenre>
+	<name>Glitch hop</name>
+	</subgenre>
+	<subgenre>
+	<name>House</name>
+	</subgenre>
+	<subgenre>
+	<name>Acid House</name>
+	</subgenre>
+	<subgenre>
+	<name>Deep House</name>
+	</subgenre>
+	<subgenre>
+	<name>Disco House</name>
+	</subgenre>
+	<subgenre>
+	<name>Electro House</name>
+	</subgenre>
+	<subgenre>
+	<name>Fidget House</name>
+	</subgenre>
+	<subgenre>
+	<name>Hard House</name>
+	</subgenre>
+	<subgenre>
+	<name>Progressive House</name>
+	</subgenre>
+	<subgenre>
+	<name>Soulful House</name>
+	</subgenre>
+	<subgenre>
+	<name>Tech House</name>
+	</subgenre>
+	<subgenre>
+	<name>Tribal</name>
+	</subgenre>
+	<subgenre>
+	<name>Vocal House</name>
+	</subgenre>
+	<subgenre>
+	<name>Big Beat</name>
+	</subgenre>
+	<subgenre>
+	<name>Breakbeat</name>
+	</subgenre>
+	<subgenre>
+	<name>Drum'n'Bass</name>
+	</subgenre>
+	<subgenre>
+	<name>Dubstep</name>
+	</subgenre>
+	<subgenre>
+	<name>Garage / UK Funky</name>
+	</subgenre>
+	<subgenre>
+	<name>IDM</name>
+	</subgenre>
+	<subgenre>
+	<name>Trip-Hop</name>
+	</subgenre>
+	<subgenre>
+	<name>Trance</name>
+	</subgenre>
+	<subgenre>
+	<name>Goa Trance</name>
+	</subgenre>
+	<subgenre>
+	<name>Hard Trance</name>
+	</subgenre>
+	<subgenre>
+	<name>Psychedelic Trance</name>
+	</subgenre>
+	<subgenre>
+	<name>Gabba</name>
+	</subgenre>
+	<subgenre>
+	<name>Jumpstyle / Hardstyle</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Classic</name>
+	<subgenres>
+	<subgenre>
+		<name>Ancient music</name>
+	</subgenre>
+	<subgenre>
+		<name>Medieval music</name>
+	</subgenre>
+	<subgenre>
+		<name>Renaissance</name>
+	</subgenre>
+	<subgenre>
+		<name>Baroque</name>
+	</subgenre>
+	<subgenre>
+		<name>Classical period</name>
+	</subgenre>
+	<subgenre>
+		<name>Romantic</name>
+	</subgenre>
+	<subgenre>
+		<name>Neoromanticism</name>
+	</subgenre>
+	<subgenre>
+		<name>Neoclassicism</name>
+	</subgenre>
+	<subgenre>
+		<name>New Music / Contemporary Music</name>
+	</subgenre>
+	<subgenre>
+		<name>Modern, 20th / 21st Century</name>
+	</subgenre>
+	<subgenre>
+		<name>Postmodern Music</name>
+	</subgenre>
+	<subgenre>
+		<name>Music and other Media / Arts</name>
+	</subgenre>
+	<subgenre>
+		<name>Music and Word</name>
+	</subgenre>
+	<subgenre>
+		<name>12-Tone Composition</name>
+	</subgenre>
+	<subgenre>
+		<name>Anthem</name>
+	</subgenre>
+	<subgenre>
+		<name>Ballet</name>
+	</subgenre>
+	<subgenre>
+		<name>Cantata</name>
+	</subgenre>
+	<subgenre>
+		<name>Chamber Music</name>
+	</subgenre>
+	<subgenre>
+		<name>Choral</name>
+	</subgenre>
+	<subgenre>
+		<name>Crossover / Popular Classicism</name>
+	</subgenre>
+	<subgenre>
+		<name>Electronic Music / Computer Music</name>
+	</subgenre>
+	<subgenre>
+		<name>Madrigal</name>
+	</subgenre>
+	<subgenre>
+		<name>March</name>
+	</subgenre>
+	<subgenre>
+		<name>Minimal Music</name>
+	</subgenre>
+	<subgenre>
+		<name>Motet</name>
+	</subgenre>
+	<subgenre>
+		<name>Musical</name>
+	</subgenre>
+	<subgenre>
+		<name>Opera Arias</name>
+	</subgenre>
+	<subgenre>
+		<name>Opera Baroque</name>
+	</subgenre>
+	<subgenre>
+		<name>Opera Classical</name>
+	</subgenre>
+	<subgenre>
+		<name>Opera Renaissance</name>
+	</subgenre>
+	<subgenre>
+		<name>Opera Romantic</name>
+	</subgenre>
+	<subgenre>
+		<name>Operetta</name>
+	</subgenre>
+	<subgenre>
+		<name>Oratorio</name>
+	</subgenre>
+	<subgenre>
+		<name>Passion</name>
+	</subgenre>
+	<subgenre>
+		<name>Requiem</name>
+	</subgenre>
+	<subgenre>
+		<name>Serialism</name>
+	</subgenre>
+	<subgenre>
+		<name>Sonata</name>
+	</subgenre>
+	<subgenre>
+		<name>Suite</name>
+	</subgenre>
+	<subgenre>
+		<name>Symphonic Music / Orchestral Music</name>
+	</subgenre>
+	<subgenre>
+		<name>Symphony</name>
+	</subgenre>
+	<subgenre>
+		<name>Waltz</name>
+	</subgenre>
+	<subgenre>
+		<name>Brass Ensemble</name>
+	</subgenre>
+	<subgenre>
+		<name>Concerto / Solo Instrument with Orchestra</name>
+	</subgenre>
+	<subgenre>
+		<name>Mixed Ensemble (Strings / Wind)</name>
+	</subgenre>
+	<subgenre>
+		<name>Mixed Wind Ensemble (Woodwind / Brass)</name>
+	</subgenre>
+	<subgenre>
+		<name>Several Solo Instruments</name>
+	</subgenre>
+	<subgenre>
+		<name>Solo Instrument</name>
+	</subgenre>
+	<subgenre>
+		<name>String Ensemble</name>
+	</subgenre>
+	<subgenre>
+		<name>String Orchestra</name>
+	</subgenre>
+	<subgenre>
+		<name>String Quartet</name>
+	</subgenre>
+	<subgenre>
+		<name>String Trio</name>
+	</subgenre>
+	<subgenre>
+		<name>Woodwind Ensemble</name>
+	</subgenre>
+	<subgenre>
+		<name>A cappella</name>
+	</subgenre>
+	<subgenre>
+		<name>Vocal Ensemble</name>
+	</subgenre>
+	<subgenre>
+		<name>Vocal Music</name>
+	</subgenre>
+	<subgenre>
+		<name>Choir</name>
+	</subgenre>
+	<subgenre>
+		<name>Boy's Choir</name>
+	</subgenre>
+	<subgenre>
+		<name>Children's Choir</name>
+	</subgenre>
+	<subgenre>
+		<name>Choir with Orchestra</name>
+	</subgenre>
+	<subgenre>
+		<name>Women's Choir</name>
+	</subgenre>
+	<subgenre>
+		<name>Men's Choir</name>
+	</subgenre>
+	<subgenre>
+		<name>Mixed Choir</name>
+	</subgenre>
+	<subgenre>
+		<name>Soprano</name>
+	</subgenre>
+	<subgenre>
+		<name>Mezzosoprano</name>
+	</subgenre>
+	<subgenre>
+		<name>Alto</name>
+	</subgenre>
+	<subgenre>
+		<name>Tenor</name>
+	</subgenre>
+	<subgenre>
+		<name>Baritone</name>
+	</subgenre>
+	<subgenre>
+		<name>Bass</name>
+	</subgenre>
+	<subgenre>
+		<name>Accordion</name>
+	</subgenre>
+	<subgenre>
+		<name>Ancient Instruments</name>
+	</subgenre>
+	<subgenre>
+		<name>Bassoon</name>
+	</subgenre>
+	<subgenre>
+		<name>Cembalo</name>
+	</subgenre>
+	<subgenre>
+		<name>Clarinet</name>
+	</subgenre>
+	<subgenre>
+		<name>Double Bass</name>
+	</subgenre>
+	<subgenre>
+		<name>Flute</name>
+	</subgenre>
+	<subgenre>
+		<name>Guitar</name>
+	</subgenre>
+	<subgenre>
+		<name>Harp</name>
+	</subgenre>
+	<subgenre>
+		<name>Harpsichord</name>
+	</subgenre>
+	<subgenre>
+		<name>Horn</name>
+	</subgenre>
+	<subgenre>
+		<name>Lute</name>
+	</subgenre>
+	<subgenre>
+		<name>Mandolin</name>
+	</subgenre>
+	<subgenre>
+		<name>Oboe</name>
+	</subgenre>
+	<subgenre>
+		<name>Organ</name>
+	</subgenre>
+	<subgenre>
+		<name>Percussion (Vibraphone etc.)</name>
+	</subgenre>
+	<subgenre>
+		<name>Piano</name>
+	</subgenre>
+	<subgenre>
+		<name>Recorder / English Flute</name>
+	</subgenre>
+	<subgenre>
+		<name>Saxophone</name>
+	</subgenre>
+	<subgenre>
+		<name>Trombone</name>
+	</subgenre>
+	<subgenre>
+		<name>Trumpet</name>
+	</subgenre>
+	<subgenre>
+		<name>Tuba</name>
+	</subgenre>
+	<subgenre>
+		<name>Viola</name>
+	</subgenre>
+	<subgenre>
+		<name>Violin</name>
+	</subgenre>
+	<subgenre>
+		<name>Violoncello</name>
+	</subgenre>
+	<subgenre>
+		<name>Miscellaneous Lead Instrument</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Reggae</name>
+	<subgenres>
+	<subgenre>
+	<name>Contemporary Reggae</name>
+	</subgenre>
+	<subgenre>
+	<name>Dancehall</name>
+	</subgenre>
+	<subgenre>
+	<name>Dub</name>
+	</subgenre>
+	<subgenre>
+	<name>Lover's Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Reggaeton</name>
+	</subgenre>
+	<subgenre>
+	<name>Roots</name>
+	</subgenre>
+	<subgenre>
+	<name>Ska</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>World</name>
+	<subgenres>
+	<subgenre>
+	<name>African Music</name>
+	</subgenre>
+	<subgenre>
+	<name>Afro Beat</name>
+	</subgenre>
+	<subgenre>
+	<name>Afro Pop</name>
+	</subgenre>
+	<subgenre>
+	<name>Asian Music</name>
+	</subgenre>
+	<subgenre>
+	<name>Austropop</name>
+	</subgenre>
+	<subgenre>
+	<name>Calypso</name>
+	</subgenre>
+	<subgenre>
+	<name>Caribbean Music</name>
+	</subgenre>
+	<subgenre>
+	<name>Celtic Music</name>
+	</subgenre>
+	<subgenre>
+	<name>Chanson</name>
+	</subgenre>
+	<subgenre>
+	<name>Coupé Decalé</name>
+	</subgenre>
+	<subgenre>
+	<name>Enka</name>
+	</subgenre>
+	<subgenre>
+	<name>European Music</name>
+	</subgenre>
+	<subgenre>
+	<name>Ghazal</name>
+	</subgenre>
+	<subgenre>
+	<name>Griot</name>
+	</subgenre>
+	<subgenre>
+	<name>Gypsy</name>
+	</subgenre>
+	<subgenre>
+	<name>Highlife</name>
+	</subgenre>
+	<subgenre>
+	<name>Judaica Music / Yiddish / Klezmer</name>
+	</subgenre>
+	<subgenre>
+	<name>Kuduro</name>
+	</subgenre>
+	<subgenre>
+	<name>Kwaito</name>
+	</subgenre>
+	<subgenre>
+	<name>Makossa</name>
+	</subgenre>
+	<subgenre>
+	<name>Marching Band</name>
+	</subgenre>
+	<subgenre>
+	<name>Mento</name>
+	</subgenre>
+	<subgenre>
+	<name>Middle Eastern Music</name>
+	</subgenre>
+	<subgenre>
+	<name>Nordic / Scandinavia</name>
+	</subgenre>
+	<subgenre>
+	<name>North American Music</name>
+	</subgenre>
+	<subgenre>
+	<name>South American Music</name>
+	</subgenre>
+	<subgenre>
+	<name>Parang</name>
+	</subgenre>
+	<subgenre>
+	<name>Polka</name>
+	</subgenre>
+	<subgenre>
+	<name>Rai</name>
+	</subgenre>
+	<subgenre>
+	<name>Soca</name>
+	</subgenre>
+	<subgenre>
+	<name>Soukous</name>
+	</subgenre>
+	<subgenre>
+	<name>Zouk</name>
+	</subgenre>
+	<subgenre>
+	<name>Zulu</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Latin</name>
+	<subgenres>
+	<subgenre>
+	<name>Bachata</name>
+	</subgenre>
+	<subgenre>
+	<name>Banda</name>
+	</subgenre>
+	<subgenre>
+	<name>Bhangra</name>
+	</subgenre>
+	<subgenre>
+	<name>Bolero</name>
+	</subgenre>
+	<subgenre>
+	<name>Bossa Nova</name>
+	</subgenre>
+	<subgenre>
+	<name>Corridos</name>
+	</subgenre>
+	<subgenre>
+	<name>Cumbia</name>
+	</subgenre>
+	<subgenre>
+	<name>Fado</name>
+	</subgenre>
+	<subgenre>
+	<name>Flamenco</name>
+	</subgenre>
+	<subgenre>
+	<name>Grupero</name>
+	</subgenre>
+	<subgenre>
+	<name>Mambo</name>
+	</subgenre>
+	<subgenre>
+	<name>Mariachi</name>
+	</subgenre>
+	<subgenre>
+	<name>Merengue</name>
+	</subgenre>
+	<subgenre>
+	<name>Norteno</name>
+	</subgenre>
+	<subgenre>
+	<name>Ranchero</name>
+	</subgenre>
+	<subgenre>
+	<name>Rock En Espanol</name>
+	</subgenre>
+	<subgenre>
+	<name>Salsa</name>
+	</subgenre>
+	<subgenre>
+	<name>Samba</name>
+	</subgenre>
+	<subgenre>
+	<name>Son Cubana</name>
+	</subgenre>
+	<subgenre>
+	<name>Sonidero</name>
+	</subgenre>
+	<subgenre>
+	<name>Tango</name>
+	</subgenre>
+	<subgenre>
+	<name>Tejano</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Religious</name>
+	<subgenres>
+	<subgenre>
+	<name>Christian Rock</name>
+	</subgenre>
+	<subgenre>
+	<name>Christian Hip Hop</name>
+	</subgenre>
+	<subgenre>
+	<name>Christian Pop</name>
+	</subgenre>
+	<subgenre>
+	<name>Chants</name>
+	</subgenre>
+	<subgenre>
+	<name>Gospel</name>
+	</subgenre>
+	<subgenre>
+	<name>Gregorian Music</name>
+	</subgenre>
+	<subgenre>
+	<name>Hymn</name>
+	</subgenre>
+	<subgenre>
+	<name>Mass</name>
+	</subgenre>
+	<subgenre>
+	<name>Spiritual</name>
+	</subgenre>
+	<subgenre>
+	<name>Worship</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Miscellaneous</name>
+	<subgenres>
+	<subgenre>
+	<name>Anime / Video Game Soundtracks</name>
+	</subgenre>
+	<subgenre>
+	<name>Bollywood</name>
+	</subgenre>
+	<subgenre>
+	<name>Instrumental</name>
+	</subgenre>
+	<subgenre>
+	<name>Vocal</name>
+	</subgenre>
+	<subgenre>
+	<name>Acoustic</name>
+	</subgenre>
+	<subgenre>
+	<name>Unplugged</name>
+	</subgenre>
+	<subgenre>
+	<name>Live</name>
+	</subgenre>
+	<subgenre>
+	<name>Traditional</name>
+	</subgenre>
+	<subgenre>
+	<name>Karaoke</name>
+	</subgenre>
+	<subgenre>
+	<name>Movie Scores</name>
+	</subgenre>
+	<subgenre>
+	<name>Movie Soundtracks</name>
+	</subgenre>
+	<subgenre>
+	<name>Sound Effects</name>
+	</subgenre>
+	<subgenre>
+	<name>Soundtrack</name>
+	</subgenre>
+	<subgenre>
+	<name>TV Soundtrack</name>
+	</subgenre>
+	<subgenre>
+	<name>Wedding Music</name>
+	</subgenre>
+	<subgenre>
+	<name>Holiday</name>
+	</subgenre>
+	<subgenre>
+	<name>Mashup</name>
+	</subgenre>
+	<subgenre>
+	<name>unclassifiable</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Word</name>
+	<subgenres>
+	<subgenre>
+	<name>Business &amp; Career</name>
+	</subgenre>
+	<subgenre>
+	<name>Abstracts &amp; Dossiers</name>
+	</subgenre>
+	<subgenre>
+	<name>Accounting</name>
+	</subgenre>
+	<subgenre>
+	<name>Business &amp; Investing</name>
+	</subgenre>
+	<subgenre>
+	<name>Communication</name>
+	</subgenre>
+	<subgenre>
+	<name>Computers &amp; Internet</name>
+	</subgenre>
+	<subgenre>
+	<name>Economics</name>
+	</subgenre>
+	<subgenre>
+	<name>Finance</name>
+	</subgenre>
+	<subgenre>
+	<name>Management &amp; Leadership</name>
+	</subgenre>
+	<subgenre>
+	<name>Marketing &amp; Sales</name>
+	</subgenre>
+	<subgenre>
+	<name>Politics</name>
+	</subgenre>
+	<subgenre>
+	<name>Self-Help</name>
+	</subgenre>
+	<subgenre>
+	<name>Self-Organzation</name>
+	</subgenre>
+	<subgenre>
+	<name>Skills</name>
+	</subgenre>
+	<subgenre>
+	<name>Small Business &amp; Entrepeneurship</name>
+	</subgenre>
+	<subgenre>
+	<name>Children's Audiobooks</name>
+	</subgenre>
+	<subgenre>
+	<name>Age: up to 6 years</name>
+	</subgenre>
+	<subgenre>
+	<name>Age: 6 years +</name>
+	</subgenre>
+	<subgenre>
+	<name>Age: 8 years +</name>
+	</subgenre>
+	<subgenre>
+	<name>Popular Characters</name>
+	</subgenre>
+	<subgenre>
+	<name>Animal Stories</name>
+	</subgenre>
+	<subgenre>
+	<name>Children's Book Classics</name>
+	</subgenre>
+	<subgenre>
+	<name>Children's Detective Stories</name>
+	</subgenre>
+	<subgenre>
+	<name>Fairy Tales</name>
+	</subgenre>
+	<subgenre>
+	<name>Fantasy &amp; Spook</name>
+	</subgenre>
+	<subgenre>
+	<name>Knowledge for Children</name>
+	</subgenre>
+	<subgenre>
+	<name>Pirates, Knights &amp; Historical</name>
+	</subgenre>
+	<subgenre>
+	<name>Poems &amp; Song</name>
+	</subgenre>
+	<subgenre>
+	<name>Comedy &amp; Humour</name>
+	</subgenre>
+	<subgenre>
+	<name>Comedy &amp; Cabaret</name>
+	</subgenre>
+	<subgenre>
+	<name>Humoristic Novel</name>
+	</subgenre>
+	<subgenre>
+	<name>Crime</name>
+	</subgenre>
+	<subgenre>
+	<name>Detective Stories</name>
+	</subgenre>
+	<subgenre>
+	<name>Detective Stories „Noir“</name>
+	</subgenre>
+	<subgenre>
+	<name>Classic Detective Stories</name>
+	</subgenre>
+	<subgenre>
+	<name>Scandinavian Detective Stories</name>
+	</subgenre>
+	<subgenre>
+	<name>Temporary Detective Stories</name>
+	</subgenre>
+	<subgenre>
+	<name>Education &amp; Knowledge</name>
+	</subgenre>
+	<subgenre>
+	<name>Art &amp; Culture</name>
+	</subgenre>
+	<subgenre>
+	<name>Biography &amp; Memento</name>
+	</subgenre>
+	<subgenre>
+	<name>Foreign Language</name>
+	</subgenre>
+	<subgenre>
+	<name>History</name>
+	</subgenre>
+	<subgenre>
+	<name>Pilosophy</name>
+	</subgenre>
+	<subgenre>
+	<name>Politics &amp; Current Affairs</name>
+	</subgenre>
+	<subgenre>
+	<name>Science &amp; Technology</name>
+	</subgenre>
+	<subgenre>
+	<name>Health, Mind &amp; Body</name>
+	</subgenre>
+	<subgenre>
+	<name>Autogenous Training</name>
+	</subgenre>
+	<subgenre>
+	<name>Creativity</name>
+	</subgenre>
+	<subgenre>
+	<name>Esoteric</name>
+	</subgenre>
+	<subgenre>
+	<name>Fitness</name>
+	</subgenre>
+	<subgenre>
+	<name>Health</name>
+	</subgenre>
+	<subgenre>
+	<name>Lifestyle</name>
+	</subgenre>
+	<subgenre>
+	<name>Love &amp; Erotic</name>
+	</subgenre>
+	<subgenre>
+	<name>Meditation / Yoga</name>
+	</subgenre>
+	<subgenre>
+	<name>Memory Training</name>
+	</subgenre>
+	<subgenre>
+	<name>Mental Training</name>
+	</subgenre>
+	<subgenre>
+	<name>Motivation</name>
+	</subgenre>
+	<subgenre>
+	<name>Philosophy</name>
+	</subgenre>
+	<subgenre>
+	<name>Positive Thinking &amp; Attitude</name>
+	</subgenre>
+	<subgenre>
+	<name>Psychology</name>
+	</subgenre>
+	<subgenre>
+	<name>Spirituality &amp; Religion</name>
+	</subgenre>
+	<subgenre>
+	<name>Sports</name>
+	</subgenre>
+	<subgenre>
+	<name>Wellness &amp; Beauty</name>
+	</subgenre>
+	<subgenre>
+	<name>Science Fiction &amp; Fantasy</name>
+	</subgenre>
+	<subgenre>
+	<name>Ancient World</name>
+	</subgenre>
+	<subgenre>
+	<name>Fantasy-Romance</name>
+	</subgenre>
+	<subgenre>
+	<name>Historical Thriller</name>
+	</subgenre>
+	<subgenre>
+	<name>Horror Classics</name>
+	</subgenre>
+	<subgenre>
+	<name>Medieval Times &amp; Early Modern Era</name>
+	</subgenre>
+	<subgenre>
+	<name>Thriller</name>
+	</subgenre>
+	<subgenre>
+	<name>Mystery &amp; Conspiracy</name>
+	</subgenre>
+	<subgenre>
+	<name>Psychological Thriller</name>
+	</subgenre>
+	<subgenre>
+	<name>Espionage, Politics &amp; Justice</name>
+	</subgenre>
+	<subgenre>
+	<name>Vatican &amp; Secret Societies</name>
+	</subgenre>
+	<subgenre>
+	<name>Science &amp; Medicine</name>
+	</subgenre>
+	<subgenre>
+	<name>Literature</name>
+	</subgenre>
+	<subgenre>
+	<name>Novels</name>
+	</subgenre>
+	<subgenre>
+	<name>Erotica</name>
+	</subgenre>
+	<subgenre>
+	<name>Romance</name>
+	</subgenre>
+	<subgenre>
+	<name>Contemporary Literature</name>
+	</subgenre>
+	<subgenre>
+	<name>Contemporary German Literature</name>
+	</subgenre>
+	<subgenre>
+	<name>Entertainment</name>
+	</subgenre>
+	<subgenre>
+	<name>Youth</name>
+	</subgenre>
+	<subgenre>
+	<name>Youth Detective Stories</name>
+	</subgenre>
+	<subgenre>
+	<name>Fantasy</name>
+	</subgenre>
+	<subgenre>
+	<name>For Girls</name>
+	</subgenre>
+	<subgenre>
+	<name>Knowledge for Teenagers</name>
+	</subgenre>
+	<subgenre>
+	<name>Mystery</name>
+	</subgenre>
+	<subgenre>
+	<name>Youth Classics</name>
+	</subgenre>
+	<subgenre>
+	<name>Youth Today</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Language</name>
+	<subgenres>
+	<subgenre>
+	<name>Albanian</name>
+	</subgenre>
+	<subgenre>
+	<name>Arabic</name>
+	</subgenre>
+	<subgenre>
+	<name>Bengali</name>
+	</subgenre>
+	<subgenre>
+	<name>Bosnian</name>
+	</subgenre>
+	<subgenre>
+	<name>Bulgarian</name>
+	</subgenre>
+	<subgenre>
+	<name>Cantonese / Yue</name>
+	</subgenre>
+	<subgenre>
+	<name>Croatian</name>
+	</subgenre>
+	<subgenre>
+	<name>Czech</name>
+	</subgenre>
+	<subgenre>
+	<name>Danish</name>
+	</subgenre>
+	<subgenre>
+	<name>Dutch</name>
+	</subgenre>
+	<subgenre>
+	<name>English</name>
+	</subgenre>
+	<subgenre>
+	<name>Finnish</name>
+	</subgenre>
+	<subgenre>
+	<name>French</name>
+	</subgenre>
+	<subgenre>
+	<name>German</name>
+	</subgenre>
+	<subgenre>
+	<name>Greek</name>
+	</subgenre>
+	<subgenre>
+	<name>Hebrew</name>
+	</subgenre>
+	<subgenre>
+	<name>Hindi / Urdu</name>
+	</subgenre>
+	<subgenre>
+	<name>Hungarian</name>
+	</subgenre>
+	<subgenre>
+	<name>Italian</name>
+	</subgenre>
+	<subgenre>
+	<name>Japanese</name>
+	</subgenre>
+	<subgenre>
+	<name>Korean</name>
+	</subgenre>
+	<subgenre>
+	<name>Macedonian</name>
+	</subgenre>
+	<subgenre>
+	<name>Mandarin</name>
+	</subgenre>
+	<subgenre>
+	<name>Norwegian</name>
+	</subgenre>
+	<subgenre>
+	<name>Patois</name>
+	</subgenre>
+	<subgenre>
+	<name>Portuguese</name>
+	</subgenre>
+	<subgenre>
+	<name>Russian</name>
+	</subgenre>
+	<subgenre>
+	<name>Serbian</name>
+	</subgenre>
+	<subgenre>
+	<name>Spanish</name>
+	</subgenre>
+	<subgenre>
+	<name>Swedish</name>
+	</subgenre>
+	<subgenre>
+	<name>Tamil</name>
+	</subgenre>
+	<subgenre>
+	<name>Turkish</name>
+	</subgenre>
+	<subgenre>
+	<name>Vietnamese</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Film</name>
+	<subgenres>
+	<subgenre>
+	<name>Action</name>
+	</subgenre>
+	<subgenre>
+	<name>3D</name>
+	</subgenre>
+	<subgenre>
+	<name>Adventure</name>
+	</subgenre>
+	<subgenre>
+	<name>Animation</name>
+	</subgenre>
+	<subgenre>
+	<name>Author's Film</name>
+	</subgenre>
+	<subgenre>
+	<name>Biography</name>
+	</subgenre>
+	<subgenre>
+	<name>Cartoon</name>
+	</subgenre>
+	<subgenre>
+	<name>Children</name>
+	</subgenre>
+	<subgenre>
+	<name>Comedy</name>
+	</subgenre>
+	<subgenre>
+	<name>Crime &amp; Gangster</name>
+	</subgenre>
+	<subgenre>
+	<name>Disaster</name>
+	</subgenre>
+	<subgenre>
+	<name>Documentary</name>
+	</subgenre>
+	<subgenre>
+	<name>Drama</name>
+	</subgenre>
+	<subgenre>
+	<name>Epic / Historical</name>
+	</subgenre>
+	<subgenre>
+	<name>Erotic</name>
+	</subgenre>
+	<subgenre>
+	<name>Expressionism</name>
+	</subgenre>
+	<subgenre>
+	<name>Family</name>
+	</subgenre>
+	<subgenre>
+	<name>Fantasy</name>
+	</subgenre>
+	<subgenre>
+	<name>Film-Noir</name>
+	</subgenre>
+	<subgenre>
+	<name>GLBT</name>
+	</subgenre>
+	<subgenre>
+	<name>Horror</name>
+	</subgenre>
+	<subgenre>
+	<name>Independent Film</name>
+	</subgenre>
+	<subgenre>
+	<name>Martial-Arts / Eastern</name>
+	</subgenre>
+	<subgenre>
+	<name>Monumental</name>
+	</subgenre>
+	<subgenre>
+	<name>Musical / Dance</name>
+	</subgenre>
+	<subgenre>
+	<name>Music</name>
+	</subgenre>
+	<subgenre>
+	<name>Mystery</name>
+	</subgenre>
+	<subgenre>
+	<name>Reality-TV</name>
+	</subgenre>
+	<subgenre>
+	<name>Romantic</name>
+	</subgenre>
+	<subgenre>
+	<name>Science Fiction</name>
+	</subgenre>
+	<subgenre>
+	<name>Silent Movie</name>
+	</subgenre>
+	<subgenre>
+	<name>Sport</name>
+	</subgenre>
+	<subgenre>
+	<name>Thriller</name>
+	</subgenre>
+	<subgenre>
+	<name>TV-Series</name>
+	</subgenre>
+	<subgenre>
+	<name>Tragicomedy</name>
+	</subgenre>
+	<subgenre>
+	<name>War / Anti-War</name>
+	</subgenre>
+	<subgenre>
+	<name>Western</name>
+	</subgenre>
+	<subgenre>
+	<name>Youth</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Time</name>
+	<subgenres>
+	<subgenre>
+	<name>Middle Ages</name>
+	</subgenre>
+	<subgenre>
+	<name>20's</name>
+	</subgenre>
+	<subgenre>
+	<name>30's</name>
+	</subgenre>
+	<subgenre>
+	<name>40's</name>
+	</subgenre>
+	<subgenre>
+	<name>50's</name>
+	</subgenre>
+	<subgenre>
+	<name>60's</name>
+	</subgenre>
+	<subgenre>
+	<name>70'</name>
+	</subgenre>
+	<subgenre>
+	<name>80's</name>
+	</subgenre>
+	<subgenre>
+	<name>90's</name>
+	</subgenre>
+	<subgenre>
+	<name>2000's</name>
+	</subgenre>
+	<subgenre>
+	<name>2010's</name>
+	</subgenre>
+	<subgenre>
+	<name>2020's</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Adult</name>
+	</genre>
+	<genre>
+	<name>Children</name>
+	<subgenres>
+	<subgenre>
+	<name>Age: up to 6 years</name>
+	</subgenre>
+	<subgenre>
+	<name>Age: 6 years +</name>
+	</subgenre>
+	<subgenre>
+	<name>Age: 8 years +</name>
+	</subgenre>
+	<subgenre>
+	<name>Kids &amp; Family</name>
+	</subgenre>
+	</subgenres>
+	</genre>
+	<genre>
+	<name>Country</name>
+	<subgenres>
+	<subgenre>
+	<name>United Arab Emirates (AE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Afghanistan (AF)</name>
+	</subgenre>
+	<subgenre>
+	<name>Antigua and Barbuda (AG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Anguilla (AI)</name>
+	</subgenre>
+	<subgenre>
+	<name>Albania (AL)</name>
+	</subgenre>
+	<subgenre>
+	<name>Armenia (AM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Angola (AO)</name>
+	</subgenre>
+	<subgenre>
+	<name>Antarctica (AQ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Argentina (AR)</name>
+	</subgenre>
+	<subgenre>
+	<name>American Samoa (AS)</name>
+	</subgenre>
+	<subgenre>
+	<name>Austria (AT)</name>
+	</subgenre>
+	<subgenre>
+	<name>Australia (AU)</name>
+	</subgenre>
+	<subgenre>
+	<name>Aruba (AW)</name>
+	</subgenre>
+	<subgenre>
+	<name>Åland Islands (AX)</name>
+	</subgenre>
+	<subgenre>
+	<name>Azerbaijan (AZ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Bosnia and Herzegovina (BA)</name>
+	</subgenre>
+	<subgenre>
+	<name>Barbados (BB)</name>
+	</subgenre>
+	<subgenre>
+	<name>Bangladesh (BD)</name>
+	</subgenre>
+	<subgenre>
+	<name>Belgium (BE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Burkina Faso (BF)</name>
+	</subgenre>
+	<subgenre>
+	<name>Bulgaria (BG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Bahrain (BH)</name>
+	</subgenre>
+	<subgenre>
+	<name>Burundi (BI)</name>
+	</subgenre>
+	<subgenre>
+	<name>Benin (BJ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Saint Barthélemy (BL)</name>
+	</subgenre>
+	<subgenre>
+	<name>Bermuda (BM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Brunei Darussalam (BN)</name>
+	</subgenre>
+	<subgenre>
+	<name>Bolivia Plurinational State of (BO)</name>
+	</subgenre>
+	<subgenre>
+	<name>Bonaire Saint Eustatius and Saba (BQ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Brazil (BR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Bahamas (BS)</name>
+	</subgenre>
+	<subgenre>
+	<name>Bhutan (BT)</name>
+	</subgenre>
+	<subgenre>
+	<name>Bouvet Island (BV)</name>
+	</subgenre>
+	<subgenre>
+	<name>Botswana (BW)</name>
+	</subgenre>
+	<subgenre>
+	<name>Belarus (BY)</name>
+	</subgenre>
+	<subgenre>
+	<name>Belize (BZ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Canada (CA)</name>
+	</subgenre>
+	<subgenre>
+	<name>Cocos (Keeling) Islands (CC)</name>
+	</subgenre>
+	<subgenre>
+	<name>Congo the Democratic Republic of the (CD)</name>
+	</subgenre>
+	<subgenre>
+	<name>Central African Republic (CF)</name>
+	</subgenre>
+	<subgenre>
+	<name>Congo (CG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Switzerland (CH)</name>
+	</subgenre>
+	<subgenre>
+	<name>Côte d'Ivoire (CI)</name>
+	</subgenre>
+	<subgenre>
+	<name>Cook Islands (CK)</name>
+	</subgenre>
+	<subgenre>
+	<name>Chile (CL)</name>
+	</subgenre>
+	<subgenre>
+	<name>Cameroon (CM)</name>
+	</subgenre>
+	<subgenre>
+	<name>China (CN)</name>
+	</subgenre>
+	<subgenre>
+	<name>Colombia (CO)</name>
+	</subgenre>
+	<subgenre>
+	<name>Costa Rica (CR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Cuba (CU)</name>
+	</subgenre>
+	<subgenre>
+	<name>Cape Verde (CV)</name>
+	</subgenre>
+	<subgenre>
+	<name>Curaçao (CW)</name>
+	</subgenre>
+	<subgenre>
+	<name>Christmas Island (CX)</name>
+	</subgenre>
+	<subgenre>
+	<name>Cyprus (CY)</name>
+	</subgenre>
+	<subgenre>
+	<name>Czech Republic (CZ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Germany (DE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Djibouti (DJ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Denmark (DK)</name>
+	</subgenre>
+	<subgenre>
+	<name>Dominica (DM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Dominican Republic (DO)</name>
+	</subgenre>
+	<subgenre>
+	<name>Algeria (DZ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Ecuador (EC)</name>
+	</subgenre>
+	<subgenre>
+	<name>Estonia (EE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Egypt (EG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Western Sahara (EH)</name>
+	</subgenre>
+	<subgenre>
+	<name>Eritrea (ER)</name>
+	</subgenre>
+	<subgenre>
+	<name>Spain (ES)</name>
+	</subgenre>
+	<subgenre>
+	<name>Ethiopia (ET)</name>
+	</subgenre>
+	<subgenre>
+	<name>Finland (FI)</name>
+	</subgenre>
+	<subgenre>
+	<name>Fiji (FJ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Falkland Islands (Malvinas) (FK)</name>
+	</subgenre>
+	<subgenre>
+	<name>Micronesia Federated States of (FM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Faroe Islands (FO)</name>
+	</subgenre>
+	<subgenre>
+	<name>France (FR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Gabon (GA)</name>
+	</subgenre>
+	<subgenre>
+	<name>United Kingdom (GB)</name>
+	</subgenre>
+	<subgenre>
+	<name>Grenada (GD)</name>
+	</subgenre>
+	<subgenre>
+	<name>Georgia (GE)</name>
+	</subgenre>
+	<subgenre>
+	<name>French Guiana (GF)</name>
+	</subgenre>
+	<subgenre>
+	<name>Guernsey (GG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Ghana (GH)</name>
+	</subgenre>
+	<subgenre>
+	<name>Gibraltar (GI)</name>
+	</subgenre>
+	<subgenre>
+	<name>Greenland (GL)</name>
+	</subgenre>
+	<subgenre>
+	<name>Gambia (GM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Guinea (GN)</name>
+	</subgenre>
+	<subgenre>
+	<name>Guadeloupe (GP)</name>
+	</subgenre>
+	<subgenre>
+	<name>Equatorial Guinea (GQ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Greece (GR)</name>
+	</subgenre>
+	<subgenre>
+	<name>South Georgia and the South Sandwich Islands (GS)</name>
+	</subgenre>
+	<subgenre>
+	<name>Guatemala (GT)</name>
+	</subgenre>
+	<subgenre>
+	<name>Guam (GU)</name>
+	</subgenre>
+	<subgenre>
+	<name>Guinea-Bissau (GW)</name>
+	</subgenre>
+	<subgenre>
+	<name>Guyana (GY)</name>
+	</subgenre>
+	<subgenre>
+	<name>Hong Kong (HK)</name>
+	</subgenre>
+	<subgenre>
+	<name>Heard Island and McDonald Islands (HM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Honduras (HN)</name>
+	</subgenre>
+	<subgenre>
+	<name>Croatia (HR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Haiti (HT)</name>
+	</subgenre>
+	<subgenre>
+	<name>Hungary (HU)</name>
+	</subgenre>
+	<subgenre>
+	<name>Indonesia (ID)</name>
+	</subgenre>
+	<subgenre>
+	<name>Ireland (IE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Israel (IL)</name>
+	</subgenre>
+	<subgenre>
+	<name>Isle of Man (IM)</name>
+	</subgenre>
+	<subgenre>
+	<name>India (IN)</name>
+	</subgenre>
+	<subgenre>
+	<name>British Indian Ocean Territory (IO)</name>
+	</subgenre>
+	<subgenre>
+	<name>Iraq (IQ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Iran Islamic Republic of (IR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Iceland (IS)</name>
+	</subgenre>
+	<subgenre>
+	<name>Italy (IT)</name>
+	</subgenre>
+	<subgenre>
+	<name>Jersey (JE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Jamaica (JM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Jordan (JO)</name>
+	</subgenre>
+	<subgenre>
+	<name>Japan (JP)</name>
+	</subgenre>
+	<subgenre>
+	<name>Kenya (KE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Kyrgyzstan (KG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Cambodia (KH)</name>
+	</subgenre>
+	<subgenre>
+	<name>Kiribati (KI)</name>
+	</subgenre>
+	<subgenre>
+	<name>Comoros (KM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Saint Kitts and Nevis (KN)</name>
+	</subgenre>
+	<subgenre>
+	<name>Korea Democratic People's Republic of (KP)</name>
+	</subgenre>
+	<subgenre>
+	<name>Korea Republic of (KR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Kuwait (KW)</name>
+	</subgenre>
+	<subgenre>
+	<name>Cayman Islands (KY)</name>
+	</subgenre>
+	<subgenre>
+	<name>Kazakhstan (KZ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Lao People's Democratic Republic (LA)</name>
+	</subgenre>
+	<subgenre>
+	<name>Lebanon (LB)</name>
+	</subgenre>
+	<subgenre>
+	<name>Saint Lucia (LC)</name>
+	</subgenre>
+	<subgenre>
+	<name>Liechtenstein (LI)</name>
+	</subgenre>
+	<subgenre>
+	<name>Sri Lanka (LK)</name>
+	</subgenre>
+	<subgenre>
+	<name>Liberia (LR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Lesotho (LS)</name>
+	</subgenre>
+	<subgenre>
+	<name>Lithuania (LT)</name>
+	</subgenre>
+	<subgenre>
+	<name>Luxembourg (LU)</name>
+	</subgenre>
+	<subgenre>
+	<name>Latvia (LV)</name>
+	</subgenre>
+	<subgenre>
+	<name>Libyan Arab Jamahiriya (LY)</name>
+	</subgenre>
+	<subgenre>
+	<name>Morocco (MA)</name>
+	</subgenre>
+	<subgenre>
+	<name>Monaco (MC)</name>
+	</subgenre>
+	<subgenre>
+	<name>Moldova Republic of (MD)</name>
+	</subgenre>
+	<subgenre>
+	<name>Montenegro (ME)</name>
+	</subgenre>
+	<subgenre>
+	<name>Saint Martin (French part) (MF)</name>
+	</subgenre>
+	<subgenre>
+	<name>Madagascar (MG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Marshall Islands (MH)</name>
+	</subgenre>
+	<subgenre>
+	<name>Macedonia the former Yugoslav Republic of (MK)</name>
+	</subgenre>
+	<subgenre>
+	<name>Mali (ML)</name>
+	</subgenre>
+	<subgenre>
+	<name>Myanmar (MM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Mongolia (MN)</name>
+	</subgenre>
+	<subgenre>
+	<name>Macao (MO)</name>
+	</subgenre>
+	<subgenre>
+	<name>Northern Mariana Islands (MP)</name>
+	</subgenre>
+	<subgenre>
+	<name>Martinique (MQ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Mauritania (MR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Montserrat (MS)</name>
+	</subgenre>
+	<subgenre>
+	<name>Malta (MT)</name>
+	</subgenre>
+	<subgenre>
+	<name>Mauritius (MU)</name>
+	</subgenre>
+	<subgenre>
+	<name>Maldives (MV)</name>
+	</subgenre>
+	<subgenre>
+	<name>Malawi (MW)</name>
+	</subgenre>
+	<subgenre>
+	<name>Mexico (MX)</name>
+	</subgenre>
+	<subgenre>
+	<name>Malaysia (MY)</name>
+	</subgenre>
+	<subgenre>
+	<name>Mozambique (MZ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Namibia (NA)</name>
+	</subgenre>
+	<subgenre>
+	<name>New Caledonia (NC)</name>
+	</subgenre>
+	<subgenre>
+	<name>Niger (NE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Norfolk Island (NF)</name>
+	</subgenre>
+	<subgenre>
+	<name>Nigeria (NG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Nicaragua (NI)</name>
+	</subgenre>
+	<subgenre>
+	<name>Netherlands (NL)</name>
+	</subgenre>
+	<subgenre>
+	<name>Norway (NO)</name>
+	</subgenre>
+	<subgenre>
+	<name>Nepal (NP)</name>
+	</subgenre>
+	<subgenre>
+	<name>Nauru (NR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Niue (NU)</name>
+	</subgenre>
+	<subgenre>
+	<name>New Zealand (NZ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Oman (OM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Panama (PA)</name>
+	</subgenre>
+	<subgenre>
+	<name>Peru (PE)</name>
+	</subgenre>
+	<subgenre>
+	<name>French Polynesia (PF)</name>
+	</subgenre>
+	<subgenre>
+	<name>Papua New Guinea (PG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Philippines (PH)</name>
+	</subgenre>
+	<subgenre>
+	<name>Pakistan (PK)</name>
+	</subgenre>
+	<subgenre>
+	<name>Poland (PL)</name>
+	</subgenre>
+	<subgenre>
+	<name>Saint Pierre and Miquelon (PM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Pitcairn (PN)</name>
+	</subgenre>
+	<subgenre>
+	<name>Puerto Rico (PR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Palestinian Territory Occupied (PS)</name>
+	</subgenre>
+	<subgenre>
+	<name>Portugal (PT)</name>
+	</subgenre>
+	<subgenre>
+	<name>Palau (PW)</name>
+	</subgenre>
+	<subgenre>
+	<name>Paraguay (PY)</name>
+	</subgenre>
+	<subgenre>
+	<name>Qatar (QA)</name>
+	</subgenre>
+	<subgenre>
+	<name>Réunion (RE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Romania (RO)</name>
+	</subgenre>
+	<subgenre>
+	<name>Serbia (RS)</name>
+	</subgenre>
+	<subgenre>
+	<name>Russian Federation (RU)</name>
+	</subgenre>
+	<subgenre>
+	<name>Rwanda (RW)</name>
+	</subgenre>
+	<subgenre>
+	<name>Saudi Arabia (SA)</name>
+	</subgenre>
+	<subgenre>
+	<name>Solomon Islands (SB)</name>
+	</subgenre>
+	<subgenre>
+	<name>Seychelles (SC)</name>
+	</subgenre>
+	<subgenre>
+	<name>Sudan (SD)</name>
+	</subgenre>
+	<subgenre>
+	<name>Sweden (SE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Singapore (SG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Saint Helena Ascension and Tristan da Cunha (SH)</name>
+	</subgenre>
+	<subgenre>
+	<name>Slovenia (SI)</name>
+	</subgenre>
+	<subgenre>
+	<name>Svalbard and Jan Mayen (SJ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Slovakia (SK)</name>
+	</subgenre>
+	<subgenre>
+	<name>Sierra Leone (SL)</name>
+	</subgenre>
+	<subgenre>
+	<name>San Marino (SM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Senegal (SN)</name>
+	</subgenre>
+	<subgenre>
+	<name>Somalia (SO)</name>
+	</subgenre>
+	<subgenre>
+	<name>Suriname (SR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Sao Tome and Principe (ST)</name>
+	</subgenre>
+	<subgenre>
+	<name>El Salvador (SV)</name>
+	</subgenre>
+	<subgenre>
+	<name>Sint Maarten (Dutch part) (SX)</name>
+	</subgenre>
+	<subgenre>
+	<name>Syrian Arab Republic (SY)</name>
+	</subgenre>
+	<subgenre>
+	<name>Swaziland (SZ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Turks and Caicos Islands (TC)</name>
+	</subgenre>
+	<subgenre>
+	<name>Chad (TD)</name>
+	</subgenre>
+	<subgenre>
+	<name>French Southern Territories (TF)</name>
+	</subgenre>
+	<subgenre>
+	<name>Togo (TG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Thailand (TH)</name>
+	</subgenre>
+	<subgenre>
+	<name>Tajikistan (TJ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Tokelau (TK)</name>
+	</subgenre>
+	<subgenre>
+	<name>Timor-Leste (TL)</name>
+	</subgenre>
+	<subgenre>
+	<name>Turkmenistan (TM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Tunisia (TN)</name>
+	</subgenre>
+	<subgenre>
+	<name>Tonga (TO)</name>
+	</subgenre>
+	<subgenre>
+	<name>Turkey (TR)</name>
+	</subgenre>
+	<subgenre>
+	<name>Trinidad and Tobago (TT)</name>
+	</subgenre>
+	<subgenre>
+	<name>Tuvalu (TV)</name>
+	</subgenre>
+	<subgenre>
+	<name>Taiwan Province of China (TW)</name>
+	</subgenre>
+	<subgenre>
+	<name>Tanzania United Republic of (TZ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Ukraine (UA)</name>
+	</subgenre>
+	<subgenre>
+	<name>Uganda (UG)</name>
+	</subgenre>
+	<subgenre>
+	<name>United States Minor Outlying Islands (UM)</name>
+	</subgenre>
+	<subgenre>
+	<name>United States (US)</name>
+	</subgenre>
+	<subgenre>
+	<name>Uruguay (UY)</name>
+	</subgenre>
+	<subgenre>
+	<name>Uzbekistan (UZ)</name>
+	</subgenre>
+	<subgenre>
+	<name>Holy See (Vatican City State) (VA)</name>
+	</subgenre>
+	<subgenre>
+	<name>Saint Vincent and the Grenadines (VC)</name>
+	</subgenre>
+	<subgenre>
+	<name>Venezuela Bolivarian Republic of (VE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Virgin Islands British (VG)</name>
+	</subgenre>
+	<subgenre>
+	<name>Virgin Islands U.S. (VI)</name>
+	</subgenre>
+	<subgenre>
+	<name>Viet Nam (VN)</name>
+	</subgenre>
+	<subgenre>
+	<name>Vanuatu (VU)</name>
+	</subgenre>
+	<subgenre>
+	<name>Wallis and Futuna (WF)</name>
+	</subgenre>
+	<subgenre>
+	<name>Samoa (WS)</name>
+	</subgenre>
+	<subgenre>
+	<name>Yemen (YE)</name>
+	</subgenre>
+	<subgenre>
+	<name>Mayotte (YT)</name>
+	</subgenre>
+	<subgenre>
+	<name>South Africa (ZA)</name>
+	</subgenre>
+	<subgenre>
+	<name>Zambia (ZM)</name>
+	</subgenre>
+	<subgenre>
+	<name>Zimbabwe (ZW)</name>
+	</subgenre>
+	</subgenres>
+	</genre>
 </genres>
-
-
-
