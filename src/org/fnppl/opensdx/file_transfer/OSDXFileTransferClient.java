@@ -133,7 +133,15 @@ public class OSDXFileTransferClient implements UploadClient {
 	public void addCommandNotListen(OSDXFileTransferCommand command) {
 		queueWaiting.add(command);
 	}
+
 	
+	public boolean hasNextCommand() {
+		if (queueWaiting.size()>0) {
+			return true;
+		}
+		return false;
+	}
+			
 	public OSDXFileTransferCommand getNextCommand() {
 		if (queueWaiting.size()>0 && System.currentTimeMillis()>nextCommandBlockTimeout) {
 			OSDXFileTransferCommand c = queueWaiting.remove(0);
@@ -189,6 +197,12 @@ public class OSDXFileTransferClient implements UploadClient {
 		for (CommandResponseListener l : responseListener) {
 			l.onError(null, "Connection to server terminated.");
 		}
+	}
+	
+	public void cancelCommands() {
+		queueWaiting.removeAllElements();
+		//TODO cancel current command
+		
 	}
 	
 	public boolean connect(String host, int port, String prepath, OSDXKey mySigningKey, String username) throws Exception {

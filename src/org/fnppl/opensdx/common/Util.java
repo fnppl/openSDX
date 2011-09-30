@@ -279,6 +279,24 @@ public class Util {
     	} catch (Exception ex) {
     		return -1;
     	}
-    }    
+    }
+    
+    
+    public static void listFiles(File directory, Vector<File> result) {
+		if (directory.exists()) {
+			if (directory.isDirectory()) {
+				File[] list = directory.listFiles();
+				for(int i=0; i<list.length; i++) {
+					if(list[i].isDirectory()) {
+						listFiles(list[i],result);
+					} else {
+						result.add(list[i]);
+					}
+				}
+			} else {
+				result.add(directory);
+			}
+		}
+	}
     
 }

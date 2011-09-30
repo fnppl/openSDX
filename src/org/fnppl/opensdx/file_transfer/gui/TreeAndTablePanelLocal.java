@@ -162,8 +162,8 @@ public class TreeAndTablePanelLocal extends JPanel implements MyObservable, Tree
 		System.out.println("roots count = "+anzRoot);
 		root = new TreeAndTableNode[roots.length];
 		for (int i=0;i<anzRoot;i++) {
-			System.out.println("root["+i+"] = "+roots[i].getName());
-			root[i] = new TreeAndTableNode(this, roots[i].getName(), true, roots[i]);
+			System.out.println("root["+i+"] = "+roots[i].getPath());
+			root[i] = new TreeAndTableNode(this, roots[i].getPath(), true, roots[i]);
 			
 		}
 		
