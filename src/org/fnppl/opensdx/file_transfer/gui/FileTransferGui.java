@@ -115,6 +115,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class FileTransferGui extends JFrame implements MyObserver, CommandResponseListener {
 
+	public static final String version = "v. 2011-10-03";
 	private Vector<FileTransferAccount> accounts = new Vector<FileTransferAccount>();
 	private Vector<FileTransferAccount> supportedAccounts = new Vector<FileTransferAccount>();
 	
@@ -305,6 +306,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 				button_test_clicked();
 			}
 		});
+		buTest.setVisible(false);
 		panelNorth.add(buConnect);
 		panelNorth.add(buEdit);
 		panelNorth.add(buRemove);
@@ -558,7 +560,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 	}
 
 	private void buildUi() {
-		setTitle("openSDX :: FileTransfer GUI");
+		setTitle("openSDX :: FileTransfer GUI    ("+version+")");
 		setSize(1024, 768);
 		initComponents();
 		initLayout();
