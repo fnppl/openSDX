@@ -81,6 +81,7 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 	}
 	
 	public void onProcessCancel() {
+		
 		try {
 			fileOut.close();
 		} catch (IOException e) {

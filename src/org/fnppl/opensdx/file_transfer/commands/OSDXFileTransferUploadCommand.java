@@ -129,7 +129,20 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	}
 	
 	public void onProcessCancel() {
-
+		//stop upload
+		hasNext = false;
+		if (client!=null) {
+			client.removeCommandFromInProgress(id);
+		}
+		if (data==null) {
+			try {
+				fileIn.close();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		} else {
+			data = null;
+		}
 	}
 
 	public void onProcessEnd() {

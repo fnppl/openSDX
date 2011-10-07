@@ -202,6 +202,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	public void cancelCommands() {
 		queueWaiting.removeAllElements();
 		//TODO cancel current command
+		commandHandler.abortCommand();
 		
 	}
 	

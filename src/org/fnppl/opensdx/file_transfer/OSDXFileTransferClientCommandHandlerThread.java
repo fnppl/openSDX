@@ -51,6 +51,7 @@ public class OSDXFileTransferClientCommandHandlerThread extends Thread {
 
 	private OSDXFileTransferClient client;
 	private SecureConnection dataOut;
+	private OSDXFileTransferCommand command = null;
 	
 	public OSDXFileTransferClientCommandHandlerThread(OSDXFileTransferClient client, SecureConnection dataOut) {
 		this.client = client;
@@ -58,25 +59,31 @@ public class OSDXFileTransferClientCommandHandlerThread extends Thread {
 	}
 	
 	private boolean run = true;
+	private boolean cancelRequest = false;
 	
 	
-	public void abortAllCommands() {
-		
+	public void abortCommand() {
+		if (command != null) {
+			cancelRequest = true;
+		}
 	}
 	
 	public void run() {
 		run = true;
 		while (run) {
 			//System.out.println("COMMAND HANDLER :: get next command");
-			OSDXFileTransferCommand command = client.getNextCommand();
+			command = client.getNextCommand();
 			if (command!=null) {
 				try {
 					// -- run command -- 
 					command.startProcessing();
-					while (command.hasNextPackage()) {
+					while (command.hasNextPackage() && !cancelRequest) {
 						//System.out.println("has next: "+command.hasNextPackage());
 						//System.out.println("COMMAND HANDLER :: send next package");
-						command.sendNextPackage(dataOut);	
+						command.sendNextPackage(dataOut);
+					}
+					if (cancelRequest) {
+						command.cancelProcessing();
 					}
 					// -- run command end -- 
 					if (command instanceof OSDXFileTransferCloseConnectionCommand) {
@@ -98,6 +105,8 @@ public class OSDXFileTransferClientCommandHandlerThread extends Thread {
 						}
 					}
 				}
+				cancelRequest = false;
+				command = null;
 			} else {
 				try {
 					Thread.sleep(100);
