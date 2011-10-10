@@ -1104,9 +1104,17 @@ public class SecurityMainFrame extends JFrame {
 		return p;
 	}
 
+	
 	private JButton createHeaderButton(final String title, final String keyID, final JPanel content, final JPanel p, final int w,final int h) {
+		return createHeaderButton(title, keyID, content, p, w, h,null); 
+	}
+	
+	private JButton createHeaderButton(final String title, final String keyID, final JPanel content, final JPanel p, final int w,final int h, String tooltipText) {
 
 		final JButton head = new JButton("+   "+title);
+		if (tooltipText!=null) {
+			head.setToolTipText(tooltipText);
+		}
 		String visible = props.get(keyID);
 		if (visible==null || visible.equals("NOT VISIBLE")) {
 			props.put(keyID,"NOT VISIBLE");
@@ -1547,19 +1555,8 @@ public class SecurityMainFrame extends JFrame {
 		final int w = 800;
 		final int h = y*30 + 80;
 
-		String title = "known public key:      "+key.getKeyID();
-		String email = control.getKeyStore().getEmail(key);
-		if (email!=null) {
-			title += " :: "+email;
-		} else {
-			String ks = control.getKeyStore().getKeyServerNameForKey(key);
-			if (ks!=null) {
-				title += " :: KeyServer: "+ks;
-			} else {
-				title += " :: [unknown]";
-			}
-		}
-		JButton head = createHeaderButton(title, "known public key:      "+key.getKeyID(), content, p, w, h);
+		String title = "known public key:      "+getKeyIDMnemonicShort(key.getKeyID());
+		JButton head = createHeaderButton(title, "known public key:      "+key.getKeyID(), content, p, w, h, key.getKeyID());
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -1633,6 +1630,22 @@ public class SecurityMainFrame extends JFrame {
 
 		return p;
 	}
+	
+	public String getKeyIDMnemonicShort(String keyid) {
+		String title = keyid.substring(0,8)+" ... "+keyid.substring(51);
+		String emailMnemonic = control.getKeyStore().getEmailAndMnemonic(keyid);
+		if (emailMnemonic!=null) {
+			title += " :: "+emailMnemonic;
+		} else {
+			String ks = control.getKeyStore().getKeyServerNameForKey(keyid);
+			if (ks!=null) {
+				title += " :: KeyServer: "+ks;
+			} else {
+				title += " :: [unknown]";
+			}
+		}
+		return title;
+	}
 
 	private Component buildComponentTrustedPubKey(final OSDXKey key) {
 		final JPanel p = new JPanel();
@@ -1695,14 +1708,8 @@ public class SecurityMainFrame extends JFrame {
 
 		final int w = 800;
 		final int h = y*30 + 80;
-		String title = "known public key:      "+key.getKeyID();
-		String email = control.getKeyStore().getEmail(key);
-		if (email!=null) {
-			title += " :: "+email;
-		} else {
-			title += " :: [unknown]";
-		}
-		JButton head = createHeaderButton(title, "known public key:      "+key.getKeyID(), content, p, w, h);
+		String title = "known public key:      "+getKeyIDMnemonicShort(key.getKeyID());
+		JButton head = createHeaderButton(title, "known public key:      "+key.getKeyID(), content, p, w, h, key.getKeyID());
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -1814,13 +1821,16 @@ public class SecurityMainFrame extends JFrame {
 		final int w = 600;
 		final int h = y*32 + 120;
 		String buText = "";
+		String tooltip = null;
 		if(innerPublicKey) {
-			buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" from KeyID: "+keylog.getKeyIDFrom();
+			buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" from KeyID: "+getKeyIDMnemonicShort(keylog.getKeyIDFrom());
+			tooltip = keylog.getKeyIDFrom();
 		} else {
-			buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" for KeyID: "+keylog.getKeyIDTo();
+			buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" for KeyID: "+getKeyIDMnemonicShort(keylog.getKeyIDTo());
+			tooltip = keylog.getKeyIDTo();
 		}
-
-		JButton head = createHeaderButton(buText, buText , content, p, w, h);
+		
+		JButton head = createHeaderButton(buText, buText , content, p, w, h,tooltip);
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));

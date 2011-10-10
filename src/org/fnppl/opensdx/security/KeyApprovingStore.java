@@ -309,45 +309,112 @@ public class KeyApprovingStore {
 		return kas;
 	}
 	
-	public String getKeyServerNameForKey(OSDXKey key) {
+	public String getKeyServerNameForKey(String keyid) {
 		for (KeyServerIdentity ks : keyservers) {
-			if (ks.hasKnownKey(key.getKeyID())) {
+			if (ks.hasKnownKey(keyid)) {
 				return ks.getHost();
 			}
 		}
 		return null;
 	}
 	
-	public String getEmail(OSDXKey key) {
-		if (key.isMaster()) {
-			Identity id = ((MasterKey)key).getCurrentIdentity();
-			if (id!=null)  {
-				return id.getEmail();
+//	public String getEmail(OSDXKey key) {
+//		if (key.isMaster()) {
+//			Identity id = ((MasterKey)key).getCurrentIdentity();
+//			if (id!=null)  {
+//				return id.getEmail();
+//			}
+//		} else if (key.isSub()) {
+//			MasterKey mkey = ((SubKey)key).getParentKey();
+//			if (mkey==null) return null;
+//			return getEmail(mkey);
+//		}
+//		//get from KeyLogs
+//		String akeyid = key.getKeyID();
+//		String email = null;
+//		long date = Long.MIN_VALUE;
+//		for (KeyLog kl : keylogs) {
+//			String keyidto = kl.getKeyIDTo();
+//			if (keyidto.equals(akeyid)) {
+//				if (kl.getAction().equals(KeyLogAction.APPROVAL)) {
+//					Identity id = kl.getIdentity();
+//					if (id!=null) {
+//						if (id.getEmail() != null && kl.getActionDatetime()>date) {
+//							email = id.getEmail();
+//							date = kl.getActionDatetime();
+//						}
+//					}
+//				}
+//			}
+//		}
+//		return email;
+//	}
+	
+	public String getEmailAndMnemonic(String keyid) {
+		OSDXKey key = getKey(keyid);
+		if (key!=null) {
+			if (key.isMaster()) {
+				Identity id = ((MasterKey)key).getCurrentIdentity();
+				if (id!=null)  {
+					String email = id.getEmail();
+					String mnemonic = null;
+					if (!id.isMnemonicRestricted()) {
+						mnemonic = id.getMnemonic(); 
+					}
+					if (email!=null) {
+						if (mnemonic!=null) {
+							return email + " | "+mnemonic;
+						} else {
+							return email;
+						}
+					} else {
+						if (mnemonic!=null) {
+							return mnemonic;
+						} else {
+							return null;
+						}
+					}
+				}
+			} else if (key.isSub()) {
+				MasterKey mkey = ((SubKey)key).getParentKey();
+				if (mkey==null) return null;
+				return getEmailAndMnemonic(mkey.getKeyID());
 			}
-		} else if (key.isSub()) {
-			MasterKey mkey = ((SubKey)key).getParentKey();
-			if (mkey==null) return null;
-			return getEmail(mkey);
 		}
 		//get from KeyLogs
-		String akeyid = key.getKeyID();
 		String email = null;
+		String mnemonic = null; 
 		long date = Long.MIN_VALUE;
 		for (KeyLog kl : keylogs) {
 			String keyidto = kl.getKeyIDTo();
-			if (keyidto.equals(akeyid)) {
+			if (keyidto.equals(keyid)) {
 				if (kl.getAction().equals(KeyLogAction.APPROVAL)) {
 					Identity id = kl.getIdentity();
 					if (id!=null) {
 						if (id.getEmail() != null && kl.getActionDatetime()>date) {
 							email = id.getEmail();
 							date = kl.getActionDatetime();
+							if (id.getMnemonic()!=null && !id.isMnemonicRestricted()) {
+								mnemonic = id.getMnemonic();
+							}
 						}
 					}
 				}
 			}
 		}
-		return email;
+		if (email!=null) {
+			if (mnemonic!=null) {
+				return email + " | "+mnemonic;
+			} else {
+				return email;
+			}
+		} else {
+			if (mnemonic!=null) {
+				return mnemonic;
+			} else {
+				return null;
+			}
+		}
 	}
 	
 	public boolean hasUnsavedChanges() {

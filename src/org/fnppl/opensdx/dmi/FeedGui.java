@@ -631,7 +631,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		Vector<String> select = new Vector<String>();
 		for (int i=0;i<allKeys.size();i++) {
 			OSDXKey k = allKeys.get(i);
-			String id = k.getKeyID()+" :: "+store.getEmail(k);
+			String id = k.getKeyIDShort()+" :: "+store.getEmailAndMnemonic(k.getKeyID());
 			select.add(id);
 			
 		}

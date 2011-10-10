@@ -426,6 +426,17 @@ public class OSDXKey {
 		return getKeyModulusSHA1()+"@"+authoritativekeyserver;
 	}
 	
+	public String getKeyIDShort() {
+		String keyid = getKeyID();
+		String keyidShort;
+		try {
+			keyidShort = keyid.substring(0,8)+" ... "+keyid.substring(51);
+		} catch (Exception e) {
+			keyidShort = keyid;
+		}
+		return keyidShort;
+	}
+	
 	public String getKeyModulusSHA1() {
 		//return modulussha1;
 		return SecurityHelper.HexDecoder.encode(modulussha1, ':', -1);

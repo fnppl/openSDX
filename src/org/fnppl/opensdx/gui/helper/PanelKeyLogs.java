@@ -87,8 +87,10 @@ public class PanelKeyLogs extends JPanel {
 	private JLabel label_table;
 	private JList list_keyid_from;
 	private DefaultListModel listmodel_keyid_from;
+	private Vector<String> listmodel_keyid_from_keyids;
 	private JList list_keyid_to;
 	private DefaultListModel listmodel_keyid_to;
+	private Vector<String> listmodel_keyid_to_keyids;
 	private JTable table;
 	private String[] columnNames = new String[] {"Key id from", "Key id to","date","action", "email"};
 	private String[][] tableData = new String[0][5];
@@ -152,22 +154,31 @@ public class PanelKeyLogs extends JPanel {
 	}
 	
 
+	
 	public void updateKeyLogs(KeyApprovingStore currentKeyStore) {
 		this.currentKeyStore = currentKeyStore;
 		this.keylogs = currentKeyStore.getKeyLogs();
 		listmodel_keyid_from.removeAllElements();
+		listmodel_keyid_from_keyids.removeAllElements();
 		listmodel_keyid_from.addElement("[ALL]");
+		listmodel_keyid_from_keyids.add("[ALL]");
+		
 		listmodel_keyid_to.removeAllElements();
+		listmodel_keyid_to_keyids.removeAllElements();
 		listmodel_keyid_to.addElement("[ALL]");
+		listmodel_keyid_to_keyids.add("[ALL]");
 		
 		for (KeyLog l : keylogs) {
 			String id_from = l.getKeyIDFrom();
 			String id_to = l.getKeyIDTo();
-			if (!listmodel_keyid_from.contains(id_from)) {
-				listmodel_keyid_from.addElement(id_from);	
+			
+			if (!listmodel_keyid_from_keyids.contains(id_from)) {
+				listmodel_keyid_from_keyids.add(id_from);
+				listmodel_keyid_from.addElement(main_gui.getKeyIDMnemonicShort(id_from));	
 			}
-			if (!listmodel_keyid_to.contains(id_to)) {
-				listmodel_keyid_to.addElement(id_to);	
+			if (!listmodel_keyid_to_keyids.contains(id_to)) {
+				listmodel_keyid_to_keyids.addElement(id_to);
+				listmodel_keyid_to.addElement(main_gui.getKeyIDMnemonicShort(id_to));
 			}
 		}
 		updateDetails(null);
@@ -206,6 +217,7 @@ public class PanelKeyLogs extends JPanel {
 			}
 		});
 		
+		listmodel_keyid_from_keyids = new Vector<String>();
 		list_keyid_from = new JList();
 		listmodel_keyid_from = new DefaultListModel();
 		list_keyid_from.setModel(listmodel_keyid_from);
@@ -215,18 +227,19 @@ public class PanelKeyLogs extends JPanel {
 				int[] selF = list_keyid_from.getSelectedIndices();
 				for (int i=0;i<selF.length;i++) {
 					//System.out.println("from "+i+" :: "+(String)listmodel_keyid_from.get(selF[i]));
-					selFrom.add((String)listmodel_keyid_from.get(selF[i]));
+					selFrom.add((String)listmodel_keyid_from_keyids.get(selF[i]));
 				}
 				Vector<String> selTo = new Vector<String>();
 				int[] selT = list_keyid_to.getSelectedIndices();
 				for (int i=0;i<selT.length;i++) {
 					//System.out.println("to "+i+" :: "+(String)listmodel_keyid_to.get(selT[i]));
-					selTo.add((String)listmodel_keyid_to.get(selT[i]));
+					selTo.add((String)listmodel_keyid_to_keyids.get(selT[i]));
 				}
 				list_keyid_selection_changed(selFrom, selTo);
 			}
 		});
 		
+		listmodel_keyid_to_keyids = new Vector<String>();
 		list_keyid_to = new JList();
 		listmodel_keyid_to = new DefaultListModel();
 		list_keyid_to.setModel(listmodel_keyid_to);
@@ -235,12 +248,12 @@ public class PanelKeyLogs extends JPanel {
 				Vector<String> selFrom = new Vector<String>();
 				int[] selF = list_keyid_from.getSelectedIndices();
 				for (int i=0;i<selF.length;i++) {
-					selFrom.add((String)listmodel_keyid_from.get(selF[i]));
+					selFrom.add((String)listmodel_keyid_from_keyids.get(selF[i]));
 				}
 				Vector<String> selTo = new Vector<String>();
 				int[] selT = list_keyid_to.getSelectedIndices();
 				for (int i=0;i<selT.length;i++) {
-					selTo.add((String)listmodel_keyid_to.get(selT[i]));
+					selTo.add((String)listmodel_keyid_to_keyids.get(selT[i]));
 				}
 				list_keyid_selection_changed(selFrom, selTo);
 			}
