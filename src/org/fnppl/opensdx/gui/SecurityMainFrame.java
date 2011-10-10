@@ -1729,6 +1729,24 @@ public class SecurityMainFrame extends JFrame {
 		});
 		b.add(bu);
 
+		if (key.isMaster()) {
+			bu = new JButton("request subkeys");
+			bu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					requestSubKeys((MasterKey)key);
+				}
+			});
+			b.add(bu);
+		} else if (key.isSub() && !key.isRevoke()) {
+			bu = new JButton("request parent key");
+			bu.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					requestParentKey((SubKey)key);
+				}
+			});
+			b.add(bu);
+		}
+		
 		bu = new JButton("generate keylog");
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
