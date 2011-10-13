@@ -226,10 +226,18 @@ public class DDSToOpenSDXImporter extends OpenSDXImporterBase {
 			for (Iterator<Element> itgenres = genres.iterator(); itgenres.hasNext();) {
 				Element genreEl = itgenres.next();
 				if (genreEl.getChildText("ReleaseGenre") != null) {
-					tags.addGenre(gc.convert(genreEl.getChildText("ReleaseGenre")));
+					String genre = gc.convert(genreEl.getChildText("ReleaseGenre"));
+					if (genre.indexOf("[unknown genre]") > -1) {
+						genre = "Miscellaneous";
+					}
+					tags.addGenre(genre);
 				}
 				if (genreEl.getChildText("ReleaseSubGenre") != null) {
-					tags.addGenre(gc.convert(genreEl.getChildText("ReleaseSubGenre")));
+					String genre = gc.convert(genreEl.getChildText("ReleaseSubGenre"));
+					if (genre.indexOf("[unknown genre]") > -1) {
+						genre = "Miscellaneous";
+					}
+					tags.addGenre(genre);
 				}
 			}        		
 			bundle.tags(tags);        	
@@ -405,14 +413,21 @@ public class DDSToOpenSDXImporter extends OpenSDXImporterBase {
 					for (Iterator<Element> ittrackgenres = trackgenres.iterator(); ittrackgenres.hasNext();) {
 						Element trackgenreEl = ittrackgenres.next();
 						if (trackgenreEl.getChildText("TrackGenre") != null) {
-							tags.addGenre(gc.convert(trackgenreEl.getChildText("TrackGenre")));
+							String genre = gc.convert(trackgenreEl.getChildText("TrackGenre"));
+							if (genre.indexOf("[unknown genre]") > -1) {
+								genre = "Miscellaneous";
+							}
+							track_tags.addGenre(genre);
 						}
 						if (trackgenreEl.getChildText("TrackSubGenre") != null) {
-							tags.addGenre(gc.convert(trackgenreEl.getChildText("TrackSubGenre")));
+							String genre = gc.convert(trackgenreEl.getChildText("TrackSubGenre"));
+							if (genre.indexOf("[unknown genre]") > -1) {
+								genre = "Miscellaneous";
+							}
+							track_tags.addGenre(genre);
 						}
 					}        		
-					track_tags.addGenre(gc.convert(track.getChildTextNN("genre")));            	
-
+					
 					// explicit_lyrics
 					if(track.getChildTextNN("Explicit").length()>0) {
 						if(track.getChildTextNN("Explicit").equalsIgnoreCase("false")) {
