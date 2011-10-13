@@ -59,7 +59,7 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 	DateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
 	private Result ir = Result.succeeded();
 	// test?
-	boolean onlytest = true;
+	public boolean onlytest = true;
     
 	public SimfyToOpenSDXImporter(ImportType type, File impFile, File savFile) {
 		super(type, impFile, savFile);
@@ -74,11 +74,12 @@ public class SimfyToOpenSDXImporter extends OpenSDXImporterBase {
 			
 			Feed feed = this.getImportFeed();
             
-			if(feed!=null) {			
+			if(feed != null) {			
 	            // write file
 				Document doc = Document.buildDocument(feed.toElement());
-				doc.writeToFile(this.saveFile);
-				
+				if(saveFile != null) {
+					doc.writeToFile(this.saveFile);
+				}
 			}
 		} catch (Exception e) {
 			// e.printStackTrace();			
