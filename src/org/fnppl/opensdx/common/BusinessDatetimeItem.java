@@ -65,6 +65,10 @@ public class BusinessDatetimeItem extends BusinessItem {
 	static {
 		datemeGMT.setTimeZone(java.util.TimeZone.getTimeZone("GMT+00:00"));
 	}
+	public final static SimpleDateFormat datemeLocal = new SimpleDateFormat(RFC1123_CUT, ml);
+	static {
+		datemeLocal.setTimeZone(java.util.TimeZone.getDefault());
+	}
 
 	public BusinessDatetimeItem(String name, long datetime) {
 		super(name,datetime);
@@ -108,6 +112,10 @@ public class BusinessDatetimeItem extends BusinessItem {
 		return datemeGMT.format(getDatetime());
 	}
 	
+	public String getDatetimeStringLocal() {
+		return datemeLocal.format(getDatetime());
+	}
+		
 	public Element toElement() {
 		if (get() ==null) return null;
 		Element e = new Element(getKeyname(), getDatetimeStringGMT());

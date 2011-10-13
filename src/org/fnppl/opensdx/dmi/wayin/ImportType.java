@@ -50,6 +50,7 @@ public class ImportType {
 	public static final int SIMFY = 2;
 	public static final int FUDGE = 3;
 	public static final int PIE = 4;
+	public static final int DDS = 5;
 	
 	private int type;
 	
@@ -71,6 +72,9 @@ public class ImportType {
 		else if(type.equals("pie")) {
 			it.setType(PIE);
 		}		
+		else if(type.equals("dds")) {
+			it.setType(DDS);
+		}	
 		return it;
 	}
 

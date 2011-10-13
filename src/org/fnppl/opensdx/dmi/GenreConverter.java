@@ -55,6 +55,7 @@ public class GenreConverter {
 	public static final int SIMFY_TO_OPENSDX = 1;
 	public static final int FUDGE_TO_OPENSDX = 2;
 	public static final int PIE_TO_OPENSDX = 2;
+	public static final int DDS_TO_OPENSDX = 3;
 	private final static URL CONVERTER_LIST_XML = GenreConverter.class.getResource("resources/genreConverterList.xml");
 	private int type;
 	private HashMap<String, String> matchMap = new HashMap<String, String>();
@@ -118,7 +119,17 @@ public class GenreConverter {
 		        			matchMap.put(key, value);
 		        		}
         			}
-        		}        		
+        		} 
+        		else if(this.type==DDS_TO_OPENSDX) {
+        			if(match.getChild("dds")!=null && match.getChild("opensdx")!=null) {
+		        		String key = match.getChildTextNN("dds").toLowerCase();
+		        		String value = match.getChildTextNN("opensdx");
+		        		if(!matchMap.containsKey(key)) {
+		        			// first entry in xml delivers the value for a key - important if matching the other way
+		        			matchMap.put(key, value);
+		        		}
+        			}
+        		} 
             }
             
 		} catch (Exception e) {

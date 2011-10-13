@@ -99,7 +99,11 @@ public class OpenSDXImporterBase {
 				case ImportType.PIE:
 					PieToOpenSDXImporter impPie = new PieToOpenSDXImporter(impType, impFile, savFile);
 					ir = impPie.formatToOpenSDXFile();		
-					break;					
+					break;	
+				case ImportType.DDS:
+					DDSToOpenSDXImporter impDDS = new DDSToOpenSDXImporter(impType, impFile, savFile);
+					ir = impDDS.formatToOpenSDXFile();		
+					break;	
 				default:
 					break;
 			}
