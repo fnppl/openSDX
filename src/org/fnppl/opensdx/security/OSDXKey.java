@@ -110,10 +110,11 @@ public class OSDXKey {
 	protected String gpgkeyserverid = null;
 	protected Vector<DataSourceStep> datapath = new Vector<DataSourceStep>();
 	
-	protected char[] storepass = null;
+	//protected char[] storepass = null;
 	
 	protected AsymmetricKeyPair akp = null;
 	protected Element lockedPrivateKey = null;
+	protected boolean protectPrivateKey = true;
 	protected boolean unsavedChanges = false;
 	
 	protected OSDXKey() {
@@ -368,15 +369,19 @@ public class OSDXKey {
 			Element eExponent = privkey.getChild("exponent");
 			if(eExponent.getChild("locked") != null) {
 				//only ask for password when key is used for the first time -> see unlockPrivateKey
-				ret.lockedPrivateKey = eExponent.getChild("locked");		
+				ret.lockedPrivateKey = eExponent.getChild("locked");
+				ret.protectPrivateKey = true;
 			}
 			else if(eExponent.getChild("pgp") != null) {
 				//only ask for password when key is used for the first time -> see unlockPrivateKey
-				ret.lockedPrivateKey = eExponent.getChild("pgp");		
+				ret.lockedPrivateKey = eExponent.getChild("pgp");
+				ret.protectPrivateKey = true;
 			}
 			else {
-				//never should go here!!!
-				System.err.println("You should never see me - there seems to be a private key unlocked in your keystore: "+Sshafp+"@"+authoritativekeyserver);
+				//unlocked private key
+				//System.err.println("You should never see me - there seems to be a private key unlocked in your keystore: "+Sshafp+"@"+authoritativekeyserver);
+				ret.lockedPrivateKey = null;
+				ret.protectPrivateKey = false;
 				exponent = SecurityHelper.HexDecoder.decode(eExponent.getText());
 			}
 		}
@@ -532,7 +537,11 @@ public class OSDXKey {
 		if (akp.hasPrivateKey()) {
 			String[] ans = mh.requestNewPasswordAndMantra("Saving Key: "+getKeyID()+"\n\nLevel: "+getLevelName()+"\n\n");
 			if (ans != null) {
-				createLockedPrivateKey(ans[0],ans[1]);
+				if (ans.length==1 && ans[0].equals("no password")) {
+					protectPrivateKey = false;
+				} else {
+					createLockedPrivateKey(ans[0],ans[1]);
+				}
 			} else {
 				System.out.println("CAUTION: private key NOT saved.");
 			}
@@ -555,6 +564,8 @@ public class OSDXKey {
 	}
 	
 	public void unlockPrivateKey(char[] password) throws Exception{
+		if (akp.hasPrivateKey() && !protectPrivateKey) return;
+		
 		if (password!=null) {
 			if (lockedPrivateKey.getName().equals("locked")) {
 				String Sinitv = lockedPrivateKey.getChildText("initvector");
@@ -639,35 +650,44 @@ public class OSDXKey {
 		ekp.addContent(epk);
 		
 		if (withPrivateKey) {
-			//privkey
-			if (lockedPrivateKey == null) {
-				createLockedPrivateKey(mh);
+			if (protectPrivateKey) {
+				//privkey
+				if (lockedPrivateKey == null) {
+					createLockedPrivateKey(mh);
+				}
+				if (lockedPrivateKey != null) {
+					if (lockedPrivateKey.getName().equals("locked")) {
+						Element el = new Element("locked");
+						el.addContent("mantraname",lockedPrivateKey.getChildText("mantraname"));
+						el.addContent("algo",lockedPrivateKey.getChildText("algo"));
+						el.addContent("initvector", lockedPrivateKey.getChildText("initvector"));
+						el.addContent("padding",lockedPrivateKey.getChildText("padding"));
+						el.addContent("bytes",lockedPrivateKey.getChildText("bytes"));
+						
+						Element eexp = new Element("exponent");
+						eexp.addContent(el);
+						Element esk = new Element("privkey");
+						esk.addContent(eexp);
+						ekp.addContent(esk);
+					}
+					else if (lockedPrivateKey.getName().equals("pgp")) {
+						Element eexp = new Element("exponent");
+						eexp.addContent(XMLHelper.cloneElement(lockedPrivateKey));
+						Element esk = new Element("privkey");
+						esk.addContent(eexp);
+						ekp.addContent(esk);
+					}
+				} else if (akp.hasPrivateKey()) {
+					System.out.println("CAUTION: private key NOT saved.");
+				}// -- end privkey
 			}
-			if (lockedPrivateKey != null) {
-				if (lockedPrivateKey.getName().equals("locked")) {
-					Element el = new Element("locked");
-					el.addContent("mantraname",lockedPrivateKey.getChildText("mantraname"));
-					el.addContent("algo",lockedPrivateKey.getChildText("algo"));
-					el.addContent("initvector", lockedPrivateKey.getChildText("initvector"));
-					el.addContent("padding",lockedPrivateKey.getChildText("padding"));
-					el.addContent("bytes",lockedPrivateKey.getChildText("bytes"));
-					
-					Element eexp = new Element("exponent");
-					eexp.addContent(el);
-					Element esk = new Element("privkey");
-					esk.addContent(eexp);
-					ekp.addContent(esk);
-				}
-				else if (lockedPrivateKey.getName().equals("pgp")) {
-					Element eexp = new Element("exponent");
-					eexp.addContent(XMLHelper.cloneElement(lockedPrivateKey));
-					Element esk = new Element("privkey");
-					esk.addContent(eexp);
-					ekp.addContent(esk);
-				}
-			} else if (akp.hasPrivateKey()) {
-				System.out.println("CAUTION: private key NOT saved.");
-			}// -- end privkey
+			
+			if (!protectPrivateKey) { //BB:: protectPrivateKey can be changed by createLockedPrivateKey(mh) 
+				//save unlocked private key
+				Element ePrivkey = new Element("privkey");
+				ePrivkey.addContent("exponent", SecurityHelper.HexDecoder.encode(akp.getPrivateExponent(), ':', -1));
+				ekp.addContent(ePrivkey);
+			}
 		}
 		ekp.addContent("gpgkeyserverid", gpgkeyserverid);
 		

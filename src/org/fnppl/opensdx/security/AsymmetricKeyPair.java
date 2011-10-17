@@ -174,6 +174,9 @@ public class AsymmetricKeyPair {
 	public String getPublicExponentAsHex() {
 		return "0x"+SecurityHelper.HexDecoder.encode(pubkey.getExponent().toByteArray(), '\0', -1);
 	}
+	public byte[] getPrivateExponent() {
+		return privkey.getExponent().toByteArray();
+	}
 	
 	public boolean isRSA() {
 		if (type == OSDXKey.ALGO_RSA) {

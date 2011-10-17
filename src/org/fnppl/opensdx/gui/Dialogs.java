@@ -51,8 +51,10 @@ package org.fnppl.opensdx.gui;
  * 
  */
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -298,7 +300,7 @@ public class Dialogs {
 	    return null;
 	}
 	
-	public static final String[] showNewMantraPasswordDialog(String message) {
+	public static final String[] showNewMantraPasswordDialogOld(String message) {
 		if (message.contains("\n")) {
 			message = "<HTML><BODY>"+message.replace("\n", "<BR>")+"</BODY><HTML>";
 		}
@@ -362,6 +364,146 @@ public class Dialogs {
 		    }
 	    }
 	    return null;
+	}
+	
+	public static final String[] showNewMantraPasswordDialog(String message) {
+		
+		if (message.contains("\n")) {
+			message = "<HTML><BODY>"+message.replace("\n", "<BR>")+"</BODY><HTML>";
+		}
+		JPanel p = new JPanel();
+		
+		GridBagLayout gbl = new GridBagLayout();
+		p.setLayout(gbl);
+		GridBagConstraints gbc = new GridBagConstraints();
+
+		JLabel lMsg = new JLabel(message);
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(5,5,5,5);
+		
+		gbl.setConstraints(lMsg,gbc);
+		p.add(lMsg);
+		
+		JLabel lMantra = new JLabel("mantraname");
+		gbc.gridwidth = 1;
+		gbc.gridy = 1;
+		gbc.gridx = 0;
+		gbc.weightx = 0.0;
+		gbl.setConstraints(lMantra,gbc);
+		p.add(lMantra);
+		
+		final JTextField text = new JTextField();
+		gbc.gridx = 1;
+		gbc.weightx = 1.0;
+		gbl.setConstraints(text,gbc);
+		p.add(text);
+		
+		JLabel lPw = new JLabel("passphrase");
+		gbc.gridy = 2;
+		gbc.gridx = 0;
+		gbc.weightx = 0.0;
+		gbl.setConstraints(lPw,gbc);
+		p.add(lPw);
+		
+		final JPasswordField pf = new JPasswordField();
+		pf.setEchoChar('*');
+		gbc.gridx = 1;
+		gbc.weightx = 1.0;
+		gbl.setConstraints(pf,gbc);
+		p.add(pf);
+		
+		
+		JLabel lPw2 = new JLabel("repeat passphrase");
+		gbc.gridy = 3;
+		gbc.gridx = 0;
+		gbc.weightx = 0.0;
+		gbl.setConstraints(lPw2,gbc);
+		p.add(lPw2);
+		
+		final JPasswordField pf2 = new JPasswordField();
+		pf2.setEchoChar('*');
+		gbc.gridx = 1;
+		gbc.weightx = 1.0;
+		gbl.setConstraints(pf2,gbc);
+		p.add(pf2);
+		
+		//filler
+		JLabel filler = new JLabel("");
+		gbc.gridy = 4;
+		gbc.gridx = 0;
+		gbc.weightx = 0.0;
+		gbc.weighty = 1.0;
+		gbl.setConstraints(filler,gbc);
+		p.add(filler);
+		
+		final Dialog d = new Dialog((Frame)null,"NEW PASSWORD");
+		
+		final Vector<String[]> result = new Vector<String[]>();
+		
+		JButton bOk = new JButton("OK");
+		bOk.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (pf.getPassword()==null || pf.getPassword().length==0) {
+					showMessage("Please enter a passphrase");
+				} else {
+					if (Arrays.equals(pf.getPassword(),pf2.getPassword())) {
+						result.add(new String[] {text.getText(),new String(pf.getPassword())});
+						d.dispose();
+			    	} else {
+			    		showMessage("repeated password does not match password, please reenter...");
+			    		pf.setText("");
+			    		pf2.setText("");
+			    	}
+				}
+			}
+		});
+		
+		gbc.weighty = 0.0;
+		gbc.gridy = 5;
+		gbc.gridx = 0;
+		gbc.weightx = 0.0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.NONE;
+		gbl.setConstraints(bOk,gbc);
+		p.add(bOk);
+		
+		JButton bNoPassword = new JButton("don't protect with passphrase");
+		bNoPassword.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				result.add(new String[] {"no password"});
+				d.dispose();
+			}
+		});
+		
+		gbc.gridy = 5;
+		gbc.gridx = 1;
+		gbc.weightx = 1.0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.NONE;
+		gbl.setConstraints(bNoPassword,gbc);
+		p.add(bNoPassword);
+		
+		
+		d.setSize(600, 300);
+		d.setLayout(new BorderLayout());
+		d.add(p,BorderLayout.CENTER);
+		d.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+		Helper.centerMe(d, null);
+		d.setVisible(true);
+		
+		if (result.size()==0) {
+			return null;	
+		}
+		return result.get(0);
 	}
 	
 	public static JDialog getWaitDialog(final String message) {

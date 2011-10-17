@@ -2526,7 +2526,7 @@ public class SecurityMainFrame extends JFrame {
 			}
 		};    
 		t.start();
-		d.show();
+		d.setVisible(true);
 		if (t.isAlive()) {
 			t.stop();
 			releaseUILock();
