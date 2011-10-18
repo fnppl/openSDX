@@ -8,6 +8,8 @@ import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.xml.*;
 import org.fnppl.opensdx.security.*;
 
+import org.jdom.output.XMLOutputter;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -69,16 +71,19 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 		super(type, expFeed, savFile);
 	}
 	
+	public OpenSDXToFinetunesExporter(ExportType type, Feed expFeed) {
+		super(type, expFeed, null);
+	}
+	
 	public OpenSDXToFinetunesExporter(Feed expFeed) {
 		super(ExportType.getExportType("finetunes"), expFeed, null);
 	}	
 	
 	public Result formatToExternalFile() {	
 		try {			
-			
 			Document doc = this.getExportDocument();
             
-			if(doc!=null) {			
+			if(doc != null && saveFile != null) {			
 	            // write file
 				doc.writeToFile(this.saveFile);
 			}
@@ -90,6 +95,22 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 		}	
 		
 		return ir;			
+	}
+	
+	public byte[] formatToBuffer() {	
+		try {	
+			Document doc = this.getExportDocument();
+			if(doc != null) {			
+				return doc.toByteArray();
+			}			
+		} catch (Exception e) {
+			// e.printStackTrace();			
+//			ir.succeeded = false;
+//			ir.errorMessage = e.getMessage();			
+//			ir.exception = e;	
+			
+		}		
+		return null;
 	}
 		
 	private Document getExportDocument() {
@@ -209,7 +230,7 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
         				artist.addContent("website", contributor.getWww().getHomepage());
         			
         			IDs artistids = contributor.getIDs();
-        			if(artistids.getFinetunes()!=null && artistids.getFinetunes().length()>0) {
+        			if(artistids != null && artistids.getFinetunes() != null && artistids.getFinetunes().length() > 0) {
         				Element id = new Element("id");
         				id.setAttribute("type", "finetunes").setText(artistids.getFinetunes());
         				artist.addContent(id);
@@ -462,7 +483,7 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
             				artist.addContent("website", contributor.getWww().getHomepage());
             			
             			IDs artistids = contributor.getIDs();
-            			if(artistids.getFinetunes()!=null && artistids.getFinetunes().length()>0) {
+            			if(artistids != null && artistids.getFinetunes() != null && artistids.getFinetunes().length() > 0) {
             				Element id = new Element("id");
             				id.setAttribute("type", "finetunes").setText(artistids.getFinetunes());
             				artist.addContent(id);

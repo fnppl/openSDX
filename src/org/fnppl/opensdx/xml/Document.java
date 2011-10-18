@@ -156,6 +156,20 @@ public class Document {
 		
 		return null;
 	}
+	
+	public byte[] toByteArray() {
+		try {
+			Format f = Format.getPrettyFormat();
+			f.setEncoding("UTF-8");
+			XMLOutputter outp = new XMLOutputter(f);
+			return outp.outputString(base).getBytes("UTF-8");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
 	public String toStringCompact() {
 		try {
 			Format f = Format.getCompactFormat();
