@@ -228,14 +228,14 @@ public class DDSToOpenSDXImporter extends OpenSDXImporterBase {
 				if (genreEl.getChildText("ReleaseGenre") != null) {
 					String genre = gc.convert(genreEl.getChildText("ReleaseGenre"));
 					if (genre.indexOf("[unknown genre]") > -1) {
-						genre = "Miscellaneous";
+						genre = "Miscellaneous"+" ["+genre.substring(genre.indexOf("[unknown genre]")+16)+"]";
 					}
 					tags.addGenre(genre);
 				}
 				if (genreEl.getChildText("ReleaseSubGenre") != null) {
 					String genre = gc.convert(genreEl.getChildText("ReleaseSubGenre"));
 					if (genre.indexOf("[unknown genre]") > -1) {
-						genre = "Miscellaneous";
+						genre = "Miscellaneous"+" ["+genre.substring(genre.indexOf("[unknown genre]")+16)+"]";
 					}
 					tags.addGenre(genre);
 				}
