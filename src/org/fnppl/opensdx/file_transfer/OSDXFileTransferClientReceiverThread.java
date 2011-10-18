@@ -45,8 +45,11 @@ package org.fnppl.opensdx.file_transfer;
  */
 import java.net.SocketException;
 
+import org.fnppl.opensdx.helper.Logger;
+
 public class OSDXFileTransferClientReceiverThread extends Thread {
 
+	private Logger logger = Logger.getNoLogging();
 	
 	private SecureConnection con;
 	private OSDXFileTransferClient client;
@@ -55,6 +58,10 @@ public class OSDXFileTransferClientReceiverThread extends Thread {
 	public OSDXFileTransferClientReceiverThread(OSDXFileTransferClient client, SecureConnection con) {
 		this.client = client;
 		this.con = con;
+	}
+	
+	public void setLogger(Logger logger) {
+		this.logger = logger;
 	}
 	
 	public void run() {

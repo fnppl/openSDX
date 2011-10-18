@@ -84,7 +84,7 @@ public class HTTPServerRequest {
 			StringTokenizer st = new StringTokenizer(zeile, " ");
 			ret.method = st.nextToken();
 			ret.cmd = st.nextToken();
-			String proto = st.nextToken();
+			//String proto = st.nextToken();
 		
 			
 		
@@ -111,6 +111,9 @@ public class HTTPServerRequest {
 			}
 			else if(ret.method.equals("GET")) {
 				readGetParams(ret);
+			}
+			else if(ret.method.equals("PUT")) {
+				readPutContent(in, ret);
 			}
 			
 		}
@@ -206,6 +209,16 @@ public class HTTPServerRequest {
 	}
 	
 	private static void readContentData(InputStream in, HTTPServerRequest re) throws Exception {
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		int toread = Integer.parseInt(re.headers.get("Content-Length"));
+		re.contentData = new byte[toread];
+		int read = in.read(re.contentData, 0, toread);
+		if (toread != read) {
+			throw new Exception("Wrong content length!!");
+		}
+	}
+	
+	private static void readPutContent(InputStream in, HTTPServerRequest re) throws Exception {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		int toread = Integer.parseInt(re.headers.get("Content-Length"));
 		re.contentData = new byte[toread];

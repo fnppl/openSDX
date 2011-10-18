@@ -138,6 +138,27 @@ public class HTTPClient {
 	    return re;
 	}
 	
+	public HTTPClientResponse sendPut(HTTPClientPutRequest req) throws Exception {
+		if (!connect()) {
+			RuntimeException l = new RuntimeException("ERROR: Can not connect to server.");
+			l.printStackTrace();
+			throw l;
+		}
+		req.send(socket);
+		
+		//processing response
+	    //System.out.println("OSDXKeyServerClient | waiting for response");
+	    BufferedInputStream bin = new BufferedInputStream(socket.getInputStream());
+	    
+	    HTTPClientResponse re = HTTPClientResponse.fromStream(bin, timeout);
+	    close();
+	    
+	    if(re == null) {
+	    	throw new RuntimeException("ERROR: Server does not respond.");
+	    }
+	    return re;
+	}
+	
 	protected boolean checkResponse(HTTPClientResponse resp) {
 		if (resp==null || resp.status == null) {
 			message = ERROR_NO_RESPONSE;

@@ -47,6 +47,7 @@ package org.fnppl.opensdx.file_transfer.commands;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.SecureConnection;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
+import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.xml.Document;
 
 public class OSDXFileTransferLoginCommand extends OSDXFileTransferCommand {
@@ -87,6 +88,9 @@ public class OSDXFileTransferLoginCommand extends OSDXFileTransferCommand {
 				notifyError(getMessageFromContent(content));
 			}
 		}
+		else if (SecureConnection.isError(code)) {
+			notifyError(getMessageFromContent(content));
+		}
 	}
 	
 	public RightsAndDuties getRightsAndDuties() {
@@ -99,7 +103,10 @@ public class OSDXFileTransferLoginCommand extends OSDXFileTransferCommand {
 
 	public void onSendNextPackage(SecureConnection con) throws Exception {
 		con.setCommand(id, command);
-		if (DEBUG) System.out.println("SENDING :: "+command);
+		if (DEBUG) {
+			System.out.println("SENDING :: "+command);
+			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
+		}
 		hasNext = false;
 		con.sendPackage();
 	}

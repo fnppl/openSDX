@@ -56,6 +56,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -76,8 +78,10 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -87,6 +91,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.TableCellRenderer;
 
 import org.fnppl.opensdx.common.Util;
@@ -107,6 +112,11 @@ import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
+import org.fnppl.opensdx.helper.Logger;
+import org.fnppl.opensdx.http.HTTPClient;
+import org.fnppl.opensdx.http.HTTPClientPutRequest;
+import org.fnppl.opensdx.http.HTTPClientRequest;
+import org.fnppl.opensdx.http.HTTPClientResponse;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
@@ -115,7 +125,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class FileTransferGui extends JFrame implements MyObserver, CommandResponseListener {
 
-	public static final String version = "v. 2011-10-03";
+	public static final String version = "v. 2011-10-18";
 	private Vector<FileTransferAccount> accounts = new Vector<FileTransferAccount>();
 	private Vector<FileTransferAccount> supportedAccounts = new Vector<FileTransferAccount>();
 
@@ -125,6 +135,12 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 	private JButton buEdit;
 	private JButton buRemove;
 	private JButton buTest;
+	
+	private JPopupMenu popup;
+	private JMenuItem menuSendLogFile;
+	private JMenuItem menuTestConnection;
+	private JMenuItem menuCancel;
+	
 
 	private JPanel panelStatus;
 	private JLabel txtStatus;
@@ -249,6 +265,66 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 		panelNorth = new JPanel();
 		panelNorth.setLayout(new FlowLayout(FlowLayout.LEFT));
 
+		//popup
+		popup = new JPopupMenu("Debugging");
+		popup.setBorder(new TitledBorder("Debugging"));
+		
+		menuSendLogFile = new JMenuItem("send log");
+		menuSendLogFile.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				popup.setVisible(false);
+				int answ = Dialogs.showYES_NO_Dialog("Send logfile to server", "Really send your logfile?");
+				if (answ==Dialogs.YES) {
+					sendLogFile();
+				}
+			}
+		});
+		popup.add(menuSendLogFile);
+		
+		menuTestConnection = new JMenuItem("test connection");
+		menuTestConnection.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				popup.setVisible(false);
+				int answ = Dialogs.showYES_NO_Dialog("Test connection to server", "Really test connection to simfy.finetunes.net?");
+				if (answ==Dialogs.YES) {
+					testConnection();
+				}
+			}
+		});
+		popup.add(menuTestConnection);
+		popup.addSeparator();
+		
+		menuCancel = new JMenuItem("cancel");
+		menuCancel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				popup.setVisible(false);
+			}
+		});
+		popup.add(menuCancel);
+		
+		panelNorth.addMouseListener(new MouseListener() {
+			public void mousePressed(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON3) {
+					if (popup.isVisible()) {
+						popup.setVisible(false);
+					} else {
+						popup.setLocation(e.getXOnScreen(), e.getYOnScreen());
+						File log = Logger.getFileTransferLogger().getLogFile(); 
+						if (log==null) {
+							menuSendLogFile.setVisible(false);
+						} else {
+							menuSendLogFile.setVisible(true);
+						}
+						popup.setVisible(true);
+					}
+				}
+			}
+			public void mouseReleased(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseClicked(MouseEvent e) {}
+		});
+		
 		selectAccount_model = new DefaultComboBoxModel();
 		selectAccount = new JComboBox();
 		updateAccounts();
@@ -474,6 +550,28 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 		});
 		progressBar = new JProgressBar();
 
+	}
+	
+	private void testConnection() {
+		//TODO 
+	}
+	
+	private void sendLogFile() {
+		if (log!=null) {
+			HTTPClient httpclient = new HTTPClient("http://simfy.finetunes.net", 8899);
+			//HTTPClient httpclient = new HTTPClient("localhost", 8899);
+			File log = Logger.getFileTransferLogger().getLogFile();
+			try {
+				HTTPClientResponse resp = httpclient.sendPut(new HTTPClientPutRequest(log, "/logfile"));
+				System.out.println("SEND LOG FILE :: "+resp.status);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				Dialogs.showMessage("Error sending logfile");
+			}
+		} else {
+			Dialogs.showMessage("Logfile not found.");
+		}
 	}
 
 	private void initLayout() {

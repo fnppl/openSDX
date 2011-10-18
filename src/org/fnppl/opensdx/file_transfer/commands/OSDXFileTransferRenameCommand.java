@@ -45,6 +45,7 @@ package org.fnppl.opensdx.file_transfer.commands;
  */
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.SecureConnection;
+import org.fnppl.opensdx.helper.Logger;
 
 public class OSDXFileTransferRenameCommand extends OSDXFileTransferCommand {
 
@@ -89,7 +90,10 @@ public class OSDXFileTransferRenameCommand extends OSDXFileTransferCommand {
 
 	public void onSendNextPackage(SecureConnection con) throws Exception {
 		con.setCommand(id, command);
-		if (DEBUG) System.out.println("SENDING :: "+command);
+		if (DEBUG) {
+			System.out.println("SENDING :: "+command);
+			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
+		}
 		hasNext = false;
 		con.sendPackage();
 	}

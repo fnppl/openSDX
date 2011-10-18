@@ -51,6 +51,7 @@ import java.util.Arrays;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.file_transfer.SecureConnection;
+import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.security.SecurityHelper;
 
 public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
@@ -168,6 +169,10 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 	public void onSendNextPackage(SecureConnection con) throws Exception {
 		hasNext = false;
 		con.setCommand(id, command);
+		if (DEBUG) {
+			System.out.println("SENDING :: "+command);
+			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
+		}
 		con.sendPackage();
 	}
 

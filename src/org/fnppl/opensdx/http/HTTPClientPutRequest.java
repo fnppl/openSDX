@@ -1,11 +1,28 @@
-package org.fnppl.opensdx.file_transfer.commands;
+package org.fnppl.opensdx.http;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.URLEncoder;
+import java.util.Iterator;
+
+import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.security.Signature;
+import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLHelper;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
  * 							http://fnppl.org
- */
+*/
 
 /*
  * Software license
@@ -43,47 +60,44 @@ package org.fnppl.opensdx.file_transfer.commands;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
-import org.fnppl.opensdx.file_transfer.SecureConnection;
-import org.fnppl.opensdx.helper.Logger;
+public class HTTPClientPutRequest {
 
-public class OSDXFileTransferCloseConnectionCommand extends OSDXFileTransferCommand {
-
-	private boolean hasNext = true;
+	private File file = null;
+	private String remoteFilename = null;
 	
-	public OSDXFileTransferCloseConnectionCommand(long id) {
-		super();
-		this.command = "QUIT";
-		this.id = id;
+	public HTTPClientPutRequest(File file, String remoteFilename) {
+		this.file = file;
+		this.remoteFilename = remoteFilename;
 	}
 	
-	public void onProcessStart() throws Exception {
-		if (DEBUG) System.out.println("Command close started.");
-		hasNext = true;
-	}
-	
-	public void onProcessCancel() {
-
-	}
-
-	public void onProcessEnd() {
-		if (DEBUG) System.out.println("Command close end.");
-	}
-
-	public boolean hasNextPackage() {
-		return hasNext;
-	}
-
-	public void onSendNextPackage(SecureConnection con) throws Exception {
-		con.setCommand(id, command);
-		if (DEBUG) {
-			System.out.println("SENDING :: "+command);
-			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
+	public void toOutput(OutputStream out) throws Exception {
+		long length = file.length();
+		
+		out.write(("PUT "+remoteFilename).getBytes("ASCII"));
+		out.write("\r\n".getBytes("ASCII"));
+		out.write(("Content-Length: "+length).getBytes("ASCII"));
+		out.write("\r\n".getBytes("ASCII"));
+		out.write("\r\n".getBytes("ASCII"));
+		
+		out.flush();
+		
+		InputStream in = new BufferedInputStream(new FileInputStream(file));
+		byte[] buffer = new byte[1024];
+		int read = 0;
+		while ((read=in.read(buffer))>0) {
+			out.write(buffer, 0, read);
 		}
-		hasNext = false;
-		con.sendPackage();
+		out.flush();
 	}
-
-	public void onResponseReceived(int num, byte code, byte[] content) throws Exception {
 	
+	public void send(Socket socket) throws Exception {
+		if (!socket.isConnected()) {
+			throw new RuntimeException("not connected");
+		}
+		OutputStream out = socket.getOutputStream();
+		BufferedOutputStream bout = new BufferedOutputStream(out);
+		toOutput(bout);
+		bout.flush();
 	}
+	
 }

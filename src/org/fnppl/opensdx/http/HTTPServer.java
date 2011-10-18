@@ -157,7 +157,7 @@ public abstract class HTTPServer {
 	
 	
 	public void startService() throws Exception {
-		System.out.println("Starting Server at "+address.getHostAddress()+" on port " + port +"  at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
+		System.out.println("Starting Server "+getServerID()+" on port " + port +"  at "+SecurityHelper.getFormattedDate(System.currentTimeMillis()));
 		ServerSocket so = new ServerSocket(port);
 		Thread requestMonitor = new Thread() {
 			public void run() {

@@ -48,6 +48,7 @@ import java.util.Vector;
 import org.fnppl.opensdx.file_transfer.CommandResponseListener;
 import org.fnppl.opensdx.file_transfer.SecureConnection;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
+import org.fnppl.opensdx.helper.Logger;
 
 public class OSDXFileTransferListCommand extends OSDXFileTransferCommand {
 
@@ -104,7 +105,10 @@ public class OSDXFileTransferListCommand extends OSDXFileTransferCommand {
 
 	public void onSendNextPackage(SecureConnection con) throws Exception {
 		con.setCommand(id, command);
-		if (DEBUG) System.out.println("SENDING :: "+command);
+		if (DEBUG) {
+			System.out.println("SENDING :: "+command);
+			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
+		}
 		hasNext = false;
 		con.sendPackage();
 	}

@@ -64,6 +64,7 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadCommand;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
+import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.keyserver.helper.IdGenerator;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.OSDXKey;
@@ -71,12 +72,17 @@ import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
 import org.fnppl.opensdx.xml.Document;
 
+import sun.java2d.pipe.hw.ExtendedBufferCapabilities.VSyncType;
+
 public class OSDXFileTransferClient implements UploadClient {
 	
 	
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
 	
-	private static String version = "openSDX 0.2";
+	private static String version = "osdx_ftclient v.2011-10-18";
+	
+	private Logger logger = Logger.getFileTransferLogger();
+	
 	private String host;
 	private int port;
 	private String prepath;
@@ -124,6 +130,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	}
 	
 	public void addCommand(OSDXFileTransferCommand command) {
+		logger.logMsg("adding command "+command.getClass().getSimpleName()+" id = "+command.getID());
 		for (CommandResponseListener l : responseListener) {
 			command.addListener(l);
 		}
@@ -131,6 +138,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	}
 	
 	public void addCommandNotListen(OSDXFileTransferCommand command) {
+		logger.logMsg("adding command (not listen) "+command.getClass().getSimpleName()+" id = "+command.getID());
 		queueWaiting.add(command);
 	}
 
@@ -145,12 +153,16 @@ public class OSDXFileTransferClient implements UploadClient {
 	public OSDXFileTransferCommand getNextCommand() {
 		if (queueWaiting.size()>0 && System.currentTimeMillis()>nextCommandBlockTimeout) {
 			OSDXFileTransferCommand c = queueWaiting.remove(0);
-			if (DEBUG) System.out.println("command: "+c.getClass().getName());
+			if (DEBUG)  {
+				System.out.println("command: "+c.getClass().getName());
+			}
+			logger.logMsg("next command: "+c.getClass().getName());
 			
 			//check connected
 		//	System.out.println("established="+secureConnectionEstablished+"    socket_connected="+socket.isConnected()+"    socket_closed="+socket.isClosed());
 			if (!(c instanceof OSDXFileTransferCloseConnectionCommand || c instanceof OSDXFileTransferLoginCommand) && !isConnected()) {
 				System.out.println("No connection to server.");
+				logger.logError("No connection to server.");
 				for (CommandResponseListener l : responseListener) {
 					l.onError(c, "No connection to server.");
 				}
@@ -182,6 +194,7 @@ public class OSDXFileTransferClient implements UploadClient {
 				for (CommandResponseListener l : responseListener) {
 					l.onError(c, "Command not allowed!");
 				}
+				logger.logError("Command not allowed!");
 				return null;
 			}
 		}
@@ -193,6 +206,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	}
 	
 	public void alertBrokenPipe() {
+		logger.logMsg("alert broken pipe");
 		secureConnectionEstablished = false;
 		for (CommandResponseListener l : responseListener) {
 			l.onError(null, "Connection to server terminated.");
@@ -200,10 +214,10 @@ public class OSDXFileTransferClient implements UploadClient {
 	}
 	
 	public void cancelCommands() {
+		logger.logMsg("cancel commands");
 		queueWaiting.removeAllElements();
 		//TODO cancel current command
 		commandHandler.abortCommand();
-		
 	}
 	
 	public boolean connect(String host, int port, String prepath, OSDXKey mySigningKey, String username) throws Exception {
@@ -222,7 +236,14 @@ public class OSDXFileTransferClient implements UploadClient {
 		secureConnectionEstablished = false;
 		client_nonce = null;
 		server_nonce = null;
-		socket = new Socket(host, port);
+		try {
+			logger.logMsg("trying to connect to host: "+host+" port: "+port+" version: "+version);
+			socket = new Socket(host, port);
+		} catch (Exception ex) {
+			logger.logException(ex);
+			throw ex;
+		}
+		logger.logMsg("Socket connected.");
 		
 //		System.out.println("inner connect ok: "+socket.isConnected());
 		if (socket.isConnected()) {
@@ -245,7 +266,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	
 	private void initSecureConnection(String host, OSDXKey key) {
 		try {
-			
+			logger.logMsg("init secure connection to host: "+host+" with keyid: "+key.getKeyID()+" ...");
 			//send request
 			client_nonce = SecurityHelper.getRandomBytes(32);
 			String init = version +"\n";
@@ -305,21 +326,27 @@ public class OSDXFileTransferClient implements UploadClient {
 					secureConnectionEstablished = true;
 					//start receiver and commandhandler
 					receiver = new OSDXFileTransferClientReceiverThread(this, dataIn);
-					commandHandler = new OSDXFileTransferClientCommandHandlerThread(this,dataOut);
-					commandHandler.start();
+					receiver.setLogger(logger);
 					
+					commandHandler = new OSDXFileTransferClientCommandHandlerThread(this,dataOut);
+					commandHandler.setLogger(logger);
+					
+					commandHandler.start();
 					receiver.start();
 					login();
 					
 				} else {
 					System.out.println("init msg signature NOT verified!");
+					logger.logError("init msg signature NOT verified!");
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
+				logger.logException(ex);
 			}
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			logger.logException(ex);
 		}
 	}
 	
@@ -408,8 +435,10 @@ public class OSDXFileTransferClient implements UploadClient {
 					if (content!=null) { //if (code == SecureConnection.TYPE_TEXT) {
 						String txt = new String(content,"UTF-8");
 						System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: MSG: "+txt);
+						logger.logMsg("RESPONSE: "+SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: MSG: "+txt+" commandid="+commandid);
 					} else {
 						System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: NO MSG");
+						logger.logMsg("RESPONSE: "+SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: NO MSG commandid="+commandid);
 					}
 				}
 			}
@@ -417,7 +446,6 @@ public class OSDXFileTransferClient implements UploadClient {
 			OSDXFileTransferCommand command = commandsInProgress.get(commandid);
 			
 			if (command!=null) {
-				if (DEBUG) System.out.println("command found");
 				
 				//forward response to right command
 				command.onResponseReceived(num, code, content);
@@ -428,9 +456,11 @@ public class OSDXFileTransferClient implements UploadClient {
 						rights_duties = ((OSDXFileTransferLoginCommand)command).getRightsAndDuties();
 						secureConnectionEstablished = true;
 						System.out.println("Login successful.");
+						logger.logMsg("Login successful.");
 					}
 					else if (SecureConnection.isError(code)) {
 						System.out.println("Error in login :: "+getMessageFromContentNN(content));
+						logger.logError("Error in login :: "+getMessageFromContentNN(content));
 					}
 				}
 				
@@ -439,25 +469,31 @@ public class OSDXFileTransferClient implements UploadClient {
 					if (command instanceof OSDXFileTransferMkDirCommand) {
 						if (code == SecureConnection.TYPE_ACK) {
 							System.out.println("MkDir successful.");
+							logger.logMsg("MkDir successful.");
 						}
 						else if (SecureConnection.isError(code)) {
 							System.out.println("Error in MkDir :: "+getMessageFromContentNN(content));
+							logger.logError("Error in MkDir :: "+getMessageFromContentNN(content));
 						}
 					}
 					else if (command instanceof OSDXFileTransferDeleteCommand) {
 						if (code == SecureConnection.TYPE_ACK) {
 							System.out.println("Delete successful.");
+							logger.logMsg("Delete successful.");
 						}
 						else if (SecureConnection.isError(code)) {
 							System.out.println("Error in delete :: "+getMessageFromContentNN(content));
+							logger.logError("Error in delete :: "+getMessageFromContentNN(content));
 						}
 					}
 					else if (command instanceof OSDXFileTransferRenameCommand) {
 						if (code == SecureConnection.TYPE_ACK) {
 							System.out.println("Rename successful.");
+							logger.logMsg("Rename successful.");
 						}
 						else if (SecureConnection.isError(code)) {
 							System.out.println("Error in rename :: "+getMessageFromContentNN(content));
+							logger.logError("Error in rename :: "+getMessageFromContentNN(content));
 						}
 					}
 					else if (command instanceof OSDXFileTransferFileInfoCommand) {
@@ -467,10 +503,12 @@ public class OSDXFileTransferClient implements UploadClient {
 								System.out.println("FileInfo: "+rf.toString());
 							} else {
 								System.out.println("Error in FileInfo");
+								logger.logError("Error in FileInfo");
 							}
 						}
 						else if (SecureConnection.isError(code)) {
 							System.out.println("Error in delete :: "+getMessageFromContentNN(content));
+							logger.logError("Error in delete :: "+getMessageFromContentNN(content));
 						}
 					}
 					else if (command instanceof OSDXFileTransferListCommand) {
@@ -482,16 +520,19 @@ public class OSDXFileTransferClient implements UploadClient {
 								}
 							} else {
 								System.out.println("Error in List");
+								logger.logError("Error in List");
 							}
 						}
 						else if (SecureConnection.isError(code)) {
 							System.out.println("Error in delete :: "+getMessageFromContentNN(content));
+							logger.logError("Error in delete :: "+getMessageFromContentNN(content));
 						}
 					}
 				}
 				
 			} else {
 				System.out.println("ERROR: command not found.");
+				logger.logError("ERROR: command not found.");
 			}
 			
 			//release block
@@ -503,6 +544,7 @@ public class OSDXFileTransferClient implements UploadClient {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			logger.logException(e);
 		}
 	}
 

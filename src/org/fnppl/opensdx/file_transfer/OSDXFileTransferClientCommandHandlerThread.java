@@ -45,10 +45,13 @@ package org.fnppl.opensdx.file_transfer;
  */
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCloseConnectionCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
+import org.fnppl.opensdx.helper.Logger;
 
 
 public class OSDXFileTransferClientCommandHandlerThread extends Thread {
 
+	private Logger logger = Logger.getNoLogging();
+	
 	private OSDXFileTransferClient client;
 	private SecureConnection dataOut;
 	private OSDXFileTransferCommand command = null;
@@ -61,6 +64,9 @@ public class OSDXFileTransferClientCommandHandlerThread extends Thread {
 	private boolean run = true;
 	private boolean cancelRequest = false;
 	
+	public void setLogger(Logger logger) {
+		this.logger = logger;
+	}
 	
 	public void abortCommand() {
 		if (command != null) {
