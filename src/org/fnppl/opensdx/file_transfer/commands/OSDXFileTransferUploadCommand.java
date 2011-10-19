@@ -226,7 +226,7 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 				if (nextPackSize>maxPacketSize) {
 					nextPackSize = maxPacketSize;
 				}
-				con.setData(id, num, Arrays.copyOfRange(data, (int)filePos, nextPackSize));
+				con.setData(id, num, Arrays.copyOfRange(data, (int)filePos, (int)filePos+nextPackSize));
 				filePos += nextPackSize;
 				notifyUpdate(filePos, fileLen, null);
 				if (filePos>=fileLen) {

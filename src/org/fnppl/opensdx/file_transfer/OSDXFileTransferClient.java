@@ -63,7 +63,9 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferMkDirCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadCommand;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
+import org.fnppl.opensdx.file_transfer.model.FileTransferAccount;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
+import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.keyserver.helper.IdGenerator;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
@@ -126,7 +128,13 @@ public class OSDXFileTransferClient implements UploadClient {
 	}
 	
 	public void addResponseListener(CommandResponseListener listener) {
-		responseListener.add(listener);
+		if (!responseListener.contains(listener)) {
+			responseListener.add(listener);
+		}
+	}
+	
+	public void removeResponseListener(CommandResponseListener listener) {
+		responseListener.remove(listener);
 	}
 	
 	public void addCommand(OSDXFileTransferCommand command) {
@@ -578,7 +586,6 @@ public class OSDXFileTransferClient implements UploadClient {
 		}
 		addCommand(c);
 	}
-	
 	
 	
 	public static void main(String args[]) {

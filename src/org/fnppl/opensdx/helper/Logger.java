@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import sun.nio.cs.ext.TIS_620;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -56,11 +58,13 @@ public class Logger {
 
 	private static Logger instanceFileTransfer = null;
 	private static Logger instanceNoLogging = null;
+	private static Logger instanceSysOutLogging = null;
 	
 	private static String dateformat = "yyyy-MM-dd HH:mm:ss.SSS";
 	private static Locale ml = new Locale("en", "DE");
 	private final static SimpleDateFormat dateme = new SimpleDateFormat(dateformat, ml);
 	private File logfile = null;
+	private boolean toSysout = false;
 	
 	private Logger(File file) {
 		logfile = file;
@@ -104,20 +108,41 @@ public class Logger {
 		return instanceNoLogging;
 	}
 	
+	public static Logger getSysoutLogging() {
+		if (instanceSysOutLogging==null) {
+			instanceSysOutLogging = new Logger(null);
+			instanceSysOutLogging.toSysout = true;
+		}
+		return instanceNoLogging;
+	}
+	
 	public void logMsg(String msg) {
+		long datetime = System.currentTimeMillis();
 		if (logfile!=null) {
-			appendToLogfile(msg,"MSG");
+			appendToLogfile(datetime,msg,"MSG");
+		}
+		if (toSysout) {
+			toSystemOut(datetime,msg,"MSG");
 		}
 	}
 	
+	public void setSysoutLogging(boolean value) {
+		toSysout = value;
+	}
+	 
 	public void logError(String msg) {
+		long datetime = System.currentTimeMillis();
 		if (logfile!=null) {
-			appendToLogfile(msg,"ERR");
+			appendToLogfile(datetime,msg,"ERR");
+		}
+		if (toSysout) {
+			toSystemOut(datetime,msg,"ERR");
 		}
 	}
 	
 	public void logException(Exception ex) {
-		if (logfile!=null) {
+		if (logfile!=null || toSysout) {
+			long datetime = System.currentTimeMillis();
 			StringBuffer b = new StringBuffer();
 			b.append(ex.toString());
 			b.append("\n");
@@ -127,15 +152,22 @@ public class Logger {
 				b.append(e.toString());
 				b.append("\n");
 			}
-			appendToLogfile(b.toString(),"EXP");
+			
+			String msg = b.toString();
+			if (logfile!=null) {
+				appendToLogfile(datetime,msg,"EXP");
+			}
+			if (toSysout) {
+				toSystemOut(datetime,msg,"EXP");
+			}
 		}
 	}
 	
-	private void appendToLogfile(String msg, String type) {
+	private void appendToLogfile(long datetime, String msg, String type) {
 		if (msg!=null && msg.length()>0) {
 			try {
 				BufferedWriter out = new BufferedWriter(new FileWriter(logfile, true));
-				out.write(dateme.format(System.currentTimeMillis()));
+				out.write(dateme.format(datetime));
 				out.write(" ");
 				out.write(type);
 				out.write(" ");
@@ -146,6 +178,12 @@ public class Logger {
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			} 
+		}
+	}
+	
+	private void toSystemOut(long datetime, String msg, String type) {
+		if (msg!=null && msg.length()>0) {
+			System.out.println("LOG "+dateme.format(datetime)+" "+type+" "+msg);		
 		}
 	}
 	

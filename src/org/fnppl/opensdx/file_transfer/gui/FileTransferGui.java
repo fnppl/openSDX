@@ -69,6 +69,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -99,6 +100,7 @@ import org.fnppl.opensdx.file_transfer.CommandResponseListener;
 import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferDeleteCommand;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferDownloadCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferLoginCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferMkDirCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
@@ -125,7 +127,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class FileTransferGui extends JFrame implements MyObserver, CommandResponseListener {
 
-	public static final String version = "v. 2011-10-18";
+	public static final String version = "v. 2011-10-19";
 	private Vector<FileTransferAccount> accounts = new Vector<FileTransferAccount>();
 	private Vector<FileTransferAccount> supportedAccounts = new Vector<FileTransferAccount>();
 
@@ -553,17 +555,21 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 	}
 	
 	private void testConnection() {
-		//TODO 
+		testConnectionToFinetunes();
 	}
+
 	
 	private void sendLogFile() {
 		if (log!=null) {
-			HTTPClient httpclient = new HTTPClient("http://simfy.finetunes.net", 8899);
-			//HTTPClient httpclient = new HTTPClient("localhost", 8899);
+			String hostLogFile = "http://simfy.finetunes.net";
+			//hostLogFile = "localhost";
+			int portLogFile = 8899;
+				
+			HTTPClient httpclient = new HTTPClient(hostLogFile, portLogFile);
 			File log = Logger.getFileTransferLogger().getLogFile();
 			try {
 				HTTPClientResponse resp = httpclient.sendPut(new HTTPClientPutRequest(log, "/logfile"));
-				System.out.println("SEND LOG FILE :: "+resp.status);
+				Dialogs.showMessage("Send logging :: "+resp.status);
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -865,16 +871,21 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 		}
 	}
 
-	private void button_test_clicked() {
+	private void testConnectionToFinetunes() {
 		try {
+			final Logger log = Logger.getFileTransferLogger();
+			//log.setSysoutLogging(true);
+			
 			System.out.println("Test connection");
+			
+			//init test account
 			FileTransferAccount a = new FileTransferAccount();
 			a.host = "simfy.finetunes.net";
 			//	a.host = "localhost";
 			a.port = 4221;
 			a.prepath = "/";
 			a.username = "test";
-
+					
 			StringBuffer b = new StringBuffer();
 			b.append("    <keypair>\n");
 			b.append("      <identities>\n");
@@ -921,65 +932,148 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 			a.key = OSDXKey.fromElement(Document.fromString(b.toString()).getRootElement());
 			a.key.unlockPrivateKey("test");
 
-			client = new OSDXFileTransferClient();
-
+			log.logMsg("Testing connection to "+a.host+", port "+a.port+", username "+a.username+", keyid "+a.key.getKeyID());
+			
+			final JFrame status = new JFrame("Testing connection to finetunes");
+			status.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+			status.setAlwaysOnTop(true);
+			status.setResizable(false);
+			status.setSize(350, 150);
+			status.getContentPane().setLayout(new BorderLayout());
+//			JPanel south = new JPanel();
+//			JButton buClose = new JButton("close");
+//			buClose.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e) {
+//					status.dispose();
+//				}
+//			});
+//			south.add(buClose);
+//			status.getContentPane().add(south,BorderLayout.SOUTH);
+			final JLabel statusTxt = new JLabel("Trying to Login ...");
+			statusTxt.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+			statusTxt.setHorizontalTextPosition(SwingConstants.CENTER);
+			statusTxt.setVerticalTextPosition(SwingConstants.CENTER);
+			status.getContentPane().add(statusTxt, BorderLayout.CENTER);
+			
+			status.setVisible(true);
+			Helper.centerMe(status, this);
+			
 			try {
+				client = new OSDXFileTransferClient();
+				//client.addResponseListener(this);
+				client.addResponseListener(new CommandResponseListener() {
+					private String testdateFilename = "/test_"+System.currentTimeMillis()+".data";
+					private File testFile = File.createTempFile("osdxft_testdownload", ".tmp");
+					private long startUpload = 0L;
+					private long endUpload = 0L;
+					
+					private long startDownload = 0L;
+					private long endDownload = 0L;
+					
+					public void onSuccess(OSDXFileTransferCommand command) {
+						if (command instanceof OSDXFileTransferLoginCommand) {
+							log.logMsg("Test Login successful");
+							
+							//upload 1 MB of testdata
+							byte[] data = new byte[1024*1024];
+							Arrays.fill(data, (byte)66);
+							log.logMsg("Test Upload start");
+							statusTxt.setText("<html><body>Login successful<br>Testing upload... please wait</body></html>");
+							startUpload = System.currentTimeMillis();
+							client.uploadFile(data, testdateFilename, null);
+						}
+						else if (command instanceof OSDXFileTransferUploadCommand) {
+							endUpload = System.currentTimeMillis();
+							log.logMsg("Test Upload successful, transfered 1 MB in "+(endUpload-startUpload)+" ms -> "+(1024000.0/(endUpload-startUpload)+" Kb/s"));
+							statusTxt.setText("<html><body>Upload successful<br>Testing download... please wait</body></html>");
+							//download of testdata
+							log.logMsg("Test Download start");
+							startDownload = System.currentTimeMillis();
+							if (testFile.exists()) testFile.delete();
+							client.download(testdateFilename, testFile);
+						}
+						else if (command instanceof OSDXFileTransferDownloadCommand) {
+							endDownload = System.currentTimeMillis();
+							log.logMsg("Test Download successful, transfered 1 MB in "+(endDownload-startDownload)+" ms -> "+(1024000.0/(endDownload-startDownload)+" Kb/s"));
+							
+							//delete remote test file
+							client.delete(testdateFilename);
+							
+							//close connection
+							closeConnection();
+							String msg = "Test connection to simfy.finetunes.net successful.\nUpload rate: "+Math.round(1024000.0/(endUpload-startUpload))+" Kb/s\nDownload rate: "+Math.round(1024000.0/(endDownload-startDownload))+" Kb/s\n\nDo you want to send a report?";
+							
+							int ans = Dialogs.showYES_NO_Dialog("Test connection successful.",msg);
+							if (ans==Dialogs.YES) {
+								sendLogFile();
+							}
+						}
+					}
+					public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+	
+					}
+					public void onError(OSDXFileTransferCommand command, String msg) {
+						if (command instanceof OSDXFileTransferLoginCommand) {
+							log.logMsg("Test Login failed");
+							closeConnection();
+							int ans = Dialogs.showYES_NO_Dialog("Test connection failed.","Test connection to simfy.finetunes.net could not be established.\nDo you want to send a report?");
+							if (ans==Dialogs.YES) {
+								sendLogFile();
+							}
+						}
+						else if (command instanceof OSDXFileTransferUploadCommand) {
+							log.logMsg("Test Upload failed");
+							closeConnection();
+							int ans = Dialogs.showYES_NO_Dialog("Test connection failed.","Test upload to simfy.finetunes.net failed.\nDo you want to send a report?");
+							if (ans==Dialogs.YES) {
+								sendLogFile();
+							}
+						}
+						else if (command instanceof OSDXFileTransferDownloadCommand) {
+							log.logMsg("Test Download failed");
+							closeConnection();
+							int ans = Dialogs.showYES_NO_Dialog("Test connection failed.","Test download to simfy.finetunes.net failed.\nDo you want to send a report?");
+							if (ans==Dialogs.YES) {
+								sendLogFile();
+							}
+						}
+					}
+					
+					private void closeConnection() {
+						status.dispose();
+						if (testFile.exists()) {
+							testFile.deleteOnExit();
+							testFile.delete();
+						}
+						client.closeConnection();
+						client = null;
+//						addStatus("Disconnecting remote filesystem ...");
+//						ttpanelRemote.closeConnection();
+//						panelRemote.removeAll();
+//						FileTransferGui.this.validate();
+//						FileTransferGui.this.repaint();
+//						buConnect.setText("connect");
+					}
+				});
 				client.connect(a.host, a.port, a.prepath, a.key, a.username);
-				client.addResponseListener(this);
+				
+				log.logMsg("Test connection established.");
 			} catch (Exception ex) {
 				addStatus("ERROR, could not connect to "+a.username+"@"+a.host+".");
+				log.logError("Test connection failed with exception");
+				log.logException(ex);
 				Dialogs.showMessage("Sorry, could not connect to "+a.username+"@"+a.host+".");
 				return;
 			}
-
-
-			//TODO onSuccess() of Login
-
-			//			//test upload
-			//			//if (fsRemote.isConnected()) {
-			//				int ant = Dialogs.showYES_NO_Dialog("Test connection", "Test connection established.\nTry to upload / download a file?");
-			//				if (ant==Dialogs.YES) {
-			//					long now = System.currentTimeMillis();
-			//					File local = File.createTempFile("test_upload_"+now, ".tmp");
-			//					FileOutputStream out = new FileOutputStream(local);
-			//					
-			//					byte[] data = SecurityHelper.getRandomBytes(3000); 
-			//					out.write(data);
-			//					out.flush();
-			//					out.close();
-			//					
-			//					RemoteFile remote = new RemoteFile("/",local.getName(), local.length(), System.currentTimeMillis(), false);
-			//					System.out.println("uploading: "+local.getAbsolutePath()+" -> "+remote.getFilnameWithPath());
-			//					client.upload(local, remote.getFilnameWithPath());
-			//					
-			//					local.delete();
-			//					
-			//					int antDown = Dialogs.showYES_NO_Dialog("Test connection", "Try to download the uploaded file?");
-			//					if (antDown==Dialogs.YES) {
-			//						File local2 = File.createTempFile("test_download_"+now, ".tmp");
-			//						local2.delete();
-			//						System.out.println("downloading: "+local2.getAbsolutePath()+" <- "+remote.getFilnameWithPath());
-			//						client.download(remote.getFilnameWithPath(),local2);
-			//						Thread.sleep(3000);
-			//						client.delete(remote.getFilnameWithPath());
-			//						FileInputStream fin = new FileInputStream(local2);
-			//						byte[] data2 = new byte[3000];
-			//						int read = fin.read(data2);
-			//						if (read!=3000 || !Arrays.equals(data, data2)) {
-			//							Dialogs.showMessage("Error downloading file.");
-			//						} else {
-			//							Dialogs.showMessage("File downloading successful.");
-			//						}
-			//						local2.delete();
-			//					}
-			//				}
-			//				return;
-			//			//}
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
+	private void button_test_clicked() {
+		testConnectionToFinetunes();
+	}
+
 
 	private void button_upload_clicked() {
 		System.out.println("upload");
