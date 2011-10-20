@@ -81,7 +81,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	
 	private static boolean DEBUG = true;
 	
-	private static String version = "osdx_ftclient v.2011-10-18";
+	private static String version = "osdx_ftclient v.2011-10-20";
 	
 	private Logger logger = Logger.getFileTransferLogger();
 	

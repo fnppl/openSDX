@@ -127,7 +127,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class FileTransferGui extends JFrame implements MyObserver, CommandResponseListener {
 
-	public static final String version = "v. 2011-10-19";
+	public static final String version = "v. 2011-10-20";
 	private Vector<FileTransferAccount> accounts = new Vector<FileTransferAccount>();
 	private Vector<FileTransferAccount> supportedAccounts = new Vector<FileTransferAccount>();
 
