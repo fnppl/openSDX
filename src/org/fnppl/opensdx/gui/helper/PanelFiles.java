@@ -34,6 +34,7 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 	private Bundle bundle = null;
 	private Item item = null;
 	private JList list_files;
+	private JScrollPane scroll_list_files;
 	private DefaultListModel list_files_model;
 	private JButton bu_add;
 	private JButton bu_remove;
@@ -144,7 +145,8 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 				list_files_changed(list_files.getSelectedIndex());
 			}
 		});
-
+		scroll_list_files = new JScrollPane(list_files);
+		
 		bu_add = new JButton("add");
 		map.put("bu_add", bu_add);
 		bu_add.addActionListener(new ActionListener() {
@@ -184,7 +186,7 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 		Container spacer1 = new Container();
 
 
-		// Component: list_files
+		// Component: scroll_list_files
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.gridwidth = 1;
@@ -196,8 +198,8 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
 		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(list_files,gbc);
-		north.add(list_files);
+		gbl.setConstraints(scroll_list_files,gbc);
+		north.add(scroll_list_files);
 
 		// Component: spacer0
 		gbc.gridx = 1;

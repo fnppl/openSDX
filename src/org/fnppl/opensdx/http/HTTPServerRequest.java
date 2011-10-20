@@ -84,8 +84,11 @@ public class HTTPServerRequest {
 			StringTokenizer st = new StringTokenizer(zeile, " ");
 			ret.method = st.nextToken();
 			ret.cmd = st.nextToken();
-			//String proto = st.nextToken();
-		
+			try {
+				String proto = st.nextToken();
+			} catch (Exception ex) {
+				//this happens for a PUT request
+			}
 			
 		
 			if(st.hasMoreTokens()) {

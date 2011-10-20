@@ -436,7 +436,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	public void onResponseReceived(long commandid, int num, byte code, byte[] content) {
 		try {
 			if (DEBUG) {
-				System.out.println("RESPONSE commandid="+commandid);
+				//System.out.println("RESPONSE commandid="+commandid);
 				if (code == SecureConnection.TYPE_DATA) {
 					//System.out.println("DATA: len="+content.length);
 				} else {

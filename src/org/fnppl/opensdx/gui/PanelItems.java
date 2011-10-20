@@ -34,6 +34,7 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 
 	private Bundle bundle = null;
 	private JList list_items;
+	private JScrollPane scroll_list_items;
 	private DefaultListModel list_items_model;
 	private JButton bu_add;
 	private JButton bu_remove;
@@ -114,7 +115,8 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 				list_items_changed(list_items.getSelectedIndex());
 			}
 		});
-
+		scroll_list_items = new JScrollPane(list_items);
+		
 		bu_add = new JButton("add");
 		map.put("bu_add", bu_add);
 		bu_add.addActionListener(new ActionListener() {
@@ -154,7 +156,7 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 		Container spacer1 = new Container();
 
 
-		// Component: list_items
+		// Component: scroll_list_items
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.gridwidth = 1;
@@ -166,8 +168,8 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
 		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(list_items,gbc);
-		north.add(list_items);
+		gbl.setConstraints(scroll_list_items,gbc);
+		north.add(scroll_list_items);
 
 		// Component: spacer0
 		gbc.gridx = 1;

@@ -1292,19 +1292,19 @@ public class SecurityMainFrame extends JFrame {
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
-		JButton bu = new JButton("sign file");
-		bu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				File f = Dialogs.chooseOpenFile("Please select file for signing", control.getLastDir(), "");
-				if (f!=null && f.exists()) {
-					control.setLastDir(f.getParentFile());
-					signFile(key,f,null);
-				}
-			}
-		});
-		b.add(bu);
+//		JButton bu = new JButton("sign file");
+//		bu.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				File f = Dialogs.chooseOpenFile("Please select file for signing", control.getLastDir(), "");
+//				if (f!=null && f.exists()) {
+//					control.setLastDir(f.getParentFile());
+//					signFile(key,f,null);
+//				}
+//			}
+//		});
+//		b.add(bu);
 
-		bu = new JButton("upload to keyserver");
+		JButton bu = new JButton("upload to keyserver");
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				uploadSubKeyToKeyServer(key);
@@ -2629,6 +2629,7 @@ public class SecurityMainFrame extends JFrame {
 
 		Vector<Identity> ids = control.requestIdentitiyDetails(to.getKeyID(),null);
 		if (ids==null) {
+			Dialogs.showMessage("Sorry, could not connect to server.");
 			return;
 		}
 		final Identity[] id = new Identity[1];
