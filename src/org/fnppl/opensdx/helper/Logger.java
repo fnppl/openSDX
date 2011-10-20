@@ -73,9 +73,12 @@ public class Logger {
 	public static Logger getFileTransferLogger() {
 		if (instanceFileTransfer==null) {
 			try {
-				String tmpdir = System.getProperty("java.io.tmpdir");
-				if (tmpdir!=null && tmpdir.length()>0) {
-					File tmppath = new File(tmpdir);
+				//String tmpdir = System.getProperty("java.io.tmpdir");
+				
+				File userHome =  new File(System.getProperty("user.home"));
+				File tmppath =  new File(userHome,"openSDX");
+				if (!tmppath.exists()) tmppath.mkdirs();
+				//if (tmpdir!=null && tmpdir.length()>0) {
 					if (tmppath.exists()) {
 						File logfile_old = new File(tmppath,"osdx_filetransfer_old.log");
 						if (logfile_old.exists()) {
@@ -89,7 +92,7 @@ public class Logger {
 						instanceFileTransfer = new Logger(logfile);		
 						System.out.println("logging to: "+logfile.getAbsolutePath());
 					}
-				}
+				//}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
