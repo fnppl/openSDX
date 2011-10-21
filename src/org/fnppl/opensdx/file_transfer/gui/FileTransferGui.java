@@ -560,20 +560,17 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 
 	
 	private void sendLogFile() {
-		if (log!=null) {
-			String hostLogFile = "http://simfy.finetunes.net";
-			//hostLogFile = "localhost";
-			int portLogFile = 8899;
-				
-			HTTPClient httpclient = new HTTPClient(hostLogFile, portLogFile);
-			File log = Logger.getFileTransferLogger().getLogFile();
+		Logger logger = Logger.getFileTransferLogger();
+		File log = Logger.getFileTransferLogger().getLogFile();
+		if (log!=null) {	
+			HTTPClient httpclient = new HTTPClient(logger.getLogfileUploadHost(), logger.getLogfileUploadPort());
 			try {
-				HTTPClientResponse resp = httpclient.sendPut(new HTTPClientPutRequest(log, "/logfile"));
+				HTTPClientResponse resp = httpclient.sendPut(new HTTPClientPutRequest(log, logger.getLogfileUploadCommand()));
 				Dialogs.showMessage("Send logging :: "+resp.status);
 				
 			} catch (Exception e) {
 				e.printStackTrace();
-				Dialogs.showMessage("Error sending logfile");
+				Dialogs.showMessage("Error sending logfile.\nThe logfile has been saved to\n"+log.getAbsolutePath()+"\nYou can send it by email.");
 			}
 		} else {
 			Dialogs.showMessage("Logfile not found.");

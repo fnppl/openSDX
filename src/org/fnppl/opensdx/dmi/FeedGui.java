@@ -103,6 +103,7 @@ import org.fnppl.opensdx.dmi.wayout.*;
 @SuppressWarnings("serial")
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
+	private static String version = "v. 2011-10-21";
 	private URL configGenres = FeedGui.class.getResource("resources/config_genres.xml");
 	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
 	private XMLTree tree;
@@ -135,7 +136,7 @@ public class FeedGui extends JFrame implements MyObserver {
 	
 	
 	private FeedGui() {
-		super("fnppl.org :: openSDX :: FeedGui");		
+		super("fnppl.org :: openSDX :: FeedGui "+version);		
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {

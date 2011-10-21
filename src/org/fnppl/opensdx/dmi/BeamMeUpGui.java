@@ -66,6 +66,10 @@ import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.helper.PanelReceiver;
+import org.fnppl.opensdx.helper.Logger;
+import org.fnppl.opensdx.http.HTTPClient;
+import org.fnppl.opensdx.http.HTTPClientPutRequest;
+import org.fnppl.opensdx.http.HTTPClientResponse;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.Result;
@@ -347,9 +351,15 @@ public class BeamMeUpGui extends JFrame {
 		//layout pReceiver
 		pReceiver.setLayout(new BorderLayout());
 		
+		
+		
 		//layout gui
+		
+		JPanel content = new JPanel();
+		
+		
 		gbl = new GridBagLayout();
-		setLayout(gbl);
+		content.setLayout(gbl);
 		gbc = new GridBagConstraints();
 
 		//pFeed
@@ -365,30 +375,34 @@ public class BeamMeUpGui extends JFrame {
 		gbc.ipady = 0;
 		gbc.insets = new Insets(2,2,2,2);
 		gbl.setConstraints(pFeed,gbc);
-		add(pFeed);
+		content.add(pFeed);
 		
 		//pSignature
 		gbc.gridy = 1;
 		gbl.setConstraints(pSignature,gbc);
-		add(pSignature);
+		content.add(pSignature);
 		
 		//pReceiver
 		gbc.gridy = 2;
 		gbl.setConstraints(pReceiver,gbc);
-		add(pReceiver);
+		content.add(pReceiver);
 		
 		//pSummary
 		gbc.gridy = 3;
 		gbc.weighty = 99.0;
 		gbl.setConstraints(pSummary,gbc);
-		add(pSummary);
+		content.add(pSummary);
 		
 		//spacer
 		JLabel spacer =new JLabel();
 		gbc.gridy = 4;
 		gbc.weighty = 1.0;
 		gbl.setConstraints(spacer,gbc);
-		add(spacer);
+		content.add(spacer);
+		
+		setLayout(new BorderLayout());
+		JScrollPane scroll = new JScrollPane(content);
+		add(scroll, BorderLayout.CENTER);
 		
 		//beam button
 		Dimension dim = new Dimension(450,45);
@@ -396,10 +410,7 @@ public class BeamMeUpGui extends JFrame {
 		bu_beam.setMaximumSize(dim);
 		bu_beam.setPreferredSize(dim);
 		
-		gbc.gridy = 5;
-		gbc.weighty = 0.0;
-		gbl.setConstraints(bu_beam,gbc);
-		add(bu_beam);
+		add(bu_beam, BorderLayout.SOUTH);
 		
 	}
 
@@ -510,10 +521,35 @@ public class BeamMeUpGui extends JFrame {
         	} else {
         		msg += ":\n"+result.errorMessage;
         	}
-        	Dialogs.showMessage(msg);
+        	//Dialogs.showMessage(msg);
+        	
+        	
+        	msg  += "\n\nDo you want to send a report?";
+			int ans = Dialogs.showYES_NO_Dialog("Test connection successful.",msg);
+			if (ans==Dialogs.YES) {
+				sendLogFile();
+			}
         }
         bu_beam.setText(buText);
         bu_beam.setEnabled(true);
+	}
+	
+	private void sendLogFile() {
+		Logger logger = Logger.getFileTransferLogger();
+		File log = Logger.getFileTransferLogger().getLogFile();
+		if (log!=null) {	
+			HTTPClient httpclient = new HTTPClient(logger.getLogfileUploadHost(), logger.getLogfileUploadPort());
+			try {
+				HTTPClientResponse resp = httpclient.sendPut(new HTTPClientPutRequest(log, logger.getLogfileUploadCommand()));
+				Dialogs.showMessage("Send logging :: "+resp.status);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				Dialogs.showMessage("Error sending logfile.\nThe logfile has been saved to\n"+log.getAbsolutePath()+"\nYou can send it by email.");
+			}
+		} else {
+			Dialogs.showMessage("Logfile not found.");
+		}
 	}
 
 	public static void main(String[] args) {

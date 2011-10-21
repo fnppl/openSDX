@@ -66,6 +66,11 @@ public class Logger {
 	private File logfile = null;
 	private boolean toSysout = false;
 	
+	private String logfileUploadHost = "http://simfy.finetunes.net";
+	private String logfileUploadCommand = "/logfile";
+	private int logfileUploadPort = 8899;
+	
+			
 	private Logger(File file) {
 		logfile = file;
 	}
@@ -190,4 +195,27 @@ public class Logger {
 		}
 	}
 	
+	public String getLogfileUploadHost() {
+		return logfileUploadHost;
+	}
+
+	public void setLogfileUploadHost(String logfileUploadHost) {
+		this.logfileUploadHost = logfileUploadHost;
+	}
+
+	public int getLogfileUploadPort() {
+		return logfileUploadPort;
+	}
+
+	public void setLogfileUploadPort(int logfileUploadPort) {
+		this.logfileUploadPort = logfileUploadPort;
+	}
+	
+	public String getLogfileUploadCommand() {
+		return logfileUploadCommand;
+	}
+
+	public void setLogfileUploadCommand(String logfileUploadCommand) {
+		this.logfileUploadCommand = logfileUploadCommand;
+	}
 }
