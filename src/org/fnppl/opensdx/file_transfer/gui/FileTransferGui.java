@@ -562,7 +562,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 	private void sendLogFile() {
 		final Logger logger = Logger.getFileTransferLogger();
 		final File log = Logger.getFileTransferLogger().getLogFile();
-		if (log!=null) {	
+		if (log!=null && log.exists()) {	
 			Thread t = new Thread() {
 				public void run() {
 					HTTPClient httpclient = new HTTPClient(logger.getLogfileUploadHost(), logger.getLogfileUploadPort());

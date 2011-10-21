@@ -116,7 +116,7 @@ public class HTTPServerRequest {
 				readGetParams(ret);
 			}
 			else if(ret.method.equals("PUT")) {
-				readPutContent(in, ret);
+				readContentData(in, ret);
 			}
 			
 		}
@@ -213,22 +213,18 @@ public class HTTPServerRequest {
 	
 	private static void readContentData(InputStream in, HTTPServerRequest re) throws Exception {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		
 		int toread = Integer.parseInt(re.headers.get("Content-Length"));
-		re.contentData = new byte[toread];
-		int read = in.read(re.contentData, 0, toread);
-		if (toread != read) {
-			throw new Exception("Wrong content length!!");
+		int read;
+		byte[] buff = new byte[4096];
+		while((read = in.read(buff,0, Math.min(buff.length, toread))) != -1) {
+			bout.write(buff, 0, read);
+			toread -= read;
+			if(toread == 0) {
+				break;
+			}
 		}
-	}
-	
-	private static void readPutContent(InputStream in, HTTPServerRequest re) throws Exception {
-		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		int toread = Integer.parseInt(re.headers.get("Content-Length"));
-		re.contentData = new byte[toread];
-		int read = in.read(re.contentData, 0, toread);
-		if (toread != read) {
-			throw new Exception("Wrong content length!!");
-		}
+		re.contentData = bout.toByteArray();
 	}
 	
 	public String getRealIP() {		
