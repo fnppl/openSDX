@@ -560,18 +560,24 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 
 	
 	private void sendLogFile() {
-		Logger logger = Logger.getFileTransferLogger();
-		File log = Logger.getFileTransferLogger().getLogFile();
+		final Logger logger = Logger.getFileTransferLogger();
+		final File log = Logger.getFileTransferLogger().getLogFile();
 		if (log!=null) {	
-			HTTPClient httpclient = new HTTPClient(logger.getLogfileUploadHost(), logger.getLogfileUploadPort());
-			try {
-				HTTPClientResponse resp = httpclient.sendPut(new HTTPClientPutRequest(log, logger.getLogfileUploadCommand()));
-				Dialogs.showMessage("Send logging :: "+resp.status);
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-				Dialogs.showMessage("Error sending logfile.\nThe logfile has been saved to\n"+log.getAbsolutePath()+"\nYou can send it by email.");
-			}
+			Thread t = new Thread() {
+				public void run() {
+					HTTPClient httpclient = new HTTPClient(logger.getLogfileUploadHost(), logger.getLogfileUploadPort());
+					try {
+						HTTPClientResponse resp = httpclient.sendPut(new HTTPClientPutRequest(log, logger.getLogfileUploadCommand()));
+						Dialogs.showMessage("Send logging :: "+resp.status);
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+						Dialogs.showMessage("Error sending logfile.\nThe logfile has been saved to\n"+log.getAbsolutePath()+"\nYou can send it by email.");
+					}		
+				}
+			};
+			t.start();
+			
 		} else {
 			Dialogs.showMessage("Logfile not found.");
 		}

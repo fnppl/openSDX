@@ -66,7 +66,8 @@ public class Logger {
 	private File logfile = null;
 	private boolean toSysout = false;
 	
-	private String logfileUploadHost = "http://simfy.finetunes.net";
+	private String logfileUploadHost = "simfy.finetunes.net";
+	//private String logfileUploadHost = "localhost";
 	private String logfileUploadCommand = "/logfile";
 	private int logfileUploadPort = 8899;
 	
