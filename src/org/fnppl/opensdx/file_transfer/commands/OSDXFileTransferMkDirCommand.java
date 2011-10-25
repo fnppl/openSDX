@@ -60,7 +60,7 @@ public class OSDXFileTransferMkDirCommand extends OSDXFileTransferCommand {
 	}
 	
 	public void onProcessStart() throws Exception {
-		if (DEBUG) System.out.println("Command mkdir started.");
+		//if (DEBUG) System.out.println("Command mkdir started.");
 		//hasNext = true;
 	}
 	
@@ -69,7 +69,7 @@ public class OSDXFileTransferMkDirCommand extends OSDXFileTransferCommand {
 	}
 
 	public void onProcessEnd() {
-		if (DEBUG) System.out.println("Command mkdir end.");
+		//if (DEBUG) System.out.println("Command mkdir end.");
 	}
 	
 	public void onResponseReceived(int num, byte code, byte[] content) throws Exception {
@@ -87,7 +87,7 @@ public class OSDXFileTransferMkDirCommand extends OSDXFileTransferCommand {
 	public void onSendNextPackage(SecureConnection con) throws Exception {
 		con.setCommand(id, command);
 		if (DEBUG) {
-			System.out.println("SENDING :: "+command);
+			//System.out.println("SENDING :: "+command);
 			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
 		}
 		hasNext = false;

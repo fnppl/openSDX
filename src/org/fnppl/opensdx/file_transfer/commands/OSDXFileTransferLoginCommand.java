@@ -63,7 +63,7 @@ public class OSDXFileTransferLoginCommand extends OSDXFileTransferCommand {
 	}
 	
 	public void onProcessStart() throws Exception {
-		if (DEBUG) System.out.println("Command login started.");
+	//	if (DEBUG) System.out.println("Command login started.");
 		//hasNext = true;
 	}
 	
@@ -72,7 +72,7 @@ public class OSDXFileTransferLoginCommand extends OSDXFileTransferCommand {
 	}
 
 	public void onProcessEnd() {
-		if (DEBUG) System.out.println("Command login end.");
+	//	if (DEBUG) System.out.println("Command login end.");
 	}
 	
 	public void onResponseReceived(int num, byte code, byte[] content) throws Exception {
@@ -104,7 +104,7 @@ public class OSDXFileTransferLoginCommand extends OSDXFileTransferCommand {
 	public void onSendNextPackage(SecureConnection con) throws Exception {
 		con.setCommand(id, command);
 		if (DEBUG) {
-			System.out.println("SENDING :: "+command);
+			//System.out.println("SENDING :: "+command);
 			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
 		}
 		hasNext = false;

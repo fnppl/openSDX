@@ -69,27 +69,38 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	public OSDXFileTransferUploadCommand(long id, File file, String absolutePathname, OSDXFileTransferClient client) {
 		super();
 		fileLen = file.length();
-		byte[] md5 = null;
-		if (fileLen<maxFilelengthForMD5) {
-			try {
-				md5 = SecurityHelper.getMD5(file);
-			} catch (Exception e) {
-				System.out.println("Error calculating md5 hash of "+file.getAbsolutePath());
-				e.printStackTrace();
-				md5 = null;
+		if (fileLen>0) {
+			byte[] md5 = null;
+			if (fileLen<maxFilelengthForMD5) {
+				try {
+					md5 = SecurityHelper.getMD5(file);
+				} catch (Exception e) {
+					System.out.println("Error calculating md5 hash of "+file.getAbsolutePath());
+					e.printStackTrace();
+					md5 = null;
+				}
 			}
-		}
-		String[] param;
-		if (md5!=null) {
-			param = new String[] {absolutePathname,""+fileLen,SecurityHelper.HexDecoder.encode(md5)};
+			String[] param;
+			if (md5!=null) {
+				param = new String[] {absolutePathname,""+fileLen,SecurityHelper.HexDecoder.encode(md5)};
+			} else {
+				param = new String[] {absolutePathname,""+fileLen};
+			}
+			this.command = "PUT "+Util.makeParamsString(param);
+			this.filePos = -1L;
+			this.file = file;
+			this.remoteName = absolutePathname;
+			this.id = id;
 		} else {
-			param = new String[] {absolutePathname,""+fileLen};
+			String[] param = new String[] {absolutePathname,""+fileLen};
+			this.command = "PUT "+Util.makeParamsString(param);
+			this.filePos = -1L;
+			this.fileLen = 0L;
+			this.file = null;
+			this.data = new byte[0];
+			this.remoteName = absolutePathname;
+			this.id = id;
 		}
-		this.command = "PUT "+Util.makeParamsString(param);
-		this.filePos = -1L;
-		this.file = file;
-		this.remoteName = absolutePathname;
-		this.id = id;
 	}
 	
 	
@@ -122,7 +133,7 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	}
 	
 	public void onProcessStart() throws Exception {
-		if (DEBUG) System.out.println("Command upload start.");
+		//if (DEBUG) System.out.println("Command upload start.");
 		hasNext = true;
 		if (fileLen>0 && data==null) {
 			fileIn = new FileInputStream(file);
@@ -147,7 +158,7 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	}
 
 	public void onProcessEnd() {
-		if (DEBUG) System.out.println("Command upload end.");
+		//if (DEBUG) System.out.println("Command upload end.");
 	}
 
 	public boolean hasNextPackage() {
@@ -157,7 +168,10 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	public void onResponseReceived(int num, byte code, byte[] content) throws Exception {
 		if (!SecureConnection.isError(code)) {
 			if (code == SecureConnection.TYPE_ACK) {
-				System.out.println("ACK upload of file: "+remoteName);
+				//System.out.println("ACK upload of file: "+remoteName);
+				if (fileLen<=0) {
+					notifySucces();
+				}
 			}
 			else if (code == SecureConnection.TYPE_ACK_COMPLETE) {
 				if (data==null) {
@@ -194,16 +208,15 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 		if (filePos<0) {
 			con.setCommand(id, command);
 			if (DEBUG) {
-				System.out.println("SENDING :: "+command);
+				//System.out.println("SENDING :: "+command+" fileLen = "+fileLen);
 				Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
 			}
 			filePos = 0L;
 			num = 1;
-			notifyUpdate(filePos, fileLen, null);
 			if (fileLen<=0) {
 				hasNext = false;
-				notifyUpdate(filePos, fileLen, null);
 			}
+			notifyUpdate(filePos, fileLen, null);
 		} else {
 			byte[] content = new byte[maxPacketSize];
 			if (data==null) {
@@ -239,4 +252,7 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 		con.sendPackage();
 	}
 
+	public long getFileLength() {
+		return fileLen;
+	}
 }

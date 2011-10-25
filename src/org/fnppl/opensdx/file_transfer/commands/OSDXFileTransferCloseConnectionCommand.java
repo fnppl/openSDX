@@ -57,7 +57,7 @@ public class OSDXFileTransferCloseConnectionCommand extends OSDXFileTransferComm
 	}
 	
 	public void onProcessStart() throws Exception {
-		if (DEBUG) System.out.println("Command close started.");
+		//if (DEBUG) System.out.println("Command close started.");
 		hasNext = true;
 	}
 	
@@ -66,7 +66,7 @@ public class OSDXFileTransferCloseConnectionCommand extends OSDXFileTransferComm
 	}
 
 	public void onProcessEnd() {
-		if (DEBUG) System.out.println("Command close end.");
+		//if (DEBUG) System.out.println("Command close end.");
 	}
 
 	public boolean hasNextPackage() {
@@ -76,7 +76,7 @@ public class OSDXFileTransferCloseConnectionCommand extends OSDXFileTransferComm
 	public void onSendNextPackage(SecureConnection con) throws Exception {
 		con.setCommand(id, command);
 		if (DEBUG) {
-			System.out.println("SENDING :: "+command);
+			//System.out.println("SENDING :: "+command);
 			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
 		}
 		hasNext = false;

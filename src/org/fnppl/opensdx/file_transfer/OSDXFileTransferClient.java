@@ -46,12 +46,14 @@ package org.fnppl.opensdx.file_transfer;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCloseConnectionCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferDeleteCommand;
@@ -65,14 +67,19 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadCommand;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.FileTransferAccount;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
+import org.fnppl.opensdx.file_transfer.model.Transfer;
 import org.fnppl.opensdx.gui.Dialogs;
+import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.keyserver.helper.IdGenerator;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
+import org.fnppl.opensdx.security.KeyApprovingStore;
+import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
 import org.fnppl.opensdx.xml.Document;
+import org.fnppl.opensdx.xml.Element;
 
 import sun.java2d.pipe.hw.ExtendedBufferCapabilities.VSyncType;
 
@@ -81,7 +88,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	
 	private static boolean DEBUG = true;
 	
-	private static String version = "osdx_ftclient v.2011-10-20";
+	private static String version = "osdx_ftclient v.2011-10-25";
 	
 	private Logger logger = Logger.getFileTransferLogger();
 	
@@ -161,9 +168,9 @@ public class OSDXFileTransferClient implements UploadClient {
 	public OSDXFileTransferCommand getNextCommand() {
 		if (queueWaiting.size()>0 && System.currentTimeMillis()>nextCommandBlockTimeout) {
 			OSDXFileTransferCommand c = queueWaiting.remove(0);
-			if (DEBUG)  {
-				System.out.println("command: "+c.getClass().getName());
-			}
+//			if (DEBUG)  {
+//				System.out.println("command: "+c.getClass().getName());
+//			}
 			logger.logMsg("next command: "+c.getClass().getName());
 			
 			//check connected
@@ -442,10 +449,10 @@ public class OSDXFileTransferClient implements UploadClient {
 				} else {
 					if (content!=null) { //if (code == SecureConnection.TYPE_TEXT) {
 						String txt = new String(content,"UTF-8");
-						System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: MSG: "+txt);
+						//System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: MSG: "+txt);
 						logger.logMsg("RESPONSE: "+SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: MSG: "+txt+" commandid="+commandid);
 					} else {
-						System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: NO MSG");
+						//System.out.println(SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: NO MSG");
 						logger.logMsg("RESPONSE: "+SecurityHelper.HexDecoder.encode(new byte[]{code})+" :: NO MSG commandid="+commandid);
 					}
 				}
@@ -476,7 +483,7 @@ public class OSDXFileTransferClient implements UploadClient {
 				if (DEBUG) {
 					if (command instanceof OSDXFileTransferMkDirCommand) {
 						if (code == SecureConnection.TYPE_ACK) {
-							System.out.println("MkDir successful.");
+							//System.out.println("MkDir successful.");
 							logger.logMsg("MkDir successful.");
 						}
 						else if (SecureConnection.isError(code)) {
@@ -486,7 +493,7 @@ public class OSDXFileTransferClient implements UploadClient {
 					}
 					else if (command instanceof OSDXFileTransferDeleteCommand) {
 						if (code == SecureConnection.TYPE_ACK) {
-							System.out.println("Delete successful.");
+							//System.out.println("Delete successful.");
 							logger.logMsg("Delete successful.");
 						}
 						else if (SecureConnection.isError(code)) {
@@ -496,11 +503,11 @@ public class OSDXFileTransferClient implements UploadClient {
 					}
 					else if (command instanceof OSDXFileTransferRenameCommand) {
 						if (code == SecureConnection.TYPE_ACK) {
-							System.out.println("Rename successful.");
+							//System.out.println("Rename successful.");
 							logger.logMsg("Rename successful.");
 						}
 						else if (SecureConnection.isError(code)) {
-							System.out.println("Error in rename :: "+getMessageFromContentNN(content));
+							//System.out.println("Error in rename :: "+getMessageFromContentNN(content));
 							logger.logError("Error in rename :: "+getMessageFromContentNN(content));
 						}
 					}
@@ -508,7 +515,7 @@ public class OSDXFileTransferClient implements UploadClient {
 						if (code == SecureConnection.TYPE_ACK) {
 							RemoteFile rf = ((OSDXFileTransferFileInfoCommand)command).getRemoteFile();
 							if (rf!=null) {
-								System.out.println("FileInfo: "+rf.toString());
+								//System.out.println("FileInfo: "+rf.toString());
 							} else {
 								System.out.println("Error in FileInfo");
 								logger.logError("Error in FileInfo");
@@ -588,7 +595,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	}
 	
 	
-	public static void main(String args[]) {
+	public static void test() {
 		try {
 
 			OSDXFileTransferClient client = new OSDXFileTransferClient();
@@ -614,5 +621,353 @@ public class OSDXFileTransferClient implements UploadClient {
 			ex.printStackTrace();
 		}
 	}
+	
+	public static void upload_files(String host, int port, String prepath, OSDXKey mysigning, String username, Vector<File> files, String remoteDir, boolean resume) {
+		if (prepath==null || prepath.length()==0) prepath = "/";
+		if (files.size()==0) return;
+		final OSDXFileTransferClient s = new OSDXFileTransferClient();
+		try {
+			String baseDir = files.get(0).getParent(); //baseDir = shortest path in all files
+			final Vector<File> localFiles = new Vector<File>();
+			for (int i=0;i<files.size();i++) {
+				File f = files.get(i);
+				String bd = f.getParent();
+				if (bd.length()<baseDir.length()) {
+					baseDir = bd;
+				}
+				if (f.isDirectory()) {
+					Util.listFiles(f, localFiles);
+				} else {
+					localFiles.add(f);
+				}
+			}
+			final String baseDirectory = baseDir;
+			System.out.println("base dir :: "+baseDir);
+		
+			if (remoteDir==null) {
+				remoteDir = "/";
+			}
+			else if (!remoteDir.endsWith("/")) {
+				remoteDir += "/";
+			}
+			final String targetDir = remoteDir;
+
+			//count length for status
+			long cp = 0;
+			for (File from : localFiles) {
+				cp += from.length();
+			}
+			final long completeProgress = cp;
+			
+			
+			s.addResponseListener(new CommandResponseListener() {
+				long currentProgressOfReadyFile = 0L;
+				int proz = 0;
+				int count = localFiles.size();
+				int next = 0;
+				
+				public void onSuccess(OSDXFileTransferCommand command) {
+					if (command instanceof OSDXFileTransferUploadCommand) {
+						currentProgressOfReadyFile +=  ((OSDXFileTransferUploadCommand)command).getFileLength();
+						next++;
+						if (next<count) {
+							upload(next);
+						} else {
+							System.out.println("Upload ready. Closing connection.");
+							s.closeConnection();
+						}
+					}
+					if (command instanceof OSDXFileTransferLoginCommand) {
+						System.out.println("start upload");
+						upload(0);
+					}
+				}
+				
+				private void upload(int no) {
+					File from = localFiles.get(no);
+					String filenameTo = ""+targetDir;
+					if (baseDirectory==null) {
+						filenameTo += from.getName();
+					} else {
+						try {
+							//System.out.println("from path :: "+from.getCanonicalPath());
+							filenameTo += from.getCanonicalPath().substring(baseDirectory.length());
+						} catch (IOException e) {
+							filenameTo += from.getName();
+							e.printStackTrace();
+						}
+					}
+					System.out.println("upload file "+(no+1)+" of "+count+" :: "+from.getAbsolutePath());
+					s.upload(from, filenameTo);
+				}
+				
+				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+					if (command instanceof OSDXFileTransferUploadCommand) {
+						int aProz = (int) ((currentProgressOfReadyFile+progress)*100L/completeProgress);
+						if (aProz>proz) {
+							proz = aProz;
+							System.out.println("Uploading :: total progress: "+proz+" %");
+						}
+					}
+				}
+				
+				public void onError(OSDXFileTransferCommand command, String msg) {
+					System.out.println("ERROR :: "+msg);
+					if (command instanceof OSDXFileTransferUploadCommand) {
+						currentProgressOfReadyFile +=  ((OSDXFileTransferUploadCommand)command).getFileLength();
+						next++;
+						if (next<count) {
+							upload(next);
+						} else {
+							System.out.println("Upload ready. Closing connection.");
+							s.closeConnection();
+						}
+					}
+				}
+			});
+			s.connect(host, port, prepath,mysigning, username);
+			if (remoteDir!=null) {
+				s.mkdir(remoteDir);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+//	public static void recursePut(Vector<File> files, OSDXFileTransferClient s, int depth, boolean resume) throws Exception {
+//		for (int i=0; i<files.size(); i++) {
+//			System.out.println("Depth["+depth+"] uploading file "+(i+1)+" of "+files.size()+" :: "+files.get(i).getAbsolutePath());
+//
+//			File l = files.elementAt(i);
+//			if(l.isDirectory()) {
+//				s.mkdir(l.getName());
+//				try {
+//					Vector<File> nfiles = new Vector<File>(Arrays.asList(l.listFiles()));
+//					recursePut(nfiles, s, depth+1, resume);
+//				} catch(Exception ex) {
+//					throw ex;
+//				}
+//			}
+//			else {
+//				if (resume) {
+//					s.resumeuploadFile(files.get(i));
+//				} else {
+//					s.uploadFile(files.get(i));
+//				}
+//			}
+//		}
+//	}
+	
+	//commandline beamer
+	public static void main(String[] args) {
+		//test(); if (2 == 1+1) return;
+
+		//System.out.println("args: "+Arrays.toString(args));
+		OSDXKey key = null;
+		String host = null; // --host
+		int port = -1; // --port
+		String prepath = "/"; // --prepath
+		String username = null; // --user
+		String remotepath =null;// --remotepath
+		String keystore = null; // --keystore
+		String keyid = null; // --keyid
+		String keypw = null; // --keypw
+		String keypwfile = null;// --keypwfile
+		String config = null; // --config
+		boolean resume = false; // --resume
+
+
+		Vector<File> files = new Vector<File>();
+		int i=0;
+		boolean start_files = false;
+		try {
+			while (i<args.length) {
+				String s = args[i];
+				if (start_files) {
+					File f = new File(s);
+					if (f.exists()){
+						files.add(f);
+					} else {
+						error("Error: file "+s+" does not exists");
+					}
+					i++;
+				} else {
+					if (s.equals("--host")) {
+						host = args[i+1];
+						i+=2;
+					}
+					else if (s.equals("--port")) {
+						port = Integer.parseInt(args[i+1]);
+						i+=2;
+					}
+					else if (s.equals("--prepath")) {
+						prepath = args[i+1];
+						i+=2;
+					}
+					else if (s.equals("--user")) {
+						username = args[i+1];
+						i+=2;
+					}
+					else if (s.equals("--remotepath")) {
+						remotepath = args[i+1];
+						i+=2;
+					}
+					else if (s.equals("--keystore")) {
+						keystore = args[i+1];
+						i+=2;
+					}
+					else if (s.equals("--keyid")) {
+						keyid = args[i+1];
+						i+=2;
+					}
+					else if (s.equals("--keypw")) {
+						keypw = args[i+1];
+						i+=2;
+					}
+					else if (s.equals("--keypwfile")) {
+						keypwfile = args[i+1];
+						i+=2;
+					}
+					else if (s.equals("--config")) {
+						config = args[i+1];
+						i+=2;
+					}
+					else if (s.equals("--resume")) {
+						resume = true;
+						i++;
+					}
+					else if (s.startsWith("--")) {
+						System.out.println("CANT UNDERSTAND ARGUMENT: "+s+" "+args[i+1]);
+						i+=2;
+					}
+					else {
+						start_files = true;
+					}
+				}
+			}
+			if (config!=null) {
+				//read config
+				Element ec = Document.fromFile(new File(config)).getRootElement();
+				if (host==null && ec.getChild("host")!=null) host = ec.getChildText("host");
+				if (port == -1 && ec.getChild("port")!=null) port = Integer.parseInt(ec.getChildText("port"));
+				if (prepath==null && ec.getChild("prepath")!=null) prepath = ec.getChildText("prepath");
+				if (remotepath==null && ec.getChild("remotepath")!=null) remotepath = ec.getChildText("remotepath");
+				if (username==null) {
+					if (ec.getChild("username")!=null) username = ec.getChildText("username");
+					if (ec.getChild("user")!=null) username = ec.getChildText("user");
+				}
+				if (keystore==null && ec.getChild("keystore")!=null) keystore = ec.getChildText("keystore");
+				if (keyid==null && ec.getChild("keyid")!=null) keyid = ec.getChildText("keyid");
+				if (keypw==null && ec.getChild("keypw")!=null) keypw = ec.getChildText("keypw");
+				if (keypwfile==null && ec.getChild("keypwfile")!=null) keypwfile = ec.getChildText("keypwfile");
+
+				//private key
+				if (ec.getChild("keypair")!=null) {
+					key = OSDXKey.fromElement(ec.getChild("keypair"));
+				}
+			}
+			//message handler
+			MessageHandler mh = new MessageHandler() {
+				public char[] requestPassword(String keyid, String mantra) {
+					System.out.println("please enter password for keyid: "+keyid+", mantra: "+mantra);
+					System.out.print("password: ");
+					char[] pw = System.console().readPassword();
+					return pw;
+				}
+
+				public boolean requestOverwriteFile(File file) {
+					return false;
+				}
+
+				public String[] requestNewPasswordAndMantra(String message) {
+					return null;
+				}
+
+				public MasterKey requestMasterSigningKey(KeyApprovingStore keystore) throws Exception {
+					return null;
+				}
+				
+				public boolean requestIgnoreVerificationFailure() {
+					System.out.println("verification of keystore failed.");
+					return false;
+				}
+				public boolean requestIgnoreKeyLogVerificationFailure() {
+					return false;
+				}
+				public void fireWrongPasswordMessage() {
+					System.out.println("Sorry, wrong password.");
+					System.exit(1);
+				}
+				public File chooseOriginalFileForSignature(File dir, String selectFile) {
+					return null;
+				}
+
+				public File requestOpenKeystore() {
+					return null;
+				}
+
+				public char[] requestPasswordTitleAndMessage(String title, String message) {
+					return null;
+				}
+
+				public void showErrorMessage(String title, String message) {
+					System.out.println("ERROR :: "+message);
+				}
+			};
+
+
+			//check if we have everything we need
+			if (host==null) error("missing paramenter: host");
+			if (port==-1) error("missing parameter: port");
+			if (username==null) error("missing paramenter: user");
+			if (files.size()==0) error("missing parameter: file to upload");
+
+			//init key
+			if (key==null) {
+				if (keystore==null) {
+					error("missing paramenter: key in configfile or keystore");
+				}
+				if (keyid==null) {
+					error("missing paramenter: key in configfile or keyid");
+				}
+				KeyApprovingStore ks = KeyApprovingStore.fromFile(new File(keystore), mh);
+				key = ks.getKey(keyid);
+				if (key==null) error("error: keyid: "+keyid+" not found in given keystore.");
+			}
+
+			//unlock key
+			if (keypw!=null) {
+				key.unlockPrivateKey(keypw);
+			} else if (keypwfile!=null) {
+				keypw = Util.loadText(keypwfile);
+				key.unlockPrivateKey(keypw);
+			} else {
+				key.unlockPrivateKey(mh);
+			}
+			if (!key.isPrivateKeyUnlocked()) {
+				error("can not unlock private key");
+			}
+
+			//yes, we can finally execute the uploads
+			upload_files(host, port, prepath, key, username, files, remotepath, resume);
+
+		} catch (Exception ex) {
+			System.out.println("usage: OSDXFileTransferClient --host localhost --port 4221 --prepath \"/\" --user username --keystore defautlKeyStore.xml --keyid 11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:11:22:33:44:55 --keypw key-password [file or list of files to upload]");
+			System.out.println("usage: OSDXFileTransferClient --config configfile.xml [file or list of files to upload]");
+			ex.printStackTrace();
+		}
+	}
+
+	private static void error(String msg) {
+		System.out.println(msg);
+		System.out.println("usage: OSDXFileTransferClient --host localhost --port 4221 --prepath \"/\" --user username --keystore defautlKeyStore.xml --keyid 11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:11:22:33:44:55 --keypw key-password --remotepath \"/bla/blub\" [file or list of files to upload]");
+		System.out.println("or : OSDXFileTransferClient --host localhost --port 4221 --prepath \"/\" --user username --keystore defautlKeyStore.xml --keyid 11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:11:22:33:44:55 --keypwfile key-password.txt [file or list of files to upload]");
+		System.out.println("or : OSDXFileTransferClient --config configfile.xml [file or list of files to upload]");
+
+		System.exit(1);
+	}
+
+
 
 }
