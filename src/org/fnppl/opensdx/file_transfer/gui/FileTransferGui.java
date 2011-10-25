@@ -127,7 +127,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class FileTransferGui extends JFrame implements MyObserver, CommandResponseListener {
 
-	public static final String version = "v. 2011-10-20";
+	public static final String version = "v. 2011-10-25";
 	private Vector<FileTransferAccount> accounts = new Vector<FileTransferAccount>();
 	private Vector<FileTransferAccount> supportedAccounts = new Vector<FileTransferAccount>();
 
@@ -787,7 +787,10 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 			pAcc.update(a);
 			int ans = JOptionPane.showConfirmDialog(null,pAcc,"Edit Account",JOptionPane.OK_CANCEL_OPTION);
 			if (ans == JOptionPane.OK_OPTION) {
-				supportedAccounts.set(sel, pAcc.getAccount());
+				FileTransferAccount editedAccount = pAcc.getAccount();
+				int indA = accounts.indexOf(a);
+				accounts.set(indA, editedAccount);
+				supportedAccounts.set(sel, editedAccount);
 				updateAccounts();
 				selectAccount.setSelectedIndex(sel+2);
 			}
@@ -818,6 +821,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 	}
 
 	private void saveAccounts() {
+		System.out.println("save accounts");
 		File f = new File(userHome,"file_transfer_settings.xml");
 		boolean save = false;
 		if (!f.exists()) {
