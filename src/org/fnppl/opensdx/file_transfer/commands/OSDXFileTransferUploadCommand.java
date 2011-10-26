@@ -176,14 +176,24 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 				if (fileLen<=0) {
 					notifySucces();
 				}
-				if (resume) {
-					try {
-						filePos = Long.parseLong(Util.getParams(getMessageFromContent(content))[0]);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-						notifyError("wrong format: file upload resume position not parseable");
-					}
-				}
+//				if (resume) {
+//					String msg = getMessageFromContent(content);
+//					System.out.println("resume msg :: "+msg+"  filePos before = "+filePos);
+//					if (msg!=null && msg.equals("upload already complete")) {
+//						hasNext = false;
+//						System.out.println(msg);
+//						notifyUpdate(fileLen-1, fileLen, null);
+//						notifySucces();
+//					} else {
+//						try {
+//							filePos = Long.parseLong(getMessageFromContent(content));
+//							System.out.println("file pos = "+filePos);
+//						} catch (Exception ex) {
+//							notifyError("wrong format: file upload resume position not parseable");
+//							//ex.printStackTrace();
+//						}
+//					}
+//				}
 			}
 			else if (code == SecureConnection.TYPE_ACK_COMPLETE) {
 				if (data==null) {

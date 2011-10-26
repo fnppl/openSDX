@@ -691,7 +691,7 @@ public class OSDXFileTransferServerThread extends Thread {
 					else if (file.exists()) {
 						long loaded = file.length();
 						if (loaded>=length) {
-							data.setError(commandid, num, "upload already complete");
+							data.setAck(commandid, num, "upload already complete");
 							data.sendPackage();
 						} else {
 							//ack -> ready for upload
