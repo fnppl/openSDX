@@ -398,7 +398,13 @@ public class OSDXFileTransferClient implements UploadClient {
 
 	public long upload(File localFile, String absoluteRemotePath) {
 		long id = IdGenerator.getTimestamp();
-		addCommand(new OSDXFileTransferUploadCommand(id,localFile, absoluteRemotePath,this));
+		addCommand(new OSDXFileTransferUploadCommand(id,localFile, absoluteRemotePath,true, this));
+		return id;
+	}
+	
+	public long uploadResume(File localFile, String absoluteRemotePath) {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferUploadCommand(id,localFile, absoluteRemotePath,false, this));
 		return id;
 	}
 	
@@ -578,7 +584,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	
 	public void uploadFile(File f, String remoteAbsoluteFilename, CommandResponseListener listener) {
 		long id = IdGenerator.getTimestamp();
-		OSDXFileTransferUploadCommand c = new OSDXFileTransferUploadCommand(id,f, remoteAbsoluteFilename,this);
+		OSDXFileTransferUploadCommand c = new OSDXFileTransferUploadCommand(id,f, remoteAbsoluteFilename,false,this);
 		if (listener!=null) {
 			c.addListener(listener);
 		}

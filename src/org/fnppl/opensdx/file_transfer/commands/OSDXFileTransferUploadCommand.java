@@ -65,10 +65,17 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	private long maxFilelengthForMD5 = 10*1024*1024L; //10 MB
 	private boolean hasNext = true;
 	private OSDXFileTransferClient client = null;
+	private boolean resume = false;
 
-	public OSDXFileTransferUploadCommand(long id, File file, String absolutePathname, OSDXFileTransferClient client) {
+	public OSDXFileTransferUploadCommand(long id, File file, String absolutePathname, boolean resume, OSDXFileTransferClient client) {
 		super();
 		fileLen = file.length();
+		this.resume = resume;
+		this.filePos = -1L;
+		this.remoteName = absolutePathname;
+		this.id = id;
+		
+		String[] param;
 		if (fileLen>0) {
 			byte[] md5 = null;
 			if (fileLen<maxFilelengthForMD5) {
@@ -80,26 +87,23 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 					md5 = null;
 				}
 			}
-			String[] param;
 			if (md5!=null) {
 				param = new String[] {absolutePathname,""+fileLen,SecurityHelper.HexDecoder.encode(md5)};
 			} else {
 				param = new String[] {absolutePathname,""+fileLen};
 			}
-			this.command = "PUT "+Util.makeParamsString(param);
-			this.filePos = -1L;
 			this.file = file;
-			this.remoteName = absolutePathname;
-			this.id = id;
 		} else {
-			String[] param = new String[] {absolutePathname,""+fileLen};
-			this.command = "PUT "+Util.makeParamsString(param);
-			this.filePos = -1L;
-			this.fileLen = 0L;
+			fileLen = 0L;
+			param = new String[] {absolutePathname,""+fileLen};
 			this.file = null;
 			this.data = new byte[0];
-			this.remoteName = absolutePathname;
-			this.id = id;
+		}
+		
+		if (resume) {
+			this.command = "RESUMEPUT "+Util.makeParamsString(param);
+		} else {
+			this.command = "PUT "+Util.makeParamsString(param);
 		}
 	}
 	
@@ -171,6 +175,14 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 				//System.out.println("ACK upload of file: "+remoteName);
 				if (fileLen<=0) {
 					notifySucces();
+				}
+				if (resume) {
+					try {
+						filePos = Long.parseLong(Util.getParams(getMessageFromContent(content))[0]);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						notifyError("wrong format: file upload resume position not parseable");
+					}
 				}
 			}
 			else if (code == SecureConnection.TYPE_ACK_COMPLETE) {

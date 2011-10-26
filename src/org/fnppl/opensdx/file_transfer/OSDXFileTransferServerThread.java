@@ -619,6 +619,132 @@ public class OSDXFileTransferServerThread extends Thread {
 		}
 	}
 	
+//	public void handle_putpart(long commandid, int num, byte code, String param) throws Exception {
+//		ensureAllowed(RightsAndDuties.ALLOW_UPLOAD, commandid, num, "Sorry, no right to upload files.");
+//		if (param!=null) {
+//			String[] params = Util.getParams(param);
+//			String filename = null;
+//			long start = -1;
+//			int length = -1;
+//
+//			try {
+//				filename = params[0];
+//				start = Long.parseLong(params[1]);
+//				length = Integer.parseInt(params[2]);
+//			} catch (Exception ex) {
+//				String resp = "ERROR IN PUTPART :: WRONG FORMAT";
+//				//log.logCommand(sender.getID(), sender.getRemoteIP(), "PUTPART", param, resp);
+//				//sender.sendEncryptedText(resp);
+//				data.setError(commandid, num, "wrong format");
+//				data.sendPackage();	
+//			}
+//			File f = state.getWriteFile();
+//			if (f==null || !filename.equals(f.getName())) {
+//				String resp = "ERROR IN PUTPART :: PLEASE SEND PUT OR RESUMEPUT COMMAND FIRST";
+//				log.logCommand(sender.getID(), sender.getRemoteIP(), "PUTPART", param, resp);
+//				sender.sendEncryptedText(resp);
+//			}
+//
+//			if (f.exists()) {
+//				if (f.length()==start) {
+//					//append
+//					state.setNextFilePartStart(start);
+//					state.setNextFilePartLength(length);
+//					String resp = "ACK PUTPART :: WAITING FOR DATA";
+//					log.logCommand(sender.getID(), sender.getRemoteIP(), "PUTPART", param, resp);
+//					sender.sendEncryptedText(resp);
+//				} else {
+//					String resp = "ERROR IN PUTPART :: WRONG START POSITION, EXPECTED POS="+f.length();
+//					log.logCommand(sender.getID(), sender.getRemoteIP(), "PUTPART", param, resp);
+//					sender.sendEncryptedText(resp);
+//				}
+//			} else {
+//				state.setNextFilePartStart(start);
+//				state.setNextFilePartLength(length);
+//				String resp = "ACK PUTPART :: WAITING FOR DATA";
+//				log.logCommand(sender.getID(), sender.getRemoteIP(), "PUTPART", param, resp);
+//				sender.sendEncryptedText(resp);
+//			}
+//		}
+//	}
+
+	public void handle_resumeput(long commandid, int num, byte code, String param) throws Exception {
+		ensureAllowed(RightsAndDuties.ALLOW_UPLOAD, commandid, num, "Sorry, no right to upload files.");
+		if (param!=null) {
+			//RESUMEPUT "filename"
+			String[] p = Util.getParams(param);
+			File file = null;
+			long length = -1L;
+			try {
+				length = Long.parseLong(p[1]);
+			} catch (Exception ex) {}
+			if (length<0) {
+				data.setError(commandid, num, "missing or wrong file length parameter");
+				data.sendPackage();	
+			} else {
+				if (p[0].startsWith("/")) {
+					file = new File(cs.getLocalRootPath()+p[0]);
+					if (!cs.isAllowed(file)) {
+						data.setError(commandid, num, "restricted file");
+						data.sendPackage();
+					}
+					else if (file.exists()) {
+						long loaded = file.length();
+						if (loaded>=length) {
+							data.setError(commandid, num, "upload already complete");
+							data.sendPackage();
+						} else {
+							//ack -> ready for upload
+							data.setAck(commandid, num,""+loaded); //Startpos = file.length
+							data.sendPackage();
+							if (length==0) {
+								file.createNewFile();
+							} else {
+								FileUploadInfo info = new FileUploadInfo();
+								info.file = file;
+								info.length = length;
+								info.out = null;
+								info.loaded = loaded;
+								if (p.length>2) {
+									info.md5 = p[2];
+								} else {
+									info.md5 = null;
+								}
+								uploads.put(commandid,info);
+							}
+						}
+					} else {
+						//file does not exists -> normal PUT
+						//ensure directories exists
+						file.getParentFile().mkdirs();
+						
+						//ack -> ready for upload
+						data.setAck(commandid, num,"0"); //Startpos 0
+						data.sendPackage();
+						if (length==0) {
+							file.createNewFile();
+						} else {
+							FileUploadInfo info = new FileUploadInfo();
+							info.file = file;
+							info.length = length;
+							info.out = null;
+							info.loaded = 0L;
+							if (p.length>2) {
+								info.md5 = p[2];
+							} else {
+								info.md5 = null;
+							}
+							uploads.put(commandid,info);
+						}
+					}
+				} else {
+					data.setError(commandid, num, "path must be absolute");
+					data.sendPackage();
+				}
+			}
+		}
+	}
+	
 	public void handle_get(long commandid, int num, byte code, String param) throws Exception {
 		ensureAllowed(RightsAndDuties.ALLOW_DOWNLOAD, commandid, num, "Sorry, no right to download files.");
 		if (param!=null) {
