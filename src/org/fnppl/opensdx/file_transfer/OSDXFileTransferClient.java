@@ -770,7 +770,12 @@ public class OSDXFileTransferClient implements UploadClient {
 //			}
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			String msg = e.getMessage();
+			if (msg!=null && msg.equalsIgnoreCase("Connection refused")) {
+				System.out.println("Error: could not connect to host: "+host+" on port: "+port);
+			} else {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -804,13 +809,14 @@ public class OSDXFileTransferClient implements UploadClient {
 	      return;
 	    }
 	    System.out.println("Connection to Server:");
-	    System.out.println("-----------");
+	    System.out.println("---------------------");
 	    String host = console.readLine("host: ");
-	    String port = console.readLine("port: ");
+	    String port = console.readLine("port (ENTER for default 4221): ");
+	    if (port.length()==0) port = "4221";
 	    String prepath = console.readLine("prepath (ENTER for default): ");
 	    
 	    System.out.println("Login:");
-	    System.out.println("-----------");
+	    System.out.println("------");
 	    String username = console.readLine("username: ");
 	  
 	    boolean ok = false;
@@ -869,6 +875,8 @@ public class OSDXFileTransferClient implements UploadClient {
 	    if (keypw.length()==0) { 
 	    	keypwfile = console.readLine("key password filename (ENTER: not save password in file): ");
 	    }
+	    System.out.println("Other settings:");
+	    System.out.println("---------------");
 	    String remotepath = console.readLine("remotepath (ENTER for default): ");
 	    String config_filename = console.readLine("filename configfile (ENTER for default: filetransfer_config.xml)): ");
 	    if (config_filename.length()==0) {
