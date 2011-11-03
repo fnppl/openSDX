@@ -74,6 +74,7 @@ import javax.swing.table.TableRowSorter;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
@@ -286,10 +287,8 @@ public class TreeAndTablePanelLocal extends JPanel implements MyObservable, Tree
 						int q = Dialogs.showYES_NO_Dialog("Remove Directory", msg);
 						if (q == Dialogs.YES) {
 							TreePath path = tree.getSelectionPath();
-							//TODO recursive delete
-							//deleteDirecotry(dir);
-							//throw new RuntimeException("remove direcotory not implemented");
-							boolean ok = false;	
+							//recursive delete
+							boolean ok = Util.deleteDirectory(dir);	
 							if (!ok) {
 								Dialogs.showMessage("Error, could not remove:\n"+dir.getAbsolutePath());
 							}
@@ -464,26 +463,28 @@ public class TreeAndTablePanelLocal extends JPanel implements MyObservable, Tree
 		}
 		try {
 			File file = (File) node.getUserObject();
-			File[] list = file.listFiles();
 			Vector<String[]> data = new Vector<String[]>();
-			for (int i = 0; i < list.length; i++) {
-				File f = list[i];
-				String[] d  = new String[header.length];
-				d[0] = f.getName();
-				if (f.isDirectory()) {
-//					d[2] = "";
-//					d[1] = "[DIR]";
-//					data.add(d);
-				} else {
-					if (showHidden || !f.isHidden()) {
-						d[2] = (f.length() / 1000) + " kB";
-						d[1] = "";
-						int ind = d[0].lastIndexOf('.');
-						if (ind > 0 && ind + 1 < d[0].length()) {
-							d[1] = d[0].substring(ind + 1);
+			if (file.exists()) {
+				File[] list = file.listFiles();
+				for (int i = 0; i < list.length; i++) {
+					File f = list[i];
+					String[] d  = new String[header.length];
+					d[0] = f.getName();
+					if (f.isDirectory()) {
+	//					d[2] = "";
+	//					d[1] = "[DIR]";
+	//					data.add(d);
+					} else {
+						if (showHidden || !f.isHidden()) {
+							d[2] = (f.length() / 1000) + " kB";
+							d[1] = "";
+							int ind = d[0].lastIndexOf('.');
+							if (ind > 0 && ind + 1 < d[0].length()) {
+								d[1] = d[0].substring(ind + 1);
+							}
+							data.add(d);
+							currentFiles.add(f);
 						}
-						data.add(d);
-						currentFiles.add(f);
 					}
 				}
 			}

@@ -123,7 +123,7 @@ public class Util {
 	        //System.out.println("OK!");
 	        return ob;
 	    }
-
+	 
 	public static void zipFiles(File archive, Vector<File> files) {
 		final int BUFFER = 2048;  
 		try {
@@ -281,6 +281,26 @@ public class Util {
     	}
     }
     
+	public static boolean deleteDirectory(File dir) {
+		boolean ok = true;
+		Vector<File> files = new Vector<File>();
+		Vector<File> dirs = new Vector<File>();
+		listFilesAndDirectories(dir, files, dirs);
+		
+		//delete all files
+		while (ok && files.size()>0) {
+			//System.out.println("delete file: "+files.get(0).getAbsolutePath());
+			ok = files.remove(0).delete();
+		}
+
+		//delete all directories (in reverse order)
+		Collections.sort(dirs);
+		while (ok && dirs.size()>0) {
+			//System.out.println("delete dir : "+dirs.get(dirs.size()-1).getAbsolutePath());
+			ok = dirs.remove(dirs.size()-1).delete();
+		}
+		return ok;
+	}
     
     public static void listFiles(File directory, Vector<File> result) {
 		if (directory.exists()) {
@@ -316,6 +336,24 @@ public class Util {
 				}
 			} else {
 				result.add(directory);
+			}
+		}
+	}
+    
+    public static void listFilesAndDirectories(File directory, Vector<File> files,  Vector<File> directories) {
+		if (directory.exists()) {
+			if (directory.isDirectory()) {
+				directories.add(directory);
+				File[] list = directory.listFiles();
+				for(int i=0; i<list.length; i++) {
+					if(list[i].isDirectory()) {
+						listFilesAndDirectories(list[i],files, directories);
+					} else {
+						files.add(list[i]);
+					}
+				}
+			} else {
+				files.add(directory);
 			}
 		}
 	}
