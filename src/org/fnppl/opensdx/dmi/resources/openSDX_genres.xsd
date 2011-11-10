@@ -128,7 +128,7 @@
 		<xsd:enumeration value="Americana"/>
 		<xsd:enumeration value="Folk Rock"/>
 		<xsd:enumeration value="Irish Folk"/>
-		<xsd:enumeration value="German Folk"/>
+		<xsd:enumeration value="German Folk / Volksmusik"/>
 		<xsd:enumeration value="Jazz"/>
 		<xsd:enumeration value="Acid Jazz"/>
 		<xsd:enumeration value="Avantgarde"/>
