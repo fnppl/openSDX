@@ -55,6 +55,9 @@ import org.jdom.Comment;
 public class Element {
 	protected org.jdom.Element base = null;
 	
+	public static Element buildElement(org.jdom.Element jdomElement) {
+		return new Element(jdomElement);
+	}
 	public Element(String name) {
 		base = new org.jdom.Element(name);
 	}
