@@ -336,8 +336,8 @@
     </xsd:complexType>
     <xsd:complexType name="channels">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en">This element is a container for channels which can be either "all", 
-            "ad supported" or "premium".</xsd:documentation>
+            <xsd:documentation xml:lang="en">This element is a container for channels which can be either "all",
+             "premium" or "ringtones".</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="channel" type="channel" maxOccurs="unbounded" minOccurs="0"/>
@@ -345,7 +345,7 @@
     </xsd:complexType>
     <xsd:complexType name="channel">
         <xsd:annotation>
-            <xsd:documentation xml:lang="en"> A channels can be either "all", "ad supported" or "premium". 
+            <xsd:documentation xml:lang="en"> A channels can be either "all", "ad supported", "premium" or "ringtones". 
             The required attribute "type" regards to the allowance in reference to the channel. 
             Type can be "allow" or "disallow".</xsd:documentation>
         </xsd:annotation>
