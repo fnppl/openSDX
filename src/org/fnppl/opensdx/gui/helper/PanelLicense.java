@@ -234,7 +234,7 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 		} else {
 			String name = lb.getChannelName(0);
 			System.out.println("channelname :: "+name);
-			if (lb.getChannelsCount()>1 || lb.getChannelAllowed(0)==false || !(name.equals("[not set]") || name.equals("all") || name.equals("ad supported") || name.equals("premium"))) {
+			if (lb.getChannelsCount()>1 || lb.getChannelAllowed(0)==false || !(name.equals("[not set]") || name.equals("all") || name.equals("ad supported") || name.equals("premium") || name.equals("ringtones"))) {
 				select_channels.setSelectedIndex(0);	
 				Dialogs.showMessage("Caution: Channels not visualizable by this GUI.");
 			} else {

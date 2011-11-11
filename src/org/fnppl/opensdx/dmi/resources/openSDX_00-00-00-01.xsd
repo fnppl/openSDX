@@ -337,7 +337,7 @@
     <xsd:complexType name="channels">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element is a container for channels which can be either "all",
-             "premium" or "ringtones".</xsd:documentation>
+             "ad supported", "premium" or "ringtones".</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="channel" type="channel" maxOccurs="unbounded" minOccurs="0"/>
