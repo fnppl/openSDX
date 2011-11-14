@@ -39,7 +39,8 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 	private JButton bu_add;
 	private JButton bu_remove;
 	private PanelFileProperties panel_properties;
-
+	private File lastDir = null;
+	
 	public PanelFiles() {
 		initComponents();
 		initLayout();
@@ -289,8 +290,11 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 			} catch (Exception ex) {
 			}
 		}
+		if (path==null) path = lastDir;
 		File f = Dialogs.chooseOpenFile("Choose file", path, "");
 		if (f==null || !f.exists() || f.isDirectory()) return;
+		lastDir = f.getParentFile();
+		
 		ItemFile file = ItemFile.make(f);
 
 		if (bundle!=null) {

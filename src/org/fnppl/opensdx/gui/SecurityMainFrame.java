@@ -89,6 +89,7 @@ public class SecurityMainFrame extends JFrame {
 	private JMenuItem jmiGenerateMaster;
 	private JMenuItem jmiGenerateSet;
 	private JMenuItem jmiRequestKeys;
+	private JMenuItem jmiRequestKeyByID;
 	private JMenuItem jmiAddKeyServer;
 
 
@@ -238,8 +239,11 @@ public class SecurityMainFrame extends JFrame {
 				else if(cmd.equalsIgnoreCase("generatemasterkey")) {
 					generateMasterKeyPair();
 				}
-				else if(cmd.equalsIgnoreCase("request keys from server")) {
+				else if(cmd.equalsIgnoreCase("request keys from server by email")) {
 					requestKeysFromServer();
+				}
+				else if(cmd.equalsIgnoreCase("request key from server by keyid")) {
+					requestKeyFromServerByKeyID();
 				}
 				else if(cmd.equalsIgnoreCase("encryptfiledialog")) {
 					showEncryptFileDialog();
@@ -318,10 +322,17 @@ public class SecurityMainFrame extends JFrame {
 
 		jm.addSeparator();
 
-		jmiRequestKeys = new JMenuItem("Request Keys from KeyServer");
-		jmiRequestKeys.setActionCommand("request keys from server");
+		jmiRequestKeys = new JMenuItem("Request Keys from KeyServer by email");
+		jmiRequestKeys.setActionCommand("request keys from server by email");
 		jmiRequestKeys.addActionListener(ja);
 		jm.add(jmiRequestKeys);
+		
+		
+		jmiRequestKeyByID = new JMenuItem("Request Keys from KeyServer by KeyID");
+		jmiRequestKeyByID.setActionCommand("request key from server by keyid");
+		jmiRequestKeyByID.addActionListener(ja);
+		jm.add(jmiRequestKeyByID);
+		
 
 
 		jm = new JMenu("KeyServer");
@@ -387,6 +398,7 @@ public class SecurityMainFrame extends JFrame {
 		jmiGenerateMaster.setEnabled(keystoreOpend);
 		jmiGenerateSet.setEnabled(keystoreOpend);
 		jmiRequestKeys.setEnabled(keystoreOpend);
+		jmiRequestKeyByID.setEnabled(keystoreOpend);
 		jmiAddKeyServer.setEnabled(keystoreOpend);
 	}
 
@@ -1454,7 +1466,7 @@ public class SecurityMainFrame extends JFrame {
 		JPanel buP = new JPanel();
 		buP.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-		JButton bu = new JButton("request keys from server");
+		JButton bu = new JButton("request keys from server by email");
 		//bu.setPreferredSize(new Dimension(buWidth,25));
 		bu.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -1462,6 +1474,16 @@ public class SecurityMainFrame extends JFrame {
 			}
 		});
 		buP.add(bu);
+
+		bu = new JButton("request key from server by keyid");
+		//bu.setPreferredSize(new Dimension(buWidth,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				requestKeyFromServerByKeyID();
+			}
+		});
+		buP.add(bu);
+
 		p.add(buP);
 
 		return p;
@@ -3226,6 +3248,47 @@ public class SecurityMainFrame extends JFrame {
 		}
 	}
 
+	protected void requestKeyFromServerByKeyID() {
+		if (control.getKeyStore().getKeyServer()==null || control.getKeyStore().getKeyServer().size()==0) {
+			Dialogs.showMessage("Sorry, no keyservers found.");
+			return;
+		}
+
+		final String keyid = Dialogs.showInputDialog("Request key", "Please enter keyid for searching on keyservers.");
+		if (keyid!=null) {
+			if (keyid.contains("@")) {
+				final JDialog wait = Dialogs.getWaitDialog("Requesting public key "+keyid+".\n please wait ...");
+				Thread t = new Thread() {
+					public void run() {
+						try {
+							String authKeyServer = keyid.substring(keyid.indexOf("@")+1);
+							KeyClient client =  control.getKeyClient(authKeyServer);
+							OSDXKey key =client.requestPublicKey(keyid);
+						
+							if (key!=null) {
+								control.getKeyStore().addKey(key);
+								Dialogs.showMessage("Added key \""+keyid+"\" to your keystore.");
+							} else {
+								Dialogs.showMessage("No public key with id \""+keyid+"\" could be found on keyserver "+authKeyServer+".");
+							}
+							update();
+							releaseUILock();
+							wait.dispose();
+						} catch (Exception ex) {
+							releaseUILock();
+							wait.dispose();
+							ex.printStackTrace();
+						}
+					}
+				};
+				t.start();
+				wait.setVisible(true);
+			}
+		}
+	}
+	
+	
+	
 	private void requestSubKeys(MasterKey masterkey) {
 		try {
 			KeyClient client =  control.getKeyClient(masterkey.getAuthoritativekeyserver());

@@ -352,6 +352,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
 		if (f!=null && f.exists()) {
 			try {
+				lastDir = f.getParentFile();
 				Document doc = Document.fromFile(f);
 				Feed feed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
 				makeSureFeedHasMinimalFeedRequirementsForGui(feed);
@@ -968,6 +969,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		File f = Dialogs.chooseOpenFile("Select file to validate", lastDir, "feed.xml");
 		if (f!=null && f.exists()) {
 			try {
+				lastDir = f.getParentFile();
 				String msg = new FeedValidator().validateOSDX_0_0_1(f);
 				
 				if(msg.length()==0) {
@@ -989,6 +991,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
 		Result ir = Result.succeeded();
 		if (f!=null && f.exists()) {
+			lastDir = f.getParentFile();
 			try {
 				Feed feed = null;
 				if(type.equals("finetunes")) {
@@ -1046,6 +1049,7 @@ public class FeedGui extends JFrame implements MyObserver {
 				File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
 				Document doc = null;
 				if(f!=null) {
+					lastDir = f.getParentFile();
 					try {
 						doc = Document.fromFile(f);
 					} catch (Exception e) {
