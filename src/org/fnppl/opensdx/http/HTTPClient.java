@@ -58,6 +58,8 @@ import org.fnppl.opensdx.xml.*;
 
 public class HTTPClient {
 	
+	public static boolean DEBUG = false;
+	
 	protected Socket socket = null;
 	private long timeout = 2000;
 	protected String host = null;
@@ -117,11 +119,14 @@ public class HTTPClient {
 			l.printStackTrace();
 			throw l;
 		}
-		System.out.println("OSDXKeyServerClient | start "+req.getURI());
 		
-		System.out.println("--- sending ---");
-		req.toOutput(System.out);
-		System.out.println("\n--- end of sending ---");
+		if (DEBUG) {
+			System.out.println("OSDXKeyServerClient | start "+req.getURI());
+			
+			System.out.println("--- sending ---");
+			req.toOutput(System.out);
+			System.out.println("\n--- end of sending ---");
+		}
 		
 		req.send(socket);
 		
