@@ -62,6 +62,7 @@ import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.OSDXKey;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Vector;
 import java.awt.event.ActionListener;
@@ -845,7 +846,26 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		Receiver r = getReceiver();
 		if (r==null) return;
 		if (name.equals("text_servername")) {
-			r.servername(text_servername.getText());
+			String hostname = text_servername.getText();
+			r.servername(hostname);
+			if (hostname != null && !hostname.equals(""))  {
+				try {
+					
+					InetAddress addr = InetAddress.getByName(hostname);
+					String ip = addr.getHostAddress();
+					text_serveripv4.setText(ip);
+					r.serveripv4(ip);
+					documentListener.saveState(text_serveripv4);
+				} catch (Exception ex) {
+					text_serveripv4.setText("IP address could not be resolved");
+					r.serveripv4("");
+					//documentListener.saveState(text_serveripv4);	
+				}
+			} else {
+				text_serveripv4.setText("");
+				r.serveripv4("");
+				documentListener.saveState(text_serveripv4);
+			}
 		} else if (name.equals("text_serveripv4")) {
 			r.serveripv4(text_serveripv4.getText());
 		} else if (name.equals("text_username")) {
