@@ -61,6 +61,8 @@ import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.dmi.FeedCreator;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferListCommand;
+import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.MessageHandler;
@@ -132,7 +134,8 @@ public class Beamer {
 		
 		if (client!=null) {
 			try {
-				Result result = uploadFeed(feed, client, signatureKey,mh);
+				Beamer beam = new Beamer();
+				Result result = beam.uploadFeed(feed, client, signatureKey,mh);
 				client.closeConnection();
 				return result;
 			} catch (Exception ex) {
@@ -263,8 +266,13 @@ public class Beamer {
 		return normFeedid;
 	}
 	
+	
+	private long timeoutDuration = 4000;
+	private Vector<RemoteFile> list = null;
+	private boolean hasAnswer = false;
+	
 	//private Result currentUploadResult = null; 
-	public static Result uploadFeed(Feed feed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh) throws Exception {
+	public Result uploadFeed(Feed feed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh) throws Exception {
 		final String normFeedid = getNormFeedID(feed);
 		
 		final Result[] result = new Result[] {Result.succeeded()};
@@ -278,22 +286,84 @@ public class Beamer {
 		} catch (Exception ex) {}
 		
 		//directory for date
-		String datedir = Util.filterCharactersFile(SecurityHelper.getFormattedDateDay(System.currentTimeMillis()));
+		//String datedir = Util.filterCharactersFile(SecurityHelper.getFormattedDateDay(System.currentTimeMillis()));
 		
 		//norm feedid
 		String dir = normFeedid;
 		//String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,19).replace(' ', '_');
 		//dir = Util.filterCharactersFile(dir);
 		
+		
+		//test if dir already exists
+		list = null;
+		boolean exists = false;
+		if (client instanceof FTPClient) {
+			list = ((FTPClient)client).list();
+		}
+		else if (client instanceof OSDXFileTransferClient) {	
+			hasAnswer = false;
+			((OSDXFileTransferClient)client).list("/",new CommandResponseListener() {
+				public void onError(OSDXFileTransferCommand command, String msg) {
+					//System.out.println("END OF LIST COMMAND :: ERROR");
+					list = null;
+					hasAnswer = true;
+				}
+				public void onStatusUpdate(OSDXFileTransferCommand command,long progress, long maxProgress, String msg) {}
+				public void onSuccess(OSDXFileTransferCommand command) {
+					//System.out.println("END OF LIST COMMAND :: SUCCESS");
+					list = ((OSDXFileTransferListCommand)command).getList();
+					hasAnswer = true;
+				}
+			});
+			
+			//block until answer or timeout
+			long timeout = System.currentTimeMillis()+timeoutDuration;
+			while (!hasAnswer && timeout > System.currentTimeMillis()) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			if (!hasAnswer) {
+				return Result.error("Error: Timeout when requesting server.");
+			} else {
+				if (list==null) {
+					return Result.error("Error: Server filelist request failed.");
+				}
+				for (RemoteFile rf : list) {
+					if (rf.isDirectory() && rf.getName().equals(normFeedid)) {
+						exists = true;
+						break;
+					}
+				}
+			}
+			((OSDXFileTransferClient)client).list("/", new CommandResponseListener() {
+				public void onSuccess(OSDXFileTransferCommand command) {
+					
+				}
+				
+				public void onStatusUpdate(OSDXFileTransferCommand command, long progress,long maxProgress, String msg) {}
+				public void onError(OSDXFileTransferCommand command, String msg) {
+					
+				}
+			});
+		}
+		
+		if (exists) {
+			return Result.error("A feed with this id already exists on the server.\nPlease select another feedid.");
+		}
+		
 		//build file structure
 		if (client instanceof FTPClient) {
-			((FTPClient)client).mkdir(datedir);
-			((FTPClient)client).cd(datedir);
+		//	((FTPClient)client).mkdir(datedir);
+		//	((FTPClient)client).cd(datedir);
 			((FTPClient)client).mkdir(dir);
 			((FTPClient)client).cd(dir);
 		}
 		
-		String absolutePath = "/"+datedir+"/"+dir+"/";
+		//String absolutePath = "/"+datedir+"/"+dir+"/";
+		String absolutePath = "/"+dir+"/";
 		
 		//upload feed
 		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
