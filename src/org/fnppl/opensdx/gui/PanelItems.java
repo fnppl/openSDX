@@ -17,7 +17,9 @@ import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.Item;
+import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
+import org.fnppl.opensdx.common.LicenseSpecifics;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
 
@@ -251,7 +253,8 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 	public void bu_add_clicked() {
 		if (bundle==null) return;
 		long now = System.currentTimeMillis();
-		Item newItem = Item.make(IDs.make(), "new item", "", "", "[not specified]", "", BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null);
+		Item newItem = Item.make(IDs.make(), "new item", "", "", "[not specified]", "", BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),LicenseSpecifics.make());
+		
 		bundle.addItem(newItem);
 		updateItemList();
 		list_items.setSelectedIndex(list_items.getModel().getSize()-1);
