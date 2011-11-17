@@ -103,7 +103,7 @@ import org.fnppl.opensdx.dmi.wayout.*;
 @SuppressWarnings("serial")
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
-	private static String version = "v. 2011-11-16";
+	private static String version = "v. 2011-11-17";
 	private URL configGenres = FeedGui.class.getResource("resources/config_genres.xml");
 	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
 	private XMLTree tree;
@@ -407,6 +407,10 @@ public class FeedGui extends JFrame implements MyObserver {
 			if (feedid!=null && feedid.length()>0) {
 				name = feedid+".xml";
 			}
+			
+			//warning if not valid
+			if (!continueIfFeedNotValid("\nDo you want to continue saving anyway?")) return;
+			
 			File f = Dialogs.chooseSaveFile("Select filename for saving feed", lastDir, name);
 			if (f!=null) {
 				try {
@@ -420,7 +424,30 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 	}
 	
-	
+	private boolean continueIfFeedNotValid(String msg) {
+		//warning if not valid
+		boolean feedValid = true;
+		try {
+			Document doc = Document.buildDocument(currentFeed.toElement());	
+			String msgResult = new FeedValidator().validateOSDX_0_0_1(doc.toString());
+			if(msgResult.length()!=0) {
+				//feed not vaild
+				feedValid = false;
+				//Dialogs.showTextFlex("Feed validation", msgResult, 700, 350);
+			}
+		}
+		catch(Exception ex) {
+			Dialogs.showMessage(ex.getMessage());	
+		}
+		if (!feedValid) {
+			if (msg==null) msg = "";
+			int ans = Dialogs.showYES_NO_Dialog("Feed validation failed", "Your current feed is not valid in terms of xsd specifications.\nPlease select \"Extras\" -> \"Validate Feed\" to get a detailed error message."+msg);
+			if (ans == Dialogs.NO) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 	public void sendFeedToReceiver() { //AKA beam me up
 		if (currentFeed!=null) {
@@ -430,6 +457,7 @@ public class FeedGui extends JFrame implements MyObserver {
 				return;
 			}
 			else {
+				if (!continueIfFeedNotValid("\nDo you really want to continue sending this feed?")) return;
 				String type = receiver.getType();
 				if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
 					String host = receiver.getServername();
