@@ -65,6 +65,16 @@ public class FeedValidator {
 	private String message = "";
 	private int errorCount = 0;
 	private int errorLengthToShow = 200; // set to "-1" to show all
+
+	public String validateOSDX_latest(String xml) throws Exception {
+		return validateOSDX_0_0_1(xml);
+	}
+	
+	public String validateOSDX_latest(File f) throws Exception { 
+		return validateOSDX_0_0_1(f);
+	}
+
+	
 	
 	public String validateOSDX_0_0_1(String s) throws Exception { //validate against oSDX 0.0.1 (mayor minor sub)
 		File file = new File(FILE_OSDX_0_0_1.toURI());

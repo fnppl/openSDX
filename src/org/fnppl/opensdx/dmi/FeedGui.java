@@ -429,7 +429,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		boolean feedValid = true;
 		try {
 			Document doc = Document.buildDocument(currentFeed.toElement());	
-			String msgResult = new FeedValidator().validateOSDX_0_0_1(doc.toString());
+			String msgResult = new FeedValidator().validateOSDX_latest(doc.toString());
 			if(msgResult.length()!=0) {
 				//feed not vaild
 				feedValid = false;
@@ -980,7 +980,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		
 		try {
 			Document doc = Document.buildDocument(currentFeed.toElement());	
-			String msg = new FeedValidator().validateOSDX_0_0_1(doc.toString());
+			String msg = new FeedValidator().validateOSDX_latest(doc.toString());
 			
 			if(msg.length()==0) {
 				msg = "Yehaw. Feed is valid.";
@@ -998,7 +998,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		if (f!=null && f.exists()) {
 			try {
 				lastDir = f.getParentFile();
-				String msg = new FeedValidator().validateOSDX_0_0_1(f);
+				String msg = new FeedValidator().validateOSDX_latest(f);
 				
 				if(msg.length()==0) {
 					msg = "Yehaw. Feed is valid.";
