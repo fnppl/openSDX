@@ -259,7 +259,8 @@ public class SecurityManagerCommandline {
 			sign();
 		}
 		else if (cmd.equals("verify")) {
-			verify();
+			int ret = verify();
+			System.exit(ret);
 		}
 	}
 	
@@ -292,13 +293,16 @@ public class SecurityManagerCommandline {
 		}
 	}
 	
-	private void verify() {
+	private int verify() {
 		initSecurityControl();
 		File fileIn = getFileIn();
+		
+		int ret = 1; //fail
 		
 		Result res = sec.verifyFileSignature(fileIn);
 		if (res.succeeded) {
 			System.out.println("VERIFICATION SUCCEEDED.");
+			ret = 0;
 		} else {
 			System.out.println("VERIFICATION FAILED.");
 		}
@@ -310,6 +314,7 @@ public class SecurityManagerCommandline {
 			System.out.println("Warning: Report creation failed.");
 			//e.printStackTrace();
 		}
+		return ret;
 	}
 	
 	private void initSecurityControl() {
