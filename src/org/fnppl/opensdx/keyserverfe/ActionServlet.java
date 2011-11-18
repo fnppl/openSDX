@@ -1,6 +1,4 @@
 package org.fnppl.opensdx.keyserverfe;
-
-
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -51,211 +49,189 @@ import javax.servlet.http.*;
 
 import org.apache.velocity.*;
 import org.apache.velocity.app.*;
-import org.jdom.Element;
-
-import org.fnppl.dbaccess.*;
-import org.fnppl.opensdx.common.*;
 
 
-	@SuppressWarnings("serial")
-	public class ActionServlet extends MyServlet {
-	    //private static WM staticWM;
-	    private static Object velocityCatch;
-	    //private static HashSet<MyAction> unfinished = new HashSet<MyAction>();
-	    public static boolean maintenance = false;
-	    
-	    public ActionServlet() throws Exception{        
-	        super();                
-	    }
-	    
-	    public void doHead(HttpServletRequest request, HttpServletResponse response) {
-	    	System.out.println((new Date())+"\n"+request.getRequestURL()+"\n"+MyAction.getHeader(request, "ActionServlet::doHead"));
-	    	
-	    	
-	        response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-//	        response.setStatus(HttpServletResponse.SC_OK);
-//	        
-//	        long ll = System.currentTimeMillis();
-//	        response.setDateHeader("Date", ll);
-//	        response.setHeader("Connection", "close");
-//	        response.setDateHeader("expires", ll);
-//	        response.setDateHeader("Last-Modified", ll);
-//	        String cmd = request.getParameter("cmd");
-//	        
-//	        if(cmd==null) {
-//	            cmd = "loginpage";
-//	        }
-//	        if(cmd.equals("rssmaster")) {
-//	            response.setContentType("application/rss+xml;charset="+"UTF-8");
-//	        }
-//	        else {
-//	            response.setContentType("text/html");
-//	        }
-	    }
-	    
-	    public static void initVM() {
-	    	if(velocityCatch == null) {
-	        	velocityCatch = new Object();
 
-	        	Properties props = new Properties();
-	        	props.setProperty("input.encoding", "UTF-8");
-	        	props.setProperty("output.encoding", "UTF-8");
-	        	
-	        	if(config.getChild("vmtemplatepath")!=null) {
-	                props.setProperty("file.resource.loader.path", config.getChildText("vmtemplatepath"));
-	        	}
-	        	if(System.getProperty("vmtemplatepath")!=null) {
-	        		props.setProperty("file.resource.loader.path", System.getProperty("vmtemplatepath"));
-	        		//Velocity.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, System.getProperty("vmtemplatepath"));//oder new FIle()?
-	        	}
-	        	
-	            try {
-	            	Velocity.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM, VeloLog.getInstance());
-	            	Velocity.init(props);            	            	
-	            	
-	            }catch(Exception ex) {
-	                ex.printStackTrace();
-	            }
-	        }
-	    }
-	    
-		@SuppressWarnings("unchecked")
-		public void doPGU(HttpServletRequest request_, HttpServletResponse response, String method) {
-			MultiTypeRequest request = new MultiTypeRequest(request_);
-			
-			initVM();
-	    	
-	    	String pathinfo = request.getPathInfo();
-	    	if(pathinfo == null) {
-	    		pathinfo = "";
-	    	}
-	    	
-	    	String cmd = null;
-	    	
-	    	StringTokenizer kk = new StringTokenizer(pathinfo, "/");
-	    	int i = 0;
-	    	Vector[] args = {new Vector<String>(), new Vector<String>()};
-	    	if(kk.countTokens()!=0){
-	        	cmd = kk.nextToken();
-	        }
-	    	while(kk.hasMoreTokens()) {
-	    		String kkk = kk.nextToken();
-	    		System.out.println("["+method+"] PATHINFO["+i+"]: "+kkk);
-	    		args[i%2].add(kkk);
-	    		i++;
-	    	}
-	        
-	        MyAction ma = null;
-	        if(cmd==null || cmd.equals("")) {
-	        	cmd="index";
-	        }
-	        
-	        System.out.println("MyAction::"+cmd+" from "+request.getRemoteAddr());
-	        
-	        if("onexml".equalsIgnoreCase(cmd)){
-	            ma = new OneXMLAction(request, response);
-	        }
-	        
-	        
-	        if(ma != null) {
-	        	ma.mode = method;        	
-	        	VelocityContext c = new VelocityContext();        	
-	        	try {
-	        		System.out.println("ActionServlet::going to performAllAction on "+ma.getClass().getName());
-	        		ma.performAllAction();
-	        		System.out.println("ActionServlet::going to conjoinParams on "+ma.getClass().getName());
-	        		ma.conjoinParams(args); //das hier fügt aus den per get/post übergebenen parametern die zu per pathinfo angegebenen hinzu
-	        		
-	        		for(int zi=0, to=ma.gimmeParameterCount();zi<to;zi++) {
-	                    c.put("param_"+ma.gimmeNameAt(zi), ma.gimmeValueAt(zi));
-	                }
-	        		
-	                c.put("ma",ma);
-	                c.put("encoding", ma.encoding);
-	                c.put("cmd", cmd);
-//	                c.put("sessionid", ma.user.sessionid);//
-	                c.put("reqaddress", request.getRemoteAddr());
-	                c.put("scheme", request.getScheme());
-	                c.put("querystring",request.getQueryString());
-	                if(c.get("querystring") == null) {
-	                    c.put("querystring","");
-	                }
-	                String requesturl = request.getRequestURL().toString();
+@SuppressWarnings("serial")
+public class ActionServlet extends MyServlet {
+    private static Object velocityCatch;   
+    public static boolean maintenance = false;
+    public static boolean allowsearchengines = false;
+    
+    // Init
+    public ActionServlet() throws Exception{        
+        super();                
+    }
+    
+    // HEAD nich erlaubt
+    public void doHead(HttpServletRequest request, HttpServletResponse response) {
+        response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+    }
+    
+    // Verlocity initialisieren
+    public static void initVM() {
+    	if(velocityCatch == null) {
+        	velocityCatch = new Object();
 
-	                c.put("request", request);
-	                c.put("requesturl", requesturl);
-	                c.put("server", request.getServerName());
-	                c.put("port", request.getServerPort());
-	                
-	                ma.server = request.getServerName();
-	                ma.port = request.getServerPort();
-	                
-	                String ref = request.getHeader("Referer");
-	                
-	                if(ref == null) { 
-	                	ref="#"; 
-	                }             
-	                c.put("referer", ref);
-	                
-	                System.out.println((new Date())+"ActionServlet::going to performAction on "+ma.getClass().getName());
-	        		ma.performAction(request.getRemoteAddr(), c);
-	        		System.out.println((new Date())+"ActionServlet::performed on "+ma.getClass().getName());
-	        	} catch(Exception ex) {
-	        		ex.printStackTrace();
-//	        		ma.makeErrorOutput("Ein interner Fehler ist aufgetreten", null, c);  
-	        		
-	        		Element reqresp = new Element("reqresp");
-	        		int code = MyAction.RESPONSECODE_FAIL; //ok
-	            	
-	            	Element req = new Element("request");
-	            	reqresp.addContent(req);
-	            	ma.mirrorParams(req, request.getRemoteAddr());
-	            	
-	            	Element resp = new Element("response");    	
-	            	reqresp.addContent(resp);
-	            	
-	            	Element responsecode = new Element("responsecode");
-	            	resp.addContent(responsecode);
-	            	responsecode.setText(""+code);
-	            	
-	            	
-	            	Element responsemessage = new Element("responsemessage");
-	            	resp.addContent(responsemessage );
-	            	responsemessage.setText(ex.getMessage());
-	            	
-	            	try {
-	            		ma.writeXML(reqresp);
-	            	}catch(Exception exx) {
-	            		exx.printStackTrace();
-	            	}
-	        	}
-	        } //ma!=null
-	    }
-	    
-	    public void doGet(HttpServletRequest request, HttpServletResponse response) {
-	    	doPGU(request, response, "GET");
-	    }
-	    
-		public void doPost(HttpServletRequest request, HttpServletResponse response) {
-	    	doPGU(request, response, "POST");
-	    }
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws Exception {
-//		//TNMOB-17
-//		//für lokales geshizzle:
-//		ActionServlet.initOFFDB();//initialisiert die db-connection mit dem "dblocal"-hostname aus resources/config.xml
-//		
-//		DBResultSet Rs = BalancingConnectionManager.execQuery("select count(*) from tnuser");
-//		//u dont have to check-in and check-out connections - they are just taken for ONE call... but please make sure not to use prepare-statments!!!!
-//		System.out.println("User in DB: "+Rs.height());
-//		
-//		int r = BalancingConnectionManager.execUpdate("update tnuser set username='root' where username='root");
-//		
-//		//auf dem server (production)
-////		ActionServlet.initLoadDB()://normales geshizzle
-	}
-
+        	Properties props = new Properties();
+        	props.setProperty("input.encoding", "UTF-8");
+        	props.setProperty("output.encoding", "UTF-8");
+        	
+        	if(config.getChild("vmtemplatepath")!=null) {
+                props.setProperty("file.resource.loader.path", config.getChildText("vmtemplatepath"));
+        	}
+        	if(System.getProperty("vmtemplatepath")!=null) {
+        		props.setProperty("file.resource.loader.path", System.getProperty("vmtemplatepath"));
+        		//Velocity.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, System.getProperty("vmtemplatepath"));//oder new FIle()?
+        	}
+        	
+            try {
+            	Velocity.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM, VeloLog.getInstance());
+            	Velocity.init(props);            	            	
+            	
+            }catch(Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+    
+    // doGet, doPost delegieren an diese Methode weiter - siehe param method  
+	@SuppressWarnings("unchecked")
+	public void doPGU(HttpServletRequest request_, HttpServletResponse response, String method) {
+		MultiTypeRequest request = new MultiTypeRequest(request_);
+		
+		initVM();
+    	
+    	String pathinfo = request.getPathInfo();
+    	if(pathinfo == null) {
+    		pathinfo = "";
+    	}
+    	
+    	String cmd = null;
+    	
+    	StringTokenizer kk = new StringTokenizer(pathinfo, "/");
+    	int i = 0;
+    	Vector[] args = {new Vector<String>(), new Vector<String>()};
+    	if(kk.countTokens()!=0){
+        	cmd = kk.nextToken();
+        }
+    	while(kk.hasMoreTokens()) {
+    		String kkk = kk.nextToken();
+    		System.out.println("["+method+"] PATHINFO["+i+"]: "+kkk);
+    		args[i%2].add(kkk);
+    		i++;
+    	}
+        
+    	
+        MyAction ma = null;
+        // Default-cmd == index
+        if(cmd==null || cmd.equals("")) {
+        	cmd="index";
+        }
+        
+//        String useragent = "";
+//        Enumeration en = request.getHeaderNames();
+//        while(en.hasMoreElements()) {
+//            String n = (String)en.nextElement();
+//            String v = request.getHeader(n);
+//            if(n.toLowerCase().equals("user-agent")) {
+//                useragent = v;
+//            }
+//        }
+        
+        // Prüfen ob es sich um einen Bot/eine Suchmaschine handelt und ggf. nichts ausliefern
+        String useragent = request.getHeader("User-Agent");        
+//        System.out.println("useragent: "+useragent);
+        
+        boolean detectedsearchengine = false;
+        String ua = useragent.toLowerCase();
+        for(int ui=0;ui<searchengines.size();ui++) {
+            String se = (String)searchengines.elementAt(ui);
+            if(ua.indexOf(se)>=0) {
+                detectedsearchengine = true;
+                System.out.println("SEARCHENGINEREQUEST :: "+cmd+" :: "+useragent);
+                break;
+            }
+        }
+        
+        if(detectedsearchengine && !allowsearchengines) {
+        	//throw new Exception("Search-Engine "+useragent+" not allowed here...");
+    		System.err.println("Search-Engine "+useragent+" not allowed at all...");
+        	return;
+        }
+        
+        if("index".equals(cmd)){
+            EchoPageAction epa = new EchoPageAction(request, response);
+            epa.tmpl = "index.vm";
+            epa.admin = false;
+            ma = epa;
+        }
+        else if("echo".equals(cmd)){
+            EchoPageAction epa = new EchoPageAction(request, response);        	
+            epa.admin = false;
+            ma = epa;
+        }
+        
+        if(ma != null) {
+        	ma.mode = method;
+        	if(ma.needssessionid && detectedsearchengine) {
+        		System.err.println("Search-Engine "+useragent+" not allowed here ("+cmd+"...");
+            	return;
+        	}
+        	
+        	VelocityContext c = new VelocityContext();        	
+        	try {
+        		ma.performAllAction(args);
+        		
+//        		ma.conjoinParams(args); //das hier fügt aus den per get/post übergebenen parametern die zu per pathinfo angegebenen hinzu
+        		
+        		for(int zi=0, to=ma.gimmeParameterCount();zi<to;zi++) {
+                    c.put("param_"+ma.gimmeNameAt(zi), ma.gimmeValueAt(zi));
+                }
+        		
+//        		c.put("broker", ObjectBroker.getInstance());
+                c.put("ma",ma);
+                c.put("encoding", ma.encoding);
+                c.put("cmd", cmd);
+                
+                c.put("au", ma.user);
+                
+                c.put("reqaddress", request.getRemoteAddr());
+                c.put("scheme", request.getScheme());
+                c.put("querystring",request.getQueryString());
+                if(c.get("querystring") == null) {
+                    c.put("querystring","");
+                }
+                
+                String requesturl = request.getRequestURL().toString();
+//                System.out.println("RequestURL: "+requesturl+" from "+request.getRemoteAddr());
+                
+                c.put("mid", ma.user.mandantid);
+                c.put("request", request);
+                c.put("requesturl", requesturl);
+                c.put("server", request.getServerName());
+                c.put("port", request.getServerPort());
+                
+                String ref = request.getHeader("Referer");                
+                if(ref == null) { 
+                	ref="#"; 
+                }             
+                c.put("referer", ref);
+                                
+        		ma.performAction(request.getRemoteAddr(), c);
+        	} catch(Exception ex) {
+        		ex.printStackTrace();
+//        		ma.makeErrorOutput("Ein interner Fehler ist aufgetreten", null, c);    
+        	}
+        } //ma!=null
+    }
+    
+    public void doGet(HttpServletRequest request, HttpServletResponse response) {
+    	doPGU(request, response, "GET");
+    }
+    
+	public void doPost(HttpServletRequest request, HttpServletResponse response) {
+    	doPGU(request, response, "POST");
+    }
 }
+

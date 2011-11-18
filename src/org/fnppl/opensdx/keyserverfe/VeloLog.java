@@ -1,12 +1,10 @@
-package org.fnppl.opensdx.keyserverfe;
-
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
  * 							http://fnppl.org
- */
+*/
 
 /*
  * Software license
@@ -44,6 +42,11 @@ package org.fnppl.opensdx.keyserverfe;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+
+package org.fnppl.opensdx.keyserverfe;
+
+
+
 import org.apache.velocity.runtime.log.LogChute;
 import org.apache.velocity.runtime.RuntimeServices;
 

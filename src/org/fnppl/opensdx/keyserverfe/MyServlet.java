@@ -1,12 +1,10 @@
-package org.fnppl.opensdx.keyserverfe;
-
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
  * 							http://fnppl.org
- */
+*/
 
 /*
  * Software license
@@ -44,9 +42,12 @@ package org.fnppl.opensdx.keyserverfe;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+package org.fnppl.opensdx.keyserverfe;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
+
 import javax.servlet.http.*;
 
 import org.jdom.*;
@@ -56,9 +57,10 @@ import org.fnppl.dbaccess.*;
 
 
 public class MyServlet extends HttpServlet {
-private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-protected static Element config = new Element("fucker");
+	protected static Element config = new Element("fucker");
+	protected static Vector searchengines;
     
     public MyServlet() throws Exception{
         System.out.println("Initialising MyServlet");
@@ -78,6 +80,16 @@ protected static Element config = new Element("fucker");
                 } catch(Exception ex) {
                     ex.printStackTrace();
                 }
+                
+//                try {
+//                	String g = config.getChildText("hibernatedir");
+//                	File f = new File(g);
+//                	if(f.exists() && f.isDirectory()) {
+//                		XMLServerConnector.hibernatedir = f;
+//                	}
+//                } catch(Exception ex) {
+////                	ex.printStackTrace();
+//                }
             }
         }//synchronized   
     }
@@ -89,6 +101,20 @@ protected static Element config = new Element("fucker");
         Class<MyServlet> c = MyServlet.class;
         
         config = sax.build(new InputStreamReader(c.getResourceAsStream("resources/config.xml"))).getRootElement();
+        
+        searchengines = new Vector();        
+        SAXBuilder builder = new SAXBuilder();
+        try {
+        	Iterator it = config.getChild("searchengines").getChildren().iterator();
+        	while(it.hasNext()) {
+        		Element e = (Element)it.next();
+        		searchengines.addElement(e.getText().trim().toLowerCase());
+        	}
+        
+    		ActionServlet.allowsearchengines = ! "false".equals(config.getChildText("allowsearchengines"));
+    	} catch(Exception ex) {
+//    		ex.printStackTrace();
+    	}
     }
     
     public static void initOFFDB() throws Exception {
@@ -105,7 +131,7 @@ protected static Element config = new Element("fucker");
     }
     public static void initLoadDB(boolean local, int limitconns) {
         Element lbconfig = config.getChild("dbloadbalancer");
-//        BalancingConnectionManager.init(lbconfig,local,limitconns);
+        BalancingConnectionManager.init(lbconfig,local,limitconns);
     }
         
     

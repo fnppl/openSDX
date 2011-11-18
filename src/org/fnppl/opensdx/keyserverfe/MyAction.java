@@ -1,18 +1,10 @@
 /*
- * $Id: MyAction.java 1881 2010-04-01 11:57:54Z SP $
- */
-
-
-package org.fnppl.opensdx.keyserverfe;
-
-
-/*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
  * 							http://fnppl.org
- */
+*/
 
 /*
  * Software license
@@ -51,6 +43,7 @@ package org.fnppl.opensdx.keyserverfe;
  * 
  */
 
+package org.fnppl.opensdx.keyserverfe;
 
 import org.jdom.*;
 import org.jdom.input.*;
@@ -58,29 +51,26 @@ import org.jdom.output.*;
 
 import java.io.*;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import javax.servlet.http.*;
+
+import org.fnppl.dbaccess.*;
+
 import org.apache.velocity.*;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 
-import org.fnppl.dbaccess.*;
-import org.fnppl.opensdx.common.*;
+
 
 @SuppressWarnings("unchecked")
 public abstract class MyAction {
-	public final static int RESPONSECODE_OK = 0;
-	public final static int RESPONSECODE_SHIZZLE = 1;
-	public final static int RESPONSECODE_SHOULD_RELOADCONFIG = 2;
-	public final static int RESPONSECODE_MUST_RELOADCONFIG = 3;
-	public final static int RESPONSECODE_REPORTING_ALREADY_EXISTS = 50;
-	public final static int RESPONSECODE_FAIL = 100;
-	public final static int RESPONSECODE_FAIL_DUE_TO_RECONFIG = 102;
+	public final static boolean always_session_wanted = false;
+	public final static long default_mandantid = 101;
 	
-	public boolean admin = false;
 	
 	public String mode = "UNDEFINED";  
 	public Vector<String>[] parameter = new Vector[2];
@@ -92,23 +82,29 @@ public abstract class MyAction {
 
 	public String encoding = "UTF-8";
 
-	public String server = null;
-	public int port = 0;
+	public boolean needssessionid = false;
 
 	public static Element config;
-	public static File storagedir = null;
 
-	public ActiveUser user;//HT 02.04.2009 - das ist ja meine kapsel für session und user
+	public ActiveUser user;
+	public String templateprefix = "shop_";
+	
+	/**
+	 * Setzt die MaxAge Eigenschaft des Cookies auf null, dieser wird somit vom browser gelöscht
+	 * @param sessionid ID der Session
+	 */
+	public void deleteCookie(String sessionid){
+		//Hier den Cookie killen
+		Cookie kill = new Cookie("MERCHSTORE_ADMIN_sessionid", sessionid);
+		kill.setMaxAge(0);
+		kill.setPath("/");
+		response.addCookie(kill);
+	}
 
 	private static final void readConfig() throws Exception {
 		SAXBuilder sax = new SAXBuilder();        
 		Class<MyAction> c = MyAction.class;        
 		config = sax.build(new InputStreamReader(c.getResourceAsStream("resources/config.xml"))).getRootElement();
-		
-		storagedir = new File(config.getChildText("storagedir"));
-		storagedir.mkdirs();
-		
-		System.out.println("StorageDir: "+storagedir.getPath());
 	}
 
 	static {
@@ -119,21 +115,53 @@ public abstract class MyAction {
 		}
 	}
 
-	public final static boolean validClientSession(Client cl, ActiveUser au, String tnappuid) {
-		System.out.println("MyAction::validClientSession::Client==null: "+(cl==null));
-		System.out.println("MyAction::validClientSession::ActiveUser==null: "+(au==null));
+	public final static String moneyF(String s) {
+		return moneyF(Double.parseDouble(s));
+	}
+	public final static String moneyF(double f) {
+		DecimalFormat df = (DecimalFormat)DecimalFormat.getInstance(Locale.GERMANY);
+		df.applyPattern("#0.00");
 		
-		if(cl!=null && au!=null) {
-			System.out.println("MyAction::validClientSession::given tnappuid="+tnappuid+" equals cl.tnappuid="+cl.get("tnappuid")+" "+(cl.get("tnappuid").equals(tnappuid)));
-			System.out.println("MyAction::validClientSession::au.loggedin: "+au.loggedin);
-			System.out.println("MyAction::validClientSession::au.logintime: "+au.logintime+ "maxlogin("+au.logintime+ActiveUser.MAX_LOGINTIME+")>current: "+(au.logintime+ActiveUser.MAX_LOGINTIME > System.currentTimeMillis()));
-    		
-			if(cl.get("tnappuid").equals(tnappuid) && au.loggedin && au.logintime+ActiveUser.MAX_LOGINTIME > System.currentTimeMillis()) {
-    			return true;
-    		}
-    	}
-    	
-    	return false;    	
+		return df.format(f);
+	}
+	
+	public final static String simplify(String s, int maxlength) {
+		StringBuffer sb = new StringBuffer();
+		for(int i=0;i<s.length();i++) {
+			char c = s.charAt(i);
+			switch(c) {
+				case 'ä':
+					sb.append("ae");
+					break;
+				case 'Ä':
+					sb.append("ae");
+					break;
+				case 'ö':
+					sb.append("oe");
+					break;
+				case 'Ö':
+					sb.append("Oe");
+					break;
+				case 'ü':
+					sb.append("ue");
+					break;
+				case 'Ü':
+					sb.append("Ue");
+					break;
+				case 'ß':
+					sb.append("ss");
+					break;
+					
+				default:
+					sb.append(c);
+			}			
+		}
+		
+		if(sb.length() > maxlength) {
+			return sb.substring(0, maxlength);
+		}
+		
+		return sb.toString();
 	}
 
 	public final static String replace(String inwhat, String what, String withme) {
@@ -164,20 +192,39 @@ public abstract class MyAction {
 		return ret.toString();
 	}
 	
-	public static String getHeader(HttpServletRequest request, String ident) {
-		StringBuffer ret = new StringBuffer();
-		
-		ret.append("****************\n");
-    	Enumeration en = request.getHeaderNames();
-    	while(en.hasMoreElements()) {
-    		String n = en.nextElement().toString();
-    		String v = request.getHeader(n);
-    		
-    		ret.append(ident+"::Header["+n+"] -> "+v+"\n");
-    	}
-    	ret.append("****************\n");
-    	
-    	return ret.toString();
+	public final static String elementToString(Element e) {
+		return Helper.elementToString(e);
+	}
+	
+	public final static String htmlEncode(String s) {
+		StringBuilder b = new StringBuilder(s.length());
+	     for (int i = 0; i < s.length(); i++)
+	     {
+	       char ch = s.charAt(i);
+	       if (ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9')
+	       {
+	         // safe
+	         b.append(ch);
+	       }
+	       else if (Character.isWhitespace(ch))
+	       {
+	         // paranoid version: whitespaces are unsafe - escape
+	         // conversion of (int)ch is naive
+	         b.append("&#").append((int) ch).append(";");
+	       }
+	       else if (Character.isISOControl(ch))
+	       {
+	         // paranoid version:isISOControl which are not isWhitespace removed !
+	         // do nothing do not include in output !
+	       }
+	       else
+	       {
+	         // paranoid version
+	         // the rest is unsafe, including <127 control chars
+	         b.append("&#" + (int) ch + ";");
+	       }
+	     }
+	     return b.toString();
 	}
 
 	public final static String urlEncode(String s) {
@@ -345,7 +392,7 @@ public abstract class MyAction {
 
 	public abstract void performAction(String reqAddress, VelocityContext c) throws Exception;
 
-	public void performAllAction() throws Exception {
+	public void performAllAction(Vector[] args) throws Exception {
 		//String clienti p = request.getRemoteAddr();
 		try {
 			Enumeration<String> e = request.getParameterNames();            
@@ -365,61 +412,122 @@ public abstract class MyAction {
 			//this.errortext=e.getMessage();
 			e.printStackTrace();
 		}
+		
+		conjoinParams(args);
 
 		user = new ActiveUser();
-		//TODO HT 26.08.2010 - hier jetzt aus den post-daten den user ziehen...
 		
+		/*
+         * Hier Session Checken (Um es nicht jedes mal in den Actions machen zu müssen (wie im PT)
+         * Und zwar gehen wir nach folgenden Regeln vor: 
+         * 
+         * -> Cookie vorhanden?
+         * 		|
+         * 		|`-> JA!
+         * 		|	|
+         * 		|	`-> Sessionid noch gültig?
+         * 		|		|
+         * 		|		|`->JA!
+         * 		|		|	`-> Anhand der Parameter einfach weiterleiten!
+         * 		|		|
+         * 		|		`->NEIN!
+         * 		|			|
+         * 		|			`-> Checken ob MID vorhanden ist (Als Parameter und im Cookie).
+         * 		|				|
+         * 		|				|`-> JA!
+         * 		|				|	|	
+         * 		|				|	`-> Login unter dieser MID vorbereiten (Formular anpassen)
+         * 		|				|
+         * 		|				`-> NEIN!
+         * 		|					|
+         * 		|					`-> Login so vorbereiten das man die MID auswählen muss.
+         * 		| 
+         * 		`->NEIN!
+         * 			|
+         * 			`-> Checken ob MID im parameter vorhanden ist.
+         * 				|
+         * 				|`-> JA!
+         * 				|	|
+         * 				|	`-> Login unter dieser MID vorbereiten.
+         * 				|
+         * 				`-> NEIN!
+         * 					|
+         * 					`-> Login so vorbereiten das man die MID auswählen muss.
+         */
+        
+        //Cookie lesen:
+        Cookie[] cooks = request.getCookies();
+        String sessionid = null;
+        boolean cookieFound = false;
+        System.out.println("---------------\nSearching 4 cookie: MERCHSTORE_ADMIN_sessionid");
+        for(int j=0; cooks!=null && j<cooks.length && !cookieFound; j++) {
+        	Cookie coo = cooks[j];
+        	if(coo.getName().equals("MERCHSTORE_ADMIN_sessionid")) {
+        		System.out.print("Cookie Found!\nDoes an active session exist --->");
+        		cookieFound = true;
+        		sessionid = coo.getValue();
+        		
+        		
+        		//Hier Prüfen obs eine Aktive session in der DB gibt
+        		boolean exists = BalancingConnectionManager.execQuery(
+        				"select exists(select * from activeusers where sessionid = '"+Helper.dbEncode(sessionid)+"')"
+        			).getValueAt(0, 0).indexOf("t") == 0;  
+        		
+        		if(exists){
+        			System.out.println("YES!");
+        			System.out.println("select mandantid from activeusers where sessionid = '"+sessionid+"'");
+        			//Checken ob die Session noch gültig ist -> Nicht älter als 12h
+    				long mid = BalancingConnectionManager.execQuery(
+    								"select mandantid from activeusers where sessionid = '"+sessionid+"'"
+    							).getLongOf(0, "mandantid");
+    				
+    				user.sessionid = sessionid;
+    				user.mandantid = mid;
+        
+        		}else{
+        			System.out.println("NO!");
+        			// Keine aktive session in der DB, der Cookie kann gelöscht werden
+    				deleteCookie(sessionid);        			
+        		}
+        		System.out.println("---------------");
+            }
+        } 		
+        
+        if(!cookieFound){ //Kein Cookie gefunden, es wird ein "Leerer" User erzeugt um ein Login zu erzwingen.
+        	System.out.println("Cookie NOT found! Please Login!\n---------------");
+        	user = new ActiveUser();
+        	return;
+        }
 		
-//		Cookie[] cooked = request.getCookies();
-//		if(cooked!=null) {
-//			for(int z=0;z<cooked.length;z++) {
-//				Cookie c = cooked[z];
-//				if(c.getName().equals("sessionid")) {
-//					user.sessionid = c.getValue();		
-//					break;
-//				}
-//			}
-//		}
+		//hier jetzt abgelaufene sessions killen und neue setzen!
+		if(user.sessionid != null) {
+			if(!ActiveUser.detectSessionIdInDB(user.sessionid)) {
+				System.out.println("OUTDATED SESSIONID: "+user.sessionid);
+				user.sessionid = null;
+			}
+		}
 		
-		long aff = 333; //default "nonsense"-affiliateid 
-			
-//		if(isset("sessionid") && !gimmeValueOf("sessionid").equals("null")) {
-//			user.sessionid = gimmeValueOf("sessionid");
-//			aff = Long.parseLong(user.sessionid.substring(user.sessionid.indexOf("-")+1));
-//			user.affiliateid = aff;
-//		}
-//		
-//		if(user.sessionid == null) {
-//			aff = Long.parseLong(gimmeValueOf("affiliateid"));
-//			
-//			user.sessionid = SessionKeyGenerator.getInstance().generateTimedKeyString(SessionKeyGenerator.keylength)+"-"+aff;
-//			user.affiliateid = aff;//wirklich ein long!
-//		}
+		if(request.getServerName().indexOf("recordmakers")>=0) {
+			user.mandantid = 333; //wirklich ein long!
+		}
 		
-//		try {
-//			Cookie ccc = new Cookie("sessionid", user.sessionid);
-//			ccc.setMaxAge(60*60*24*5);//5 tage in sekunden...
-//			response.addCookie(ccc);
-//		} catch(Exception ex) {
-//			ex.printStackTrace();
-//		}
-//		
-//		if(user.sessionid != null) {
-//			user.sessiondata = ActiveUser.getSessionFromDB(user.sessionid);
-//			//System.out.println("sessiondata:"+sessiondata);
-//			if(user.sessiondata != null && user.sessiondata.get("user_userid") != null){
-//				user.loggedin = user.sessiondata.get("user_loggedin").toString().indexOf("t")==0;
-//
-//				if(user.loggedin) {
-////					MandantUser u = MandantUser.byId(Long.parseLong((String)user.sessiondata.get("user_userid")));
-////					user.user = u;
-//					//Mandant m = u.getMandant();
-//				}
-//
-//				ActiveUser.updateSessionData(user); //, sessiondata, loggedin, sessionid);
-//				//ActiveUser.assignDBSessionToUser(user.sessionid, u.getUserid()); //HT 02.04.2009 - hier nicht nötig. wird ja beim login gemacht.
-//			}
-//		}
+//		user.mandant = Mandant.getMandant(user.mandantid);
+//		templateprefix = user.mandant.get("templateprefix");
+		
+		if(user.sessionid != null) {
+			try {
+				Cookie ccc = new Cookie("MERCHSTORE_ADMIN_sessionid", user.sessionid);
+				ccc.setMaxAge(60*60*12);//12 Stunden in Sekunden
+				ccc.setPath("/");
+				response.addCookie(ccc);
+			} catch(Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		
+		if(user.sessionid != null) {
+//			user.ensureSessionData();
+		}
 	}
 	
 	public void makeOutput(Template t, VelocityContext c) throws Exception {        
@@ -451,6 +559,15 @@ public abstract class MyAction {
 
 		return null;
 	}
+	
+	public final Long gimmeLongValueOf(String name){
+		try{
+			return Long.parseLong(gimmeValueOf(name));
+		}catch (Exception e){
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 	public final String gimmeValueOf(String name) {
 		for(int i=0;i<parameter[0].size();i++) {
@@ -458,7 +575,6 @@ public abstract class MyAction {
 				return (String)parameter[1].elementAt(i) ;                
 			}
 		}
-		//return "";
 		return null;
 	}
 	
@@ -485,23 +601,21 @@ public abstract class MyAction {
 		}
 	}
 
-
 	public final void sendJavaRedirect(String wohin) throws Exception {
 		outStream.write(("<script type=\"text/javascript\">location.href=\""+wohin+"\"</script>redirecting to: "+wohin).getBytes());
 	}
 
-	public final void prepareOut(HttpServletResponse response, String mime) {
+	public final void prepareOut(HttpServletResponse response, String _mime) {
+		String mime = _mime;
+		if(_mime.indexOf("text/")>=0 && _mime.indexOf("chars")<0) {
+			mime = _mime+";charset="+encoding;
+		}
 		long ll = System.currentTimeMillis() - 1000*60*60*24;
-//		if(!response.containsHeader("expires")) {
-//			response.addDateHeader("expires", ll);//5 sekunden
-//		}
-		if(!response.containsHeader("Last-Modified")) {
-			response.setDateHeader("Last-Modified", ll);
-		}
-		if(!response.containsHeader("Date")) {
-			response.setDateHeader("Date", ll);
-		}
 
+		response.addDateHeader("expires", ll);//5 sekunden
+		response.setDateHeader("Last-Modified", ll);
+
+		response.addHeader("Content-Type", mime);
 		response.setContentType(mime);
 		response.setHeader("Connection", "close");
 
@@ -522,7 +636,33 @@ public abstract class MyAction {
 			System.out.println(key.toString()+": "+value.toString());
 		}
 	}
-
+	
+    public final static double add(double d1, double d2) {
+        return d1+d2;
+    }
+    public final static double add(String d1, String d2) {
+        return Double.parseDouble(d1)+Double.parseDouble(d2);
+    }
+    public final static double add(String d1, double d2) {
+        return Double.parseDouble(d1)+d2;
+    }
+    public final static double add(double d1, String d2) {
+        return Double.parseDouble(d2)+d1;
+    }
+    
+    public final static double multiply(double d1, double d2) {
+        return d1*d2;
+    }
+    public final static double multiply(String d1, String d2) {
+        return Double.parseDouble(d1)*Double.parseDouble(d2);
+    }
+    public final static double multiply(String d1, double d2) {
+        return Double.parseDouble(d1)*d2;
+    }
+    public final static double multiply(double d1, String d2) {
+        return Double.parseDouble(d2)*d1;
+    }    
+    
 	public static String dropParameterFromURLString(String url, String valuename) {
 		String ret = url;
 
@@ -582,39 +722,4 @@ public abstract class MyAction {
 		}
 		return url;
 	}
-	
-	public void writeXML(Element e) throws Exception {
-		if(outStream == null) {
-			prepareOut(response, "text/xml; charset="+encoding);
-		}
-		
-		//TODO HT 26.08.2010 - oder auf den stream
-		
-		BufferedOutputStream bout = new BufferedOutputStream(outStream);		
-		OutputStreamWriter ow = new OutputStreamWriter(bout, encoding);
-		
-		System.out.println("MyAction :: writeXML :: start");
-    	Format f = Format.getPrettyFormat();
-    	f.setEncoding("UTF-8");
-    	
-    	XMLOutputter xout = new XMLOutputter(f);    	
-    	xout.output(e, ow);
-    	ow.flush();
-    	ow.close();
-    }
-	
-	public void mirrorParams(Element e, String reqAddress) {
-		Vector<String> names = parameter[0];
-		Vector<String> values = parameter[1];
-		
-		for(int i=0;i<names.size();i++) {
-			Element r = new Element(names.elementAt(i));
-			r.setText(values.elementAt(i));
-			e.addContent(r);
-		}
-		
-		e.addContent((new Element("requestaddress")).setText(reqAddress));
-		e.addContent((new Element("requesttime")).setText(""+System.currentTimeMillis()));
-	}
-}
-
+}  
