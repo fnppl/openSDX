@@ -103,7 +103,7 @@ import org.fnppl.opensdx.dmi.wayout.*;
 @SuppressWarnings("serial")
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
-	private static String version = "v. 2011-11-17";
+	private static String version = "v. 2011-11-21";
 	private URL configGenres = FeedGui.class.getResource("resources/config_genres.xml");
 	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
 	private XMLTree tree;
@@ -393,9 +393,22 @@ public class FeedGui extends JFrame implements MyObserver {
 		if (feed.getBundleCount()==0) {
 			BundleInformation info = BundleInformation.make(now,now);
 			LicenseBasis license_basis = LicenseBasis.make(Territorial.make(), now, now);
-			LicenseSpecifics license_specifics = null;
+			LicenseSpecifics license_specifics = LicenseSpecifics.make();
 			Bundle bundle = Bundle.make(IDs.make(), "","", "", "", info, license_basis, license_specifics);
 			feed.addBundle(bundle);
+		}
+		int bundleCount = feed.getBundleCount();
+		for (int i=0;i<bundleCount;i++) {
+			Bundle b = feed.getBundle(i);
+			if (b.getLicense_specifics()==null) {
+				b.license_specifics(LicenseSpecifics.make());
+			}
+			int itemCount = b.getItemsCount();
+			for (int j=0;j<itemCount;j++) {
+				if (b.getItem(j).getLicense_specifics()==null) {
+					b.getItem(j).license_specifics(LicenseSpecifics.make());
+				}
+			}
 		}
 		return;
 	}
