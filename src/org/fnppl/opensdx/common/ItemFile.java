@@ -72,6 +72,8 @@ public class ItemFile extends BusinessObject {
 	private BusinessCollection<BusinessIntegerItem> dimension; 	//COULD
 	private BusinessBooleanItem no_file_given;			 		//COULD
 	
+	private BusinessStringItem comment;							//COULD - COULD EVEN BE MORE THAN ONE...
+	
 	public static ItemFile make(File f) {
 		ItemFile file = make();
 		file.setFile(f);
@@ -96,6 +98,7 @@ public class ItemFile extends BusinessObject {
 		file.prelistening_offset = null;
 		file.prelistening_offset = null;
 		file.no_file_given = null;
+		file.comment = null;
 		return file;
 	}
 	
@@ -143,6 +146,7 @@ public class ItemFile extends BusinessObject {
 		file.codecsettings = BusinessStringItem.fromBusinessObject(bo, "codecsettings");
 		file.channels = BusinessStringItem.fromBusinessObject(bo, "channels");
 		file.bytes = BusinessLongItem.fromBusinessObject(bo, "bytes");
+		file.comment = BusinessStringItem.fromBusinessObject(bo, "comment");
 		
 		file.checksums = Checksums.fromBusinessObject(bo);
 		file.location = FileLocation.fromBusinessObject(bo);
@@ -246,6 +250,14 @@ public class ItemFile extends BusinessObject {
 			this.filetype = null;
 		} else {
 			this.filetype = new BusinessStringItem("filetype", filetype);
+		}
+		return this;
+	}
+	public ItemFile comment(String comment) {
+		if (comment==null) {
+			this.comment = null;
+		} else {
+			this.comment = new BusinessStringItem("comment", comment);
 		}
 		return this;
 	}

@@ -259,7 +259,8 @@ public class SecurityManagerCommandline {
 			sign();
 		}
 		else if (cmd.equals("verify")) {
-			verify();
+			int ret = verify();
+			System.exit(ret);
 		}
 	}
 	
@@ -292,13 +293,54 @@ public class SecurityManagerCommandline {
 		}
 	}
 	
-	private void verify() {
-		initSecurityControl();
-		File fileIn = getFileIn();
+	public static int justCheckSignature(File keystore, File signature) throws Exception {
+		SecurityControl sec = new SecurityControl();
+		sec.setMessageHandler(null);
+		
+		KeyApprovingStore store = KeyApprovingStore.fromFile(keystore, null);
+		
+		sec.setKeyStore(store);
+		
+		KeyVerificator kv = KeyVerificator.make();
+		Vector<OSDXKey> privKeys = store.getAllPrivateSigningKeys();
+		for (OSDXKey key : privKeys) {
+			kv.addKeyRating(key, TrustRatingOfKey.RATING_ULTIMATE);
+		}
+		sec.setKeyverificator(kv);
+		sec.resetKeyClients();;
+		
+		File fileIn = signature;
+		
+		int ret = 1; //fail
 		
 		Result res = sec.verifyFileSignature(fileIn);
 		if (res.succeeded) {
 			System.out.println("VERIFICATION SUCCEEDED.");
+			ret = 0;
+		} else {
+			System.out.println("VERIFICATION FAILED.");
+		}
+		File fileOut = new File(signature.getParentFile(), signature.getName()+"_verify_report.xml");
+		try {
+			Document.buildDocument(res.report).writeToFile(fileOut);
+			System.out.println("Report created in "+fileOut.getAbsolutePath());
+		} catch (Exception e) {
+			System.out.println("Warning: Report creation failed.");
+			//e.printStackTrace();
+		}
+		return ret;
+	}
+	
+	private int verify() {
+		initSecurityControl();
+		File fileIn = getFileIn();
+		
+		int ret = 1; //fail
+		
+		Result res = sec.verifyFileSignature(fileIn);
+		if (res.succeeded) {
+			System.out.println("VERIFICATION SUCCEEDED.");
+			ret = 0;
 		} else {
 			System.out.println("VERIFICATION FAILED.");
 		}
@@ -310,6 +352,7 @@ public class SecurityManagerCommandline {
 			System.out.println("Warning: Report creation failed.");
 			//e.printStackTrace();
 		}
+		return ret;
 	}
 	
 	private void initSecurityControl() {
