@@ -127,7 +127,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class FileTransferGui extends JFrame implements MyObserver, CommandResponseListener {
 
-	public static final String version = "v. 2011-11-03";
+	public static final String version = "v. 2011-11-22";
 	private Vector<FileTransferAccount> accounts = new Vector<FileTransferAccount>();
 	private Vector<FileTransferAccount> supportedAccounts = new Vector<FileTransferAccount>();
 
@@ -169,6 +169,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 	private JList log;
 	private DefaultListModel log_model;
 	private File userHome = null;
+	private File lastPath = null;
 
 	public FileTransferGui() {
 		initUserHome();
@@ -200,6 +201,13 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 		try {
 			Element root =  Document.fromFile(f).getRootElement();
 			Vector<Element> eAccounts = root.getChildren("account");
+			String lp = root.getChildText("last_path");
+			if (lp!=null && lp.length()>0) {
+				lastPath = new File(lp);
+				if (!lastPath.exists()) {
+					lastPath = null;
+				}
+			}
 			for (Element e : eAccounts) {
 				try {
 					FileTransferAccount a = new FileTransferAccount();
@@ -234,7 +242,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 
 	private void exit() {
 		//TODO close open connections
-
+		saveAccounts();
 		this.dispose();
 	}
 
@@ -672,6 +680,9 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 		initComponents();
 		initLayout();
 		Helper.centerMe(this, null);
+		if (lastPath!=null) {
+			panelLocal.setSelectedDir(lastPath);
+		}
 	}
 
 	public static void main(String[] args) {
@@ -856,6 +867,13 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 				}
 				else {
 					Dialogs.showMessage("unsupported account type: "+a.type);
+				}
+			}
+			if (panelLocal!=null) {
+				File lastDir = panelLocal.getSelectedDir();
+				if (lastDir!=null) {
+					Element eLastPath = new Element("last_path", lastDir.getAbsolutePath());
+					e.addContent(eLastPath);
 				}
 			}
 			try {
