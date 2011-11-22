@@ -3,3 +3,4 @@
 .project
 bin/*
 lib/servlet.jar
+tokeyserver.sh
