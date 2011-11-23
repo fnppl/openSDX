@@ -266,7 +266,7 @@ public class Feed extends BusinessObject {
 				for (int i=0;i<bundle.getItemsCount();i++) {
 					Item item = bundle.getItem(i);
 					if (item.getFilesCount()>0) {
-						boolean subIndex = (item.getFilesCount()>1);
+						//boolean subIndex = (item.getFilesCount()>1);
 						for (int j=0;j<item.getFilesCount();j++) {
 							try {
 								ItemFile nextItemFile = item.getFile(j);
@@ -289,7 +289,7 @@ public class Feed extends BusinessObject {
 	public Element toElement() {
 		Vector<BundleItemStructuredName> itemNames = getStructuredFilenames();
 		for (BundleItemStructuredName sn : itemNames) {
-			sn.itemFile.file_origin(sn.new_filename);
+			sn.itemFile.filename(sn.new_filename);
 		}
 		return super.toElement();
 	}

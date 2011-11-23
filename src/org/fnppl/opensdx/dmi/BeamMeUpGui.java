@@ -131,6 +131,19 @@ public class BeamMeUpGui extends JFrame {
 		text_feed.setText(feed.getFeedinfo().getFeedID());
 		bu_feed_open.setVisible(false);
 		
+		try {
+			String keystore = feed.getFeedinfo().getReceiver().getFileKeystore();
+			if (keystore!=null && keystore.length()>0) {
+				text_keystore.setText(keystore);
+			}
+			String keyid = feed.getFeedinfo().getReceiver().getKeyID();
+			if (keyid!=null && keyid.length()>0) {
+				text_keyid.setText(keyid);
+			}
+		} catch (Exception ex) {
+			
+		}
+		
 		pReceiver.removeAll();
 		pReceiver.add(new PanelReceiver(feed.getFeedinfo().getReceiver()));
 

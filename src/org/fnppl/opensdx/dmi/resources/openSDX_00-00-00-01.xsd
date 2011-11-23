@@ -580,7 +580,6 @@
             <xsd:element name="decryptinfo" type="decryptinfo" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="no_file_given" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="comment" minOccurs="0" type="xsd:string"/>
-            <xsd:element name="file_origin" minOccurs="0" type="xsd:string"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="checksums">
@@ -608,9 +607,10 @@
             File can be accessible via path, http or ftp.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="path" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="origin_file" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="http" type="fileHttp" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="ftp" type="fileFtp" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="filename" type="xsd:string" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="creator">
@@ -643,6 +643,8 @@
             <xsd:element name="authtype" type="authtype"/>
             <xsd:element name="username" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="crypto" type="crypto" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="file_keystore" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="keyid" type="xsd:string" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="crypto">

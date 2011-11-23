@@ -651,12 +651,14 @@
 								<pass></pass><!-- COULD ; http-basic-header-auth -->
 								<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
 							</http><!-- http means that, this file is not delivered, but it can be pulled by the receiving parties ; integrity is assured by checksums -->
+							<origin_file>../ajajaj.flv</origin_file> <!-- COULD path to file on creator side -->
+							<filename>kaakka_2_90C70236ABE34F9D22BC1EB082CCF183</filename> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->
 						</location>
 						<checksums>
 							<sha1>8A:17:4F:86:DB:B4:05:62:5A:E7:3B:58:63:53:AD:F5:D6:23:D3:48</sha1><!-- SHOULD sha1-checksum of that file -->
 							<md5>90:C7:02:36:AB:E3:4F:9D:22:BC:1E:B0:82:CC:F1:83</md5><!-- SHOULD sha1-checksum of that file -->
 						</checksums><!-- MUST one checksum must be given; -->
-						<file_origin>kaakka_2_90C70236ABE34F9D22BC1EB082CCF183</file_origin> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->
+						
 					</file>
 					<file>
 						<type>prelistening</type><!-- MUST ; full|prelistening -->
@@ -674,12 +676,13 @@
 								<pass></pass><!-- COULD ; -->
 								<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
 							</ftp><!-- http means that, this file is not delivered, but it can be pulled by the receiving parties ; integrity is assured by checksums -->
+							<origin_file>../ajajaj.flv</origin_file> <!-- COULD path to file on creator side -->
+							<filename>kaakka_3_90C70236ABE34F9D22BC1EB082CCF183</filename> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->
 						</location>
 						<checksums>
 							<sha1></sha1><!-- SHOULD sha1-checksum of that file -->
 							<md5></md5><!-- SHOULD sha1-checksum of that file -->
 						</checksums><!-- MUST one checksum must be given; if encrypted file is referenced, those bytes/checksums are those of the encrypted file -->
-						<file_origin>kaakka_3_90C70236ABE34F9D22BC1EB082CCF183</file_origin> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->
 						<decryptinfo>
 							<cipher>AES/256/CTR</cipher><!-- MUST ; AES, RIJNDAEL, XOR, Arcfour, whatever - should be "convenient" -->
 							<initvector>19191919199</initvector>
@@ -696,13 +699,13 @@
 						<filetype>FLV/96/YUV/ajja</filetype><!-- MUST ; FILEFORMAT/BITRATE[KBIT/s]/CODEC/CODECSETTINGS e.g. mp3/320/unknown/CBR -->
 						<bytes>84848483838</bytes><!-- length of file in bytes -->
 						<location>
-							<path>../ajajaj.flv</path><!-- relative-paths are relative to this xml -->
+							<origin_file>../ajajaj.flv</origin_file> <!-- COULD path to file on creator side -->
+							<filename>kaakka_4_90C70236ABE34F9D22BC1EB082CCF183</filename> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->
 						</location>
 						<checksums>
 							<sha1></sha1><!-- SHOULD sha1-checksum of that file -->
 							<md5></md5><!-- SHOULD sha1-checksum of that file -->
 						</checksums><!-- MUST one checksum must be given; if encrypted file is referenced, those bytes/checksums are those of the encrypted file -->
-						<file_origin>kaakka_4_90C70236ABE34F9D22BC1EB082CCF183</file_origin> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->						
 					</file>
 					<file><!-- In the case of an update or takedown with no extra file given, set "no_file_given" to "true" -->
 			            <location />
@@ -729,12 +732,13 @@
 						<pass></pass><!-- COULD ; http-basic-header-auth -->
 						<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
 					</http><!-- http means that, this file is not delivered, but it can be pulled by the receiving parties ; integrity is assured by checksums -->
+					<origin_file>../ajajaj.flv</origin_file> <!-- COULD path to file on creator side -->
+					<filename>kaakka_1_90C70236ABE34F9D22BC1EB082CCF183</filename> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->	
 				</location>
 				<checksums>
 					<sha1></sha1><!-- SHOULD sha1-checksum of that file -->
 					<md5></md5><!-- SHOULD sha1-checksum of that file -->
 				</checksums><!-- MUST one checksum must be given; -->
-				<file_origin>kaakka_1_90C70236ABE34F9D22BC1EB082CCF183</file_origin> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->
 			</file>
 		</files><!-- mainly/only used for cover or pdf-booklet -->
 	</bundle>

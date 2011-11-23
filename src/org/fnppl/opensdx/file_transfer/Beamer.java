@@ -222,6 +222,8 @@ public class Beamer {
 		
 		final Result[] result = new Result[] {Result.succeeded()};
 		
+		final boolean[] ready = new boolean[]{false};
+		
 		//make a copy to remove private information and change to relative file paths  
 		Feed copyOfFeed = Feed.fromBusinessObject(BusinessObject.fromElement(feed.toElement()));
 		
@@ -318,21 +320,41 @@ public class Beamer {
 		
 		try {
 			System.out.println("\nUploading "+normFeedid+".xml ...");
+			hasAnswer = false;
+			final long[] timeout = new long[]{System.currentTimeMillis()+timeoutDuration};
 			client.uploadFile(feedbytes, absolutePath+normFeedid+".xml", new CommandResponseListener() {
 				public void onSuccess(OSDXFileTransferCommand command) {
 					System.out.println("Upload of "+normFeedid+".xml successful.");
+					hasAnswer = true;
 				}
 				
 				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
-					
+					timeout[0] = System.currentTimeMillis()+timeoutDuration;
 				}
 				public void onError(OSDXFileTransferCommand command, String msg) {
 					if (mh!=null) {
 						mh.showErrorMessage("Upload failed", "Upload of feed xml failed.");
 					}
 					result[0] = Result.error("Upload of feed xml failed.");
+					hasAnswer = true;
 				}
 			});
+			
+			//block until answer or timeout
+			while (!hasAnswer && timeout[0] > System.currentTimeMillis()) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			if (!hasAnswer) {
+				if (mh!=null) {
+					mh.showErrorMessage("Upload failed", "Upload of feed xml failed.");
+				}
+				result[0] = Result.error("Upload of feed xml failed. Timeout.");
+				return result[0];
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			if (mh!=null) {
@@ -349,21 +371,41 @@ public class Beamer {
 		
 		try {
 			System.out.println("\nUploading signature ...");
+			hasAnswer = false;
+			final long[] timeout = new long[]{System.currentTimeMillis()+timeoutDuration};
 			client.uploadFile(bOut.toByteArray(), absolutePath+normFeedid+".osdx.sig", new CommandResponseListener() {
 				public void onSuccess(OSDXFileTransferCommand command) {
 					System.out.println("Upload of signature successful.");
+					hasAnswer = true;
 				}
 				
 				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
-					
+					timeout[0] = System.currentTimeMillis()+timeoutDuration;
 				}
 				public void onError(OSDXFileTransferCommand command, String msg) {
 					if (mh!=null) {
 						mh.showErrorMessage("Upload failed", "Upload of signature failed.");
 					}
 					result[0] = Result.error("Upload of signature failed.");
+					hasAnswer = true;
 				}
 			});
+			
+			//block until answer or timeout
+			while (!hasAnswer && timeout[0] > System.currentTimeMillis()) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			if (!hasAnswer) {
+				if (mh!=null) {
+					mh.showErrorMessage("Upload failed", "Upload of feed signature xml failed. Timeout.");
+				}
+				result[0] = Result.error("Upload of feed signature xml failed. Timeout.");
+				return result[0];
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			if (mh!=null) {
@@ -377,19 +419,25 @@ public class Beamer {
 		Vector<BundleItemStructuredName> files = copyOfFeed.getStructuredFilenames();
 		for (BundleItemStructuredName f : files) {
 			try {
-				ItemFile nextItemFile = f.itemFile;
+				//ItemFile nextItemFile = f.itemFile;
+				//nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
+				
 				File nextFile = f.file;
 				final String filename = f.new_filename;
-				nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
 				
 				try {
+					final long[] timeout = new long[]{System.currentTimeMillis()+timeoutDuration};
+					hasAnswer = false;
 					System.out.println("\nUploading "+filename+" ...");
 					client.uploadFile(nextFile, absolutePath+filename, new CommandResponseListener() {
 						public void onSuccess(OSDXFileTransferCommand command) {
 							System.out.println("Upload of "+filename+" successful.");
+							hasAnswer = true;
 						}
 						
 						public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+							//System.out.println("status update: "+progress+" / "+maxProgress);
+							timeout[0] = System.currentTimeMillis()+timeoutDuration;
 							
 						}
 						public void onError(OSDXFileTransferCommand command, String msg) {
@@ -397,8 +445,25 @@ public class Beamer {
 								mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed.");
 							}
 							result[0] = Result.error("Upload of "+filename+" failed.");
+							hasAnswer = true;
 						}
 					});
+					
+					//block until answer or timeout
+					while (!hasAnswer && timeout[0] > System.currentTimeMillis()) {
+						try {
+							Thread.sleep(50);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					if (!hasAnswer) {
+						if (mh!=null) {
+							mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed. Timeout.");
+						}
+						result[0] = Result.error("Upload of "+filename+" failed. Timeout.");
+						return result[0];
+					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
 					if (mh!=null) {
@@ -414,9 +479,11 @@ public class Beamer {
 		//upload feed finished file
 		try {
 			System.out.println("\nUploading finish token ...");
+			hasAnswer = false;
 			client.uploadFile(new byte[]{0},absolutePath+normFeedid+".finished", new CommandResponseListener() {
 				public void onSuccess(OSDXFileTransferCommand command) {
 					System.out.println("Upload of finish token successful.");
+					hasAnswer = true;
 				}
 				
 				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
@@ -427,8 +494,26 @@ public class Beamer {
 						mh.showErrorMessage("Upload failed", "Upload of finish token failed.");
 					}
 					result[0] = Result.error("Upload of finish token failed.");
+					hasAnswer = true;
 				}
 			});
+			
+			//block until answer or timeout
+			long timeout = System.currentTimeMillis()+timeoutDuration;
+			while (!hasAnswer && timeout > System.currentTimeMillis()) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			if (!hasAnswer) {
+				if (mh!=null) {
+					mh.showErrorMessage("Upload failed", "Upload of finish token failed. Timeout.");
+				}
+				result[0] = Result.error("Upload of finish token failed. Timeout.");
+				return result[0];
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			if (mh!=null) {
@@ -437,58 +522,8 @@ public class Beamer {
 			result[0] = Result.error("Upload of finish token failed.");
 		}
 		
-		return result[0];
 		
-//		Bundle bundle = copyOfFeed.getBundle(0);
-//		if (bundle!=null) {
-//			//bundle files (cover, booklet, ..)
-//			for (int j=0;j<bundle.getFilesCount();j++) {
-//				try {
-//					ItemFile nextItemFile = bundle.getFile(j);
-//					File nextFile = new File(nextItemFile.getLocationPath());
-////					String ending = nextFile.getName();
-////					if (ending.contains(".")) {
-////						ending = ending.substring(ending.lastIndexOf('.'));
-////					} else {
-////						ending = "";
-////					}
-//					String ending = "";
-//					String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-//					String filename = normFeedid+"_0_"+j+"_"+md5+ending;
-//					nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
-//					client.uploadFile(nextFile, filename);
-//				} catch (Exception ex) {
-//					ex.printStackTrace();
-//				}
-//			}
-//			
-//			//item files
-//			for (int i=0;i<bundle.getItemsCount();i++) {
-//				Item item = bundle.getItem(i);
-//				if (item.getFilesCount()>0) {
-//					boolean subIndex = (item.getFilesCount()>1);
-//					for (int j=0;j<item.getFilesCount();j++) {
-//						try {
-//							ItemFile nextItemFile = item.getFile(j);
-//							File nextFile = new File(nextItemFile.getLocationPath());
-////							String ending = nextFile.getName();
-////							if (ending.contains(".")) {
-////								ending = ending.substring(ending.lastIndexOf('.'));
-////							} else {
-////								ending = "";
-////							}
-//							String ending = "";
-//							String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-//							String filename = normFeedid+"_"+(i+1)+(subIndex?"_"+(j+1):"")+"_"+md5+ending;
-//							nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
-//							client.uploadFile(nextFile, filename);
-//						} catch (Exception ex) {
-//							ex.printStackTrace();
-//						}
-//					}
-//				}
-//			}
-//		}
+		return result[0];
 	}
 	
 	

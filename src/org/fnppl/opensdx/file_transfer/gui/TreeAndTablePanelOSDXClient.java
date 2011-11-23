@@ -160,8 +160,10 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 		}
 		return nextList;
 	}
+	private Object objSync = new Object();
 	
 	public Vector<TreeAndTableNode> getChildren(TreeAndTableNode node) {
+		
 		RemoteFile file = (RemoteFile) node.getUserObject();
 		System.out.println("getChildren :: "+file.getFilnameWithPath());
 		try {
@@ -174,6 +176,7 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 					String name = f.getName();
 					try {
 						if (f.isDirectory()) {
+							System.out.println("adding directory: "+f.getPath()+"/"+name);
 							TreeAndTableNode n = new TreeAndTableNode(this, name, true, f);
 							children.add(n);
 						} else {
@@ -191,6 +194,7 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 			ex.printStackTrace();
 		}
 		return null;
+		
 	}
 	
 	public void setPreferredColumnWidth(int colNo, int width) {
@@ -376,6 +380,9 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 	}
 	
 	public void refreshView(final TreePath path, final boolean updateTableFromServer) {
+		synchronized (objSync) {
+			
+		
 		Thread t = new Thread() {
 			public void run() {
 				TreeAndTableNode node = root;
@@ -424,6 +431,8 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 //		} catch (Exception ex) {
 //			ex.printStackTrace();
 //		}
+		
+		}
 	}
 
 	
