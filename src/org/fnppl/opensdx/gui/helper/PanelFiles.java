@@ -14,8 +14,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.fnppl.opensdx.common.Bundle;
+import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.common.ItemFile;
+import org.fnppl.opensdx.dmi.BundleItemStructuredName;
 import org.fnppl.opensdx.gui.Dialogs;
 
 import java.util.HashMap;
@@ -31,6 +33,7 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 	//init fields
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
+	private Feed feed = null;
 	private Bundle bundle = null;
 	private Item item = null;
 	private JList list_files;
@@ -44,12 +47,13 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 	public PanelFiles() {
 		initComponents();
 		initLayout();
-		update((Item)null);
+		update((Item)null, null);
 	}
 
-	public void update(Item item){
+	public void update(Item item, Feed feed){
 		this.item = item;
 		this.bundle = null;
+		this.feed = feed;
 		int sel = list_files.getSelectedIndex();
 		updateFileList();
 		if (sel>=0) {
@@ -64,9 +68,10 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 		updateProperties();
 	}
 
-	public void update(Bundle bundle){
+	public void update(Bundle bundle, Feed feed){
 		this.bundle = bundle;
 		this.item = null;
+		this.feed = feed;
 		int sel = list_files.getSelectedIndex();
 		updateFileList();
 		if (sel>=0) {
@@ -112,7 +117,14 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 
 	private void updateProperties() {
 		ItemFile file = getSelectedFile();
-		panel_properties.update(file);
+		String structuredName = "";
+		if (file!=null && feed!=null) {
+			BundleItemStructuredName sn = feed.getStructuredFilename(file);
+			if (sn!=null) {
+				structuredName = sn.new_filename;
+			}
+		}
+		panel_properties.update(file, structuredName);
 		if (file==null) {
 			panel_properties.setVisible(false);
 		} else {

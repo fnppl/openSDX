@@ -59,6 +59,7 @@ import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.common.Util;
+import org.fnppl.opensdx.dmi.BundleItemStructuredName;
 import org.fnppl.opensdx.dmi.FeedCreator;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferListCommand;
@@ -149,58 +150,12 @@ public class Beamer {
 	}
 	
 	public static Vector<String[]> getUploadExtraFiles(Feed feed) {
-		Vector<ExtraFile> files = getUploadExtraFile(feed);
+		Vector<BundleItemStructuredName> files = feed.getStructuredFilenames();
 		Vector<String[]> sfiles = new Vector<String[]>();
-		for (ExtraFile f : files) {
+		for (BundleItemStructuredName f : files) {
 			sfiles.add(new String[] {f.file.getAbsolutePath(), f.new_filename});
 		}	
 		return sfiles;
-	}
-	
-	private static Vector<ExtraFile> getUploadExtraFile(Feed feed) {
-		Vector<ExtraFile> files = new Vector<ExtraFile>();
-		
-		String normFeedid = getNormFeedID(feed);
-		int num = 1;
-		for (int b=0;b<feed.getBundleCount();b++) {
-			Bundle bundle = feed.getBundle(b);
-			if (bundle!=null) {
-				//bundle files (cover, booklet, ..)
-				for (int j=0;j<bundle.getFilesCount();j++) {
-					try {
-						ItemFile nextItemFile = bundle.getFile(j);
-						File nextFile = new File(nextItemFile.getLocationPath());
-						String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-						String filename = normFeedid+"_"+num+"_"+md5;
-						num++;
-						files.add(new ExtraFile(nextItemFile, nextFile, filename));
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				
-				//item files
-				for (int i=0;i<bundle.getItemsCount();i++) {
-					Item item = bundle.getItem(i);
-					if (item.getFilesCount()>0) {
-						boolean subIndex = (item.getFilesCount()>1);
-						for (int j=0;j<item.getFilesCount();j++) {
-							try {
-								ItemFile nextItemFile = item.getFile(j);
-								File nextFile = new File(nextItemFile.getLocationPath());
-								String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-								String filename = normFeedid+"_"+num+"_"+md5;
-								num++;
-								files.add(new ExtraFile(nextItemFile, nextFile, filename));
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							}
-						}
-					}
-				}
-			}
-		}
-		return files;
 	}
 			
 			//old
@@ -256,16 +211,6 @@ public class Beamer {
 //		}
 		
 	
-	public static String getNormFeedID(Feed feed) {
-		String feedid = feed.getFeedinfo().getFeedID();
-		String normFeedid = Util.filterCharactersFile(feedid.toLowerCase());
-		System.out.println("norm feedid: "+normFeedid);
-		if (normFeedid.length()==0) {
-			normFeedid = "unnamed_feed";
-		}
-		return normFeedid;
-	}
-	
 	
 	private long timeoutDuration = 4000;
 	private Vector<RemoteFile> list = null;
@@ -273,7 +218,7 @@ public class Beamer {
 	
 	//private Result currentUploadResult = null; 
 	public Result uploadFeed(Feed feed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh) throws Exception {
-		final String normFeedid = getNormFeedID(feed);
+		final String normFeedid = feed.getNormFeedID();
 		
 		final Result[] result = new Result[] {Result.succeeded()};
 		
@@ -429,8 +374,8 @@ public class Beamer {
 		
 		
 		//upload all bundle and item files
-		Vector<ExtraFile> files = getUploadExtraFile(copyOfFeed);
-		for (ExtraFile f : files) {
+		Vector<BundleItemStructuredName> files = copyOfFeed.getStructuredFilenames();
+		for (BundleItemStructuredName f : files) {
 			try {
 				ItemFile nextItemFile = f.itemFile;
 				File nextFile = f.file;
@@ -780,16 +725,3 @@ public class Beamer {
 	}
 }
 
-class ExtraFile {
-	
-	ItemFile itemFile = null;
-	File file = null;
-	String new_filename = null;
-	
-	public ExtraFile(ItemFile itemFile, File file, String new_filename) {
-		this.itemFile = itemFile;
-		this.file = file;
-		this.new_filename = new_filename;
-	}
-	
-}

@@ -902,7 +902,7 @@ public class FeedGui extends JFrame implements MyObserver {
 			public void stateChanged(ChangeEvent e) {
 				if (jt.getSelectedComponent()==scrollBIP) {
 					if (currentFeed!=null) {
-						bundled_items_panel.update(currentFeed.getBundle(0));
+						bundled_items_panel.update(currentFeed.getBundle(0), currentFeed);
 					}
 				}
 				else if (jt.getSelectedComponent()==treePanel) {
@@ -948,7 +948,7 @@ public class FeedGui extends JFrame implements MyObserver {
 			}
 		}
 		if (bundled_items_panel!=null) {
-			bundled_items_panel.update(currentFeed.getBundle(0));
+			bundled_items_panel.update(currentFeed.getBundle(0), currentFeed);
 		}
 		if (treePanel!=null) {
 			if (currentFeed != null) {

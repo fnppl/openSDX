@@ -83,6 +83,7 @@ import java.awt.event.KeyEvent;
 public class PanelItem extends JPanel implements MyObservable, MyObserver {
 
 	//init fields
+	private Feed feed = null;
 	private Item item = null;
 	private Bundle bundle = null;
 	private PanelItemBasics pBasics;
@@ -101,12 +102,13 @@ public class PanelItem extends JPanel implements MyObservable, MyObserver {
 	public PanelItem() {
 		initComponents();
 		initLayout();
-		update((Item)null,null);
+		update((Item)null,null,null);
 	}
 
-	public void update(Item item, Bundle bundle) {
+	public void update(Item item, Bundle bundle, Feed feed) {
 		this.item = item;
 		this.bundle = bundle;
+		this.feed = feed;
 		if (item ==null) {
 			//update empty
 			pBasics.update((Item)null);
@@ -115,7 +117,7 @@ public class PanelItem extends JPanel implements MyObservable, MyObserver {
 			pInformation.update((BundleInformation)null);
 			pLicense.update((LicenseBasis)null);
 			pTags.update((ItemTags)null);
-			pFiles.update((Bundle)null);
+			pFiles.update((Bundle)null,feed);
 		} else {
 			IDs ids = item.getIds();
 			BundleInformation info = item.getInformation();
@@ -131,7 +133,7 @@ public class PanelItem extends JPanel implements MyObservable, MyObserver {
 			pInformation.update((BundleInformation)info);
 			pLicense.update((LicenseBasis)lb);
 			pTags.update(tags);
-			pFiles.update(item);
+			pFiles.update(item, feed);
 		}
 	}
 
