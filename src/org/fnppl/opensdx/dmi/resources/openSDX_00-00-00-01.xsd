@@ -580,6 +580,7 @@
             <xsd:element name="decryptinfo" type="decryptinfo" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="no_file_given" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="comment" minOccurs="0" type="xsd:string"/>
+            <xsd:element name="file_origin" minOccurs="0" type="xsd:string"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="checksums">

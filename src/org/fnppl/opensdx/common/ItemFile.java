@@ -71,8 +71,8 @@ public class ItemFile extends BusinessObject {
 	private BusinessStringItem channels;						//COULD
 	private BusinessCollection<BusinessIntegerItem> dimension; 	//COULD
 	private BusinessBooleanItem no_file_given;			 		//COULD
-	
 	private BusinessStringItem comment;							//COULD - COULD EVEN BE MORE THAN ONE...
+	private BusinessStringItem file_origin;						//COULD
 	
 	public static ItemFile make(File f) {
 		ItemFile file = make();
@@ -99,6 +99,7 @@ public class ItemFile extends BusinessObject {
 		file.prelistening_offset = null;
 		file.no_file_given = null;
 		file.comment = null;
+		file.file_origin = null;
 		return file;
 	}
 	
@@ -122,6 +123,7 @@ public class ItemFile extends BusinessObject {
 				e.printStackTrace();
 			}
 		}
+		file_origin = null;
 		return this;
 	}
 	
@@ -147,7 +149,7 @@ public class ItemFile extends BusinessObject {
 		file.channels = BusinessStringItem.fromBusinessObject(bo, "channels");
 		file.bytes = BusinessLongItem.fromBusinessObject(bo, "bytes");
 		file.comment = BusinessStringItem.fromBusinessObject(bo, "comment");
-		
+		file.file_origin = BusinessStringItem.fromBusinessObject(bo, "file_origin");
 		file.checksums = Checksums.fromBusinessObject(bo);
 		file.location = FileLocation.fromBusinessObject(bo);
 		BusinessObject dim = file.handleBusinessObject("dimension");
@@ -258,6 +260,15 @@ public class ItemFile extends BusinessObject {
 			this.comment = null;
 		} else {
 			this.comment = new BusinessStringItem("comment", comment);
+		}
+		return this;
+	}
+	
+	public ItemFile file_origin(String file_origin) {
+		if (file_origin==null) {
+			this.file_origin = null;
+		} else {
+			this.file_origin = new BusinessStringItem("file_origin", file_origin);
 		}
 		return this;
 	}
@@ -420,6 +431,12 @@ public class ItemFile extends BusinessObject {
 	public ItemFile checksums(Checksums checksums) {
 		this.checksums = checksums;
 		return this;
+	}
+	
+	
+	public String getFile_origin() {
+		if (file_origin==null) return null;
+		return file_origin.getString();
 	}
 	
 	public Checksums getChecksums() {

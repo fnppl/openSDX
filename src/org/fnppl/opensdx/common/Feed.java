@@ -6,6 +6,7 @@ import java.util.Vector;
 import org.fnppl.opensdx.dmi.BundleItemStructuredName;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.ChildElementIterator;
+import org.fnppl.opensdx.xml.Element;
 
 /*
  * Copyright (C) 2010-2011 
@@ -284,6 +285,13 @@ public class Feed extends BusinessObject {
 		}
 		return files;
 	}
-
+	
+	public Element toElement() {
+		Vector<BundleItemStructuredName> itemNames = getStructuredFilenames();
+		for (BundleItemStructuredName sn : itemNames) {
+			sn.itemFile.file_origin(sn.new_filename);
+		}
+		return super.toElement();
+	}
 
 }
