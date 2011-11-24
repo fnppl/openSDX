@@ -373,7 +373,7 @@ public class Beamer {
 			System.out.println("\nUploading signature ...");
 			hasAnswer = false;
 			final long[] timeout = new long[]{System.currentTimeMillis()+timeoutDuration};
-			client.uploadFile(bOut.toByteArray(), absolutePath+normFeedid+".osdx.sig", new CommandResponseListener() {
+			client.uploadFile(bOut.toByteArray(), absolutePath+normFeedid+".xml.osdx.sig", new CommandResponseListener() {
 				public void onSuccess(OSDXFileTransferCommand command) {
 					System.out.println("Upload of signature successful.");
 					hasAnswer = true;
