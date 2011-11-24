@@ -170,6 +170,8 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 	private DefaultListModel log_model;
 	private File userHome = null;
 	private File lastPath = null;
+	
+	private long lastUploadID = -1L;
 
 	public FileTransferGui() {
 		initUserHome();
@@ -1161,8 +1163,9 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 					panelStatus.setVisible(true);
 				}
 
-				for (File from : localFiles) {
-
+				for (int no=0;no<localFiles.size();no++) {
+					File from = localFiles.get(no);
+					
 					String filenameTo = ""+targetDir;
 					if (baseDir==null) {
 						filenameTo += from.getName();
@@ -1179,6 +1182,9 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 					//RemoteFile to = new RemoteFile(tragetDirectory.getFilnameWithPath(), from.getName(), from.length(), from.lastModified(), false);
 
 					long id = client.upload(from, filenameTo);
+					if (no == localFiles.size()-1) {
+						lastUploadID = id;
+					}
 					Transfer t = new Transfer();
 
 					//t.msg = "uploading "+from.getAbsolutePath()+" -> "+filenameTo+ " ("+String.format("%8dkB",(localFile.length()/1000))+")";
@@ -1461,8 +1467,8 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 			}
 			if (command instanceof OSDXFileTransferUploadCommand) {
 				//ttpanelRemote.updateTable();
-				//if (transfersInProgress.size()==0) {
-				if (!client.hasNextCommand()) {
+				if (command.getID() == lastUploadID) {
+				//if (!client.hasNextCommand()) {
 					ttpanelRemote.refreshView(true);
 				}
 			}

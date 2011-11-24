@@ -109,6 +109,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	private OSDXFileTransferClientReceiverThread receiver = null;
 	private OSDXFileTransferClientCommandHandlerThread commandHandler = null;
 	
+	
 	private boolean secureConnectionEstablished = false;
 	private byte[] client_nonce = null;
 	private byte[] server_nonce = null;
@@ -154,6 +155,14 @@ public class OSDXFileTransferClient implements UploadClient {
 			command.addListener(l);
 		}
 		queueWaiting.add(command);
+	}
+	
+	public void addCommandNext(OSDXFileTransferCommand command) {
+		logger.logMsg("adding command next "+command.getClass().getSimpleName()+" id = "+command.getID());
+		for (CommandResponseListener l : responseListener) {
+			command.addListener(l);
+		}
+		queueWaiting.add(0,command);
 	}
 	
 	public void addCommandNotListen(OSDXFileTransferCommand command) {
@@ -349,8 +358,8 @@ public class OSDXFileTransferClient implements UploadClient {
 					
 					commandHandler = new OSDXFileTransferClientCommandHandlerThread(this,dataOut);
 					commandHandler.setLogger(logger);
-					
 					commandHandler.start();
+					
 					receiver.start();
 					login();
 					
@@ -391,7 +400,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	}
 	
 	public void list(String absoluteDirectoryName, CommandResponseListener listener) {
-		addCommand(new OSDXFileTransferListCommand(IdGenerator.getTimestamp(),absoluteDirectoryName, listener));
+		addCommandNext(new OSDXFileTransferListCommand(IdGenerator.getTimestamp(),absoluteDirectoryName, listener).setBlocking());
 	}
 	
 	public long download(String absoluteRemoteFilename, File localFile) {
@@ -402,7 +411,7 @@ public class OSDXFileTransferClient implements UploadClient {
 
 	public long upload(File localFile, String absoluteRemotePath) {
 		long id = IdGenerator.getTimestamp();
-		addCommand(new OSDXFileTransferUploadCommand(id,localFile, absoluteRemotePath,false, this));
+		addCommand(new OSDXFileTransferUploadCommand(id,localFile, absoluteRemotePath,false, this).setBlocking());
 		return id;
 	}
 	
