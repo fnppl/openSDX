@@ -80,7 +80,7 @@ import org.fnppl.opensdx.xml.Element;
 public class Beamer {
 
 
-	public static Result beamUpFeed(Feed feed, OSDXKey signatureKey, MessageHandler mh) {
+	public static Result beamUpFeed(Feed feed, OSDXKey signatureKey, MessageHandler mh, String defaultKeystore) {
 		Receiver receiver = feed.getFeedinfo().getReceiver();
 		if (receiver==null) {
 			return Result.error("Please enter complete receiver information in FeedInfo tab first.");
@@ -106,7 +106,7 @@ public class Beamer {
 		
 		if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
 			try {
-				Result result = initOSDXFileTransferClient(receiver, mh);
+				Result result = initOSDXFileTransferClient(receiver, mh, defaultKeystore);
 				if (!result.succeeded) {
 					return result;
 				}
@@ -227,10 +227,10 @@ public class Beamer {
 		//make a copy to remove private information and change to relative file paths  
 		Feed copyOfFeed = Feed.fromBusinessObject(BusinessObject.fromElement(feed.toElement()));
 		
-		//remove private info
-		try {
-			copyOfFeed.getFeedinfo().getReceiver().file_keystore(null);
-		} catch (Exception ex) {}
+//		//remove private info
+//		try {
+//			copyOfFeed.getFeedinfo().getReceiver().file_keystore(null);
+//		} catch (Exception ex) {}
 		
 		//directory for date
 		//String datedir = Util.filterCharactersFile(SecurityHelper.getFormattedDateDay(System.currentTimeMillis()));
@@ -588,7 +588,7 @@ public class Beamer {
 	}
 
 	
-	private static Result initOSDXFileTransferClient(Receiver r, MessageHandler mh) {
+	private static Result initOSDXFileTransferClient(Receiver r, MessageHandler mh, String keystore) {
 		
 		String servername = r.getServername();
 		int port = r.getPort();
@@ -601,7 +601,6 @@ public class Beamer {
 		
 		File f = null;
 		
-		String keystore = r.getFileKeystore();
 		String keyid = r.getKeyID();
 		
 		if (keystore!=null) {
@@ -628,8 +627,15 @@ public class Beamer {
 			
 			if (keyid!=null) {
 				mysigning = store.getKey(keyid);
-				if (mysigning==null) {
-					return Result.error("You given key id \""+keyid+"\"\nfor authentification could not be found in selected keystore.\nPlease select a valid key.");
+				while (mysigning==null) {
+					String msg = "You given key id \""+keyid+"\"\nfor authentification could not be found in default keystore.\nPlease select the corresponding keystore.";
+					mh.showErrorMessage("Key not found.", msg);
+					f = mh.requestOpenKeystore();
+					if (f==null || !f.exists()) {
+						return Result.error("Key for authentification could not be found.");	
+					}
+					store = KeyApprovingStore.fromFile(f, mh2);
+					mysigning = store.getKey(keyid);
 				}
 			}
 			
@@ -711,52 +717,54 @@ public class Beamer {
 	
 	
 	
-	public static void main(String[] args) {
-		// init example feed
-		Feed currentFeed = FeedCreator.makeExampleFeed();
-		long now = System.currentTimeMillis();
-		
-		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
-			.servername("localhost")
-			.serveripv4("127.0.0.1")
-			.authtype(Receiver.AUTH_TYPE_KEYFILE)
-			.file_keystore("/home/neo/openSDX/defaultKeyStore.xml")
-			.keyid("AF:08:7F:7E:92:D8:48:98:24:7B:56:00:71:F8:47:65:62:8A:46:EA@localhost")
-			.username("user_1");
-		
-		Receiver receiver2 = Receiver.make(Receiver.TRANSFER_TYPE_FTP)
-		.servername("it-is-awesome.de")
-		.authtype(Receiver.AUTH_TYPE_LOGIN)
-		.username("baumbach");
-		
-		
-		currentFeed.getFeedinfo().receiver(receiver2);
-		
-		currentFeed.getBundle(0).addItem(
-				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
-						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)
-						.addFile(ItemFile.make(new File("fnppl_contributor_license.pdf")))
-					.tags(ItemTags.make()
-						.addGenre("Rock")
-					)
-						
-		);
-		currentFeed.getBundle(0).getLicense_basis().getTerritorial()
-		.allow("DE")
-		.allow("GB")
-		.disallow("US");
-
-		OSDXKey signKey = null;
-		Result sk = selectPrivateSigningKey("/home/neo/openSDX/defaultKeyStore.xml", new DefaultMessageHandler());
-		if (sk.succeeded) signKey = (OSDXKey)sk.userobject;
-		
-		Result result = beamUpFeed(currentFeed, signKey, new DefaultMessageHandler());
-		
-		if (result.succeeded) {
-			System.out.println("beaming successful");
-		} else {
-			System.out.println("error in beaming: "+result.errorMessage);
-		}
-	}
+//	public static void main(String[] args) {
+//		// init example feed
+//		Feed currentFeed = FeedCreator.makeExampleFeed();
+//		long now = System.currentTimeMillis();
+//		
+//		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
+//			.servername("localhost")
+//			.serveripv4("127.0.0.1")
+//			.authtype(Receiver.AUTH_TYPE_KEYFILE)
+//		//	.file_keystore("/home/neo/openSDX/defaultKeyStore.xml")
+//			.keyid("AF:08:7F:7E:92:D8:48:98:24:7B:56:00:71:F8:47:65:62:8A:46:EA@localhost")
+//			.username("user_1");
+//		
+//		String defaultKeystore = "/home/neo/openSDX/defaultKeyStore.xml";
+//		
+//		Receiver receiver2 = Receiver.make(Receiver.TRANSFER_TYPE_FTP)
+//		.servername("it-is-awesome.de")
+//		.authtype(Receiver.AUTH_TYPE_LOGIN)
+//		.username("baumbach");
+//		
+//		
+//		currentFeed.getFeedinfo().receiver(receiver2);
+//		
+//		currentFeed.getBundle(0).addItem(
+//				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
+//						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)
+//						.addFile(ItemFile.make(new File("fnppl_contributor_license.pdf")))
+//					.tags(ItemTags.make()
+//						.addGenre("Rock")
+//					)
+//						
+//		);
+//		currentFeed.getBundle(0).getLicense_basis().getTerritorial()
+//		.allow("DE")
+//		.allow("GB")
+//		.disallow("US");
+//
+//		OSDXKey signKey = null;
+//		Result sk = selectPrivateSigningKey("/home/neo/openSDX/defaultKeyStore.xml", new DefaultMessageHandler());
+//		if (sk.succeeded) signKey = (OSDXKey)sk.userobject;
+//		
+//		Result result = beamUpFeed(currentFeed, signKey, new DefaultMessageHandler(), defaultKeystore);
+//		
+//		if (result.succeeded) {
+//			System.out.println("beaming successful");
+//		} else {
+//			System.out.println("error in beaming: "+result.errorMessage);
+//		}
+//	}
 }
 

@@ -103,10 +103,12 @@ import org.fnppl.opensdx.dmi.wayout.*;
 @SuppressWarnings("serial")
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
-	private static String version = "v. 2011-11-23";
+	private static String version = "v. 2011-11-24";
 	private URL configGenres = FeedGui.class.getResource("resources/config_genres.xml");
 	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
 	private XMLTree tree;
+	private String defaultKeystore = null;
+	private MessageHandler messageHandler = new DefaultMessageHandler();
 	
 	public static FeedGui getInstance() {
 		if(instance == null) {
@@ -117,6 +119,7 @@ public class FeedGui extends JFrame implements MyObserver {
 	}
 	
 	private File lastDir = new File(System.getProperty("user.home"));
+	private File settingsFile = new File(System.getProperty("user.home")+File.separator+"openSDX"+File.separator+"feedgui_settings.xml");
 	
 	private JTabbedPane jt = null;
 	private StatusBar status = null;
@@ -143,12 +146,61 @@ public class FeedGui extends JFrame implements MyObserver {
 				quit();
 			}
 		});
-		
+		readSettings();
 		setSize(1024, 768);
 		makeMenuBar();
 		Helper.centerMe(this, null);
 	}
 	
+	private void readSettings() {
+		if (settingsFile.exists()) {
+			try {
+				Element root = Document.fromFile(settingsFile).getRootElement();
+				defaultKeystore = root.getChildText("keystore");
+				String ld = root.getChildText("last_path");
+				if (ld!=null && new File(ld).exists()) {
+					lastDir = new File(ld);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//try default keystores if not given in config
+		File fks = null;
+		if (defaultKeystore!=null) {
+			fks = new File(defaultKeystore);
+		}
+		if (defaultKeystore == null || fks==null) {
+			fks = new File(System.getProperty("user.home")+File.separator+"openSDX"+File.separator+"defaultKeyStore.xml");
+			if (fks.exists()) {
+				defaultKeystore = fks.getAbsolutePath();
+			} else {
+				fks = new File(System.getProperty("user.home")+File.separator+"openSDX"+File.separator+"mykeystore.xml");
+				if (fks.exists()) {
+					defaultKeystore = fks.getAbsolutePath();
+				}
+			}
+		}
+	}
+	
+	private void saveSettings() {
+		Element root = new Element("feedgui_settings");
+		if (defaultKeystore!=null) {
+			root.addContent("keystore", defaultKeystore);
+		}
+		if (lastDir!=null) {
+			root.addContent("last_path", lastDir.getAbsolutePath());
+		}
+		
+		//save
+		settingsFile.getParentFile().mkdirs();
+		try {
+			Document.buildDocument(root).writeToFile(settingsFile);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 	private void initTooltips() {
 //		initTooltips(feedinfo_panel);
@@ -251,7 +303,10 @@ public class FeedGui extends JFrame implements MyObserver {
 				}
 				else if(cmd.equalsIgnoreCase("validate feed")) {
 					validateFeed();
-				}				
+				}
+				else if(cmd.equalsIgnoreCase("select keystore")) {
+					selectDefaultKeystore();
+				}
 			}
 		};
 
@@ -295,6 +350,16 @@ public class FeedGui extends JFrame implements MyObserver {
 		jmi.setActionCommand("quit");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
+		
+		
+		JMenu jmSettings = new JMenu("Settings");
+		jb.add(jmSettings);
+
+		jmi = new JMenuItem("set Keystore");
+		jmi.setActionCommand("select keystore");
+		jmi.addActionListener(ja);
+		jmSettings.add(jmi);
+		
 		
 		JMenu jm2 = new JMenu("Import");
 		jb.add(jm2);
@@ -478,7 +543,7 @@ public class FeedGui extends JFrame implements MyObserver {
 						Dialogs.showMessage("Please set a valid servername first.");
 						return;
 					}
-					String ks = receiver.getFileKeystore();
+					String ks = defaultKeystore;
 					if (ks==null || ks.length()==0 || !(new File(ks)).exists()) {
 						Dialogs.showMessage("Please select a valid keystore filename first.");
 						return;
@@ -510,7 +575,7 @@ public class FeedGui extends JFrame implements MyObserver {
 				}
 			}
 			
-			BeamMeUpGui beameGUI = new BeamMeUpGui(currentFeed);
+			BeamMeUpGui beameGUI = new BeamMeUpGui(currentFeed, defaultKeystore);
 			beameGUI.setVisible(true);
 			
 			//old version
@@ -1163,9 +1228,22 @@ public class FeedGui extends JFrame implements MyObserver {
 				// e.printStackTrace();
 			}
 		}		
-	}	
+	}
+	
+	public void selectDefaultKeystore() {
+		File f = messageHandler.requestOpenKeystore();
+		if (f!=null) {
+			defaultKeystore = f.getAbsolutePath();
+		}
+	}
+	
+	
+	public String getDefaultKeyStore() {
+		return defaultKeystore;
+	}
 	
 	public void quit() {
+		saveSettings();
 		System.exit(0);
 	}
 	public static void main(String[] args) {

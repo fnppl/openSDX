@@ -610,7 +610,7 @@
             <xsd:element name="origin_file" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="http" type="fileHttp" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="ftp" type="fileFtp" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="filename" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="path" type="xsd:string" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="creator">
@@ -643,7 +643,6 @@
             <xsd:element name="authtype" type="authtype"/>
             <xsd:element name="username" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="crypto" type="crypto" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="file_keystore" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="keyid" type="xsd:string" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>

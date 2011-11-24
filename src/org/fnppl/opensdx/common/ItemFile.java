@@ -274,16 +274,16 @@ public class ItemFile extends BusinessObject {
 		return this;
 	}
 	
-	public ItemFile filename(String filename) {
+	public ItemFile path(String filename) {
 		if (filename==null) {
 			if(location!=null) {
-				location.filename(filename);
+				location.path(filename);
 			}
 		} else {
 			if(location==null) {
 				location = FileLocation.make();
 			}
-			location.filename(filename);
+			location.path(filename);
 		}
 		return this;
 	}
@@ -454,9 +454,9 @@ public class ItemFile extends BusinessObject {
 		return location.getOriginFile();
 	}
 	
-	public String getFilename() {
+	public String getPath() {
 		if (location==null) return null;
-		return location.getFilename();
+		return location.getPath();
 	}
 	
 	public Checksums getChecksums() {

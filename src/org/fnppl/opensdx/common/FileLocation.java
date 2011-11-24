@@ -48,13 +48,13 @@ public class FileLocation extends BusinessObject {
 	public static String KEY_NAME = "location";
 
 	
-	private BusinessStringItem filename;			//COULD
+	private BusinessStringItem path;			//COULD
 	private BusinessStringItem origin_file;				//COULD
 
 	public static FileLocation make(String origin_file) {
 		FileLocation location = new FileLocation();
 		location.origin_file = new BusinessStringItem("origin_file", origin_file);
-		location.filename = null;
+		location.path = null;
 		return location;
 	}
 
@@ -64,7 +64,7 @@ public class FileLocation extends BusinessObject {
 	public static FileLocation make() {
 		FileLocation location = new FileLocation();
 		location.origin_file = null;
-		location.filename = null;
+		location.path = null;
 		return location;
 	}
 
@@ -79,10 +79,7 @@ public class FileLocation extends BusinessObject {
 		location.initFromBusinessObject(bo);
 		
 		location.origin_file = BusinessStringItem.fromBusinessObject(bo, "origin_file");
-		if (location.origin_file==null) {
-			location.origin_file = BusinessStringItem.fromBusinessObject(bo, "path"); //compatible with old version: path -> origin_file
-		}
-		location.filename = BusinessStringItem.fromBusinessObject(bo, "filename");
+		location.path = BusinessStringItem.fromBusinessObject(bo, "path");
 		
 		return location;
 	}
@@ -93,8 +90,8 @@ public class FileLocation extends BusinessObject {
 		return this;
 	}
 
-	public FileLocation filename(String filename) {
-		this.filename = new BusinessStringItem("filename", filename);
+	public FileLocation path(String path) {
+		this.path = new BusinessStringItem("path", path);
 		return this;
 	}
 
@@ -104,9 +101,9 @@ public class FileLocation extends BusinessObject {
 		return origin_file.getString();
 	}
 	
-	public String getFilename() {
-		if (filename==null) return null;
-		return filename.getString();
+	public String getPath() {
+		if (path==null) return null;
+		return path.getString();
 	}
 	
 	public String getKeyname() {

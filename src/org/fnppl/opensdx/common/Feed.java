@@ -289,7 +289,7 @@ public class Feed extends BusinessObject {
 	public Element toElement() {
 		Vector<BundleItemStructuredName> itemNames = getStructuredFilenames();
 		for (BundleItemStructuredName sn : itemNames) {
-			sn.itemFile.filename(sn.new_filename);
+			sn.itemFile.path(sn.new_filename);
 		}
 		return super.toElement();
 	}
