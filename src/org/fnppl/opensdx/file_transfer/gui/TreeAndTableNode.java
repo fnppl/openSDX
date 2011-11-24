@@ -93,6 +93,7 @@ public class TreeAndTableNode extends DefaultMutableTreeNode {
 				removeAllChildren(); //remove dummy node
 				interim = false;
 			}
+			
 			Vector<TreeAndTableNode> nodes = main.getChildren(this);
 			if (nodes!=null) {
 				populated = true;

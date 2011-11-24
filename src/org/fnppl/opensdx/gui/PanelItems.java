@@ -15,9 +15,12 @@ import javax.swing.event.ListSelectionListener;
 
 import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BundleInformation;
+import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.Item;
+import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
+import org.fnppl.opensdx.common.LicenseSpecifics;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
 
@@ -32,6 +35,7 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 	//init fields
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
+	private Feed feed = null;
 	private Bundle bundle = null;
 	private JList list_items;
 	private JScrollPane scroll_list_items;
@@ -43,11 +47,12 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 	public PanelItems() {
 		initComponents();
 		initLayout();
-		update((Bundle)null);
+		update((Bundle)null,null);
 	}
 
-	public void update(Bundle bundle){
+	public void update(Bundle bundle, Feed feed){
 		this.bundle = bundle;
+		this.feed = feed;
 		int sel = list_items.getSelectedIndex();
 		updateItemList();
 		if (sel>=0) {
@@ -86,7 +91,7 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 
 	private void updateItem() {
 		Item item = getSelectedItem();
-		panel_item.update(item,bundle);
+		panel_item.update(item,bundle,feed);
 		if (item==null) {
 			panel_item.setVisible(false);
 		} else {
@@ -251,7 +256,8 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 	public void bu_add_clicked() {
 		if (bundle==null) return;
 		long now = System.currentTimeMillis();
-		Item newItem = Item.make(IDs.make(), "new item", "", "", "[not specified]", "", BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null);
+		Item newItem = Item.make(IDs.make(), "new item", "", "", "[not specified]", "", BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),LicenseSpecifics.make());
+		
 		bundle.addItem(newItem);
 		updateItemList();
 		list_items.setSelectedIndex(list_items.getModel().getSize()-1);

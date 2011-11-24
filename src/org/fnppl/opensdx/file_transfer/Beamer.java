@@ -59,8 +59,11 @@ import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.common.Util;
+import org.fnppl.opensdx.dmi.BundleItemStructuredName;
 import org.fnppl.opensdx.dmi.FeedCreator;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferListCommand;
+import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.MessageHandler;
@@ -77,7 +80,7 @@ import org.fnppl.opensdx.xml.Element;
 public class Beamer {
 
 
-	public static Result beamUpFeed(Feed feed, OSDXKey signatureKey, MessageHandler mh) {
+	public static Result beamUpFeed(Feed feed, OSDXKey signatureKey, MessageHandler mh, String defaultKeystore) {
 		Receiver receiver = feed.getFeedinfo().getReceiver();
 		if (receiver==null) {
 			return Result.error("Please enter complete receiver information in FeedInfo tab first.");
@@ -103,7 +106,7 @@ public class Beamer {
 		
 		if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
 			try {
-				Result result = initOSDXFileTransferClient(receiver, mh);
+				Result result = initOSDXFileTransferClient(receiver, mh, defaultKeystore);
 				if (!result.succeeded) {
 					return result;
 				}
@@ -132,7 +135,8 @@ public class Beamer {
 		
 		if (client!=null) {
 			try {
-				Result result = uploadFeed(feed, client, signatureKey,mh);
+				Beamer beam = new Beamer();
+				Result result = beam.uploadFeed(feed, client, signatureKey,mh);
 				client.closeConnection();
 				return result;
 			} catch (Exception ex) {
@@ -146,58 +150,12 @@ public class Beamer {
 	}
 	
 	public static Vector<String[]> getUploadExtraFiles(Feed feed) {
-		Vector<ExtraFile> files = getUploadExtraFile(feed);
+		Vector<BundleItemStructuredName> files = feed.getStructuredFilenames();
 		Vector<String[]> sfiles = new Vector<String[]>();
-		for (ExtraFile f : files) {
+		for (BundleItemStructuredName f : files) {
 			sfiles.add(new String[] {f.file.getAbsolutePath(), f.new_filename});
 		}	
 		return sfiles;
-	}
-	
-	private static Vector<ExtraFile> getUploadExtraFile(Feed feed) {
-		Vector<ExtraFile> files = new Vector<ExtraFile>();
-		
-		String normFeedid = getNormFeedID(feed);
-		int num = 1;
-		for (int b=0;b<feed.getBundleCount();b++) {
-			Bundle bundle = feed.getBundle(b);
-			if (bundle!=null) {
-				//bundle files (cover, booklet, ..)
-				for (int j=0;j<bundle.getFilesCount();j++) {
-					try {
-						ItemFile nextItemFile = bundle.getFile(j);
-						File nextFile = new File(nextItemFile.getLocationPath());
-						String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-						String filename = normFeedid+"_"+num+"_"+md5;
-						num++;
-						files.add(new ExtraFile(nextItemFile, nextFile, filename));
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				
-				//item files
-				for (int i=0;i<bundle.getItemsCount();i++) {
-					Item item = bundle.getItem(i);
-					if (item.getFilesCount()>0) {
-						boolean subIndex = (item.getFilesCount()>1);
-						for (int j=0;j<item.getFilesCount();j++) {
-							try {
-								ItemFile nextItemFile = item.getFile(j);
-								File nextFile = new File(nextItemFile.getLocationPath());
-								String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-								String filename = normFeedid+"_"+num+"_"+md5;
-								num++;
-								files.add(new ExtraFile(nextItemFile, nextFile, filename));
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							}
-						}
-					}
-				}
-			}
-		}
-		return files;
 	}
 			
 			//old
@@ -253,47 +211,106 @@ public class Beamer {
 //		}
 		
 	
-	public static String getNormFeedID(Feed feed) {
-		String feedid = feed.getFeedinfo().getFeedID();
-		String normFeedid = Util.filterCharactersFile(feedid.toLowerCase());
-		System.out.println("norm feedid: "+normFeedid);
-		if (normFeedid.length()==0) {
-			normFeedid = "unnamed_feed";
-		}
-		return normFeedid;
-	}
+	
+	private long timeoutDuration = 4000;
+	private Vector<RemoteFile> list = null;
+	private boolean hasAnswer = false;
 	
 	//private Result currentUploadResult = null; 
-	public static Result uploadFeed(Feed feed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh) throws Exception {
-		final String normFeedid = getNormFeedID(feed);
+	public Result uploadFeed(Feed feed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh) throws Exception {
+		final String normFeedid = feed.getNormFeedID();
 		
 		final Result[] result = new Result[] {Result.succeeded()};
+		
+		final boolean[] ready = new boolean[]{false};
 		
 		//make a copy to remove private information and change to relative file paths  
 		Feed copyOfFeed = Feed.fromBusinessObject(BusinessObject.fromElement(feed.toElement()));
 		
-		//remove private info
-		try {
-			copyOfFeed.getFeedinfo().getReceiver().file_keystore(null);
-		} catch (Exception ex) {}
+//		//remove private info
+//		try {
+//			copyOfFeed.getFeedinfo().getReceiver().file_keystore(null);
+//		} catch (Exception ex) {}
 		
 		//directory for date
-		String datedir = Util.filterCharactersFile(SecurityHelper.getFormattedDateDay(System.currentTimeMillis()));
+		//String datedir = Util.filterCharactersFile(SecurityHelper.getFormattedDateDay(System.currentTimeMillis()));
 		
 		//norm feedid
 		String dir = normFeedid;
 		//String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,19).replace(' ', '_');
 		//dir = Util.filterCharactersFile(dir);
 		
+		
+		//test if dir already exists
+		list = null;
+		boolean exists = false;
+		if (client instanceof FTPClient) {
+			list = ((FTPClient)client).list();
+		}
+		else if (client instanceof OSDXFileTransferClient) {	
+			hasAnswer = false;
+			((OSDXFileTransferClient)client).list("/",new CommandResponseListener() {
+				public void onError(OSDXFileTransferCommand command, String msg) {
+					//System.out.println("END OF LIST COMMAND :: ERROR");
+					list = null;
+					hasAnswer = true;
+				}
+				public void onStatusUpdate(OSDXFileTransferCommand command,long progress, long maxProgress, String msg) {}
+				public void onSuccess(OSDXFileTransferCommand command) {
+					//System.out.println("END OF LIST COMMAND :: SUCCESS");
+					list = ((OSDXFileTransferListCommand)command).getList();
+					hasAnswer = true;
+				}
+			});
+			
+			//block until answer or timeout
+			long timeout = System.currentTimeMillis()+timeoutDuration;
+			while (!hasAnswer && timeout > System.currentTimeMillis()) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			if (!hasAnswer) {
+				return Result.error("Error: Timeout when requesting server.");
+			} else {
+				if (list==null) {
+					return Result.error("Error: Server filelist request failed.");
+				}
+				for (RemoteFile rf : list) {
+					if (rf.isDirectory() && rf.getName().equals(normFeedid)) {
+						exists = true;
+						break;
+					}
+				}
+			}
+			((OSDXFileTransferClient)client).list("/", new CommandResponseListener() {
+				public void onSuccess(OSDXFileTransferCommand command) {
+					
+				}
+				
+				public void onStatusUpdate(OSDXFileTransferCommand command, long progress,long maxProgress, String msg) {}
+				public void onError(OSDXFileTransferCommand command, String msg) {
+					
+				}
+			});
+		}
+		
+		if (exists) {
+			return Result.error("A feed with this id already exists on the server.\nPlease select another feedid.");
+		}
+		
 		//build file structure
 		if (client instanceof FTPClient) {
-			((FTPClient)client).mkdir(datedir);
-			((FTPClient)client).cd(datedir);
+		//	((FTPClient)client).mkdir(datedir);
+		//	((FTPClient)client).cd(datedir);
 			((FTPClient)client).mkdir(dir);
 			((FTPClient)client).cd(dir);
 		}
 		
-		String absolutePath = "/"+datedir+"/"+dir+"/";
+		//String absolutePath = "/"+datedir+"/"+dir+"/";
+		String absolutePath = "/"+dir+"/";
 		
 		//upload feed
 		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -303,21 +320,41 @@ public class Beamer {
 		
 		try {
 			System.out.println("\nUploading "+normFeedid+".xml ...");
+			hasAnswer = false;
+			final long[] timeout = new long[]{System.currentTimeMillis()+timeoutDuration};
 			client.uploadFile(feedbytes, absolutePath+normFeedid+".xml", new CommandResponseListener() {
 				public void onSuccess(OSDXFileTransferCommand command) {
 					System.out.println("Upload of "+normFeedid+".xml successful.");
+					hasAnswer = true;
 				}
 				
 				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
-					
+					timeout[0] = System.currentTimeMillis()+timeoutDuration;
 				}
 				public void onError(OSDXFileTransferCommand command, String msg) {
 					if (mh!=null) {
 						mh.showErrorMessage("Upload failed", "Upload of feed xml failed.");
 					}
 					result[0] = Result.error("Upload of feed xml failed.");
+					hasAnswer = true;
 				}
 			});
+			
+			//block until answer or timeout
+			while (!hasAnswer && timeout[0] > System.currentTimeMillis()) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			if (!hasAnswer) {
+				if (mh!=null) {
+					mh.showErrorMessage("Upload failed", "Upload of feed xml failed.");
+				}
+				result[0] = Result.error("Upload of feed xml failed. Timeout.");
+				return result[0];
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			if (mh!=null) {
@@ -334,21 +371,41 @@ public class Beamer {
 		
 		try {
 			System.out.println("\nUploading signature ...");
+			hasAnswer = false;
+			final long[] timeout = new long[]{System.currentTimeMillis()+timeoutDuration};
 			client.uploadFile(bOut.toByteArray(), absolutePath+normFeedid+".osdx.sig", new CommandResponseListener() {
 				public void onSuccess(OSDXFileTransferCommand command) {
 					System.out.println("Upload of signature successful.");
+					hasAnswer = true;
 				}
 				
 				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
-					
+					timeout[0] = System.currentTimeMillis()+timeoutDuration;
 				}
 				public void onError(OSDXFileTransferCommand command, String msg) {
 					if (mh!=null) {
 						mh.showErrorMessage("Upload failed", "Upload of signature failed.");
 					}
 					result[0] = Result.error("Upload of signature failed.");
+					hasAnswer = true;
 				}
 			});
+			
+			//block until answer or timeout
+			while (!hasAnswer && timeout[0] > System.currentTimeMillis()) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			if (!hasAnswer) {
+				if (mh!=null) {
+					mh.showErrorMessage("Upload failed", "Upload of feed signature xml failed. Timeout.");
+				}
+				result[0] = Result.error("Upload of feed signature xml failed. Timeout.");
+				return result[0];
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			if (mh!=null) {
@@ -359,22 +416,28 @@ public class Beamer {
 		
 		
 		//upload all bundle and item files
-		Vector<ExtraFile> files = getUploadExtraFile(copyOfFeed);
-		for (ExtraFile f : files) {
+		Vector<BundleItemStructuredName> files = copyOfFeed.getStructuredFilenames();
+		for (BundleItemStructuredName f : files) {
 			try {
-				ItemFile nextItemFile = f.itemFile;
+				//ItemFile nextItemFile = f.itemFile;
+				//nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
+				
 				File nextFile = f.file;
 				final String filename = f.new_filename;
-				nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
 				
 				try {
+					final long[] timeout = new long[]{System.currentTimeMillis()+timeoutDuration};
+					hasAnswer = false;
 					System.out.println("\nUploading "+filename+" ...");
 					client.uploadFile(nextFile, absolutePath+filename, new CommandResponseListener() {
 						public void onSuccess(OSDXFileTransferCommand command) {
 							System.out.println("Upload of "+filename+" successful.");
+							hasAnswer = true;
 						}
 						
 						public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+							//System.out.println("status update: "+progress+" / "+maxProgress);
+							timeout[0] = System.currentTimeMillis()+timeoutDuration;
 							
 						}
 						public void onError(OSDXFileTransferCommand command, String msg) {
@@ -382,8 +445,25 @@ public class Beamer {
 								mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed.");
 							}
 							result[0] = Result.error("Upload of "+filename+" failed.");
+							hasAnswer = true;
 						}
 					});
+					
+					//block until answer or timeout
+					while (!hasAnswer && timeout[0] > System.currentTimeMillis()) {
+						try {
+							Thread.sleep(50);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					if (!hasAnswer) {
+						if (mh!=null) {
+							mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed. Timeout.");
+						}
+						result[0] = Result.error("Upload of "+filename+" failed. Timeout.");
+						return result[0];
+					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
 					if (mh!=null) {
@@ -399,9 +479,11 @@ public class Beamer {
 		//upload feed finished file
 		try {
 			System.out.println("\nUploading finish token ...");
+			hasAnswer = false;
 			client.uploadFile(new byte[]{0},absolutePath+normFeedid+".finished", new CommandResponseListener() {
 				public void onSuccess(OSDXFileTransferCommand command) {
 					System.out.println("Upload of finish token successful.");
+					hasAnswer = true;
 				}
 				
 				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
@@ -412,8 +494,26 @@ public class Beamer {
 						mh.showErrorMessage("Upload failed", "Upload of finish token failed.");
 					}
 					result[0] = Result.error("Upload of finish token failed.");
+					hasAnswer = true;
 				}
 			});
+			
+			//block until answer or timeout
+			long timeout = System.currentTimeMillis()+timeoutDuration;
+			while (!hasAnswer && timeout > System.currentTimeMillis()) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			if (!hasAnswer) {
+				if (mh!=null) {
+					mh.showErrorMessage("Upload failed", "Upload of finish token failed. Timeout.");
+				}
+				result[0] = Result.error("Upload of finish token failed. Timeout.");
+				return result[0];
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			if (mh!=null) {
@@ -422,58 +522,8 @@ public class Beamer {
 			result[0] = Result.error("Upload of finish token failed.");
 		}
 		
-		return result[0];
 		
-//		Bundle bundle = copyOfFeed.getBundle(0);
-//		if (bundle!=null) {
-//			//bundle files (cover, booklet, ..)
-//			for (int j=0;j<bundle.getFilesCount();j++) {
-//				try {
-//					ItemFile nextItemFile = bundle.getFile(j);
-//					File nextFile = new File(nextItemFile.getLocationPath());
-////					String ending = nextFile.getName();
-////					if (ending.contains(".")) {
-////						ending = ending.substring(ending.lastIndexOf('.'));
-////					} else {
-////						ending = "";
-////					}
-//					String ending = "";
-//					String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-//					String filename = normFeedid+"_0_"+j+"_"+md5+ending;
-//					nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
-//					client.uploadFile(nextFile, filename);
-//				} catch (Exception ex) {
-//					ex.printStackTrace();
-//				}
-//			}
-//			
-//			//item files
-//			for (int i=0;i<bundle.getItemsCount();i++) {
-//				Item item = bundle.getItem(i);
-//				if (item.getFilesCount()>0) {
-//					boolean subIndex = (item.getFilesCount()>1);
-//					for (int j=0;j<item.getFilesCount();j++) {
-//						try {
-//							ItemFile nextItemFile = item.getFile(j);
-//							File nextFile = new File(nextItemFile.getLocationPath());
-////							String ending = nextFile.getName();
-////							if (ending.contains(".")) {
-////								ending = ending.substring(ending.lastIndexOf('.'));
-////							} else {
-////								ending = "";
-////							}
-//							String ending = "";
-//							String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-//							String filename = normFeedid+"_"+(i+1)+(subIndex?"_"+(j+1):"")+"_"+md5+ending;
-//							nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
-//							client.uploadFile(nextFile, filename);
-//						} catch (Exception ex) {
-//							ex.printStackTrace();
-//						}
-//					}
-//				}
-//			}
-//		}
+		return result[0];
 	}
 	
 	
@@ -538,7 +588,7 @@ public class Beamer {
 	}
 
 	
-	private static Result initOSDXFileTransferClient(Receiver r, MessageHandler mh) {
+	private static Result initOSDXFileTransferClient(Receiver r, MessageHandler mh, String keystore) {
 		
 		String servername = r.getServername();
 		int port = r.getPort();
@@ -551,7 +601,6 @@ public class Beamer {
 		
 		File f = null;
 		
-		String keystore = r.getFileKeystore();
 		String keyid = r.getKeyID();
 		
 		if (keystore!=null) {
@@ -578,8 +627,15 @@ public class Beamer {
 			
 			if (keyid!=null) {
 				mysigning = store.getKey(keyid);
-				if (mysigning==null) {
-					return Result.error("You given key id \""+keyid+"\"\nfor authentification could not be found in selected keystore.\nPlease select a valid key.");
+				while (mysigning==null) {
+					String msg = "You given key id \""+keyid+"\"\nfor authentification could not be found in default keystore.\nPlease select the corresponding keystore.";
+					mh.showErrorMessage("Key not found.", msg);
+					f = mh.requestOpenKeystore();
+					if (f==null || !f.exists()) {
+						return Result.error("Key for authentification could not be found.");	
+					}
+					store = KeyApprovingStore.fromFile(f, mh2);
+					mysigning = store.getKey(keyid);
 				}
 			}
 			
@@ -661,65 +717,54 @@ public class Beamer {
 	
 	
 	
-	public static void main(String[] args) {
-		// init example feed
-		Feed currentFeed = FeedCreator.makeExampleFeed();
-		long now = System.currentTimeMillis();
-		
-		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
-			.servername("localhost")
-			.serveripv4("127.0.0.1")
-			.authtype(Receiver.AUTH_TYPE_KEYFILE)
-			.file_keystore("/home/neo/openSDX/defaultKeyStore.xml")
-			.keyid("AF:08:7F:7E:92:D8:48:98:24:7B:56:00:71:F8:47:65:62:8A:46:EA@localhost")
-			.username("user_1");
-		
-		Receiver receiver2 = Receiver.make(Receiver.TRANSFER_TYPE_FTP)
-		.servername("it-is-awesome.de")
-		.authtype(Receiver.AUTH_TYPE_LOGIN)
-		.username("baumbach");
-		
-		
-		currentFeed.getFeedinfo().receiver(receiver2);
-		
-		currentFeed.getBundle(0).addItem(
-				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
-						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)
-						.addFile(ItemFile.make(new File("fnppl_contributor_license.pdf")))
-					.tags(ItemTags.make()
-						.addGenre("Rock")
-					)
-						
-		);
-		currentFeed.getBundle(0).getLicense_basis().getTerritorial()
-		.allow("DE")
-		.allow("GB")
-		.disallow("US");
-
-		OSDXKey signKey = null;
-		Result sk = selectPrivateSigningKey("/home/neo/openSDX/defaultKeyStore.xml", new DefaultMessageHandler());
-		if (sk.succeeded) signKey = (OSDXKey)sk.userobject;
-		
-		Result result = beamUpFeed(currentFeed, signKey, new DefaultMessageHandler());
-		
-		if (result.succeeded) {
-			System.out.println("beaming successful");
-		} else {
-			System.out.println("error in beaming: "+result.errorMessage);
-		}
-	}
+//	public static void main(String[] args) {
+//		// init example feed
+//		Feed currentFeed = FeedCreator.makeExampleFeed();
+//		long now = System.currentTimeMillis();
+//		
+//		Receiver receiver = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)
+//			.servername("localhost")
+//			.serveripv4("127.0.0.1")
+//			.authtype(Receiver.AUTH_TYPE_KEYFILE)
+//		//	.file_keystore("/home/neo/openSDX/defaultKeyStore.xml")
+//			.keyid("AF:08:7F:7E:92:D8:48:98:24:7B:56:00:71:F8:47:65:62:8A:46:EA@localhost")
+//			.username("user_1");
+//		
+//		String defaultKeystore = "/home/neo/openSDX/defaultKeyStore.xml";
+//		
+//		Receiver receiver2 = Receiver.make(Receiver.TRANSFER_TYPE_FTP)
+//		.servername("it-is-awesome.de")
+//		.authtype(Receiver.AUTH_TYPE_LOGIN)
+//		.username("baumbach");
+//		
+//		
+//		currentFeed.getFeedinfo().receiver(receiver2);
+//		
+//		currentFeed.getBundle(0).addItem(
+//				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
+//						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(),null)
+//						.addFile(ItemFile.make(new File("fnppl_contributor_license.pdf")))
+//					.tags(ItemTags.make()
+//						.addGenre("Rock")
+//					)
+//						
+//		);
+//		currentFeed.getBundle(0).getLicense_basis().getTerritorial()
+//		.allow("DE")
+//		.allow("GB")
+//		.disallow("US");
+//
+//		OSDXKey signKey = null;
+//		Result sk = selectPrivateSigningKey("/home/neo/openSDX/defaultKeyStore.xml", new DefaultMessageHandler());
+//		if (sk.succeeded) signKey = (OSDXKey)sk.userobject;
+//		
+//		Result result = beamUpFeed(currentFeed, signKey, new DefaultMessageHandler(), defaultKeystore);
+//		
+//		if (result.succeeded) {
+//			System.out.println("beaming successful");
+//		} else {
+//			System.out.println("error in beaming: "+result.errorMessage);
+//		}
+//	}
 }
 
-class ExtraFile {
-	
-	ItemFile itemFile = null;
-	File file = null;
-	String new_filename = null;
-	
-	public ExtraFile(ItemFile itemFile, File file, String new_filename) {
-		this.itemFile = itemFile;
-		this.file = file;
-		this.new_filename = new_filename;
-	}
-	
-}

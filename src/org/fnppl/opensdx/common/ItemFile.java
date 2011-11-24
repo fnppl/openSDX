@@ -71,6 +71,7 @@ public class ItemFile extends BusinessObject {
 	private BusinessStringItem channels;						//COULD
 	private BusinessCollection<BusinessIntegerItem> dimension; 	//COULD
 	private BusinessBooleanItem no_file_given;			 		//COULD
+	private BusinessStringItem comment;							//COULD - COULD EVEN BE MORE THAN ONE...
 	
 	public static ItemFile make(File f) {
 		ItemFile file = make();
@@ -96,6 +97,7 @@ public class ItemFile extends BusinessObject {
 		file.prelistening_offset = null;
 		file.prelistening_offset = null;
 		file.no_file_given = null;
+		file.comment = null;
 		return file;
 	}
 	
@@ -143,7 +145,7 @@ public class ItemFile extends BusinessObject {
 		file.codecsettings = BusinessStringItem.fromBusinessObject(bo, "codecsettings");
 		file.channels = BusinessStringItem.fromBusinessObject(bo, "channels");
 		file.bytes = BusinessLongItem.fromBusinessObject(bo, "bytes");
-		
+		file.comment = BusinessStringItem.fromBusinessObject(bo, "comment");
 		file.checksums = Checksums.fromBusinessObject(bo);
 		file.location = FileLocation.fromBusinessObject(bo);
 		BusinessObject dim = file.handleBusinessObject("dimension");
@@ -246,6 +248,42 @@ public class ItemFile extends BusinessObject {
 			this.filetype = null;
 		} else {
 			this.filetype = new BusinessStringItem("filetype", filetype);
+		}
+		return this;
+	}
+	public ItemFile comment(String comment) {
+		if (comment==null) {
+			this.comment = null;
+		} else {
+			this.comment = new BusinessStringItem("comment", comment);
+		}
+		return this;
+	}
+	
+	public ItemFile origin_file(String file_origin) {
+		if (file_origin==null) {
+			if(location!=null) {
+				location.file_origin(file_origin);
+			}
+		} else {
+			if(location==null) {
+				location = FileLocation.make();
+			}
+			location.file_origin(file_origin);
+		}
+		return this;
+	}
+	
+	public ItemFile path(String filename) {
+		if (filename==null) {
+			if(location!=null) {
+				location.path(filename);
+			}
+		} else {
+			if(location==null) {
+				location = FileLocation.make();
+			}
+			location.path(filename);
 		}
 		return this;
 	}
@@ -383,7 +421,7 @@ public class ItemFile extends BusinessObject {
 	
 	public String getLocationPath() {
 		if (location==null) return null;
-		return location.getPath();
+		return location.getOriginFile();
 	}
 	
 	public int getBytes() {
@@ -408,6 +446,17 @@ public class ItemFile extends BusinessObject {
 	public ItemFile checksums(Checksums checksums) {
 		this.checksums = checksums;
 		return this;
+	}
+	
+	
+	public String getOriginFile() {
+		if (location==null) return null;
+		return location.getOriginFile();
+	}
+	
+	public String getPath() {
+		if (location==null) return null;
+		return location.getPath();
 	}
 	
 	public Checksums getChecksums() {

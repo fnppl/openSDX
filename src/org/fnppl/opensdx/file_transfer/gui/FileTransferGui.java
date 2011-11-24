@@ -127,7 +127,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class FileTransferGui extends JFrame implements MyObserver, CommandResponseListener {
 
-	public static final String version = "v. 2011-11-03";
+	public static final String version = "v. 2011-11-23";
 	private Vector<FileTransferAccount> accounts = new Vector<FileTransferAccount>();
 	private Vector<FileTransferAccount> supportedAccounts = new Vector<FileTransferAccount>();
 
@@ -169,6 +169,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 	private JList log;
 	private DefaultListModel log_model;
 	private File userHome = null;
+	private File lastPath = null;
 
 	public FileTransferGui() {
 		initUserHome();
@@ -200,6 +201,13 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 		try {
 			Element root =  Document.fromFile(f).getRootElement();
 			Vector<Element> eAccounts = root.getChildren("account");
+			String lp = root.getChildText("last_path");
+			if (lp!=null && lp.length()>0) {
+				lastPath = new File(lp);
+				if (!lastPath.exists()) {
+					lastPath = null;
+				}
+			}
 			for (Element e : eAccounts) {
 				try {
 					FileTransferAccount a = new FileTransferAccount();
@@ -234,7 +242,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 
 	private void exit() {
 		//TODO close open connections
-
+		saveAccounts();
 		this.dispose();
 	}
 
@@ -672,6 +680,9 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 		initComponents();
 		initLayout();
 		Helper.centerMe(this, null);
+		if (lastPath!=null) {
+			panelLocal.setSelectedDir(lastPath);
+		}
 	}
 
 	public static void main(String[] args) {
@@ -856,6 +867,13 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 				}
 				else {
 					Dialogs.showMessage("unsupported account type: "+a.type);
+				}
+			}
+			if (panelLocal!=null) {
+				File lastDir = panelLocal.getSelectedDir();
+				if (lastDir!=null) {
+					Element eLastPath = new Element("last_path", lastDir.getAbsolutePath());
+					e.addContent(eLastPath);
 				}
 			}
 			try {
@@ -1083,91 +1101,98 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 
 
 	private void button_upload_clicked() {
-		System.out.println("upload");
-		Vector<File> localFiles = panelLocal.getSelectedFiles();
-		String baseDir = null;
-		if (localFiles==null || localFiles.size()==0) {
-			File dir = panelLocal.getSelectedDir();
-			if (dir!=null) {
-				localFiles = new Vector<File>();
-				try {
-					baseDir = dir.getParentFile().getCanonicalPath();
-					if (!baseDir.endsWith(File.separator)) {
-						baseDir += File.separator;
+		
+		Thread tUpload = new Thread() {
+			public void run() {
+				System.out.println("upload");
+				Vector<File> localFiles = panelLocal.getSelectedFiles();
+				String baseDir = null;
+				if (localFiles==null || localFiles.size()==0) {
+					File dir = panelLocal.getSelectedDir();
+					if (dir!=null) {
+						localFiles = new Vector<File>();
+						try {
+							baseDir = dir.getParentFile().getCanonicalPath();
+							if (!baseDir.endsWith(File.separator)) {
+								baseDir += File.separator;
+							}
+						} catch (IOException e) {
+							e.printStackTrace();
+							baseDir = null;
+						}
+						Util.listFiles(dir, localFiles);
 					}
-				} catch (IOException e) {
-					e.printStackTrace();
-					baseDir = null;
+					if (localFiles==null || localFiles.size()==0) {
+						Dialogs.showMessage("Please select files to upload on local side.");
+						return;
+					}
 				}
-				Util.listFiles(dir, localFiles);
-			}
-			if (localFiles==null || localFiles.size()==0) {
-				Dialogs.showMessage("Please select files to upload on local side.");
-				return;
-			}
-		}
 
 
-		RemoteFile targetDirectory = ttpanelRemote.getSelectedDir();
-		if (targetDirectory==null) {
-			Dialogs.showMessage("Please select a target directory on remote side.");
-			return;
-		}
+				RemoteFile targetDirectory = ttpanelRemote.getSelectedDir();
+				if (targetDirectory==null) {
+					Dialogs.showMessage("Please select a target directory on remote side.");
+					return;
+				}
 
-		String targetDir = targetDirectory.getFilnameWithPath();
-		if (!targetDir.endsWith("/")) {
-			targetDir += "/";
-		}
+				String targetDir = targetDirectory.getFilnameWithPath();
+				if (!targetDir.endsWith("/")) {
+					targetDir += "/";
+				}
 
-		//show status Bar
-		long completeProgress = 0;
-		for (File from : localFiles) {
-			completeProgress += from.length();
-		}
-		int cp = (int)completeProgress;
-		//System.out.println("complete Progress :: "+completeProgress+"  as int "+cp);
-		if (panelStatus.isVisible()) {
-			progressBar.setMaximum(progressBar.getMaximum()+cp);
-			if (txtStatus.getText().equals("Downloading files")) {
-				txtStatus.setText("Uploading / Downloading files");
-			}
-		} else {
-			txtStatus.setText("Uploading files");
-			progressCompleteFiles = 0;
-			progressBar.setMinimum(0);
-			progressBar.setMaximum(cp);
-			progressBar.setValue(0);
-			panelStatus.setVisible(true);
-		}
+				//show status Bar
+				long completeProgress = 0;
+				for (File from : localFiles) {
+					completeProgress += from.length();
+				}
+				int cp = (int)completeProgress;
+				//System.out.println("complete Progress :: "+completeProgress+"  as int "+cp);
+				if (panelStatus.isVisible()) {
+					progressBar.setMaximum(progressBar.getMaximum()+cp);
+					if (txtStatus.getText().equals("Downloading files")) {
+						txtStatus.setText("Uploading / Downloading files");
+					}
+				} else {
+					txtStatus.setText("Uploading files");
+					progressCompleteFiles = 0;
+					progressBar.setMinimum(0);
+					progressBar.setMaximum(cp);
+					progressBar.setValue(0);
+					panelStatus.setVisible(true);
+				}
 
-		for (File from : localFiles) {
+				for (File from : localFiles) {
 
-			String filenameTo = ""+targetDir;
-			if (baseDir==null) {
-				filenameTo += from.getName();
-			} else {
-				try {
-					System.out.println("from path :: "+from.getCanonicalPath());
-					filenameTo += from.getCanonicalPath().substring(baseDir.length());
-				} catch (IOException e) {
-					filenameTo += from.getName();
-					e.printStackTrace();
+					String filenameTo = ""+targetDir;
+					if (baseDir==null) {
+						filenameTo += from.getName();
+					} else {
+						try {
+							System.out.println("from path :: "+from.getCanonicalPath());
+							filenameTo += from.getCanonicalPath().substring(baseDir.length());
+						} catch (IOException e) {
+							filenameTo += from.getName();
+							e.printStackTrace();
+						}
+					}
+
+					//RemoteFile to = new RemoteFile(tragetDirectory.getFilnameWithPath(), from.getName(), from.length(), from.lastModified(), false);
+
+					long id = client.upload(from, filenameTo);
+					Transfer t = new Transfer();
+
+					//t.msg = "uploading "+from.getAbsolutePath()+" -> "+filenameTo+ " ("+String.format("%8dkB",(localFile.length()/1000))+")";
+					//t.msg = String.format("uploading %-30s -> %-50s   (%8dkB)", from.getName(), filenameTo, (localFile.length()/1000));
+					t.msg = new String[] {"upload",from.getName(), filenameTo,String.format("%10dkB",(from.length()/1000)), "waiting"};
+					t.pos = addStatus(t.msg);
+					t.type = "upload";
+					t.startTime = -1L;
+					transfersInProgress.put(id,t);
 				}
 			}
-
-			//RemoteFile to = new RemoteFile(tragetDirectory.getFilnameWithPath(), from.getName(), from.length(), from.lastModified(), false);
-
-			long id = client.upload(from, filenameTo);
-			Transfer t = new Transfer();
-
-			//t.msg = "uploading "+from.getAbsolutePath()+" -> "+filenameTo+ " ("+String.format("%8dkB",(localFile.length()/1000))+")";
-			//t.msg = String.format("uploading %-30s -> %-50s   (%8dkB)", from.getName(), filenameTo, (localFile.length()/1000));
-			t.msg = new String[] {"upload",from.getName(), filenameTo,String.format("%10dkB",(from.length()/1000)), "waiting"};
-			t.pos = addStatus(t.msg);
-			t.type = "upload";
-			t.startTime = -1L;
-			transfersInProgress.put(id,t);
-		}
+		};
+		tUpload.start();
+		
 	}
 
 	private void button_download_clicked() {
@@ -1307,10 +1332,14 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 			if (msg==null) {
 				Dialogs.showMessage("Unknown error in command");
 			} else {
-				Dialogs.showMessage(msg);
-				if (msg.equals("Connection to server terminated.")) {
-					//disconnect
-					button_connect_clicked();
+				if (msg.startsWith("Error: Timeout when requesting list") && panelStatus.isVisible()) {
+					return; //upload or download blocks list command
+				} else {
+					Dialogs.showMessage(msg);
+					if (msg.equals("Connection to server terminated.")) {
+						//disconnect
+						button_connect_clicked();
+					}
 				}
 			}
 			return;
@@ -1432,6 +1461,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 			}
 			if (command instanceof OSDXFileTransferUploadCommand) {
 				//ttpanelRemote.updateTable();
+				//if (transfersInProgress.size()==0) {
 				if (!client.hasNextCommand()) {
 					ttpanelRemote.refreshView(true);
 				}

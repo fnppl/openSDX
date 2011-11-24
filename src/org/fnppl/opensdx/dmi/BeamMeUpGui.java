@@ -110,17 +110,18 @@ public class BeamMeUpGui extends JFrame {
 	private JScrollPane scroll_summary;
 	
 	private JButton bu_beam;
+	private String defaultKeyStore = null; 
 
-
-	public BeamMeUpGui(Feed feed) {
-		super("fnppl.org :: openSDX :: Beam me up");		
+	public BeamMeUpGui(Feed feed, String defaultKeystore) {
+		super("fnppl.org :: openSDX :: Beam me up");
+		this.defaultKeyStore = defaultKeystore;
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				returnToFeedGui();
 			}
 		});
-		setSize(700, 768);
+		setSize(800, 768);
 		Helper.centerMe(this, null);
 		currentFeed = feed;
 		
@@ -130,6 +131,21 @@ public class BeamMeUpGui extends JFrame {
 		label_feed.setText("Feed ID:");
 		text_feed.setText(feed.getFeedinfo().getFeedID());
 		bu_feed_open.setVisible(false);
+		
+		try {
+//			String keystore = feed.getFeedinfo().getReceiver().getFileKeystore();
+//			if (keystore!=null && keystore.length()>0) {
+//				text_keystore.setText(keystore);
+//			}
+			String keyid = feed.getFeedinfo().getReceiver().getKeyID();
+			if (keyid!=null && keyid.length()>0) {
+				text_keyid.setText(keyid);
+			}
+		} catch (Exception ex) {}
+		
+		if (defaultKeystore!=null) {
+			text_keystore.setText(defaultKeystore);
+		}
 		
 		pReceiver.removeAll();
 		pReceiver.add(new PanelReceiver(feed.getFeedinfo().getReceiver()));
@@ -156,7 +172,7 @@ public class BeamMeUpGui extends JFrame {
 				quit();
 			}
 		});
-		setSize(700, 768);
+		setSize(800, 768);
 		Helper.centerMe(this, null);
 	}
 
@@ -501,6 +517,11 @@ public class BeamMeUpGui extends JFrame {
             return;
         }
         
+        if (signatureKey==null) {
+        	Dialogs.showMessage("Given keyid not found in keystore. Please select a valid comnbination of keystore and keyid for signing the feed.");
+        	return;
+        }
+        
         try {
         	signatureKey.unlockPrivateKey(text_pw.getPassword()); 
         } catch (Exception ex) {
@@ -511,7 +532,7 @@ public class BeamMeUpGui extends JFrame {
         String buText = bu_beam.getText();
         bu_beam.setEnabled(false);
         bu_beam.setText("uploading... please wait");
-        Result result = Beamer.beamUpFeed(currentFeed, signatureKey, new DefaultMessageHandler());
+        Result result = Beamer.beamUpFeed(currentFeed, signatureKey, new DefaultMessageHandler(), defaultKeyStore);
         if (result.succeeded) {
         	Dialogs.showMessage("Upload succeeded.");
         } else {

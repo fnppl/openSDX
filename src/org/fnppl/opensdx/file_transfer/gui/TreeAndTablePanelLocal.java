@@ -173,6 +173,7 @@ public class TreeAndTablePanelLocal extends JPanel implements MyObservable, Tree
 			oneRoot = root[0];
 		} else {
 			oneRoot = new TreeAndTableNode(this, "Computer", true, roots);
+			oneRoot.populate();
 		}
 		
 		tree_model = new DefaultTreeModel(oneRoot);
@@ -504,9 +505,47 @@ public class TreeAndTablePanelLocal extends JPanel implements MyObservable, Tree
 			File f = (File)((TreeAndTableNode)tree.getSelectionPath().getLastPathComponent()).getUserObject();
 			return f;
 		} catch (Exception ex)	{
-			ex.printStackTrace();
+			//ex.printStackTrace();
 		}
 		return null;
+	}
+	
+	public void setSelectedDir(File dir) {
+		Vector<String> parts = new Vector<String>();
+		//System.out.println("adding: "+dir.getName());
+		String name = dir.getName();
+		if (name.length()==0) {
+			name = dir.getAbsolutePath();
+		}
+		parts.add(name);
+		File parent = dir.getParentFile();
+		while (parent!=null) {
+			name = parent.getName();
+			if (name.length()==0) {
+				name = parent.getAbsolutePath();
+			}
+			parts.add(0,name);
+			//System.out.println("adding: "+name);
+			parent = parent.getParentFile();
+		}
+		
+		for (int j=0;j<parts.size();j++) {
+			String searchNext = parts.get(j);
+			//System.out.println("searching for: "+searchNext);
+			boolean search = true;
+			int rowCount = tree.getRowCount();
+			for (int i=0;i<rowCount && search;i++) {
+				TreePath cp = tree.getPathForRow(i);
+				if (cp.getLastPathComponent().toString().equals(searchNext)) {
+					//System.out.println("found: "+searchNext);
+					//tree.setSelectionPath(cp);
+					tree.setSelectionRow(i);
+					tree.expandRow(i);
+					search = false;
+				}
+			}
+		}
+		
 	}
 	
 	public Vector<File> getSelectedFiles() {

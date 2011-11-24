@@ -1,5 +1,48 @@
 package org.fnppl.opensdx.gui.helper;
+/*
+ * Copyright (C) 2010-2011 
+ * 							fine people e.V. <opensdx@fnppl.org> 
+ * 							Henning Thieß <ht@fnppl.org>
+ * 
+ * 							http://fnppl.org
+ */
 
+/*
+ * Software license
+ *
+ * As far as this file or parts of this file is/are software, rather than documentation, this software-license applies / shall be applied.
+ *  
+ * This file is part of openSDX
+ * openSDX is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * openSDX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * and GNU General Public License along with openSDX.
+ * If not, see <http://www.gnu.org/licenses/>.
+ *      
+ */
+
+/*
+ * Documentation license
+ * 
+ * As far as this file or parts of this file is/are documentation, rather than software, this documentation-license applies / shall be applied.
+ * 
+ * This file is part of openSDX.
+ * Permission is granted to copy, distribute and/or modify this document 
+ * under the terms of the GNU Free Documentation License, Version 1.3 
+ * or any later version published by the Free Software Foundation; 
+ * with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. 
+ * A copy of the license is included in the section entitled "GNU 
+ * Free Documentation License" resp. in the file called "FDL.txt".
+ * 
+ */
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -63,6 +106,8 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 	private JTextField text_md5;
 	private JLabel label_sha1;
 	private JTextField text_sha1;
+	private JLabel label_structuredname;
+	private JTextField text_structuredname;
 	private JLabel label_filler;
 
 
@@ -75,9 +120,10 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		text_length.setEditable(false);
 		text_md5.setEditable(false);
 		text_sha1.setEditable(false);
+		text_structuredname.setEditable(false);
 
 		file = null;
-		update(file);
+		update(file,"");
 	}
 
 	public void setTypeBundle() {
@@ -125,7 +171,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		select_type_model.addElement("pre-listening");
 	}
 
-	public void update(ItemFile file) {
+	public void update(ItemFile file, String structuredFilename) {
 		this.file = file;
 		if (file == null) {
 			text_path.setText("");
@@ -140,7 +186,8 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 			text_bitrate.setText("");
 			text_bitratetype.setText("");
 			text_codec.setText("");
-			text_codecsettings.setText("");			
+			text_codecsettings.setText("");
+			text_structuredname.setText("");
 		} else {
 			text_path.setText(file.getLocationPath());
 			text_format.setText(file.getFiletype());
@@ -165,7 +212,12 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 			text_bitrate.setText(file.getBitrate());
 			text_bitratetype.setText(file.getBitratetype());
 			text_codec.setText(file.getCodec());
-			text_codecsettings.setText(file.getCodecsettings());				
+			text_codecsettings.setText(file.getCodecsettings());
+			if (structuredFilename==null) {
+				text_structuredname.setText("");
+			} else {
+				text_structuredname.setText(structuredFilename);
+			}
 		}
 		documentListener.saveStates();
 	}
@@ -307,13 +359,22 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		texts.add(text_md5);
 
 		label_sha1 = new JLabel("SHA1 checksum");
-
+		
 		text_sha1 = new JTextField("");
 
 		text_sha1.setName("text_sha1");
 		map.put("text_sha1", text_sha1);
 		texts.add(text_sha1);
 
+		label_structuredname = new JLabel("structured name");
+		
+		text_structuredname = new JTextField("");
+
+		text_structuredname.setName("text_structuredname");
+		map.put("text_structuredname", text_structuredname);
+		texts.add(text_structuredname);
+		
+		
 		label_filler = new JLabel("");
 
 		documentListener = new DocumentChangeListener(texts);
@@ -751,7 +812,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: label_sha1
 		gbc.gridx = 0;
-		gbc.gridy = 11;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -766,7 +827,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_sha1
 		gbc.gridx = 1;
-		gbc.gridy = 11;
+		//gbc.gridy;
 		gbc.gridwidth = 4;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -778,10 +839,40 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		gbc.insets = new Insets(2,2,2,2);
 		gbl.setConstraints(text_sha1,gbc);
 		add(text_sha1);
+		
+		// Component: label_structuredname
+		gbc.gridx = 0;
+		gbc.gridy++;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_structuredname,gbc);
+		add(label_structuredname);
 
+		// Component: text_structuredname
+		gbc.gridx = 1;
+		//gbc.gridy++;
+		gbc.gridwidth = 4;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_structuredname,gbc);
+		add(text_structuredname);
+		
 		// Component: label_filler
 		gbc.gridx = 0;
-		gbc.gridy = 12;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;

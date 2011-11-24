@@ -103,10 +103,12 @@ import org.fnppl.opensdx.dmi.wayout.*;
 @SuppressWarnings("serial")
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
-	private static String version = "v. 2011-10-21";
+	private static String version = "v. 2011-11-24";
 	private URL configGenres = FeedGui.class.getResource("resources/config_genres.xml");
 	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
 	private XMLTree tree;
+	private String defaultKeystore = null;
+	private MessageHandler messageHandler = new DefaultMessageHandler();
 	
 	public static FeedGui getInstance() {
 		if(instance == null) {
@@ -117,6 +119,7 @@ public class FeedGui extends JFrame implements MyObserver {
 	}
 	
 	private File lastDir = new File(System.getProperty("user.home"));
+	private File settingsFile = new File(System.getProperty("user.home")+File.separator+"openSDX"+File.separator+"feedgui_settings.xml");
 	
 	private JTabbedPane jt = null;
 	private StatusBar status = null;
@@ -143,12 +146,61 @@ public class FeedGui extends JFrame implements MyObserver {
 				quit();
 			}
 		});
-		
+		readSettings();
 		setSize(1024, 768);
 		makeMenuBar();
 		Helper.centerMe(this, null);
 	}
 	
+	private void readSettings() {
+		if (settingsFile.exists()) {
+			try {
+				Element root = Document.fromFile(settingsFile).getRootElement();
+				defaultKeystore = root.getChildText("keystore");
+				String ld = root.getChildText("last_path");
+				if (ld!=null && new File(ld).exists()) {
+					lastDir = new File(ld);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//try default keystores if not given in config
+		File fks = null;
+		if (defaultKeystore!=null) {
+			fks = new File(defaultKeystore);
+		}
+		if (defaultKeystore == null || fks==null) {
+			fks = new File(System.getProperty("user.home")+File.separator+"openSDX"+File.separator+"defaultKeyStore.xml");
+			if (fks.exists()) {
+				defaultKeystore = fks.getAbsolutePath();
+			} else {
+				fks = new File(System.getProperty("user.home")+File.separator+"openSDX"+File.separator+"mykeystore.xml");
+				if (fks.exists()) {
+					defaultKeystore = fks.getAbsolutePath();
+				}
+			}
+		}
+	}
+	
+	private void saveSettings() {
+		Element root = new Element("feedgui_settings");
+		if (defaultKeystore!=null) {
+			root.addContent("keystore", defaultKeystore);
+		}
+		if (lastDir!=null) {
+			root.addContent("last_path", lastDir.getAbsolutePath());
+		}
+		
+		//save
+		settingsFile.getParentFile().mkdirs();
+		try {
+			Document.buildDocument(root).writeToFile(settingsFile);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 	private void initTooltips() {
 //		initTooltips(feedinfo_panel);
@@ -251,7 +303,10 @@ public class FeedGui extends JFrame implements MyObserver {
 				}
 				else if(cmd.equalsIgnoreCase("validate feed")) {
 					validateFeed();
-				}				
+				}
+				else if(cmd.equalsIgnoreCase("select keystore")) {
+					selectDefaultKeystore();
+				}
 			}
 		};
 
@@ -295,6 +350,16 @@ public class FeedGui extends JFrame implements MyObserver {
 		jmi.setActionCommand("quit");
 		jmi.addActionListener(ja);
 		jm.add(jmi);
+		
+		
+		JMenu jmSettings = new JMenu("Settings");
+		jb.add(jmSettings);
+
+		jmi = new JMenuItem("set Keystore");
+		jmi.setActionCommand("select keystore");
+		jmi.addActionListener(ja);
+		jmSettings.add(jmi);
+		
 		
 		JMenu jm2 = new JMenu("Import");
 		jb.add(jm2);
@@ -352,6 +417,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
 		if (f!=null && f.exists()) {
 			try {
+				lastDir = f.getParentFile();
 				Document doc = Document.fromFile(f);
 				Feed feed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
 				makeSureFeedHasMinimalFeedRequirementsForGui(feed);
@@ -392,9 +458,22 @@ public class FeedGui extends JFrame implements MyObserver {
 		if (feed.getBundleCount()==0) {
 			BundleInformation info = BundleInformation.make(now,now);
 			LicenseBasis license_basis = LicenseBasis.make(Territorial.make(), now, now);
-			LicenseSpecifics license_specifics = null;
+			LicenseSpecifics license_specifics = LicenseSpecifics.make();
 			Bundle bundle = Bundle.make(IDs.make(), "","", "", "", info, license_basis, license_specifics);
 			feed.addBundle(bundle);
+		}
+		int bundleCount = feed.getBundleCount();
+		for (int i=0;i<bundleCount;i++) {
+			Bundle b = feed.getBundle(i);
+			if (b.getLicense_specifics()==null) {
+				b.license_specifics(LicenseSpecifics.make());
+			}
+			int itemCount = b.getItemsCount();
+			for (int j=0;j<itemCount;j++) {
+				if (b.getItem(j).getLicense_specifics()==null) {
+					b.getItem(j).license_specifics(LicenseSpecifics.make());
+				}
+			}
 		}
 		return;
 	}
@@ -406,6 +485,10 @@ public class FeedGui extends JFrame implements MyObserver {
 			if (feedid!=null && feedid.length()>0) {
 				name = feedid+".xml";
 			}
+			
+			//warning if not valid
+			if (!continueIfFeedNotValid("\nDo you want to continue saving anyway?")) return;
+			
 			File f = Dialogs.chooseSaveFile("Select filename for saving feed", lastDir, name);
 			if (f!=null) {
 				try {
@@ -419,7 +502,30 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 	}
 	
-	
+	private boolean continueIfFeedNotValid(String msg) {
+		//warning if not valid
+		boolean feedValid = true;
+		try {
+			Document doc = Document.buildDocument(currentFeed.toElement());	
+			String msgResult = new FeedValidator().validateOSDX_latest(doc.toString());
+			if(msgResult.length()!=0) {
+				//feed not vaild
+				feedValid = false;
+				//Dialogs.showTextFlex("Feed validation", msgResult, 700, 350);
+			}
+		}
+		catch(Exception ex) {
+			Dialogs.showMessage(ex.getMessage());	
+		}
+		if (!feedValid) {
+			if (msg==null) msg = "";
+			int ans = Dialogs.showYES_NO_Dialog("Feed validation failed", "Your current feed is not valid in terms of xsd specifications.\nPlease select \"Extras\" -> \"Validate Feed\" to get a detailed error message."+msg);
+			if (ans == Dialogs.NO) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 	public void sendFeedToReceiver() { //AKA beam me up
 		if (currentFeed!=null) {
@@ -429,6 +535,7 @@ public class FeedGui extends JFrame implements MyObserver {
 				return;
 			}
 			else {
+				if (!continueIfFeedNotValid("\nDo you really want to continue sending this feed?")) return;
 				String type = receiver.getType();
 				if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
 					String host = receiver.getServername();
@@ -436,7 +543,7 @@ public class FeedGui extends JFrame implements MyObserver {
 						Dialogs.showMessage("Please set a valid servername first.");
 						return;
 					}
-					String ks = receiver.getFileKeystore();
+					String ks = defaultKeystore;
 					if (ks==null || ks.length()==0 || !(new File(ks)).exists()) {
 						Dialogs.showMessage("Please select a valid keystore filename first.");
 						return;
@@ -468,7 +575,7 @@ public class FeedGui extends JFrame implements MyObserver {
 				}
 			}
 			
-			BeamMeUpGui beameGUI = new BeamMeUpGui(currentFeed);
+			BeamMeUpGui beameGUI = new BeamMeUpGui(currentFeed, defaultKeystore);
 			beameGUI.setVisible(true);
 			
 			//old version
@@ -860,7 +967,7 @@ public class FeedGui extends JFrame implements MyObserver {
 			public void stateChanged(ChangeEvent e) {
 				if (jt.getSelectedComponent()==scrollBIP) {
 					if (currentFeed!=null) {
-						bundled_items_panel.update(currentFeed.getBundle(0));
+						bundled_items_panel.update(currentFeed.getBundle(0), currentFeed);
 					}
 				}
 				else if (jt.getSelectedComponent()==treePanel) {
@@ -906,7 +1013,7 @@ public class FeedGui extends JFrame implements MyObserver {
 			}
 		}
 		if (bundled_items_panel!=null) {
-			bundled_items_panel.update(currentFeed.getBundle(0));
+			bundled_items_panel.update(currentFeed.getBundle(0), currentFeed);
 		}
 		if (treePanel!=null) {
 			if (currentFeed != null) {
@@ -951,7 +1058,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		
 		try {
 			Document doc = Document.buildDocument(currentFeed.toElement());	
-			String msg = new FeedValidator().validateOSDX_0_0_1(doc.toString());
+			String msg = new FeedValidator().validateOSDX_latest(doc.toString());
 			
 			if(msg.length()==0) {
 				msg = "Yehaw. Feed is valid.";
@@ -968,7 +1075,8 @@ public class FeedGui extends JFrame implements MyObserver {
 		File f = Dialogs.chooseOpenFile("Select file to validate", lastDir, "feed.xml");
 		if (f!=null && f.exists()) {
 			try {
-				String msg = new FeedValidator().validateOSDX_0_0_1(f);
+				lastDir = f.getParentFile();
+				String msg = new FeedValidator().validateOSDX_latest(f);
 				
 				if(msg.length()==0) {
 					msg = "Yehaw. Feed is valid.";
@@ -989,6 +1097,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
 		Result ir = Result.succeeded();
 		if (f!=null && f.exists()) {
+			lastDir = f.getParentFile();
 			try {
 				Feed feed = null;
 				if(type.equals("finetunes")) {
@@ -1046,6 +1155,7 @@ public class FeedGui extends JFrame implements MyObserver {
 				File f = Dialogs.chooseOpenFile("Select Feed", lastDir, "feed.xml");
 				Document doc = null;
 				if(f!=null) {
+					lastDir = f.getParentFile();
 					try {
 						doc = Document.fromFile(f);
 					} catch (Exception e) {
@@ -1118,9 +1228,22 @@ public class FeedGui extends JFrame implements MyObserver {
 				// e.printStackTrace();
 			}
 		}		
-	}	
+	}
+	
+	public void selectDefaultKeystore() {
+		File f = messageHandler.requestOpenKeystore();
+		if (f!=null) {
+			defaultKeystore = f.getAbsolutePath();
+		}
+	}
+	
+	
+	public String getDefaultKeyStore() {
+		return defaultKeystore;
+	}
 	
 	public void quit() {
+		saveSettings();
 		System.exit(0);
 	}
 	public static void main(String[] args) {

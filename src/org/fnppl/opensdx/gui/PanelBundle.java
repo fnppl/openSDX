@@ -116,7 +116,7 @@ public class PanelBundle extends JPanel implements MyObservable, MyObserver {
 			pInformation.update((BundleInformation)null);
 			pLicense.update((LicenseBasis)null);
 			pTags.update((ItemTags)null);
-			pFiles.update((Bundle)null);
+			pFiles.update((Bundle)null, null);
 		} else {
 			IDs ids = bundle.getIds();
 			BundleInformation info = bundle.getInformation();
@@ -132,7 +132,7 @@ public class PanelBundle extends JPanel implements MyObservable, MyObserver {
 			pInformation.update((BundleInformation)info);
 			pLicense.update((LicenseBasis)lb);
 			pTags.update(tags);
-			pFiles.update((Bundle)bundle);
+			pFiles.update((Bundle)bundle,gui.getCurrentFeed());
 		}
 	}
 

@@ -62,6 +62,7 @@ import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.OSDXKey;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Vector;
 import java.awt.event.ActionListener;
@@ -86,10 +87,10 @@ public class PanelReceiver extends JPanel implements MyObservable {
 	private JLabel label_auth_type;
 	private JComboBox select_auth_type;
 	private DefaultComboBoxModel select_auth_type_model;
-	private JLabel label_keystore;
-	private JTextField text_keystore;
-	private JButton bu_keystore_select;
-	private JButton bu_keystore_remove;
+//	private JLabel label_keystore;
+//	private JTextField text_keystore;
+//	private JButton bu_keystore_select;
+//	private JButton bu_keystore_remove;
 	private JLabel label_keyid;
 	private JTextField text_keyid;
 	private JButton bu_keyid_select;
@@ -122,14 +123,14 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		text_servername.setEditable(false);
 		text_serveripv4.setEditable(false);
 		select_auth_type.setEnabled(false);
-		text_keystore.setEditable(false);
+		//text_keystore.setEditable(false);
 		text_keyid.setEditable(false);
 		text_username.setEditable(false);
 		
 		bu_keyid_select.setVisible(false);
 		bu_keyid_remove.setVisible(false);
-		bu_keystore_select.setVisible(false);
-		bu_keystore_remove.setVisible(false);
+		//bu_keystore_select.setVisible(false);
+		//bu_keystore_remove.setVisible(false);
 		
 		bu_beam_me_up.setVisible(false);
 	}
@@ -211,29 +212,29 @@ public class PanelReceiver extends JPanel implements MyObservable {
 			}
 		});
 
-		label_keystore = new JLabel("KeyStore");
-
-		text_keystore = new JTextField("");
-		text_keystore.setEditable(false);
-		text_keystore.setName("text_keystore");
-		map.put("text_keystore", text_keystore);
-		//texts.add(text_keystore);
-
-		bu_keystore_select = new JButton("select");
-		map.put("bu_keystore_select", bu_keystore_select);
-		bu_keystore_select.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				bu_keystore_select_clicked();
-			}
-		});
-
-		bu_keystore_remove = new JButton("x");
-		map.put("bu_keystore_remove", bu_keystore_remove);
-		bu_keystore_remove.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				bu_keystore_remove_clicked();
-			}
-		});
+//		label_keystore = new JLabel("KeyStore");
+//
+//		text_keystore = new JTextField("");
+//		text_keystore.setEditable(false);
+//		text_keystore.setName("text_keystore");
+//		map.put("text_keystore", text_keystore);
+//		//texts.add(text_keystore);
+//
+//		bu_keystore_select = new JButton("select");
+//		map.put("bu_keystore_select", bu_keystore_select);
+//		bu_keystore_select.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				bu_keystore_select_clicked();
+//			}
+//		});
+//
+//		bu_keystore_remove = new JButton("x");
+//		map.put("bu_keystore_remove", bu_keystore_remove);
+//		bu_keystore_remove.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				bu_keystore_remove_clicked();
+//			}
+//		});
 
 		label_keyid = new JLabel("Key ID");
 
@@ -453,69 +454,69 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		gbl.setConstraints(select_auth_type,gbc);
 		add(select_auth_type);
 
-		// Component: label_keystore
-		gbc.gridx = 0;
-		gbc.gridy = 4;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-	//	gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(label_keystore,gbc);
-		add(label_keystore);
+//		// Component: label_keystore
+//		gbc.gridx = 0;
+//		gbc.gridy = 4;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+//	//	gbc.insets = new Insets(5,5,5,5);
+//		gbl.setConstraints(label_keystore,gbc);
+//		add(label_keystore);
 
-		// Component: text_keystore
-		gbc.gridx = 1;
-		gbc.gridy = 4;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 50.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-//		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(text_keystore,gbc);
-		add(text_keystore);
-
-		// Component: bu_keystore_select
-		gbc.gridx = 2;
-		gbc.gridy = 4;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-//		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(bu_keystore_select,gbc);
-		add(bu_keystore_select);
-
-		// Component: bu_keystore_remove
-		gbc.gridx = 3;
-		gbc.gridy = 4;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-//		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(bu_keystore_remove,gbc);
-		add(bu_keystore_remove);
+//		// Component: text_keystore
+//		gbc.gridx = 1;
+//		gbc.gridy = 4;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 50.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+////		gbc.insets = new Insets(5,5,5,5);
+//		gbl.setConstraints(text_keystore,gbc);
+//		add(text_keystore);
+//
+//		// Component: bu_keystore_select
+//		gbc.gridx = 2;
+//		gbc.gridy = 4;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+////		gbc.insets = new Insets(5,5,5,5);
+//		gbl.setConstraints(bu_keystore_select,gbc);
+//		add(bu_keystore_select);
+//
+//		// Component: bu_keystore_remove
+//		gbc.gridx = 3;
+//		gbc.gridy = 4;
+//		gbc.gridwidth = 1;
+//		gbc.gridheight = 1;
+//		gbc.weightx = 0.0;
+//		gbc.weighty = 0.0;
+//		gbc.anchor = GridBagConstraints.CENTER;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.ipadx = 0;
+//		gbc.ipady = 0;
+////		gbc.insets = new Insets(5,5,5,5);
+//		gbl.setConstraints(bu_keystore_remove,gbc);
+//		add(bu_keystore_remove);
 
 		// Component: label_keyid
 		gbc.gridx = 0;
-		gbc.gridy = 5;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -530,7 +531,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 
 		// Component: text_keyid
 		gbc.gridx = 1;
-		gbc.gridy = 5;
+		//gbc.gridy = 5;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -545,7 +546,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 
 		// Component: bu_keyid_select
 		gbc.gridx = 2;
-		gbc.gridy = 5;
+		//gbc.gridy = 5;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -560,7 +561,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 
 		// Component: bu_keyid_remove
 		gbc.gridx = 3;
-		gbc.gridy = 5;
+		//gbc.gridy = 5;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -575,7 +576,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 
 		// Component: label_username
 		gbc.gridx = 0;
-		gbc.gridy = 6;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -590,7 +591,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 
 		// Component: text_usernam
 		gbc.gridx = 1;
-		gbc.gridy = 6;
+		//gbc.gridy = 6;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -606,7 +607,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		// Component: filler
 		JLabel filler = new JLabel();
 		gbc.gridx = 1;
-		gbc.gridy = 7;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -626,7 +627,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		bu_beam_me_up.setPreferredSize(dim);
 		
 		gbc.gridx = 0;
-		gbc.gridy = 8;
+		gbc.gridy++;
 		gbc.gridwidth = 4;
 		gbc.gridheight = 1;
 		gbc.weightx = 50.0;
@@ -666,7 +667,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
     	if (r==null) {
     		text_servername.setText("");
     		text_serveripv4.setText("");
-    		text_keystore.setText("");
+    	//	text_keystore.setText("");
     		text_keyid.setText("");
     		text_username.setText("");
     		documentListener.saveStates();
@@ -676,7 +677,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
     	} else {
     		text_servername.setText(r.getServername());
     		text_serveripv4.setText(r.getServerIPv4());
-    		text_keystore.setText(r.getFileKeystore());
+    		//text_keystore.setText(r.getFileKeystore());
     		text_keyid.setText(r.getKeyID());
     		text_username.setText(r.getUsername());
     		documentListener.saveStates();
@@ -738,10 +739,10 @@ public class PanelReceiver extends JPanel implements MyObservable {
 			text_username.setVisible(true);
 			
 			boolean visible = false;
-			label_keystore.setVisible(visible);
-			text_keystore.setVisible(visible);
-			bu_keystore_select.setVisible(visible);
-			bu_keystore_remove.setVisible(visible);
+//			label_keystore.setVisible(visible);
+//			text_keystore.setVisible(visible);
+//			bu_keystore_select.setVisible(visible);
+//			bu_keystore_remove.setVisible(visible);
 			
 			label_keyid.setVisible(visible);
 			text_keyid.setVisible(visible);
@@ -762,10 +763,10 @@ public class PanelReceiver extends JPanel implements MyObservable {
 			label_username.setVisible(visible);
 			text_username.setVisible(visible);
 			
-			label_keystore.setVisible(visible);
-			text_keystore.setVisible(visible);
-			bu_keystore_select.setVisible(visible);
-			bu_keystore_remove.setVisible(visible);
+//			label_keystore.setVisible(visible);
+//			text_keystore.setVisible(visible);
+//			bu_keystore_select.setVisible(visible);
+//			bu_keystore_remove.setVisible(visible);
 			
 			label_keyid.setVisible(visible);
 			text_keyid.setVisible(visible);
@@ -780,30 +781,31 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		
 		
 	}
-	public void bu_keystore_select_clicked() {
-		Receiver r = getReceiver();
-		if (r==null) return;
-		File f = Dialogs.chooseOpenFile("Open KeyStore", lastDir, "keystore.xml");
-        if (f==null) return;
-        lastDir = f.getParentFile();
-        r.file_keystore(f.getAbsolutePath());
-        text_keystore.setText(f.getAbsolutePath());
-		notifyChanges();
-	}
-	public void bu_keystore_remove_clicked() {
-		Receiver r = getReceiver();
-		if (r==null) return;
-		r.file_keystore(null);
-		text_keystore.setText("");
-		r.keyid(null);
-		text_keyid.setText("");
-		notifyChanges();
-	}
+//	public void bu_keystore_select_clicked() {
+//		Receiver r = getReceiver();
+//		if (r==null) return;
+//		File f = Dialogs.chooseOpenFile("Open KeyStore", lastDir, "keystore.xml");
+//        if (f==null) return;
+//        lastDir = f.getParentFile();
+//        r.file_keystore(f.getAbsolutePath());
+//        text_keystore.setText(f.getAbsolutePath());
+//		notifyChanges();
+//	}
+//	public void bu_keystore_remove_clicked() {
+//		Receiver r = getReceiver();
+//		if (r==null) return;
+//		r.file_keystore(null);
+//		text_keystore.setText("");
+//		r.keyid(null);
+//		text_keyid.setText("");
+//		notifyChanges();
+//	}
 	public void bu_keyid_select_clicked() {
 		Receiver r = getReceiver();
 		if (r==null) return;
 		
-		String filenameKeystore = r.getFileKeystore();
+		String filenameKeystore = gui.getDefaultKeyStore();
+		
         if (filenameKeystore == null) {
             Dialogs.showMessage("Please select a keystore file first.");
             return;
@@ -845,7 +847,26 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		Receiver r = getReceiver();
 		if (r==null) return;
 		if (name.equals("text_servername")) {
-			r.servername(text_servername.getText());
+			String hostname = text_servername.getText();
+			r.servername(hostname);
+			if (hostname != null && !hostname.equals(""))  {
+				try {
+					
+					InetAddress addr = InetAddress.getByName(hostname);
+					String ip = addr.getHostAddress();
+					text_serveripv4.setText(ip);
+					r.serveripv4(ip);
+					documentListener.saveState(text_serveripv4);
+				} catch (Exception ex) {
+					text_serveripv4.setText("IP address could not be resolved");
+					r.serveripv4("");
+					//documentListener.saveState(text_serveripv4);	
+				}
+			} else {
+				text_serveripv4.setText("");
+				r.serveripv4("");
+				documentListener.saveState(text_serveripv4);
+			}
 		} else if (name.equals("text_serveripv4")) {
 			r.serveripv4(text_serveripv4.getText());
 		} else if (name.equals("text_username")) {

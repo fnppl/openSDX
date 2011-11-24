@@ -1,8 +1,12 @@
 package org.fnppl.opensdx.common;
 
+import java.io.File;
 import java.util.Vector;
 
+import org.fnppl.opensdx.dmi.BundleItemStructuredName;
+import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.ChildElementIterator;
+import org.fnppl.opensdx.xml.Element;
 
 /*
  * Copyright (C) 2010-2011 
@@ -177,6 +181,117 @@ public class Feed extends BusinessObject {
 	public String getKeyname() {
 		return KEY_NAME;
 	}
-
+	
+	public String getNormFeedID() {
+		String feedid = getFeedinfo().getFeedID();
+		String normFeedid = Util.filterCharactersFile(feedid.toLowerCase());
+		//System.out.println("norm feedid: "+normFeedid);
+		if (normFeedid.length()==0) {
+			normFeedid = "unnamed_feed";
+		}
+		return normFeedid;
+	}
+	
+	public BundleItemStructuredName getStructuredFilename(ItemFile file) {
+		String normFeedid = getNormFeedID();
+		int num = 1;
+		for (int b=0;b<getBundleCount();b++) {
+			Bundle bundle = getBundle(b);
+			if (bundle!=null) {
+				//bundle files (cover, booklet, ..)
+				for (int j=0;j<bundle.getFilesCount();j++) {
+					try {
+						ItemFile nextItemFile = bundle.getFile(j);
+						if (nextItemFile==file) {
+							File nextFile = new File(nextItemFile.getLocationPath());
+							String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+							String filename = normFeedid+"_"+num+"_"+md5;
+							return new BundleItemStructuredName(nextItemFile, nextFile, filename);
+						}
+						num++;
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+				
+				//item files
+				for (int i=0;i<bundle.getItemsCount();i++) {
+					Item item = bundle.getItem(i);
+					if (item.getFilesCount()>0) {
+						boolean subIndex = (item.getFilesCount()>1);
+						for (int j=0;j<item.getFilesCount();j++) {
+							try {
+								ItemFile nextItemFile = item.getFile(j);
+								if (nextItemFile==file) {
+									File nextFile = new File(nextItemFile.getLocationPath());
+									String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+									String filename = normFeedid+"_"+num+"_"+md5;
+									return new BundleItemStructuredName(nextItemFile, nextFile, filename);
+								}
+								num++;
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	public Vector<BundleItemStructuredName> getStructuredFilenames() {
+		Vector<BundleItemStructuredName> files = new Vector<BundleItemStructuredName>();
+		
+		String normFeedid = getNormFeedID();
+		int num = 1;
+		for (int b=0;b<getBundleCount();b++) {
+			Bundle bundle = getBundle(b);
+			if (bundle!=null) {
+				//bundle files (cover, booklet, ..)
+				for (int j=0;j<bundle.getFilesCount();j++) {
+					try {
+						ItemFile nextItemFile = bundle.getFile(j);
+						File nextFile = new File(nextItemFile.getLocationPath());
+						String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+						String filename = normFeedid+"_"+num+"_"+md5;
+						num++;
+						files.add(new BundleItemStructuredName(nextItemFile, nextFile, filename));
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+				
+				//item files
+				for (int i=0;i<bundle.getItemsCount();i++) {
+					Item item = bundle.getItem(i);
+					if (item.getFilesCount()>0) {
+						//boolean subIndex = (item.getFilesCount()>1);
+						for (int j=0;j<item.getFilesCount();j++) {
+							try {
+								ItemFile nextItemFile = item.getFile(j);
+								File nextFile = new File(nextItemFile.getLocationPath());
+								String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+								String filename = normFeedid+"_"+num+"_"+md5;
+								num++;
+								files.add(new BundleItemStructuredName(nextItemFile, nextFile, filename));
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
+						}
+					}
+				}
+			}
+		}
+		return files;
+	}
+	
+	public Element toElement() {
+		Vector<BundleItemStructuredName> itemNames = getStructuredFilenames();
+		for (BundleItemStructuredName sn : itemNames) {
+			sn.itemFile.path(sn.new_filename);
+		}
+		return super.toElement();
+	}
 
 }

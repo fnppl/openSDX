@@ -95,7 +95,7 @@ public class Receiver extends BusinessObject {
 	private BusinessStringItem username;					//MUST for OSDXFileTransferServer
 	private BusinessBytesItem authsha1; 					//MUST
 	private BusinessObject crypto;							//COULD
-	private BusinessStringItem file_keystore;
+	//private BusinessStringItem file_keystore;
 	private BusinessStringItem keyid;
 	
 	
@@ -134,7 +134,7 @@ public class Receiver extends BusinessObject {
 		
 		r.serveripv6 = null;
 		r.crypto = null;
-		r.file_keystore = null;
+		//r.file_keystore = null;
 		r.keyid = null;
 		r.username = null;
 		return r;
@@ -159,7 +159,7 @@ public class Receiver extends BusinessObject {
 		
 		r.serveripv6 = BusinessStringItem.fromBusinessObject(bo, "serveripv6");
 		r.crypto = bo.handleBusinessObject("crypto");
-		r.file_keystore = BusinessStringItem.fromBusinessObject(bo, "file_keystore");
+		//r.file_keystore = BusinessStringItem.fromBusinessObject(bo, "file_keystore");
 		r.keyid = BusinessStringItem.fromBusinessObject(bo, "keyid");
 		r.username = BusinessStringItem.fromBusinessObject(bo, "username");
 		return r;
@@ -263,22 +263,22 @@ public class Receiver extends BusinessObject {
 		return this;
 	}
 	
-	public Receiver file_keystore(String value) {
-		if (value == null) {
-			file_keystore = null;
-		}
-		else if (file_keystore==null) {
-			file_keystore = new BusinessStringItem("file_keystore", value);
-		}
-		else {
-			file_keystore.setString(value);
-		}
-		return this;
-	}
-	public String getFileKeystore() {
-		if (file_keystore==null) return null;
-		return file_keystore.getString();
-	}
+//	public Receiver file_keystore(String value) {
+//		if (value == null) {
+//			file_keystore = null;
+//		}
+//		else if (file_keystore==null) {
+//			file_keystore = new BusinessStringItem("file_keystore", value);
+//		}
+//		else {
+//			file_keystore.setString(value);
+//		}
+//		return this;
+//	}
+//	public String getFileKeystore() {
+//		if (file_keystore==null) return null;
+//		return file_keystore.getString();
+//	}
 	public Receiver keyid(String value) {
 		if (value == null) {
 			keyid = null;
@@ -374,7 +374,7 @@ public class Receiver extends BusinessObject {
 //			keyid(null);
 //		}
 		if (authtype==null || !authtype.equals(AUTH_TYPE_KEYFILE)) {
-			file_keystore(null);
+			//file_keystore(null);
 			keyid(null);
 		}
 		return super.toElement();
