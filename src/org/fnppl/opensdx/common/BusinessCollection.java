@@ -83,7 +83,7 @@ public abstract class BusinessCollection<E> implements XMLElementable {
 		String name = ((BusinessItem)item).getKeyname();
 		boolean add = true;
 		for (int i=0;i<list.size() && add;i++) {
-			if (list.get(i) instanceof Item) {
+			if (list.get(i) instanceof BusinessItem) {
 				if (((BusinessItem)list.get(i)).getKeyname().equals(name)) {
 					list.set(i, item);
 					add = false;
