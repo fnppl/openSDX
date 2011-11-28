@@ -67,6 +67,7 @@ import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.MessageHandler;
+import org.fnppl.opensdx.helper.ProgressListener;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
@@ -79,8 +80,11 @@ import org.fnppl.opensdx.xml.Element;
 
 public class Beamer {
 
-
 	public static Result beamUpFeed(Feed feed, OSDXKey signatureKey, MessageHandler mh, String defaultKeystore) {
+		return beamUpFeed(feed, signatureKey, mh, defaultKeystore, null);
+	}
+	
+	public static Result beamUpFeed(Feed feed, OSDXKey signatureKey, MessageHandler mh, String defaultKeystore, ProgressListener pg) {
 		Receiver receiver = feed.getFeedinfo().getReceiver();
 		if (receiver==null) {
 			return Result.error("Please enter complete receiver information in FeedInfo tab first.");
@@ -136,7 +140,7 @@ public class Beamer {
 		if (client!=null) {
 			try {
 				Beamer beam = new Beamer();
-				Result result = beam.uploadFeed(feed, client, signatureKey,mh);
+				Result result = beam.uploadFeed(feed, client, signatureKey,mh, pg);
 				client.closeConnection();
 				return result;
 			} catch (Exception ex) {
@@ -217,7 +221,7 @@ public class Beamer {
 	private boolean hasAnswer = false;
 	
 	//private Result currentUploadResult = null; 
-	public Result uploadFeed(Feed feed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh) throws Exception {
+	public Result uploadFeed(Feed feed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh, final ProgressListener pg) throws Exception {
 		final String normFeedid = feed.getNormFeedID();
 		
 		final Result[] result = new Result[] {Result.succeeded()};
@@ -312,11 +316,14 @@ public class Beamer {
 		//String absolutePath = "/"+datedir+"/"+dir+"/";
 		String absolutePath = "/"+dir+"/";
 		
+		long maxProgress = 0;
+		long progress = 0;
 		//upload feed
 		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 		Element eFeed = copyOfFeed.toElement();
 		Document.buildDocument(eFeed).output(bOut);
 		byte[] feedbytes = bOut.toByteArray();
+		maxProgress += feedbytes.length;
 		
 		try {
 			System.out.println("\nUploading "+normFeedid+".xml ...");
@@ -368,12 +375,13 @@ public class Beamer {
 		Signature feed_sig = Signature.createSignature(checks[1], checks[2], checks[3], normFeedid+".xml",signaturekey);
 		bOut = new ByteArrayOutputStream();
 		Document.buildDocument(feed_sig.toElement()).output(bOut);
-		
+		byte[] feedSignatureBytes = bOut.toByteArray();
+		maxProgress += feedSignatureBytes.length;
 		try {
 			System.out.println("\nUploading signature ...");
 			hasAnswer = false;
 			final long[] timeout = new long[]{System.currentTimeMillis()+timeoutDuration};
-			client.uploadFile(bOut.toByteArray(), absolutePath+normFeedid+".xml.osdx.sig", new CommandResponseListener() {
+			client.uploadFile(feedSignatureBytes, absolutePath+normFeedid+".xml.osdx.sig", new CommandResponseListener() {
 				public void onSuccess(OSDXFileTransferCommand command) {
 					System.out.println("Upload of signature successful.");
 					hasAnswer = true;
@@ -415,8 +423,20 @@ public class Beamer {
 		}
 		
 		
+		
 		//upload all bundle and item files
 		Vector<BundleItemStructuredName> files = copyOfFeed.getStructuredFilenames();
+		
+		if (pg!=null) { // count max progress
+			progress = maxProgress;
+			pg.setProgress(progress);
+			for (BundleItemStructuredName f : files) {
+				maxProgress += f.file.length();
+			}
+			pg.setMaxProgress(maxProgress);
+			pg.onUpate();
+		}
+		final long[] progressSave = new long[1];
 		for (BundleItemStructuredName f : files) {
 			try {
 				//ItemFile nextItemFile = f.itemFile;
@@ -424,21 +444,31 @@ public class Beamer {
 				
 				File nextFile = f.file;
 				final String filename = f.new_filename;
-				
+				final long len = f.file.length();
 				try {
 					final long[] timeout = new long[]{System.currentTimeMillis()+timeoutDuration};
 					hasAnswer = false;
 					System.out.println("\nUploading "+filename+" ...");
+					if (pg!=null) {
+						progressSave[0] = pg.getProgress();
+					}
 					client.uploadFile(nextFile, absolutePath+filename, new CommandResponseListener() {
 						public void onSuccess(OSDXFileTransferCommand command) {
 							System.out.println("Upload of "+filename+" successful.");
 							hasAnswer = true;
+							if (pg!=null) {
+								pg.setProgress(progressSave[0]+len);
+								pg.onUpate();
+							}
 						}
 						
 						public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
 							//System.out.println("status update: "+progress+" / "+maxProgress);
 							timeout[0] = System.currentTimeMillis()+timeoutDuration;
-							
+							if (pg!=null) {
+								pg.setProgress(progressSave[0]+progress);
+								pg.onUpate();
+							}
 						}
 						public void onError(OSDXFileTransferCommand command, String msg) {
 							if (mh!=null) {

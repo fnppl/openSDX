@@ -52,6 +52,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -67,6 +68,7 @@ import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.Helper;
 import org.fnppl.opensdx.gui.helper.PanelReceiver;
 import org.fnppl.opensdx.helper.Logger;
+import org.fnppl.opensdx.helper.ProgressListener;
 import org.fnppl.opensdx.http.HTTPClient;
 import org.fnppl.opensdx.http.HTTPClientPutRequest;
 import org.fnppl.opensdx.http.HTTPClientResponse;
@@ -110,6 +112,7 @@ public class BeamMeUpGui extends JFrame {
 	private JScrollPane scroll_summary;
 	
 	private JButton bu_beam;
+	private JProgressBar progressBar = null;
 	private String defaultKeyStore = null; 
 
 	public BeamMeUpGui(Feed feed, String defaultKeystore) {
@@ -260,6 +263,13 @@ public class BeamMeUpGui extends JFrame {
 				bu_beam_clicked();
 			}
 		});
+		
+		//ProgressBar
+		progressBar = new JProgressBar(0,0);
+		progressBar.setValue(1);
+		progressBar.setIndeterminate(true);
+		progressBar.setVisible(false);
+		
 
 	}
 	
@@ -420,13 +430,26 @@ public class BeamMeUpGui extends JFrame {
 		JScrollPane scroll = new JScrollPane(content);
 		add(scroll, BorderLayout.CENTER);
 		
+		JPanel panelSouth = new JPanel();
+		panelSouth.setLayout(new BorderLayout());
+		
 		//beam button
 		Dimension dim = new Dimension(450,45);
 		bu_beam.setMinimumSize(dim);
 		bu_beam.setMaximumSize(dim);
 		bu_beam.setPreferredSize(dim);
 		
-		add(bu_beam, BorderLayout.SOUTH);
+		panelSouth.add(bu_beam, BorderLayout.CENTER);
+		
+		//progress bar
+		//progressBar.setVisible(true);
+		Dimension dim2 = new Dimension(450,25);
+		progressBar.setMinimumSize(dim2);
+		progressBar.setMaximumSize(dim2);
+		progressBar.setPreferredSize(dim2);
+		panelSouth.add(progressBar, BorderLayout.SOUTH);
+		
+		add(panelSouth, BorderLayout.SOUTH);
 		
 	}
 
@@ -529,30 +552,56 @@ public class BeamMeUpGui extends JFrame {
         	Dialogs.showMessage("Sorry, wrong password for signature key.");
             return;
         }
-        String buText = bu_beam.getText();
+        final String buText = bu_beam.getText();
         bu_beam.setEnabled(false);
         bu_beam.setText("uploading... please wait");
-        Result result = Beamer.beamUpFeed(currentFeed, signatureKey, new DefaultMessageHandler(), defaultKeyStore);
-        if (result.succeeded) {
-        	Dialogs.showMessage("Upload succeeded.");
-        } else {
-        	String msg = "Upload failed";
-        	if (result.errorMessage==null) {
-        		msg += ".";
-        	} else {
-        		msg += ":\n"+result.errorMessage;
-        	}
-        	//Dialogs.showMessage(msg);
-        	
-        	
-        	msg  += "\n\nDo you want to send a report?";
-			int ans = Dialogs.showYES_NO_Dialog("Test connection successful.",msg);
-			if (ans==Dialogs.YES) {
-				sendLogFile();
+        
+        progressBar.setVisible(true);
+        final ProgressListener pg = new ProgressListener() {
+			public void onUpate() {
+				if (progressBar.isIndeterminate()) {
+					progressBar.setMaximum((int)getMaxProgress());
+					progressBar.setIndeterminate(false);
+				}
+				progressBar.setValue((int)getProgress());
 			}
-        }
-        bu_beam.setText(buText);
-        bu_beam.setEnabled(true);
+		};
+		final OSDXKey fsignatureKey = signatureKey;
+		Thread t = new Thread() {
+			public void run() {
+				 	Result result = Beamer.beamUpFeed(currentFeed, fsignatureKey, new DefaultMessageHandler(), defaultKeyStore, pg);
+			        
+				 	//reset progress bar and button
+				 	progressBar.setVisible(false);
+				 	progressBar.setValue(0);
+				 	progressBar.setMaximum(0);
+			        progressBar.setIndeterminate(true);
+			        bu_beam.setText(buText);
+			        bu_beam.setEnabled(true);
+			        
+			        if (result.succeeded) {
+			        	Dialogs.showMessage("Upload succeeded.");
+			        } else {
+			        	String msg = "Upload failed";
+			        	if (result.errorMessage==null) {
+			        		msg += ".";
+			        	} else {
+			        		msg += ":\n"+result.errorMessage;
+			        	}
+			        	//Dialogs.showMessage(msg);
+			        	
+			        	
+			        	msg  += "\n\nDo you want to send a report?";
+						int ans = Dialogs.showYES_NO_Dialog("Test connection successful.",msg);
+						if (ans==Dialogs.YES) {
+							sendLogFile();
+						}
+			        }
+			      
+			}
+		};
+		t.start();
+       
 	}
 	
 	private void sendLogFile() {

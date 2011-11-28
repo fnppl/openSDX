@@ -162,7 +162,12 @@ public class OSDXFileTransferClient implements UploadClient {
 		for (CommandResponseListener l : responseListener) {
 			command.addListener(l);
 		}
-		queueWaiting.add(0,command);
+		if (queueWaiting.size()>0 && queueWaiting.get(0) instanceof OSDXFileTransferLoginCommand) {
+			queueWaiting.add(1,command);	
+		} else {
+			queueWaiting.add(0,command);
+		}
+		
 	}
 	
 	public void addCommandNotListen(OSDXFileTransferCommand command) {
@@ -401,6 +406,8 @@ public class OSDXFileTransferClient implements UploadClient {
 	
 	public void list(String absoluteDirectoryName, CommandResponseListener listener) {
 		addCommandNext(new OSDXFileTransferListCommand(IdGenerator.getTimestamp(),absoluteDirectoryName, listener).setBlocking());
+		//addCommand(new OSDXFileTransferListCommand(IdGenerator.getTimestamp(),absoluteDirectoryName, listener).setBlocking());
+		
 	}
 	
 	public long download(String absoluteRemoteFilename, File localFile) {
