@@ -149,7 +149,7 @@ public class FeedValidator {
 		return validateOSDX_0_0_1(f);
 	}
 	
-	public String validateOSDX_0_0_1(String s) throws Exception { //validate against oSDX 0.0.1 (mayor minor sub)
+	public String validateOSDX_0_0_1(String s) { //validate against oSDX 0.0.1 (mayor minor sub)
 		
 		///File file = new File(FILE_OSDX_0_0_1.toURI());
 		//if(!file.exists()) { throw new Exception("Validation Error. Schema-File not loaded."); }
@@ -167,8 +167,8 @@ public class FeedValidator {
 		return validateXmlFile(f, RESSOURCE_OSDX_0_0_1);
 	}
 	
-	public boolean validateOSDX_0_1_0(Feed f) { //validate against oSDX 0.1.0 (mayor minor sub)
-		return false;
+	public String validateOSDX_0_1_0(Feed f) { //validate against oSDX 0.1.0 (mayor minor sub)
+		return validateOSDX_0_0_1(f.toElement().toString());  		
 	}
 	
    // public String validateXmlFeed(String f, File schemaFile) {
@@ -339,6 +339,9 @@ public class FeedValidator {
 		this.errorLengthToShow = errorLengthToShow;
 	}    
     
+	public int getErrorCount() {
+		return errorCount;
+	}
 	public static void main(String[] args) {
 		File f = new File(args[0]);
 		FeedValidator fv = new FeedValidator();

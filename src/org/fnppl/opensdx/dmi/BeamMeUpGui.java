@@ -529,6 +529,14 @@ public class BeamMeUpGui extends JFrame {
 			Dialogs.showMessage("Please open a feed for upload first.");
 			return;
 		}
+		
+		FeedValidator fv = new FeedValidator();
+		String va = fv.validateOSDX_0_1_0(currentFeed); 
+		if(fv.getErrorCount() != 0) {
+			Dialogs.showMessage("Sorry, cannot upload feed - feed validation failed.\n\n"+va);
+			return;
+		}
+		
 		//check signature key
 		OSDXKey signatureKey = null;
 		 try {
