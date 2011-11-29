@@ -62,11 +62,85 @@ import org.xml.sax.*;
 
 public class FeedValidator {
 	//public final static URL FILE_OSDX_0_0_1 = FeedValidator.class.getResource("resources/openSDX_00-00-00-01.xsd");
-	public final static String  RESSOURCE_OSDX_0_0_1 = "resources/openSDX_00-00-00-01.xsd";
+	public final static String  RESSOURCE_OSDX_0_0_1 = "openSDX_00-00-00-01.xsd";
+	public final static String  RESSOURCE_OSDX_0_0_1_COUNTRIES = "openSDX_countryCodes.xsd";
+	public final static String  RESSOURCE_OSDX_0_0_1_GENRES = "openSDX_genres.xsd";
+	public final static String  RESSOURCE_OSDX_0_0_1_LANGUAGES = "openSDX_languages.xsd";
+	
 	private String message = "";
 	private int errorCount = 0;
 	private int errorLengthToShow = 200; // set to "-1" to show all
 
+	public File xsdDir = null;
+	
+	public FeedValidator() {
+		initXSDs();
+	}
+	public static void copyResource(InputStream in, File dstDir, String fname) {
+		try {
+			File f = new File(dstDir, fname);
+			FileOutputStream fout = new FileOutputStream(f);
+			byte[] buff = new byte[1024];
+			int read = 0;
+			while((read=in.read(buff))!=-1) {
+				fout.write(buff,0,read);
+			}
+			fout.flush();
+			fout.close();
+			in.close();
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	public void initXSDs() {
+		if(xsdDir != null) {
+			//TODO HT 2011-11-29 - check each .xsd to be present as well...
+			return;
+		}
+		
+		try {
+			File f = new File(System.getProperty("user.home"), "openSDX");
+			f = new File(f, "xsd");
+			if(!f.exists()) {
+				boolean r = f.mkdirs();
+				if(r) {
+					System.out.println("Created openSDX-subdir \"xsd\" to store current schema-files.\nLocation: "+f.getAbsolutePath());
+				}
+			}
+			if(!f.exists()) {
+				//dir-creation failed - trying to go for tmpdir
+				f = new File(System.getProperty("java.io.tmpdir"), "openSDX");
+				f = new File(f, "xsd");
+				if(!f.exists()) {
+					boolean r = f.mkdirs();
+					if(r) {
+						System.out.println("Created TEMPORARY openSDX-subdir \"xsd\" to store current schema-files.\nLocation: "+f.getAbsolutePath());
+					}
+				}
+				if(!f.exists()) {
+					f = f.getParentFile(); //tmpdir then...					
+				}								
+			}
+			xsdDir = f;
+			
+//			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1);
+			copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1), xsdDir, RESSOURCE_OSDX_0_0_1);
+			
+//			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_COUNTRIES);
+			copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_COUNTRIES), xsdDir, RESSOURCE_OSDX_0_0_1_COUNTRIES);
+			
+//			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_LANGUAGES);
+			copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_LANGUAGES), xsdDir, RESSOURCE_OSDX_0_0_1_LANGUAGES);
+			
+//			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_GENRES);
+			copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_GENRES), xsdDir, RESSOURCE_OSDX_0_0_1_GENRES);
+			
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+		System.out.println("XSDs inited in "+xsdDir.getAbsolutePath());
+	}
+	
 	public String validateOSDX_latest(String xml) throws Exception {
 		return validateOSDX_0_0_1(xml);
 	}
@@ -80,17 +154,17 @@ public class FeedValidator {
 		///File file = new File(FILE_OSDX_0_0_1.toURI());
 		//if(!file.exists()) { throw new Exception("Validation Error. Schema-File not loaded."); }
 
-		String xml = s.trim().replaceFirst("^([\\W]+)<","<");
+		String xml = s.trim().replaceFirst("^([\\W]+)<","<"); //HT 2011-11-29 WHY?!?!?!
 				
 		//return validateXmlFeed(xml, file);
-		return validateXmlFeed(xml, FeedValidator.class.getResourceAsStream(RESSOURCE_OSDX_0_0_1));
+		return validateXmlFeed(xml, RESSOURCE_OSDX_0_0_1);
 	}
 	
-	public String validateOSDX_0_0_1(File f) throws Exception { //validate against oSDX 0.0.1 (mayor minor sub)
+	public String validateOSDX_0_0_1(File f) { //validate against oSDX 0.0.1 (mayor minor sub)
 		//File file = new File(FILE_OSDX_0_0_1.toURI());
 		//if(!file.exists()) { throw new Exception("Validation Error. Schema-File not loaded."); }
 		//return validateXmlFile(f, file);
-		return validateXmlFile(f, FeedValidator.class.getResourceAsStream(RESSOURCE_OSDX_0_0_1));
+		return validateXmlFile(f, RESSOURCE_OSDX_0_0_1);
 	}
 	
 	public boolean validateOSDX_0_1_0(Feed f) { //validate against oSDX 0.1.0 (mayor minor sub)
@@ -98,13 +172,11 @@ public class FeedValidator {
 	}
 	
    // public String validateXmlFeed(String f, File schemaFile) {
-	 public String validateXmlFeed(String xml, InputStream schemaStream) {
-    	    	
-    	try
-		{
+	 public String validateXmlFeed(String xml, String schemaName) {
+    	try {
 			// use a SchemaFactory and a Schema for validation
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			Source schemaSource = new StreamSource(schemaStream);
+			Source schemaSource = new StreamSource(new File(xsdDir, schemaName));
 			Schema schema = schemaFactory.newSchema(schemaSource);
 			
 			ByteArrayInputStream bs = new ByteArrayInputStream(xml.getBytes("UTF-8"));
@@ -165,12 +237,12 @@ public class FeedValidator {
     	return message;
 	}	
 	
-    public String validateXmlFile(File xmlFile, InputStream schemaStream) {
-    	try
-		{
+    public String validateXmlFile(File xmlFile, String schemaName) {
+    	try {
     		// use a SchemaFactory and a Schema for validation
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			Source schemaSource = new StreamSource(schemaStream);
+//			Source schemaSource = new StreamSource(schemaStream);
+			Source schemaSource = new StreamSource(new File(xsdDir, schemaName));
 			Schema schema = schemaFactory.newSchema(schemaSource);
 
 			InputStream inputStream= new FileInputStream(xmlFile);
@@ -268,6 +340,13 @@ public class FeedValidator {
 	}    
     
 	public static void main(String[] args) {
+		File f = new File(args[0]);
+		FeedValidator fv = new FeedValidator();
+		String msg = fv.validateOSDX_0_0_1(f);
 		
+		if(fv.errorCount > 0) {
+			System.out.println("Errors occured: "+fv.errorCount);
+		}
+		System.out.println(msg);
 	}
 }
