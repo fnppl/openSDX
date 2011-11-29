@@ -47,10 +47,14 @@ package org.fnppl.opensdx.xml;
  */
 
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.*;
 
 import org.jdom.Attribute;
 import org.jdom.Comment;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 public class Element {
 	protected org.jdom.Element base = null;
@@ -182,5 +186,20 @@ public class Element {
 		return ret;
 	}
 	
-	
+	public String toString() {
+		try {
+			Format f = Format.getPrettyFormat();
+			f.setEncoding("UTF-8");
+			XMLOutputter outp = new XMLOutputter(f);
+			StringWriter sw = new StringWriter();
+			outp.output(base, sw);      
+			sw.flush();
+			
+			return sw.toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
 }
