@@ -167,6 +167,7 @@
             <xsd:element name="licensor" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="licensee" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="gvl" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="amg" type="xsd:string" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="www">
