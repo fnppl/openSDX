@@ -92,6 +92,7 @@ public class SecurityMainFrame extends JFrame {
 	private JMenuItem jmiRequestKeyByID;
 	private JMenuItem jmiAddKeyServer;
 
+	private OSDXKey lastSelectedPrivateKey = null;
 
 	private HashMap<String, String> props = new HashMap<String, String>(); //GUI layout properties
 
@@ -2664,19 +2665,23 @@ public class SecurityMainFrame extends JFrame {
 			return;
 		}
 
+		int preselect = 0;
 		Vector<String> select = new Vector<String>();
-		int[] map = new int[storedPrivateKeys.size()];
+		final int[] map = new int[storedPrivateKeys.size()];
 		for (int i=0;i<storedPrivateKeys.size();i++) {
 			OSDXKey k = storedPrivateKeys.get(i);
 			if (k.allowsSigning()) {
 				if (k.isMaster()) {
-					select.add(k.getKeyID()+", "+((MasterKey)k).getIDEmailAndMnemonic());
+					select.add(k.getKeyIDShort()+", "+((MasterKey)k).getIDEmailAndMnemonic());
 				}
 				else if (k.isSub()) {
-					select.add(k.getKeyID()+" subkey of "+((SubKey)k).getParentKey().getIDEmailAndMnemonic());
+					select.add(k.getKeyIDShort()+" subkey of "+((SubKey)k).getParentKey().getIDEmailAndMnemonic());
 				}
 				else {
-					select.add(k.getKeyID());
+					select.add(k.getKeyIDShort());
+				}
+				if (lastSelectedPrivateKey!=null && k == lastSelectedPrivateKey) {
+					preselect = select.size()-1;
 				}
 				map[select.size()-1] = i;
 			}
@@ -2768,9 +2773,18 @@ public class SecurityMainFrame extends JFrame {
 		c.gridwidth = 1;
 		p.add(l, c);
 
-		JComboBox selectMasterKey = new JComboBox(select);
+		final JComboBox selectMasterKey = new JComboBox(select);
 		selectMasterKey.setEditable(false);
-		selectMasterKey.setSelectedIndex(0);
+		selectMasterKey.setSelectedIndex(preselect);
+		selectMasterKey.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					lastSelectedPrivateKey = storedPrivateKeys.get(map[selectMasterKey.getSelectedIndex()]);
+				} catch (Exception ex) {
+					ex.printStackTrace(); //should never happen
+				}
+			}
+		});
 		c.weightx = 1;
 		c.weighty = 0.1;
 		c.fill = GridBagConstraints.HORIZONTAL;
