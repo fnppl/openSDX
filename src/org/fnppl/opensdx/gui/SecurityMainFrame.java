@@ -1169,7 +1169,6 @@ public class SecurityMainFrame extends JFrame {
 	}
 	
 	private JButton createHeaderButton(final String title, final String keyID, final JPanel content, final JPanel p, final int w,final int h, String tooltipText) {
-
 		final JButton head = new JButton("+   "+title);
 		if (tooltipText!=null) {
 			head.setToolTipText(tooltipText);
@@ -1197,7 +1196,7 @@ public class SecurityMainFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				if (content.isVisible()) {
 					props.put(keyID,"NOT VISIBLE");
-					head.setText("+   "+title);
+					head.setText("+    "+title);
 					p.setPreferredSize(new Dimension(w,28));
 					p.setMinimumSize(new Dimension(10,28));
 					p.setMaximumSize(new Dimension(maxWidth,28));
@@ -1216,6 +1215,59 @@ public class SecurityMainFrame extends JFrame {
 		head.setPreferredSize(new Dimension(w,28));
 		head.setMinimumSize(new Dimension(10,28));
 		head.setMaximumSize(new Dimension(maxWidth,28));
+		return head;
+	}
+	
+	private JButton createHeaderButtonHTML(final String title, final String keyID, final JPanel content, final JPanel p, final int w,final int h1, String tooltipText) {
+		final int myH = 52;
+		final int h = h1+26;
+		final String pre = "<html><table><tr><td>";
+		final JButton head = new JButton(pre+"+ "+title+"</html>");
+		if (tooltipText!=null) {
+			head.setToolTipText(tooltipText);
+		}
+		String visible = props.get(keyID);
+		if (visible==null || visible.equals("NOT VISIBLE")) {
+			props.put(keyID,"NOT VISIBLE");
+			head.setText(pre+"+ "+title+"</html>");
+			p.setPreferredSize(new Dimension(w,myH));
+			p.setMinimumSize(new Dimension(10,myH));
+			p.setMaximumSize(new Dimension(maxWidth,myH));
+			content.setVisible(false);
+		} else {
+			props.put(keyID,"VISIBLE");
+			head.setText(pre+"- "+title+"</html>");
+			p.setPreferredSize(new Dimension(w,h));
+			p.setMinimumSize(new Dimension(10,myH));
+			p.setMaximumSize(new Dimension(maxWidth,h));
+			content.setVisible(true);
+		}
+
+		head.setHorizontalAlignment(JButton.LEFT);
+		head.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				if (content.isVisible()) {
+					props.put(keyID,"NOT VISIBLE");
+					head.setText(pre+"+  "+title+"</html>");
+					p.setPreferredSize(new Dimension(w,myH));
+					p.setMinimumSize(new Dimension(10,myH));
+					p.setMaximumSize(new Dimension(maxWidth,myH));
+					content.setVisible(false);
+				} else {
+					props.put(keyID,"VISIBLE");
+					head.setText(pre+"- "+title+"</html>");
+					p.setPreferredSize(new Dimension(w,h));
+					p.setMinimumSize(new Dimension(10,myH));
+					p.setMaximumSize(new Dimension(maxWidth,h));
+					content.setVisible(true);
+					props.put(keyID,"VISIBLE");
+				}
+			}
+		});
+		head.setPreferredSize(new Dimension(w,myH));
+		head.setMinimumSize(new Dimension(10,myH));
+		head.setMaximumSize(new Dimension(maxWidth,myH));
 		return head;
 	}
 
@@ -1635,8 +1687,9 @@ public class SecurityMainFrame extends JFrame {
 		final int h = y*30 + 80;
 
 		String title = "known public key:      "+getKeyIDMnemonicShort(key.getKeyID());
+		String txt = "known public key:      "+key.getKeyID();
 		
-		JButton head = createHeaderButton(title, "known public key:      "+key.getKeyID(), content, p, w, h, key.getKeyID());
+		JButton head = createHeaderButton(title, txt, content, p, w, h, key.getKeyID());
 	
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -1920,15 +1973,21 @@ public class SecurityMainFrame extends JFrame {
 		final int h = y*32 + 120;
 		String buText = "";
 		String tooltip = null;
+		JButton head = null;
 		if(innerPublicKey) {
 			buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" from KeyID: "+getKeyIDMnemonicShort(keylog.getKeyIDFrom());
 			tooltip = keylog.getKeyIDFrom();
+			head = createHeaderButton(buText, buText , content, p, w, h,tooltip);
+			
 		} else {
-			buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" for KeyID: "+getKeyIDMnemonicShort(keylog.getKeyIDTo());
+			//buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" for KeyID: "+getKeyIDMnemonicShort(keylog.getKeyIDTo());
+			//buText = "KeyLog "+keylog.getActionDatetimeString().substring(0,20)+" for KeyID: "+getKeyIDMnemonicShort(keylog.getKeyIDTo()+"<br />"+keylog.getAction()+" from "+getKeyIDMnemonicShort(keylog.getKeyIDFrom()));
+
+			buText = "KeyLog</td><td>"+keylog.getActionDatetimeString().substring(0,20)+"</td><td>to</td><td>"+getKeyIDMnemonicShort(keylog.getKeyIDTo())+"</td></tr>"
+					 +"<tr><td></td><td>"+keylog.getAction()+"</td><td>from</td><td>"+getKeyIDMnemonicShort(keylog.getKeyIDFrom())+"</td></tr></table>";
 			tooltip = keylog.getKeyIDTo();
+			head = createHeaderButtonHTML(buText, buText , content, p, w, h,tooltip);
 		}
-		
-		JButton head = createHeaderButton(buText, buText , content, p, w, h,tooltip);
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
