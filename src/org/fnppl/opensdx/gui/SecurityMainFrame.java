@@ -537,22 +537,60 @@ public class SecurityMainFrame extends JFrame {
 
 			//known public keys from keystore
 			p = new JPanel();
-			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
 			JScrollPane scroll = new JScrollPane(p);
 			tab.add("Known Public Keys", scroll);
-
+			
+			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+			
+			
+//			GridBagLayout gbl = new GridBagLayout();
+//			p.setLayout(gbl);
+//			
+//			GridBagConstraints gbc = new GridBagConstraints();
+//			gbc.gridx = 0;
+//			gbc.gridy = 0;
+//			gbc.gridwidth = 1;
+//			gbc.gridheight = 1;
+//			gbc.weightx = 0.5;
+//			gbc.weighty = 0.0;
+//			gbc.anchor = GridBagConstraints.LINE_START;
+//			gbc.fill = GridBagConstraints.BOTH;
+//			gbc.ipadx = 0;
+//			gbc.ipady = 0;
+//			gbc.insets = new Insets(2,2,2,2);
+			
 			if (storedTrustedPublicKeys!=null && storedTrustedPublicKeys.size()>0) {
-				p.add(buildComponentTrustedKeys(storedTrustedPublicKeys));
+				Component panelTrustedKeys = buildComponentTrustedKeys(storedTrustedPublicKeys);
+				((JPanel)panelTrustedKeys).setAlignmentX(LEFT_ALIGNMENT);
+				p.add(panelTrustedKeys);
+					
+//				gbl.setConstraints(panelTrustedKeys, gbc);
+//				p.add(panelTrustedKeys);
+//				gbc.gridy++;
 			}
-			p.add(buildComponentKnownKeys(storedPublicKeys));
-
-
+			
+			Component panelKnownKeys = buildComponentKnownKeys(storedPublicKeys);
+			((JPanel)panelKnownKeys).setAlignmentX(LEFT_ALIGNMENT);
+			p.add(panelKnownKeys);
+				
+//			gbl.setConstraints(panelKnownKeys, gbc);
+//			p.add(panelKnownKeys);
+//			
+//			JLabel filler = new JLabel();
+//			gbc.gridx = 1;
+//			gbc.gridy++;
+//			gbc.weightx = 0.5;
+//			gbc.weighty = 1.0;
+//			gbl.setConstraints(filler, gbc);
+//			p.add(filler);
+			
 			//keylogs
 			p = new JPanel();
 			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
 			scroll = new JScrollPane(p);
 			tab.add("KeyLogs", scroll);
 			if (pKeyLogs!=null) {
+				pKeyLogs.setAlignmentX(LEFT_ALIGNMENT);
 				p.add(pKeyLogs);
 			}
 
@@ -578,7 +616,9 @@ public class SecurityMainFrame extends JFrame {
 				pks.setBorder(new TitledBorder("KeyServers:"));
 				pks.setLayout(new BoxLayout(pks, BoxLayout.PAGE_AXIS));
 				for (KeyServerIdentity ksid : keyservers) {
-					pks.add(buildComponentKeyServer(ksid));
+					JPanel c = buildComponentKeyServer(ksid);
+					c.setAlignmentX(LEFT_ALIGNMENT);
+					pks.add(c);
 				}
 				p.add(pks);
 			}
@@ -615,17 +655,23 @@ public class SecurityMainFrame extends JFrame {
 		//p.setBorder(new TitledBorder("KeyGroup:"+(identities!=null?"   "+identities:"")));
 
 		p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-		p.add(buildComponentMasterKey(masterkey));
+		JPanel c = buildComponentMasterKey(masterkey);
+		c.setAlignmentX(LEFT_ALIGNMENT);
+		p.add(c);
 		for (RevokeKey key : revokekeys) {
-			p.add(buildComponentRevokeKey(key));
+			c = buildComponentRevokeKey(key);
+			c.setAlignmentX(LEFT_ALIGNMENT);
+			p.add(c);
 		}
 		for (SubKey key : subkeys) {
-			p.add(buildComponentSubKey(key));
+			c = buildComponentSubKey(key);
+			c.setAlignmentX(LEFT_ALIGNMENT);
+			p.add(c);
 		}
 		return p;
 	}
 
-	private Component buildComponentMasterKey(final MasterKey key) {
+	private JPanel buildComponentMasterKey(final MasterKey key) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -1003,7 +1049,7 @@ public class SecurityMainFrame extends JFrame {
 		//		}
 	}
 
-	private Component buildComponentRevokeKey(final RevokeKey key) {
+	private JPanel buildComponentRevokeKey(final RevokeKey key) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -1173,7 +1219,7 @@ public class SecurityMainFrame extends JFrame {
 		return head;
 	}
 
-	private Component buildComponentSubKey(final SubKey key) {
+	private JPanel buildComponentSubKey(final SubKey key) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -1343,7 +1389,7 @@ public class SecurityMainFrame extends JFrame {
 		return p;
 	}
 
-	private Component buildComponentKeyServer(final KeyServerIdentity keyserver) {
+	private JPanel buildComponentKeyServer(final KeyServerIdentity keyserver) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -1455,13 +1501,15 @@ public class SecurityMainFrame extends JFrame {
 		return p;
 	}
 
-	private Component buildComponentKnownKeys(Vector<OSDXKey> keys) {
+	private JPanel buildComponentKnownKeys(Vector<OSDXKey> keys) {
 
 		final JPanel p = new JPanel();
 		p.setBorder(new TitledBorder("Known public keys"));
 		p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
 		for (OSDXKey key : keys) {
-			p.add(buildComponentKnownPubKey(key));
+			JPanel c = buildComponentKnownPubKey(key);
+			c.setAlignmentX(LEFT_ALIGNMENT);
+			p.add(c);
 		}
 
 		JPanel buP = new JPanel();
@@ -1485,18 +1533,26 @@ public class SecurityMainFrame extends JFrame {
 		});
 		buP.add(bu);
 
+		buP.setAlignmentX(LEFT_ALIGNMENT);
+		Dimension dim = new Dimension(600,30);
+		buP.setPreferredSize(dim);
+		buP.setMinimumSize(dim);
+		buP.setMaximumSize(dim);
+		
 		p.add(buP);
 
 		return p;
 	}
 
-	private Component buildComponentTrustedKeys(Vector<OSDXKey> keys) {
+	private JPanel buildComponentTrustedKeys(Vector<OSDXKey> keys) {
 
 		final JPanel p = new JPanel();
 		p.setBorder(new TitledBorder("Known public trusted keys"));
 		p.setLayout(new BoxLayout(p, BoxLayout.PAGE_AXIS));
 		for (OSDXKey key : keys) {
-			p.add(buildComponentTrustedPubKey(key));
+			JPanel c = buildComponentTrustedPubKey(key);
+			c.setAlignmentX(LEFT_ALIGNMENT);
+			p.add(c);
 		}
 
 		//		JPanel buP = new JPanel();
@@ -1516,7 +1572,7 @@ public class SecurityMainFrame extends JFrame {
 	}
 
 
-	private Component buildComponentKnownPubKey(final OSDXKey key) {
+	private JPanel buildComponentKnownPubKey(final OSDXKey key) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -1579,8 +1635,9 @@ public class SecurityMainFrame extends JFrame {
 		final int h = y*30 + 80;
 
 		String title = "known public key:      "+getKeyIDMnemonicShort(key.getKeyID());
+		
 		JButton head = createHeaderButton(title, "known public key:      "+key.getKeyID(), content, p, w, h, key.getKeyID());
-
+	
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
 
@@ -1670,7 +1727,7 @@ public class SecurityMainFrame extends JFrame {
 		return title;
 	}
 
-	private Component buildComponentTrustedPubKey(final OSDXKey key) {
+	private JPanel buildComponentTrustedPubKey(final OSDXKey key) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -1806,7 +1863,7 @@ public class SecurityMainFrame extends JFrame {
 		return p;
 	}
 
-	private Component buildComponentKeyLog(final KeyLog keylog, boolean innerPublicKey) {
+	private JPanel buildComponentKeyLog(final KeyLog keylog, boolean innerPublicKey) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
