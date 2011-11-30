@@ -542,47 +542,22 @@ public class SecurityMainFrame extends JFrame {
 			
 			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
 			
-			
-//			GridBagLayout gbl = new GridBagLayout();
-//			p.setLayout(gbl);
-//			
-//			GridBagConstraints gbc = new GridBagConstraints();
-//			gbc.gridx = 0;
-//			gbc.gridy = 0;
-//			gbc.gridwidth = 1;
-//			gbc.gridheight = 1;
-//			gbc.weightx = 0.5;
-//			gbc.weighty = 0.0;
-//			gbc.anchor = GridBagConstraints.LINE_START;
-//			gbc.fill = GridBagConstraints.BOTH;
-//			gbc.ipadx = 0;
-//			gbc.ipady = 0;
-//			gbc.insets = new Insets(2,2,2,2);
-			
 			if (storedTrustedPublicKeys!=null && storedTrustedPublicKeys.size()>0) {
 				Component panelTrustedKeys = buildComponentTrustedKeys(storedTrustedPublicKeys);
 				((JPanel)panelTrustedKeys).setAlignmentX(LEFT_ALIGNMENT);
 				p.add(panelTrustedKeys);
-					
-//				gbl.setConstraints(panelTrustedKeys, gbc);
-//				p.add(panelTrustedKeys);
-//				gbc.gridy++;
 			}
 			
 			Component panelKnownKeys = buildComponentKnownKeys(storedPublicKeys);
 			((JPanel)panelKnownKeys).setAlignmentX(LEFT_ALIGNMENT);
 			p.add(panelKnownKeys);
-				
-//			gbl.setConstraints(panelKnownKeys, gbc);
-//			p.add(panelKnownKeys);
-//			
-//			JLabel filler = new JLabel();
-//			gbc.gridx = 1;
-//			gbc.gridy++;
-//			gbc.weightx = 0.5;
-//			gbc.weighty = 1.0;
-//			gbl.setConstraints(filler, gbc);
-//			p.add(filler);
+
+			//known public keys alternative
+			p = buildPanelKnowPublicKeys(storedTrustedPublicKeys,storedPublicKeys);
+			
+			//JScrollPane scroll2 = new JScrollPane(p);
+			//tab.add("Known Public Keys (sorted)", scroll2);
+			tab.add("Known Public Keys 2", p);
 			
 			//keylogs
 			p = new JPanel();
@@ -1552,6 +1527,98 @@ public class SecurityMainFrame extends JFrame {
 
 		return p;
 	}
+	
+	private OSDXKey knownPublicKeysSelected = null;
+	private int knownPublicKeysSplitLoc = 250;
+	
+	private JPanel buildPanelKnowPublicKeys(final Vector<OSDXKey> storedTrustedPublicKeys,final Vector<OSDXKey> storedPublicKeys) {
+		final JPanel p = new JPanel();
+		final JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		
+		final JPanel[] details = new JPanel[1];
+		details[0] = null;
+		p.setBorder(new TitledBorder("Known public keys"));
+		p.setLayout(new BorderLayout());
+		String[] header = new String[] {"KeyID", "Level", "Owner","Trusted"};
+		int anz = 0;
+		int offs = 0;
+		int sel = -1;
+		if (storedTrustedPublicKeys!=null) {
+			anz += storedTrustedPublicKeys.size();
+			offs = storedTrustedPublicKeys.size();
+		}
+		if (storedPublicKeys!=null) {
+			anz += storedPublicKeys.size();
+		}
+		String[][] data = new String[anz][header.length];
+		for (int i=0;i<storedTrustedPublicKeys.size();i++) {
+			OSDXKey key = storedTrustedPublicKeys.get(i);
+			data[i][0] = key.getKeyIDShort();
+			data[i][1] = key.getLevelName();
+			data[i][2] = control.getKeyStore().getEmailAndMnemonic(key.getKeyID());
+			data[i][3] = "YES";
+			if (key == knownPublicKeysSelected) {
+				sel = i;
+			}
+		}
+
+		for (int i=0;i<storedPublicKeys.size();i++) {
+			OSDXKey key = storedPublicKeys.get(i);
+			data[i+offs][0] = key.getKeyIDShort();
+			data[i+offs][1] = key.getLevelName();
+			data[i+offs][2] = control.getKeyStore().getEmailAndMnemonic(key.getKeyID());
+			data[i+offs][3] = "";
+			if (key == knownPublicKeysSelected) {
+				sel = i+offs;
+			}
+		}
+		
+		final JTable table = new JTable();
+		DefaultTableModel mod = new DefaultTableModel(data, header); 
+		table.setModel(mod);
+		final RowSorter<DefaultTableModel> sorter = new TableRowSorter<DefaultTableModel>(mod);
+		table.setRowSorter(sorter);
+		final int trenn = offs;
+		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+				boolean trusted = false;
+				int selRow = table.getSelectedRow();
+				if (selRow<=0) return;
+				int sel = sorter.convertRowIndexToModel(selRow);
+				if (sel<trenn) {
+					knownPublicKeysSelected = storedTrustedPublicKeys.get(sel);
+					trusted = true;
+				} else {
+					knownPublicKeysSelected = storedPublicKeys.get(sel-trenn);
+				}
+				
+				//show
+				if (knownPublicKeysSelected!=null) {
+					if (trusted) {
+						details[0] = buildComponentTrustedPubKey(knownPublicKeysSelected, false);
+					} else {
+						details[0] = buildComponentKnownPubKey(knownPublicKeysSelected, false);
+					}
+					knownPublicKeysSplitLoc = split.getDividerLocation();
+					split.setRightComponent(details[0]);
+					p.validate();
+					if (knownPublicKeysSplitLoc>p.getHeight()-70) {
+						knownPublicKeysSplitLoc = 250;
+					}
+					split.setDividerLocation(knownPublicKeysSplitLoc);
+				}
+			}
+		});
+		fitAllColumnWidth(table);
+		
+		//p.add(new JScrollPane(table),BorderLayout.CENTER);
+		split.setLeftComponent(new JScrollPane(table));
+		
+		p.add(split,BorderLayout.CENTER);
+		
+		
+		return p;
+	}
 
 	private JPanel buildComponentKnownKeys(Vector<OSDXKey> keys) {
 
@@ -1623,8 +1690,11 @@ public class SecurityMainFrame extends JFrame {
 		return p;
 	}
 
-
 	private JPanel buildComponentKnownPubKey(final OSDXKey key) {
+		return buildComponentKnownPubKey(key, true);
+	}
+
+	private JPanel buildComponentKnownPubKey(final OSDXKey key,  boolean asButton) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -1652,6 +1722,13 @@ public class SecurityMainFrame extends JFrame {
 		if (key instanceof MasterKey) {
 			String ids = ((MasterKey)key).getIDEmails();
 			if (ids!=null) addLabelTextFieldPart("identities:", ids, a, c, y); y++;
+		}
+		else if (key instanceof SubKey) {
+			String parentkeyid = ((SubKey)key).getParentKeyID();
+			if (parentkeyid==null) {
+				parentkeyid = "";
+			}
+			addLabelTextFieldPart("parent key:", parentkeyid, a, c, y); y++;
 		}
 		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
 		addLabelTextFieldPart("usage restriction:", key.getUsageRestriction(), a, c, y); y++;
@@ -1689,7 +1766,13 @@ public class SecurityMainFrame extends JFrame {
 		String title = "known public key:      "+getKeyIDMnemonicShort(key.getKeyID());
 		String txt = "known public key:      "+key.getKeyID();
 		
-		JButton head = createHeaderButton(title, txt, content, p, w, h, key.getKeyID());
+		JButton head = null;
+		
+		if (asButton) {
+			head = createHeaderButton(title, txt, content, p, w, h, key.getKeyID());
+		} else {
+			p.setBorder(new TitledBorder(title));
+		}
 	
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -1753,10 +1836,14 @@ public class SecurityMainFrame extends JFrame {
 		});
 		b.add(bu);
 
-
 		content.add(b,BorderLayout.SOUTH);
-
-		p.add(head, BorderLayout.NORTH);
+		if (asButton) {
+			p.add(head, BorderLayout.NORTH);
+		} else {
+			p.setPreferredSize(new Dimension(w,h));
+			p.setMinimumSize(new Dimension(10,28));
+			p.setMaximumSize(new Dimension(maxWidth,h));
+		}
 		JScrollPane scrollContent = new JScrollPane(content);
 		p.add(scrollContent, BorderLayout.CENTER);
 		content.add(a,BorderLayout.CENTER);
@@ -1779,8 +1866,11 @@ public class SecurityMainFrame extends JFrame {
 		}
 		return title;
 	}
-
 	private JPanel buildComponentTrustedPubKey(final OSDXKey key) {
+		return buildComponentTrustedPubKey(key, true);
+	}
+	
+	private JPanel buildComponentTrustedPubKey(final OSDXKey key, boolean asButton) {
 		final JPanel p = new JPanel();
 		p.setLayout(new BorderLayout());
 
@@ -1808,6 +1898,13 @@ public class SecurityMainFrame extends JFrame {
 		if (key instanceof MasterKey) {
 			String ids = ((MasterKey)key).getIDEmails();
 			if (ids!=null) addLabelTextFieldPart("identities:", ids, a, c, y); y++;
+		}
+		else if (key instanceof SubKey) {
+			String parentkeyid = ((SubKey)key).getParentKeyID();
+			if (parentkeyid==null) {
+				parentkeyid = "";
+			}
+			addLabelTextFieldPart("parent key:", parentkeyid, a, c, y); y++;
 		}
 		addLabelTextFieldPart("usage:", key.getUsageName(), a, c, y); y++;
 		addLabelTextFieldPart("usage restriction:", key.getUsageRestriction(), a, c, y); y++;
@@ -1842,8 +1939,15 @@ public class SecurityMainFrame extends JFrame {
 		final int w = 800;
 		final int h = y*30 + 80;
 		String title = "known public key:      "+getKeyIDMnemonicShort(key.getKeyID());
-		JButton head = createHeaderButton(title, "known public key:      "+key.getKeyID(), content, p, w, h, key.getKeyID());
-
+		JButton head = null;
+		//JLabel lhead = null;
+		if (asButton) {
+			head = createHeaderButton(title, "known public key:      "+key.getKeyID(), content, p, w, h, key.getKeyID());
+		} else {
+		//	lhead = new JLabel(title);
+			p.setBorder(new TitledBorder(title));
+		}
+		
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
 		//		JButton bu = new JButton("update status");
@@ -1907,8 +2011,14 @@ public class SecurityMainFrame extends JFrame {
 
 
 		content.add(b,BorderLayout.SOUTH);
-
-		p.add(head, BorderLayout.NORTH);
+		if (asButton) {
+			p.add(head, BorderLayout.NORTH);
+		} else {
+			//p.add(lhead, BorderLayout.NORTH);
+			p.setPreferredSize(new Dimension(w,h));
+			p.setMinimumSize(new Dimension(10,28));
+			p.setMaximumSize(new Dimension(maxWidth,h));
+		}
 		JScrollPane scrollContent = new JScrollPane(content);
 		p.add(scrollContent, BorderLayout.CENTER);
 		content.add(a,BorderLayout.CENTER);

@@ -376,9 +376,12 @@ public class KeyApprovingStore {
 					}
 				}
 			} else if (key.isSub()) {
-				MasterKey mkey = ((SubKey)key).getParentKey();
-				if (mkey==null) return null;
-				return getEmailAndMnemonic(mkey.getKeyID());
+				//MasterKey mkey = ((SubKey)key).getParentKey();
+				//if (mkey==null) return null;
+				//return getEmailAndMnemonic(mkey.getKeyID());
+				String mkeyid = ((SubKey)key).getParentKeyID();
+				if (mkeyid==null || mkeyid.length()==0) return null;
+				return getEmailAndMnemonic(mkeyid);
 			}
 		}
 		//get from KeyLogs
