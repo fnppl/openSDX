@@ -128,6 +128,7 @@ public abstract class BusinessObject implements XMLElementable {
 			for (XMLElementable ue : otherObjects) {
 				if (showOtherObjectsMessage) {
 					System.out.println("appending other object:: "+getKeyname()+"::"+ue.getKeyname());
+					System.out.println(ue.toElement().toString());
 				}
 				if (!showOtherObjectsMessage && ue instanceof BusinessObject) { //forward appending behavior
 					//System.out.println("forwarding");
@@ -276,12 +277,26 @@ public abstract class BusinessObject implements XMLElementable {
 		return result;
 	}
 	
-	public BusinessObject handleBusinessObject(String name) {
+	public BusinessObject handleBusinessObject(final String name) {
 		for (XMLElementable b : otherObjects) {
 			if (b.getKeyname().equals(name)) {
 				if (b instanceof BusinessObject) {
 					otherObjects.remove(b);
 					return (BusinessObject)b;
+				}
+				else {
+					//check for empty item that was wrongly parsed to StringItem
+					if (b instanceof BusinessStringItem) {
+						BusinessStringItem bItem = (BusinessStringItem)b;
+						if (bItem.getString()==null || bItem.getString().length()==0) {
+							otherObjects.remove(b);
+							return new BusinessObject() {
+								public String getKeyname() {
+									return name;
+								}
+							};
+						}
+					}
 				}
 				otherObjects.remove(b);
 				return null;

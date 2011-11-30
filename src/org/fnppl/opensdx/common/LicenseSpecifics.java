@@ -3,6 +3,7 @@ package org.fnppl.opensdx.common;
 import java.util.Vector;
 
 import org.fnppl.opensdx.xml.ChildElementIterator;
+import org.fnppl.opensdx.xml.XMLElementable;
 
 /*
  * Software license
@@ -75,7 +76,22 @@ public class LicenseSpecifics extends BusinessObject {
 	public static LicenseSpecifics fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(KEY_NAME)) {
-			bo = bo.handleBusinessObject(KEY_NAME);
+			BusinessObject boChild = bo.handleBusinessObject(KEY_NAME);
+//			if (boChild == null) {
+//				//check for empty field
+//				XMLElementable other = bo.getOtherObject(KEY_NAME);
+//				if (other != null) {
+//					System.out.println("other object "+other.getClass().getSimpleName());
+//					if (other instanceof BusinessStringItem) {
+//						BusinessStringItem otherItem = (BusinessStringItem)other;
+//						if (otherItem.getString()==null || otherItem.getString().length()==0) {
+//							bo.removeObject(KEY_NAME);
+//							return new LicenseSpecifics();
+//						}
+//					}
+//				}
+//			}
+			bo = boChild;
 		}
 		if (bo==null) return null;
 		final LicenseSpecifics b = new LicenseSpecifics();

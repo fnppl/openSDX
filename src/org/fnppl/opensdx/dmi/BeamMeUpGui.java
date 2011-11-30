@@ -90,6 +90,7 @@ public class BeamMeUpGui extends JFrame {
 
 	private File lastDir = new File(System.getProperty("user.home"));
 	private Feed currentFeed = null;
+	
 
 	private JPanel pFeed;
 	private JLabel label_feed;
@@ -459,16 +460,40 @@ public class BeamMeUpGui extends JFrame {
 			lastDir = file.getParentFile();
 			try {
 				Document doc = Document.fromFile(file);
-				currentFeed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
+				Feed feed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
 				
+				//validate
+				boolean feedValid = true;
+				String msgResult = "";
+				try {
+					msgResult = new FeedValidator().validateOSDX_latest(Document.buildDocument(feed.toElement()).toString());
+					if(msgResult.length()!=0) {
+						//feed not vaild
+						feedValid = false;
+						//Dialogs.showTextFlex("Feed validation", msgResult, 700, 350);
+					}
+				}
+				catch(Exception ex) {
+					Dialogs.showMessage(ex.getMessage());
+					return;
+				}
+				if (!feedValid) {
+					int ans = Dialogs.showYES_NO_Dialog("Feed validation failed","The selected feed is not valid in terms of xsd specifications and cannot be send.\nDo you want to see a detailed error message.");
+					if (ans == Dialogs.YES) {
+						Dialogs.showTextFlex("Feed validation", msgResult, 700, 350);
+					}
+					return;
+				}
+				
+				currentFeed = feed;
+				
+
 				//has receiver
 				Receiver r = currentFeed.getFeedinfo().getReceiver();
 				if (r==null) {
 					Dialogs.showMessage("Sorry, missing receiver in selected feed.");
 					return;
 				}
-				
-				//TODO validate
 				
 				
 				//set values to gui
@@ -530,12 +555,12 @@ public class BeamMeUpGui extends JFrame {
 			return;
 		}
 		
-		FeedValidator fv = new FeedValidator();
-		String va = fv.validateOSDX_0_1_0(currentFeed); 
-		if(fv.getErrorCount() != 0) {
-			Dialogs.showMessage("Sorry, cannot upload feed - feed validation failed.\n\n"+va);
-			return;
-		}
+//		FeedValidator fv = new FeedValidator();
+//		String va = fv.validateOSDX_0_1_0(currentFeed); 
+//		if(fv.getErrorCount() != 0) {
+//			Dialogs.showMessage("Sorry, cannot upload feed - feed validation failed.\n\n"+va);
+//			return;
+//		}
 		
 		//check signature key
 		OSDXKey signatureKey = null;

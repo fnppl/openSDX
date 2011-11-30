@@ -223,10 +223,10 @@ public class FeedCreator {
 							.url("my.youtube.url")
 							.channel("my.youtube.channel")
 						)
-						.addRelatedBundleIDs(IDs.make()
-								.licensor("our id")
-								.licensee("your id")
-						)
+//						.addRelatedBundleIDs(IDs.make()
+//								.licensor("our id")
+//								.licensee("your id")
+//						)
 				)
 			,
 			LicenseBasis.make(
