@@ -952,7 +952,7 @@ public class PostgresBackend implements KeyServerBackend {
 		Vector<OSDXKey> keys = new Vector<OSDXKey>();
 		try {
 			String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(parentkeyid);
-			SQLStatement sql = new SQLStatement("SELECT * FROM keys WHERE parentkeysh1=?");
+			SQLStatement sql = new SQLStatement("SELECT * FROM keys WHERE parentkeysha1=?");
 			sql.setString(1, keysha1);
 			System.out.println("SQL: "+sql.toString());
 			Statement stmt = con.createStatement();
