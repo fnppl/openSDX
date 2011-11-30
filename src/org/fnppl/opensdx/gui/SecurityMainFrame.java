@@ -893,7 +893,7 @@ public class SecurityMainFrame extends JFrame {
 		JLabel l = new JLabel(textLabel);
 		l.setPreferredSize(new Dimension(200,20));
 		c.weightx = 0;
-		c.weighty = 0.1;
+		c.weighty = 0;
 		c.fill = GridBagConstraints.NONE;
 		c.gridx = 0;
 		c.gridy = y;
@@ -914,7 +914,7 @@ public class SecurityMainFrame extends JFrame {
 		JLabel l = new JLabel(textLabel);
 		l.setPreferredSize(new Dimension(200,20));
 		c.weightx = 0;
-		c.weighty = 0.1;
+		c.weighty = 0;
 		c.fill = GridBagConstraints.NONE;
 		c.gridx = 0;
 		c.gridy = y;
@@ -936,7 +936,7 @@ public class SecurityMainFrame extends JFrame {
 		JLabel l = new JLabel(textLabel);
 		l.setPreferredSize(new Dimension(200,20));
 		c.weightx = 0;
-		c.weighty = 0.1;
+		c.weighty = 0;
 		c.fill = GridBagConstraints.NONE;
 		c.gridx = 0;
 		c.gridy = y;
@@ -958,7 +958,7 @@ public class SecurityMainFrame extends JFrame {
 
 		JLabel l = new JLabel("identity "+(i+1)+":");
 		c.weightx = 0;
-		c.weighty = 0.1;
+		c.weighty = 0;
 		c.fill = GridBagConstraints.NONE;
 		c.gridx = 0;
 		c.gridy = y;
@@ -1583,7 +1583,7 @@ public class SecurityMainFrame extends JFrame {
 			public void valueChanged(ListSelectionEvent e) {
 				boolean trusted = false;
 				int selRow = table.getSelectedRow();
-				if (selRow<=0) return;
+				if (selRow<0) return;
 				int sel = sorter.convertRowIndexToModel(selRow);
 				if (sel<trenn) {
 					knownPublicKeysSelected = storedTrustedPublicKeys.get(sel);
@@ -1743,7 +1743,7 @@ public class SecurityMainFrame extends JFrame {
 					y++;
 					Component ckl = buildComponentKeyLog(kl, true);
 					c.weightx = 1;
-					c.weighty = 0.1;
+					c.weighty = 0;
 					c.fill = GridBagConstraints.BOTH;
 					c.gridx = 0;
 					c.gridy = y;
@@ -1846,6 +1846,18 @@ public class SecurityMainFrame extends JFrame {
 		}
 		JScrollPane scrollContent = new JScrollPane(content);
 		p.add(scrollContent, BorderLayout.CENTER);
+		
+		//filler
+		y++;
+		JLabel filler = new JLabel();
+		c.weightx = 0;
+		c.weighty = 1;
+		c.fill = GridBagConstraints.VERTICAL;
+		c.gridx = 0;
+		c.gridy = y;
+		c.gridwidth = 1;
+		a.add(filler, c);
+		
 		content.add(a,BorderLayout.CENTER);
 
 		return p;
@@ -1919,7 +1931,7 @@ public class SecurityMainFrame extends JFrame {
 					y++;
 					Component ckl = buildComponentKeyLog(kl,true);
 					c.weightx = 1;
-					c.weighty = 0.1;
+					c.weighty = 0;
 					c.fill = GridBagConstraints.BOTH;
 					c.gridx = 0;
 					c.gridy = y;
@@ -1947,7 +1959,7 @@ public class SecurityMainFrame extends JFrame {
 		//	lhead = new JLabel(title);
 			p.setBorder(new TitledBorder(title));
 		}
-		
+			
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
 		//		JButton bu = new JButton("update status");
@@ -2021,6 +2033,18 @@ public class SecurityMainFrame extends JFrame {
 		}
 		JScrollPane scrollContent = new JScrollPane(content);
 		p.add(scrollContent, BorderLayout.CENTER);
+		
+		//filler
+		y++;
+		JLabel filler = new JLabel("");
+		c.weightx = 0;
+		c.weighty = 1;
+		c.fill = GridBagConstraints.VERTICAL;
+		c.gridx = 0;
+		c.gridy = y;
+		c.gridwidth = 1;
+		a.add(filler, c);
+		
 		content.add(a,BorderLayout.CENTER);
 
 		return p;
