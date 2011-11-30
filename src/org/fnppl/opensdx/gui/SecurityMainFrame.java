@@ -536,28 +536,30 @@ public class SecurityMainFrame extends JFrame {
 			}
 
 			//known public keys from keystore
-			p = new JPanel();
-			JScrollPane scroll = new JScrollPane(p);
-			tab.add("Known Public Keys", scroll);
-			
-			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
-			
-			if (storedTrustedPublicKeys!=null && storedTrustedPublicKeys.size()>0) {
-				Component panelTrustedKeys = buildComponentTrustedKeys(storedTrustedPublicKeys);
-				((JPanel)panelTrustedKeys).setAlignmentX(LEFT_ALIGNMENT);
-				p.add(panelTrustedKeys);
-			}
-			
-			Component panelKnownKeys = buildComponentKnownKeys(storedPublicKeys);
-			((JPanel)panelKnownKeys).setAlignmentX(LEFT_ALIGNMENT);
-			p.add(panelKnownKeys);
+//			p = new JPanel();
+//			JScrollPane scroll = new JScrollPane(p);
+//			tab.add("Known Public Keys", scroll);
+//			
+//			p.setLayout(new BoxLayout(p,BoxLayout.Y_AXIS));
+//			
+//			if (storedTrustedPublicKeys!=null && storedTrustedPublicKeys.size()>0) {
+//				Component panelTrustedKeys = buildComponentTrustedKeys(storedTrustedPublicKeys);
+//				((JPanel)panelTrustedKeys).setAlignmentX(LEFT_ALIGNMENT);
+//				p.add(panelTrustedKeys);
+//			}
+//			
+//			Component panelKnownKeys = buildComponentKnownKeys(storedPublicKeys);
+//			((JPanel)panelKnownKeys).setAlignmentX(LEFT_ALIGNMENT);
+//			p.add(panelKnownKeys);
 
 			//known public keys alternative
 			p = buildPanelKnowPublicKeys(storedTrustedPublicKeys,storedPublicKeys);
 			
 			//JScrollPane scroll2 = new JScrollPane(p);
 			//tab.add("Known Public Keys (sorted)", scroll2);
-			tab.add("Known Public Keys 2", p);
+			tab.add("Known Public Keys", p);
+			
+			JScrollPane scroll = null;
 			
 			//keylogs
 			p = new JPanel();
@@ -1555,7 +1557,7 @@ public class SecurityMainFrame extends JFrame {
 			OSDXKey key = storedTrustedPublicKeys.get(i);
 			data[i][0] = key.getKeyIDShort();
 			data[i][1] = key.getLevelName();
-			data[i][2] = control.getKeyStore().getEmailAndMnemonic(key.getKeyID());
+			data[i][2] = getEmailAndMnemonic(key.getKeyID());
 			data[i][3] = "YES";
 			if (key == knownPublicKeysSelected) {
 				sel = i;
@@ -1566,7 +1568,7 @@ public class SecurityMainFrame extends JFrame {
 			OSDXKey key = storedPublicKeys.get(i);
 			data[i+offs][0] = key.getKeyIDShort();
 			data[i+offs][1] = key.getLevelName();
-			data[i+offs][2] = control.getKeyStore().getEmailAndMnemonic(key.getKeyID());
+			data[i+offs][2] = getEmailAndMnemonic(key.getKeyID());
 			data[i+offs][3] = "";
 			if (key == knownPublicKeysSelected) {
 				sel = i+offs;
@@ -1878,6 +1880,21 @@ public class SecurityMainFrame extends JFrame {
 		}
 		return title;
 	}
+	
+	public String getEmailAndMnemonic(String keyid) {
+		String title = "[unknown]";
+		String emailMnemonic = control.getKeyStore().getEmailAndMnemonic(keyid);
+		if (emailMnemonic!=null) {
+			title = emailMnemonic;
+		} else {
+			String ks = control.getKeyStore().getKeyServerNameForKey(keyid);
+			if (ks!=null) {
+				title = "KeyServer: "+ks;
+			}
+		}
+		return title;
+	}
+	
 	private JPanel buildComponentTrustedPubKey(final OSDXKey key) {
 		return buildComponentTrustedPubKey(key, true);
 	}
