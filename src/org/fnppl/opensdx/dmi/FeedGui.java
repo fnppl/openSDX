@@ -103,7 +103,7 @@ import org.fnppl.opensdx.dmi.wayout.*;
 @SuppressWarnings("serial")
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
-	private static String version = "v. 2011-11-30";
+	private static String version = "v. 2011-11-30b";
 	private URL configGenres = FeedGui.class.getResource("resources/config_genres.xml");
 	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
 	private XMLTree tree;
@@ -455,6 +455,8 @@ public class FeedGui extends JFrame implements MyObserver {
 		if (feed.getFeedinfo().getReceiver()==null) {
 			feed.getFeedinfo().receiver(Receiver.make(Receiver.TRANSFER_TYPE_FTP));
 		}
+		feed.getFeedinfo().getReceiver().removeObject("file_keystore");
+		
 		if (feed.getBundleCount()==0) {
 			BundleInformation info = BundleInformation.make(now,now);
 			LicenseBasis license_basis = LicenseBasis.make(Territorial.make(), now, now);
@@ -468,10 +470,23 @@ public class FeedGui extends JFrame implements MyObserver {
 			if (b.getLicense_specifics()==null) {
 				b.license_specifics(LicenseSpecifics.make());
 			}
+			int contributorCount = b.getContributorCount();
+			for (int j=0;j<contributorCount;j++) {
+				if (b.getContributor(j).getIDs()==null) {
+					b.getContributor(j).ids(IDs.make());
+				}
+			}
 			int itemCount = b.getItemsCount();
 			for (int j=0;j<itemCount;j++) {
-				if (b.getItem(j).getLicense_specifics()==null) {
-					b.getItem(j).license_specifics(LicenseSpecifics.make());
+				Item it = b.getItem(j);
+				contributorCount = b.getContributorCount();
+				for (int k=0;k<contributorCount;k++) {
+					if (it.getContributor(k).getIDs()==null) {
+						it.getContributor(k).ids(IDs.make());
+					}
+				}
+				if (it.getLicense_specifics()==null) {
+					it.license_specifics(LicenseSpecifics.make());
 				}
 			}
 		}

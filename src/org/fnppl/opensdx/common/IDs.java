@@ -1,4 +1,7 @@
 package org.fnppl.opensdx.common;
+
+import java.util.Vector;
+
 /*
  * Copyright (C) 2010-2011 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -65,6 +68,7 @@ public class IDs extends BusinessObject {
 	private BusinessStringItem licensor;			//COULD
 	private BusinessStringItem licensee;			//COULD
 	private BusinessStringItem gvl;					//COULD
+	private BusinessStringItem amg;					//COULD
 
 
 	public static IDs make() {
@@ -80,6 +84,7 @@ public class IDs extends BusinessObject {
 		ids.licensor = null;
 		ids.licensee = null;
 		ids.gvl = null;
+		ids.amg = null;
 		return ids;
 	}
 
@@ -103,6 +108,7 @@ public class IDs extends BusinessObject {
 		ids.licensor = BusinessStringItem.fromBusinessObject(bo, "licensor");
 		ids.licensee = BusinessStringItem.fromBusinessObject(bo, "licensee");
 		ids.gvl = BusinessStringItem.fromBusinessObject(bo, "gvl");
+		ids.amg = BusinessStringItem.fromBusinessObject(bo, "amg");
 		
 		
 		return ids;
@@ -173,6 +179,11 @@ public class IDs extends BusinessObject {
 		return this;
 	}
 
+	public IDs amg(String amg) {
+		if (amg==null) this.amg=null;
+		this.amg = new BusinessStringItem("amg", amg);
+		return this;
+	}
 
 	public String getGrid() {
 		if (grid==null) return null;
@@ -229,7 +240,87 @@ public class IDs extends BusinessObject {
 		return gvl.getString();
 	}
 	
+	public String getAmg() {
+		if (amg==null) return null;
+		return amg.getString();
+	}
+	
 	public String getKeyname() {
 		return KEY_NAME;
+	}
+	
+	public static Vector<String> getRelevantIDs(String type) {
+		Vector<String> relevant = new Vector<String>();
+		if (type.equals(Contributor.TYPE_LABEL)) {
+			relevant.add("gvl");
+			relevant.add("licensee");
+			relevant.add("licensor");
+			relevant.add("finetunes");
+			relevant.add("contentauth");
+			return relevant;
+		}
+		
+		if (    type.equals(Contributor.TYPE_COPYRIGHT)
+			||  type.equals(Contributor.TYPE_PRODUCER)
+			||  type.equals(Contributor.TYPE_CLEARINGHOUSE)
+		   ) {
+			relevant.add("contentauth");
+			return relevant;
+		}
+		
+		if (    type.equals(Contributor.TYPE_PERFORMER)
+		    ||  type.equals(Contributor.TYPE_TEXTER)
+		    ||  type.equals(Contributor.TYPE_EDITOR)
+		    ||  type.equals(Contributor.TYPE_CONDUCTOR)
+		    ||  type.equals(Contributor.TYPE_ORCHESTRA)
+		    ||  type.equals(Contributor.TYPE_DISPLAY_ARTIST)
+		    ||  type.equals(Contributor.TYPE_SINGER)
+		    ||  type.equals(Contributor.TYPE_COMPOSER)
+		    ||  type.equals(Contributor.TYPE_MIXER)
+		    ||  type.equals(Contributor.TYPE_REMIXER)
+		    ||  type.equals(Contributor.TYPE_PRODUCER)
+		    ||  type.equals(Contributor.TYPE_FEATURING)
+		    ||  type.equals(Contributor.TYPE_WITH)
+		    ||  type.equals(Contributor.TYPE_DJ)
+		    ||  type.equals(Contributor.TYPE_VERSUS)
+		    ||  type.equals(Contributor.TYPE_MEETS)
+		    ||  type.equals(Contributor.TYPE_PRESENTS)
+		    ||  type.equals(Contributor.TYPE_COMPILATOR)
+		    ||  type.equals(Contributor.TYPE_PUBLISHER)
+		   ) {
+			relevant.add("licensor");
+			relevant.add("licensee");
+			relevant.add("finetunes");
+			relevant.add("contentauth");
+			return relevant;
+		}
+		
+		if (type.equalsIgnoreCase("bundle")) {
+			relevant.add("grid");
+			relevant.add("upc");
+			relevant.add("contentauth");
+			relevant.add("labelordernum");
+			relevant.add("amzn");
+			relevant.add("isbn");
+			relevant.add("finetunes");
+			relevant.add("licensor");
+			relevant.add("licensee");
+			relevant.add("amg");
+			return relevant;
+		}
+		
+		if (type.equalsIgnoreCase("bundleditem")) {
+			relevant.add("grid");
+			relevant.add("isrc");
+			relevant.add("contentauth");
+			relevant.add("isbn");
+			relevant.add("finetunes");
+			relevant.add("licensor");
+			relevant.add("licensee");
+			relevant.add("amg");
+			return relevant;
+		}
+		
+		return relevant;
 	}
 }
