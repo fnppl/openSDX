@@ -873,6 +873,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 			r.username(text_username.getText());
 		}
 		notifyChanges();
+		
 	}
 	
 	//observable

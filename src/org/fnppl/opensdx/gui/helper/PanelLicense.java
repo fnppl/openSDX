@@ -730,6 +730,8 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 			lb.pricing_wholesale(t);
 		}
 		notifyChanges();
+		text.requestFocusInWindow();
+		text.transferFocus();
 	}
 
 

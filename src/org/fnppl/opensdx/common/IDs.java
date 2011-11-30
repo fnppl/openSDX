@@ -116,43 +116,43 @@ public class IDs extends BusinessObject {
 
 	public IDs grid(String grid) {
 		if (grid==null) this.grid=null;
-		this.grid = new BusinessStringItem("grid", grid);
+		else this.grid = new BusinessStringItem("grid", grid);
 		return this;
 	}
 
 	public IDs upc(String upc) {
 		if (upc==null) this.upc=null;
-		this.upc = new BusinessStringItem("upc", upc);
+		else this.upc = new BusinessStringItem("upc", upc);
 		return this;
 	}
 
 	public IDs isrc(String isrc) {
 		if (isrc==null) this.isrc=null;
-		this.isrc = new BusinessStringItem("isrc", isrc);
+		else this.isrc = new BusinessStringItem("isrc", isrc);
 		return this;
 	}
 
 	public IDs contentauth(String contentauth) {
 		if (contentauth==null) this.contentauth=null;
-		this.contentauth = new BusinessStringItem("contentauth", contentauth);
+		else this.contentauth = new BusinessStringItem("contentauth", contentauth);
 		return this;
 	}
 
 	public IDs labelordernum(String labelordernum) { 
 		if (labelordernum==null) this.labelordernum=null;
-		this.labelordernum = new BusinessStringItem("labelordernum", labelordernum);
+		else this.labelordernum = new BusinessStringItem("labelordernum", labelordernum);
 		return this;
 	}
 
 	public IDs amzn(String amzn) {
 		if (amzn==null) this.amzn=null;
-		this.amzn = new BusinessStringItem("amzn", amzn);
+		else this.amzn = new BusinessStringItem("amzn", amzn);
 		return this;
 	}
 
 	public IDs isbn(String isbn) {
 		if (isbn==null) this.isbn=null;
-		this.isbn = new BusinessStringItem("isbn", isbn);
+		else this.isbn = new BusinessStringItem("isbn", isbn);
 		return this;
 	}
 
@@ -163,25 +163,25 @@ public class IDs extends BusinessObject {
 
 	public IDs licensor(String licensor) {
 		if (licensor==null) this.licensor=null;
-		this.licensor = new BusinessStringItem("licensor", licensor);
+		else this.licensor = new BusinessStringItem("licensor", licensor);
 		return this;
 	}
 
 	public IDs licensee(String licensee) {
 		if (licensee==null) this.licensee=null;
-		this.licensee = new BusinessStringItem("licensee", licensee);
+		else this.licensee = new BusinessStringItem("licensee", licensee);
 		return this;
 	}
 
 	public IDs gvl(String gvl) {
 		if (gvl==null) this.gvl=null;
-		this.gvl = new BusinessStringItem("gvl", gvl);
+		else this.gvl = new BusinessStringItem("gvl", gvl);
 		return this;
 	}
 
 	public IDs amg(String amg) {
 		if (amg==null) this.amg=null;
-		this.amg = new BusinessStringItem("amg", amg);
+		else this.amg = new BusinessStringItem("amg", amg);
 		return this;
 	}
 

@@ -416,6 +416,8 @@ public class PanelItemBasics extends JPanel implements MyObservable {
 			item.display_artistname(t);
 		}
 		notifyChanges();
+		text.requestFocusInWindow();
+		text.transferFocus();
 	}
 
 

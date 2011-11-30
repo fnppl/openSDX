@@ -447,6 +447,8 @@ public class PanelFeedInfoBasics extends JPanel implements MyObservable {
 				}
 			}
 			notifyChanges();
+			text.requestFocusInWindow();
+			text.transferFocus();
 		}
 
 	}

@@ -308,7 +308,10 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 		lastDir = f.getParentFile();
 		
 		ItemFile file = ItemFile.make(f);
-
+		if (panel_properties.isTypeItem()) {
+			file.type("full");
+		}
+		
 		if (bundle!=null) {
 			bundle.addFile(file);
 			updateFileList();

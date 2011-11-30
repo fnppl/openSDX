@@ -168,7 +168,8 @@ public class Contributor extends BusinessObject {
 	}
 	
 	public Contributor year(String year) {
-		this.year = new BusinessStringItem("year", year);
+		if (year == null) this.year = null;
+		else this.year = new BusinessStringItem("year", year);
 		return this;
 	}	
 

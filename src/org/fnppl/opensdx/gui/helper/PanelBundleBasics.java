@@ -354,6 +354,8 @@ public class PanelBundleBasics extends JPanel implements MyObservable {
 			bundle.display_artistname(t);
 		}
 		notifyChanges();
+		text.requestFocusInWindow();
+		text.transferFocus();
 	}
 
 

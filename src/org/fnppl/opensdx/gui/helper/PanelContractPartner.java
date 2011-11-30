@@ -510,6 +510,8 @@ public void initLayout() {
 			cp.keyid(t);
 		}
 		notifyChanges();
+		text.requestFocusInWindow();
+		text.transferFocus();
 	}
 
 

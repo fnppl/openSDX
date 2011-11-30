@@ -146,6 +146,7 @@ public class PanelItem extends JPanel implements MyObservable, MyObserver {
 		pBasics.addObserver(this);
 		
 		pIDs = new PanelIDs(ids);
+		pIDs.onlyShowFields(IDs.getRelevantIDs("bundleditem"));
 		pIDs.addObserver(this);
 		
 		pContributors = new PanelContributorsInItems();

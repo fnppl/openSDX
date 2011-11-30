@@ -91,12 +91,20 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 		initKeyAdapter();
 		initComponents();
 		initLayout();
-		Vector<String> show = new Vector<String>();
-		show.add("gvl");
-		show.add("finetunesid");
-		show.add("ourid");
-		show.add("yourid");
-		show.add("contentauthid");
+		Vector<String> show;
+		if (contributor!=null) {
+			show = IDs.getRelevantIDs(contributor.getType());
+		} else {
+			show = IDs.getRelevantIDs(Contributor.TYPE_DJ);	
+		}
+		
+		 
+//		show.add("gvl");
+//		show.add("contentauth");
+//		show.add("finetunes");
+//		show.add("our");
+//		show.add("your");
+		
 
 		panel_ids.onlyShowFields(show);
 		panel_ids.addObserver(this);
@@ -437,7 +445,17 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 	public void select_type_changed(int selected) {
 		if (contributor==null) return;
 		contributor.type((String)select_type_model.getSelectedItem());
+		
+		Vector<String> show;
+		if (contributor!=null) {
+			show = IDs.getRelevantIDs(contributor.getType());
+		} else {
+			show = IDs.getRelevantIDs(Contributor.TYPE_DJ);	
+		}
+		panel_ids.onlyShowFields(show);
+		
 		notifyChanges();
+		
 	}
 
 	public void check_sublevel_changed(boolean selected) {
@@ -456,6 +474,8 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 			contributor.year(t);
 		} 
 		notifyChanges();
+		text.requestFocusInWindow();
+		text.transferFocus();
 	}
 
 	//observable

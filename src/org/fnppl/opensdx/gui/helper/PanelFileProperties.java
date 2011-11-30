@@ -170,6 +170,10 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		select_type_model.addElement("full");
 		select_type_model.addElement("pre-listening");
 	}
+	
+	public boolean isTypeItem() {
+		return label_channels.isVisible();
+	}
 
 	public void update(ItemFile file, String structuredFilename) {
 		this.file = file;
@@ -967,6 +971,8 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		//			}
 		//		}
 		notifyChanges();
+		text.requestFocusInWindow();
+		text.transferFocus();
 	}
 
 

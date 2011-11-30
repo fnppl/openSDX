@@ -421,6 +421,8 @@ public void initLayout() {
 			c.keyid(t);
 		}
 		notifyChanges();
+		text.requestFocusInWindow();
+		text.transferFocus();
 	}
 
 

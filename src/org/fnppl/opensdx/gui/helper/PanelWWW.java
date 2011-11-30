@@ -471,6 +471,9 @@ public void initLayout() {
 			www = InfoWWW.make();
 		}
 		String t = text.getText();
+		if (t!=null && t.length()==0) {
+			t = null;
+		}
 		if (text == text_facebook) {
 			www.facebook(t);
 		}
@@ -487,6 +490,9 @@ public void initLayout() {
 			www.phone(t, check_phone_publishable.isSelected());	
 		}
 		notifyChanges();
+		
+		text.requestFocusInWindow();
+		text.transferFocus();
 	}
 
 

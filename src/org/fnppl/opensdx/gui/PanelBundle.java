@@ -145,6 +145,7 @@ public class PanelBundle extends JPanel implements MyObservable, MyObserver {
 		pBasics.addObserver(this);
 		
 		pIDs = new PanelIDs(ids);
+		pIDs.onlyShowFields(IDs.getRelevantIDs("bundle"));
 		pIDs.addObserver(this);
 		
 		pContributors = new PanelContributors(bundle);

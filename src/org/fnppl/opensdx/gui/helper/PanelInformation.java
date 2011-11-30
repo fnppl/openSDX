@@ -1010,6 +1010,8 @@ public void initLayout() {
 			info.origin_country(t);
 		}
 		notifyChanges();
+		text.requestFocusInWindow();
+		text.transferFocus();
 	}
 
 

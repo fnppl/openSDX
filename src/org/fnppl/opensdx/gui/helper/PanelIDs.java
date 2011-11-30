@@ -49,6 +49,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Color;
+import java.awt.KeyboardFocusManager;
+
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.border.TitledBorder;
@@ -58,6 +60,8 @@ import org.fnppl.opensdx.dmi.FeedGui;
 import org.fnppl.opensdx.dmi.wayin.FinetunesToOpenSDXImporter;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -84,8 +88,8 @@ public class PanelIDs extends JPanel implements MyObservable {
 	private JTextField text_contentauth;
 	private JLabel label_labelordernum;
 	private JTextField text_labelordernum;
-	private JLabel label_amazon;
-	private JTextField text_amazon;
+	private JLabel label_amzn;
+	private JTextField text_amzn;
 	private JLabel label_isbn;
 	private JTextField text_isbn;
 	private JLabel label_finetunes;
@@ -94,6 +98,9 @@ public class PanelIDs extends JPanel implements MyObservable {
 	private JTextField text_licensor;
 	private JLabel label_licensee;
 	private JTextField text_licensee;
+	private JLabel label_amg;
+	private JTextField text_amg;
+	
 	private JLabel label_filler;
 	private Vector<JTextComponent> texts = new Vector<JTextComponent>();
 	private Vector<JLabel> labels = new Vector<JLabel>();
@@ -133,7 +140,7 @@ public class PanelIDs extends JPanel implements MyObservable {
 			text_isrc.setText("");
 			text_contentauth.setText("");
 			text_labelordernum.setText("");
-			text_amazon.setText("");
+			text_amzn.setText("");
 			text_isbn.setText("");
 			text_finetunes.setText("");
 			text_licensor.setText("");
@@ -145,7 +152,7 @@ public class PanelIDs extends JPanel implements MyObservable {
 			text_isrc.setText(ids.getIsrc());
 			text_contentauth.setText(ids.getContentauth());
 			text_labelordernum.setText(ids.getLabelordernum());
-			text_amazon.setText(ids.getAmzn());
+			text_amzn.setText(ids.getAmzn());
 			text_isbn.setText(ids.getIsbn());
 			text_finetunes.setText(ids.getFinetunes());
 			text_licensor.setText(ids.getLicensor());
@@ -243,14 +250,14 @@ public class PanelIDs extends JPanel implements MyObservable {
 		map.put("text_labelordernum", text_labelordernum);
 		texts.add(text_labelordernum);
 
-		label_amazon = new JLabel("Amazon");
-		label_amazon.setName("label_amazon");
-		labels.add(label_amazon);
-		text_amazon = new JTextField("");
+		label_amzn = new JLabel("Amazon");
+		label_amzn.setName("label_amzn");
+		labels.add(label_amzn);
+		text_amzn = new JTextField("");
 
-		text_amazon.setName("text_amazon");
-		map.put("text_amazon", text_amazon);
-		texts.add(text_amazon);
+		text_amzn.setName("text_amzn");
+		map.put("text_amzn", text_amzn);
+		texts.add(text_amzn);
 
 		label_isbn = new JLabel("ISBN");
 		label_isbn.setName("label_isbn");
@@ -288,6 +295,15 @@ public class PanelIDs extends JPanel implements MyObservable {
 		text_licensee.setName("text_licensee");
 		map.put("text_licensee", text_licensee);
 		texts.add(text_licensee);
+		
+		label_amg = new JLabel("AMG");
+		label_amg.setName("label_amg");
+		labels.add(label_amg);
+		text_amg = new JTextField("");
+
+		text_amg.setName("text_amg");
+		map.put("text_amg", text_amg);
+		texts.add(text_amg);
 
 		label_filler = new JLabel("");
 
@@ -295,6 +311,11 @@ public class PanelIDs extends JPanel implements MyObservable {
 		for (JTextComponent text : texts) {
 			text.getDocument().addDocumentListener(documentListener);
 			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
+			
+//			Set forwardKeys = text.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+//			Set newForwardKeys = new HashSet(forwardKeys);
+//			newForwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+//			text.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, newForwardKeys);
 		}
 		documentListener.saveStates();
 		
@@ -515,7 +536,7 @@ public void initLayout() {
 	gbl.setConstraints(text_labelordernum,gbc);
 	add(text_labelordernum);
 
-	// Component: label_amazon
+	// Component: label_amzn
 	gbc.gridx = 0;
 	gbc.gridy = 6;
 	gbc.gridwidth = 1;
@@ -527,10 +548,10 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(label_amazon,gbc);
-	add(label_amazon);
+	gbl.setConstraints(label_amzn,gbc);
+	add(label_amzn);
 
-	// Component: text_amazon
+	// Component: text_amzn
 	gbc.gridx = 1;
 	gbc.gridy = 6;
 	gbc.gridwidth = 1;
@@ -542,8 +563,8 @@ public void initLayout() {
 	gbc.ipadx = 0;
 	gbc.ipady = 0;
 	gbc.insets = new Insets(2,2,2,2);
-	gbl.setConstraints(text_amazon,gbc);
-	add(text_amazon);
+	gbl.setConstraints(text_amzn,gbc);
+	add(text_amzn);
 
 	// Component: label_isbn
 	gbc.gridx = 0;
@@ -664,10 +685,40 @@ public void initLayout() {
 	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_licensee,gbc);
 	add(text_licensee);
+	
+	// Component: label_amg
+	gbc.gridx = 0;
+	gbc.gridy = 11;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(label_amg,gbc);
+	add(label_amg);
+	
+	// Component: text_amg
+	gbc.gridx = 1;
+	gbc.gridy = 11;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 50.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(text_amg,gbc);
+	add(text_amg);
 
 	// Component: label_filler
 	gbc.gridx = 0;
-	gbc.gridy = 11;
+	gbc.gridy = 12;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
@@ -686,6 +737,9 @@ public void initLayout() {
 	public void text_changed(JTextComponent text) {
 		if (ids==null) return;
 		String t = text.getText();
+		if (t!=null && t.length()==0) {
+			t = null;
+		}
 		if (text == text_gvl) {
 			ids.gvl(t);
 		}
@@ -704,7 +758,7 @@ public void initLayout() {
 		else if (text == text_labelordernum) {
 			ids.labelordernum(t);
 		}
-		else if (text == text_amazon) {
+		else if (text == text_amzn) {
 			ids.amzn(t);
 		}
 		else if (text == text_isbn) {
@@ -719,7 +773,13 @@ public void initLayout() {
 		else if (text == text_licensee) {
 			ids.licensee(t);
 		}
+		else if (text == text_amg) {
+			ids.amg(t);
+		}
 		notifyChanges();
+		
+		text.requestFocusInWindow();
+		text.transferFocus();
 	}
 
 

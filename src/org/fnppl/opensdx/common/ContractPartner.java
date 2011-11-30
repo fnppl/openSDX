@@ -127,7 +127,11 @@ public class ContractPartner extends BusinessObject {
 	}
 
 	public ContractPartner email(String email) {
-		this.email = new BusinessStringItem("email", email);
+		if (email==null) {
+			this.email = null;
+		} else {
+			this.email = new BusinessStringItem("email", email);
+		}
 		return this;
 	}
 	public String getEmail() {
@@ -136,7 +140,11 @@ public class ContractPartner extends BusinessObject {
 	}
 	
 	public ContractPartner keyid(String value) {
-		this.keyid = new BusinessStringItem("keyid", value);
+		if (value==null) {
+			this.keyid = null;
+		} else {
+			this.keyid = new BusinessStringItem("keyid", value);
+		}
 		return this;
 	}
 	public String getKeyid() {

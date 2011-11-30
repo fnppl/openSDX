@@ -102,33 +102,57 @@ public class InfoWWW extends BusinessObject {
 
 
 	public InfoWWW facebook(String facebook) {
-		this.facebook = new BusinessStringItem("facebook", facebook);
+		if (facebook==null) {
+			this.facebook = null;
+		} else {
+			this.facebook = new BusinessStringItem("facebook", facebook);
+		}
 		return this;
 	}
 
 	public InfoWWW myspace(String myspace) {
-		this.myspace = new BusinessStringItem("myspace", myspace);
+		if (myspace==null) {
+			this.myspace = null;
+		} else {
+			this.myspace = new BusinessStringItem("myspace", myspace);
+		}
 		return this;
 	}
 
 	public InfoWWW homepage(String homepage) {
-		this.homepage = new BusinessStringItem("homepage", homepage);
+		if (homepage==null) {
+			this.homepage = null;
+		} else {
+			this.homepage = new BusinessStringItem("homepage", homepage);
+		}
 		return this;
 	}
 
 	public InfoWWW twitter(String twitter) {
-		this.twitter = new BusinessStringItem("twitter", twitter);
+		if (twitter==null) {
+			this.twitter = null;
+		} else {
+			this.twitter = new BusinessStringItem("twitter", twitter);
+		}
 		return this;
 	}
 
 	public InfoWWW phone(String phone) {
-		this.phone = new BusinessStringItem("phone", phone);
+		if (phone==null) {
+			this.phone = null;
+		} else {
+			this.phone = new BusinessStringItem("phone", phone);
+		}
 		return this;
 	}
 	
 	public InfoWWW phone(String phone, boolean publishable) {
-		this.phone = new BusinessStringItem("phone", phone);
-		this.phone.setAttribute("publishable", ""+publishable);
+		if (phone==null) {
+			this.phone = null;
+		} else {
+			this.phone = new BusinessStringItem("phone", phone);
+			this.phone.setAttribute("publishable", ""+publishable);
+		}
 		return this;
 	}
 
