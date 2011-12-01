@@ -294,6 +294,7 @@ public class IDs extends BusinessObject {
 			relevant.add("licensee");
 			relevant.add("finetunes");
 			relevant.add("contentauth");
+			relevant.add("gvl");
 			return relevant;
 		}
 		
