@@ -114,7 +114,7 @@ public class PanelIDs extends JPanel implements MyObservable {
 	}
 
 
-	public void onlyShowFields(Vector<String> show) {
+	public void onlyShowFields(HashSet<String> show) {
 		for (JTextComponent t : texts) {
 			if (show.contains(t.getName().substring(5))) {
 				t.setVisible(true);

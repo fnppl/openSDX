@@ -1,6 +1,6 @@
 package org.fnppl.opensdx.common;
 
-import java.util.Vector;
+import java.util.*;
 
 /*
  * Copyright (C) 2010-2011 
@@ -249,8 +249,10 @@ public class IDs extends BusinessObject {
 		return KEY_NAME;
 	}
 	
-	public static Vector<String> getRelevantIDs(String type) {
-		Vector<String> relevant = new Vector<String>();
+	public static HashSet<String> getRelevantIDs(String type) {
+		System.out.println("getRelevantIDs for type: "+type);
+		
+		HashSet<String> relevant = new HashSet<String>();
 		if (type.equals(Contributor.TYPE_LABEL)) {
 			relevant.add("gvl");
 			relevant.add("licensee");

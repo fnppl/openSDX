@@ -61,8 +61,7 @@ import org.fnppl.opensdx.common.InfoWWW;
 import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.dmi.FeedGui;
 
-import java.util.HashMap;
-import java.util.Vector;
+import java.util.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
@@ -96,7 +95,7 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 		initKeyAdapter();
 		initComponents();
 		initLayout();
-		Vector<String> show;
+		HashSet<String> show;
 		if (contributor!=null) {
 			show = IDs.getRelevantIDs(contributor.getType());
 		} else {
@@ -455,7 +454,7 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 		if (bundle!=null) {
 			bundle.updateItemsContributors(contributor, contributor.getName(), oldType);
 		}
-		Vector<String> show;
+		HashSet<String> show;
 		if (contributor!=null) {
 			show = IDs.getRelevantIDs(contributor.getType());
 		} else {
