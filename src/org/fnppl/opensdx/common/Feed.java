@@ -203,7 +203,7 @@ public class Feed extends BusinessObject {
 					try {
 						ItemFile nextItemFile = bundle.getFile(j);
 						if (nextItemFile==file) {
-							File nextFile = new File(nextItemFile.getLocationPath());
+							File nextFile = new File(nextItemFile.getOriginLocationPath());
 							String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
 							String filename = normFeedid+"_"+num+"_"+md5;
 							return new BundleItemStructuredName(nextItemFile, nextFile, filename);
@@ -211,6 +211,7 @@ public class Feed extends BusinessObject {
 						num++;
 					} catch (Exception ex) {
 						ex.printStackTrace();
+						return null;
 					}
 				}
 				
@@ -223,7 +224,7 @@ public class Feed extends BusinessObject {
 							try {
 								ItemFile nextItemFile = item.getFile(j);
 								if (nextItemFile==file) {
-									File nextFile = new File(nextItemFile.getLocationPath());
+									File nextFile = new File(nextItemFile.getOriginLocationPath());
 									String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
 									String filename = normFeedid+"_"+num+"_"+md5;
 									return new BundleItemStructuredName(nextItemFile, nextFile, filename);
@@ -231,6 +232,7 @@ public class Feed extends BusinessObject {
 								num++;
 							} catch (Exception ex) {
 								ex.printStackTrace();
+								return null;
 							}
 						}
 					}
@@ -252,7 +254,7 @@ public class Feed extends BusinessObject {
 				for (int j=0;j<bundle.getFilesCount();j++) {
 					try {
 						ItemFile nextItemFile = bundle.getFile(j);
-						File nextFile = new File(nextItemFile.getLocationPath());
+						File nextFile = new File(nextItemFile.getOriginLocationPath());
 						String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
 						String filename = normFeedid+"_"+num+"_"+md5;
 						num++;
@@ -270,7 +272,7 @@ public class Feed extends BusinessObject {
 						for (int j=0;j<item.getFilesCount();j++) {
 							try {
 								ItemFile nextItemFile = item.getFile(j);
-								File nextFile = new File(nextItemFile.getLocationPath());
+								File nextFile = new File(nextItemFile.getOriginLocationPath());
 								String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
 								String filename = normFeedid+"_"+num+"_"+md5;
 								num++;

@@ -306,7 +306,7 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 		ItemFile selFile = getSelectedFile();
 		if (selFile!=null) {
 			try {
-				path = new File(selFile.getLocationPath()).getParentFile();
+				path = new File(selFile.getOriginLocationPath()).getParentFile();
 			} catch (Exception ex) {
 			}
 		}
