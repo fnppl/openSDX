@@ -103,7 +103,7 @@ import org.fnppl.opensdx.dmi.wayout.*;
 @SuppressWarnings("serial")
 public class FeedGui extends JFrame implements MyObserver {
 	private static FeedGui instance = null;
-	private static String version = "v. 2011-11-30b";
+	private static String version = "v. 2011-11-31";
 	private URL configGenres = FeedGui.class.getResource("resources/config_genres.xml");
 	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
 	private XMLTree tree;
@@ -420,7 +420,7 @@ public class FeedGui extends JFrame implements MyObserver {
 				lastDir = f.getParentFile();
 				Document doc = Document.fromFile(f);
 				Feed feed = Feed.fromBusinessObject(BusinessObject.fromElement(doc.getRootElement()));
-				makeSureFeedHasMinimalFeedRequirementsForGui(feed);
+				makeSureFeedHasMinimalFeedRequirements(feed);
 				currentFeed = feed;				
 				update();
 				
@@ -434,7 +434,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 	}
 	
-	private void makeSureFeedHasMinimalFeedRequirementsForGui(Feed feed) {
+	private void makeSureFeedHasMinimalFeedRequirements(Feed feed) {
 		if (feed==null) return;
 		long now = System.currentTimeMillis();
 		if (feed.getFeedinfo()==null) {
@@ -479,10 +479,16 @@ public class FeedGui extends JFrame implements MyObserver {
 			int itemCount = b.getItemsCount();
 			for (int j=0;j<itemCount;j++) {
 				Item it = b.getItem(j);
-				contributorCount = b.getContributorCount();
+				contributorCount = it.getContributorCount();
 				for (int k=0;k<contributorCount;k++) {
 					if (it.getContributor(k).getIDs()==null) {
 						it.getContributor(k).ids(IDs.make());
+					}
+				}
+				int filesCount = it.getFilesCount();
+				for (int k=0;k<filesCount;k++) {
+					if (it.getFile(k).getType()==null || it.getFile(k).getType().equals("[not specified]")) {
+						it.getFile(k).type("full");
 					}
 				}
 				if (it.getLicense_specifics()==null) {
