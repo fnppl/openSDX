@@ -93,7 +93,7 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 		this.bundle = bundle;
 		Contributor c = (Contributor)list_contributors.getSelectedValue();
 		updateContributorsList();
-		panel_contributor_details.update(c);
+		panel_contributor_details.update(c, bundle);
 		if (c==null) {
 			panel_contributor_details.setVisible(false);
 		} else {
@@ -127,7 +127,7 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 			}
 		});
 
-		panel_contributor_details = new PanelContributorDetails(null);
+		panel_contributor_details = new PanelContributorDetails(null,null);
 		panel_contributor_details.addObserver(this);
 
 		bu_add = new JButton("add");
@@ -191,7 +191,7 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 	public void list_contributors_changed(int selected) {
 		if (bundle==null) return;
 		Contributor c = (Contributor)list_contributors.getSelectedValue();
-		panel_contributor_details.update(c);
+		panel_contributor_details.update(c, bundle);
 		if (c==null) {
 			panel_contributor_details.setVisible(false);
 		} else {

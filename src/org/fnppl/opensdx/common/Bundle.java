@@ -208,7 +208,7 @@ public class Bundle extends BusinessObject {
 		if (contributors==null) return;
 		if (c!=null) {
 			int index = contributors.indexOf(c);
-			if (index>0) contributors.remove(index);
+			if (index>=0) contributors.remove(index);
 			
 			//also remove this contributor in all items in this bundle
 			for (int i=0;i<getItemsCount();i++) {
@@ -228,6 +228,35 @@ public class Bundle extends BusinessObject {
 				}
 			}
 		}
+	}
+	
+	public void updateItemsContributors(Contributor updatedContrib, String oldName, String oldType) {
+		//update values in all item contributors
+		int itemCount = getItemsCount();
+		for (int j=0;j<itemCount;j++) {
+			Item it = getItem(j);
+			int contCout = it.getContributorCount();
+			for (int k=0;k<contCout;k++) {
+				Contributor ic = it.getContributor(j);
+				if (ic.getName().equals(oldName) && ic.getType().equals(oldType)) {
+					ic.name(updatedContrib.getName());
+					ic.type(updatedContrib.getType());
+					ic.year(updatedContrib.getYear());
+					ic.ids(updatedContrib.getIDs());
+					ic.www(updatedContrib.getWww());	
+				}
+			}
+		}
+	}
+	
+	public void moveItemUp(int ind) {
+		if (items==null) return;
+		items.moveUp(ind);
+	}
+	
+	public void moveItemDown(int ind) {
+		if (items==null) return;
+		items.moveDown(ind);
 	}
 	
 	public int getContributorCount() {

@@ -53,9 +53,12 @@ import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.border.TitledBorder;
 
+import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.Contributor;
+import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.InfoWWW;
+import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.dmi.FeedGui;
 
 import java.util.HashMap;
@@ -69,6 +72,7 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 
 	//init fields
 	private Contributor contributor = null;
+	private Bundle bundle = null;
 	private DocumentChangeListener documentListener;
 	private KeyAdapter keyAdapter;
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
@@ -86,8 +90,9 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 	private JLabel label_filler;
 
 
-	public PanelContributorDetails(Contributor contributor) {
+	public PanelContributorDetails(Contributor contributor, Bundle bundle) {
 		this.contributor = contributor;
+		this.bundle = bundle;
 		initKeyAdapter();
 		initComponents();
 		initLayout();
@@ -112,15 +117,16 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 	}
 
 
-	public void update(Contributor contributor) {
+	public void update(Contributor contributor, Bundle bundle) {
 		this.contributor = contributor;
+		this.bundle = bundle;
 		if (contributor == null) {;
-		text_name.setText("");
-		text_year.setText("");
-		select_type.setSelectedItem(0);
-		check_sublevel.setSelected(false);
-		panel_ids.update((IDs)null);
-		panel_www.update((InfoWWW)null);
+			text_name.setText("");
+			text_year.setText("");
+			select_type.setSelectedItem(0);
+			check_sublevel.setSelected(false);
+			panel_ids.update((IDs)null);
+			panel_www.update((InfoWWW)null);
 		} else {
 			text_name.setText(contributor.getName());
 			text_year.setText(contributor.getYear());
@@ -444,8 +450,11 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 	}
 	public void select_type_changed(int selected) {
 		if (contributor==null) return;
+		String oldType = contributor.getType();
 		contributor.type((String)select_type_model.getSelectedItem());
-		
+		if (bundle!=null) {
+			bundle.updateItemsContributors(contributor, contributor.getName(), oldType);
+		}
 		Vector<String> show;
 		if (contributor!=null) {
 			show = IDs.getRelevantIDs(contributor.getType());
@@ -468,10 +477,19 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 		if (contributor==null) return;
 		String t = text.getText();
 		if (text == text_name) {
-			contributor.name(t);
+			String oldName = contributor.getName();
+			if (!t.equals(oldName)) {
+				contributor.name(t);
+				if (bundle!=null) {
+					bundle.updateItemsContributors(contributor, oldName, contributor.getType());
+				}
+			}
 		}
 		else if (text == text_year) {
 			contributor.year(t);
+			if (bundle!=null) {
+				bundle.updateItemsContributors(contributor, contributor.getName(), contributor.getType());
+			}
 		} 
 		notifyChanges();
 		text.requestFocusInWindow();
@@ -495,6 +513,9 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 			if (contributor!=null && contributor.getWww()==null) {
 				contributor.www(panel_www.getWWW());
 			}
+		}
+		if (bundle!=null) {
+			bundle.updateItemsContributors(contributor, contributor.getName(), contributor.getType());
 		}
 		notifyChanges();
 	}

@@ -84,7 +84,10 @@ public class PanelContributorsInItems extends JPanel implements MyObservable {
 	private DefaultListModel list_contributors_bundle_model;
 	
 	private JButton bu_add;
+	private JButton bu_addAll;
 	private JButton bu_remove;
+	private JButton bu_up;
+	private JButton bu_down;
 	
 
 	public PanelContributorsInItems() {
@@ -141,11 +144,32 @@ public class PanelContributorsInItems extends JPanel implements MyObservable {
 				bu_add_clicked();
 			}
 		});
+		
+		bu_addAll = new JButton("add all");
+		bu_addAll.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				bu_addAll_clicked();
+			}
+		});
 
 		bu_remove = new JButton("remove");
 		bu_remove.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				bu_remove_clicked();
+			}
+		});
+		
+		bu_up = new JButton("<");
+		bu_up.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				bu_up_clicked();
+			}
+		});
+		
+		bu_down = new JButton(">");
+		bu_down.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				bu_down_clicked();
 			}
 		});
 	}
@@ -166,6 +190,8 @@ public class PanelContributorsInItems extends JPanel implements MyObservable {
 		pb2.setLayout(new FlowLayout(FlowLayout.LEFT));
 		//pb2.add(bu_add);
 		pb2.add(bu_remove);
+		pb2.add(bu_up);
+		pb2.add(bu_down);
 		pForItem.setBorder(new TitledBorder("List of Contributors"));
 		pForItem.add(pb2, BorderLayout.CENTER);
 		
@@ -182,6 +208,8 @@ public class PanelContributorsInItems extends JPanel implements MyObservable {
 		JPanel pb = new JPanel();
 		pb.setLayout(new FlowLayout(FlowLayout.LEFT));
 		pb.add(bu_add);
+		pb.add(bu_addAll);
+		
 		//pb.add(bu_remove);
 		pInBundle.setBorder(new TitledBorder("List of all Contributors"));
 		pInBundle.add(pb, BorderLayout.CENTER);
@@ -238,6 +266,21 @@ public class PanelContributorsInItems extends JPanel implements MyObservable {
 			}
 		}
 	}
+	
+	public void bu_addAll_clicked() {
+		if (bundle != null && item !=null) {
+			Object[] sel = list_contributors_bundle_model.toArray();
+			if (sel.length>0) {
+				for (Object s : sel) {
+					Contributor c = (Contributor)s;
+					item.addContributor(c);
+				}
+				updateContributorsList();
+				notifyChanges();
+			}
+		}
+	}
+	
 	public void bu_remove_clicked() {
 		if (item != null) {
 			Object[] sel = list_contributors.getSelectedValues();
@@ -248,6 +291,36 @@ public class PanelContributorsInItems extends JPanel implements MyObservable {
 				}
 				updateContributorsList();
 				notifyChanges();
+			}
+		}
+	}
+	
+	public void bu_up_clicked() {
+		if (item != null) {
+			int selInd = list_contributors.getSelectedIndex(); 
+			if (selInd==0) return;
+			Object sel = list_contributors.getSelectedValue();
+			if (sel!=null) {
+				Contributor c = (Contributor)sel;
+				item.moveContributorUp(c);
+				updateContributorsList();
+				notifyChanges();
+				list_contributors.setSelectedIndex(selInd-1);
+			}
+		}
+	}
+	
+	public void bu_down_clicked() {
+		if (item != null) {
+			int selInd = list_contributors.getSelectedIndex(); 
+			if (selInd == list_contributors_model.getSize()-1) return;
+			Object sel = list_contributors.getSelectedValue();
+			if (sel!=null) {
+				Contributor c = (Contributor)sel;
+				item.moveContributorDown(c);
+				updateContributorsList();
+				notifyChanges();
+				list_contributors.setSelectedIndex(selInd+1);
 			}
 		}
 	}

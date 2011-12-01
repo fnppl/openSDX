@@ -9,11 +9,13 @@ import java.awt.Insets;
 import java.awt.Color;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.html.HTML.Tag;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.dmi.FeedGui;
 import org.fnppl.opensdx.gui.EditCheckBoxTree;
@@ -24,6 +26,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 public class PanelTags extends JPanel implements MyObservable, MyObserver {
 
@@ -43,6 +48,10 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 	private DefaultComboBoxModel select_explicit_lyrics_model;
 
 	private JLabel label_filler;
+	private Bundle bundle = null;
+	
+	private boolean canPopup = false;
+	private JPopupMenu popup = null;
 
 	private ItemTags tags;
 
@@ -51,13 +60,19 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 		initComponents();
 		initLayout();
 		tree_genres.addObserver(this);
-		update((ItemTags)null);
+		update((ItemTags)null, null);
 	}
 
 
 
-	public void update(ItemTags tags) {
+	public void update(ItemTags tags, Bundle bundle) {
 		this.tags = tags;
+		this.bundle = bundle;
+		if (bundle==null) {
+			canPopup = false;
+		} else {
+			canPopup = true;
+		}
 		if (tags == null) {
 			check_bundle_only.setSelected(false);
 			check_live.setSelected(false);
@@ -116,6 +131,43 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 	}
 
 	private void initComponents() {
+		popup = new JPopupMenu();
+		JMenuItem itemCopyFromBundle = new JMenuItem("copy values from bundle");
+		itemCopyFromBundle.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (bundle!=null && tags!=null) {
+					ItemTags bt = bundle.getTags();
+					if(bt!=null) {
+						tags.live(bt.isLive());
+						tags.accoustic(bt.isAccoustic());
+						tags.instrumental(bt.isInstrumental());
+						tags.explicit_lyrics(bt.getExplicit_lyrics());
+						tags.removeAllGenres();
+						int anzGen = bt.getGenresCount();
+						for (int i=0;i<anzGen;i++) {
+							tags.addGenre(bt.getGenre(i));
+						}
+						notifyChanges();
+						update(tags, bundle);
+					}
+				}
+			}
+		});
+		popup.add(itemCopyFromBundle);
+		this.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent evt) {
+				if (evt.isPopupTrigger()) {
+					popup.show(evt.getComponent(), evt.getX(), evt.getY());
+				}
+			}
+
+			public void mouseReleased(MouseEvent evt) {
+				if (evt.isPopupTrigger()) {
+					popup.show(evt.getComponent(), evt.getX(), evt.getY());
+				}
+			}
+		});
+		
 		Vector<JTextComponent> texts = new Vector<JTextComponent>();
 		setBorder(new TitledBorder("Tags"));
 
