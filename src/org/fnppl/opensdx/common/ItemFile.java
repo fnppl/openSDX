@@ -419,9 +419,13 @@ public class ItemFile extends BusinessObject {
 		return channels.getString();
 	}
 	
-	public String getLocationPath() {
+	public String getOriginLocationPath() {
 		if (location==null) return null;
 		return location.getOriginFile();
+	}
+	public String getLocationPath() {
+		if (location==null) return null;
+		return location.getPath();
 	}
 	
 	public int getBytes() {
