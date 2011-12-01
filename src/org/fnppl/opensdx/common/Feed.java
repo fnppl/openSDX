@@ -224,7 +224,16 @@ public class Feed extends BusinessObject {
 							try {
 								ItemFile nextItemFile = item.getFile(j);
 								if (nextItemFile==file) {
-									File nextFile = new File(nextItemFile.getOriginLocationPath());
+									String origFilename = nextItemFile.getOriginLocationPath();
+									if (origFilename==null) {
+										System.out.println("WARNING :: file not found: "+origFilename);
+										return null;
+									}
+									File nextFile = new File(origFilename);
+									if (!nextFile.exists()) {
+										System.out.println("WARNING :: file not found: "+origFilename);
+										return null;
+									}
 									String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
 									String filename = normFeedid+"_"+num+"_"+md5;
 									return new BundleItemStructuredName(nextItemFile, nextFile, filename);
@@ -254,11 +263,20 @@ public class Feed extends BusinessObject {
 				for (int j=0;j<bundle.getFilesCount();j++) {
 					try {
 						ItemFile nextItemFile = bundle.getFile(j);
-						File nextFile = new File(nextItemFile.getOriginLocationPath());
-						String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-						String filename = normFeedid+"_"+num+"_"+md5;
+						String origFilename = nextItemFile.getOriginLocationPath();
+						if (origFilename!=null) {
+							File nextFile = new File(origFilename);
+							if (nextFile.exists()) {
+								String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+								String filename = normFeedid+"_"+num+"_"+md5;
+								files.add(new BundleItemStructuredName(nextItemFile, nextFile, filename));
+							} else {
+								System.out.println("WARNING :: file not found: "+origFilename);
+							}
+						} else {
+							System.out.println("WARNING :: file not found: "+origFilename);
+						}
 						num++;
-						files.add(new BundleItemStructuredName(nextItemFile, nextFile, filename));
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
@@ -272,11 +290,16 @@ public class Feed extends BusinessObject {
 						for (int j=0;j<item.getFilesCount();j++) {
 							try {
 								ItemFile nextItemFile = item.getFile(j);
-								File nextFile = new File(nextItemFile.getOriginLocationPath());
-								String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
-								String filename = normFeedid+"_"+num+"_"+md5;
+								String origFilename = nextItemFile.getOriginLocationPath();
+								if (origFilename!=null) {
+									File nextFile = new File(origFilename);
+									if (nextFile.exists()) {
+										String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+										String filename = normFeedid+"_"+num+"_"+md5;	
+										files.add(new BundleItemStructuredName(nextItemFile, nextFile, filename));
+									}
+								}
 								num++;
-								files.add(new BundleItemStructuredName(nextItemFile, nextFile, filename));
 							} catch (Exception ex) {
 								ex.printStackTrace();
 							}
