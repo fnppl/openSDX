@@ -143,21 +143,61 @@ public class Item extends BusinessObject {
 		if (contributor == null) {
 			return this;
 		}
-		contributor.setAttribute("num", ""+(contributors.size()+1));
-		contributors.add(contributor);
+		//remove old one -> no doubles
+		for (int j=0;j<getContributorCount();j++) {
+			Contributor ic = getContributor(j);
+			if (	ic.getName().equals(contributor.getName())
+					&& ic.getType().equals(contributor.getType())
+				) {
+				removeContributor(j);
+				j--;
+			}
+		}
+		
+		//clone for renumbering
+		Contributor cNew = Contributor.fromBusinessObject(BusinessObject.fromElement(contributor.toElement()));
+		cNew.setAttribute("num", ""+(contributors.size()+1));
+		contributors.add(cNew);
+		
 		return this;
 	}
 	
 	public void removeContributor(int index) {
 		if (contributors==null) return;
 		contributors.remove(index);
+		//renumber
+		for (int i=0;i<contributors.size();i++) {
+			contributors.get(i).setAttribute("num", ""+(i+1));
+		}
 	}
 	
 	public void removeContributor(Contributor c) {
 		if (contributors==null) return;
 		if (c!=null) {
 			int index = contributors.indexOf(c);
-			if (index>0) contributors.remove(index);
+			if (index>=0) {
+				removeContributor(index);
+			}
+		}
+	}
+	
+	public void moveContributorUp(Contributor c) {
+		if (contributors==null) return;
+		int ind = contributors.indexOf(c);
+		contributors.moveUp(ind);
+		//renumber
+		for (int i=0;i<contributors.size();i++) {
+			contributors.get(i).setAttribute("num", ""+(i+1));
+		}
+	}
+	
+	public void moveContributorDown(Contributor c) {
+		if (contributors==null) return;
+		int ind = contributors.indexOf(c);
+		contributors.moveDown(ind);
+		//renumber
+		for (int i=0;i<contributors.size();i++) {
+			contributors.get(i).setAttribute("num", ""+(i+1));
 		}
 	}
 	

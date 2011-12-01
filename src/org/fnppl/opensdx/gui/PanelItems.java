@@ -15,6 +15,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BundleInformation;
+import org.fnppl.opensdx.common.Contributor;
 import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.Item;
@@ -42,6 +43,9 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 	private DefaultListModel list_items_model;
 	private JButton bu_add;
 	private JButton bu_remove;
+	private JButton bu_up;
+	private JButton bu_down;
+	
 	private PanelItem panel_item;
 
 	public PanelItems() {
@@ -138,6 +142,19 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 			}
 		});
 
+		bu_up = new JButton("<");
+		bu_up.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				bu_up_clicked();
+			}
+		});
+		
+		bu_down = new JButton(">");
+		bu_down.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				bu_down_clicked();
+			}
+		});
 
 		panel_item = new PanelItem();
 		panel_item.addObserver(this);
@@ -165,7 +182,7 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.gridwidth = 1;
-		gbc.gridheight = 3;
+		gbc.gridheight = 5;
 		gbc.weightx = 100.0;
 		gbc.weighty = 100.0;
 		gbc.anchor = GridBagConstraints.CENTER;
@@ -235,6 +252,36 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(bu_remove,gbc);
 		north.add(bu_remove);
+		
+		// Component: bu_up
+		gbc.gridx = 2;
+		gbc.gridy = 3;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.NORTH;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(5,5,5,5);
+		gbl.setConstraints(bu_up,gbc);
+		north.add(bu_up);
+		
+		// Component: bu_down
+		gbc.gridx = 2;
+		gbc.gridy = 4;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.NORTH;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(5,5,5,5);
+		gbl.setConstraints(bu_down,gbc);
+		north.add(bu_down);
 
 		int h = 200;
 		north.setPreferredSize(new Dimension(800,h));
@@ -283,6 +330,28 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 		notifyChanges();
 	}
 
+	public void bu_up_clicked() {
+		if (bundle==null || bundle.getItemsCount()<2) return;
+		int selInd = list_items.getSelectedIndex();
+		if (selInd>0) {
+			bundle.moveItemUp(selInd);
+			updateItemList();
+			list_items.setSelectedIndex(selInd-1);
+			notifyChanges();
+		}
+	}
+	
+	public void bu_down_clicked() {
+		if (bundle==null || bundle.getItemsCount()<2) return;
+		int selInd = list_items.getSelectedIndex();
+		if (selInd<bundle.getItemsCount()-1) {
+			bundle.moveItemDown(selInd);
+			updateItemList();
+			list_items.setSelectedIndex(selInd+1);
+			notifyChanges();
+		}
+	}
+	
 	//observable
 	private Vector<MyObserver> observers = new Vector<MyObserver>();
 	public void addObserver(MyObserver observer) {

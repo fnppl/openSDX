@@ -105,6 +105,22 @@ public abstract class BusinessCollection<E> implements XMLElementable {
 		return list.indexOf(object);
 	}
 	
+	public void moveUp(int ind) {
+		if (ind<1) return;
+		E element1 = list.get(ind-1);
+		E element2 = list.get(ind);
+		list.set(ind-1,element2);
+		list.set(ind,element1);
+	}
+	
+	public void moveDown(int ind) {
+		if (ind>=list.size()-1) return;
+		E element1 = list.get(ind+1);
+		E element2 = list.get(ind);
+		list.set(ind+1,element2);
+		list.set(ind,element1);
+	}
+	
 	public void removeAll() {
 		list.removeAllElements();
 	}

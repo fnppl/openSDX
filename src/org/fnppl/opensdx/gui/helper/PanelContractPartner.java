@@ -441,8 +441,20 @@ public void initLayout() {
 	public void bu_keyid_select_clicked() {
 		ContractPartner cp = getContractPartner();
 		if (cp!=null) {
-			File f = Dialogs.chooseOpenFile("Open KeyStore", lastDir, "keystore.xml");
+			
+			File f = null;
+			String filenameKeystore = gui.getDefaultKeyStore();
+	        if (filenameKeystore != null) {
+	        	f = new File(filenameKeystore);
+	        	if (!f.exists()) {
+	        		f = null;
+		        }
+	        }	        
+	        if (f==null) {
+	        	f = Dialogs.chooseOpenFile("Open KeyStore", lastDir, "keystore.xml");
+	        }
 			if (f==null) return;
+			
 			lastDir = f.getParentFile();
 	        if (!f.exists()) {
 	            Dialogs.showMessage("Sorry. selected keystore file does not exist.");

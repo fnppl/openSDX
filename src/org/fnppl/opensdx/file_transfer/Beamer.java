@@ -110,7 +110,7 @@ public class Beamer {
 		
 		if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
 			try {
-				Result result = initOSDXFileTransferClient(receiver, mh, defaultKeystore);
+				Result result = initOSDXFileTransferClient(receiver, mh, defaultKeystore, signatureKey);
 				if (!result.succeeded) {
 					return result;
 				}
@@ -618,7 +618,7 @@ public class Beamer {
 	}
 
 	
-	private static Result initOSDXFileTransferClient(Receiver r, MessageHandler mh, String keystore) {
+	private static Result initOSDXFileTransferClient(Receiver r, MessageHandler mh, String keystore, OSDXKey key) {
 		
 		String servername = r.getServername();
 		int port = r.getPort();
@@ -633,45 +633,53 @@ public class Beamer {
 		
 		String keyid = r.getKeyID();
 		
-		if (keystore!=null) {
-			f = new File(keystore);
-		} else {
-			f = mh.requestOpenKeystore();
-		}
-		if (f==null) return Result.error("keystore could not be opened.");
-		
 		OSDXKey mysigning = null;
-		MessageHandler mh2 = new DefaultMessageHandler() {
-			public boolean requestOverwriteFile(File file) {
-				return false;
-			}
-			public boolean requestIgnoreVerificationFailure() {
-				return false;
-			}
-			public boolean requestIgnoreKeyLogVerificationFailure() {
-				return false;
-			}
-		};
-		try {
-			KeyApprovingStore store = KeyApprovingStore.fromFile(f, mh2); 
-			
-			if (keyid!=null) {
-				mysigning = store.getKey(keyid);
-				while (mysigning==null) {
-					String msg = "You given key id \""+keyid+"\"\nfor authentification could not be found in default keystore.\nPlease select the corresponding keystore.";
-					mh.showErrorMessage("Key not found.", msg);
-					f = mh.requestOpenKeystore();
-					if (f==null || !f.exists()) {
-						return Result.error("Key for authentification could not be found.");	
-					}
-					store = KeyApprovingStore.fromFile(f, mh2);
-					mysigning = store.getKey(keyid);
-				}
-			}
-			
-		} catch (Exception e1) {
-			Result.error("Error opening keystore:\n"+f.getAbsolutePath());
+		if (key!=null && keyid.equals(key.getKeyID())) {
+			mysigning = key;
 		}
+		
+		if (mysigning==null) { // get key from keystore
+			if (keystore!=null) {
+				f = new File(keystore);
+			} else {
+				f = mh.requestOpenKeystore();
+			}
+			if (f==null) return Result.error("keystore could not be opened.");
+			
+			
+			MessageHandler mh2 = new DefaultMessageHandler() {
+				public boolean requestOverwriteFile(File file) {
+					return false;
+				}
+				public boolean requestIgnoreVerificationFailure() {
+					return false;
+				}
+				public boolean requestIgnoreKeyLogVerificationFailure() {
+					return false;
+				}
+			};
+			try {
+				KeyApprovingStore store = KeyApprovingStore.fromFile(f, mh2); 
+				
+				if (keyid!=null) {
+					mysigning = store.getKey(keyid);
+					while (mysigning==null) {
+						String msg = "You given key id \""+keyid+"\"\nfor authentification could not be found in default keystore.\nPlease select the corresponding keystore.";
+						mh.showErrorMessage("Key not found.", msg);
+						f = mh.requestOpenKeystore();
+						if (f==null || !f.exists()) {
+							return Result.error("Key for authentification could not be found.");	
+						}
+						store = KeyApprovingStore.fromFile(f, mh2);
+						mysigning = store.getKey(keyid);
+					}
+				}
+				
+			} catch (Exception e1) {
+				Result.error("Error opening keystore:\n"+f.getAbsolutePath());
+		}
+		}
+		
 		if (mysigning==null) return Result.error("no signing key");
 		try {
 			mysigning.unlockPrivateKey(mh);
