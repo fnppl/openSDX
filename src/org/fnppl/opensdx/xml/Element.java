@@ -83,6 +83,11 @@ public class Element {
 		base.setText(value);
 	}
 	
+	public Element detach() {
+		base.detach();
+		return this;
+	}
+	
 	public void addComment(String comment)  {
 		base.addContent(new Comment(comment));
 	}

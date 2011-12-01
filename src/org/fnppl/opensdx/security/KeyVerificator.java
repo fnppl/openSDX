@@ -167,6 +167,8 @@ public class KeyVerificator {
 		
 		//find a keylog of a trusted key that approves the given key		
 		Result r = checkForKeyLogsThatTrustKey(key, datetime);
+		r.report.detach();//OSDX-47
+		
 		report.addContent(r.report);
 		if (r.succeeded) {
 			return Result.succeeded(report);
