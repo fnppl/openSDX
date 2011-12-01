@@ -513,7 +513,7 @@ public class FeedGui extends JFrame implements MyObserver {
 			File f = Dialogs.chooseSaveFile("Select filename for saving feed", lastDir, name);
 			if (f!=null) {
 				try {
-					Document doc = Document.buildDocument(currentFeed.toElement());
+					Document doc = Document.buildDocument(currentFeed.toElement(true));
 					doc.writeToFile(f);
 				} catch (Exception ex) {
 					Dialogs.showMessage("ERROR, feed could not be saved to "+f.getAbsolutePath());
@@ -527,7 +527,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		//warning if not valid
 		boolean feedValid = true;
 		try {
-			Document doc = Document.buildDocument(currentFeed.toElement());	
+			Document doc = Document.buildDocument(currentFeed.toElement(true));	
 			String msgResult = new FeedValidator().validateOSDX_latest(doc.toString());
 			if(msgResult.length()!=0) {
 				//feed not vaild
@@ -559,7 +559,7 @@ public class FeedGui extends JFrame implements MyObserver {
 				//if (!continueIfFeedNotValid("\nDo you really want to continue sending this feed?")) return;
 				boolean feedValid = true;
 				try {
-					Document doc = Document.buildDocument(currentFeed.toElement());	
+					Document doc = Document.buildDocument(currentFeed.toElement(true));	
 					String msgResult = new FeedValidator().validateOSDX_latest(doc.toString());
 					if(msgResult.length()!=0) {
 						//feed not vaild
@@ -1014,11 +1014,11 @@ public class FeedGui extends JFrame implements MyObserver {
 						//EditBusinessObjectTree tree = new EditBusinessObjectTree(currentFeed);
 						if (tree!=null) {
 							Vector<Integer> exp = tree.getExpandStates();
-							tree = new XMLTree(currentFeed.toElement());
+							tree = new XMLTree(currentFeed.toElement(true));
 							treePanel.add(new JScrollPane(tree),BorderLayout.CENTER);
 							tree.setExpanded(exp);
 						} else {
-							tree = new XMLTree(currentFeed.toElement());
+							tree = new XMLTree(currentFeed.toElement(true));
 							treePanel.add(new JScrollPane(tree),BorderLayout.CENTER);
 						}
 						
@@ -1095,7 +1095,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 		
 		try {
-			Document doc = Document.buildDocument(currentFeed.toElement());	
+			Document doc = Document.buildDocument(currentFeed.toElement(true));	
 			String msg = new FeedValidator().validateOSDX_latest(doc.toString());
 			
 			if(msg.length()==0) {

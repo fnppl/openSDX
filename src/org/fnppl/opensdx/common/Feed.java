@@ -287,9 +287,14 @@ public class Feed extends BusinessObject {
 	}
 	
 	public Element toElement() {
-		Vector<BundleItemStructuredName> itemNames = getStructuredFilenames();
-		for (BundleItemStructuredName sn : itemNames) {
-			sn.itemFile.path(sn.new_filename);
+		return toElement(false);
+	}
+	public Element toElement(boolean doStructureFileNames) {
+		if(doStructureFileNames) {
+			Vector<BundleItemStructuredName> itemNames = getStructuredFilenames();
+			for (BundleItemStructuredName sn : itemNames) {
+				sn.itemFile.path(sn.new_filename);
+			}
 		}
 		return super.toElement();
 	}
