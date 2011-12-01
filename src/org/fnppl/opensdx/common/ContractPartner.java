@@ -164,10 +164,11 @@ public class ContractPartner extends BusinessObject {
 	}
 	
 	public String getKeyname() {
-		if (role == ROLE_SENDER) return KEY_NAME_SENDER;
-		if (role == ROLE_LICENSOR) return KEY_NAME_LICENSOR;
-		if (role == ROLE_LICENSEE) return KEY_NAME_LICENSEE;
-		return KEY_NAME_CONTRACT_PARTNER;
+		return getKeyname(role);
+//		if (role == ROLE_SENDER) return KEY_NAME_SENDER;
+//		if (role == ROLE_LICENSOR) return KEY_NAME_LICENSOR;
+//		if (role == ROLE_LICENSEE) return KEY_NAME_LICENSEE;
+//		return KEY_NAME_CONTRACT_PARTNER;
 	}
 	
 	public String getContractPartnerID() {
