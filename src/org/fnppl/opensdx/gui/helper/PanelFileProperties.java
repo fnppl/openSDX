@@ -193,7 +193,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 			text_codecsettings.setText("");
 			text_structuredname.setText("");
 		} else {
-			text_path.setText(file.getLocationPath());
+			text_path.setText(file.getOriginLocationPath());
 			text_format.setText(file.getFiletype());
 			select_channels.setSelectedItem(file.getChannels());
 			String type = file.getType();

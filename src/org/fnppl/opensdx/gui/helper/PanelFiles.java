@@ -100,13 +100,21 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 		if (bundle!=null) {
 			int anz = bundle.getFilesCount();
 			for (int i = 0; i < anz; i++) {
-				list_files_model.addElement("File: "+bundle.getFile(i).getLocationPath());
+				String name = bundle.getFile(i).getOriginLocationPath();
+				if (name==null || name.length()==0) {
+					name = bundle.getFile(i).getLocationPath();
+				}
+				list_files_model.addElement("File: "+name);
 			}
 		}
 		if (item!=null) {
 			int anz = item.getFilesCount();
 			for (int i = 0; i < anz; i++) {
-				list_files_model.addElement("File: "+item.getFile(i).getLocationPath());
+				String name = item.getFile(i).getOriginLocationPath();
+				if (name==null || name.length()==0) {
+					name = item.getFile(i).getLocationPath();
+				}
+				list_files_model.addElement("File: "+name);
 			}
 		}
 		list_files.setModel(list_files_model);
