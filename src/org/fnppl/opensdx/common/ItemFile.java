@@ -1,6 +1,14 @@
 package org.fnppl.opensdx.common;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
 
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.XMLElementable;
@@ -185,6 +193,25 @@ public class ItemFile extends BusinessObject {
 		return this;
 	}
 	
+	public ItemFile dimension(Integer width, Integer height) {
+		if (width == null && height == null) {
+			dimension = null;
+			return this;
+		}
+		dimension = new BusinessCollection<BusinessIntegerItem>() {
+			public String getKeyname() {
+				return "dimension";
+			}
+		};
+		if (width!=null) {
+			dimension.add(new BusinessIntegerItem("width", width.intValue()));
+		}
+		if (height!=null) {
+			dimension.add(new BusinessIntegerItem("height", height.intValue()));
+		}
+		return this;
+	}
+	
 	public ItemFile remove_dimension() {
 		dimension = null;
 		return this;
@@ -208,6 +235,52 @@ public class ItemFile extends BusinessObject {
 			}
 		}
 		return null;
+	}
+	
+	public boolean calculateDimensionFromFile() {
+		if (location==null) return false;
+		String filename = location.getOriginFile();
+		if (filename==null) return false;
+		File f = new File(filename);
+		if (!f.exists()) return false;
+		
+		//try it the fast way
+		int ind = filename.lastIndexOf('.');
+		if (ind>=0) {
+			try {
+				String suffix = filename.substring(ind+1);
+			    Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
+			    if (iter.hasNext()) {
+			        ImageReader reader = iter.next();
+			        try {
+			        	FileImageInputStream stream = new FileImageInputStream(f);
+			            reader.setInput(stream);
+			            int width = reader.getWidth(reader.getMinIndex());
+			            int height = reader.getHeight(reader.getMinIndex());
+			            dimension(width, height);
+			            reader.dispose();
+			            return true;
+			        } catch (IOException e) {
+			        	//e.printStackTrace();
+			        } finally {
+			            reader.dispose();
+			        }
+			    }
+			} catch (Exception ex) {
+				//ex.printStackTrace();
+			}
+		}
+		
+		//try it the slower way
+		try {
+			BufferedImage img = ImageIO.read(f);
+			dimension(img.getWidth(), img.getHeight());
+			return true;
+		} catch (Exception ex) {
+		}
+		
+		//System.out.println("Could not calculate dimensions for file: "+filename);
+		return false;
 	}
 	
 	public ItemFile md5(byte[] bytes) {

@@ -54,20 +54,23 @@ public class InfoWWW extends BusinessObject {
 
 	public static String KEY_NAME = "www";
 
-	private BusinessStringItem facebook;				//COULD
+	private BusinessStringItem facebook;			//COULD
 	private BusinessStringItem myspace;				//COULD
-	private BusinessStringItem homepage;				//COULD
+	private BusinessStringItem homepage;			//COULD
 	private BusinessStringItem twitter;				//COULD
+	private BusinessStringItem blog;				//COULD
 	private BusinessStringItem phone;				//COULD
 
 
 	public static InfoWWW make(String facebook, String myspace, String homepage, String twitter, String phone) {
-		InfoWWW www = new InfoWWW();
-		www.facebook = new BusinessStringItem("facebook", facebook);
-		www.myspace = new BusinessStringItem("myspace", myspace);
-		www.homepage = new BusinessStringItem("homepage", homepage);
-		www.twitter = new BusinessStringItem("twitter", twitter);
-		www.phone = new BusinessStringItem("phone", phone);
+		InfoWWW www = make();
+		www.facebook(facebook);
+		www.myspace(myspace);
+		www.homepage(homepage);
+		www.twitter(twitter);
+		www.phone(phone);
+		www.blog = null;
+		
 		return www;
 	}
 
@@ -78,6 +81,8 @@ public class InfoWWW extends BusinessObject {
 		www.homepage = null;
 		www.twitter = null;
 		www.phone = null;
+		www.blog = null;
+		
 		return www;
 	}
 
@@ -95,6 +100,7 @@ public class InfoWWW extends BusinessObject {
 		www.myspace = BusinessStringItem.fromBusinessObject(bo, "myspace");
 		www.homepage = BusinessStringItem.fromBusinessObject(bo, "homepage");
 		www.twitter = BusinessStringItem.fromBusinessObject(bo, "twitter");
+		www.blog = BusinessStringItem.fromBusinessObject(bo, "blog");
 		www.phone = BusinessStringItem.fromBusinessObject(bo, "phone");
 		
 		return www;
@@ -133,6 +139,15 @@ public class InfoWWW extends BusinessObject {
 			this.twitter = null;
 		} else {
 			this.twitter = new BusinessStringItem("twitter", twitter);
+		}
+		return this;
+	}
+	
+	public InfoWWW blog(String blog) {
+		if (blog==null) {
+			this.blog = null;
+		} else {
+			this.blog = new BusinessStringItem("blog", blog);
 		}
 		return this;
 	}
@@ -175,6 +190,11 @@ public class InfoWWW extends BusinessObject {
 	public String getTwitter() {
 		if (twitter==null) return null;
 		return twitter.getString();
+	}
+	
+	public String getBlog() {
+		if (blog==null) return null;
+		return blog.getString();
 	}
 
 	public String getPhone() {

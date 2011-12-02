@@ -318,6 +318,8 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 		ItemFile file = ItemFile.make(f);
 		if (panel_properties.isTypeItem()) {
 			file.type("full");
+		} else {
+			file.calculateDimensionFromFile();
 		}
 		
 		if (bundle!=null) {

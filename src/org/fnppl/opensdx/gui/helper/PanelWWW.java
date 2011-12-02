@@ -80,6 +80,8 @@ public class PanelWWW extends JPanel implements MyObservable {
 	private JTextField text_homepage;
 	private JLabel label_twitter;
 	private JTextField text_twitter;
+	private JLabel label_blog;
+	private JTextField text_blog;
 	private JLabel label_phone;
 	private JTextField text_phone;
 	private JCheckBox check_phone_publishable;
@@ -101,12 +103,14 @@ public class PanelWWW extends JPanel implements MyObservable {
 			text_homepage.setText("");
 			text_twitter.setText("");
 			text_phone.setText("");
+			text_blog.setText("");
 			check_phone_publishable.setSelected(false);
 		} else {
 			text_facebook.setText(www.getFacebook());
 			text_myspace.setText(www.getMyspace());
 			text_homepage.setText(www.getHomepage());
 			text_twitter.setText(www.getTwitter());
+			text_blog.setText(www.getBlog());
 			text_phone.setText(www.getPhone());
 			check_phone_publishable.setSelected(www.isPhonePublishable());
 		}
@@ -178,6 +182,14 @@ public class PanelWWW extends JPanel implements MyObservable {
 		text_twitter.setName("text_twitter");
 		map.put("text_twitter", text_twitter);
 		texts.add(text_twitter);
+		
+		label_blog = new JLabel("Blog");
+
+		text_blog = new JTextField("");
+
+		text_blog.setName("text_blog");
+		map.put("text_blog", text_blog);
+		texts.add(text_blog);
 
 		label_phone = new JLabel("Phone");
 
@@ -376,10 +388,41 @@ public void initLayout() {
 	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_twitter,gbc);
 	add(text_twitter);
+	
+	
+	// Component: label_blog
+	gbc.gridx = 0;
+	gbc.gridy++;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 0.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(label_blog,gbc);
+	add(label_blog);
+
+	// Component: text_blog
+	gbc.gridx = 1;
+	//gbc.gridy;
+	gbc.gridwidth = 1;
+	gbc.gridheight = 1;
+	gbc.weightx = 50.0;
+	gbc.weighty = 0.0;
+	gbc.anchor = GridBagConstraints.CENTER;
+	gbc.fill = GridBagConstraints.BOTH;
+	gbc.ipadx = 0;
+	gbc.ipady = 0;
+	gbc.insets = new Insets(2,2,2,2);
+	gbl.setConstraints(text_blog,gbc);
+	add(text_blog);
 
 	// Component: label_phone
 	gbc.gridx = 0;
-	gbc.gridy = 4;
+	gbc.gridy++;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
@@ -394,7 +437,7 @@ public void initLayout() {
 
 	// Component: text_phone
 	gbc.gridx = 1;
-	gbc.gridy = 4;
+	//gbc.gridy = 4;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
@@ -409,7 +452,7 @@ public void initLayout() {
 
 	// Component: spacer0
 	gbc.gridx = 0;
-	gbc.gridy = 5;
+	gbc.gridy++;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
@@ -424,7 +467,6 @@ public void initLayout() {
 
 	// Component: check_phone_publishable
 	gbc.gridx = 1;
-	gbc.gridy = 5;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
@@ -439,7 +481,7 @@ public void initLayout() {
 
 	// Component: label_filler
 	gbc.gridx = 0;
-	gbc.gridy = 6;
+	gbc.gridy++;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
@@ -485,6 +527,9 @@ public void initLayout() {
 		}
 		else if (text == text_twitter) {
 			www.twitter(t);
+		}
+		else if (text == text_blog) {
+			www.blog(t);
 		}
 		else if (text == text_phone) {
 			www.phone(t, check_phone_publishable.isSelected());	

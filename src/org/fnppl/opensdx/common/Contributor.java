@@ -67,6 +67,8 @@ public class Contributor extends BusinessObject {
 	public static String TYPE_MIXER = "mixer";
 	public static String TYPE_REMIXER = "remixer";
 	public static String TYPE_PRODUCER = "producer";
+	public static String TYPE_AUTHOR = "author";
+	public static String TYPE_ARRANGER = "arranger";
 	public static String TYPE_FEATURING = "featuring";
 	public static String TYPE_WITH = "with";
 	public static String TYPE_DJ = "DJ";
@@ -94,6 +96,8 @@ public class Contributor extends BusinessObject {
 		TYPES.add(TYPE_MIXER);
 		TYPES.add(TYPE_REMIXER);
 		TYPES.add(TYPE_PRODUCER);
+		TYPES.add(TYPE_AUTHOR);
+		TYPES.add(TYPE_ARRANGER);
 		TYPES.add(TYPE_FEATURING);
 		TYPES.add(TYPE_WITH);
 		TYPES.add(TYPE_DJ);

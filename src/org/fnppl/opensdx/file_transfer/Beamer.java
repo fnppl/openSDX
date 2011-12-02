@@ -68,6 +68,7 @@ import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.helper.ProgressListener;
+import org.fnppl.opensdx.keyserverfe.Helper;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
@@ -229,7 +230,7 @@ public class Beamer {
 		final boolean[] ready = new boolean[]{false};
 		
 		//make a copy to remove private information and change to relative file paths  
-		Feed copyOfFeed = Feed.fromBusinessObject(BusinessObject.fromElement(feed.toElement()));
+		//Feed copyOfFeed = Feed.fromBusinessObject(BusinessObject.fromElement(feed.toElement()));
 		
 //		//remove private info
 //		try {
@@ -320,7 +321,8 @@ public class Beamer {
 		long progress = 0;
 		//upload feed
 		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-		Element eFeed = copyOfFeed.toElement();
+		//Element eFeed = copyOfFeed.toElement();
+		Element eFeed = feed.toElement(true);
 		Document.buildDocument(eFeed).output(bOut);
 		byte[] feedbytes = bOut.toByteArray();
 		maxProgress += feedbytes.length;
@@ -425,7 +427,7 @@ public class Beamer {
 		
 		
 		//upload all bundle and item files
-		Vector<BundleItemStructuredName> files = copyOfFeed.getStructuredFilenames();
+		Vector<BundleItemStructuredName> files = feed.getStructuredFilenames();
 		
 		if (pg!=null) { // count max progress
 			progress = maxProgress;
@@ -554,6 +556,59 @@ public class Beamer {
 		
 		
 		return result[0];
+	}
+	
+	//private Result currentUploadResult = null; 
+	public Result exportFeedToDirectory(Feed feed, File targetDir, OSDXKey signaturekey) throws Exception {
+		if (targetDir==null) {
+			return Result.error("Missing target directory for feed output.");
+		}
+		final String normFeedid = feed.getNormFeedID();		
+		final Result result = Result.succeeded();
+
+		//test if dir already exists
+		list = null;
+		File path = new File(targetDir, normFeedid);
+		 
+		if (path.exists()) {
+			return Result.error("A feed with this id already exists in given directory.\nPlease select another feedid.");
+		}
+		path.mkdirs();
+		
+		//save feed
+		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+		Element eFeed = feed.toElement();
+		
+		File feedFile = new File(path, normFeedid+".xml");
+		Document.buildDocument(eFeed).writeToFile(feedFile);
+		
+		//save feed signature
+		byte[][] checks  = SecurityHelper.getMD5SHA1SHA256(feedFile);
+		Signature feed_sig = Signature.createSignature(checks[1], checks[2], checks[3], normFeedid+".xml",signaturekey);
+		File feedSigFile = new File(path, normFeedid+".xml.osdx.sig");
+		Document.buildDocument(feed_sig.toElement()).writeToFile(feedSigFile);
+		
+		//copy all bundle and item files
+		Vector<BundleItemStructuredName> files = feed.getStructuredFilenames();
+		for (BundleItemStructuredName f : files) {
+			try {
+				File nextFileSrc = f.file;
+				File nextFileDest = new File(path,f.new_filename);
+				Helper.copy(nextFileSrc, nextFileDest);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		
+		//save feed finished file
+		try {
+			File finishFile = new File(path,normFeedid+".finish");
+			finishFile.createNewFile();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		
+		return result;
 	}
 	
 	

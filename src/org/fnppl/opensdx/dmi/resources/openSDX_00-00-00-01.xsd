@@ -137,8 +137,8 @@
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element contains information of one contributor. 
             A contributor can be a label, performer, texter, editor, conductor, artist, singer,
-            composer, mixer, remixer, producer, featuring-Artist, with-Artist, DJ, versus-Artist,
-            meets-Artist, presents-Artist, compilator, copyright, production or clearinghouse.
+            composer, mixer, remixer, producer, author, arranger, featuring-Artist, with-Artist, DJ,
+            versus-Artist, meets-Artist, presents-Artist, compilator, copyright, production or clearinghouse.
             A year should be provided in case the type equals copyright or production.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
@@ -174,7 +174,7 @@
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This Element is a container for the important web addresses and 
             phone of the associated element (contributor e.g.). Phone should be in international format.
-            Every single information-entry cold be tagged "publishable" which would then mean wether customers 
+            Every single information-entry cold be tagged "publishable" which would then mean whether customers 
             of receiver are also allowed to be given this information. If publishable is not given, then this 
             is granted.</xsd:documentation>
         </xsd:annotation>
@@ -183,6 +183,7 @@
             <xsd:element name="myspace" type="publishable" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="homepage" type="publishable" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="twitter" type="publishable" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="blog" type="publishable" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="phone" type="publishable" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
@@ -1071,6 +1072,8 @@
             <xsd:enumeration value="mixer"/>
             <xsd:enumeration value="remixer"/>
             <xsd:enumeration value="producer"/>
+            <xsd:enumeration value="author"/>
+            <xsd:enumeration value="arranger"/>
             <xsd:enumeration value="featuring"/>
             <xsd:enumeration value="with"/>
             <xsd:enumeration value="DJ"/>

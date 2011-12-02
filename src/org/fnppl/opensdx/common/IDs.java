@@ -250,7 +250,7 @@ public class IDs extends BusinessObject {
 	}
 	
 	public static HashSet<String> getRelevantIDs(String type) {
-		System.out.println("getRelevantIDs for type: "+type);
+		//System.out.println("getRelevantIDs for type: "+type);
 		
 		HashSet<String> relevant = new HashSet<String>();
 		if (type.equals(Contributor.TYPE_LABEL)) {
@@ -289,6 +289,8 @@ public class IDs extends BusinessObject {
 		    ||  type.equals(Contributor.TYPE_PRESENTS)
 		    ||  type.equals(Contributor.TYPE_COMPILATOR)
 		    ||  type.equals(Contributor.TYPE_PUBLISHER)
+		    ||  type.equals(Contributor.TYPE_AUTHOR)
+		    ||  type.equals(Contributor.TYPE_ARRANGER)
 		   ) {
 			relevant.add("licensor");
 			relevant.add("licensee");

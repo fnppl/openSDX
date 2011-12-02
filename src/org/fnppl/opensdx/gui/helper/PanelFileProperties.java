@@ -58,6 +58,7 @@ import javax.swing.event.ListSelectionListener;
 import org.fnppl.opensdx.common.BusinessStringItem;
 import org.fnppl.opensdx.common.Checksums;
 import org.fnppl.opensdx.common.ItemFile;
+import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.security.SecurityHelper;
 
 import java.util.HashMap;
@@ -102,6 +103,10 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 	private JLabel label_hfiller;
 	private JLabel label_length;
 	private JTextField text_length;
+	private JLabel label_width;
+	private JTextField text_width_integer;
+	private JLabel label_height;
+	private JTextField text_height_integer;
 	private JLabel label_md5;
 	private JTextField text_md5;
 	private JLabel label_sha1;
@@ -142,6 +147,9 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		label_codecsettings.setVisible(false);
 		text_codecsettings.setVisible(false);
 		
+		//text_width.setVisible(false); //false as long as type not given
+		//text_height.setVisible(false);
+		
 		select_type_model.removeAllElements();
 		select_type_model.addElement("[not specified]");
 		select_type_model.addElement("frontcover");
@@ -163,7 +171,11 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		label_codec.setVisible(true);
 		text_codec.setVisible(true);
 		label_codecsettings.setVisible(true);
-		text_codecsettings.setVisible(true);		
+		text_codecsettings.setVisible(true);
+		label_width.setVisible(false);
+		label_height.setVisible(false);
+		text_width_integer.setVisible(false);
+		text_height_integer.setVisible(false);
 		
 		select_type_model.removeAllElements();
 		select_type_model.addElement("[not specified]");
@@ -192,6 +204,12 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 			text_codec.setText("");
 			text_codecsettings.setText("");
 			text_structuredname.setText("");
+			text_width_integer.setText("");
+			text_height_integer.setText("");
+			label_width.setVisible(false);
+			label_height.setVisible(false);
+			text_width_integer.setVisible(false);
+			text_height_integer.setVisible(false);
 		} else {
 			text_path.setText(file.getOriginLocationPath());
 			text_format.setText(file.getFiletype());
@@ -222,6 +240,29 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 			} else {
 				text_structuredname.setText(structuredFilename);
 			}
+			
+			//dimension
+			Integer w = file.getDimensionWidth();
+			if (w==null) {
+				text_width_integer.setText("");
+			} else {
+				text_width_integer.setText(""+w);
+			}
+			Integer h = file.getDimensionHeight();
+			if (h==null) {
+				text_height_integer.setText("");
+			} else {
+				text_height_integer.setText(""+h);
+			}
+			String ftype = file.getType();
+			boolean dimVisible = false;
+			if (h!=null || w!=null || ftype!=null && (ftype.equals("frontcover") || ftype.equals("backcover"))) {
+				dimVisible = true;
+			}
+			label_width.setVisible(dimVisible);
+			label_height.setVisible(dimVisible);
+			text_width_integer.setVisible(dimVisible);
+			text_height_integer.setVisible(dimVisible);
 		}
 		documentListener.saveStates();
 	}
@@ -317,7 +358,19 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		text_length.setName("text_length");
 		map.put("text_length", text_length);
 		texts.add(text_length);
+		
+		label_width = new JLabel("Dimension width in px");
+		text_width_integer = new JTextField("");
+		text_width_integer.setName("text_width_integer");
+		map.put("text_width_integer", text_width_integer);
+		texts.add(text_width_integer);
 
+		label_height = new JLabel("Dimension height in px");
+		text_height_integer = new JTextField("");
+		text_height_integer.setName("text_height_integer");
+		map.put("text_height_integer", text_height_integer);
+		texts.add(text_height_integer);
+		
 		label_samplerate = new JLabel("Samplerate");
 		text_samplerate = new JTextField("");
 		text_samplerate.setName("text_samplerate");
@@ -574,9 +627,67 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		gbl.setConstraints(label_hfiller,gbc);
 		add(label_hfiller);
 
+		// Component: label_width
+		gbc.gridx = 0;
+		gbc.gridy++;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_width,gbc);
+		add(label_width);
+
+		// Component: text_width
+		gbc.gridx = 1;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_width_integer,gbc);
+		add(text_width_integer);
+		
+		// Component: label_height
+		gbc.gridx = 0;
+		gbc.gridy++;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(label_height,gbc);
+		add(label_height);
+
+		// Component: text_height
+		gbc.gridx = 1;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.0;
+		gbc.weighty = 0.0;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.ipadx = 0;
+		gbc.ipady = 0;
+		gbc.insets = new Insets(2,2,2,2);
+		gbl.setConstraints(text_height_integer,gbc);
+		add(text_height_integer);
+		
 		// Component: label_length
 		gbc.gridx = 0;
-		gbc.gridy = 3;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -591,7 +702,6 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_length
 		gbc.gridx = 1;
-		gbc.gridy = 3;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -606,7 +716,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: label_samplerate
 		gbc.gridx = 0;
-		gbc.gridy = 4;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -621,7 +731,6 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_samplerate
 		gbc.gridx = 1;
-		gbc.gridy = 4;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -636,7 +745,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		
 		// Component: label_samplesize
 		gbc.gridx = 0;
-		gbc.gridy = 5;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -651,7 +760,6 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_samplesize
 		gbc.gridx = 1;
-		gbc.gridy = 5;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -666,7 +774,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		
 		// Component: label_bitrate
 		gbc.gridx = 0;
-		gbc.gridy = 6;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -681,7 +789,6 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_bitrate
 		gbc.gridx = 1;
-		gbc.gridy = 6;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -696,7 +803,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		
 		// Component: label_bitratetype
 		gbc.gridx = 0;
-		gbc.gridy = 7;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -711,7 +818,6 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_bitratetype
 		gbc.gridx = 1;
-		gbc.gridy = 7;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -726,7 +832,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		
 		// Component: label_codec
 		gbc.gridx = 0;
-		gbc.gridy = 8;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -741,7 +847,6 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_codec
 		gbc.gridx = 1;
-		gbc.gridy = 8;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -756,7 +861,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 		
 		// Component: label_codecsettings
 		gbc.gridx = 0;
-		gbc.gridy = 9;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -771,7 +876,6 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_codecsettings
 		gbc.gridx = 1;
-		gbc.gridy = 9;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -786,7 +890,7 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: label_md5
 		gbc.gridx = 0;
-		gbc.gridy = 10;
+		gbc.gridy++;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -801,7 +905,6 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_md5
 		gbc.gridx = 1;
-		gbc.gridy = 10;
 		gbc.gridwidth = 4;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -831,7 +934,6 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_sha1
 		gbc.gridx = 1;
-		//gbc.gridy;
 		gbc.gridwidth = 4;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -861,7 +963,6 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 
 		// Component: text_structuredname
 		gbc.gridx = 1;
-		//gbc.gridy++;
 		gbc.gridwidth = 4;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -929,14 +1030,104 @@ public class PanelFileProperties extends JPanel implements MyObservable {
 	public void select_type_changed(int selected) {
 		if (file==null) return;
 		file.type((String)select_type.getSelectedItem());
+		
+		//update dimension
+		Integer w = file.getDimensionWidth();
+		if (w==null) {
+			text_width_integer.setText("");
+		} else {
+			text_width_integer.setText(""+w);
+		}
+		Integer h = file.getDimensionHeight();
+		if (h==null) {
+			text_height_integer.setText("");
+		} else {
+			text_height_integer.setText(""+h);
+		}
+		String ftype = file.getType();
+		boolean dimVisible = false;
+		if (h!=null || w!=null || ftype!=null && (ftype.equals("frontcover") || ftype.equals("backcover"))) {
+			dimVisible = true;
+		}
+		label_width.setVisible(dimVisible);
+		label_height.setVisible(dimVisible);
+		text_width_integer.setVisible(dimVisible);
+		text_height_integer.setVisible(dimVisible);
+		
 		notifyChanges();
+		
 	}
 	public void text_changed(JTextComponent text) {
 		if (file==null) return;
 		String t = text.getText();
+		if (t.length()==0) t=null;
+		
 		if (text == text_format) {
 			file.filetype(t);
 		}
+		else if (text == text_format) {
+			file.filetype(t);
+		}
+		else if (text == text_samplerate) {
+			file.samplerate(t);
+		}
+		else if (text == text_bitrate) {
+			file.bitrate(t);
+		}
+		else if (text == text_bitratetype) {
+			file.bitratetype(t);
+		}
+		else if (text == text_codec) {
+			file.codec(t);
+		}
+		else if (text == text_codecsettings) {
+			file.codecsettings(t);
+		}
+		else if (text == text_length) {
+			if (t!=null) {
+				try {
+					long len = Long.parseLong(t);
+					file.bytes(len);
+				} catch (Exception ex) {
+					Dialogs.showMessage("Error parsing Length in Bytes.");
+					return;
+				}
+			} else {
+				file.bytes(-1L);
+			}
+		}
+		else if (text == text_width_integer) {
+			if (t!=null) {
+				try {
+					int w = Integer.parseInt(t);
+					file.dimension(new Integer(w),file.getDimensionHeight());
+				} catch (Exception ex) {
+					Dialogs.showMessage("Error parsing \"Dimension width in pixel\"");	
+					return;
+				}
+			} else {
+				file.dimension(null,file.getDimensionHeight());
+			}
+ 		}
+		else if (text == text_height_integer) {
+			if (t!=null) {
+				try {
+					int h = Integer.parseInt(t);
+					file.dimension(file.getDimensionWidth(),new Integer(h));
+				} catch (Exception ex) {
+					Dialogs.showMessage("Error parsing \"Dimension height in pixel\"");
+					return;
+				}
+			} else {
+				file.dimension(file.getDimensionWidth(),null);
+			}
+ 		}
+		
+		
+		//text_md5;
+		//text_sha1;
+		//text_structuredname;
+		
 //		if (text == text_path) {
 //			file.setFile(new File(t));
 //		}
