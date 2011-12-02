@@ -99,6 +99,8 @@ public class OSDXFileTransferServer {
 			}
 			Element root = Document.fromFile(configFile).getRootElement();
 
+			System.out.println("Using config-file: "+configFile.getAbsolutePath());
+			
 			//uploadserver base
 			Element ks = root.getChild("osdxfiletransferserver");
 			//			host = ks.getChildText("host");
