@@ -251,6 +251,53 @@ public class Feed extends BusinessObject {
 		return null;
 	}
 	
+	public String getStructuredFilenameWithoutFilecheck(ItemFile file) {
+		String normFeedid = getNormFeedID();
+		int num = 1;
+		for (int b=0;b<getBundleCount();b++) {
+			Bundle bundle = getBundle(b);
+			if (bundle!=null) {
+				//bundle files (cover, booklet, ..)
+				for (int j=0;j<bundle.getFilesCount();j++) {
+					try {
+						ItemFile nextItemFile = bundle.getFile(j);
+						if (nextItemFile==file) {
+							String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+							String filename = normFeedid+"_"+num+"_"+md5;
+							return filename;
+						}
+						num++;
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						return null;
+					}
+				}
+				
+				//item files
+				for (int i=0;i<bundle.getItemsCount();i++) {
+					Item item = bundle.getItem(i);
+					if (item.getFilesCount()>0) {
+						for (int j=0;j<item.getFilesCount();j++) {
+							try {
+								ItemFile nextItemFile = item.getFile(j);
+								if (nextItemFile==file) {
+									String md5 = SecurityHelper.HexDecoder.encode(nextItemFile.getChecksums().getMd5(),'\0',-1);
+									String filename = normFeedid+"_"+num+"_"+md5;
+									return filename;
+								}
+								num++;
+							} catch (Exception ex) {
+								ex.printStackTrace();
+								return null;
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
 	public Vector<BundleItemStructuredName> getStructuredFilenames() {
 		Vector<BundleItemStructuredName> files = new Vector<BundleItemStructuredName>();
 		

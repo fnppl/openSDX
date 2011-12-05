@@ -476,6 +476,23 @@ public class FeedGui extends JFrame implements MyObserver {
 					b.getContributor(j).ids(IDs.make());
 				}
 			}
+			int bundlefilesCount = b.getFilesCount();
+			for (int k=0;k<bundlefilesCount;k++) {
+				ItemFile itf = b.getFile(k);
+				//handle old formatted origin_file, path (only works if file at path exists)
+				//System.out.println("bundle file no :: "+k);
+				//System.out.println("  path        :: "+itf.getPath());
+				//System.out.println("  origin_file :: "+itf.getOriginFile());
+				if (itf.getOriginFile()==null && itf.getPath()!=null && new File(itf.getPath()).exists()) {
+				//if (itf.getOriginFile()==null && itf.getPath()!=null) {
+					itf.origin_file(itf.getPath());
+					String structuredName = feed.getStructuredFilenameWithoutFilecheck(itf);
+					//System.out.println("  structered  :: "+structuredName);
+					itf.path(structuredName);
+				}
+			}
+		
+			
 			int itemCount = b.getItemsCount();
 			for (int j=0;j<itemCount;j++) {
 				Item it = b.getItem(j);
@@ -487,8 +504,21 @@ public class FeedGui extends JFrame implements MyObserver {
 				}
 				int filesCount = it.getFilesCount();
 				for (int k=0;k<filesCount;k++) {
-					if (it.getFile(k).getType()==null || it.getFile(k).getType().equals("[not specified]")) {
-						it.getFile(k).type("full");
+					ItemFile itf = it.getFile(k);
+					if (itf.getType()==null || itf.getType().equals("[not specified]")) {
+						itf.type("full");
+					}
+					
+					//handle old formatted origin_file, path (only works if file at path exists)
+					//System.out.println("item no :: "+j+", file no "+k);
+					//System.out.println("  path        :: "+itf.getPath());
+					//System.out.println("  origin_file :: "+itf.getOriginFile());
+					if (itf.getOriginFile()==null && itf.getPath()!=null && new File(itf.getPath()).exists()) {
+					//if (itf.getOriginFile()==null && itf.getPath()!=null) {
+						itf.origin_file(itf.getPath());
+						String structuredName = feed.getStructuredFilenameWithoutFilecheck(itf);
+						//System.out.println("  structered  :: "+structuredName);
+						itf.path(structuredName);
 					}
 				}
 				if (it.getLicense_specifics()==null) {
