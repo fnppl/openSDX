@@ -48,6 +48,7 @@ import java.io.File;
 import java.util.Vector;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -109,10 +110,12 @@ public class BeamMeUpGui extends JFrame {
 	
 	private JPanel pReceiver;
 	private JPanel pSummary;
+	private JCheckBox checkIncludeFiles;
 	private JTextArea text_summary;
 	private JScrollPane scroll_summary;
 	
 	private JButton bu_beam;
+	private JButton bu_local;
 	private JProgressBar progressBar = null;
 	private String defaultKeyStore = null; 
 
@@ -253,6 +256,9 @@ public class BeamMeUpGui extends JFrame {
 		//summary
 		pSummary = new JPanel();
 		pSummary.setBorder(new TitledBorder("Summary - Uploading files"));
+		checkIncludeFiles = new JCheckBox("Deliver referenced files");
+		checkIncludeFiles.setSelected(true);
+		
 		text_summary = new JTextArea("");
 		scroll_summary = new JScrollPane(text_summary);
 		pSummary.setVisible(false);
@@ -262,6 +268,14 @@ public class BeamMeUpGui extends JFrame {
 		bu_beam.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				bu_beam_clicked();
+			}
+		});
+		
+		//local
+		bu_local = new JButton("<html><b>deliver to local folder</b></html>");
+		bu_local.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				bu_local_clicked();
 			}
 		});
 		
@@ -373,6 +387,7 @@ public class BeamMeUpGui extends JFrame {
 		
 		//layout pSummary
 		pSummary.setLayout(new BorderLayout());
+		pSummary.add(checkIncludeFiles, BorderLayout.NORTH);
 		pSummary.add(scroll_summary, BorderLayout.CENTER);
 		
 		//layout pReceiver
@@ -441,6 +456,8 @@ public class BeamMeUpGui extends JFrame {
 		bu_beam.setPreferredSize(dim);
 		
 		panelSouth.add(bu_beam, BorderLayout.CENTER);
+		panelSouth.add(bu_local, BorderLayout.EAST);
+		
 		
 		//progress bar
 		//progressBar.setVisible(true);
@@ -549,6 +566,63 @@ public class BeamMeUpGui extends JFrame {
         }
 	}
 	
+	public  void bu_local_clicked() {
+		if (currentFeed==null) {
+			Dialogs.showMessage("Please open a feed for upload first.");
+			return;
+		}
+		//check signature key
+		OSDXKey signatureKey = null;
+		 try {
+            KeyApprovingStore keystore = KeyApprovingStore.fromFile(new File(text_keystore.getText()), new DefaultMessageHandler());
+            signatureKey = keystore.getKey(text_keyid.getText());
+        } catch (Exception ex) {
+        	//ex.printStackTrace();
+        	Dialogs.showMessage("Please select a valid keystore and keyid for signing the feed.");
+            return;
+        }
+        
+        if (signatureKey==null) {
+        	Dialogs.showMessage("Given keyid not found in keystore. Please select a valid comnbination of keystore and keyid for signing the feed.");
+        	return;
+        }
+        
+        try {
+        	signatureKey.unlockPrivateKey(text_pw.getPassword()); 
+        } catch (Exception ex) {
+        	//ex.printStackTrace();
+        	Dialogs.showMessage("Sorry, wrong password for signature key.");
+            return;
+        }
+        
+        //deliver
+        final OSDXKey fsignatureKey = signatureKey;
+        final File targetDir = Dialogs.chooseSaveDirectory("Select folder for feed delivery", lastDir, "");
+        Thread t = new Thread() {
+			public void run() {
+				try {
+					Result result = Beamer.exportFeedToDirectory(currentFeed, targetDir, fsignatureKey, checkIncludeFiles.isSelected());
+					
+					if (result.succeeded) {
+			        	Dialogs.showMessage("Delivery to local folder succeeded.");
+			        } else {
+			        	String msg = "Delivery to local folder failed";
+			        	if (result.errorMessage==null) {
+			        		msg += ".";
+			        	} else {
+			        		msg += ":\n"+result.errorMessage;
+			        	}
+			        	Dialogs.showMessage(msg);
+			        }
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+        };
+        t.start();
+        
+	}
+	
 	public  void bu_beam_clicked() {
 		if (currentFeed==null) {
 			Dialogs.showMessage("Please open a feed for upload first.");
@@ -602,7 +676,7 @@ public class BeamMeUpGui extends JFrame {
 		final OSDXKey fsignatureKey = signatureKey;
 		Thread t = new Thread() {
 			public void run() {
-				 	Result result = Beamer.beamUpFeed(currentFeed, fsignatureKey, new DefaultMessageHandler(), defaultKeyStore, pg);
+				 	Result result = Beamer.beamUpFeed(currentFeed, fsignatureKey, new DefaultMessageHandler(), defaultKeyStore, checkIncludeFiles.isSelected(), pg);
 			        
 				 	//reset progress bar and button
 				 	progressBar.setVisible(false);

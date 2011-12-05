@@ -81,6 +81,7 @@ public class ItemFile extends BusinessObject {
 	private BusinessBooleanItem no_file_given;			 		//COULD
 	private BusinessStringItem comment;							//COULD - COULD EVEN BE MORE THAN ONE...
 	
+	
 	public static ItemFile make(File f) {
 		ItemFile file = make();
 		file.setFile(f);
@@ -541,7 +542,11 @@ public class ItemFile extends BusinessObject {
 	}
 	
 	public ItemFile no_file_given(boolean no_file_given) {
-		this.no_file_given  = new BusinessBooleanItem("no_file_given", no_file_given);
+		if (no_file_given) {
+			this.no_file_given  = new BusinessBooleanItem("no_file_given", true);
+		} else {
+			this.no_file_given  = null;
+		}
 		return this;
 	}
 	

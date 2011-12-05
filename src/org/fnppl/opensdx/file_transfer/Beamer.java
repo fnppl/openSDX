@@ -57,6 +57,7 @@ import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.common.ItemFile;
 import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
+import org.fnppl.opensdx.common.LicenseSpecifics;
 import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.dmi.BundleItemStructuredName;
@@ -81,11 +82,11 @@ import org.fnppl.opensdx.xml.Element;
 
 public class Beamer {
 
-	public static Result beamUpFeed(Feed feed, OSDXKey signatureKey, MessageHandler mh, String defaultKeystore) {
-		return beamUpFeed(feed, signatureKey, mh, defaultKeystore, null);
+	public static Result beamUpFeed(Feed feed, OSDXKey signatureKey, MessageHandler mh, String defaultKeystore, boolean includeFiles) {
+		return beamUpFeed(feed, signatureKey, mh, defaultKeystore, includeFiles, null);
 	}
 	
-	public static Result beamUpFeed(Feed feed, OSDXKey signatureKey, MessageHandler mh, String defaultKeystore, ProgressListener pg) {
+	public static Result beamUpFeed(Feed feed, OSDXKey signatureKey, MessageHandler mh, String defaultKeystore, boolean includeFiles, ProgressListener pg) {
 		Receiver receiver = feed.getFeedinfo().getReceiver();
 		if (receiver==null) {
 			return Result.error("Please enter complete receiver information in FeedInfo tab first.");
@@ -141,7 +142,7 @@ public class Beamer {
 		if (client!=null) {
 			try {
 				Beamer beam = new Beamer();
-				Result result = beam.uploadFeed(feed, client, signatureKey,mh, pg);
+				Result result = beam.uploadFeed(feed, client, signatureKey,mh, includeFiles, pg);
 				client.closeConnection();
 				return result;
 			} catch (Exception ex) {
@@ -222,15 +223,41 @@ public class Beamer {
 	private boolean hasAnswer = false;
 	
 	//private Result currentUploadResult = null; 
-	public Result uploadFeed(Feed feed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh, final ProgressListener pg) throws Exception {
-		final String normFeedid = feed.getNormFeedID();
+	public Result uploadFeed(Feed currentFeed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh, final boolean includeFiles, final ProgressListener pg) throws Exception {
+		final String normFeedid = currentFeed.getNormFeedID();
 		
 		final Result[] result = new Result[] {Result.succeeded()};
 		
 		final boolean[] ready = new boolean[]{false};
 		
+		
 		//make a copy to remove private information and change to relative file paths  
 		//Feed copyOfFeed = Feed.fromBusinessObject(BusinessObject.fromElement(feed.toElement()));
+		//copy feed and set structeredNames
+		Feed feed = Feed.fromBusinessObject(BusinessObject.fromElement(currentFeed.toElement(true)));
+		
+		//check include files
+		int bundleCount = feed.getBundleCount();
+		for (int i=0;i<bundleCount;i++) { // for each bundle
+			Bundle b = feed.getBundle(i);
+			//bundle files
+			int bundlefilesCount = b.getFilesCount();
+			for (int k=0;k<bundlefilesCount;k++) { // for each bundle file
+				ItemFile itf = b.getFile(k);
+				itf.no_file_given(!includeFiles); //set no_file_given if not includeFiles
+			}
+			//item files
+			int itemCount = b.getItemsCount();
+			for (int j=0;j<itemCount;j++) {// for each item in bundle
+				Item it = b.getItem(j);
+				int filesCount = it.getFilesCount();
+				for (int k=0;k<filesCount;k++) {// for each file in item
+					ItemFile itf = it.getFile(k);
+					itf.no_file_given(!includeFiles); //set no_file_given if not includeFiles
+				}
+			}
+		}
+		
 		
 //		//remove private info
 //		try {
@@ -427,84 +454,86 @@ public class Beamer {
 		
 		
 		//upload all bundle and item files
-		Vector<BundleItemStructuredName> files = feed.getStructuredFilenames();
-		
-		if (pg!=null) { // count max progress
-			progress = maxProgress;
-			pg.setProgress(progress);
-			for (BundleItemStructuredName f : files) {
-				maxProgress += f.file.length();
+		if (includeFiles) {
+			Vector<BundleItemStructuredName> files = feed.getStructuredFilenames();
+			
+			if (pg!=null) { // count max progress
+				progress = maxProgress;
+				pg.setProgress(progress);
+				for (BundleItemStructuredName f : files) {
+					maxProgress += f.file.length();
+				}
+				pg.setMaxProgress(maxProgress);
+				pg.onUpate();
 			}
-			pg.setMaxProgress(maxProgress);
-			pg.onUpate();
-		}
-		final long[] progressSave = new long[1];
-		for (BundleItemStructuredName f : files) {
-			try {
-				//ItemFile nextItemFile = f.itemFile;
-				//nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
-				
-				File nextFile = f.file;
-				final String filename = f.new_filename;
-				final long len = f.file.length();
+			final long[] progressSave = new long[1];
+			for (BundleItemStructuredName f : files) {
 				try {
-					final long[] timeout = new long[]{System.currentTimeMillis()+timeoutDuration};
-					hasAnswer = false;
-					System.out.println("\nUploading "+filename+" ...");
-					if (pg!=null) {
-						progressSave[0] = pg.getProgress();
-					}
-					client.uploadFile(nextFile, absolutePath+filename, new CommandResponseListener() {
-						public void onSuccess(OSDXFileTransferCommand command) {
-							System.out.println("Upload of "+filename+" successful.");
-							hasAnswer = true;
-							if (pg!=null) {
-								pg.setProgress(progressSave[0]+len);
-								pg.onUpate();
-							}
-						}
-						
-						public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
-							//System.out.println("status update: "+progress+" / "+maxProgress);
-							timeout[0] = System.currentTimeMillis()+timeoutDuration;
-							if (pg!=null) {
-								pg.setProgress(progressSave[0]+progress);
-								pg.onUpate();
-							}
-						}
-						public void onError(OSDXFileTransferCommand command, String msg) {
-							if (mh!=null) {
-								mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed.");
-							}
-							result[0] = Result.error("Upload of "+filename+" failed.");
-							hasAnswer = true;
-						}
-					});
+					//ItemFile nextItemFile = f.itemFile;
+					//nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
 					
-					//block until answer or timeout
-					while (!hasAnswer && timeout[0] > System.currentTimeMillis()) {
-						try {
-							Thread.sleep(50);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
+					File nextFile = f.file;
+					final String filename = f.new_filename;
+					final long len = f.file.length();
+					try {
+						final long[] timeout = new long[]{System.currentTimeMillis()+timeoutDuration};
+						hasAnswer = false;
+						System.out.println("\nUploading "+filename+" ...");
+						if (pg!=null) {
+							progressSave[0] = pg.getProgress();
 						}
-					}
-					if (!hasAnswer) {
+						client.uploadFile(nextFile, absolutePath+filename, new CommandResponseListener() {
+							public void onSuccess(OSDXFileTransferCommand command) {
+								System.out.println("Upload of "+filename+" successful.");
+								hasAnswer = true;
+								if (pg!=null) {
+									pg.setProgress(progressSave[0]+len);
+									pg.onUpate();
+								}
+							}
+							
+							public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+								//System.out.println("status update: "+progress+" / "+maxProgress);
+								timeout[0] = System.currentTimeMillis()+timeoutDuration;
+								if (pg!=null) {
+									pg.setProgress(progressSave[0]+progress);
+									pg.onUpate();
+								}
+							}
+							public void onError(OSDXFileTransferCommand command, String msg) {
+								if (mh!=null) {
+									mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed.");
+								}
+								result[0] = Result.error("Upload of "+filename+" failed.");
+								hasAnswer = true;
+							}
+						});
+						
+						//block until answer or timeout
+						while (!hasAnswer && timeout[0] > System.currentTimeMillis()) {
+							try {
+								Thread.sleep(50);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+						if (!hasAnswer) {
+							if (mh!=null) {
+								mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed. Timeout.");
+							}
+							result[0] = Result.error("Upload of "+filename+" failed. Timeout.");
+							return result[0];
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
 						if (mh!=null) {
-							mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed. Timeout.");
+							mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed.");
 						}
-						result[0] = Result.error("Upload of "+filename+" failed. Timeout.");
-						return result[0];
+						result[0] = Result.error("Upload of "+filename+" failed.");
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
-					if (mh!=null) {
-						mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed.");
-					}
-					result[0] = Result.error("Upload of "+filename+" failed.");
 				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
 			}
 		}
 		
@@ -558,22 +587,48 @@ public class Beamer {
 		return result[0];
 	}
 	
-	//private Result currentUploadResult = null; 
-	public Result exportFeedToDirectory(Feed feed, File targetDir, OSDXKey signaturekey) throws Exception {
+
+	public static Result exportFeedToDirectory(Feed currentFeed, File targetDir, OSDXKey signaturekey, boolean includeFiles) throws Exception {
 		if (targetDir==null) {
 			return Result.error("Missing target directory for feed output.");
 		}
-		final String normFeedid = feed.getNormFeedID();		
+		final String normFeedid = currentFeed.getNormFeedID();		
 		final Result result = Result.succeeded();
 
 		//test if dir already exists
-		list = null;
 		File path = new File(targetDir, normFeedid);
 		 
 		if (path.exists()) {
 			return Result.error("A feed with this id already exists in given directory.\nPlease select another feedid.");
 		}
 		path.mkdirs();
+		
+		//copy feed and set structeredNames
+		Feed feed = Feed.fromBusinessObject(BusinessObject.fromElement(currentFeed.toElement(true)));
+		
+		//check include files
+		int bundleCount = feed.getBundleCount();
+		for (int i=0;i<bundleCount;i++) { // for each bundle
+			Bundle b = feed.getBundle(i);
+			//bundle files
+			int bundlefilesCount = b.getFilesCount();
+			for (int k=0;k<bundlefilesCount;k++) { // for each bundle file
+				ItemFile itf = b.getFile(k);
+				itf.no_file_given(!includeFiles); //set no_file_given if not includeFiles
+			}
+			//item files
+			int itemCount = b.getItemsCount();
+			for (int j=0;j<itemCount;j++) {// for each item in bundle
+				Item it = b.getItem(j);
+				int filesCount = it.getFilesCount();
+				for (int k=0;k<filesCount;k++) {// for each file in item
+					ItemFile itf = it.getFile(k);
+					itf.no_file_given(!includeFiles); //set no_file_given if not includeFiles
+				}
+			}
+		}
+		
+		
 		
 		//save feed
 		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -588,15 +643,18 @@ public class Beamer {
 		File feedSigFile = new File(path, normFeedid+".xml.osdx.sig");
 		Document.buildDocument(feed_sig.toElement()).writeToFile(feedSigFile);
 		
+		
 		//copy all bundle and item files
-		Vector<BundleItemStructuredName> files = feed.getStructuredFilenames();
-		for (BundleItemStructuredName f : files) {
-			try {
-				File nextFileSrc = f.file;
-				File nextFileDest = new File(path,f.new_filename);
-				Helper.copy(nextFileSrc, nextFileDest);
-			} catch (Exception ex) {
-				ex.printStackTrace();
+		if (includeFiles) {
+			Vector<BundleItemStructuredName> files = feed.getStructuredFilenames();
+			for (BundleItemStructuredName f : files) {
+				try {
+					File nextFileSrc = f.file;
+					File nextFileDest = new File(path,f.new_filename);
+					Helper.copy(nextFileSrc, nextFileDest);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
 			}
 		}
 		
