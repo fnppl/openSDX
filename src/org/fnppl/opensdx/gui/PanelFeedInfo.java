@@ -76,6 +76,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.dmi.FeedGuiTooltips;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
@@ -140,8 +141,16 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable, M
         }
         initComponents();
         initLayout();
-        
+        initTooltips();
     }
+    
+    public void initTooltips() {
+		pSender.initTooltips();
+		pLicensor.initTooltips();
+		pLicensee.initTooltips();
+		pReceiver.setToolTipText(FeedGuiTooltips.receiver);
+		pCreator.setToolTipText(FeedGuiTooltips.creator);
+	}
 
     public void notifyChange(MyObservable changedIn) {
         notifyChanges();

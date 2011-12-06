@@ -817,5 +817,22 @@ public class SecurityHelper {
 //		
 //	}
 	
+	
+	public static void copyResource(InputStream in, File dstDir, String fname) {
+		try {
+			File f = new File(dstDir, fname);
+			FileOutputStream fout = new FileOutputStream(f);
+			byte[] buff = new byte[1024];
+			int read = 0;
+			while((read=in.read(buff))!=-1) {
+				fout.write(buff,0,read);
+			}
+			fout.flush();
+			fout.close();
+			in.close();
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 }
 

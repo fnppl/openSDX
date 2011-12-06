@@ -57,6 +57,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import org.fnppl.opensdx.common.*;
+import org.fnppl.opensdx.security.SecurityHelper;
 import org.xml.sax.*;
 
 
@@ -76,22 +77,7 @@ public class FeedValidator {
 	public FeedValidator() {
 		initXSDs();
 	}
-	public static void copyResource(InputStream in, File dstDir, String fname) {
-		try {
-			File f = new File(dstDir, fname);
-			FileOutputStream fout = new FileOutputStream(f);
-			byte[] buff = new byte[1024];
-			int read = 0;
-			while((read=in.read(buff))!=-1) {
-				fout.write(buff,0,read);
-			}
-			fout.flush();
-			fout.close();
-			in.close();
-		} catch(Exception ex) {
-			ex.printStackTrace();
-		}
-	}
+	
 	public void initXSDs() {
 		if(xsdDir != null) {
 			//TODO HT 2011-11-29 - check each .xsd to be present as well...
@@ -122,18 +108,18 @@ public class FeedValidator {
 				}								
 			}
 			xsdDir = f;
-			
+
 //			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1);
-			copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1), xsdDir, RESSOURCE_OSDX_0_0_1);
+			SecurityHelper.copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1), xsdDir, RESSOURCE_OSDX_0_0_1);
 			
 //			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_COUNTRIES);
-			copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_COUNTRIES), xsdDir, RESSOURCE_OSDX_0_0_1_COUNTRIES);
+			SecurityHelper.copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_COUNTRIES), xsdDir, RESSOURCE_OSDX_0_0_1_COUNTRIES);
 			
 //			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_LANGUAGES);
-			copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_LANGUAGES), xsdDir, RESSOURCE_OSDX_0_0_1_LANGUAGES);
+			SecurityHelper.copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_LANGUAGES), xsdDir, RESSOURCE_OSDX_0_0_1_LANGUAGES);
 			
 //			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_GENRES);
-			copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_GENRES), xsdDir, RESSOURCE_OSDX_0_0_1_GENRES);
+			SecurityHelper.copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_GENRES), xsdDir, RESSOURCE_OSDX_0_0_1_GENRES);
 			
 		} catch(Exception ex) {
 			ex.printStackTrace();

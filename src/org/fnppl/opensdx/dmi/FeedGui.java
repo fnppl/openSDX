@@ -102,6 +102,9 @@ import org.fnppl.opensdx.dmi.wayout.*;
 
 @SuppressWarnings("serial")
 public class FeedGui extends JFrame implements MyObserver {
+	public final static String  RESSOURCE_FEEDGUI_MANUAL = "OSDX-Manual-FeedGui.pdf";
+	public final static String  RESSOURCE_SCHEMA_DOCUMENTATION = "openSDX_00-00-00-01.pdf";
+	
 	private static FeedGui instance = null;
 	private static String version = "v. 2011-12-05";
 	private URL configGenres = FeedGui.class.getResource("resources/config_genres.xml");
@@ -109,6 +112,7 @@ public class FeedGui extends JFrame implements MyObserver {
 	private XMLTree tree;
 	private String defaultKeystore = null;
 	private MessageHandler messageHandler = new DefaultMessageHandler();
+	private File fileResourcesDir = null;
 	
 	public static FeedGui getInstance() {
 		if(instance == null) {
@@ -147,6 +151,7 @@ public class FeedGui extends JFrame implements MyObserver {
 			}
 		});
 		readSettings();
+		initManuals();
 		setSize(1024, 768);
 		makeMenuBar();
 		Helper.centerMe(this, null);
@@ -184,6 +189,16 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 	}
 	
+	public void showHelp(String filename) {
+		File file = new File(System.getProperty("user.home")+File.separator+"openSDX"+File.separator+"docs"+File.separator+filename);
+		try {
+			Desktop.getDesktop().open(file);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Dialogs.showMessage("Error opening FeedGui manual at "+file);
+		}
+	}
+	
 	private void saveSettings() {
 		Element root = new Element("feedgui_settings");
 		if (defaultKeystore!=null) {
@@ -202,10 +217,54 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 	}
 	
+	
 	private void initTooltips() {
+
 //		initTooltips(feedinfo_panel);
 //		initTooltips(bundle_panel);
 //		initTooltips(bundled_items_panel);
+	}
+	
+	
+	private void initManuals() {
+		if(fileResourcesDir != null) {
+			//TODO check each file to be present as well...
+			return;
+		}
+		String dirName = "docs";
+		
+		try {
+			File f = new File(System.getProperty("user.home"), "openSDX");
+			f = new File(f, dirName);
+			if(!f.exists()) {
+				boolean r = f.mkdirs();
+				if(r) {
+					System.out.println("Created openSDX-subdir \""+dirName+"\" to store current resource files.\nLocation: "+f.getAbsolutePath());
+				}
+			}
+			if(!f.exists()) {
+				//dir-creation failed - trying to go for tmpdir
+				f = new File(System.getProperty("java.io.tmpdir"), "openSDX");
+				f = new File(f, "xsd");
+				if(!f.exists()) {
+					boolean r = f.mkdirs();
+					if(r) {
+						System.out.println("Created TEMPORARY openSDX-subdir \""+dirName+"\" to store current resource files.\nLocation: "+f.getAbsolutePath());
+					}
+				}
+				if(!f.exists()) {
+					f = f.getParentFile(); //tmpdir then...					
+				}								
+			}
+			fileResourcesDir = f;
+
+			SecurityHelper.copyResource(FeedGui.class.getResourceAsStream("resources/"+RESSOURCE_FEEDGUI_MANUAL), fileResourcesDir, RESSOURCE_FEEDGUI_MANUAL);
+			SecurityHelper.copyResource(FeedGui.class.getResourceAsStream("resources/"+RESSOURCE_SCHEMA_DOCUMENTATION), fileResourcesDir, RESSOURCE_SCHEMA_DOCUMENTATION);
+		} catch(Exception ex) {
+			ex.printStackTrace();
+			return;
+		}
+		System.out.println("File resources inited in "+fileResourcesDir.getAbsolutePath());
 	}
 	
 	private void initTooltips(Object ob) {
@@ -306,6 +365,12 @@ public class FeedGui extends JFrame implements MyObserver {
 				}
 				else if(cmd.equalsIgnoreCase("select keystore")) {
 					selectDefaultKeystore();
+				}
+				else if(cmd.equalsIgnoreCase("feedgui manual")) {
+					showHelp(RESSOURCE_FEEDGUI_MANUAL);
+				}
+				else if(cmd.equalsIgnoreCase("schema documentation")) {
+					showHelp(RESSOURCE_SCHEMA_DOCUMENTATION);
 				}
 			}
 		};
@@ -409,6 +474,19 @@ public class FeedGui extends JFrame implements MyObserver {
 		jmi.setActionCommand("validate file");
 		jmi.addActionListener(ja);
 		jm4.add(jmi);		
+		
+		JMenu jm5 = new JMenu("Help");
+		jb.add(jm5);
+		
+		jmi = new JMenuItem("FeedGui manual");
+		jmi.setActionCommand("feedgui manual");
+		jmi.addActionListener(ja);
+		jm5.add(jmi);	
+		
+		jmi = new JMenuItem("OSDX schema documentation");
+		jmi.setActionCommand("schema documentation");
+		jmi.addActionListener(ja);
+		jm5.add(jmi);	
 		
 		setJMenuBar(jb);
 	}

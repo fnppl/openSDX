@@ -58,6 +58,7 @@ import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.FeedInfo;
 import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.dmi.FeedGuiTooltips;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.security.KeyApprovingStore;
@@ -100,6 +101,19 @@ public class PanelContractPartner extends JPanel implements MyObservable {
 		initKeyAdapter();
 		initComponents();
 		initLayout();
+	}
+	
+	public void initTooltips() {
+		if (contractPartnerType == ContractPartner.ROLE_SENDER) {
+			this.setToolTipText(FeedGuiTooltips.sender);
+		}
+		else if (contractPartnerType == ContractPartner.ROLE_LICENSOR) {
+			this.setToolTipText(FeedGuiTooltips.licensor);
+		}
+		else if (contractPartnerType == ContractPartner.ROLE_LICENSEE) {
+			this.setToolTipText(FeedGuiTooltips.licensee);
+		}
+		
 	}
 
 	public void update() {

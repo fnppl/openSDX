@@ -56,6 +56,7 @@ import javax.swing.text.JTextComponent;
 
 import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.dmi.FeedGuiTooltips;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.security.KeyApprovingStore;
