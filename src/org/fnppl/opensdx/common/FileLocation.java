@@ -58,9 +58,6 @@ public class FileLocation extends BusinessObject {
 		return location;
 	}
 
-
-
-
 	public static FileLocation make() {
 		FileLocation location = new FileLocation();
 		location.origin_file = null;

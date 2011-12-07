@@ -54,6 +54,7 @@ import javax.swing.text.JTextComponent;
 
 import org.fnppl.opensdx.common.FeedInfo;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.dmi.FeedGuiTooltips;
 import org.fnppl.opensdx.security.SecurityHelper;
 
 import java.util.HashMap;
@@ -90,6 +91,14 @@ public class PanelFeedInfoBasics extends JPanel implements MyObservable {
 		initLayout();
 	}
 
+	public void initTooltips() {
+		text_feedid.setToolTipText(FeedGuiTooltips.feedid);
+		bu_uuid.setToolTipText(FeedGuiTooltips.randomUUID);
+		check_onlytest.setToolTipText(FeedGuiTooltips.onlytest);
+		text_creation_datetime.setToolTipText(FeedGuiTooltips.creation_datetime);
+		text_effective_datetime.setToolTipText(FeedGuiTooltips.effective_datetime);
+		bu_now.setToolTipText(FeedGuiTooltips.now);
+	}
 
 	public void update() {
 		FeedInfo fi = getFeedInfo();

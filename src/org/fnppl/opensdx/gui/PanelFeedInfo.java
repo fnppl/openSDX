@@ -145,11 +145,13 @@ public class PanelFeedInfo extends javax.swing.JPanel implements MyObservable, M
     }
     
     public void initTooltips() {
+    	pBasis.initTooltips();
 		pSender.initTooltips();
 		pLicensor.initTooltips();
 		pLicensee.initTooltips();
 		pReceiver.setToolTipText(FeedGuiTooltips.receiver);
 		pCreator.setToolTipText(FeedGuiTooltips.creator);
+		pTriggeredActions.setToolTipText(FeedGuiTooltips.triggered_actions);
 	}
 
     public void notifyChange(MyObservable changedIn) {

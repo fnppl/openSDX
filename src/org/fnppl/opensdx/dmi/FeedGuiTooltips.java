@@ -1,4 +1,6 @@
 package org.fnppl.opensdx.dmi;
+
+import javax.swing.ToolTipManager;
 /*
  * Copyright (C) 2010-2011
  * 							fine people e.V. <opensdx@fnppl.org>
@@ -45,19 +47,32 @@ package org.fnppl.opensdx.dmi;
  */
 public class FeedGuiTooltips {
 
+	public static void initDelays() {
+		ToolTipManager.sharedInstance().setInitialDelay(100);
+		ToolTipManager.sharedInstance().setDismissDelay(20000);
+	}
+	
+//--- FeedInfo Panel --------------------------------------------
+	public static final String feedid             = "<html><body>Every <b>feed</b> needs to have its own <b>feed id</b>, even if it is an update to a former feed.<br />It is good practice to generate a UUID (by pressing the random UUID button) for every feed you create but certainly you can enter your own id.</body></html>";
+	public static final String randomUUID         = "<html><body>This will create a <b>random UUID</b> and set it as <b>feed id</b>.</body></html>";
+	public static final String onlytest           = "<html><body>Select whether your feed should be a test or real data</body></html>";
+	public static final String creation_datetime  = "<html><body>The datetime when this feed is created.<br />Format: yyyy-mm-dd HH:MM:SS GMT+hh:00</body></html>";
+	public static final String effective_datetime = "<html><body>The datetime when this feed should come effective.<br />Format: yyyy-mm-dd HH:MM:SS GMT+hh:00</body></html>";
+	public static final String now = "<html><body>Set the current datetime as <b>creation</b> and <b>effective datetime</b>.</body></html>";
+	
 	public static final String sender = 
 		"<html><body>The <b>Sender</b> part should give information about the sender of the feed (typically you / your company),<br />"
 		+" where the <b>Key ID</b> should be related to the key that will be used by the sender in further correspondence.<br />"
 		+"The <b>ID</b> field should hold the id on the receiver side, the <b>Our ID</b> field should hold the ID of the sender side.</body></html>";
 	
 	public static final String licensor =
-		"<html><body>The <b>Licensor</b> part should give information about the licensor (the one who holds the license) of the feeds content (typically you / your company),<br />"
-		+" where the <b>Key ID</b> should be related to the key that will be used by the licensor in further correspondence.<br />"
+		"<html><body>The <b>Licensor</b> part should give information about the licensor (the one who holds the license) of the feeds<br />content (typically you / your company).<br />"
+		+"The <b>Key ID</b> should be related to the key that will be used by the licensor in further correspondence.<br />"
 		+"The <b>ID</b> field should hold the id on the receiver side, the <b>Our ID</b> field should hold the ID of the sender side.</body></html>";
 	
 	public static final String licensee = 
-		"<html><body>The <b>Licensee</b> part should give information about the licensee (the one to whom the license is granted to) of the feeds content (typically the receiver),<br />"
-		+" where the <b>Key ID</b> should be related to the key that will be used by the licensee in further correspondence.<br />"
+		"<html><body>The <b>Licensee</b> part should give information about the licensee (the one to whom the license is granted to)<br />of the feeds content (typically the receiver).<br />"
+		+"The <b>Key ID</b> should be related to the key that will be used by the licensee in further correspondence.<br />"
 		+"The <b>ID</b> field should hold the id on the receiver side, the <b>Our ID</b> field should hold the ID of the sender side.</body></html>";
 	
 	public static final String creator = 
@@ -72,6 +87,31 @@ public class FeedGuiTooltips {
 		+" in the <b>servername</b> field.<br />"
 	    +" The button <b>beam me up!</b> will open another window where the feed and all referenced media files could be send to the given receiver.</body></html>";
 	
-	public static final String triggered_actions = "";
+	public static final String triggered_actions = 
+		"<html><body>"
+		+ "<b>Triggerd Actions</b> are notifications send to you by the <b>receiver</b> on the following events:"
+		+ "<ul><li>on initial receive: triggered when the feed was received by the receiver</li>"
+		+ "<li>on process start: triggered when the processing of the feed starts</li>"
+		+ "<li>on process end: triggered when the processing of the feed ends</li>"
+		+ "<li>on error: triggered when an error occurs during the processing of the feed</li>"
+		+ "<li>on full success: triggered when the processing of the feed was successfully completed</li>"
+		+ "</ul>You can decide on which of these events you want to get a notification and whether this should<br />"
+		+ "be done by an email (<b>add Mail Action</b>) or by a http call (<b>add HTTP Action</b>).<br />"
+		+ "If you don't want to be notified you can leave these fields empty, but it is recommended to add<br />"
+		+ "notifications for at least the <b>on error</b> and the <b>on full success</b> cases."
+		+"</body></html>";
+	
+//--- End of FeedInfo Panel --------------------------------------------
+
+	
+//--- BundlePanel --------------------------------------------
+
+//--- End of BundlePanel --------------------------------------------
+	
+	
+//--- ItemsPanel --------------------------------------------
+	
+//--- End of Items Panel --------------------------------------------
+
 	
 }

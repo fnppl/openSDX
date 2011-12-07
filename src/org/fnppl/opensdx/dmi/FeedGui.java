@@ -219,7 +219,7 @@ public class FeedGui extends JFrame implements MyObserver {
 	
 	
 	private void initTooltips() {
-
+		FeedGuiTooltips.initDelays();
 //		initTooltips(feedinfo_panel);
 //		initTooltips(bundle_panel);
 //		initTooltips(bundled_items_panel);
