@@ -120,12 +120,13 @@ public class ItemFile extends BusinessObject {
 		checksums = null;
 		bytes = null;
 		if (f.exists() && !f.isDirectory()) {
-			location = FileLocation.make(f.getAbsolutePath());
+			location = FileLocation.make(f.getAbsolutePath()).file_origin(f.getAbsolutePath());
+			
 			int b = (int)f.length();
 			bytes = new BusinessLongItem("bytes", b);
 			try {
 				byte[][] sums = SecurityHelper.getMD5SHA1(f);
-				checksums = Checksums.make(sums[0],sums[1],null);
+				checksums = Checksums.make(sums[0], sums[1], null);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
