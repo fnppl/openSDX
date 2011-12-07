@@ -1576,7 +1576,11 @@ public class SecurityMainFrame extends JFrame {
 		}
 		
 		final JTable table = new JTable();
-		DefaultTableModel mod = new DefaultTableModel(data, header); 
+		DefaultTableModel mod = new DefaultTableModel(data, header) {
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}			
+		};
 		table.setModel(mod);
 		final RowSorter<DefaultTableModel> sorter = new TableRowSorter<DefaultTableModel>(mod);
 		table.setRowSorter(sorter);

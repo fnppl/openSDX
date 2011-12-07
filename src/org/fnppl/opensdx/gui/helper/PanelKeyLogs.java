@@ -130,7 +130,11 @@ public class PanelKeyLogs extends JPanel {
 				tableData[i][4] = "[unknown]";
 			}
 		}
-		tablemodel = new DefaultTableModel(tableData,columnNames);
+		tablemodel = new DefaultTableModel(tableData,columnNames)  {
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}			
+		};
 		table.setModel(tablemodel);
 		table.setRowSorter(new TableRowSorter<DefaultTableModel>(tablemodel));
 	}
