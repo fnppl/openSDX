@@ -114,7 +114,7 @@ public class PanelAccount extends JPanel {
 			text_port_integer.setText("4221");
 			text_prepath.setText("/");
 			text_username.setText("");
-			text_keystore.setText(System.getProperty("user.home")+File.separator+"openSDX"+File.separator+"defaultKeyStore.xml");
+			text_keystore.setText(new File(new File(System.getProperty("user.home"),"openSDX"),"defaultKeyStore.xml").getAbsolutePath());
 			text_keyid.setText("");
 			setKeyStroreAndIdVisibility(true);
 		} else {

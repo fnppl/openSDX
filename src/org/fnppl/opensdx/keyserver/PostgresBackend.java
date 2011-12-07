@@ -108,11 +108,12 @@ public class PostgresBackend implements KeyServerBackend {
 	
 	private File getFileFromID(long id, String ending) {
 		String name = ""+id;
+		File result = data_path;
 		if (name.length()>5) {
-			name = name.substring(0,name.length()-5)+File.separator+name;
+			result = new File(result, name.substring(0,name.length()-5));
 		}
 		if (ending!=null) name += ending;
-		return new File(data_path, name);
+		return new File(result, name);
 	}
 	
 	public void addKeysAndLogsFromKeyStore(String filename) {

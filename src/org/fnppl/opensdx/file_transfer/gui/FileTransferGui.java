@@ -815,7 +815,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 			a_new.port = 4221;
 			a_new.prepath = "/";
 			a_new.username = "";
-			a_new.keystore_filename = System.getProperty("user.home")+File.separator+"openSDX"+File.separator+"defaultKeyStore.xml";
+			a_new.keystore_filename = new File(new File(System.getProperty("user.home"),"openSDX"),"defaultKeyStore.xml").getAbsolutePath();
 			if (!new File(a_new.keystore_filename).exists()) {
 				a_new.keystore_filename = "";
 			}

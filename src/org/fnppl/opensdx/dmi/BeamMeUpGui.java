@@ -220,7 +220,7 @@ public class BeamMeUpGui extends JFrame {
 		
 		
 		text_keystore = new JTextField("");
-		File defStore = new File(System.getProperty("user.home")+File.separator+"openSDX"+File.separator+"defaultKeyStore.xml");
+		File defStore = new File(new File(System.getProperty("user.home"),"openSDX"),"defaultKeyStore.xml");
 		if (defStore.exists()) {
 			text_keystore.setText(defStore.getAbsolutePath());
 		}
