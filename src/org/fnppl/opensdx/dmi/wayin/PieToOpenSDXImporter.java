@@ -233,12 +233,12 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
         			itemfile.setFile(f);
         			
         			// set delivered path to file 
-        			itemfile.setLocation(FileLocation.make(filename));
+        			itemfile.setLocation(FileLocation.make(filename,filename));
         		} else {
         			//file does not exist -> so we have to set the values "manually"
         			
         			//-> use filename for location
-        			itemfile.setLocation(FileLocation.make(filename));
+        			itemfile.setLocation(FileLocation.make(filename,filename));
         		
         			//file size
         			if(cover.getChild("size")!=null) {
@@ -378,12 +378,12 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
         			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
         			
         			// set delivered path to file 
-        			itemfile.setLocation(FileLocation.make(filename));        			
+        			itemfile.setLocation(FileLocation.make(filename,filename));        			
         		} else {
         			//file does not exist -> so we have to set the values "manually"
         			
         			//-> use filename as location
-        			itemfile.setLocation(FileLocation.make(filename));
+        			itemfile.setLocation(FileLocation.make(filename,filename));
         		
         			//file size
         			if(track.getChild("track_audio_file").getChild("size")!=null) {

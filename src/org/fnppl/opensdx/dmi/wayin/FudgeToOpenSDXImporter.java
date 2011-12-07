@@ -278,12 +278,12 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         			itemfile.setFile(f);
         			
         			// set delivered path to file 
-        			itemfile.setLocation(FileLocation.make(fpath+filename));
+        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         		} else {
         			//file does not exist -> so we have to set the values "manually"
         			
         			//-> use filename for location
-        			itemfile.setLocation(FileLocation.make(fpath+filename));
+        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         		
         			//file size
         			if(cover.getChild("file").getChild("size")!=null) {
@@ -415,13 +415,13 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
         			
         			// set delivered path to file 
-        			itemfile.setLocation(FileLocation.make(fpath+filename));
+        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         			
         		} else {
         			//file does not exist -> so we have to set the values "manually"
         			
         			//-> use filename as location
-        			itemfile.setLocation(FileLocation.make(fpath+filename));
+        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         		
         			//file size
         			if(track.getChild("resources").getChild("audio")!=null && track.getChild("resources").getChild("audio").getChild("file")!=null && track.getChild("resources").getChild("audio").getChild("file").getChild("size")!=null) {
@@ -570,13 +570,13 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
         			
         			// set delivered path to file 
-        			itemfile.setLocation(FileLocation.make(fpath+filename));
+        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         			
         		} else {
         			//file does not exist -> so we have to set the values "manually"
         			
         			//-> use filename as location
-        			itemfile.setLocation(FileLocation.make(fpath+filename));
+        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         		
         			//file size
         			if(track.getChild("resources").getChild("audio")!=null && track.getChild("resources").getChild("audio").getChild("file")!=null && track.getChild("resources").getChild("audio").getChild("file").getChild("size")!=null) {
@@ -668,13 +668,13 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
         			
         			// set delivered path to file 
-        			itemfile.setLocation(FileLocation.make(fpath+filename));
+        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         			
         		} else {
         			//file does not exist -> so we have to set the values "manually"
         			
         			//-> use filename as location
-        			itemfile.setLocation(FileLocation.make(fpath+filename));
+        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         		
         			//file size
         			if(video.getChild("resources").getChild("video")!=null && video.getChild("resources").getChild("video").getChild("file")!=null && video.getChild("resources").getChild("video").getChild("file").getChild("size")!=null) {

@@ -280,7 +280,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
 	        			
 	        			// set delivered path to file (?)
-	        			itemfile.setLocation(FileLocation.make(filename));
+	        			itemfile.setLocation(FileLocation.make(filename, filename));
 	        			
 		        		Vector<Element> qualities = ressource.getChildren("quality");
 			        	for (Iterator<Element> itQualities = qualities.iterator(); itQualities.hasNext();) {
@@ -301,7 +301,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        			//file does not exist -> so we have to set the values "manually"
 	        			
 	        			//-> use filename as location
-	        			itemfile.setLocation(FileLocation.make(filename));	        		
+	        			itemfile.setLocation(FileLocation.make(filename, filename));	        		
 	        		
 		        		if(ressource.getChild("checksum")!=null && ressource.getChild("checksum").getAttribute("type").equals("md5")) {	        			
 	            			String sMd5 =  ressource.getChildText("checksum");
@@ -429,7 +429,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
 	        			
 	        			// set delivered path to file 
-	        			itemfile.setLocation(FileLocation.make(track_filename));
+	        			itemfile.setLocation(FileLocation.make(track_filename, track_filename));
 	        			
 		        		Vector<Element> track_qualities = track_ressource.getChildren("quality");
 			        	for (Iterator<Element> track_itQualities = track_qualities.iterator(); track_itQualities.hasNext();) {
@@ -455,7 +455,7 @@ public class FinetunesToOpenSDXImporter extends OpenSDXImporterBase {
 	        			//file does not exist -> so we have to set the values "manually"
 	        			
 	        			//-> use filename as location
-	        			itemfile.setLocation(FileLocation.make(track_filename));	        		
+	        			itemfile.setLocation(FileLocation.make(track_filename, track_filename));	        		
 	        		
 		        		if(track_ressource.getChild("checksum")!=null && track_ressource.getChild("checksum").getAttribute("type").equals("md5")) {	        			
 	            			String sMd5 =  track_ressource.getChildText("checksum");

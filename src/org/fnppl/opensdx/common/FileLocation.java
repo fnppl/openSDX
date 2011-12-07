@@ -49,12 +49,12 @@ public class FileLocation extends BusinessObject {
 
 	
 	private BusinessStringItem path;			//COULD
-	private BusinessStringItem origin_file;				//COULD
+	private BusinessStringItem origin_file;		//COULD
 
-	public static FileLocation make(String path) {
+	public static FileLocation make(String path, String origin_file) {
 		FileLocation location = new FileLocation();
-		location.origin_file = new BusinessStringItem("path", path);
-		location.path = null;
+		 location.origin_file = origin_file==null?null:new BusinessStringItem("origin_file", origin_file);
+		 location.path = path==null?null:new BusinessStringItem("path", path);
 		return location;
 	}
 
