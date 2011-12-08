@@ -7,6 +7,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Color;
+import java.awt.KeyboardFocusManager;
+
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.html.HTML.Tag;
@@ -21,6 +23,8 @@ import org.fnppl.opensdx.dmi.FeedGui;
 import org.fnppl.opensdx.gui.EditCheckBoxTree;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -30,11 +34,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-public class PanelTags extends JPanel implements MyObservable, MyObserver {
+public class PanelTags extends JPanel implements MyObservable, MyObserver, TextChangeListener {
 
 	//init fields
-	private DocumentChangeListener documentListener;
-	private KeyAdapter keyAdapter;
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
 	private JCheckBox check_bundle_only;
@@ -56,14 +58,19 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 	private ItemTags tags;
 
 	public PanelTags() {
-		initKeyAdapter();
+		initFocusTraversal();
 		initComponents();
 		initLayout();
 		tree_genres.addObserver(this);
 		update((ItemTags)null, null);
 	}
 
-
+	@SuppressWarnings("unchecked")
+	private void initFocusTraversal() {
+		Set forwardKeys = new HashSet(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+		forwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+		setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,forwardKeys);
+	}
 
 	public void update(ItemTags tags, Bundle bundle) {
 		this.tags = tags;
@@ -98,36 +105,6 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 			}
 			tree_genres.setSelectedNodes(genres);
 		}
-	}
-
-
-	private void initKeyAdapter() {
-		keyAdapter = new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if (e.getComponent() instanceof JTextField) {
-						try {
-							JTextComponent text = (JTextComponent)e.getComponent();
-							String t = text.getText();
-							String name = text.getName();
-							if (documentListener.formatOK(name,t)) {
-								text_changed(text);
-								documentListener.saveState(text);
-							}
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
-				else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					if (e.getComponent() instanceof JTextField) {
-						JTextField text = (JTextField)e.getComponent();
-						text.setText(documentListener.getSavedText(text));
-						text.setBackground(Color.WHITE);
-					}
-				}
-			}
-		};
 	}
 
 	private void initComponents() {
@@ -221,23 +198,15 @@ public class PanelTags extends JPanel implements MyObservable, MyObserver {
 
 		label_filler = new JLabel("");
 
-		documentListener = new DocumentChangeListener(texts);
+		DocumentInstantChangeListener chl = new DocumentInstantChangeListener(this);
 		for (JTextComponent text : texts) {
-			text.getDocument().addDocumentListener(documentListener);
-			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
+			if (text instanceof JTextField) {
+				chl.addTextComponent(text);
+			}
 		}
-		documentListener.saveStates();
 	}
 
 
-
-	public void updateDocumentListener() {
-		documentListener.saveStates();
-	}
-
-	public void updateDocumentListener(JTextComponent t) {
-		documentListener.saveState(t);
-	}
 	public JComponent getComponent(String name) {
 		return map.get(name);
 	}

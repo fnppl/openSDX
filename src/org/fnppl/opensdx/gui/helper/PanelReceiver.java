@@ -50,6 +50,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Color;
+import java.awt.KeyboardFocusManager;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.JTextComponent;
@@ -65,17 +67,21 @@ import org.fnppl.opensdx.security.OSDXKey;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelReceiver extends JPanel implements MyObservable {
+public class PanelReceiver extends JPanel implements MyObservable, TextChangeListener {
 
 	//init fields
-	private DocumentChangeListener documentListener;
-	private KeyAdapter keyAdapter;
+	//private DocumentChangeListener documentListener;
+	//private KeyAdapter keyAdapter;
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
 	private JLabel label_type;
@@ -106,7 +112,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 	public PanelReceiver(FeedGui gui) {
 		this.gui = gui;
 		this.receiver = null;
-		initKeyAdapter();
+		initFocusTraversal();
 		initComponents();
 		initLayout();
 		setFieldsVisibility();
@@ -115,7 +121,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
 	public PanelReceiver(Receiver receiver) {
 		this.gui = null;
 		this.receiver = receiver;
-		initKeyAdapter();
+		initFocusTraversal();
 		initComponents();
 		initLayout();
 		update();
@@ -135,35 +141,12 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		
 		bu_beam_me_up.setVisible(false);
 	}
-
-
-	private void initKeyAdapter() {
-		keyAdapter = new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if (e.getComponent() instanceof JTextField) {
-						try {
-							JTextComponent text = (JTextComponent)e.getComponent();
-							String t = text.getText();
-							String name = text.getName();
-							if (documentListener.formatOK(name,t)) {
-								text_changed(name);
-								documentListener.saveState(text);
-							}
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
-				else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					if (e.getComponent() instanceof JTextField) {
-						JTextField text = (JTextField)e.getComponent();
-						text.setText(documentListener.getSavedText(text));
-						text.setBackground(Color.WHITE);
-					}
-				}
-			}
-		};
+	
+	@SuppressWarnings("unchecked")
+	private void initFocusTraversal() {
+		Set forwardKeys = new HashSet(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+		forwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+		setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,forwardKeys);
 	}
 
 	private void initComponents() {
@@ -191,7 +174,32 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		text_servername.setName("text_servername");
 		map.put("text_servername", text_servername);
 		texts.add(text_servername);
+		text_servername.addFocusListener(new FocusAdapter() {
+			 public void focusLost(FocusEvent evt) {
+			    if (evt.isTemporary()) {
+			      return;
+			    }
+			    Receiver r = getReceiver();
+				if (r==null) return;
+				String hostname = text_servername.getText();
+				if (hostname != null && !hostname.equals(""))  {
+					try {
+						InetAddress addr = InetAddress.getByName(hostname);
+						String ip = addr.getHostAddress();
+						text_serveripv4.setText(ip);
+						r.serveripv4(ip);
+					} catch (Exception ex) {
+						text_serveripv4.setText("IP address could not be resolved");
+						r.serveripv4("");
+					}
+				} else {
+					text_serveripv4.setText("");
+					r.serveripv4("");
+				}
+			 }
+		});
 
+		
 		label_serveripv4 = new JLabel("server IPv4");
 
 		text_serveripv4 = new JTextField("");
@@ -278,22 +286,14 @@ public class PanelReceiver extends JPanel implements MyObservable {
 			}
 		});
 		
-		documentListener = new DocumentChangeListener(texts);
+		DocumentInstantChangeListener chl = new DocumentInstantChangeListener(this);
 		for (JTextComponent text : texts) {
-			text.getDocument().addDocumentListener(documentListener);
-			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
+			if (text instanceof JTextField) {
+				chl.addTextComponent(text);
+			}
 		}
-		documentListener.saveStates();	}
-
-
-
-	public void updateDocumentListener() {
-		documentListener.saveStates();
 	}
 
-	public void updateDocumentListener(JTextComponent t) {
-		documentListener.saveState(t);
-	}
 	public JComponent getComponent(String name) {
 		return map.get(name);
 	}
@@ -671,7 +671,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
     	//	text_keystore.setText("");
     		text_keyid.setText("");
     		text_username.setText("");
-    		documentListener.saveStates();
+    		//documentListener.saveStates();
     		select_type.setSelectedIndex(0);
     		select_auth_type.setSelectedIndex(1);
     		setFieldsVisibility();
@@ -681,7 +681,7 @@ public class PanelReceiver extends JPanel implements MyObservable {
     		//text_keystore.setText(r.getFileKeystore());
     		text_keyid.setText(r.getKeyID());
     		text_username.setText(r.getUsername());
-    		documentListener.saveStates();
+    		//documentListener.saveStates();
     		select_type.setSelectedItem(r.getType());
     		select_auth_type.setSelectedItem(r.getAuthType());
     		setFieldsVisibility();
@@ -844,33 +844,33 @@ public class PanelReceiver extends JPanel implements MyObservable {
 		}
 	}
 	
-	public void text_changed(String name) {
+	public void text_changed(JTextComponent text) {
 		Receiver r = getReceiver();
 		if (r==null) return;
-		if (name.equals("text_servername")) {
+		
+		if (text == text_servername) {
 			String hostname = text_servername.getText();
 			r.servername(hostname);
-			if (hostname != null && !hostname.equals(""))  {
-				try {
-					
-					InetAddress addr = InetAddress.getByName(hostname);
-					String ip = addr.getHostAddress();
-					text_serveripv4.setText(ip);
-					r.serveripv4(ip);
-					documentListener.saveState(text_serveripv4);
-				} catch (Exception ex) {
-					text_serveripv4.setText("IP address could not be resolved");
-					r.serveripv4("");
-					//documentListener.saveState(text_serveripv4);	
-				}
-			} else {
-				text_serveripv4.setText("");
-				r.serveripv4("");
-				documentListener.saveState(text_serveripv4);
-			}
-		} else if (name.equals("text_serveripv4")) {
+//			if (hostname != null && !hostname.equals(""))  {
+//				try {
+//					InetAddress addr = InetAddress.getByName(hostname);
+//					String ip = addr.getHostAddress();
+//					text_serveripv4.setText(ip);
+//					r.serveripv4(ip);
+//					//documentListener.saveState(text_serveripv4);
+//				} catch (Exception ex) {
+//					text_serveripv4.setText("IP address could not be resolved");
+//					r.serveripv4("");
+//					//documentListener.saveState(text_serveripv4);	
+//				}
+//			} else {
+//				text_serveripv4.setText("");
+//				r.serveripv4("");
+//				//documentListener.saveState(text_serveripv4);
+//			}
+		} else if (text == text_serveripv4) {
 			r.serveripv4(text_serveripv4.getText());
-		} else if (name.equals("text_username")) {
+		} else if (text == text_username) {
 			r.username(text_username.getText());
 		}
 		notifyChanges();

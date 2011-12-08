@@ -51,6 +51,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Color;
+import java.awt.KeyboardFocusManager;
+
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.border.TitledBorder;
@@ -65,18 +67,22 @@ import org.fnppl.opensdx.gui.EditTerritoiresTree;
 import org.fnppl.opensdx.security.SecurityHelper;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelLicense extends JPanel implements MyObservable, MyObserver {
+public class PanelLicense extends JPanel implements MyObservable, MyObserver, TextChangeListener {
 
 	//init fields
 	private LicenseBasis lb = null;
-	private DocumentChangeListener documentListener;
-	private KeyAdapter keyAdapter;
+	//private DocumentChangeListener documentListener;
+	//private KeyAdapter keyAdapter;
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
 	private JCheckBox check_as_on_bundle;
@@ -104,7 +110,7 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 	
 	public PanelLicense(LicenseBasis lb) {
 		this.lb = lb;
-		initKeyAdapter();
+		initFocusTraversal();
 		initComponents();
 		initLayout();
 
@@ -143,6 +149,14 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 		panel_territories.add(new JScrollPane(tree_territories),BorderLayout.CENTER);
 	}
 
+	
+	@SuppressWarnings("unchecked")
+	private void initFocusTraversal() {
+		Set forwardKeys = new HashSet(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+		forwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+		setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,forwardKeys);
+	}
+	
 	public void notifyChange(MyObservable changedIn) {
 		if (lb!=null) {
 			lb.setTerritorial(tree_territories.getTerritorial());
@@ -225,7 +239,7 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 		
 		setVisibility(!check_as_on_bundle.isSelected());
 		doUpdate = true;
-		documentListener.saveStates();
+		//documentListener.saveStates();
 	}
 	
 	private void setSelectChannels(LicenseBasis lb) {
@@ -243,34 +257,6 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 		}
 	}
 
-	private void initKeyAdapter() {
-		keyAdapter = new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if (e.getComponent() instanceof JTextField) {
-						try {
-							JTextComponent text = (JTextComponent)e.getComponent();
-							String t = text.getText();
-							String name = text.getName();
-							if (documentListener.formatOK(name,t)) {
-								text_changed(text);
-								documentListener.saveState(text);
-							}
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
-				else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					if (e.getComponent() instanceof JTextField) {
-						JTextField text = (JTextField)e.getComponent();
-						text.setText(documentListener.getSavedText(text));
-						text.setBackground(Color.WHITE);
-					}
-				}
-			}
-		};
-	}
 
 	private void initComponents() {
 		Vector<JTextComponent> texts = new Vector<JTextComponent>();
@@ -291,7 +277,17 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 		text_timeframe_from_datetime.setName("text_timeframe_from_datetime");
 		map.put("text_timeframe_from_datetime", text_timeframe_from_datetime);
 		texts.add(text_timeframe_from_datetime);
-
+		text_timeframe_from_datetime.addFocusListener(new FocusAdapter() {
+			 public void focusLost(FocusEvent evt) {
+			    if (evt.isTemporary()) {
+			      return;
+			    }
+			    try {
+			    	text_timeframe_from_datetime.setText(lb.getTimeframeFromText());
+			    } catch (Exception ex) {}
+			 }
+		});
+		
 		label_timeframe_to = new JLabel("timeframe until");
 
 		text_timeframe_to_datetime = new JTextField("");
@@ -299,7 +295,17 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 		text_timeframe_to_datetime.setName("text_timeframe_to_datetime");
 		map.put("text_timeframe_to_datetime", text_timeframe_to_datetime);
 		texts.add(text_timeframe_to_datetime);
-
+		text_timeframe_to_datetime.addFocusListener(new FocusAdapter() {
+			 public void focusLost(FocusEvent evt) {
+			    if (evt.isTemporary()) {
+			      return;
+			    }
+			    try {
+			    	text_timeframe_to_datetime.setText(lb.getTimeframeToText());
+			    } catch (Exception ex) {}
+			 }
+		});
+		
 		label_pricing = new JLabel("pricing");
 
 		select_pricing = new JComboBox();
@@ -347,24 +353,16 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 
 		label_filler = new JLabel("");
 
-		documentListener = new DocumentChangeListener(texts);
+		DocumentInstantChangeListener chl = new DocumentInstantChangeListener(this);
 		for (JTextComponent text : texts) {
-			text.getDocument().addDocumentListener(documentListener);
-			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
+			if (text instanceof JTextField) {
+				chl.addTextComponent(text);
+			}
 		}
-		documentListener.saveStates();
 
 	}
 
 
-
-	public void updateDocumentListener() {
-		documentListener.saveStates();
-	}
-
-	public void updateDocumentListener(JTextComponent t) {
-		documentListener.saveState(t);
-	}
 	public JComponent getComponent(String name) {
 		return map.get(name);
 	}
@@ -730,8 +728,8 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver {
 			lb.pricing_wholesale(t);
 		}
 		notifyChanges();
-		text.requestFocusInWindow();
-		text.transferFocus();
+		//text.requestFocusInWindow();
+		//text.transferFocus();
 	}
 
 
