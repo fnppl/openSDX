@@ -48,9 +48,12 @@ import javax.swing.ToolTipManager;
 public class FeedGuiTooltips {
 
 	public static void initDelays() {
-		ToolTipManager.sharedInstance().setInitialDelay(100);
+		ToolTipManager.sharedInstance().setInitialDelay(000);
 		ToolTipManager.sharedInstance().setDismissDelay(20000);
 	}
+	
+	public static final String helpButton         = "<html><body>Activate this button to show a help text when moving the mouse over an element.</body></html>";
+	
 	
 //--- FeedInfo Panel --------------------------------------------
 	public static final String feedid             = "<html><body>Every <b>feed</b> needs to have its own <b>feed id</b>, even if it is an update to a former feed.<br />It is good practice to generate a UUID (by pressing the random UUID button) for every feed you create but certainly you can enter your own id.</body></html>";

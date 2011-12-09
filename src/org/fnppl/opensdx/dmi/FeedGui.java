@@ -270,54 +270,54 @@ public class FeedGui extends JFrame implements MyObserver {
 //		System.out.println("File resources inited in "+fileResourcesDir.getAbsolutePath());
 //	}
 	
-	private void initTooltips(Object ob) {
-		String configName = "tooltips_"+ob.getClass().getSimpleName()+".txt";
-		File config = new File("src/org/fnppl/opensdx/dmi/resources/"+configName);
-		
-		boolean save = false;
-		
-		Properties tooltips = new Properties();
-		if (config.exists()) {
-			try {
-			FileInputStream in = new FileInputStream(config);
-			tooltips.load(in);
-			in.close();
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		}
-		
-		Field[] fields = ob.getClass().getDeclaredFields();
-         for (Field f : fields) {
-            f.setAccessible(true);
-            try {
-            	Object obj = f.get(ob);
-            	if (!(obj instanceof JLabel) && !(obj instanceof JPanel) && !(obj instanceof JScrollPane)) {
-	            	Method m = obj.getClass().getMethod("setToolTipText", String.class);
-					//System.out.println("tooltip::"+f.getName());
-					String key = f.getName();
-					if (tooltips.containsKey(key)) {
-						String tip = (String)tooltips.get(key);
-						if (tip.length()>0) {
-							m.invoke(obj, tip);
-						}
-					} else {
-						tooltips.setProperty(key, "");
-					}
-            	}
-            } catch (Exception ex) {
-            } 
-        }
-         if (save) {
- 	        try {
- 	        	FileOutputStream out = new FileOutputStream(config);
- 				tooltips.store(out, null);
- 				out.close();
- 			} catch (IOException e) {
- 				e.printStackTrace();
- 			}
-         }
-	}
+//	private void initTooltips(Object ob) {
+//		String configName = "tooltips_"+ob.getClass().getSimpleName()+".txt";
+//		File config = new File("src/org/fnppl/opensdx/dmi/resources/"+configName);
+//		
+//		boolean save = false;
+//		
+//		Properties tooltips = new Properties();
+//		if (config.exists()) {
+//			try {
+//			FileInputStream in = new FileInputStream(config);
+//			tooltips.load(in);
+//			in.close();
+//			} catch (Exception ex) {
+//				ex.printStackTrace();
+//			}
+//		}
+//		
+//		Field[] fields = ob.getClass().getDeclaredFields();
+//         for (Field f : fields) {
+//            f.setAccessible(true);
+//            try {
+//            	Object obj = f.get(ob);
+//            	if (!(obj instanceof JLabel) && !(obj instanceof JPanel) && !(obj instanceof JScrollPane)) {
+//	            	Method m = obj.getClass().getMethod("setToolTipText", String.class);
+//					//System.out.println("tooltip::"+f.getName());
+//					String key = f.getName();
+//					if (tooltips.containsKey(key)) {
+//						String tip = (String)tooltips.get(key);
+//						if (tip.length()>0) {
+//							m.invoke(obj, tip);
+//						}
+//					} else {
+//						tooltips.setProperty(key, "");
+//					}
+//            	}
+//            } catch (Exception ex) {
+//            } 
+//        }
+//         if (save) {
+// 	        try {
+// 	        	FileOutputStream out = new FileOutputStream(config);
+// 				tooltips.store(out, null);
+// 				out.close();
+// 			} catch (IOException e) {
+// 				e.printStackTrace();
+// 			}
+//         }
+//	}
 	
 	public void makeMenuBar() {
 		ActionListener ja = new ActionListener() {
@@ -485,6 +485,22 @@ public class FeedGui extends JFrame implements MyObserver {
 		jmi.setActionCommand("feedgui manual");
 		jmi.addActionListener(ja);
 		jm5.add(jmi);	
+		
+		jb.add(new JLabel("     "));
+		final JToggleButton b = new JToggleButton("?");
+		b.setToolTipText(FeedGuiTooltips.helpButton);
+		b.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (b.isSelected()) {
+					ToolTipManager.sharedInstance().setInitialDelay(0);
+				} else {
+					ToolTipManager.sharedInstance().setInitialDelay(10000);
+				}
+			}
+		});
+		b.setSelected(true);
+		jb.add(b);
+		
 		
 //		jmi = new JMenuItem("OSDX schema documentation");
 //		jmi.setActionCommand("schema documentation");
