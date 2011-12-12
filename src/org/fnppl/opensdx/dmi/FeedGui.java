@@ -1021,13 +1021,13 @@ public class FeedGui extends JFrame implements MyObserver {
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 		
 		final JScrollPane scrollBIP = new JScrollPane(bundled_items_panel);
-		tabbedPane.addTab("BundledItems", null, scrollBIP, null);
+		tabbedPane.addTab("BundledItems", null, scrollBIP, FeedGuiTooltips.items);
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 
-		tabbedPane.addTab("Tree", null, treePanel, null);
+		tabbedPane.addTab("Tree", null, treePanel, FeedGuiTooltips.tree);
 		tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 		
-		tabbedPane.addTab("Saved DMI Objects", null, panel_saved_dmi, null);
+		tabbedPane.addTab("Saved DMI Objects", null, panel_saved_dmi, FeedGuiTooltips.savedDMI);
 		tabbedPane.setMnemonicAt(4, KeyEvent.VK_5);
 		
 		jt.addChangeListener(new ChangeListener() {

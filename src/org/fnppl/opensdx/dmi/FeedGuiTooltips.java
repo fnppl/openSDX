@@ -49,7 +49,7 @@ public class FeedGuiTooltips {
 
 	public static void initDelays() {
 		ToolTipManager.sharedInstance().setInitialDelay(000);
-		ToolTipManager.sharedInstance().setDismissDelay(20000);
+		ToolTipManager.sharedInstance().setDismissDelay(60000);
 	}
 	
 	public static final String helpButton         = "<html><body>Activate this button to show a help text when moving the mouse over an element.</body></html>";
@@ -68,17 +68,17 @@ public class FeedGuiTooltips {
 	public static final String effective_datetime = "<html><body>The datetime when this feed should come effective.<br />Format: yyyy-mm-dd HH:MM:SS GMT+hh:00</body></html>";
 	public static final String now 				  = "<html><body>Set the current datetime as <b>creation</b> and <b>effective datetime</b>.</body></html>";
 	
-	public static final String idGRID           = "<html><body>GRID = Global Release IDentifier, see <i>http://www.ifpi.org/content/section_resources/grid.html</i> for more information</body></html>";
-	public static final String idUPC            = "<html><body>UPC = Universal Product Code, alternativly you can enter the EAN = European Article Number here</body></html>";
-	public static final String idISRC           = "<html><body>ISRC = International Standard Recording Code</body></html>";
+	public static final String idGRID           = "<html><body><b>GRID</b> = <b>G</b>lobal <b>R</b>elease <b>ID</b>entifier, see <i>http://www.ifpi.org/content/section_resources/grid.html</i> for more information</body></html>";
+	public static final String idUPC            = "<html><body><b>UPC</b> = <b>U</b>niversal <b>P</b>roduct <b>C</b>ode, alternativly you can enter the <b>EAN</b> = <b>E</b>uropean <b>A</b>rticle <b>N</b>umber here</body></html>";
+	public static final String idISRC           = "<html><body><b>ISRC</b> = <b>I</b>nternational <b>S</b>tandard <b>R</b>ecording <b>C</b>ode</body></html>";
 	public static final String idContentAuth    = "<html><body></body></html>";
 	public static final String idLabelOrderNum  = "<html><body></body></html>";
 	public static final String idAmazon         = "<html><body>identifier provided by <b>amazon.com</b></body></html>";
-	public static final String idISBN           = "<html><body>ISBN = International Standard Book Number</body></html>";
+	public static final String idISBN           = "<html><body><b>ISBN</b> = <b>I</b>nternational <b>S</b>tandard <b>B</b>ook <b>N</b>umber</body></html>";
 	public static final String idFinetunes      = "<html><body>identifier provided by <b>finetunes.net</b></body></html>";
 	public static final String idLicensor       = "<html><body>identifier provided by the <b>licensor</b></body></html>";
 	public static final String idLicensee       = "<html><body>identifier provided by the <b>licensee</b></body></html>";
-	public static final String idGVL            = "<html><body>identifier provided by the GVL - Gesellschaft zur Verwertung von Leistungsschutzrechten</body></html>";
+	public static final String idGVL            = "<html><body>identifier provided by the <b>GVL</b> - Gesellschaft zur Verwertung von Leistungsschutzrechten</body></html>";
 	public static final String idAMG            = "<html><body>identifier provided by <b>allmusic.com</b></body></html>";
 	
 	
@@ -176,8 +176,37 @@ public class FeedGuiTooltips {
 	
 	
 //--- ItemsPanel --------------------------------------------
+	public static final String items = "<html><body><div style=\"width:520px\">"
+		+ "The <b>BundledItems</b>-panel contains all items in this <b>bundle</b>. Most probably your <b>items</b> are tracks (either audio, video, flash, whatever).<br />"
+		+ "An <b>item's</b> definition is quite similar to the definition of a <b>bundle</b>, it consits of the same parts, like <b>IDs</b>, <b>contributors</b>, <b>related information</b>, <b>tags</b> and <b>file</b>."
+		+ " However there are also some differences:<ul>"
+		+ "<li>some additional/other identfier fields</li>"
+		+ "<li>you can only select from the list of contributors you have specified on bundle-level</li>"
+		+ "<li>addition fields <b>number</b>, <b>set number</b> and <b>suggested prelistining offest</b> in the information panel</li>"
+		+ "<li>the license can be set <b>as on bundle level</b> or be defined different</li>"
+		+ "<li>the tags can be copied from bundle level by clicking the right mouse button and selecting <b>copy values from bundle</b> or be defined different</li>"
+		+ "<li>the file's type and other properties suits to tracks and no more to bundles</li>"
+		+ "</ul>"
+		+"</div></body></html>";
 	
 //--- End of Items Panel --------------------------------------------
 
 	
+	
+	public static final String tree = "<html><body><div style=\"width:520px\">"
+		+"In the <b>Tree</b> tab all feed information is represented in a tree structure which corresponds to the XML structure when saving the feed to a file.<br />"
+		+"On top level are the feedinfo and bundle parts, e.g. the bundled items can be found by the path: bundle -> items -> item. All data fields can only be reviewed and not be edited here."
+		+"</div></body></html>";
+	
+	public static final String savedDMI = "<html><body><div style=\"width:520px\">"
+		+"The <b>Saved DMI Objects</b>-panel shows your predefined set of data objects. These objects can be used to fill some data parts in"
+		+" your feeds. For example your data for sender, licensor and licensee might be the same for a lot of feeds, so it would make sense to copy the"
+		+" data instead of entering it again for every new feed. The Saved DMI Object tab offers the possibility to browse your predefined data and add"
+		+" it to certain fields in the feed. At the top of the feed you see the data path field with the select and read data button. The select button opens"
+		+" a file dialog and lets you select a path where your predefined data is stored in XML formatted files. The default data directory is named"
+		+" <i>dmi_data</i> and is a subdirectory of <i>openSDX</i> in your local home directory. The read data function reads all .xml files in the given directory and"
+		+" extracts the useful information/data if it is given in a valid openSDX format. An overview of all recognized entries will be shown in the table. If you click on an entry the data details"
+		+" will be shown in the panel below and one or more buttons (depending on the data type) at the bottom of the window will let you assign the"
+		+" data to a part of the feed. Please take a look at the <b>FeedGui manual</b> for more information."
+		+"</div></body></html>";
 }
