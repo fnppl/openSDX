@@ -151,7 +151,6 @@ public class FeedGui extends JFrame implements MyObserver {
 			}
 		});
 		readSettings();
-		//initManuals();
 		setSize(1024, 768);
 		makeMenuBar();
 		Helper.centerMe(this, null);
@@ -218,104 +217,9 @@ public class FeedGui extends JFrame implements MyObserver {
 		}
 	}
 	
-	
 	private void initTooltips() {
 		FeedGuiTooltips.initDelays();
-//		initTooltips(feedinfo_panel);
-//		initTooltips(bundle_panel);
-//		initTooltips(bundled_items_panel);
 	}
-	
-	
-//	private void initManuals() {
-//		if(fileResourcesDir != null) {
-//			//TODO check each file to be present as well...
-//			return;
-//		}
-//		String dirName = "docs";
-//		
-//		try {
-//			File f = new File(System.getProperty("user.home"), "openSDX");
-//			f = new File(f, dirName);
-//			if(!f.exists()) {
-//				boolean r = f.mkdirs();
-//				if(r) {
-//					System.out.println("Created openSDX-subdir \""+dirName+"\" to store current resource files.\nLocation: "+f.getAbsolutePath());
-//				}
-//			}
-//			if(!f.exists()) {
-//				//dir-creation failed - trying to go for tmpdir
-//				f = new File(System.getProperty("java.io.tmpdir"), "openSDX");
-//				f = new File(f, "xsd");
-//				if(!f.exists()) {
-//					boolean r = f.mkdirs();
-//					if(r) {
-//						System.out.println("Created TEMPORARY openSDX-subdir \""+dirName+"\" to store current resource files.\nLocation: "+f.getAbsolutePath());
-//					}
-//				}
-//				if(!f.exists()) {
-//					f = f.getParentFile(); //tmpdir then...					
-//				}								
-//			}
-//			fileResourcesDir = f;
-//
-//			SecurityHelper.copyResource(FeedGui.class.getResourceAsStream("resources/"+RESSOURCE_FEEDGUI_MANUAL), fileResourcesDir, RESSOURCE_FEEDGUI_MANUAL);
-//			SecurityHelper.copyResource(FeedGui.class.getResourceAsStream("resources/"+RESSOURCE_SCHEMA_DOCUMENTATION), fileResourcesDir, RESSOURCE_SCHEMA_DOCUMENTATION);
-//		} catch(Exception ex) {
-//			ex.printStackTrace();
-//			return;
-//		}
-//		System.out.println("File resources inited in "+fileResourcesDir.getAbsolutePath());
-//	}
-	
-//	private void initTooltips(Object ob) {
-//		String configName = "tooltips_"+ob.getClass().getSimpleName()+".txt";
-//		File config = new File("src/org/fnppl/opensdx/dmi/resources/"+configName);
-//		
-//		boolean save = false;
-//		
-//		Properties tooltips = new Properties();
-//		if (config.exists()) {
-//			try {
-//			FileInputStream in = new FileInputStream(config);
-//			tooltips.load(in);
-//			in.close();
-//			} catch (Exception ex) {
-//				ex.printStackTrace();
-//			}
-//		}
-//		
-//		Field[] fields = ob.getClass().getDeclaredFields();
-//         for (Field f : fields) {
-//            f.setAccessible(true);
-//            try {
-//            	Object obj = f.get(ob);
-//            	if (!(obj instanceof JLabel) && !(obj instanceof JPanel) && !(obj instanceof JScrollPane)) {
-//	            	Method m = obj.getClass().getMethod("setToolTipText", String.class);
-//					//System.out.println("tooltip::"+f.getName());
-//					String key = f.getName();
-//					if (tooltips.containsKey(key)) {
-//						String tip = (String)tooltips.get(key);
-//						if (tip.length()>0) {
-//							m.invoke(obj, tip);
-//						}
-//					} else {
-//						tooltips.setProperty(key, "");
-//					}
-//            	}
-//            } catch (Exception ex) {
-//            } 
-//        }
-//         if (save) {
-// 	        try {
-// 	        	FileOutputStream out = new FileOutputStream(config);
-// 				tooltips.store(out, null);
-// 				out.close();
-// 			} catch (IOException e) {
-// 				e.printStackTrace();
-// 			}
-//         }
-//	}
 	
 	public void makeMenuBar() {
 		ActionListener ja = new ActionListener() {
@@ -1110,12 +1014,12 @@ public class FeedGui extends JFrame implements MyObserver {
 		treePanel = new JPanel();
 		treePanel.setLayout(new BorderLayout());
 		
-		tabbedPane.addTab("FeedInfo", null, new JScrollPane(feedinfo_panel), null);
+		tabbedPane.addTab("FeedInfo", null, new JScrollPane(feedinfo_panel), FeedGuiTooltips.feedinfo);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 
-		tabbedPane.addTab("Bundle", null,new JScrollPane(bundle_panel), null);
+		tabbedPane.addTab("Bundle", null,new JScrollPane(bundle_panel), FeedGuiTooltips.bundle);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
-
+		
 		final JScrollPane scrollBIP = new JScrollPane(bundled_items_panel);
 		tabbedPane.addTab("BundledItems", null, scrollBIP, null);
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
