@@ -57,6 +57,7 @@ import javax.swing.border.TitledBorder;
 
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.dmi.FeedGuiTooltips;
 import org.fnppl.opensdx.dmi.wayin.FinetunesToOpenSDXImporter;
 
 import java.util.HashMap;
@@ -111,6 +112,34 @@ public class PanelIDs extends JPanel implements MyObservable, TextChangeListener
 		initComponents();
 		text_licensor.setPreferredSize(new Dimension(150,(int)text_licensor.getPreferredSize().getHeight()));
 		initLayout();
+		initToolTips();
+	}
+	
+	public void initToolTips() {
+		label_gvl.setToolTipText(FeedGuiTooltips.idGVL);
+		text_gvl.setToolTipText(FeedGuiTooltips.idGVL);
+		label_grid.setToolTipText(FeedGuiTooltips.idGRID);
+		text_grid.setToolTipText(FeedGuiTooltips.idGRID);
+		label_upc.setToolTipText(FeedGuiTooltips.idUPC);
+		text_upc.setToolTipText(FeedGuiTooltips.idUPC);
+		label_isrc.setToolTipText(FeedGuiTooltips.idISRC);
+		text_isrc.setToolTipText(FeedGuiTooltips.idISRC);
+		label_contentauth.setToolTipText(FeedGuiTooltips.idContentAuth);
+		text_contentauth.setToolTipText(FeedGuiTooltips.idContentAuth);
+		label_labelordernum.setToolTipText(FeedGuiTooltips.idLabelOrderNum);
+		text_labelordernum.setToolTipText(FeedGuiTooltips.idLabelOrderNum);
+		label_amzn.setToolTipText(FeedGuiTooltips.idAmazon);
+		text_amzn.setToolTipText(FeedGuiTooltips.idAmazon);
+		label_isbn.setToolTipText(FeedGuiTooltips.idISBN);
+		text_isbn.setToolTipText(FeedGuiTooltips.idISBN);
+		label_finetunes.setToolTipText(FeedGuiTooltips.idFinetunes);
+		text_finetunes.setToolTipText(FeedGuiTooltips.idFinetunes);
+		label_licensor.setToolTipText(FeedGuiTooltips.idLicensor);
+		text_licensor.setToolTipText(FeedGuiTooltips.idLicensor);
+		label_licensee.setToolTipText(FeedGuiTooltips.idLicensee);
+		text_licensee.setToolTipText(FeedGuiTooltips.idLicensee);
+		label_amg.setToolTipText(FeedGuiTooltips.idAMG);
+		text_amg.setToolTipText(FeedGuiTooltips.idAMG);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -167,7 +196,6 @@ public class PanelIDs extends JPanel implements MyObservable, TextChangeListener
 		//documentListener.saveStates();
 	}
 
-
 	private void initComponents() {
 		
 		setBorder(new TitledBorder("IDs"));
@@ -181,7 +209,7 @@ public class PanelIDs extends JPanel implements MyObservable, TextChangeListener
 		text_gvl.setName("text_gvl");
 		map.put("text_gvl", text_gvl);
 		texts.add(text_gvl);
-
+		
 		label_grid = new JLabel("GRID");
 		label_grid.setName("label_grid");
 		labels.add(label_grid);

@@ -68,6 +68,20 @@ public class FeedGuiTooltips {
 	public static final String effective_datetime = "<html><body>The datetime when this feed should come effective.<br />Format: yyyy-mm-dd HH:MM:SS GMT+hh:00</body></html>";
 	public static final String now 				  = "<html><body>Set the current datetime as <b>creation</b> and <b>effective datetime</b>.</body></html>";
 	
+	public static final String idGRID           = "<html><body>GRID = Global Release IDentifier, see <i>http://www.ifpi.org/content/section_resources/grid.html</i> for more information</body></html>";
+	public static final String idUPC            = "<html><body>UPC = Universal Product Code, alternativly you can enter the EAN = European Article Number here</body></html>";
+	public static final String idISRC           = "<html><body>ISRC = International Standard Recording Code</body></html>";
+	public static final String idContentAuth    = "<html><body></body></html>";
+	public static final String idLabelOrderNum  = "<html><body></body></html>";
+	public static final String idAmazon         = "<html><body>identifier provided by <b>amazon.com</b></body></html>";
+	public static final String idISBN           = "<html><body>ISBN = International Standard Book Number</body></html>";
+	public static final String idFinetunes      = "<html><body>identifier provided by <b>finetunes.net</b></body></html>";
+	public static final String idLicensor       = "<html><body>identifier provided by the <b>licensor</b></body></html>";
+	public static final String idLicensee       = "<html><body>identifier provided by the <b>licensee</b></body></html>";
+	public static final String idGVL            = "<html><body>identifier provided by the GVL - Gesellschaft zur Verwertung von Leistungsschutzrechten</body></html>";
+	public static final String idAMG            = "<html><body>identifier provided by <b>allmusic.com</b></body></html>";
+	
+	
 	public static final String sender = "<html><body><div style=\"width:520px\">"
 		+"The <b>Sender</b> part should give information about the sender of the feed (typically you / your company),"
 		+" where the <b>Key ID</b> should be related to the key that will be used by the sender in further correspondence."
