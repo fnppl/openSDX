@@ -47,6 +47,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Color;
+import java.awt.KeyboardFocusManager;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.JTextComponent;
@@ -61,17 +63,19 @@ import org.fnppl.opensdx.security.OSDXKey;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelCreator extends JPanel implements MyObservable {
+public class PanelCreator extends JPanel implements MyObservable, TextChangeListener {
 
 	//init fields
-	private DocumentChangeListener documentListener;
-	private KeyAdapter keyAdapter;
+	//private DocumentChangeListener documentListener;
+	//private KeyAdapter keyAdapter;
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
 	private JLabel label_email;
@@ -88,11 +92,18 @@ public class PanelCreator extends JPanel implements MyObservable {
 
 	public PanelCreator(FeedGui gui) {
 		this.gui = gui;
-		initKeyAdapter();
+		initFocusTraversal();
 		initComponents();
 		initLayout();
 	}
 
+	@SuppressWarnings("unchecked")
+	private void initFocusTraversal() {
+		Set forwardKeys = new HashSet(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+		forwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+		setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,forwardKeys);
+	}
+	
 	public void update() {
 		Creator c = getCreator();
 		if (c==null) {
@@ -104,7 +115,7 @@ public class PanelCreator extends JPanel implements MyObservable {
 			text_email.setText(c.getEmail());
 			text_keyid.setText(c.getKeyid());
 		}
-		documentListener.saveStates();
+		//documentListener.saveStates();
 	}
 	
 	private Creator getCreator() {
@@ -119,36 +130,6 @@ public class PanelCreator extends JPanel implements MyObservable {
 		if (gui==null || gui.getCurrentFeed()==null) return null;
 		FeedInfo info = gui.getCurrentFeed().getFeedinfo();
 		return info;
-	}
-
-
-	private void initKeyAdapter() {
-		keyAdapter = new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if (e.getComponent() instanceof JTextField) {
-						try {
-							JTextComponent text = (JTextComponent)e.getComponent();
-							String t = text.getText();
-							String name = text.getName();
-							if (documentListener.formatOK(name,t)) {
-								text_changed(text);
-								documentListener.saveState(text);
-							}
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
-				else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					if (e.getComponent() instanceof JTextField) {
-						JTextField text = (JTextField)e.getComponent();
-						text.setText(documentListener.getSavedText(text));
-						text.setBackground(Color.WHITE);
-					}
-				}
-			}
-		};
 	}
 
 	private void initComponents() {
@@ -198,23 +179,14 @@ public class PanelCreator extends JPanel implements MyObservable {
 			}
 		});
 
-		documentListener = new DocumentChangeListener(texts);
+		DocumentInstantChangeListener chl = new DocumentInstantChangeListener(this);
 		for (JTextComponent text : texts) {
-			text.getDocument().addDocumentListener(documentListener);
-			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
+			if (text instanceof JTextField) {
+				chl.addTextComponent(text);
+			}
 		}
-		documentListener.saveStates();
 	}
 
-
-
-	public void updateDocumentListener() {
-		documentListener.saveStates();
-	}
-
-	public void updateDocumentListener(JTextComponent t) {
-	documentListener.saveState(t);
-	}
 	public JComponent getComponent(String name) {
 		return map.get(name);
 	}
@@ -434,8 +406,8 @@ public void initLayout() {
 			c.keyid(t);
 		}
 		notifyChanges();
-		text.requestFocusInWindow();
-		text.transferFocus();
+		//text.requestFocusInWindow();
+		//text.transferFocus();
 	}
 
 

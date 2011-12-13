@@ -231,14 +231,15 @@ public class Bundle extends BusinessObject {
 	}
 	
 	public void updateItemsContributors(Contributor updatedContrib, String oldName, String oldType) {
+		if (oldName==null || oldType==null) return;
 		//update values in all item contributors
 		int itemCount = getItemsCount();
 		for (int j=0;j<itemCount;j++) {
 			Item it = getItem(j);
 			int contCout = it.getContributorCount();
 			for (int k=0;k<contCout;k++) {
-				Contributor ic = it.getContributor(j);
-				if (ic.getName().equals(oldName) && ic.getType().equals(oldType)) {
+				Contributor ic = it.getContributor(k);
+				if (ic.getName()!=null && ic.getName().equals(oldName) && ic.getType()!=null && ic.getType().equals(oldType)) {
 					ic.name(updatedContrib.getName());
 					ic.type(updatedContrib.getType());
 					ic.year(updatedContrib.getYear());

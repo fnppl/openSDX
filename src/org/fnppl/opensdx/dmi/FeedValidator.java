@@ -157,7 +157,7 @@ public class FeedValidator {
 		return validateXmlFile(f, RESSOURCE_OSDX_0_0_1);
 	}
 	
-	public String validateOSDX_0_0_1(Feed f) { //validate against oSDX 0.0.1 (mayor minor sub)
+	public String validateOSDX_0_0_1(Feed f) { //validate against oSDX 0.1.0 (mayor minor sub)
 		return validateOSDX_0_0_1(f.toElement().toString());  		
 	}
 	

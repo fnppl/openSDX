@@ -51,6 +51,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Color;
+import java.awt.KeyboardFocusManager;
+
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.border.TitledBorder;
@@ -59,24 +61,29 @@ import javax.swing.event.ListSelectionListener;
 
 import org.bouncycastle.util.test.Test;
 import org.fnppl.opensdx.common.BundleInformation;
+import org.fnppl.opensdx.common.FeedInfo;
 import org.fnppl.opensdx.dmi.FeedGui;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.security.SecurityHelper;
 
 import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelInformation extends JPanel implements MyObservable {
+public class PanelInformation extends JPanel implements MyObservable, TextChangeListener {
 
 	//init fields
 	private BundleInformation info = null;
-	private DocumentChangeListener documentListener;
-	private KeyAdapter keyAdapter;
+	//private DocumentChangeListener documentListener;
+	//private KeyAdapter keyAdapter;
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
 	private JLabel label_physical_release_datetime;
@@ -121,11 +128,18 @@ public class PanelInformation extends JPanel implements MyObservable {
 
 	public PanelInformation(BundleInformation info) {
 		this.info = info;
-		initKeyAdapter();
+		initFocusTraversal();
 		initComponents();
 		initLayout();
 	}
-
+	
+	@SuppressWarnings("unchecked")
+	private void initFocusTraversal() {
+		Set forwardKeys = new HashSet(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+		forwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+		setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,forwardKeys);
+	}
+	
 	public void setTypeBundle() {
 		label_num_integer.setVisible(false);
 		text_num_integer.setVisible(false);
@@ -185,7 +199,7 @@ public class PanelInformation extends JPanel implements MyObservable {
 			updateLanguageList();
 			updatePromoAndTeaserText();
 		}
-		documentListener.saveStates();
+		//documentListener.saveStates();
 	}
 	
 	private void updateLanguageList() {
@@ -221,40 +235,40 @@ public class PanelInformation extends JPanel implements MyObservable {
            text_promotion.setText(info.getTexts().getPromotext(lang));
            text_teaser.setText(info.getTexts().getTeasertext(lang));
         }
-        documentListener.saveState(text_promotion);
-        documentListener.saveState(text_teaser);
+       // documentListener.saveState(text_promotion);
+       // documentListener.saveState(text_teaser);
 	}
 		
 
 
-	private void initKeyAdapter() {
-		keyAdapter = new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if (e.getComponent() instanceof JTextField) {
-						try {
-							JTextComponent text = (JTextComponent)e.getComponent();
-							String t = text.getText();
-							String name = text.getName();
-							if (documentListener.formatOK(name,t)) {
-								text_changed(text);
-								documentListener.saveState(text);
-							}
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
-				else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					if (e.getComponent() instanceof JTextField) {
-						JTextField text = (JTextField)e.getComponent();
-						text.setText(documentListener.getSavedText(text));
-						text.setBackground(Color.WHITE);
-					}
-				}
-			}
-		};
-	}
+//	private void initKeyAdapter() {
+//		keyAdapter = new KeyAdapter() {
+//			public void keyPressed(KeyEvent e) {
+//				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+//					if (e.getComponent() instanceof JTextField) {
+//						try {
+//							JTextComponent text = (JTextComponent)e.getComponent();
+//							String t = text.getText();
+//							String name = text.getName();
+//							if (documentListener.formatOK(name,t)) {
+//								text_changed(text);
+//								documentListener.saveState(text);
+//							}
+//						} catch (Exception ex) {
+//							ex.printStackTrace();
+//						}
+//					}
+//				}
+//				else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+//					if (e.getComponent() instanceof JTextField) {
+//						JTextField text = (JTextField)e.getComponent();
+//						text.setText(documentListener.getSavedText(text));
+//						text.setBackground(Color.WHITE);
+//					}
+//				}
+//			}
+//		};
+//	}
 
 	private void initComponents() {
 		Vector<JTextComponent> texts = new Vector<JTextComponent>();
@@ -267,7 +281,17 @@ public class PanelInformation extends JPanel implements MyObservable {
 		text_physical_release_datetime.setName("text_physical_release_datetime");
 		map.put("text_physical_release_datetime", text_physical_release_datetime);
 		texts.add(text_physical_release_datetime);
-
+		text_physical_release_datetime.addFocusListener(new FocusAdapter() {
+			 public void focusLost(FocusEvent evt) {
+			    if (evt.isTemporary()) {
+			      return;
+			    }
+			    try {
+			    	text_physical_release_datetime.setText(info.getPhysicalReleaseDatetimeText());
+			    } catch (Exception ex) {}
+			 }
+		});
+		
 		label_digital_release_datetime = new JLabel("digital release date");
 
 		text_digital_release_datetime = new JTextField("");
@@ -275,7 +299,17 @@ public class PanelInformation extends JPanel implements MyObservable {
 		text_digital_release_datetime.setName("text_digital_release_datetime");
 		map.put("text_digital_release_datetime", text_digital_release_datetime);
 		texts.add(text_digital_release_datetime);
-
+		text_digital_release_datetime.addFocusListener(new FocusAdapter() {
+			 public void focusLost(FocusEvent evt) {
+			    if (evt.isTemporary()) {
+			      return;
+			    }
+			    try {
+			    	text_digital_release_datetime.setText(info.getDigitalReleaseDatetimeText());
+			    } catch (Exception ex) {}
+			 }
+		});
+		
 		label_playlength_integer = new JLabel("playlength in seconds");
 		text_playlength_integer = new JTextField("");
 		text_playlength_integer.setName("text_playlength_integer");
@@ -350,21 +384,21 @@ public class PanelInformation extends JPanel implements MyObservable {
 		map.put("text_promotion", text_promotion);
 		texts.add(text_promotion);
 
-		bu_promotion_update = new JButton("update");
-		map.put("bu_promotion_update", bu_promotion_update);
-		bu_promotion_update.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				bu_promotion_update_clicked();
-			}
-		});
-
-		bu_promotion_reset = new JButton("reset");
-		map.put("bu_promotion_reset", bu_promotion_reset);
-		bu_promotion_reset.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				bu_promotion_reset_clicked();
-			}
-		});
+//		bu_promotion_update = new JButton("update");
+//		map.put("bu_promotion_update", bu_promotion_update);
+//		bu_promotion_update.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				bu_promotion_update_clicked();
+//			}
+//		});
+//
+//		bu_promotion_reset = new JButton("reset");
+//		map.put("bu_promotion_reset", bu_promotion_reset);
+//		bu_promotion_reset.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				bu_promotion_reset_clicked();
+//			}
+//		});
 
 		label_filler1 = new JLabel("");
 
@@ -395,42 +429,47 @@ public class PanelInformation extends JPanel implements MyObservable {
 		map.put("text_teaser", text_teaser);
 		texts.add(text_teaser);
 
-		bu_teaser_update = new JButton("update");
-		map.put("bu_teaser_update", bu_teaser_update);
-		bu_teaser_update.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				bu_teaser_update_clicked();
-			}
-		});
-
-		bu_teaser_reset = new JButton("reset");
-		map.put("bu_teaser_reset", bu_teaser_reset);
-		bu_teaser_reset.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				bu_teaser_reset_clicked();
-			}
-		});
+//		bu_teaser_update = new JButton("update");
+//		map.put("bu_teaser_update", bu_teaser_update);
+//		bu_teaser_update.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				bu_teaser_update_clicked();
+//			}
+//		});
+//
+//		bu_teaser_reset = new JButton("reset");
+//		map.put("bu_teaser_reset", bu_teaser_reset);
+//		bu_teaser_reset.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				bu_teaser_reset_clicked();
+//			}
+//		});
 
 		label_filler = new JLabel("");
 
-		documentListener = new DocumentChangeListener(texts);
+//		documentListener = new DocumentChangeListener(texts);
+//		for (JTextComponent text : texts) {
+//			text.getDocument().addDocumentListener(documentListener);
+//			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
+//		}
+//		documentListener.saveStates();
+		DocumentInstantChangeListener chl = new DocumentInstantChangeListener(this);
 		for (JTextComponent text : texts) {
-			text.getDocument().addDocumentListener(documentListener);
-			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
+			//if (text instanceof JTextField) {
+				chl.addTextComponent(text);
+			//}
 		}
-		documentListener.saveStates();
-		
 	}
 
 
 
-	public void updateDocumentListener() {
-		documentListener.saveStates();
-	}
-
-	public void updateDocumentListener(JTextComponent t) {
-	documentListener.saveState(t);
-	}
+//	public void updateDocumentListener() {
+//		documentListener.saveStates();
+//	}
+//
+//	public void updateDocumentListener(JTextComponent t) {
+//	documentListener.saveState(t);
+//	}
 	public JComponent getComponent(String name) {
 		return map.get(name);
 	}
@@ -478,11 +517,11 @@ public void initLayout() {
 	JScrollPane sPromo = new JScrollPane(text_promotion);
 	pPromo.add(sPromo, BorderLayout.CENTER);
 
-	JPanel pPromoButtons = new JPanel();
-	pPromoButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-	pPromoButtons.add(bu_promotion_update);
-	pPromoButtons.add(bu_promotion_reset);
-	pPromo.add(pPromoButtons, BorderLayout.SOUTH);
+//	JPanel pPromoButtons = new JPanel();
+//	pPromoButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+//	pPromoButtons.add(bu_promotion_update);
+//	pPromoButtons.add(bu_promotion_reset);
+//	pPromo.add(pPromoButtons, BorderLayout.SOUTH);
 	
 	JPanel pTeaser = new JPanel();
 	pTeaser.setBorder(new TitledBorder("Teaser Text"));
@@ -491,11 +530,11 @@ public void initLayout() {
 	JScrollPane sTeaser = new JScrollPane(text_teaser);
 	pTeaser.add(sTeaser, BorderLayout.CENTER);
 
-	JPanel pTeaserButtons = new JPanel();
-	pTeaserButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-	pTeaserButtons.add(bu_teaser_update);
-	pTeaserButtons.add(bu_teaser_reset);
-	pTeaser.add(pTeaserButtons, BorderLayout.SOUTH);
+//	JPanel pTeaserButtons = new JPanel();
+//	pTeaserButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
+//	pTeaserButtons.add(bu_teaser_update);
+//	pTeaserButtons.add(bu_teaser_reset);
+//	pTeaser.add(pTeaserButtons, BorderLayout.SOUTH);
 	
 	
 	JPanel pRest = new JPanel();
@@ -866,7 +905,7 @@ public void initLayout() {
 		String lang = FeedGui.showLanguageCodeSelector();
 		if (lang!=null) {
 			text_main_language.setText(lang);
-			documentListener.saveState(text_main_language);
+			//documentListener.saveState(text_main_language);
 			info.main_language(lang);
 			notifyChanges();
 		}
@@ -877,7 +916,7 @@ public void initLayout() {
 		String country = FeedGui.showCountryCodeSelector();
 		if (country!=null) {
 			text_origin_country.setText(country);
-			documentListener.saveState(text_origin_country);
+			//documentListener.saveState(text_origin_country);
 			info.origin_country(country);
 			notifyChanges();
 		}
@@ -919,34 +958,34 @@ public void initLayout() {
             notifyChanges();
         }
 	}
-	public void bu_promotion_update_clicked() {
-		if (info==null) return;
-        String lang = (String)list_language.getSelectedValue();
-        if (lang!=null) {
-        	info.getTexts().setPromotext(lang, text_promotion.getText());
-            text_promotion.setBackground(Color.WHITE);
-            documentListener.saveState(text_promotion);
-            notifyChanges();
-        }
-	}
-	public void bu_promotion_reset_clicked() {
-		text_promotion.setText(documentListener.getSavedText(text_promotion));
-		text_promotion.setBackground(Color.WHITE);
-	}
-	public void bu_teaser_update_clicked() {
-		if (info==null) return;
-        String lang = (String)list_language.getSelectedValue();
-        if (lang!=null) {
-        	info.getTexts().setTeasertext(lang, text_teaser.getText());
-            text_teaser.setBackground(Color.WHITE);
-            documentListener.saveState(text_teaser);
-            notifyChanges();
-        }
-	}
-	public void bu_teaser_reset_clicked() {
-		text_teaser.setText(documentListener.getSavedText(text_teaser));
-	    text_teaser.setBackground(Color.WHITE);
-	}
+//	public void bu_promotion_update_clicked() {
+//		if (info==null) return;
+//        String lang = (String)list_language.getSelectedValue();
+//        if (lang!=null) {
+//        	info.getTexts().setPromotext(lang, text_promotion.getText());
+//            text_promotion.setBackground(Color.WHITE);
+//            //documentListener.saveState(text_promotion);
+//            notifyChanges();
+//        }
+//	}
+//	public void bu_promotion_reset_clicked() {
+//		//text_promotion.setText(documentListener.getSavedText(text_promotion));
+//		text_promotion.setBackground(Color.WHITE);
+//	}
+//	public void bu_teaser_update_clicked() {
+//		if (info==null) return;
+//        String lang = (String)list_language.getSelectedValue();
+//        if (lang!=null) {
+//        	info.getTexts().setTeasertext(lang, text_teaser.getText());
+//            text_teaser.setBackground(Color.WHITE);
+//            //documentListener.saveState(text_teaser);
+//            notifyChanges();
+//        }
+//	}
+//	public void bu_teaser_reset_clicked() {
+//		text_teaser.setText(documentListener.getSavedText(text_teaser));
+//	    text_teaser.setBackground(Color.WHITE);
+//	}
 	
 	public void text_changed(JTextComponent text) {
 		if (info==null) return;
@@ -957,7 +996,6 @@ public void initLayout() {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
-			text_physical_release_datetime.setText(info.getPhysicalReleaseDatetimeText());
 		}
 		else if (text == text_digital_release_datetime) {
 			try {
@@ -965,18 +1003,17 @@ public void initLayout() {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
-			text_digital_release_datetime.setText(info.getDigitalReleaseDatetimeText());
 		}
 		else if (text == text_playlength_integer) {
 			if (t.equals("")) {
 				info.playlength(null);
 			} else {
 				info.playlength(Integer.parseInt(t));
-				if (info.hasPlaylength()) {
-					text_playlength_integer.setText(""+info.getPlaylength());
-				} else {
-					text_playlength_integer.setText("");
-				}
+//				if (info.hasPlaylength()) {
+//					text_playlength_integer.setText(""+info.getPlaylength());
+//				} else {
+//					text_playlength_integer.setText("");
+//				}
 			}
 		}
 		else if (text == text_num_integer) {
@@ -984,11 +1021,11 @@ public void initLayout() {
 				info.num(null);
 			} else {
 				info.num(Integer.parseInt(t));
-				if (info.hasNum()) {
-					text_num_integer.setText(""+info.getNum());
-				} else {
-					text_num_integer.setText("");
-				}
+//				if (info.hasNum()) {
+//					text_num_integer.setText(""+info.getNum());
+//				} else {
+//					text_num_integer.setText("");
+//				}
 			}
 		}
 		else if (text == text_setnum_integer) {
@@ -996,11 +1033,11 @@ public void initLayout() {
 				info.setnum(null);
 			} else {
 				info.setnum(Integer.parseInt(t));
-				if (info.hasSetNum()) {
-					text_setnum_integer.setText(""+info.getSetNum());
-				} else {
-					text_setnum_integer.setText("");
-				}
+//				if (info.hasSetNum()) {
+//					text_setnum_integer.setText(""+info.getSetNum());
+//				} else {
+//					text_setnum_integer.setText("");
+//				}
 			}
 		}
 		else if (text == text_main_language) {
@@ -1009,9 +1046,23 @@ public void initLayout() {
 		else if (text == text_origin_country) {
 			info.origin_country(t);
 		}
+		else if (text == text_teaser) {
+			if (info==null) return;
+	        String lang = (String)list_language.getSelectedValue();
+	        if (lang!=null) {
+	        	info.getTexts().setTeasertext(lang, t);
+	        }
+		}
+		else if (text == text_promotion) {
+			if (info==null) return;
+	        String lang = (String)list_language.getSelectedValue();
+	        if (lang!=null) {
+	        	info.getTexts().setPromotext(lang, t);
+	        }
+		}
 		notifyChanges();
-		text.requestFocusInWindow();
-		text.transferFocus();
+		//text.requestFocusInWindow();
+		//text.transferFocus();
 	}
 
 

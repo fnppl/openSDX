@@ -43,20 +43,33 @@ package org.fnppl.opensdx.gui.helper;
  * Free Documentation License" resp. in the file called "FDL.txt".
  *
  */
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Color;
-import javax.swing.*;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.JTextComponent;
 
 import org.fnppl.opensdx.common.ContractPartner;
-import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.FeedInfo;
-import org.fnppl.opensdx.common.Receiver;
 import org.fnppl.opensdx.dmi.FeedGui;
 import org.fnppl.opensdx.dmi.FeedGuiTooltips;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
@@ -64,19 +77,9 @@ import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.OSDXKey;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Vector;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-
-public class PanelContractPartner extends JPanel implements MyObservable {
+public class PanelContractPartner extends JPanel implements MyObservable, TextChangeListener {
 
 	//init fields
-	private DocumentChangeListener documentListener;
-	private KeyAdapter keyAdapter;
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
 	private JLabel label_contractpartnerid;
@@ -98,7 +101,7 @@ public class PanelContractPartner extends JPanel implements MyObservable {
 	public PanelContractPartner(FeedGui gui, int contractPartnerType) {
 		this.gui = gui;
 		this.contractPartnerType = contractPartnerType;
-		initKeyAdapter();
+		initFocusTraversal();
 		initComponents();
 		initLayout();
 	}
@@ -129,7 +132,6 @@ public class PanelContractPartner extends JPanel implements MyObservable {
 			text_email.setText(cp.getEmail());
 			text_keyid.setText(cp.getKeyid());
 		}
-		documentListener.saveStates();
 	}
 	
 	private ContractPartner getContractPartner() {
@@ -156,33 +158,11 @@ public class PanelContractPartner extends JPanel implements MyObservable {
 	}
 
 
-	private void initKeyAdapter() {
-		keyAdapter = new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if (e.getComponent() instanceof JTextField) {
-						try {
-							JTextComponent text = (JTextComponent)e.getComponent();
-							String t = text.getText();
-							String name = text.getName();
-							if (documentListener.formatOK(name,t)) {
-								text_changed(text);
-								documentListener.saveState(text);
-							}
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
-				else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					if (e.getComponent() instanceof JTextField) {
-						JTextField text = (JTextField)e.getComponent();
-						text.setText(documentListener.getSavedText(text));
-						text.setBackground(Color.WHITE);
-					}
-				}
-			}
-		};
+	@SuppressWarnings("unchecked")
+	private void initFocusTraversal() {
+		Set forwardKeys = new HashSet(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+		forwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+		setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,forwardKeys);
 	}
 
 	private void initComponents() {
@@ -242,23 +222,14 @@ public class PanelContractPartner extends JPanel implements MyObservable {
 			}
 		});
 
-		documentListener = new DocumentChangeListener(texts);
+		DocumentInstantChangeListener chl = new DocumentInstantChangeListener(this);
 		for (JTextComponent text : texts) {
-			text.getDocument().addDocumentListener(documentListener);
-			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
+			if (text instanceof JTextField) {
+				chl.addTextComponent(text);
+			}
 		}
-		documentListener.saveStates();
 	}
 
-
-
-	public void updateDocumentListener() {
-		documentListener.saveStates();
-	}
-
-	public void updateDocumentListener(JTextComponent t) {
-	documentListener.saveState(t);
-	}
 	public JComponent getComponent(String name) {
 		return map.get(name);
 	}
@@ -282,9 +253,7 @@ public void initLayout() {
 	GridBagLayout gbl = new GridBagLayout();
 	setLayout(gbl);
 	GridBagConstraints gbc = new GridBagConstraints();
-
-
-
+	
 	// Component: label_contractpartnerid
 	gbc.gridx = 0;
 	gbc.gridy = 0;
@@ -536,8 +505,8 @@ public void initLayout() {
 			cp.keyid(t);
 		}
 		notifyChanges();
-		text.requestFocusInWindow();
-		text.transferFocus();
+		//text.requestFocusInWindow();
+		//text.transferFocus();
 	}
 
 

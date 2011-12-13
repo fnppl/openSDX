@@ -61,6 +61,7 @@ import javax.swing.event.ListSelectionListener;
 import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.Contributor;
 import org.fnppl.opensdx.common.IDs;
+import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.dmi.FeedGui;
 
 import java.util.HashMap;
@@ -92,14 +93,14 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 	public void update(Bundle bundle) {
 		this.bundle = bundle;
 		Contributor c = (Contributor)list_contributors.getSelectedValue();
-		updateContributorsList();
-		panel_contributor_details.update(c, bundle);
+		//panel_contributor_details.update(c, bundle);
 		if (c==null) {
 			panel_contributor_details.setVisible(false);
 		} else {
 			panel_contributor_details.setVisible(true);
-			list_contributors.setSelectedValue(c, true);
+			panel_contributor_details.update(c, bundle);
 		}
+		updateContributorsList();
 	}
 
 	private void updateContributorsList() {
@@ -189,8 +190,13 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 
 	}
 	public void list_contributors_changed(int selected) {
+		updateContributor();
+	}
+	
+	private void updateContributor() {
 		if (bundle==null) return;
-		Contributor c = (Contributor)list_contributors.getSelectedValue();
+		//Contributor c = (Contributor)list_contributors.getSelectedValue();
+		Contributor c = getSelectedContributor();
 		panel_contributor_details.update(c, bundle);
 		if (c==null) {
 			panel_contributor_details.setVisible(false);
@@ -198,6 +204,17 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 			panel_contributor_details.setVisible(true);
 		}
 	}
+	
+	private Contributor getSelectedContributor() {
+		int sel = list_contributors.getSelectedIndex();
+		if (sel>=0) {
+			if (bundle!=null && sel<bundle.getContributorCount()) {
+				return bundle.getContributor(sel);
+			}
+		}
+		return null;
+	}
+	
 	public void bu_add_clicked() {
 		if (bundle != null) {
 			Contributor c = Contributor.make("new contributor", "[no type]", IDs.make());
@@ -218,6 +235,16 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 		}
 	}
 
+	private void checkContributorList() {
+		if (bundle!=null) {
+			Vector<Contributor> contribs = bundle.getAllContributors();
+			int anz = Math.min(contribs.size(), list_contributors_model.getSize());
+			for (int i = 0; i < anz; i++) {
+				list_contributors_model.set(i, contribs.get(i));
+			}
+		}
+	}
+	
 	//observable
 	private Vector<MyObserver> observers = new Vector<MyObserver>();
 	public void addObserver(MyObserver observer) {
@@ -231,10 +258,13 @@ public class PanelContributors extends JPanel implements MyObservable, MyObserve
 
 	
 	public void notifyChange(MyObservable changedIn) {
-		int sel = list_contributors.getSelectedIndex();
-		updateContributorsList();
-		if (sel>=0) {
-			list_contributors.setSelectedIndex(sel);
+//		int sel = list_contributors.getSelectedIndex();
+//		updateContributorsList();
+//		if (sel>=0) {
+//			list_contributors.setSelectedIndex(sel);
+//		}
+		if (changedIn == panel_contributor_details) {
+			checkContributorList();
 		}
 		notifyChanges();
 	}

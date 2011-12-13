@@ -49,6 +49,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Color;
+import java.awt.KeyboardFocusManager;
+
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 
@@ -58,18 +60,22 @@ import org.fnppl.opensdx.dmi.FeedGuiTooltips;
 import org.fnppl.opensdx.security.SecurityHelper;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.Vector;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelFeedInfoBasics extends JPanel implements MyObservable {
+public class PanelFeedInfoBasics extends JPanel implements MyObservable, TextChangeListener {
 
 	//init fields
-	private DocumentChangeListener documentListener;
-	private KeyAdapter keyAdapter;
+	//private DocumentChangeListener documentListener;
+	//private KeyAdapter keyAdapter;
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
 	private JLabel label_feedid;
@@ -86,9 +92,16 @@ public class PanelFeedInfoBasics extends JPanel implements MyObservable {
 
 	public PanelFeedInfoBasics(FeedGui gui) {
 		this.gui = gui;
-		initKeyAdapter();
+		initFocusTraversal();
 		initComponents();
 		initLayout();
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void initFocusTraversal() {
+		Set forwardKeys = new HashSet(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+		forwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+		setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,forwardKeys);
 	}
 
 	public void initTooltips() {
@@ -113,7 +126,7 @@ public class PanelFeedInfoBasics extends JPanel implements MyObservable {
 			text_effective_datetime.setText(fi.getEffectiveDatetimeString());
 			text_creation_datetime.setText(fi.getCreationDatetimeString());
 		}
-		documentListener.saveStates();
+		//documentListener.saveStates();
 	}
 
 	private FeedInfo getFeedInfo() {
@@ -123,34 +136,34 @@ public class PanelFeedInfoBasics extends JPanel implements MyObservable {
 	}
 
 
-	private void initKeyAdapter() {
-		keyAdapter = new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if (e.getComponent() instanceof JTextField) {
-						try {
-							JTextComponent text = (JTextComponent)e.getComponent();
-							String t = text.getText();
-							String name = text.getName();
-							if (documentListener.formatOK(name,t)) {
-								text_changed(text);
-								documentListener.saveState(text);
-							}
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
-				else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					if (e.getComponent() instanceof JTextField) {
-						JTextField text = (JTextField)e.getComponent();
-						text.setText(documentListener.getSavedText(text));
-						text.setBackground(Color.WHITE);
-					}
-				}
-			}
-		};
-	}
+//	private void initKeyAdapter() {
+//		keyAdapter = new KeyAdapter() {
+//			public void keyPressed(KeyEvent e) {
+//				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+//					if (e.getComponent() instanceof JTextField) {
+//						try {
+//							JTextComponent text = (JTextComponent)e.getComponent();
+//							String t = text.getText();
+//							String name = text.getName();
+//							if (documentListener.formatOK(name,t)) {
+//								text_changed(text);
+//								documentListener.saveState(text);
+//							}
+//						} catch (Exception ex) {
+//							ex.printStackTrace();
+//						}
+//					}
+//				}
+//				else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+//					if (e.getComponent() instanceof JTextField) {
+//						JTextField text = (JTextField)e.getComponent();
+//						text.setText(documentListener.getSavedText(text));
+//						text.setBackground(Color.WHITE);
+//					}
+//				}
+//			}
+//		};
+//	}
 
 	private void initComponents() {
 		Vector<JTextComponent> texts = new Vector<JTextComponent>();
@@ -186,7 +199,18 @@ public class PanelFeedInfoBasics extends JPanel implements MyObservable {
 		text_creation_datetime.setName("text_creationdatetime");
 		map.put("text_creationdatetime", text_creation_datetime);
 		texts.add(text_creation_datetime);
-
+		text_creation_datetime.addFocusListener(new FocusAdapter() {
+			 public void focusLost(FocusEvent evt) {
+			    if (evt.isTemporary()) {
+			      return;
+			    }
+			    try {
+			    	FeedInfo fi = getFeedInfo();
+			    	text_creation_datetime.setText(fi.getCreationDatetimeString());
+			    } catch (Exception ex) {}
+			 }
+		});
+		
 		label_effectivedatetime = new JLabel("effective datetime");
 
 		text_effective_datetime = new JTextField("");
@@ -194,6 +218,19 @@ public class PanelFeedInfoBasics extends JPanel implements MyObservable {
 		text_effective_datetime.setName("text_effectivedatetime");
 		map.put("text_effectivedatetime", text_effective_datetime);
 		texts.add(text_effective_datetime);
+		text_effective_datetime.addFocusListener(new FocusAdapter() {
+			 public void focusLost(FocusEvent evt) {
+			    if (evt.isTemporary()) {
+			      return;
+			    }
+			    try {
+			    	FeedInfo fi = getFeedInfo();
+			    	text_effective_datetime.setText(fi.getEffectiveDatetimeString());
+			    } catch (Exception ex) {}
+			 }
+		});
+		
+		
 
 		bu_now = new JButton("now");
 		map.put("bu_now", bu_now);
@@ -203,22 +240,30 @@ public class PanelFeedInfoBasics extends JPanel implements MyObservable {
 			}
 		});
 
-		documentListener = new DocumentChangeListener(texts);
+//		documentListener = new DocumentChangeListener(texts);
+//		for (JTextComponent text : texts) {
+//			text.getDocument().addDocumentListener(documentListener);
+//			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
+//		}
+//		documentListener.saveStates();
+		
+		DocumentInstantChangeListener chl = new DocumentInstantChangeListener(this);
 		for (JTextComponent text : texts) {
-			text.getDocument().addDocumentListener(documentListener);
-			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
+			if (text instanceof JTextField) {
+				chl.addTextComponent(text);
+			}
 		}
-		documentListener.saveStates();	}
-
-
-
-	public void updateDocumentListener() {
-		documentListener.saveStates();
 	}
 
-	public void updateDocumentListener(JTextComponent t) {
-		documentListener.saveState(t);
-	}
+
+
+//	public void updateDocumentListener() {
+//		documentListener.saveStates();
+//	}
+//
+//	public void updateDocumentListener(JTextComponent t) {
+//		documentListener.saveState(t);
+//	}
 	public JComponent getComponent(String name) {
 		return map.get(name);
 	}
@@ -404,7 +449,7 @@ public class PanelFeedInfoBasics extends JPanel implements MyObservable {
 	public void bu_uuid_clicked() {
 		String uuid = UUID.randomUUID().toString();
 		text_feedid.setText(uuid);
-		documentListener.saveState(text_feedid);
+		//documentListener.saveState(text_feedid);
 		FeedInfo fi = getFeedInfo();
 		if (fi!=null)  {
 			fi.feedid(uuid);   
@@ -423,8 +468,8 @@ public class PanelFeedInfoBasics extends JPanel implements MyObservable {
 		String s = SecurityHelper.getFormattedDate(now);
 		text_creation_datetime.setText(s);
 		text_effective_datetime.setText(s);
-		documentListener.saveState(text_creation_datetime);
-		documentListener.saveState(text_effective_datetime);
+		//documentListener.saveState(text_creation_datetime);
+		//documentListener.saveState(text_effective_datetime);
 		FeedInfo fi = getFeedInfo();
 		if (fi!=null)  {
 			fi.creation_datetime(now);
@@ -442,22 +487,30 @@ public class PanelFeedInfoBasics extends JPanel implements MyObservable {
 			}
 			else if (text == text_creation_datetime) {
 				try {
-					fi.creation_datetime(SecurityHelper.parseDate(t));
-
+					fi.creation_datetime(DocumentInstantChangeListener.datetimeformat.parse(t).getTime());
+//					String s = fi.getCreationDatetimeString();
+//					if (!t.equals(s)) {
+//						text.setText(s);
+//					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 			else if (text == text_effective_datetime) {
 				try {
-					fi.effective_datetime(SecurityHelper.parseDate(t));
+					//fi.effective_datetime(SecurityHelper.parseDate(t));
+					fi.effective_datetime(DocumentInstantChangeListener.datetimeformat.parse(t).getTime());
+//					String s = fi.getEffectiveDatetimeString();
+//					if (!t.equals(s)) {
+//						text.setText(s);
+//					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 			notifyChanges();
-			text.requestFocusInWindow();
-			text.transferFocus();
+			//text.requestFocusInWindow();
+			//text.transferFocus();
 		}
 
 	}

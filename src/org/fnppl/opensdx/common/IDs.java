@@ -157,7 +157,8 @@ public class IDs extends BusinessObject {
 	}
 
 	public IDs finetunes(String finetunes) {
-		this.finetunes = new BusinessStringItem("finetunes", finetunes);
+		if (finetunes==null) this.finetunes=null;
+		else this.finetunes = new BusinessStringItem("finetunes", finetunes);
 		return this;
 	}
 

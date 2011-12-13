@@ -100,7 +100,11 @@ public class ContractPartner extends BusinessObject {
 	}
 	
 	public ContractPartner ourcontractpartnerid(String value) {
-		ourcontractpartnerid.setString(value);
+		if (value == null) {
+			ourcontractpartnerid.setString("");
+		} else {
+			ourcontractpartnerid.setString(value);
+		}
 		return this;
 	}
 	
@@ -121,6 +125,12 @@ public class ContractPartner extends BusinessObject {
 		p.role = role;
 		p.contractpartnerid = BusinessStringItem.fromBusinessObject(p,"contractpartnerid");
 		p.ourcontractpartnerid = BusinessStringItem.fromBusinessObject(p,"ourcontractpartnerid");
+		if (p.contractpartnerid==null) {
+			p.contractpartnerid = new BusinessStringItem("contractpartnerid", "");
+		}
+		if (p.ourcontractpartnerid==null) {
+			p.ourcontractpartnerid = new BusinessStringItem("ourcontractpartnerid", "");
+		}
 		p.email = BusinessStringItem.fromBusinessObject(p,"email");
 		p.keyid = BusinessStringItem.fromBusinessObject(p, "keyid");
 		return p;

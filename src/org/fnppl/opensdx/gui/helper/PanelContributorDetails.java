@@ -49,6 +49,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Color;
+import java.awt.KeyboardFocusManager;
+
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.border.TitledBorder;
@@ -67,13 +69,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelContributorDetails extends JPanel implements MyObservable, MyObserver {
+public class PanelContributorDetails extends JPanel implements MyObservable, MyObserver, TextChangeListener {
 
 	//init fields
 	private Contributor contributor = null;
 	private Bundle bundle = null;
-	private DocumentChangeListener documentListener;
-	private KeyAdapter keyAdapter;
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
 	private JLabel label_name;
@@ -92,7 +92,7 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 	public PanelContributorDetails(Contributor contributor, Bundle bundle) {
 		this.contributor = contributor;
 		this.bundle = bundle;
-		initKeyAdapter();
+		initFocusTraversal();
 		initComponents();
 		initLayout();
 		HashSet<String> show;
@@ -114,6 +114,13 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 		panel_ids.addObserver(this);
 		panel_www.addObserver(this);
 	}
+	
+	@SuppressWarnings("unchecked")
+	private void initFocusTraversal() {
+		Set forwardKeys = new HashSet(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+		forwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+		setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,forwardKeys);
+	}
 
 
 	public void update(Contributor contributor, Bundle bundle) {
@@ -134,38 +141,8 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 			panel_ids.update(contributor.getIDs());
 			panel_www.update(contributor.getWww());
 		}
-		documentListener.saveStates();
 	}
 
-
-	private void initKeyAdapter() {
-		keyAdapter = new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if (e.getComponent() instanceof JTextField) {
-						try {
-							JTextComponent text = (JTextComponent)e.getComponent();
-							String t = text.getText();
-							String name = text.getName();
-							if (documentListener.formatOK(name,t)) {
-								text_changed(text);
-								documentListener.saveState(text);
-							}
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
-				else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					if (e.getComponent() instanceof JTextField) {
-						JTextField text = (JTextField)e.getComponent();
-						text.setText(documentListener.getSavedText(text));
-						text.setBackground(Color.WHITE);
-					}
-				}
-			}
-		};
-	}
 
 	private void initComponents() {
 		Vector<JTextComponent> texts = new Vector<JTextComponent>();
@@ -213,24 +190,15 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 
 		label_filler = new JLabel("");
 
-		documentListener = new DocumentChangeListener(texts);
+		DocumentInstantChangeListener chl = new DocumentInstantChangeListener(this);
 		for (JTextComponent text : texts) {
-			text.getDocument().addDocumentListener(documentListener);
-			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
+			if (text instanceof JTextField) {
+				chl.addTextComponent(text);
+			}
 		}
-		documentListener.saveStates();
 
 	}
 
-
-
-	public void updateDocumentListener() {
-		documentListener.saveStates();
-	}
-
-	public void updateDocumentListener(JTextComponent t) {
-		documentListener.saveState(t);
-	}
 	public JComponent getComponent(String name) {
 		return map.get(name);
 	}
@@ -485,14 +453,15 @@ public class PanelContributorDetails extends JPanel implements MyObservable, MyO
 			}
 		}
 		else if (text == text_year) {
-			contributor.year(t);
-			if (bundle!=null) {
-				bundle.updateItemsContributors(contributor, contributor.getName(), contributor.getType());
+			if (t==null || t.length()==0) {
+				contributor.year(null);
+			} else {
+				contributor.year(t);
 			}
 		} 
 		notifyChanges();
-		text.requestFocusInWindow();
-		text.transferFocus();
+		//text.requestFocusInWindow();
+		//text.transferFocus();
 	}
 
 	//observable

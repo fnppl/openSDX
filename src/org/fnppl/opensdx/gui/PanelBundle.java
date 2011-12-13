@@ -60,6 +60,7 @@ import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.common.ItemTags;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.dmi.FeedGuiTooltips;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
 import org.fnppl.opensdx.gui.helper.PanelBundleBasics;
@@ -97,8 +98,13 @@ public class PanelBundle extends JPanel implements MyObservable, MyObserver {
 		initComponents();
 		initLayout();
 		pLicense.showAsOnBundle(false);
+		initTooltips();
 	}
 
+	public void initTooltips() {
+		this.setToolTipText(FeedGuiTooltips.bundle);
+		pContributors.setToolTipText(FeedGuiTooltips.bundleContributors);
+	}
 	private Bundle getBundle() {
 		if (gui==null) return null;
 		Feed feed = gui.getCurrentFeed();
@@ -147,34 +153,39 @@ public class PanelBundle extends JPanel implements MyObservable, MyObserver {
 		pIDs = new PanelIDs(ids);
 		pIDs.onlyShowFields(IDs.getRelevantIDs("bundle"));
 		pIDs.addObserver(this);
+		pIDs.setToolTipText(FeedGuiTooltips.bundleIds);
 		
 		pContributors = new PanelContributors(bundle);
 		pContributors.addObserver(this);
+		pContributors.setToolTipText(FeedGuiTooltips.bundleContributors);
 		
 		pInformation = new PanelInformation(info);
 		pInformation.setTypeBundle();
 		pInformation.addObserver(this);
+		pInformation.setToolTipText(FeedGuiTooltips.bundleInformation);
 		
 		pLicense = new PanelLicense(lb);
 		pLicense.addObserver(this);
+		pLicense.setToolTipText(FeedGuiTooltips.bundleLicense);
 		
 		pTags = new PanelTags();
 		pTags.addObserver(this);
+		pTags.setToolTipText(FeedGuiTooltips.bundleTags);
 		
 		pFiles = new PanelFiles();
 		pFiles.setTypeBundle();
 		pFiles.addObserver(this);
+		pFiles.setToolTipText(FeedGuiTooltips.bundleFiles);
 		
 		tabs = new JTabbedPane();
-		tabs.add(buildEmbeddedPanel(pIDs),"IDs");
-//		tabs.add(new JScrollPane(pContributors),"Contributors");
-//		tabs.add(new JScrollPane(pInformation),"Information");
-//		tabs.add(new JScrollPane(pLicense),"License");
-		tabs.add(buildEmbeddedPanel(pContributors),"Contributors");
-		tabs.add(new JScrollPane(pInformation),"Information");
-		tabs.add(buildEmbeddedPanel(pLicense),"License");
-		tabs.add(new JScrollPane(pTags),"Tags");
-		tabs.add(buildEmbeddedPanel(pFiles),"Files");
+		
+		tabs.addTab("IDs", null, buildEmbeddedPanel(pIDs), FeedGuiTooltips.bundleIds);
+		tabs.addTab("Contributors", null, buildEmbeddedPanel(pContributors), FeedGuiTooltips.bundleContributors);
+		tabs.addTab("Information", null, new JScrollPane(pInformation), FeedGuiTooltips.bundleInformation);
+		tabs.addTab("License", null, buildEmbeddedPanel(pLicense), FeedGuiTooltips.bundleLicense);
+		tabs.addTab("Tags", null, new JScrollPane(pTags), FeedGuiTooltips.bundleTags);
+		tabs.addTab("Files", null, buildEmbeddedPanel(pFiles), FeedGuiTooltips.bundleFiles);
+		
 		
 	}
 	

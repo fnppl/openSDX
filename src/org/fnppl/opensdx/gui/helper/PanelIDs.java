@@ -57,6 +57,7 @@ import javax.swing.border.TitledBorder;
 
 import org.fnppl.opensdx.common.IDs;
 import org.fnppl.opensdx.dmi.FeedGui;
+import org.fnppl.opensdx.dmi.FeedGuiTooltips;
 import org.fnppl.opensdx.dmi.wayin.FinetunesToOpenSDXImporter;
 
 import java.util.HashMap;
@@ -68,12 +69,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class PanelIDs extends JPanel implements MyObservable {
+public class PanelIDs extends JPanel implements MyObservable, TextChangeListener {
 
 	//init fields
 	private IDs ids = null;
-	private DocumentChangeListener documentListener;
-	private KeyAdapter keyAdapter;
+	//private DocumentChangeListener documentListener;
+	//private KeyAdapter keyAdapter;
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
 	private JLabel label_gvl;
@@ -107,13 +108,47 @@ public class PanelIDs extends JPanel implements MyObservable {
 
 	public PanelIDs(IDs ids) {
 		this.ids = ids;
-		initKeyAdapter();
+		initFocusTraversal();
 		initComponents();
 		text_licensor.setPreferredSize(new Dimension(150,(int)text_licensor.getPreferredSize().getHeight()));
 		initLayout();
+		initToolTips();
+	}
+	
+	public void initToolTips() {
+		label_gvl.setToolTipText(FeedGuiTooltips.idGVL);
+		text_gvl.setToolTipText(FeedGuiTooltips.idGVL);
+		label_grid.setToolTipText(FeedGuiTooltips.idGRID);
+		text_grid.setToolTipText(FeedGuiTooltips.idGRID);
+		label_upc.setToolTipText(FeedGuiTooltips.idUPC);
+		text_upc.setToolTipText(FeedGuiTooltips.idUPC);
+		label_isrc.setToolTipText(FeedGuiTooltips.idISRC);
+		text_isrc.setToolTipText(FeedGuiTooltips.idISRC);
+		label_contentauth.setToolTipText(FeedGuiTooltips.idContentAuth);
+		text_contentauth.setToolTipText(FeedGuiTooltips.idContentAuth);
+		label_labelordernum.setToolTipText(FeedGuiTooltips.idLabelOrderNum);
+		text_labelordernum.setToolTipText(FeedGuiTooltips.idLabelOrderNum);
+		label_amzn.setToolTipText(FeedGuiTooltips.idAmazon);
+		text_amzn.setToolTipText(FeedGuiTooltips.idAmazon);
+		label_isbn.setToolTipText(FeedGuiTooltips.idISBN);
+		text_isbn.setToolTipText(FeedGuiTooltips.idISBN);
+		label_finetunes.setToolTipText(FeedGuiTooltips.idFinetunes);
+		text_finetunes.setToolTipText(FeedGuiTooltips.idFinetunes);
+		label_licensor.setToolTipText(FeedGuiTooltips.idLicensor);
+		text_licensor.setToolTipText(FeedGuiTooltips.idLicensor);
+		label_licensee.setToolTipText(FeedGuiTooltips.idLicensee);
+		text_licensee.setToolTipText(FeedGuiTooltips.idLicensee);
+		label_amg.setToolTipText(FeedGuiTooltips.idAMG);
+		text_amg.setToolTipText(FeedGuiTooltips.idAMG);
 	}
 
-
+	@SuppressWarnings("unchecked")
+	private void initFocusTraversal() {
+		Set forwardKeys = new HashSet(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+		forwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+		setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,forwardKeys);
+	}
+	
 	public void onlyShowFields(HashSet<String> show) {
 		for (JTextComponent t : texts) {
 			if (show.contains(t.getName().substring(5))) {
@@ -158,37 +193,7 @@ public class PanelIDs extends JPanel implements MyObservable {
 			text_licensor.setText(ids.getLicensor());
 			text_licensee.setText(ids.getLicensee());
 		}
-		documentListener.saveStates();
-	}
-
-
-	private void initKeyAdapter() {
-		keyAdapter = new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					if (e.getComponent() instanceof JTextField) {
-						try {
-							JTextComponent text = (JTextComponent)e.getComponent();
-							String t = text.getText();
-							String name = text.getName();
-							if (documentListener.formatOK(name,t)) {
-								text_changed(text);
-								documentListener.saveState(text);
-							}
-						} catch (Exception ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
-				else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					if (e.getComponent() instanceof JTextField) {
-						JTextField text = (JTextField)e.getComponent();
-						text.setText(documentListener.getSavedText(text));
-						text.setBackground(Color.WHITE);
-					}
-				}
-			}
-		};
+		//documentListener.saveStates();
 	}
 
 	private void initComponents() {
@@ -204,7 +209,7 @@ public class PanelIDs extends JPanel implements MyObservable {
 		text_gvl.setName("text_gvl");
 		map.put("text_gvl", text_gvl);
 		texts.add(text_gvl);
-
+		
 		label_grid = new JLabel("GRID");
 		label_grid.setName("label_grid");
 		labels.add(label_grid);
@@ -307,29 +312,15 @@ public class PanelIDs extends JPanel implements MyObservable {
 
 		label_filler = new JLabel("");
 
-		documentListener = new DocumentChangeListener(texts);
+		DocumentInstantChangeListener chl = new DocumentInstantChangeListener(this);
 		for (JTextComponent text : texts) {
-			text.getDocument().addDocumentListener(documentListener);
-			if (text instanceof JTextField) text.addKeyListener(keyAdapter);
-			
-//			Set forwardKeys = text.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
-//			Set newForwardKeys = new HashSet(forwardKeys);
-//			newForwardKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
-//			text.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, newForwardKeys);
+			if (text instanceof JTextField) {
+				chl.addTextComponent(text);
+			}
 		}
-		documentListener.saveStates();
 		
 	}
 
-
-
-	public void updateDocumentListener() {
-		documentListener.saveStates();
-	}
-
-	public void updateDocumentListener(JTextComponent t) {
-	documentListener.saveState(t);
-	}
 	public JComponent getComponent(String name) {
 		return map.get(name);
 	}
@@ -778,8 +769,8 @@ public void initLayout() {
 		}
 		notifyChanges();
 		
-		text.requestFocusInWindow();
-		text.transferFocus();
+		//text.requestFocusInWindow();
+		//text.transferFocus();
 	}
 
 
