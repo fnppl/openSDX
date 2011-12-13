@@ -250,10 +250,15 @@ public class KeyClientMessageFactory {
 		content.addContent("masterkeyid", relatedMasterKey.getKeyModulusSHA1());
 		content.addContent(subkey.getSimplePubKeyElement());
 		
-		OSDXMessage msg = OSDXMessage.buildMessage(content, subkey);//first signoff with subkey
-		//then signoff with relatedMasterKey
-		msg.signLastSignature(relatedMasterKey, "signatue of signaturebytes of subkey");
-		req.setContentElement(msg.toElement());
+		if (subkey.allowsSigning()) {
+			OSDXMessage msg = OSDXMessage.buildMessage(content, subkey);//first signoff with subkey
+			//then signoff with relatedMasterKey
+			msg.signLastSignature(relatedMasterKey, "signatue of signaturebytes of subkey");
+			req.setContentElement(msg.toElement());
+		}  else {
+			OSDXMessage msg = OSDXMessage.buildMessage(content, relatedMasterKey);//first signoff with masterkey
+			req.setContentElement(msg.toElement());
+		}
 		
 		return req;
 	}

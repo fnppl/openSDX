@@ -69,6 +69,7 @@ import org.w3c.dom.ranges.RangeException;
 
 public class SecurityMainFrame extends JFrame {
 
+	private static String version = "v. 2011-12-13";
 	private int maxWidth = 1200;
 
 	private SecurityControl control;
@@ -110,7 +111,7 @@ public class SecurityMainFrame extends JFrame {
 	}
 
 	private SecurityMainFrame() {
-		super("fnppl.org :: openSDX :: SecurityMainFrame");		
+		super("fnppl.org :: openSDX :: SecurityMainFrame "+version);		
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -1094,8 +1095,10 @@ public class SecurityMainFrame extends JFrame {
 
 		JPanel b = new JPanel();
 		b.setLayout(new FlowLayout(FlowLayout.LEFT));
+		
+		int buWidth = 180;
 		JButton bu = new JButton("upload to keyserver");
-
+		
 		String parent = key.getParentKeyID();
 		if (parent.toLowerCase().endsWith("@local")) {
 			bu.setEnabled(false);
@@ -1120,6 +1123,36 @@ public class SecurityMainFrame extends JFrame {
 			}
 		});
 		b.add(bu);
+		
+		bu = new JButton("revoke with masterkey");
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				revokeRevokeKeyWithMasterKey(key);
+			}
+		});
+	//	bu.setPreferredSize(new Dimension(buWidth,25));
+		b.add(bu);
+
+		bu = new JButton("generate keylog");
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				showGenerateKeyLogDialog(key);
+			}
+		});
+	//	bu.setPreferredSize(new Dimension(buWidth,25));
+		b.add(bu);
+
+		bu = new JButton("request keylogs");
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				requestKeyLogs(key);
+			}
+		});
+	//	bu.setPreferredSize(new Dimension(buWidth,25));
+		b.add(bu);
+
 
 		bu = new JButton("remove");
 		bu.addActionListener(new ActionListener() {
@@ -1127,6 +1160,7 @@ public class SecurityMainFrame extends JFrame {
 				removeKey(key);
 			}
 		});
+	//	bu.setPreferredSize(new Dimension(buWidth,25));
 		b.add(bu);
 
 
@@ -1391,6 +1425,8 @@ public class SecurityMainFrame extends JFrame {
 //			}
 //		});
 //		b.add(bu);
+		
+		int buWidth = 180;
 
 		JButton bu = new JButton("upload to keyserver");
 		bu.addActionListener(new ActionListener() {
@@ -1398,7 +1434,38 @@ public class SecurityMainFrame extends JFrame {
 				uploadSubKeyToKeyServer(key);
 			}
 		});
+		bu.setPreferredSize(new Dimension(buWidth,25));
 		b.add(bu);
+		
+		bu = new JButton("revoke with masterkey");
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				revokeSubKeyWithMasterKey(key);
+			}
+		});
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		b.add(bu);
+
+		bu = new JButton("generate keylog");
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				showGenerateKeyLogDialog(key);
+			}
+		});
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		b.add(bu);
+
+		bu = new JButton("request keylogs");
+		bu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				requestKeyLogs(key);
+			}
+		});
+		bu.setPreferredSize(new Dimension(buWidth,25));
+		b.add(bu);
+
 
 		bu = new JButton("remove");
 		bu.addActionListener(new ActionListener() {
@@ -1406,6 +1473,7 @@ public class SecurityMainFrame extends JFrame {
 				removeKey(key);
 			}
 		});
+		bu.setPreferredSize(new Dimension(buWidth,25));
 		b.add(bu);
 
 		content.add(b,BorderLayout.SOUTH);
@@ -2931,10 +2999,10 @@ public class SecurityMainFrame extends JFrame {
 		if (ids!=null && ids.size()>0) {
 			id[0] = ids.lastElement();
 		}
-		if (id[0]==null) {
-			Dialogs.showMessage("No identities found for "+to.getKeyID());
-			return;
-		}
+//		if (id[0]==null) {
+//			Dialogs.showMessage("No identities found for "+to.getKeyID());
+//			return;
+//		}
 
 		int preselect = 0;
 		Vector<String> select = new Vector<String>();
@@ -3065,77 +3133,81 @@ public class SecurityMainFrame extends JFrame {
 		p.add(selectMasterKey, c);
 
 		y++;
-
-		JButton requestId = new JButton("request (restricted) identity details from keyserver");
-		c.weightx = 0;
-		c.weighty = 0.1;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 0;
-		c.gridy = y;
-		c.gridwidth = 2;
-		p.add(requestId, c);
-		requestId.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				//select signing key
-				OSDXKey signinigKey = selectPrivateSigningKey();
-				if (signinigKey!=null) {
-					signinigKey.unlockPrivateKey(control.getMessageHandler());
-				}
-				Vector<Identity> ids = control.requestIdentitiyDetails(to.getKeyID(), signinigKey);	
-
-				Identity idd = null;
-				if (ids!=null && ids.size()>0) {
-					idd = ids.lastElement();
-				}
-				if (idd==null) {
-					Dialogs.showMessage("No identities found for "+to.getKeyID());
-					return;
-				}
-				Vector<Element> content = idd.getContentElements(true);
-				for (int i=0;i<content.size();i++) {
-					Element ec = content.get(i);
-					String name = ec.getName();
-					String value = ec.getText();
-					texts.get(i).setText(value);
-					boolean restricted = Boolean.parseBoolean(ec.getAttribute("restricted"));
-					if (restricted) {
-						restricted = value.equals(Identity.RESTRICTED);
+		
+		if (id[0]!=null) {
+			JButton requestId = new JButton("request (restricted) identity details from keyserver");
+			c.weightx = 0;
+			c.weighty = 0.1;
+			c.fill = GridBagConstraints.HORIZONTAL;
+			c.gridx = 0;
+			c.gridy = y;
+			c.gridwidth = 2;
+			
+			p.add(requestId, c);
+			
+			requestId.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					//select signing key
+					OSDXKey signinigKey = selectPrivateSigningKey();
+					if (signinigKey!=null) {
+						signinigKey.unlockPrivateKey(control.getMessageHandler());
 					}
-					if (restricted) {
-						checks.get(i).setEnabled(false);
-						checks.get(i).setSelected(false);
-						texts.get(i).setBackground(Color.WHITE);
-					} else {
-						checks.get(i).setEnabled(true);
+					Vector<Identity> ids = control.requestIdentitiyDetails(to.getKeyID(), signinigKey);	
+	
+					Identity idd = null;
+					if (ids!=null && ids.size()>0) {
+						idd = ids.lastElement();
 					}
-					if  (name.equals("identnum")) {
-						checks.get(i).setEnabled(false);
-						checks.get(i).setSelected(true);
-						texts.get(i).setBackground(Color.GREEN);
+					if (idd==null) {
+						Dialogs.showMessage("No identities found for "+to.getKeyID());
+						return;
 					}
-					if  (name.equals("photo")) {
+					Vector<Element> content = idd.getContentElements(true);
+					for (int i=0;i<content.size();i++) {
+						Element ec = content.get(i);
+						String name = ec.getName();
+						String value = ec.getText();
+						texts.get(i).setText(value);
+						boolean restricted = Boolean.parseBoolean(ec.getAttribute("restricted"));
+						if (restricted) {
+							restricted = value.equals(Identity.RESTRICTED);
+						}
 						if (restricted) {
 							checks.get(i).setEnabled(false);
 							checks.get(i).setSelected(false);
-							int photoW = 90;
-							int photoH = 120;
-							BufferedImage img = new BufferedImage(photoW, photoH, BufferedImage.TYPE_INT_RGB);
-							Graphics g = img.getGraphics();
-							g.setColor(Color.WHITE);
-							g.fillRect(0,0,photoW,photoH);
-							g.setColor(Color.GRAY);
-							g.setFont(new Font("arial", Font.BOLD, 12));
-							g.drawString("[RESTRICTED]", photoW/2-39 ,photoH/2);
-							buttons.get(0).setIcon(new ImageIcon(img));
+							texts.get(i).setBackground(Color.WHITE);
 						} else {
 							checks.get(i).setEnabled(true);
-							buttons.get(0).setIcon(new ImageIcon(idd.getPhoto()));
+						}
+						if  (name.equals("identnum")) {
+							checks.get(i).setEnabled(false);
+							checks.get(i).setSelected(true);
+							texts.get(i).setBackground(Color.GREEN);
+						}
+						if  (name.equals("photo")) {
+							if (restricted) {
+								checks.get(i).setEnabled(false);
+								checks.get(i).setSelected(false);
+								int photoW = 90;
+								int photoH = 120;
+								BufferedImage img = new BufferedImage(photoW, photoH, BufferedImage.TYPE_INT_RGB);
+								Graphics g = img.getGraphics();
+								g.setColor(Color.WHITE);
+								g.fillRect(0,0,photoW,photoH);
+								g.setColor(Color.GRAY);
+								g.setFont(new Font("arial", Font.BOLD, 12));
+								g.drawString("[RESTRICTED]", photoW/2-39 ,photoH/2);
+								buttons.get(0).setIcon(new ImageIcon(img));
+							} else {
+								checks.get(i).setEnabled(true);
+								buttons.get(0).setIcon(new ImageIcon(idd.getPhoto()));
+							}
 						}
 					}
+					id[0] = idd;
 				}
-				id[0] = idd;
-			}
-		});
+			});
+		}
 		y++;
 		l = new JLabel("Message:");
 		c.weightx = 0;
@@ -3155,17 +3227,17 @@ public class SecurityMainFrame extends JFrame {
 		c.gridwidth = 2;
 		p.add(text_message, c);
 
-
-		y++;
-		l = new JLabel("Please select fields for status update:");
-		c.weightx = 0;
-		c.weighty = 0.1;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.gridx = 0;
-		c.gridy = y;
-		c.gridwidth = 2;
-		p.add(l, c);
-
+		if (id[0]!=null) {
+			y++;
+			l = new JLabel("Please select fields for status update:");
+			c.weightx = 0;
+			c.weighty = 0.1;
+			c.fill = GridBagConstraints.HORIZONTAL;
+			c.gridx = 0;
+			c.gridy = y;
+			c.gridwidth = 2;
+			p.add(l, c);
+		}
 
 		Dimension d = new Dimension(700,4*40+80);
 		p.setPreferredSize(d);
@@ -3174,40 +3246,43 @@ public class SecurityMainFrame extends JFrame {
 
 		pDialog.setLayout(new BorderLayout());
 		pDialog.add(p, BorderLayout.NORTH);
-		pSouth[0] = buildIDElement(id[0], checks, texts, buttons);
-		pDialog.add(pSouth[0], BorderLayout.CENTER);
-
+		if (id[0]!=null) {
+			pSouth[0] = buildIDElement(id[0], checks, texts, buttons);
+			pDialog.add(pSouth[0], BorderLayout.CENTER);
+		}
+		
 		int ans = JOptionPane.showConfirmDialog(null,pDialog,head,JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 		if (ans == JOptionPane.OK_OPTION) {
-			//delete all unchecked from id;
-			Vector<Element> content = id[0].getContentElements(true);
-			for (int i=0;i<content.size();i++) {
-				Element ec = content.get(i);
-				boolean selected = checks.get(i).isSelected();
-				if (!selected) {
-					String name = ec.getName();
-					if (name.equals("email")) id[0].setEmail(null);
-					else if (name.equals("mnemonic")) id[0].setMnemonic(null);
-					else if (name.equals("country")) id[0].setCountry(null);
-					else if (name.equals("region")) id[0].setRegion(null);
-					else if (name.equals("city")) id[0].setCity(null);
-					else if (name.equals("postcode")) id[0].setPostcode(null);
-					else if (name.equals("company")) id[0].setCompany(null);
-					else if (name.equals("unit")) id[0].setUnit(null);
-					else if (name.equals("subunit")) id[0].setSubunit(null);
-					else if (name.equals("function")) id[0].setFunction(null);
-					else if (name.equals("surname")) id[0].setSurname(null);
-					else if (name.equals("middlename")) id[0].setMiddlename(null);
-					else if (name.equals("name")) id[0].setFirstNames(null);
-					else if (name.equals("birthday_gmt")) id[0].setBirthday_gmt(Long.MIN_VALUE);
-					else if (name.equals("placeofbirth")) id[0].setPlaceofbirth(null);
-					else if (name.equals("phone")) id[0].setPhone(null);
-					else if (name.equals("fax")) id[0].setFax(null);
-					else if (name.equals("note")) id[0].setNote(null);
-					else if (name.equals("photo")) id[0].setPhoto((BufferedImage)null);
+			if (id[0]!=null) {
+				//delete all unchecked from id;
+				Vector<Element> content = id[0].getContentElements(true);
+				for (int i=0;i<content.size();i++) {
+					Element ec = content.get(i);
+					boolean selected = checks.get(i).isSelected();
+					if (!selected) {
+						String name = ec.getName();
+						if (name.equals("email")) id[0].setEmail(null);
+						else if (name.equals("mnemonic")) id[0].setMnemonic(null);
+						else if (name.equals("country")) id[0].setCountry(null);
+						else if (name.equals("region")) id[0].setRegion(null);
+						else if (name.equals("city")) id[0].setCity(null);
+						else if (name.equals("postcode")) id[0].setPostcode(null);
+						else if (name.equals("company")) id[0].setCompany(null);
+						else if (name.equals("unit")) id[0].setUnit(null);
+						else if (name.equals("subunit")) id[0].setSubunit(null);
+						else if (name.equals("function")) id[0].setFunction(null);
+						else if (name.equals("surname")) id[0].setSurname(null);
+						else if (name.equals("middlename")) id[0].setMiddlename(null);
+						else if (name.equals("name")) id[0].setFirstNames(null);
+						else if (name.equals("birthday_gmt")) id[0].setBirthday_gmt(Long.MIN_VALUE);
+						else if (name.equals("placeofbirth")) id[0].setPlaceofbirth(null);
+						else if (name.equals("phone")) id[0].setPhone(null);
+						else if (name.equals("fax")) id[0].setFax(null);
+						else if (name.equals("note")) id[0].setNote(null);
+						else if (name.equals("photo")) id[0].setPhoto((BufferedImage)null);
+					}
 				}
 			}
-
 			OSDXKey from = storedPrivateKeys.get(map[selectMasterKey.getSelectedIndex()]);
 			if (!from.isPrivateKeyUnlocked()) from.unlockPrivateKey(control.getMessageHandler());
 			try {
@@ -4047,6 +4122,53 @@ public class SecurityMainFrame extends JFrame {
 			t.start();
 			wait.setVisible(true);
 		}
+	}
+	
+	public boolean revokeRevokeKeyWithMasterKey(RevokeKey revokekey) {
+		String message = Dialogs.showInputDialog("Confirm REVOCATION", "Please confirm REVOCATION of Revokekey.\nYou can enter a revocatoin message:");
+		if (message!=null) {
+			return revokeSubKeyWithMasterKey(revokekey,message);
+		}
+		return false;
+	}
+	
+	public boolean revokeSubKeyWithMasterKey(SubKey subkey) {
+		String message = Dialogs.showInputDialog("Confirm REVOCATION", "Please confirm REVOCATION of Subkey.\nYou can enter a revocatoin message:");
+		if (message!=null) {
+			return revokeSubKeyWithMasterKey(subkey,message);
+		}
+		return false;
+	}
+
+	public boolean revokeSubKeyWithMasterKey(SubKey subkey, String message) {
+
+		String parent = subkey.getParentKeyID();
+		OSDXKey mkey = control.getKeyStore().getKey(parent);
+		MasterKey masterkey = null;
+		if (mkey instanceof MasterKey) {
+			masterkey = (MasterKey)mkey;
+		}
+		String host = masterkey.getAuthoritativekeyserver().toLowerCase();
+		KeyClient client = control.getKeyClient(host);
+
+		if (client!=null) {
+			try {
+				if (!mkey.isPrivateKeyUnlocked()) mkey.unlockPrivateKey(control.getMessageHandler());	
+
+				boolean ok = client.putRevokeSubKeyRequest(subkey, masterkey, message);
+				if (ok) {
+					Dialogs.showMessage("REVOCATION of Key:\n"+subkey.getKeyID()+"\non KeyServer: "+client.getHost()+"\nsuccessful!");
+					return ok;
+				} else {
+					String msg = client.getMessage();
+					Dialogs.showMessage("REVOCATION of Key:\n"+subkey.getKeyID()+"\non KeyServer: "+client.getHost()+"\nFAILED!"+(msg!=null?"\n\n"+msg:""));
+					return false;
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}	
+		}
+		return false;
 	}
 
 	public boolean revokeMasterKeyWithRevokeKey(RevokeKey revokekey) {
