@@ -131,6 +131,10 @@ public class FeedValidator {
 		return validateOSDX_0_0_1(xml);
 	}
 	
+	public String validateOSDX_latest(Feed f) throws Exception {
+		return validateOSDX_0_0_1(f);
+	}
+	
 	public String validateOSDX_latest(File f) throws Exception { 
 		return validateOSDX_0_0_1(f);
 	}
@@ -153,7 +157,7 @@ public class FeedValidator {
 		return validateXmlFile(f, RESSOURCE_OSDX_0_0_1);
 	}
 	
-	public String validateOSDX_0_1_0(Feed f) { //validate against oSDX 0.1.0 (mayor minor sub)
+	public String validateOSDX_0_0_1(Feed f) { //validate against oSDX 0.0.1 (mayor minor sub)
 		return validateOSDX_0_0_1(f.toElement().toString());  		
 	}
 	
