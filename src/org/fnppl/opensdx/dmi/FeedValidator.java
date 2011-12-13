@@ -131,10 +131,11 @@ public class FeedValidator {
 		return validateOSDX_0_0_1(xml);
 	}
 	
-	public String validateOSDX_latest(File f) throws Exception { 
+	public String validateOSDX_latest(Feed f) throws Exception {
 		return validateOSDX_0_0_1(f);
 	}
-	public String validateOSDX_latest(Feed f) throws Exception { 
+	
+	public String validateOSDX_latest(File f) throws Exception { 
 		return validateOSDX_0_0_1(f);
 	}
 	
