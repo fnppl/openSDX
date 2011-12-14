@@ -88,6 +88,10 @@ public class Element {
 		return this;
 	}
 	
+	public org.jdom.Element getJDOMElement() {
+		return base;
+	}
+	
 	public void addComment(String comment)  {
 		base.addContent(new Comment(comment));
 	}
