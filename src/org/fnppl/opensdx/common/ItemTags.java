@@ -173,11 +173,19 @@ public class ItemTags extends BusinessObject {
 		return bundle_only.getBoolean();
 	}
 	
+	public boolean hasBundle_only() {
+		return (bundle_only==null);
+	}
+	
 	public boolean isExplicit_lyrics() {
 		if (explicit_lyrics==null) return false;
 		String e = explicit_lyrics.getString();
 		if (e.equalsIgnoreCase("true")) return true;
 		return false;
+	}
+	
+	public boolean hasExplicit_lyrics() {
+		return (explicit_lyrics==null);
 	}
 		
 	public String getExplicit_lyrics() {
@@ -190,14 +198,26 @@ public class ItemTags extends BusinessObject {
 		return live.getBoolean();
 	}
 	
+	public boolean hasLive() {
+		return (live==null);
+	}
+	
 	public boolean isAccoustic() {
 		if (accoustic==null) return false;
 		return accoustic.getBoolean();
 	}
 	
+	public boolean hasAccoustic() {
+		return (accoustic==null);
+	}
+	
 	public boolean isInstrumental() {
 		if (instrumental==null) return false;
 		return instrumental.getBoolean();
+	}
+	
+	public boolean hasInstrumental() {
+		return (instrumental==null);
 	}	
 
 	public String getKeyname() {

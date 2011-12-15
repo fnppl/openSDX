@@ -272,6 +272,11 @@ public class LicenseBasis extends BusinessObject {
 		if (streaming_allowed==null) return false;
 		return streaming_allowed.getBoolean();
 	}
+	
+	public boolean hasStreaming_allowed() {
+		if (streaming_allowed==null) return false;
+		return true;
+	}
 
 	
 	public LicenseBasis pricing_pricecode(String pricecode) {
