@@ -182,8 +182,9 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
 	        
 			
 			// streaming allowed?			
-			release.addContent("streaming", ""+bundle.getLicense_basis().isStreaming_allowed());	        
-	        
+			//release.addContent("streaming", String.valueOf(BusinessObject.getNotNullBoolean(bundle.getLicense_basis().isStreaming_allowed(), false)));
+	        release.addContent("streaming", ""+bundle.getLicense_basis().isStreaming_allowed());
+			
 			// pricecode
         	if(bundle.getLicense_basis().getPricingPricecode()!=null) {
         		release.addContent("priceband", ""+bundle.getLicense_basis().getPricingPricecode());
@@ -438,8 +439,9 @@ public class OpenSDXToFinetunesExporter extends OpenSDXExporterBase {
     	        
     			
     			// item streaming allowed?			
-    	        track.addContent("streaming", ""+item.getLicense_basis().isStreaming_allowed());	        
-    	        
+//    	        track.addContent("streaming", String.valueOf(BusinessObject.getNotNullBoolean(item.getLicense_basis().isStreaming_allowed(), false)));
+    	        track.addContent("streaming", ""+item.getLicense_basis().isStreaming_allowed());
+
         		// item version
     	        version = item.getVersion();
     	        if (version==null) version = "";

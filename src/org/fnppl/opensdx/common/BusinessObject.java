@@ -393,4 +393,19 @@ public abstract class BusinessObject implements XMLElementable {
 		this.appendOtherObjects = appendOtherObjects;
 		return this;
 	}
+	
+	public static boolean getNotNullBoolean(Boolean b, boolean value_when_b_is_null) {
+		if(b==null) {
+			return value_when_b_is_null;
+		}
+		return b.booleanValue();
+	}
+	public static int getNotNullInteger(Integer b, int value_when_b_is_null) {
+		if(b==null) {
+			return value_when_b_is_null;
+		}
+		return b.intValue();
+	}
 }
+
+

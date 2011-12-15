@@ -275,7 +275,8 @@ public class OpenSDXToSimfyExporter extends OpenSDXExporterBase {
     	            			Element right = new Element("right");
     	            			rights.addContent(right);
     	            			right.addContent("country_code", "**");
-    	            			right.addContent("allows_streaming", ""+item.getLicense_basis().isStreaming_allowed());
+//    	            			right.addContent("allows_streaming", String.valueOf(BusinessObject.getNotNullBoolean(item.getLicense_basis().isStreaming_allowed(), false)));
+    	            			right.addContent("allows_streaming", String.valueOf(item.getLicense_basis().isStreaming_allowed()));
     	            			cal.setTimeInMillis(item.getLicense_basis().getTimeframeFrom());
     	            			right.addContent("streamable_from", ymd.format(cal.getTime()));
     	            		}

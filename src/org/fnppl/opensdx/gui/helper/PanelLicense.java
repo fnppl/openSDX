@@ -59,6 +59,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.fnppl.opensdx.common.BusinessObject;
 import org.fnppl.opensdx.common.LicenseBasis;
 import org.fnppl.opensdx.common.Territorial;
 import org.fnppl.opensdx.dmi.FeedGui;
@@ -207,6 +208,7 @@ public class PanelLicense extends JPanel implements MyObservable, MyObserver, Te
 				text_pricing.setText(lb.getPricingWholesale());
 				text_pricing.setEnabled(true);
 			}
+//			boolean sa = BusinessObject.getNotNullBoolean(lb.isStreaming_allowed(), false);
 			boolean sa = lb.isStreaming_allowed();
 			check_streaming_allowed.setSelected(sa);
 			if (sa) {
