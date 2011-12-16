@@ -14,6 +14,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.fnppl.opensdx.common.Bundle;
+import org.fnppl.opensdx.common.Contributor;
 import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.Item;
 import org.fnppl.opensdx.common.ItemFile;
@@ -103,6 +104,9 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 				String name = bundle.getFile(i).getOriginLocationPath();
 				if (name==null || name.length()==0) {
 					name = bundle.getFile(i).getLocationPath();
+					if (name==null) {
+						name = "";
+					}
 				}
 				list_files_model.addElement("File: "+name);
 			}
@@ -113,6 +117,9 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 				String name = item.getFile(i).getOriginLocationPath();
 				if (name==null || name.length()==0) {
 					name = item.getFile(i).getLocationPath();
+					if (name==null) {
+						name = "";
+					}
 				}
 				list_files_model.addElement("File: "+name);
 			}
@@ -125,14 +132,7 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 
 	private void updateProperties() {
 		ItemFile file = getSelectedFile();
-		String structuredName = "";
-		if (file!=null && feed!=null) {
-			BundleItemStructuredName sn = feed.getStructuredFilename(file);
-			if (sn!=null) {
-				structuredName = sn.new_filename;
-			}
-		}
-		panel_properties.update(file, structuredName);
+		panel_properties.update(file, feed);
 		if (file==null) {
 			panel_properties.setVisible(false);
 		} else {
@@ -378,6 +378,36 @@ public class PanelFiles extends JPanel implements MyObservable, MyObserver {
 
 	//observer
 	public void notifyChange(MyObservable changedIn) {
+		if (changedIn == panel_properties) {
+			//update list names
+			if (bundle!=null) {
+				int anz = bundle.getFilesCount();
+				for (int i = 0; i < anz; i++) {
+					String name = bundle.getFile(i).getOriginLocationPath();
+					if (name==null || name.length()==0) {
+						name = bundle.getFile(i).getLocationPath();
+						if (name==null) {
+							name = "";
+						}
+					}
+					list_files_model.set(i, "File: "+name);
+				}
+			}
+			
+			if (item!=null) {
+				int anz = item.getFilesCount();
+				for (int i = 0; i < anz; i++) {
+					String name = item.getFile(i).getOriginLocationPath();
+					if (name==null || name.length()==0) {
+						name = item.getFile(i).getLocationPath();
+						if (name==null) {
+							name = "";
+						}
+					}
+					list_files_model.set(i,"File: "+name);
+				}
+			}
+		}
 		notifyChanges();
 	}
 }

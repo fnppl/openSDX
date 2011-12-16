@@ -15,6 +15,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.fnppl.opensdx.common.Bundle;
 import org.fnppl.opensdx.common.BundleInformation;
+import org.fnppl.opensdx.common.BusinessObject;
 import org.fnppl.opensdx.common.Contributor;
 import org.fnppl.opensdx.common.Feed;
 import org.fnppl.opensdx.common.IDs;
@@ -42,6 +43,7 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 	private JScrollPane scroll_list_items;
 	private DefaultListModel list_items_model;
 	private JButton bu_add;
+	private JButton bu_duplicate;
 	private JButton bu_remove;
 	private JButton bu_up;
 	private JButton bu_down;
@@ -133,6 +135,14 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 				bu_add_clicked();
 			}
 		});
+		
+		bu_duplicate = new JButton("duplicate");
+		map.put("bu_duplicate", bu_duplicate);
+		bu_duplicate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				bu_duplicate_clicked();
+			}
+		});
 
 		bu_remove = new JButton("remove");
 		map.put("bu_remove", bu_remove);
@@ -174,43 +184,25 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 		north.setLayout(gbl);
 		GridBagConstraints gbc = new GridBagConstraints();
 
-		Container spacer0 = new Container();
-		Container spacer1 = new Container();
-
 
 		// Component: scroll_list_items
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.gridwidth = 1;
-		gbc.gridheight = 5;
+		gbc.gridheight = 6;
 		gbc.weightx = 100.0;
 		gbc.weighty = 100.0;
 		gbc.anchor = GridBagConstraints.CENTER;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+		gbc.insets = new Insets(2,2,2,2);
 		gbl.setConstraints(scroll_list_items,gbc);
 		north.add(scroll_list_items);
-
-		// Component: spacer0
-		gbc.gridx = 1;
-		gbc.gridy = 1;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(spacer0,gbc);
-		north.add(spacer0);
-
+		
 		// Component: bu_add
 		gbc.gridx = 2;
-		gbc.gridy = 1;
+		gbc.gridy = 0;
 		gbc.gridwidth = 1;
 		gbc.gridheight = 1;
 		gbc.weightx = 0.0;
@@ -219,67 +211,26 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.ipadx = 0;
 		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
 		gbl.setConstraints(bu_add,gbc);
 		north.add(bu_add);
 
-		// Component: spacer1
-		gbc.gridx = 1;
-		gbc.gridy = 2;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.CENTER;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
-		gbl.setConstraints(spacer1,gbc);
-		north.add(spacer1);
-
+		// Component: bu_duplicate
+		gbc.gridy++;
+		gbl.setConstraints(bu_duplicate,gbc);
+		north.add(bu_duplicate);
+		
 		// Component: bu_remove
-		gbc.gridx = 2;
-		gbc.gridy = 2;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.NORTH;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+		gbc.gridy++;
 		gbl.setConstraints(bu_remove,gbc);
 		north.add(bu_remove);
 		
 		// Component: bu_up
-		gbc.gridx = 2;
-		gbc.gridy = 3;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.NORTH;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+		gbc.gridy++;
 		gbl.setConstraints(bu_up,gbc);
 		north.add(bu_up);
 		
 		// Component: bu_down
-		gbc.gridx = 2;
-		gbc.gridy = 4;
-		gbc.gridwidth = 1;
-		gbc.gridheight = 1;
-		gbc.weightx = 0.0;
-		gbc.weighty = 0.0;
-		gbc.anchor = GridBagConstraints.NORTH;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.ipadx = 0;
-		gbc.ipady = 0;
-		gbc.insets = new Insets(5,5,5,5);
+		gbc.gridy++;
 		gbl.setConstraints(bu_down,gbc);
 		north.add(bu_down);
 
@@ -311,6 +262,24 @@ public class PanelItems extends JPanel implements MyObservable, MyObserver {
 		//panel_item.update(newItem, bundle);
 		notifyChanges();
 	}
+	
+	public void bu_duplicate_clicked() {
+		if (bundle==null) return;
+		Item selectedItem = getSelectedItem();
+		if (selectedItem==null) {
+			Dialogs.showMessage("Please select an item to duplicate first.");
+			return;
+		}
+		
+		//clone selected item
+		Item newItem = Item.fromBusinessObject(BusinessObject.fromElement(selectedItem.toElement()));		
+		bundle.addItem(newItem);
+		updateItemList();
+		list_items.setSelectedIndex(list_items.getModel().getSize()-1);
+		//panel_item.update(newItem, bundle);
+		notifyChanges();
+	}
+	
 	public void bu_remove_clicked() {
 		if (bundle==null || bundle.getItemsCount()==0) return;
 		int selItem = list_items.getSelectedIndex();

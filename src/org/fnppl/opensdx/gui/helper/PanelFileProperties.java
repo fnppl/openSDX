@@ -59,7 +59,10 @@ import javax.swing.event.ListSelectionListener;
 
 import org.fnppl.opensdx.common.BusinessStringItem;
 import org.fnppl.opensdx.common.Checksums;
+import org.fnppl.opensdx.common.Feed;
+import org.fnppl.opensdx.common.FileLocation;
 import org.fnppl.opensdx.common.ItemFile;
+import org.fnppl.opensdx.dmi.BundleItemStructuredName;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.security.SecurityHelper;
 
@@ -81,6 +84,7 @@ public class PanelFileProperties extends JPanel implements MyObservable, TextCha
 	private HashMap<String,JComponent> map = new HashMap<String, JComponent>();
 
 	private ItemFile file;
+	private Feed feed = null;
 	private JLabel label_path;
 	private JTextField text_path;
 	private JButton bu_change;
@@ -132,7 +136,7 @@ public class PanelFileProperties extends JPanel implements MyObservable, TextCha
 		text_structuredname.setEditable(false);
 
 		file = null;
-		update(file,"");
+		update(file,null);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -198,8 +202,9 @@ public class PanelFileProperties extends JPanel implements MyObservable, TextCha
 		return label_channels.isVisible();
 	}
 
-	public void update(ItemFile file, String structuredFilename) {
+	public void update(ItemFile file, Feed feed) {
 		this.file = file;
+		this.feed = feed;
 		if (file == null) {
 			text_path.setText("");
 			text_format.setText("");
@@ -246,12 +251,15 @@ public class PanelFileProperties extends JPanel implements MyObservable, TextCha
 			text_bitratetype.setText(file.getBitratetype());
 			text_codec.setText(file.getCodec());
 			text_codecsettings.setText(file.getCodecsettings());
-			if (structuredFilename==null) {
-				text_structuredname.setText("");
-			} else {
-				text_structuredname.setText(structuredFilename);
+			String structuredName = "";
+			if (feed!=null) {
+				BundleItemStructuredName sn = feed.getStructuredFilename(file);
+				if (sn!=null) {
+					structuredName = sn.new_filename;
+				}
 			}
-			
+			text_structuredname.setText(structuredName);
+
 			//dimension
 			Integer w = file.getDimensionWidth();
 			if (w==null) {
@@ -422,6 +430,7 @@ public class PanelFileProperties extends JPanel implements MyObservable, TextCha
 				chl.addTextComponent(text);
 			}
 		}
+		text_path.setEditable(false);
 	}
 
 
@@ -982,8 +991,32 @@ public class PanelFileProperties extends JPanel implements MyObservable, TextCha
 
 	// ----- action methods --------------------------------
 	public void bu_change_clicked() {
+		File path = null;
 		
+		if (file!=null && file.getOriginFile()!=null) {
+			try {
+				path = new File(file.getOriginFile()).getParentFile();
+		 	if (!path.exists()) path = null;
+			} catch (Exception ex) {
+				path = null;
+			}
+		}
+		
+		File f = Dialogs.chooseOpenFile("Choose file", path, "");
+		if (f==null || !f.exists() || f.isDirectory()) {
+			Dialogs.showMessage("Please select a valid file.");
+			return;
+		}
+		if (file == null) {
+			file = ItemFile.make(f);
+			file.type("full");
+		} else {
+			file.setFile(f);
+		}
+		notifyChanges();
+		update(file, feed);
 	}
+	
 	public void init_select_channels_model() {
 		select_channels_model.removeAllElements();
 		select_channels_model.addElement("[no audio]");
@@ -1039,9 +1072,9 @@ public class PanelFileProperties extends JPanel implements MyObservable, TextCha
 		if (text == text_format) {
 			file.filetype(t);
 		}
-		else if (text == text_format) {
-			file.filetype(t);
-		}
+//		else if (text == text_path) {
+//			file.setLocation(FileLocation.make(t,t));
+//		}
 		else if (text == text_samplerate) {
 			file.samplerate(t);
 		}

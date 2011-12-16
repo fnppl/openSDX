@@ -106,11 +106,12 @@ public class FeedGui extends JFrame implements MyObserver {
 	public final static String RESSOURCE_FEEDGUI_MANUAL = "https://atlas.fnppl.org/display/OSDX/Manual+-+FeedGui";
 	
 	private static FeedGui instance = null;
-	private static String version = "v. 2011-12-09";
+	private static String version = "v. 2011-12-16";
 	private URL configGenres = FeedGui.class.getResource("resources/config_genres.xml");
 	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
 	private XMLTree tree;
 	private String defaultKeystore = null;
+	private boolean defaultShowTooltips = true;
 	private MessageHandler messageHandler = new DefaultMessageHandler();
 	private File fileResourcesDir = null;
 	
@@ -165,6 +166,8 @@ public class FeedGui extends JFrame implements MyObserver {
 				if (ld!=null && new File(ld).exists()) {
 					lastDir = new File(ld);
 				}
+				defaultShowTooltips = root.getChildBoolean("show_tooltips", true);
+				//System.out.println("show_tooltips: "+defaultShowTooltips);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -207,6 +210,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		if (lastDir!=null) {
 			root.addContent("last_path", lastDir.getAbsolutePath());
 		}
+		root.addContent("show_tooltips",""+defaultShowTooltips);
 		
 		//save
 		settingsFile.getParentFile().mkdirs();
@@ -393,14 +397,15 @@ public class FeedGui extends JFrame implements MyObserver {
 		b.setToolTipText(FeedGuiTooltips.helpButton);
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (b.isSelected()) {
+				defaultShowTooltips = b.isSelected();
+				if (defaultShowTooltips) {
 					ToolTipManager.sharedInstance().setInitialDelay(0);
 				} else {
 					ToolTipManager.sharedInstance().setInitialDelay(10000);
 				}
 			}
 		});
-		b.setSelected(true);
+		b.setSelected(defaultShowTooltips);
 		jb.add(b);
 		
 		
@@ -1063,6 +1068,12 @@ public class FeedGui extends JFrame implements MyObserver {
 		
 		initTooltips();
 		newEmptyFeed();
+		
+		if (defaultShowTooltips) {
+			ToolTipManager.sharedInstance().setInitialDelay(0);
+		} else {
+			ToolTipManager.sharedInstance().setInitialDelay(10000);
+		}
 	}
 	
 	public Feed getCurrentFeed() {

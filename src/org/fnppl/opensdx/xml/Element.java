@@ -136,7 +136,7 @@ public class Element {
 		//beware double-invoke!!!
 		String s = base.getChildText(name);
 		if (s == null) {
-			return ""; //TODO ist das sinn der sache??
+			return "";
 		}
 		return s;
 	}
@@ -159,6 +159,15 @@ public class Element {
 			return Long.parseLong(base.getChildText(name));
 		} catch (Exception ex) {
 			return Long.MIN_VALUE;
+		}
+	}
+	public boolean getChildBoolean(String name, boolean onError) {
+		try {
+			String s = base.getChildText(name);
+			if (s==null) return onError;
+			return Boolean.parseBoolean(s);
+		} catch (Exception ex) {
+			return onError;
 		}
 	}
 	public String getText() {
