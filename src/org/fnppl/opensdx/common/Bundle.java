@@ -298,6 +298,19 @@ public class Bundle extends BusinessObject {
 		return all;
 	}
 	
+	public Vector<Contributor> getAllBundleContributors() {
+		Vector<Contributor> all = new Vector<Contributor>();
+		int num = 1;
+		for (int i=0;i<getContributorCount();i++) {
+			// set Attribute "num"
+			Contributor c = getContributor(i);
+			c.setAttribute("num", ""+num);
+			all.add(getContributor(i));
+			num++;
+		}
+		return all;
+	}
+	
 	public Bundle addItem(Item item) {
 		if (items==null) {
 			items = new BusinessCollection<Item>() {
