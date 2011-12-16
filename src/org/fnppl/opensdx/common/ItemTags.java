@@ -174,7 +174,7 @@ public class ItemTags extends BusinessObject {
 	}
 	
 	public boolean hasBundle_only() {
-		return (bundle_only==null);
+		return (bundle_only != null);
 	}
 	
 	public boolean isExplicit_lyrics() {
@@ -185,7 +185,7 @@ public class ItemTags extends BusinessObject {
 	}
 	
 	public boolean hasExplicit_lyrics() {
-		return (explicit_lyrics==null);
+		return (explicit_lyrics != null);
 	}
 		
 	public String getExplicit_lyrics() {
@@ -199,7 +199,7 @@ public class ItemTags extends BusinessObject {
 	}
 	
 	public boolean hasLive() {
-		return (live==null);
+		return (live != null);
 	}
 	
 	public boolean isAccoustic() {
@@ -208,7 +208,7 @@ public class ItemTags extends BusinessObject {
 	}
 	
 	public boolean hasAccoustic() {
-		return (accoustic==null);
+		return (accoustic != null);
 	}
 	
 	public boolean isInstrumental() {
@@ -217,7 +217,7 @@ public class ItemTags extends BusinessObject {
 	}
 	
 	public boolean hasInstrumental() {
-		return (instrumental==null);
+		return (instrumental != null);
 	}	
 
 	public String getKeyname() {
