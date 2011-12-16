@@ -300,13 +300,14 @@ public class Bundle extends BusinessObject {
 	
 	public Vector<Contributor> getAllBundleContributors() {
 		Vector<Contributor> all = new Vector<Contributor>();
-		int num = 1;
+//		int num=1; //HT 2011-12-16 not needed
 		for (int i=0;i<getContributorCount();i++) {
 			// set Attribute "num"
 			Contributor c = getContributor(i);
-			c.setAttribute("num", ""+num);
-			all.add(getContributor(i));
-			num++;
+//			c.setAttribute("num", ""+num); //HT 2011-12-16 - don't do that on the main object (rather clone it or just let it be!!!) this changes the core-object!!!
+//			all.add(getContributor(i));//HT 2011-12-16 why getting it again?
+			all.addElement(c);
+//			num++; //HT 2011-12-16 not needed
 		}
 		return all;
 	}
