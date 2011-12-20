@@ -342,6 +342,9 @@ public class FeedValidator {
 		if(fv.errorCount > 0) {
 			System.out.println("Errors occured: "+fv.errorCount);
 		}
+		else {
+			System.out.println(f.getAbsolutePath()+" validates.");
+		}
 		System.out.println(msg);
 	}
 }
