@@ -59,6 +59,7 @@ import javax.xml.validation.SchemaFactory;
 import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.jdom.Document;
+import org.jdom.input.SAXBuilder;
 import org.xml.sax.*;
 
 
@@ -334,17 +335,76 @@ public class FeedValidator {
 	public int getErrorCount() {
 		return errorCount;
 	}
-	public static void main(String[] args) {
-		File f = new File(args[0]);
-		FeedValidator fv = new FeedValidator();
-		String msg = fv.validateOSDX_0_0_1(f);
+	public static void main(String[] args) throws Exception {
+		int mode = 0; //file-mode
+//		int mode = 1; //string-mode
+//		int mode = 2; //feed-mode
 		
-		if(fv.errorCount > 0) {
-			System.out.println("Errors occured: "+fv.errorCount);
-		}
-		else {
-			System.out.println(f.getAbsolutePath()+" validates.");
-		}
-		System.out.println(msg);
+		switch(mode) {
+			case 0:
+			{
+				System.out.println("file-mode");
+				File f = new File(args[0]);
+				FeedValidator fv = new FeedValidator();
+				String msg = fv.validateOSDX_latest(f);
+
+				if(fv.errorCount > 0) {
+					System.out.println("Errors occured: "+fv.errorCount);
+				}
+				else {
+					System.out.println(f.getAbsolutePath()+" validates.");
+				}
+				System.out.println(msg);
+			}
+				break;
+			case 1:
+			{
+				System.out.println("string-mode");
+				File f = new File(args[0]);
+				BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+				String zeile = null;
+				StringBuffer sb = new StringBuffer();
+				while((zeile=br.readLine())!=null) {
+					sb.append(zeile);
+					sb.append("\n");
+				}
+				br.close();
+				
+				FeedValidator fv = new FeedValidator();
+				String msg = fv.validateOSDX_latest(sb.toString());
+				
+				if(fv.errorCount > 0) {
+					System.out.println("Errors occured: "+fv.errorCount);
+				}
+				else {
+					System.out.println(f.getAbsolutePath()+" validates.");
+				}
+				System.out.println(msg);
+			}
+				break;
+			case 2:
+			{
+				System.out.println("feed-mode");
+				File f = new File(args[0]);
+				SAXBuilder sax = new SAXBuilder();
+				Document d = sax.build(f);
+				org.jdom.Element r = (org.jdom.Element)d.getRootElement().detach();
+				
+				Feed fe = Feed.fromBusinessObject(Feed.fromElement(org.fnppl.opensdx.xml.Element.buildElement(r)));
+				
+				FeedValidator fv = new FeedValidator();
+				String msg = fv.validateOSDX_latest(fe);
+				
+				if(fv.errorCount > 0) {
+					System.out.println("Errors occured: "+fv.errorCount);
+				}
+				else {
+					System.out.println(f.getAbsolutePath()+" validates.");
+				}
+				System.out.println(msg);
+			}
+				break;
+		}		
 	}
+	
 }
