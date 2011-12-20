@@ -58,6 +58,7 @@ import javax.xml.validation.SchemaFactory;
 
 import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.security.SecurityHelper;
+import org.jdom.Document;
 import org.xml.sax.*;
 
 
@@ -144,10 +145,10 @@ public class FeedValidator {
 		///File file = new File(FILE_OSDX_0_0_1.toURI());
 		//if(!file.exists()) { throw new Exception("Validation Error. Schema-File not loaded."); }
 
-		String xml = s.trim().replaceFirst("^([\\W]+)<","<"); //HT 2011-11-29 WHY?!?!?!
-				
+//		String xml = s.trim().replaceFirst("^([\\W]+)<","<"); //HT 2011-11-29 WHY?!?!?!
+
 		//return validateXmlFeed(xml, file);
-		return validateXmlFeed(xml, RESSOURCE_OSDX_0_0_1);
+		return validateXmlFeed(s, RESSOURCE_OSDX_0_0_1);
 	}
 	
 	public String validateOSDX_0_0_1(File f) { //validate against oSDX 0.0.1 (mayor minor sub)
@@ -158,7 +159,8 @@ public class FeedValidator {
 	}
 	
 	public String validateOSDX_0_0_1(Feed f) { //validate against oSDX 0.1.0 (mayor minor sub)
-		return validateOSDX_0_0_1(f.toElement().toString());  		
+		org.fnppl.opensdx.xml.Document doc = org.fnppl.opensdx.xml.Document.buildDocument(f.toElement());
+		return validateOSDX_0_0_1(doc.toStringCompact());  		
 	}
 	
    // public String validateXmlFeed(String f, File schemaFile) {
