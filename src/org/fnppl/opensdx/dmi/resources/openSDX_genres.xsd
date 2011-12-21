@@ -403,7 +403,7 @@
 		<xsd:enumeration value="Wedding Music"/>
 		<xsd:enumeration value="Holiday"/>
 		<xsd:enumeration value="Mashup"/>
-		<xsd:enumeration value="unclassifiable"/>
+		<xsd:enumeration value="Unclassifiable"/>
 		<xsd:enumeration value="Word"/>
 		<xsd:enumeration value="Business &amp; Career"/>
 		<xsd:enumeration value="Abstracts &amp; Dossiers"/>
