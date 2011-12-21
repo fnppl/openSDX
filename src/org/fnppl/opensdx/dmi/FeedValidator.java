@@ -74,18 +74,15 @@ public class FeedValidator {
 	private int errorCount = 0;
 	private int errorLengthToShow = 200; // set to "-1" to show all
 
-	public File xsdDir = null;
-	
-	public FeedValidator() {
+	public static File xsdDir = null;
+	static {
 		initXSDs();
 	}
 	
-	public void initXSDs() {
-		if(xsdDir != null) {
-			//TODO HT 2011-11-29 - check each .xsd to be present as well...
-			return;
-		}
-		
+	public FeedValidator() {
+	}
+	
+	public static void initXSDs() {
 		try {
 			File f = new File(System.getProperty("user.home"), "openSDX");
 			f = new File(f, "xsd");
@@ -161,7 +158,7 @@ public class FeedValidator {
 	
 	public String validateOSDX_0_0_1(Feed f) { //validate against oSDX 0.1.0 (mayor minor sub)
 		org.fnppl.opensdx.xml.Document doc = org.fnppl.opensdx.xml.Document.buildDocument(f.toElement());
-		return validateOSDX_0_0_1(doc.toStringCompact());  		
+		return validateOSDX_0_0_1(doc.toString());  		
 	}
 	
    // public String validateXmlFeed(String f, File schemaFile) {
@@ -169,7 +166,11 @@ public class FeedValidator {
     	try {
 			// use a SchemaFactory and a Schema for validation
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			Source schemaSource = new StreamSource(new File(xsdDir, schemaName));
+			File sc = new File(xsdDir, schemaName);
+			
+			System.out.println("FeedValidator::schema exists::"+sc.getAbsolutePath()+" -> "+sc.exists()+" ["+sc.length()+"]");
+			
+			Source schemaSource = new StreamSource(sc);
 			Schema schema = schemaFactory.newSchema(schemaSource);
 			
 			ByteArrayInputStream bs = new ByteArrayInputStream(xml.getBytes("UTF-8"));
@@ -235,7 +236,9 @@ public class FeedValidator {
     		// use a SchemaFactory and a Schema for validation
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 //			Source schemaSource = new StreamSource(schemaStream);
-			Source schemaSource = new StreamSource(new File(xsdDir, schemaName));
+			File sc = new File(xsdDir, schemaName);
+			System.out.println("FeedValidator::schema exists::"+sc.getAbsolutePath()+" -> "+sc.exists()+" ["+sc.length()+"]");
+			Source schemaSource = new StreamSource(sc);
 			Schema schema = schemaFactory.newSchema(schemaSource);
 
 			InputStream inputStream= new FileInputStream(xmlFile);
