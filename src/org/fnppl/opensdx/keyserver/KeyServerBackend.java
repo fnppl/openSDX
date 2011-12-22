@@ -61,7 +61,7 @@ public interface KeyServerBackend {
 	public void removeOpenToken(String token);
 	public void updateCache(OSDXKey k, KeyLog l);
 	public KeyStatus getKeyStatus(String keyid);
-	
+	public KeyStatus getKeyStatus(String keyid, String usage, long datetime, String keyidKeyserver);
 	public void addKey(OSDXKey key);
 	public void addKeyLog(KeyLog keylog);
 	public void removeKey(OSDXKey key);

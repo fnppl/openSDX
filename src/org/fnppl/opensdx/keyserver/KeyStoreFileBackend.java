@@ -125,9 +125,14 @@ public class KeyStoreFileBackend implements KeyServerBackend {
 	public void removeOpenToken(String token) {
 		openTokens.remove(token);
 	}
+	
 	public KeyStatus getKeyStatus(String keyid) {
+		return getKeyStatus(keyid, null, System.currentTimeMillis(), null);
+	}
+
+	public KeyStatus getKeyStatus(String keyid, String usage, long datetime, String keyidKeyserver) {
 		try {
-			return keystore.getKeyStatus(keyid);
+			return keystore.getKeyStatus(keyid, usage, datetime, keyidKeyserver);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

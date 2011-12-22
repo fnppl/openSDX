@@ -1,5 +1,6 @@
 package org.fnppl.opensdx.security;
 
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Vector;
@@ -58,12 +59,17 @@ public class KeyStatus {
 	public static int STATUS_VALID = 1;
 	public static int STATUS_REVOKED = 2;
 	public static int STATUS_OUTDATED = 3;
+	public static int STATUS_USAGE_NOT_ALLOWED = 4;
+	public static int STATUS_KEY_NOT_FOUND = 5;
+	
 	public static final Vector<String> VALIDITY_NAME = new Vector<String>();
 	static {
 		VALIDITY_NAME.addElement("unapproved");
 		VALIDITY_NAME.addElement("valid");
 		VALIDITY_NAME.addElement("revoked");
 		VALIDITY_NAME.addElement("outdated");
+		VALIDITY_NAME.addElement("usage not allowed");
+		VALIDITY_NAME.addElement("key not found");
 	};
 	
 	private int validityStatus;
@@ -76,6 +82,67 @@ public class KeyStatus {
 		approvalPoints = 100;
 		validFrom = System.currentTimeMillis();
 		validUntil = validFrom;
+	}
+	
+	public static KeyStatus getKeyStatus(OSDXKey key, Vector<KeyLog> keylogs, String usage, long datetime, String keyidKeyserver) {
+		String keyid = key.getKeyID();
+		System.out.println("Checking keyvalid:\n  keyid: "+keyid+"\n  usage: "+(usage==null?"not checked":usage)+"\n  datetime: "+SecurityHelper.getFormattedDate(datetime));
+		
+		boolean valid = false;
+		//check usage
+		if (usage!=null) {
+			if (usage.equals("sign") && key.allowsSignatures()) valid = true;
+			else if (usage.equals("crypt") && key.allowsCrypt()) valid = true;
+			else if (usage.equals("both") && key.getUsage()==OSDXKey.USAGE_WHATEVER) valid = true;
+		} else {
+			valid = true;
+		}
+			
+		if (!valid) {
+			return new KeyStatus(STATUS_USAGE_NOT_ALLOWED, 0, key.getValidFrom(), key.getValidUntil(), null);
+		}
+			
+		 //check timeframe
+		 System.out.println("timeframe: "+SecurityHelper.getFormattedDate(key.getValidFrom())+"  ...   "+SecurityHelper.getFormattedDate(key.getValidUntil()));
+		 if (key.getValidFrom() > datetime || datetime > key.getValidUntil()) {
+			 return new KeyStatus(STATUS_OUTDATED, 0, key.getValidFrom(), key.getValidUntil(), null);
+		 }
+			 
+		 //check keyserver approval and not revoked
+		 System.out.println("Keyserverkeyid: "+keyidKeyserver);
+		 String alternativeKeyIDKeyserver = null;
+		 boolean hasKeyServerApproval = false;
+		 boolean approval_pending = false;
+		 KeyLog referenced = null;
+		 for (KeyLog kl : keylogs) {
+			 System.out.println("KEYLOG :: "+kl.getKeyIDFrom()+" -> "+kl.getKeyIDTo()+" "+kl.getAction()+" "+kl.getActionDatetimeString());
+			 if (kl.getAction().equals(KeyLogAction.REVOCATION)) {
+				 return new KeyStatus(STATUS_REVOKED, 0, key.getValidFrom(), key.getValidUntil(), kl);
+			 }
+			 else if (kl.getAction().equals(KeyLogAction.APPROVAL_PENDING)) {
+				 alternativeKeyIDKeyserver = kl.getKeyIDFrom();
+				 approval_pending = true;
+			 }
+			 else if (kl.getAction().equals(KeyLogAction.APPROVAL)) {
+				 if (keyidKeyserver!=null && kl.getKeyIDFrom().equals(keyidKeyserver)) {
+					 hasKeyServerApproval = true;
+					 referenced = kl;
+				 }
+				 else if (alternativeKeyIDKeyserver!=null && kl.getKeyIDFrom().equals(alternativeKeyIDKeyserver)) {
+					 hasKeyServerApproval = true;
+					 referenced = kl;
+				 }
+			 }
+		 }
+		 if (hasKeyServerApproval) { //and not revoked
+			 return new KeyStatus(STATUS_VALID, 100, key.getValidFrom(), key.getValidUntil(), referenced);
+		 }
+		 else if (approval_pending) { //and not keyserver approval and not revoked
+			 return new KeyStatus(STATUS_UNAPPROVED, 100, key.getValidFrom(), key.getValidUntil(), referenced);
+		 } else {
+			 //this should not happen, since the keyserver should always build the approval_pending keylog 
+			 return new KeyStatus(STATUS_UNAPPROVED, 100, key.getValidFrom(), key.getValidUntil(), null);
+		 }
 	}
 	
 	public KeyStatus(int validity, int approvalPoints, long datetimeValidFrom, long datetimeValidUntil, KeyLog kl) {

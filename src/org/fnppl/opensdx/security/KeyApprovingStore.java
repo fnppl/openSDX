@@ -713,35 +713,53 @@ public class KeyApprovingStore {
 		return ret;
 	}
 	
-	public KeyStatus getKeyStatus(String keyid) throws Exception {
-		Vector<KeyLog> kls = getKeyLogs(keyid);
-		if (kls==null || kls.size()==0) return null;
-		for (KeyLog kl : kls) {
-			System.out.println("found keylog... "+kl.getActionDatetimeString());
-		}
-		KeyLog kl = kls.lastElement();
-		String status = kl.getAction();
-		int validity = -1;
-		if (status.equals(KeyLogAction.APPROVAL)) {
-			validity =  KeyStatus.STATUS_VALID;
-		}
-		else if (status.equals(KeyLogAction.DISAPPROVAL)) {
-			validity =  KeyStatus.STATUS_UNAPPROVED;
-		}
-		else if (status.equals(KeyLogAction.APPROVAL_PENDING)) {
-			validity =  KeyStatus.STATUS_UNAPPROVED;
-		}
-		else if (status.equals(KeyLogAction.REVOCATION)) {
-			validity =  KeyStatus.STATUS_REVOKED;
-		}
-		
-		int approvalPoints = 100;
-		int datetimeValidFrom = 0;  //TODO get from key
-		int datetimeValidUntil = 0; //TODO
-		
-		KeyStatus ks = new KeyStatus(validity, approvalPoints, datetimeValidFrom, datetimeValidUntil, kl);
-		return ks;
+	
+	public KeyStatus getKeyStatus(String keyid) {
+		return getKeyStatus(keyid, null, System.currentTimeMillis(), null);
 	}
+
+	public KeyStatus getKeyStatus(String keyid, String usage, long datetime, String keyidKeyserver) {
+		OSDXKey key = getKey(keyid);
+		if (key==null) {
+			return null;
+		}
+		Vector<KeyLog> keylogs = getKeyLogs(keyid);
+		if (keylogs==null) {
+			keylogs = new Vector<KeyLog>();
+		}
+		return KeyStatus.getKeyStatus(key, keylogs, usage, datetime, keyidKeyserver);
+	
+	}
+	
+//	public KeyStatus getKeyStatus(String keyid) throws Exception {
+//		Vector<KeyLog> kls = getKeyLogs(keyid);
+//		if (kls==null || kls.size()==0) return null;
+//		for (KeyLog kl : kls) {
+//			System.out.println("found keylog... "+kl.getActionDatetimeString());
+//		}
+//		KeyLog kl = kls.lastElement();
+//		String status = kl.getAction();
+//		int validity = -1;
+//		if (status.equals(KeyLogAction.APPROVAL)) {
+//			validity =  KeyStatus.STATUS_VALID;
+//		}
+//		else if (status.equals(KeyLogAction.DISAPPROVAL)) {
+//			validity =  KeyStatus.STATUS_UNAPPROVED;
+//		}
+//		else if (status.equals(KeyLogAction.APPROVAL_PENDING)) {
+//			validity =  KeyStatus.STATUS_UNAPPROVED;
+//		}
+//		else if (status.equals(KeyLogAction.REVOCATION)) {
+//			validity =  KeyStatus.STATUS_REVOKED;
+//		}
+//		
+//		int approvalPoints = 100;
+//		int datetimeValidFrom = 0;  //TODO get from key
+//		int datetimeValidUntil = 0; //TODO
+//		
+//		KeyStatus ks = new KeyStatus(validity, approvalPoints, datetimeValidFrom, datetimeValidUntil, kl);
+//		return ks;
+//	}
 
 	
 	public File getFile() {

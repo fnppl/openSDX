@@ -47,6 +47,9 @@ package org.fnppl.opensdx.keyserver;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -376,17 +379,21 @@ public class KeyServerMain extends HTTPServer {
 				System.out.println("WrongIDNum...");
 				//TODO HT 2011-06-26 hier bitte checken, ob noch ein offener approval rumliegt und NICHT in der aktuellen token-hash drin ist -> resend...
 				if(key != null) {
-					System.out.println("WrongIDNum key!=null...");
-					KeyStatus ks = backend.getKeyStatus(key.getKeyID());
-					//if (ks==null || !(ks.isValid() || ks.isUnapproved())) {
-					System.out.println("WrongIDNum keystatus: "+ks.getValidityStatusName());
-					if (ks!=null && ks.isUnapproved()) {
-						KeyLog kl = ks.referencedKeyLog;
-						System.out.println("WrongIDNum keylog : "+kl.getAction());
-						sendApprovalTokenMail(kl, idd);
-						//openTokens.containsValue(kl);
+					try {
+						System.out.println("WrongIDNum key!=null...");
+						KeyStatus ks = backend.getKeyStatus(key.getKeyID(), null, System.currentTimeMillis(), keyServerSigningKey.getKeyID());
+						//if (ks==null || !(ks.isValid() || ks.isUnapproved())) {
+						System.out.println("WrongIDNum keystatus: "+ks.getValidityStatusName());
+						if (ks!=null && ks.isUnapproved()) {
+							KeyLog kl = ks.referencedKeyLog;
+							System.out.println("WrongIDNum keylog : "+kl.getAction());
+							sendApprovalTokenMail(kl, idd);
+							//openTokens.containsValue(kl);
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
 					}
-				}				
+				}	
 				
 				return errorMessage("IdentNum collision: IdentNum must be > "+maxIDnum+".");
 			}
@@ -437,7 +444,7 @@ public class KeyServerMain extends HTTPServer {
 		
 		//TODO HT 2011-06-26 port must also be checked because of http-reverse-proxy...
 		//String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+":"+port+"/approve_mail?id="+token;
-		String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+"/approve_mail?id="+token;
+		String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+":"+port+"/approve_mail?id="+token;
 		
 		backend.addOpenToken(token, kl);
 		try {
@@ -512,10 +519,10 @@ public class KeyServerMain extends HTTPServer {
 			return errorMessage("associatied masterkey is not on server.");
 		}
 		
-		//check masterkey approved
-		KeyStatus ks = backend.getKeyStatus(masterkey.getKeyID());
+		//check masterkey approved or approval pending
+		KeyStatus ks = backend.getKeyStatus(masterkey.getKeyID(), null, System.currentTimeMillis(), keyServerSigningKey.getKeyID());
 		//if (ks==null || !ks.isValid()) {
-		if (ks==null || !(ks.isValid() || ks.isUnapproved())) { //TODO for testing with approval_pending
+		if (ks==null || !(ks.isValid() || ks.isUnapproved())) { //approval_pending is sufficient
 			return errorMessage("associatied masterkey is not approved.");
 		}
 		
@@ -539,11 +546,12 @@ public class KeyServerMain extends HTTPServer {
 		
 		//save
 		backend.addKey(revokekey);
-		//keystore.addKeyLog(kl);
+		//backend.addKeyLog(kl);
+		
 		updateCache(revokekey, null);
 		
 		//add revokekey to trusted keys
-		keyverificator.addKeyRating(revokekey, TrustRatingOfKey.RATING_MARGINAL);
+		keyverificator.addKeyRating(revokekey, TrustRatingOfKey.RATING_MARGINAL);		
 		
 		KeyServerResponse resp = new KeyServerResponse(serverid); 
 		return resp;
@@ -556,10 +564,8 @@ public class KeyServerMain extends HTTPServer {
 		} catch (Exception ex) {
 			return errorMessage("ERROR in opensdx_message");
 		}
-		Result verified = msg.verifySignatures(keyverificator);
-		if (!verified.succeeded) {
-			return errorMessage("verification of signature failed"+(verified.errorMessage!=null?": "+verified.errorMessage:""));
-		}
+		
+		
 		Element content = msg.getContent();
 		if (!content.getName().equals("revokemasterkey")) {
 			return errorMessage("missing revokemasterkey element");
@@ -569,6 +575,7 @@ public class KeyServerMain extends HTTPServer {
 //		String toKeyID = content.getChildText("to_keyid");
 //		String message = content.getChildText("message");
 		
+		
 		KeyLogAction keylogAction = KeyLogAction.fromElement(content.getChild("keylogaction"));
 		
 		OSDXKey revokekey = backend.getKey(OSDXKey.getFormattedKeyIDModulusOnly(keylogAction.getKeyIDFrom())); 
@@ -577,14 +584,25 @@ public class KeyServerMain extends HTTPServer {
 		}
 		
 		//check toKeyID is parent of revokekey
-		if (   !    OSDXKey.getFormattedKeyIDModulusOnly(((RevokeKey)revokekey).getParentKeyID())
+		System.out.println("Revokekey: "+revokekey.toElement(null).toString());
+		String parentKeyid = ((RevokeKey)revokekey).getParentKeyID();
+		if ( parentKeyid==null ||  !OSDXKey.getFormattedKeyIDModulusOnly(parentKeyid)
 			.equals(OSDXKey.getFormattedKeyIDModulusOnly(keylogAction.getKeyIDTo()))) {
 			return errorMessage("revokekey is not registered as child of masterkey");
 		}
+		
+		//if revokekey is registered, it can be set as trusted (trust needed for verification)
+		keyverificator.addKeyRating(revokekey, TrustRatingOfKey.RATING_MARGINAL);
+		
+		Result verified = msg.verifySignatures(keyverificator);
+		if (!verified.succeeded) {
+			return errorMessage("verification of signature failed"+(verified.errorMessage!=null?": "+verified.errorMessage:""));
+		}
+		
 		Result res = keylogAction.verifySignature();
 		if (!res.succeeded) {
 			return errorMessage("verifcation of keylogaction localproof and signature failed.");	
-		}		
+		}
 		
 		KeyLog log = KeyLog.buildNewKeyLog(keylogAction, request.getRealIP(), "", keyServerSigningKey);
 		//log.verify();
@@ -627,7 +645,8 @@ public class KeyServerMain extends HTTPServer {
 		}
 		
 		//check fromKeyID is parent of subkey
-		if (   !    OSDXKey.getFormattedKeyIDModulusOnly(((SubKey)subkey).getParentKeyID())
+		String parentKeyid = ((SubKey)subkey).getParentKeyID();
+		if ( parentKeyid==null ||  !OSDXKey.getFormattedKeyIDModulusOnly(parentKeyid)
 			.equals(OSDXKey.getFormattedKeyIDModulusOnly(keylogAction.getKeyIDFrom()))) {
 			return errorMessage("subkey is not registered as child of masterkey");
 		}
@@ -671,9 +690,9 @@ public class KeyServerMain extends HTTPServer {
 		}
 		
 		//check masterkey approved
-		KeyStatus ks = backend.getKeyStatus(masterkey.getKeyID());
+		KeyStatus ks = backend.getKeyStatus(masterkey.getKeyID(), null, System.currentTimeMillis(), keyServerSigningKey.getKeyID());
 		//if (ks==null || !ks.isValid()) {
-		if (ks==null || !(ks.isValid() || ks.isUnapproved())) { //TODO for testing with approval_pending
+		if (ks==null || !(ks.isValid() || ks.isUnapproved())) { //approval_pending is sufficient
 			return errorMessage("associatied masterkey is not approved.");
 		}
 		
@@ -738,7 +757,7 @@ public class KeyServerMain extends HTTPServer {
 				return errorMessage("verification of keylogaction signature failed.");
 			}
 			//check toKey not revoked
-			KeyStatus ks = backend.getKeyStatus(log.getKeyIDTo());
+			KeyStatus ks = backend.getKeyStatus(log.getKeyIDTo(), null, System.currentTimeMillis(), keyServerSigningKey.getKeyID());
 			if (ks!=null && ks.getValidityStatus()==KeyStatus.STATUS_REVOKED) {
 				return errorMessage("key is already revoked.");	
 			}
@@ -769,6 +788,55 @@ public class KeyServerMain extends HTTPServer {
 		} catch (Exception ex) {
 			resp.setRetCode(404, "FAILED");
 			resp.createErrorMessageContent("Internal Error"); //should/could never happen
+		}
+		return resp;
+	}
+	
+	 
+	private KeyServerResponse handleAPICommand(HTTPServerRequest request) throws Exception {
+		KeyServerResponse resp = new KeyServerResponse(serverid);
+		String[] cmd = request.cmd.substring(5).split("/");
+		
+		if (cmd[0].equals("keyvalid")) { 
+			//  keyvalid/crypt/[keyid]/atdatetimegmt/[2011-11-21_12-34-30]
+			//  results: {VALID, USAGE NOT ALLOWED, OUTDATED, REVOKED, UNAPPROVED, KEY NOT FOUND, BAD REQUEST}
+			try {
+				//parse other param
+				String usage = null; //crypt, sign, both
+				String keyid = null;
+				long datetime = System.currentTimeMillis();
+				if (cmd.length>=3 && (cmd[1].equals("sign") || cmd[1].equals("crypt") || cmd[1].equals("both"))) {
+					usage  = cmd[1];
+					keyid = URLDecoder.decode(cmd[2], "ASCII");
+					if (cmd.length>=5 && cmd[3].equals("atdatetimegmt")) {
+						SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+						datetime = df.parse(cmd[4]).getTime();
+					}
+				}	
+				if (usage==null || keyid==null) {
+					resp.setRetCode(400, "BAD REQUEST");
+					resp.setContentText("BAD REQUEST");
+					//resp.createErrorMessageContent("BAD REQUEST");
+					return resp;
+				}
+				System.out.println("Checking keyvalid:\n  keyid: "+keyid+"\n  usage: "+usage+"\n  datetime: "+SecurityHelper.getFormattedDate(datetime));
+					
+				KeyStatus ks = backend.getKeyStatus(keyid, usage, datetime, keyServerSigningKey.getKeyID());
+				if  (ks==null) {
+					resp.setContentText("KEY NOT FOUND");
+				} else {
+					resp.setContentText(ks.getValidityStatusName());
+				}
+			} catch (Exception ex) {
+				resp.setRetCode(400, "BAD REQUEST");
+				resp.setContentText("BAD REQUEST");
+				//resp.createErrorMessageContent("BAD REQUEST");
+			}
+		}
+		else {
+			resp.setRetCode(400, "BAD REQUEST");
+			resp.setContentText("BAD REQUEST");
+			//resp.createErrorMessageContent("BAD REQUEST");
 		}
 		return resp;
 	}
@@ -835,6 +903,9 @@ public class KeyServerMain extends HTTPServer {
 			}
 			else if (cmd.equals("/keyserversettings")) {
 				return handleGetKeyServerSettingsRequest(request);
+			}
+			else if(cmd.startsWith("/api/")) {
+				return handleAPICommand(request);
 			}
 		}
 		else {

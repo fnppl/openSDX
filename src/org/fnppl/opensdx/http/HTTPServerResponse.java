@@ -68,6 +68,7 @@ public class HTTPServerResponse {
 	private String serverid = null;
 	protected Element contentElement;
 	protected String html = null;
+	protected String text = null;
 	protected OSDXKey signoffkey = null;
 	
 	public HTTPServerResponse(String serverid) {
@@ -117,16 +118,29 @@ public class HTTPServerResponse {
 			out.write(content);
 		} 
 		else if (html!=null ){
+			byte[] tc = html.getBytes("ASCII");
 			out.write((
 					"HTTP/1.1 "+retcode+" "+retcodeString+"\r\n" +
 					"Server: "+serverid+"\r\n" +
 					"Connection: close\r\n").getBytes("ASCII"));
 			out.write(("Content-Type: text/html\r\n").getBytes("ASCII"));
-			out.write(("Content-Length: "+html.length()+"\r\n").getBytes("ASCII"));
+			out.write(("Content-Length: "+tc.length+"\r\n").getBytes("ASCII"));
 			out.write("\r\n".getBytes("ASCII"));
 			out.flush();
-			out.write(html.getBytes("ASCII"));
+			out.write(tc);
 			out.write("\r\n".getBytes("ASCII"));
+		}
+		else if (text!=null ){
+			byte[] tc = text.getBytes("ASCII");
+			out.write((
+					"HTTP/1.1 "+retcode+" "+retcodeString+"\r\n" +
+					"Server: "+serverid+"\r\n" +
+					"Connection: close\r\n").getBytes("ASCII"));
+			out.write(("Content-Type: text/plain\r\n").getBytes("ASCII"));
+			out.write(("Content-Length: "+tc.length+"\r\n").getBytes("ASCII"));
+			out.write("\r\n".getBytes("ASCII"));
+			out.flush();
+			out.write(tc);
 		}
 		else {
 			out.write((
@@ -150,6 +164,10 @@ public class HTTPServerResponse {
 	
 	public void setHTML(String html) {
 		this.html = html;
+	}
+	
+	public void setContentText(String text) {
+		this.text = text;
 	}
 	
 	public static HTTPServerResponse createResponse(String serverid, Element xmlContent, OSDXKey signoffkey) {

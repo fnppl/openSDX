@@ -266,7 +266,7 @@ public class PostgresBackend implements KeyServerBackend {
 			sql.setString(9, SecurityHelper.HexDecoder.encode(key.getPublicModulusBytes(),':',-1));
 			sql.setString(10, "0x"+SecurityHelper.HexDecoder.encode(key.getPubKey().getPublicExponentBytes(),':',-1));
 			
-			if (key.isSub() && ((SubKey)key).getParentKeyID()!=null) {
+			if (key instanceof SubKey && ((SubKey)key).getParentKeyID()!=null) {
 				String pkid = ((SubKey)key).getParentKeyID();
 				String pkid_sha1 = OSDXKey.getFormattedKeyIDModulusOnly(pkid);
 				String pkid_ks = OSDXKey.getKeyServerFromKeyID(pkid);
@@ -349,7 +349,7 @@ public class PostgresBackend implements KeyServerBackend {
 //					((MasterKey)key).addIdentity(idd);
 //				}
 			}
-			if (key.isSub()) {
+			if (key instanceof SubKey) {
 				String parentkeysha1 = rs.getString("parentkeysha1");
 				if (parentkeysha1!=null && parentkeysha1.length()>0) {
 					((SubKey)key).setParentKeyID(parentkeysha1+"@"+rs.getString("parentkeyserver"));
@@ -891,38 +891,54 @@ public class PostgresBackend implements KeyServerBackend {
 	}
 
 	 
-	public KeyStatus getKeyStatus(String keyid) {
-		Vector<KeyLog> kls = getKeyLogsToID(keyid);
-		if (kls==null || kls.size()==0) return null;
-		for (KeyLog kl : kls) {
-			System.out.println("found keylog... "+kl.getActionDatetimeString());
-		}
-		KeyLog kl = kls.lastElement();
-		String status = kl.getAction();
-		int validity = -1;
-		if (status.equals(KeyLogAction.APPROVAL)) {
-			validity =  KeyStatus.STATUS_VALID;
-		}
-		else if (status.equals(KeyLogAction.DISAPPROVAL)) {
-			validity =  KeyStatus.STATUS_UNAPPROVED;
-		}
-		else if (status.equals(KeyLogAction.APPROVAL_PENDING)) {
-			validity =  KeyStatus.STATUS_UNAPPROVED;
-		}
-		else if (status.equals(KeyLogAction.REVOCATION)) {
-			validity =  KeyStatus.STATUS_REVOKED;
-		}
-		
-		int approvalPoints = 100;
-		OSDXKey key = getKey(keyid);
-		long datetimeValidFrom = key.getValidFrom();
-		long datetimeValidUntil = key.getValidUntil();
-		
-		KeyStatus ks = new KeyStatus(validity, approvalPoints, datetimeValidFrom, datetimeValidUntil, kl);
-		return ks;
+//	public KeyStatus getKeyStatus(String keyid) {
+//		Vector<KeyLog> kls = getKeyLogsToID(keyid);
+//		if (kls==null || kls.size()==0) return null;
+//		for (KeyLog kl : kls) {
+//			System.out.println("found keylog... "+kl.getActionDatetimeString());
+//		}
+//		KeyLog kl = kls.lastElement();
+//		String status = kl.getAction();
+//		int validity = -1;
+//		if (status.equals(KeyLogAction.APPROVAL)) {
+//			validity =  KeyStatus.STATUS_VALID;
+//		}
+//		else if (status.equals(KeyLogAction.DISAPPROVAL)) {
+//			validity =  KeyStatus.STATUS_UNAPPROVED;
+//		}
+//		else if (status.equals(KeyLogAction.APPROVAL_PENDING)) {
+//			validity =  KeyStatus.STATUS_UNAPPROVED;
+//		}
+//		else if (status.equals(KeyLogAction.REVOCATION)) {
+//			validity =  KeyStatus.STATUS_REVOKED;
+//		}
+//		
+//		int approvalPoints = 100;
+//		OSDXKey key = getKey(keyid);
+//		long datetimeValidFrom = key.getValidFrom();
+//		long datetimeValidUntil = key.getValidUntil();
+//		
+//		KeyStatus ks = new KeyStatus(validity, approvalPoints, datetimeValidFrom, datetimeValidUntil, kl);
+//		return ks;
+//	
+//	}
 	
+	public KeyStatus getKeyStatus(String keyid) {
+		return getKeyStatus(keyid, null, System.currentTimeMillis(), null);
 	}
 
+	public KeyStatus getKeyStatus(String keyid, String usage, long datetime, String keyidKeyserver) {
+		OSDXKey key = getKey(keyid);
+		if (key==null) {
+			return null;
+		}
+		Vector<KeyLog> keylogs = getKeyLogsToID(keyid);
+		if (keylogs==null) {
+			keylogs = new Vector<KeyLog>();
+		}
+		return KeyStatus.getKeyStatus(key, keylogs, usage, datetime, keyidKeyserver);
+	
+	}
 	 
 	public Vector<OSDXKey> getKeysToId(String email) {
 		Vector<OSDXKey> keys = new Vector<OSDXKey>();

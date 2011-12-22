@@ -427,6 +427,10 @@ public class OSDXKey {
 		return usage == USAGE_SIGN || usage == USAGE_WHATEVER;
 	}
 	
+	public boolean allowsCrypt() {
+		return usage == USAGE_CRYPT || usage == USAGE_WHATEVER;
+	}
+	
 	public String getKeyID() {
 		return getKeyModulusSHA1()+"@"+authoritativekeyserver;
 	}
