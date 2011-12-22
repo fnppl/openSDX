@@ -58,6 +58,8 @@ import javax.xml.validation.SchemaFactory;
 
 import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.security.SecurityHelper;
+import org.jdom.Document;
+import org.jdom.input.SAXBuilder;
 import org.xml.sax.*;
 
 
@@ -72,18 +74,15 @@ public class FeedValidator {
 	private int errorCount = 0;
 	private int errorLengthToShow = 200; // set to "-1" to show all
 
-	public File xsdDir = null;
-	
-	public FeedValidator() {
+	public static File xsdDir = null;
+	static {
 		initXSDs();
 	}
 	
-	public void initXSDs() {
-		if(xsdDir != null) {
-			//TODO HT 2011-11-29 - check each .xsd to be present as well...
-			return;
-		}
-		
+	public FeedValidator() {
+	}
+	
+	public static void initXSDs() {
 		try {
 			File f = new File(System.getProperty("user.home"), "openSDX");
 			f = new File(f, "xsd");
@@ -144,10 +143,10 @@ public class FeedValidator {
 		///File file = new File(FILE_OSDX_0_0_1.toURI());
 		//if(!file.exists()) { throw new Exception("Validation Error. Schema-File not loaded."); }
 
-		String xml = s.trim().replaceFirst("^([\\W]+)<","<"); //HT 2011-11-29 WHY?!?!?!
-				
+//		String xml = s.trim().replaceFirst("^([\\W]+)<","<"); //HT 2011-11-29 WHY?!?!?!
+
 		//return validateXmlFeed(xml, file);
-		return validateXmlFeed(xml, RESSOURCE_OSDX_0_0_1);
+		return validateXmlFeed(s, RESSOURCE_OSDX_0_0_1);
 	}
 	
 	public String validateOSDX_0_0_1(File f) { //validate against oSDX 0.0.1 (mayor minor sub)
@@ -158,7 +157,8 @@ public class FeedValidator {
 	}
 	
 	public String validateOSDX_0_0_1(Feed f) { //validate against oSDX 0.1.0 (mayor minor sub)
-		return validateOSDX_0_0_1(f.toElement().toString());  		
+		org.fnppl.opensdx.xml.Document doc = org.fnppl.opensdx.xml.Document.buildDocument(f.toElement());
+		return validateOSDX_0_0_1(doc.toString());  		
 	}
 	
    // public String validateXmlFeed(String f, File schemaFile) {
@@ -166,7 +166,11 @@ public class FeedValidator {
     	try {
 			// use a SchemaFactory and a Schema for validation
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			Source schemaSource = new StreamSource(new File(xsdDir, schemaName));
+			File sc = new File(xsdDir, schemaName);
+			
+			System.out.println("FeedValidator::schema exists::"+sc.getAbsolutePath()+" -> "+sc.exists()+" ["+sc.length()+"]");
+			
+			Source schemaSource = new StreamSource(sc);
 			Schema schema = schemaFactory.newSchema(schemaSource);
 			
 			ByteArrayInputStream bs = new ByteArrayInputStream(xml.getBytes("UTF-8"));
@@ -232,7 +236,9 @@ public class FeedValidator {
     		// use a SchemaFactory and a Schema for validation
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 //			Source schemaSource = new StreamSource(schemaStream);
-			Source schemaSource = new StreamSource(new File(xsdDir, schemaName));
+			File sc = new File(xsdDir, schemaName);
+			System.out.println("FeedValidator::schema exists::"+sc.getAbsolutePath()+" -> "+sc.exists()+" ["+sc.length()+"]");
+			Source schemaSource = new StreamSource(sc);
 			Schema schema = schemaFactory.newSchema(schemaSource);
 
 			InputStream inputStream= new FileInputStream(xmlFile);
@@ -332,14 +338,76 @@ public class FeedValidator {
 	public int getErrorCount() {
 		return errorCount;
 	}
-	public static void main(String[] args) {
-		File f = new File(args[0]);
-		FeedValidator fv = new FeedValidator();
-		String msg = fv.validateOSDX_0_0_1(f);
+	public static void main(String[] args) throws Exception {
+		int mode = 0; //file-mode
+//		int mode = 1; //string-mode
+//		int mode = 2; //feed-mode
 		
-		if(fv.errorCount > 0) {
-			System.out.println("Errors occured: "+fv.errorCount);
-		}
-		System.out.println(msg);
+		switch(mode) {
+			case 0:
+			{
+				System.out.println("file-mode");
+				File f = new File(args[0]);
+				FeedValidator fv = new FeedValidator();
+				String msg = fv.validateOSDX_latest(f);
+
+				if(fv.errorCount > 0) {
+					System.out.println("Errors occured: "+fv.errorCount);
+				}
+				else {
+					System.out.println(f.getAbsolutePath()+" validates.");
+				}
+				System.out.println(msg);
+			}
+				break;
+			case 1:
+			{
+				System.out.println("string-mode");
+				File f = new File(args[0]);
+				BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+				String zeile = null;
+				StringBuffer sb = new StringBuffer();
+				while((zeile=br.readLine())!=null) {
+					sb.append(zeile);
+					sb.append("\n");
+				}
+				br.close();
+				
+				FeedValidator fv = new FeedValidator();
+				String msg = fv.validateOSDX_latest(sb.toString());
+				
+				if(fv.errorCount > 0) {
+					System.out.println("Errors occured: "+fv.errorCount);
+				}
+				else {
+					System.out.println(f.getAbsolutePath()+" validates.");
+				}
+				System.out.println(msg);
+			}
+				break;
+			case 2:
+			{
+				System.out.println("feed-mode");
+				File f = new File(args[0]);
+				SAXBuilder sax = new SAXBuilder();
+				Document d = sax.build(f);
+				org.jdom.Element r = (org.jdom.Element)d.getRootElement().detach();
+				
+				Feed fe = Feed.fromBusinessObject(Feed.fromElement(org.fnppl.opensdx.xml.Element.buildElement(r)));
+				
+				FeedValidator fv = new FeedValidator();
+				String msg = fv.validateOSDX_latest(fe);
+				
+				if(fv.errorCount > 0) {
+					System.out.println("Errors occured: "+fv.errorCount);
+				}
+				else {
+					System.out.println(f.getAbsolutePath()+" validates.");
+				}
+				System.out.println(msg);
+			}
+				break;
+		}		
 	}
+	
 }
