@@ -159,6 +159,7 @@
             <xsd:element name="grid" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="upc" type="upc" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="isrc" type="isrc" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="iswc" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="contentauth" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="labelordernum" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="amzn" type="xsd:string" maxOccurs="1" minOccurs="0"/>

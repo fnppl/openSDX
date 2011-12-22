@@ -60,6 +60,7 @@ public class IDs extends BusinessObject {
 	private BusinessStringItem grid;				//COULD
 	private BusinessStringItem upc;					//COULD
 	private BusinessStringItem isrc;				//COULD
+	private BusinessStringItem iswc;				//COULD
 	private BusinessStringItem contentauth;			//COULD
 	private BusinessStringItem labelordernum;		//COULD
 	private BusinessStringItem amzn;				//COULD
@@ -76,6 +77,7 @@ public class IDs extends BusinessObject {
 		ids.grid = null;
 		ids.upc = null;
 		ids.isrc = null;
+		ids.iswc = null;
 		ids.contentauth = null;
 		ids.labelordernum = null;
 		ids.amzn = null;
@@ -100,6 +102,7 @@ public class IDs extends BusinessObject {
 		ids.grid = BusinessStringItem.fromBusinessObject(bo, "grid");
 		ids.upc = BusinessStringItem.fromBusinessObject(bo, "upc");
 		ids.isrc = BusinessStringItem.fromBusinessObject(bo, "isrc");
+		ids.iswc = BusinessStringItem.fromBusinessObject(bo, "iswc");
 		ids.contentauth = BusinessStringItem.fromBusinessObject(bo, "contentauth");
 		ids.labelordernum = BusinessStringItem.fromBusinessObject(bo, "labelordernum");
 		ids.amzn = BusinessStringItem.fromBusinessObject(bo, "amzn");
@@ -129,6 +132,12 @@ public class IDs extends BusinessObject {
 	public IDs isrc(String isrc) {
 		if (isrc==null) this.isrc=null;
 		else this.isrc = new BusinessStringItem("isrc", isrc);
+		return this;
+	}
+	
+	public IDs iswc(String iswc) {
+		if (iswc==null) this.iswc=null;
+		else this.iswc = new BusinessStringItem("iswc", iswc);
 		return this;
 	}
 
@@ -199,6 +208,11 @@ public class IDs extends BusinessObject {
 	public String getIsrc() {
 		if (isrc==null) return null;
 		return isrc.getString();
+	}
+	
+	public String getIswc() {
+		if (iswc==null) return null;
+		return iswc.getString();
 	}
 
 	public String getContentauth() {
@@ -318,6 +332,7 @@ public class IDs extends BusinessObject {
 		if (type.equalsIgnoreCase("bundleditem")) {
 			relevant.add("grid");
 			relevant.add("isrc");
+			relevant.add("iswc");
 			relevant.add("contentauth");
 			relevant.add("isbn");
 			relevant.add("finetunes");

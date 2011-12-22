@@ -71,8 +71,9 @@ public class FeedGuiTooltips {
 	public static final String idGRID           = "<html><body><b>GRID</b> = <b>G</b>lobal <b>R</b>elease <b>ID</b>entifier, see <i>http://www.ifpi.org/content/section_resources/grid.html</i> for more information</body></html>";
 	public static final String idUPC            = "<html><body><b>UPC</b> = <b>U</b>niversal <b>P</b>roduct <b>C</b>ode, alternativly you can enter the <b>EAN</b> = <b>E</b>uropean <b>A</b>rticle <b>N</b>umber here</body></html>";
 	public static final String idISRC           = "<html><body><b>ISRC</b> = <b>I</b>nternational <b>S</b>tandard <b>R</b>ecording <b>C</b>ode</body></html>";
-	public static final String idContentAuth    = "<html><body></body></html>";
-	public static final String idLabelOrderNum  = "<html><body></body></html>";
+	public static final String idISWC           = "<html><body><b>ISRC</b> = <b>I</b>nternational <b>S</b>tandard Musical <b>W</b>ork <b>C</b>ode</body></html>";
+	public static final String idContentAuth    = "<html><body>identifier known at <b>contentauthority.com</b></body></html>";
+	public static final String idLabelOrderNum  = "<html><body>procduct number provided by the label</body></html>";
 	public static final String idAmazon         = "<html><body>identifier provided by <b>amazon.com</b></body></html>";
 	public static final String idISBN           = "<html><body><b>ISBN</b> = <b>I</b>nternational <b>S</b>tandard <b>B</b>ook <b>N</b>umber</body></html>";
 	public static final String idFinetunes      = "<html><body>identifier provided by <b>finetunes.net</b></body></html>";
@@ -143,7 +144,7 @@ public class FeedGuiTooltips {
 	public static final String bundleIds = "<html><body><div style=\"width:520px\">"
 		+ "The <b>IDs</b> panel holds one or more identifiers for this bundle. The <b>IDs</b>-element is also present on <b>item</b>-level and could also be "
 		+ "present on <b>contributor</b>-level (in terms of publishing-authorities-id-system). A good unique identifier on bundle-level is the EAN/UPC-code; a "
-		+ "good unique identifier on <b>item</b>-level is the ISRC resp. ISWC-code. But you could create your own identifier as well (e.g. in the <b>licensor</b> or <b>licensee</b> fields."
+		+ "good unique identifier on <b>item</b>-level is the ISRC or ISWC-code. But you could create your own identifier as well (e.g. in the <b>licensor</b> or <b>licensee</b> fields."
 		+"</div></body></html>";
 
 	public static final String bundleContributors = "<html><body><div style=\"width:520px\">"

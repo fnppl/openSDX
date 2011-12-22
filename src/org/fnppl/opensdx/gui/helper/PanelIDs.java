@@ -85,6 +85,8 @@ public class PanelIDs extends JPanel implements MyObservable, TextChangeListener
 	private JTextField text_upc;
 	private JLabel label_isrc;
 	private JTextField text_isrc;
+	private JLabel label_iswc;
+	private JTextField text_iswc;
 	private JLabel label_contentauth;
 	private JTextField text_contentauth;
 	private JLabel label_labelordernum;
@@ -124,6 +126,8 @@ public class PanelIDs extends JPanel implements MyObservable, TextChangeListener
 		text_upc.setToolTipText(FeedGuiTooltips.idUPC);
 		label_isrc.setToolTipText(FeedGuiTooltips.idISRC);
 		text_isrc.setToolTipText(FeedGuiTooltips.idISRC);
+		label_iswc.setToolTipText(FeedGuiTooltips.idISWC);
+		text_iswc.setToolTipText(FeedGuiTooltips.idISWC);
 		label_contentauth.setToolTipText(FeedGuiTooltips.idContentAuth);
 		text_contentauth.setToolTipText(FeedGuiTooltips.idContentAuth);
 		label_labelordernum.setToolTipText(FeedGuiTooltips.idLabelOrderNum);
@@ -173,6 +177,7 @@ public class PanelIDs extends JPanel implements MyObservable, TextChangeListener
 			text_grid.setText("");
 			text_upc.setText("");
 			text_isrc.setText("");
+			text_iswc.setText("");
 			text_contentauth.setText("");
 			text_labelordernum.setText("");
 			text_amzn.setText("");
@@ -185,6 +190,7 @@ public class PanelIDs extends JPanel implements MyObservable, TextChangeListener
 			text_grid.setText(ids.getGrid());
 			text_upc.setText(ids.getUpc());
 			text_isrc.setText(ids.getIsrc());
+			text_iswc.setText(ids.getIswc());
 			text_contentauth.setText(ids.getContentauth());
 			text_labelordernum.setText(ids.getLabelordernum());
 			text_amzn.setText(ids.getAmzn());
@@ -236,6 +242,15 @@ public class PanelIDs extends JPanel implements MyObservable, TextChangeListener
 		text_isrc.setName("text_isrc");
 		map.put("text_isrc", text_isrc);
 		texts.add(text_isrc);
+		
+		label_iswc = new JLabel("ISWC");
+		label_iswc.setName("label_iswc");
+		labels.add(label_iswc);
+		text_iswc = new JTextField("");
+
+		text_iswc.setName("text_iswc");
+		map.put("text_iswc", text_iswc);
+		texts.add(text_iswc);
 
 		label_contentauth = new JLabel("Content Auth");
 		label_contentauth.setName("label_contentauth");
@@ -364,361 +379,173 @@ public void initLayout() {
 
 	// Component: text_gvl
 	gbc.gridx = 1;
-	gbc.gridy = 0;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_gvl,gbc);
 	add(text_gvl);
 
 	// Component: label_grid
 	gbc.gridx = 0;
-	gbc.gridy = 1;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
+	gbc.gridy++;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_grid,gbc);
 	add(label_grid);
 
 	// Component: text_grid
 	gbc.gridx = 1;
-	gbc.gridy = 1;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_grid,gbc);
 	add(text_grid);
 
 	// Component: label_upc
 	gbc.gridx = 0;
-	gbc.gridy = 2;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
+	gbc.gridy++;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_upc,gbc);
 	add(label_upc);
 
 	// Component: text_upc
 	gbc.gridx = 1;
-	gbc.gridy = 2;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_upc,gbc);
 	add(text_upc);
 
 	// Component: label_isrc
 	gbc.gridx = 0;
-	gbc.gridy = 3;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
+	gbc.gridy++;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_isrc,gbc);
 	add(label_isrc);
 
 	// Component: text_isrc
 	gbc.gridx = 1;
-	gbc.gridy = 3;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_isrc,gbc);
 	add(text_isrc);
 
+	// Component: label_iswc
+	gbc.gridx = 0;
+	gbc.gridy++;
+	gbc.weightx = 0.0;
+	gbl.setConstraints(label_iswc,gbc);
+	add(label_iswc);
+
+	// Component: text_iswc
+	gbc.gridx = 1;
+	gbc.weightx = 50.0;
+	gbl.setConstraints(text_iswc,gbc);
+	add(text_iswc);
+	
 	// Component: label_contentauth
 	gbc.gridx = 0;
-	gbc.gridy = 4;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
+	gbc.gridy++;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_contentauth,gbc);
 	add(label_contentauth);
 
 	// Component: text_contentauth
 	gbc.gridx = 1;
-	gbc.gridy = 4;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_contentauth,gbc);
 	add(text_contentauth);
 
 	// Component: label_labelordernum
 	gbc.gridx = 0;
-	gbc.gridy = 5;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
+	gbc.gridy++;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_labelordernum,gbc);
 	add(label_labelordernum);
 
 	// Component: text_labelordernum
 	gbc.gridx = 1;
-	gbc.gridy = 5;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_labelordernum,gbc);
 	add(text_labelordernum);
 
 	// Component: label_amzn
 	gbc.gridx = 0;
-	gbc.gridy = 6;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
+	gbc.gridy++;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_amzn,gbc);
 	add(label_amzn);
 
 	// Component: text_amzn
 	gbc.gridx = 1;
-	gbc.gridy = 6;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_amzn,gbc);
 	add(text_amzn);
 
 	// Component: label_isbn
 	gbc.gridx = 0;
-	gbc.gridy = 7;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
+	gbc.gridy++;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_isbn,gbc);
 	add(label_isbn);
 
 	// Component: text_isbn
 	gbc.gridx = 1;
-	gbc.gridy = 7;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_isbn,gbc);
 	add(text_isbn);
 
 	// Component: label_finetunes
 	gbc.gridx = 0;
-	gbc.gridy = 8;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
+	gbc.gridy++;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_finetunes,gbc);
 	add(label_finetunes);
 
 	// Component: text_finetunes
 	gbc.gridx = 1;
-	gbc.gridy = 8;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_finetunes,gbc);
 	add(text_finetunes);
 
 	// Component: label_licensor
 	gbc.gridx = 0;
-	gbc.gridy = 9;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
+	gbc.gridy++;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_licensor,gbc);
 	add(label_licensor);
 
 	// Component: text_licensor
 	gbc.gridx = 1;
-	gbc.gridy = 9;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_licensor,gbc);
 	add(text_licensor);
 
 	// Component: label_licensee
 	gbc.gridx = 0;
-	gbc.gridy = 10;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
+	gbc.gridy++;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_licensee,gbc);
 	add(label_licensee);
 
 	// Component: text_licensee
 	gbc.gridx = 1;
-	gbc.gridy = 10;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_licensee,gbc);
 	add(text_licensee);
 	
 	// Component: label_amg
 	gbc.gridx = 0;
-	gbc.gridy = 11;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
+	gbc.gridy++;
 	gbc.weightx = 0.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_amg,gbc);
 	add(label_amg);
 	
 	// Component: text_amg
 	gbc.gridx = 1;
-	gbc.gridy = 11;
-	gbc.gridwidth = 1;
-	gbc.gridheight = 1;
 	gbc.weightx = 50.0;
-	gbc.weighty = 0.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(text_amg,gbc);
 	add(text_amg);
 
 	// Component: label_filler
 	gbc.gridx = 0;
-	gbc.gridy = 12;
+	gbc.gridy++;
 	gbc.gridwidth = 1;
 	gbc.gridheight = 1;
 	gbc.weightx = 0.0;
 	gbc.weighty = 100.0;
-	gbc.anchor = GridBagConstraints.CENTER;
-	gbc.fill = GridBagConstraints.BOTH;
-	gbc.ipadx = 0;
-	gbc.ipady = 0;
-	gbc.insets = new Insets(2,2,2,2);
 	gbl.setConstraints(label_filler,gbc);
 	add(label_filler);
 		JLabel filler = new JLabel();
@@ -742,6 +569,9 @@ public void initLayout() {
 		}
 		else if (text == text_isrc) {
 			ids.isrc(t);
+		}
+		else if (text == text_iswc) {
+			ids.iswc(t);
 		}
 		else if (text == text_contentauth) {
 			ids.contentauth(t);
