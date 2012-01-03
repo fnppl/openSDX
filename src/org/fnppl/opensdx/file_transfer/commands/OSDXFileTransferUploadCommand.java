@@ -62,7 +62,7 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	private FileInputStream fileIn = null;
 	private byte[] data = null;
 	
-	private long maxFilelengthForMD5 = 10*1024*1024L; //10 MB
+	private long maxFilelengthForMD5 = 100*1024*1024L; //100 MB
 	private boolean hasNext = true;
 	private OSDXFileTransferClient client = null;
 	private boolean resume = false;
@@ -176,24 +176,26 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 				if (fileLen<=0) {
 					notifySucces();
 				}
-//				if (resume) {
-//					String msg = getMessageFromContent(content);
-//					System.out.println("resume msg :: "+msg+"  filePos before = "+filePos);
-//					if (msg!=null && msg.equals("upload already complete")) {
-//						hasNext = false;
-//						System.out.println(msg);
-//						notifyUpdate(fileLen-1, fileLen, null);
-//						notifySucces();
-//					} else {
-//						try {
-//							filePos = Long.parseLong(getMessageFromContent(content));
-//							System.out.println("file pos = "+filePos);
-//						} catch (Exception ex) {
-//							notifyError("wrong format: file upload resume position not parseable");
-//							//ex.printStackTrace();
-//						}
-//					}
-//				}
+				if (resume) {
+					String msg = getMessageFromContent(content);
+					System.out.println("resume msg :: "+msg+"  filePos before = "+filePos);
+					if (msg!=null && msg.equals("upload already complete")) {
+						hasNext = false;
+						System.out.println(msg);
+						notifyUpdate(fileLen-1, fileLen, null);
+						notifySucces();
+					} else {
+						try {
+							filePos = Long.parseLong(getMessageFromContent(content));
+							System.out.println("file pos = "+filePos);
+							fileIn.skip(filePos);//skip forward to filepos
+						} catch (Exception ex) {
+							notifyError("wrong format: file upload resume position not parseable");
+							//ex.printStackTrace();
+						}
+					}
+					goOn = true;
+				}
 			}
 			else if (code == SecureConnection.TYPE_ACK_COMPLETE) {
 				if (data==null) {
@@ -237,12 +239,17 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 			num = 1;
 			if (fileLen<=0) {
 				hasNext = false;
+			} else {
+				if (resume) {
+					goOn = false;
+				}
 			}
-			notifyUpdate(filePos, fileLen, null);
+			notifyUpdate(filePos, fileLen, null);			
 		} else {
 			byte[] content = new byte[maxPacketSize];
 			if (data==null) {
 				//read from file
+				
 				int read = fileIn.read(content);
 				if (read<maxPacketSize) {
 					con.setData(id, num, Arrays.copyOf(content, read));

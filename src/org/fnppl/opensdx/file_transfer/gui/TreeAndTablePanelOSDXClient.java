@@ -451,17 +451,20 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 			if (node.files==null) {
 				node.files = list(file.getFilnameWithPath());
 			}
-			currentFiles = node.files;
+			if (currentFiles==null) {
+				currentFiles = new Vector<RemoteFile>();
+			} else {
+				currentFiles.removeAllElements();
+			}
+			if (node.files==null || node.files.size()==0) {
+				return new String[0][header.length];
+			}
 			Vector<String[]> data = new Vector<String[]>();
-			for (int i = 0; i < currentFiles.size(); i++) {
-				RemoteFile f = currentFiles.get(i);
-				String[] d  = new String[header.length];
-				d[0] = f.getName();
-				if (f.isDirectory()) {
-//					d[2] = "";
-//					d[1] = "[DIR]";
-//					data.add(d);
-				} else {
+			for (RemoteFile f : node.files) {
+				if (!f.isDirectory()) {
+					currentFiles.add(f);	
+					String[] d  = new String[header.length];
+					d[0] = f.getName();
 					d[2] = (f.getLength() / 1000) + " kB";
 					d[1] = "";
 					int ind = d[0].lastIndexOf('.');
@@ -546,6 +549,9 @@ public class TreeAndTablePanelOSDXClient extends JPanel implements MyObservable,
 	public Vector<RemoteFile> getSelectedFiles() {
 		Vector<RemoteFile> sel = new Vector<RemoteFile>();
 		int[] select = table.getSelectedRows();
+//		for (RemoteFile f : currentFiles) {
+//			System.out.println("currentFiles::"+f.getFilnameWithPath()+", "+f.isDirectory());
+//		}
 		if (select!=null && select.length>0) {
 			for (int i=0;i<select.length;i++) {
 				sel.add(currentFiles.get(table.getRowSorter().convertRowIndexToModel(select[i])));

@@ -86,7 +86,11 @@ public class OSDXFileTransferClientCommandHandlerThread extends Thread {
 					while (command.hasNextPackage() && !cancelRequest) {
 						//System.out.println("has next: "+command.hasNextPackage());
 						//System.out.println("COMMAND HANDLER :: send next package");
-						command.sendNextPackage(dataOut);
+						if (command.goOn()) {
+							command.sendNextPackage(dataOut);
+						} else {
+							sleep(50);
+						}
 					}
 					if (cancelRequest) {
 						command.cancelProcessing();

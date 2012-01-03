@@ -63,6 +63,7 @@ public abstract class OSDXFileTransferCommand {
 	protected long progress = 0;
 	protected long progressMax = 100;
 	protected boolean block = false;
+	protected boolean goOn = true;
 	
 	private Vector<CommandResponseListener> listener = new Vector<CommandResponseListener>();
 	
@@ -81,7 +82,9 @@ public abstract class OSDXFileTransferCommand {
 	public void cancelProcessing() throws Exception {
 		onProcessCancel();
 	}
-	
+	public boolean goOn() {
+		return goOn;
+	}
 	public abstract void onProcessStart() throws Exception;
 	public abstract void onProcessEnd();
 	public abstract void onProcessCancel();
