@@ -671,7 +671,7 @@ public class OSDXFileTransferServerThread extends Thread {
 	public void handle_resumeput(long commandid, int num, byte code, String param) throws Exception {
 		ensureAllowed(RightsAndDuties.ALLOW_UPLOAD, commandid, num, "Sorry, no right to upload files.");
 		if (param!=null) {
-			//RESUMEPUT "filename"
+			//RESUMEPUT "filename",length
 			String[] p = Util.getParams(param);
 			File file = null;
 			long length = -1L;
@@ -805,6 +805,84 @@ public class OSDXFileTransferServerThread extends Thread {
 			} else {
 				data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
+			}
+		} else {
+			data.setError(commandid, num, "missing path/file parameter");
+			data.sendPackage();
+		}
+	}
+	
+	public void handle_resumeget(long commandid, int num, byte code, String param) throws Exception {
+		ensureAllowed(RightsAndDuties.ALLOW_DOWNLOAD, commandid, num, "Sorry, no right to download files.");
+		if (param!=null) {
+			//RESUMEPUT "filename",length
+			String[] p = Util.getParams(param);
+			File file = null;
+			long length = -1L;
+			try {
+				length = Long.parseLong(p[1]);
+			} catch (Exception ex) {}
+			if (length<0) {
+				data.setError(commandid, num, "missing or wrong file length parameter");
+				data.sendPackage();	
+			} else {
+				if (p[0].startsWith("/")) {
+					file = new File(cs.getLocalRootPath()+p[0]);
+					
+					if (!cs.isAllowed(file)) {
+						data.setError(commandid, num, "restricted file");
+						data.sendPackage();
+					}
+					else if (!file.exists()) {
+						data.setError(commandid, num, "file does not exist");
+						data.sendPackage();
+					}
+					else if (file.isDirectory()) {
+						data.setError(commandid, num, "directory download not implemented");
+						data.sendPackage();
+					} else {
+						//send ack with file length and md5
+						String md5 = null;
+						if (file.length()<=maxFilelengthForMD5) {
+							try {
+								md5 = SecurityHelper.HexDecoder.encode(SecurityHelper.getMD5(file));
+							} catch (Exception ex) {
+								System.out.println("Error calculating md5 hash of "+file.getAbsolutePath());
+								ex.printStackTrace();
+								md5 = null;
+							}
+						}
+						String[] response;
+						if (md5==null) {
+							response = new String[]{""+file.length()};
+						} else {
+							response = new String[]{""+file.length(),md5};
+						}
+						data.setAck(commandid, num, Util.makeParamsString(response));
+						data.sendPackage();
+						
+						//send file data, starting at position "length"
+						FileInputStream fileIn = new FileInputStream(file);
+						fileIn.skip(length);
+						int read = 0;
+						byte[] content = new byte[maxPacketSize];
+						while ((read = fileIn.read(content))>0) {
+							num++;
+							if (read<maxPacketSize) {
+								data.setData(commandid, num, Arrays.copyOf(content, read));
+							} else {
+								data.setData(commandid, num, content);
+							}
+							data.sendPackage();
+							
+							//TODO it would be a good idea to check for error or cancel messages
+							//     when sending large files
+						}
+					}
+				} else {
+					data.setError(commandid, num, "path must be absolute");
+					data.sendPackage();
+				}
 			}
 		} else {
 			data.setError(commandid, num, "missing path/file parameter");

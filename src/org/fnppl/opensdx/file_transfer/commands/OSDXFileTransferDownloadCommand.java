@@ -59,21 +59,32 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 	private File localfile = null;
 	private String absoluteRemotePath = null;
 	private long fileLen = -1L;
-	private long filePos =-1L;
+	private long filePos = -1L;
 	private byte[] md5 = null;
 	
 	private FileOutputStream fileOut = null;
 
 	private boolean hasNext = true;
 	private OSDXFileTransferClient client;
+	private boolean resume = false;
 
-	public OSDXFileTransferDownloadCommand(long id, String absoluteRemotePath, File localfile, OSDXFileTransferClient client) {
+	public OSDXFileTransferDownloadCommand(long id, String absoluteRemotePath, File localfile, boolean resume, OSDXFileTransferClient client) {
 		super();
 		this.client = client;
+		this.resume = resume;
 		this.absoluteRemotePath = absoluteRemotePath;
-		this.command = "GET "+absoluteRemotePath;
 		this.localfile = localfile;
 		this.id = id;
+		if (resume && localfile.exists()) {
+			long length = this.localfile.length();
+			String param = Util.makeParamsString(new String[]{absoluteRemotePath,""+length});
+			this.command = "RESUMEGET "+param;
+			filePos = length;
+		} else {
+			resume = false;
+			this.command = "GET "+absoluteRemotePath;
+			filePos = 0L;
+		}
 	}
 	
 	public void onProcessStart() throws Exception {
@@ -103,8 +114,8 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 		if (code == SecureConnection.TYPE_ACK) {
 			String[] p = Util.getParams(getMessageFromContentNN(content));
 			fileLen = Long.parseLong(p[0]);
-			filePos = 0;
 			System.out.println("filelength = "+fileLen);
+			
 			if (p.length==2) {
 				try {
 					md5 = SecurityHelper.HexDecoder.decode(p[1]);
@@ -118,9 +129,36 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 				localfile.createNewFile();
 				notifySucces();
 			} else {
-				fileOut = new FileOutputStream(localfile);
+				localfile.getParentFile().mkdirs();
+				if (resume) {
+					fileOut = new FileOutputStream(localfile,true); //append if resume	
+				} else {
+					fileOut = new FileOutputStream(localfile); //new if not resume
+				}
 				notifyUpdate(filePos, fileLen, null);
 			}
+			if (resume) { //already finished download
+				if (filePos>fileLen) {
+					notifyError("Error downloading \""+absoluteRemotePath+"\" :: wrong filesize");
+					System.out.println("ERROR wrong filesize.");
+				}
+				else if  (fileLen==filePos) {
+					if (md5!=null){
+						//check md5
+						byte[] myMd5 = SecurityHelper.getMD5(localfile);
+						if (Arrays.equals(md5, myMd5)) {
+							System.out.println("MD5 check ok");
+							notifySucces();
+						} else {
+							System.out.println("MD5 check FAILD!");
+							notifyError("Error downloading \""+absoluteRemotePath+"\" :: MD5 check FAILD!");
+						}
+					} else {
+						notifySucces();
+					}
+				}
+			}
+			
 		}
 		else if (code == SecureConnection.TYPE_DATA && fileLen>0){
 			//write content
@@ -150,7 +188,7 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 						} else {
 							System.out.println("MD5 check FAILD!");
 							notifyUpdate(filePos, fileLen, null);
-							notifyError("Error downloading \""+absoluteRemotePath+"\" :: wrong filesize");
+							notifyError("Error downloading \""+absoluteRemotePath+"\" :: MD5 check FAILD!");
 						}
 					} else {
 						notifyUpdate(filePos, fileLen, null);

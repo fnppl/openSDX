@@ -412,7 +412,13 @@ public class OSDXFileTransferClient implements UploadClient {
 	
 	public long download(String absoluteRemoteFilename, File localFile) {
 		long id = IdGenerator.getTimestamp();
-		addCommand(new OSDXFileTransferDownloadCommand(id,absoluteRemoteFilename, localFile,this));
+		addCommand(new OSDXFileTransferDownloadCommand(id,absoluteRemoteFilename, localFile,false, this));
+		return id;
+	}
+	
+	public long downloadResume(String absoluteRemoteFilename, File localFile) {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferDownloadCommand(id,absoluteRemoteFilename, localFile,true, this));
 		return id;
 	}
 
@@ -710,7 +716,7 @@ public class OSDXFileTransferClient implements UploadClient {
 						e.printStackTrace();
 					}
 					if (resume) {
-						//TODO
+						s.downloadResume(absoluteRemoteFilename, saveTo);
 					} else {
 						s.download(absoluteRemoteFilename, saveTo);
 					}
@@ -718,7 +724,7 @@ public class OSDXFileTransferClient implements UploadClient {
 				}
 				
 				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
-					if (command instanceof OSDXFileTransferUploadCommand) {
+					if (command instanceof OSDXFileTransferDownloadCommand) {
 						//int aProz = (int) ((currentProgressOfReadyFile+progress)*100L/completeProgress);
 						int aProz = (int) ((progress)*100L/maxProgress);
 						if (aProz>proz) {
