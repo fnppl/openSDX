@@ -55,12 +55,14 @@ public class OSDXFileTransferListCommand extends OSDXFileTransferCommand {
 
 	private boolean hasNext = true;
 	private Vector<RemoteFile> list = null;
+	private String absolutePathname = null;
 	
 	public OSDXFileTransferListCommand(long id, String absolutePathname, CommandResponseListener listener) {
 		super();
 		if (listener!=null) {
 			this.addListener(listener);
 		}
+		this.absolutePathname = absolutePathname;
 		this.command = "LIST "+absolutePathname;
 		this.id = id;
 	}
@@ -117,5 +119,8 @@ public class OSDXFileTransferListCommand extends OSDXFileTransferCommand {
 		return list;
 	}
 	
+	public String getAbsolutePathname() {
+		return absolutePathname;
+	}
 
 }

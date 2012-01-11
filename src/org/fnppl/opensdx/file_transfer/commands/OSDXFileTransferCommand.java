@@ -51,7 +51,7 @@ import org.fnppl.opensdx.file_transfer.SecureConnection;
 
 public abstract class OSDXFileTransferCommand {
 
-	protected boolean DEBUG = true;
+	protected boolean DEBUG = false;
 	
 	
 	protected long id = -1L;
