@@ -54,5 +54,5 @@ public class Transfer {
 	public long dataAtTime = 0L;
 	public String[] msg = null;
 	public int pos = 0;
-	
+	public long fileLen = -1L;
 }

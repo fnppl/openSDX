@@ -1193,6 +1193,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 					t.pos = addStatus(t.msg);
 					t.type = "upload";
 					t.startTime = -1L;
+					t.fileLen = from.length();
 					transfersInProgress.put(id,t);
 				}
 			}
@@ -1247,6 +1248,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 			t.pos = addStatus(t.msg);
 			t.type = "download";
 			t.startTime = -1L;
+			t.fileLen = remoteFile.getLength();
 			transfersInProgress.put(id,t);
 		}
 	}
@@ -1332,7 +1334,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 	}
 
 
-	public void onError(OSDXFileTransferCommand command, String msg) {
+	public void onError(final OSDXFileTransferCommand command, final String msg) {
 		//handle errors without command
 		if (command == null) {
 			if (msg==null) {
@@ -1364,13 +1366,42 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 
 		//show Error Message
 		if (msg==null) {
-			Dialogs.showMessage("Unknown error in command : "+command.getClass().getSimpleName());
+			Thread mt = new Thread() {
+				public void run() {
+					Dialogs.showMessage("Unknown error in command : "+command.getClass().getSimpleName());		
+				}
+			};
+			mt.start();
 		} else {
-			Dialogs.showMessage(msg);
+			Thread mt = new Thread() {
+				public void run() {
+					Dialogs.showMessage(msg);
+				}
+			};
+			mt.start();
 		}
 		Transfer t  = transfersInProgress.get(command.getID());
 		if (t!=null) {
-			setStatus(t.pos, t.msg+ "    ERROR "+msg);
+			//setStatus(t.pos, t.msg+ "    ERROR "+msg);
+			t.msg[2] += "    ERROR "+msg;
+			t.msg[4] = "ERROR";
+			setStatus(t.pos, t.msg);
+			
+			//update status
+			try {
+				if (panelStatus.isVisible()) {
+					progressCompleteFiles += t.fileLen;
+					int value = (int)(progressCompleteFiles);
+					progressBar.setValue(value);
+					if (value>=progressBar.getMaximum()) {
+						panelStatus.setVisible(false);
+						progressBar.setValue(0);
+					}
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			
 			transfersInProgress.remove(command.getID());
 			if (t.type.equals("download")) {
 				panelLocal.refreshView();
