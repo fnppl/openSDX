@@ -543,6 +543,11 @@
 	        <xsd:documentation>Sindhi</xsd:documentation>
 	      </xsd:annotation>
 	    </xsd:enumeration>
+	     <xsd:enumeration value="se">
+	      <xsd:annotation>
+	        <xsd:documentation>Sami (Northern)</xsd:documentation>
+	      </xsd:annotation>
+	    </xsd:enumeration>
 	    <xsd:enumeration value="sg">
 	      <xsd:annotation>
 	        <xsd:documentation>Sangho</xsd:documentation>
