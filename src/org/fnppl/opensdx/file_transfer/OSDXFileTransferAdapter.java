@@ -48,6 +48,7 @@ import java.io.BufferedOutputStream;
 import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -57,6 +58,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.apache.velocity.runtime.parser.node.SetPropertyExecutor;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCloseConnectionCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
@@ -76,6 +78,7 @@ import org.fnppl.opensdx.gui.DefaultConsoleMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.helper.Logger;
+import org.fnppl.opensdx.helper.ProgressListener;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
@@ -88,36 +91,36 @@ import org.fnppl.opensdx.xml.Element;
 
 import sun.java2d.pipe.hw.ExtendedBufferCapabilities.VSyncType;
 
-public class OSDXFileTransferAdapter implements UploadClient {
-	
-	
+public class OSDXFileTransferAdapter {
+
+
 	private static boolean DEBUG = false;
-	
+
 	private static String version = "osdx_ftclient_sync v.2012-01-13";
 	protected int maxPacketSize = 50*1024; //50kB
-	
+
 	private Logger logger = Logger.getFileTransferLogger();
-	
+
 	private String host;
 	private int port;
 	private String prepath;
 	private OSDXKey mySigningKey;
 	private String username = null;
-	
+
 	private Socket socket;
 	private BufferedInputStream in;
 	private BufferedOutputStream out;
 	private SecureConnection dataOut = null;
 	private SecureConnection dataIn = null;
 	private String errorMsg = null;
-	
+
 	private boolean secureConnectionEstablished = false;
 	private byte[] client_nonce = null;
 	private byte[] server_nonce = null;
 
 	protected RightsAndDuties rightsAndDuties = null;
 	private RemoteFile root = new RemoteFile("", "/", 0L, System.currentTimeMillis(), true);
-	
+
 	public OSDXFileTransferAdapter() {
 		try {
 			dataOut = null;
@@ -131,15 +134,15 @@ public class OSDXFileTransferAdapter implements UploadClient {
 		this.host = host;
 		this.port = port;
 		this.username = username;
-		
+
 		if (prepath==null || prepath.length()==0) {
 			this.prepath = "/";
 		} else {
 			this.prepath = prepath;
 		}
 		this.mySigningKey = mySigningKey;
-		
-		
+
+
 		secureConnectionEstablished = false;
 		client_nonce = null;
 		server_nonce = null;
@@ -151,8 +154,8 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			throw ex;
 		}
 		logger.logMsg("Socket connected.");
-		
-//		System.out.println("inner connect ok: "+socket.isConnected());
+
+		//		System.out.println("inner connect ok: "+socket.isConnected());
 		if (socket.isConnected()) {
 			in = new BufferedInputStream(socket.getInputStream());
 			out = new BufferedOutputStream(socket.getOutputStream());
@@ -162,15 +165,15 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			initSecureConnection(host, mySigningKey);
 			return true;
 		} else {
-//			System.out.println("ERROR: Connection to server could NOT be established!");
+			//			System.out.println("ERROR: Connection to server could NOT be established!");
 			return false;
 		}
 	}
-	
+
 	public boolean isConnected() {
 		return socket.isConnected() && secureConnectionEstablished;
 	}
-	
+
 	private void initSecureConnection(String host, OSDXKey key) {
 		try {
 			logger.logMsg("init secure connection to host: "+host+" with keyid: "+key.getKeyID()+" ...");
@@ -185,53 +188,53 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			byte[][] checks = SecurityHelper.getMD5SHA1SHA256(client_nonce);
 			init += SecurityHelper.HexDecoder.encode(key.sign(checks[1],checks[2],checks[3],0L),':',-1)+"\n";
 			init += "\n";
-			
+
 			dataOut.sendRawBytes(init.getBytes("UTF-8"));
 			byte[] responsePartKeyData = dataIn.receiveRawBytesPackage();
 			byte[] responsePartEncData = dataIn.receiveRawBytesPackage();
-			
+
 			//process response
 			try {
 				String[] lines = new String(responsePartKeyData,"UTF-8").split("\n");
-//				for (int i=0;i<lines.length;i++) {
-//					System.out.println("("+(i+1)+")"+" "+lines[i]);
-//				}
+				//				for (int i=0;i<lines.length;i++) {
+				//					System.out.println("("+(i+1)+")"+" "+lines[i]);
+				//				}
 
-				
+
 				//check signature
 				byte[] server_mod = SecurityHelper.HexDecoder.decode(lines[3]);
 				byte[] server_exp = SecurityHelper.HexDecoder.decode(lines[4]);
 				byte[] server_signature = SecurityHelper.HexDecoder.decode(lines[5]);
-				
+
 				AsymmetricKeyPair server_pubkey = new AsymmetricKeyPair(server_mod, server_exp, null);
-				
+
 				byte[] encdata = responsePartEncData;
 				checks = SecurityHelper.getMD5SHA1SHA256(encdata);
 				boolean verifySig = server_pubkey.verify(server_signature, checks[1],checks[2],checks[3],0L);
-				
+
 				//System.out.println("signature verified: "+verifySig);
 				if (verifySig)  {
 					//System.out.println("init msg signature verified!");
 					//build enc key
-					
+
 					byte[] decData =  mySigningKey.decryptBlocks(encdata);
 					String[] encLines = new String(decData, "UTF-8").split("\n");
-//					for (int i=0;i<encLines.length;i++) {
-//						System.out.println("ENC "+(i+1)+" :: "+encLines[i]);
-//					}
+					//					for (int i=0;i<encLines.length;i++) {
+					//						System.out.println("ENC "+(i+1)+" :: "+encLines[i]);
+					//					}
 					server_nonce = SecurityHelper.HexDecoder.decode(encLines[1]);
-					
+
 					byte[] concat_nonce = SecurityHelper.concat(client_nonce, server_nonce);
-//					System.out.println("byte len :: concat_nonce = "+concat_nonce.length);
+					//					System.out.println("byte len :: concat_nonce = "+concat_nonce.length);
 					byte[] key_bytes = SecurityHelper.getSHA256(concat_nonce); 			//32 bytes = 256 bit
 					byte[] iv = Arrays.copyOf(SecurityHelper.getMD5(concat_nonce),16);	//16 bytes = 128 bit				
-//					System.out.println("byte len :: iv = "+iv.length+"  b = "+key_bytes.length);
-//					System.out.println(SecurityHelper.HexDecoder.encode(iv, '\0', -1));
-//					System.out.println(SecurityHelper.HexDecoder.encode(key_bytes, '\0', -1));
+					//					System.out.println("byte len :: iv = "+iv.length+"  b = "+key_bytes.length);
+					//					System.out.println(SecurityHelper.HexDecoder.encode(iv, '\0', -1));
+					//					System.out.println(SecurityHelper.HexDecoder.encode(key_bytes, '\0', -1));
 					dataOut.key = new SymmetricKey(key_bytes, iv);
 					dataIn.key = dataOut.key;
 					secureConnectionEstablished = true;
-					
+
 					if (login()) {
 						System.out.println("Login successful...");
 					} else {
@@ -241,7 +244,7 @@ public class OSDXFileTransferAdapter implements UploadClient {
 							System.out.println("ERROR at Login :: "+errorMsg);
 						}
 					}
-					
+
 				} else {
 					System.out.println("init msg signature NOT verified!");
 					logger.logError("init msg signature NOT verified!");
@@ -250,13 +253,13 @@ public class OSDXFileTransferAdapter implements UploadClient {
 				ex.printStackTrace();
 				logger.logException(ex);
 			}
-			
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			logger.logException(ex);
 		}
 	}
-	
+
 	public RemoteFile getRoot() {
 		return root;
 	}
@@ -286,42 +289,42 @@ public class OSDXFileTransferAdapter implements UploadClient {
 		errorMsg = cmd.errorMsg;
 		return ok;
 	}
-	
+
 	private void handleUnexpectedPackageID() {
 		System.out.println("Unexpected Package Received:");
 		System.out.println("id     = "+dataIn.id);
 		System.out.println("type   = "+SecurityHelper.HexDecoder.encode(new byte[]{dataIn.type}));
 		System.out.println("length = "+dataIn.len);
 	}
-	
+
 	private void handleConnectionClosed() {
 		System.out.println("Connection closed by Server.");
 	}
-	
+
 	public boolean mkdir(String absoluteDirectoryName) {
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut);
 		boolean ok = cmd.process("MKDIR "+absoluteDirectoryName);
 		errorMsg = cmd.errorMsg;
 		return ok;
 	}
-	
+
 	public boolean delete(String absoluteRemoteFilename) {
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut);
 		boolean ok = cmd.process("DELETE "+absoluteRemoteFilename);
 		errorMsg = cmd.errorMsg;
 		return ok;
 	}
-	
+
 	public boolean rename(String absoluteRemoteFilename, String newfilename) {
 		String[] params = new String[] {absoluteRemoteFilename,newfilename};
 		String command = "RENAME "+Util.makeParamsString(params);
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut);
-		
+
 		boolean ok = cmd.process(command);
 		errorMsg = cmd.errorMsg;
 		return ok;
 	}
-	
+
 	public Vector<RemoteFile> list(String absoluteDirectoryName) {
 		final Vector<RemoteFile> list = new Vector<RemoteFile>();
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut) {
@@ -341,7 +344,7 @@ public class OSDXFileTransferAdapter implements UploadClient {
 				return true;
 			}
 		};
-		
+
 		boolean ok = cmd.process("LIST "+absoluteDirectoryName);
 		errorMsg = cmd.errorMsg;
 		if (!ok) {
@@ -350,7 +353,7 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			return list;
 		}
 	}
-	
+
 	public RemoteFile fileinfo(String absoluteRemoteFilename) {
 		final Vector<RemoteFile> list = new Vector<RemoteFile>();
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut) {
@@ -365,7 +368,7 @@ public class OSDXFileTransferAdapter implements UploadClient {
 				}
 			}
 		};
-		
+
 		boolean ok = cmd.process("FILE "+absoluteRemoteFilename);
 		errorMsg = cmd.errorMsg;
 		if (!ok) {
@@ -378,36 +381,18 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			}
 		}
 	}
-	
+
 	public void upload(File localFile, String absoluteRemotePath) {
 		try {
 			System.out.println("Upload of file: "+localFile.getCanonicalPath()+" -> "+absoluteRemotePath);
-			boolean ok = upload(localFile, absoluteRemotePath, false);
+			boolean ok = upload(localFile, absoluteRemotePath, false, null);
 			if (ok) {
-				System.out.println("OK");
+				System.out.println("Upload finished.\n");
 			} else {
 				if (errorMsg==null) {
-					System.out.println("ERROR");
+					System.out.println("ERROR\n");
 				} else {
-					System.out.println("ERROR: "+errorMsg);
-				}
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
-	
-	public void uploadResume(File localFile, String absoluteRemotePath) {
-		try {
-			System.out.println("Upload of file: "+localFile.getCanonicalPath()+" -> "+absoluteRemotePath);
-			boolean ok = upload(localFile, absoluteRemotePath, false);
-			if (ok) {
-				System.out.println("OK");
-			} else {
-				if (errorMsg==null) {
-					System.out.println("ERROR");
-				} else {
-					System.out.println("ERROR: "+errorMsg);
+					System.out.println("ERROR: "+errorMsg+"\n");
 				}
 			}
 		} catch (Exception ex) {
@@ -415,18 +400,45 @@ public class OSDXFileTransferAdapter implements UploadClient {
 		}
 	}
 
-	public boolean upload(File localFile, String absoluteRemoteFilename, boolean resume) throws Exception {
+	public void uploadResume(File localFile, String absoluteRemotePath) {
+		try {
+			System.out.println("Upload of file: "+localFile.getCanonicalPath()+" -> "+absoluteRemotePath);
+			boolean ok = upload(localFile, absoluteRemotePath, false, null);
+			if (ok) {
+				System.out.println("Upload finished.\n");
+			} else {
+				if (errorMsg==null) {
+					System.out.println("ERROR\n");
+				} else {
+					System.out.println("ERROR: "+errorMsg+"\n");
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	public boolean upload(File localFile, String absoluteRemoteFilename, boolean resume, ProgressListener pg) throws Exception {
 		errorMsg = null;
 		long id = SecureConnection.getID();
 		int num = 0;
-		
+
 		long filePos = -1L;
 		long fileLen = localFile.length();
 		FileInputStream fileIn = null;
 		long maxFilelengthForMD5 = 100*1024*1024L; //100 MB
-		
+
 		boolean hasNext = true;
-		
+
+		if (pg!=null) {
+			if (fileLen>0) {
+				pg.setMaxProgress(fileLen);
+			} else {
+				pg.setMaxProgress(1);
+			}
+			pg.setProgress(0);	
+			pg.onUpate();
+		}
 		String command = null;
 		String[] param;
 		if (fileLen>0) {
@@ -449,20 +461,20 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			fileLen = 0L;
 			param = new String[] {absoluteRemoteFilename,""+fileLen};
 		}
-		
+
 		if (resume) {
 			command = "RESUMEPUT "+Util.makeParamsString(param);
 		} else {
 			command = "PUT "+Util.makeParamsString(param);
 		}
-		
+
 		dataOut.setCommand(id, command);
 		if (DEBUG) {
 			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
 		}
 		dataOut.sendPackage();
-		
-		
+
+
 		boolean hasPkg = false;
 		while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
 			handleUnexpectedPackageID();
@@ -472,12 +484,17 @@ public class OSDXFileTransferAdapter implements UploadClient {
 				if (dataIn.type == SecureConnection.TYPE_ACK) {
 					//System.out.println("ACK upload of file: "+remoteName);
 					if (fileLen<=0) {
+						//progress ready for file of length 0
+						if (pg!=null) {
+							pg.setProgress(pg.getMaxProgress());
+							pg.onUpate();
+						}
 						return true;
 					}
-					
+
 					//open file for transfer
 					fileIn = new FileInputStream(localFile);
-					
+
 					if (resume) {
 						String msg = getMessageFromContent(dataIn.content);
 						System.out.println("resume msg :: "+msg+"  filePos before = "+filePos);
@@ -485,6 +502,11 @@ public class OSDXFileTransferAdapter implements UploadClient {
 							hasNext = false;
 							System.out.println(msg);
 							//notifyUpdate(fileLen-1, fileLen, null);
+							//progress ready
+							if (pg!=null) {
+								pg.setProgress(pg.getMaxProgress());
+								pg.onUpate();
+							}
 							return true;
 						} else {
 							try {
@@ -495,7 +517,10 @@ public class OSDXFileTransferAdapter implements UploadClient {
 									return false;	
 								}
 								fileIn.skip(filePos);//skip forward to filepos
-								
+								if (pg!=null) {
+									pg.setProgress(filePos);
+									pg.onUpate();
+								}
 							} catch (Exception ex) {
 								//ex.printStackTrace();
 								errorMsg = "wrong format: file upload resume position not parseable";
@@ -503,7 +528,7 @@ public class OSDXFileTransferAdapter implements UploadClient {
 							}
 						}
 					}
-					
+
 					//send data
 					byte[] data = new byte[maxPacketSize];
 					while (hasNext) {
@@ -518,6 +543,10 @@ public class OSDXFileTransferAdapter implements UploadClient {
 							}
 							dataOut.sendPackage();
 							filePos += read;
+							if (pg!=null) {
+								pg.setProgress(filePos);
+								pg.onUpate();
+							}
 						}
 						else if (read==-1) {
 							hasNext = false;
@@ -527,11 +556,12 @@ public class OSDXFileTransferAdapter implements UploadClient {
 							hasNext = false;
 						}
 					}
-					
+
 					//receive next package
 					while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
 						handleUnexpectedPackageID();
 					}
+
 					if (!hasPkg) {
 						handleConnectionClosed();
 						return false;
@@ -539,6 +569,11 @@ public class OSDXFileTransferAdapter implements UploadClient {
 				}
 				else if (dataIn.type == SecureConnection.TYPE_ACK_COMPLETE) {
 					//System.out.println("Upload complete");
+					//progress ready after receiving ACK_COMPLETE
+					if (pg!=null) {
+						pg.setProgress(pg.getMaxProgress());
+						pg.onUpate();
+					}
 					try {
 						fileIn.close();
 					} catch (Exception ex) {
@@ -566,17 +601,408 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			return false;
 		}
 	}
-	
-	
-	public void download(String absoluteRemoteFilename, File localFile) {
-		//TODO
+
+	public boolean upload(byte[] data, String absoluteRemoteFilename, boolean resume, ProgressListener pg) throws Exception {
+		errorMsg = null;
+		long id = SecureConnection.getID();
+		int num = 0;
+
+		long dataPos = -1L;
+		long dataLen = data.length;
+		long maxFilelengthForMD5 = 100*1024*1024L; //100 MB
+
+		boolean hasNext = true;
+
+		if (pg!=null) {
+			if (dataLen>0) {
+				pg.setMaxProgress(dataLen);
+			} else {
+				pg.setMaxProgress(1);
+			}
+			pg.setProgress(0);	
+			pg.onUpate();
+		}
+		String command = null;
+		String[] param;
+		if (dataLen>0) {
+			byte[] md5 = null;
+			if (dataLen<maxFilelengthForMD5) {
+				try {
+					md5 = SecurityHelper.getMD5(data);
+				} catch (Exception e) {
+					System.out.println("Error calculating md5 hash of data");
+					e.printStackTrace();
+					md5 = null;
+				}
+			}
+			if (md5!=null) {
+				param = new String[] {absoluteRemoteFilename,""+dataLen,SecurityHelper.HexDecoder.encode(md5)};
+			} else {
+				param = new String[] {absoluteRemoteFilename,""+dataLen};
+			}
+		} else {
+			dataLen = 0L;
+			param = new String[] {absoluteRemoteFilename,""+dataLen};
+		}
+
+		if (resume) {
+			command = "RESUMEPUT "+Util.makeParamsString(param);
+		} else {
+			command = "PUT "+Util.makeParamsString(param);
+		}
+
+		dataOut.setCommand(id, command);
+		if (DEBUG) {
+			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
+		}
+		dataOut.sendPackage();
+
+
+		boolean hasPkg = false;
+		while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+			handleUnexpectedPackageID();
+		}
+		while (hasPkg) {
+			if (!SecureConnection.isError(dataIn.type)) {
+				if (dataIn.type == SecureConnection.TYPE_ACK) {
+					//System.out.println("ACK upload of file: "+remoteName);
+					if (dataLen<=0) {
+						//progress ready for file of length 0
+						if (pg!=null) {
+							pg.setProgress(pg.getMaxProgress());
+							pg.onUpate();
+						}
+						return true;
+					}
+
+					dataPos = 0;
+
+					if (resume) {
+						String msg = getMessageFromContent(dataIn.content);
+						//System.out.println("resume msg :: "+msg+"  filePos before = "+dataPos);
+						if (msg!=null && msg.equals("upload already complete")) {
+							hasNext = false;
+							System.out.println(msg);
+							//notifyUpdate(fileLen-1, fileLen, null);
+							//progress ready
+							if (pg!=null) {
+								pg.setProgress(pg.getMaxProgress());
+								pg.onUpate();
+							}
+							return true;
+						} else {
+							try {
+								dataPos = Long.parseLong(getMessageFromContent(dataIn.content));
+								//System.out.println("data pos = "+dataPos);
+								if (dataPos>=dataLen) {
+									errorMsg = "data position > data length";
+									return false;	
+								}
+								if (pg!=null) {
+									pg.setProgress(dataPos);
+									pg.onUpate();
+								}
+							} catch (Exception ex) {
+								//ex.printStackTrace();
+								errorMsg = "wrong format: data upload resume position not parseable";
+								return false;
+							}
+						}
+					}
+
+					//send data
+					while (hasNext) {
+						//read from data
+						int nextPackSize = (int)(dataLen-dataPos);
+						if (nextPackSize>maxPacketSize) {
+							nextPackSize = maxPacketSize;
+						}
+						if (nextPackSize>0) {
+							num++;
+							dataOut.setData(id, num, Arrays.copyOfRange(data, (int)dataPos, (int)dataPos+nextPackSize));
+							dataOut.sendPackage();
+							dataPos += nextPackSize;
+						}
+						//notify update
+						if (pg!=null) {
+							pg.setProgress(dataPos);
+							pg.onUpate();
+						}
+						if (dataPos>=dataLen) {
+							hasNext = false;
+						}
+					}
+
+					//receive next package
+					while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+						handleUnexpectedPackageID();
+					}
+
+					if (!hasPkg) {
+						handleConnectionClosed();
+						return false;
+					}
+				}
+				else if (dataIn.type == SecureConnection.TYPE_ACK_COMPLETE) {
+					//System.out.println("Upload complete");
+					//progress ready after receiving ACK_COMPLETE
+					if (pg!=null) {
+						pg.setProgress(pg.getMaxProgress());
+						pg.onUpate();
+					}
+					return true;
+				}
+			} else {
+				//stop upload
+				hasNext = false;
+				errorMsg = getMessageFromContent(dataIn.content);
+				return false;
+			}
+		}
+		if (!hasPkg) {
+			handleConnectionClosed();
+			return false;
+		} else {
+			System.out.println("should never be in this state!!!");
+			return false;
+		}
+	}
+
+
+	public void download(String absoluteRemoteFilename, File localFile, boolean showProgress) {
+		try {
+			System.out.println("Download of file: "+absoluteRemoteFilename+" -> "+localFile.getCanonicalPath());
+			ProgressListener pg = null;
+			if (showProgress) {
+				pg = new ProgressListener() {
+					int lastProg = -1;
+					public void onUpate() {
+						if (getMaxProgress()>0) {
+							int prog = (int) (getProgress()*10L / getMaxProgress());
+							if (prog > lastProg) {
+								System.out.println("  progress: "+prog*10+"%");
+								lastProg = prog;
+							}
+						}
+					}
+				};
+			}
+			
+			boolean ok = download(absoluteRemoteFilename, localFile, false, pg);
+			if (ok) {
+				System.out.println("Download finished.\n");
+			} else {
+				if (errorMsg==null) {
+					System.out.println("ERROR\n");
+				} else {
+					System.out.println("ERROR: "+errorMsg+"\n");
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 	
-	public void downloadResume(String absoluteRemoteFilename, File localFile) {
-		//TODO
+	public boolean download(String absoluteRemoteFilename, File localFile, boolean resume, ProgressListener pg) throws Exception {
+		errorMsg = null;
+		long id = SecureConnection.getID();
+		int num = 0;
+		
+		long fileLen = -1L;
+		long filePos = -1L;
+		byte[] md5 = null;
+
+		FileOutputStream fileOut = null;
+
+		String command;
+		if (resume && localFile.exists()) {
+			long length = localFile.length();
+			String param = Util.makeParamsString(new String[]{absoluteRemoteFilename,""+length});
+			command = "RESUMEGET "+param;
+			filePos = length;
+		}
+		else {
+			resume = false;
+			command = "GET "+absoluteRemoteFilename;
+			filePos = 0L;
+		}
+		
+		dataOut.setCommand(id, command);
+		if (DEBUG) {
+			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
+		}
+		dataOut.sendPackage();
+
+		boolean hasPkg = false;
+		while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+			handleUnexpectedPackageID();
+		}
+		while (hasPkg) {
+			if (!SecureConnection.isError(dataIn.type)) {
+				if (dataIn.type == SecureConnection.TYPE_ACK) {
+					String[] p = Util.getParams(getMessageFromContentNN(dataIn.content));
+					fileLen = Long.parseLong(p[0]);
+					//System.out.println("filelength = "+fileLen);
+					if (p.length==2) {
+						try {
+							md5 = SecurityHelper.HexDecoder.decode(p[1]);
+							System.out.println("md5 = "+p[1]);
+						} catch (Exception ex) {
+							System.out.println("Warning: could not parse md5 hash: "+p[1]);
+							md5 = null;
+						}
+					}	
+					if (fileLen==0) {
+						localFile.createNewFile();
+						if (pg!=null) {
+							pg.setMaxProgress(1);
+							pg.setProgress(1);
+							pg.onUpate();
+						}
+						return true;
+
+					} else {
+						//open file for output
+						localFile.getParentFile().mkdirs();
+						if (resume) {
+							fileOut = new FileOutputStream(localFile,true); //append if resume	
+						} else {
+							fileOut = new FileOutputStream(localFile); //new if not resume
+						}
+					}
+					if (resume) { //already finished download
+						if (filePos>fileLen) {
+							//System.out.println("ERROR wrong filesize.");
+							//close file
+							try {
+								fileOut.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
+							return false;
+						}
+						else if  (fileLen==filePos) {
+							if (pg!=null) {
+								pg.setMaxProgress(fileLen);
+								pg.setProgress(filePos);
+								pg.onUpate();
+							}
+							if (md5!=null){
+								//check md5
+								byte[] myMd5 = SecurityHelper.getMD5(localFile);
+								if (Arrays.equals(md5, myMd5)) {
+									System.out.println("MD5 check ok");
+									return true;
+								} else {
+									System.out.println("MD5 check FAILD!");
+									errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!";
+									return false;
+								}
+							} else {
+								return true;
+							}
+						}
+					}
+					
+					if (pg!=null) {
+						pg.setMaxProgress(fileLen);
+						pg.setProgress(filePos);
+						pg.onUpate();
+					}
+					
+					//receive next package
+					while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+						handleUnexpectedPackageID();
+					}
+					if (!hasPkg) {
+						handleConnectionClosed();
+						return false;
+					}
+				}
+				else if (dataIn.type == SecureConnection.TYPE_DATA) {
+					//write content
+					fileOut.write(dataIn.content);
+					filePos += dataIn.content.length;
+
+					//update progress
+					if (pg!=null) {
+						pg.setMaxProgress(fileLen);
+						pg.setProgress(filePos);
+						pg.onUpate();
+					}
+					
+					//finish if filePos at end
+					if (filePos>=fileLen) { //finished
+						//System.out.println("Download finished: "+localFile.getAbsolutePath());
+						//close file
+						try {
+							fileOut.flush();
+							fileOut.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+
+						if (filePos>fileLen) {
+							errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
+							//System.out.println("ERROR wrong filesize.");
+							return false;
+						} else {
+							//successfully finished download
+							if (md5!=null){
+								//check md5
+								byte[] myMd5 = SecurityHelper.getMD5(localFile);
+								if (Arrays.equals(md5, myMd5)) {
+									System.out.println("MD5 check ok");
+									return true;
+								} else {
+									System.out.println("MD5 check FAILD!");
+									errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!";
+									return false;
+								}
+							} else {
+								//notifyUpdate(filePos, fileLen, null);
+								return true;
+							}
+						}
+					}
+					else {  //not finished yet
+						
+						//receive next package
+						while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+							handleUnexpectedPackageID();
+						}
+						if (!hasPkg) {
+							handleConnectionClosed();
+							return false;
+						}
+					}
+				}
+			} //end of if !error
+			else {
+				//stop download
+				try {
+					if (fileOut!=null) {
+						fileOut.close();
+					}
+				} catch (Exception ex) {
+					//ex.printStackTrace();
+				}
+				errorMsg = getMessageFromContent(dataIn.content);
+				return false;
+			}
+		}
+
+		if (!hasPkg) {
+			handleConnectionClosed();
+			return false;
+		} else {
+			System.out.println("should never be in this state!!!");
+			return false;
+		}
 	}
-	
-	
+
+
 	public void closeConnection() {
 		System.out.println("Closing connection.");
 		errorMsg = null;
@@ -592,14 +1018,14 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private boolean isAllowed(int rightType) {
 		if (rightsAndDuties==null) {
 			return false;
 		}
 		return rightsAndDuties.hasRight(rightType);
 	}
-	
+
 	private String getMessageFromContent(byte[] content) {
 		if (content==null) return null;
 		try {
@@ -617,35 +1043,22 @@ public class OSDXFileTransferAdapter implements UploadClient {
 		}
 		return "";
 	}
-	
-	
-	//Methods from UploadClient
-	
-	public void uploadFile(File f, String remoteAbsoluteFilename, CommandResponseListener listener) {
-		//TODO	
-	}
-
-	public void  uploadFile(byte[] data, String remoteAbsoluteFilename, CommandResponseListener listener) {
-		//TODO
-	}
-	
-	
 
 
-//	//file.getParent() does NOT work for Files from args[] 
-//	private static String getParentDir(File f) throws Exception {
-//		String d = f.getCanonicalPath();
-//		d = d.substring(0,d.length()-f.getName().length()-1);
-//		return d;
-//	}
-	
+	//	//file.getParent() does NOT work for Files from args[] 
+	//	private static String getParentDir(File f) throws Exception {
+	//		String d = f.getCanonicalPath();
+	//		d = d.substring(0,d.length()-f.getName().length()-1);
+	//		return d;
+	//	}
+
 
 	public static void main(String[] args) {
 		test();
-		
+
 	}
-	
-	
+
+
 	public static void test() {
 		try {
 
@@ -658,13 +1071,15 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			client.connect("localhost", 4221,"/", mysigning, username);
 			
 			client.upload(new File("FDL.txt"), "/FDL.txt");
+			client.download("/FDL.txt", new File("/tmp/FDL.txt"),true);
+			
 			client.mkdir("/blub");
 			RemoteFile rf = client.fileinfo("/blub");
 			if (rf != null) {
 				System.out.println("FileInfo:: "+rf.toString());
 			}
 			client.rename("/blub", "blablub");
-			
+
 			Vector<RemoteFile> list = client.list("/");
 			if (list!=null) {
 				System.out.println("LIST");
@@ -675,7 +1090,7 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			}
 			client.delete("/blablub");
 			client.delete("/FDL.txt");
-			
+
 			list = client.list("/");
 			if (list!=null) {
 				System.out.println("LIST");
@@ -684,11 +1099,11 @@ public class OSDXFileTransferAdapter implements UploadClient {
 				}
 				System.out.println();
 			}
+
 			
-			//client.download("/FDL2.txt", new File("/tmp/FDL2.txt"));
-			
-			
-			
+
+
+
 			client.closeConnection();
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -697,20 +1112,20 @@ public class OSDXFileTransferAdapter implements UploadClient {
 
 	private class SimpleCommand {
 		public String errorMsg = null;
-		
+
 		//hook in here
 		public boolean onACK() {
 			return true;
 		}
-		
+
 		private SecureConnection dataIn;
 		private SecureConnection dataOut;
-		
+
 		public SimpleCommand(SecureConnection dataIn, SecureConnection dataOut) {
 			this.dataIn = dataIn;
 			this.dataOut = dataOut;
 		}
-		
+
 		public boolean process(String command) {
 			long id = SecureConnection.getID();
 			errorMsg = null; 
@@ -720,7 +1135,7 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			}
 			try {
 				dataOut.sendPackage();
-				
+
 				boolean hasPkg = false;
 				while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
 					handleUnexpectedPackageID();
@@ -745,7 +1160,7 @@ public class OSDXFileTransferAdapter implements UploadClient {
 			}
 		}
 	}
-	
+
 }
 
 

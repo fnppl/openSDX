@@ -115,7 +115,6 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 			String[] p = Util.getParams(getMessageFromContentNN(content));
 			fileLen = Long.parseLong(p[0]);
 			System.out.println("filelength = "+fileLen);
-			
 			if (p.length==2) {
 				try {
 					md5 = SecurityHelper.HexDecoder.decode(p[1]);
@@ -125,6 +124,7 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 					md5 = null;
 				}
 			}
+			
 			if (fileLen==0) {
 				localfile.createNewFile();
 				notifySucces();

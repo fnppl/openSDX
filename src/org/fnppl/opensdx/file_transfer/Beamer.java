@@ -94,8 +94,6 @@ public class Beamer {
 		
 		String type = receiver.getType();
 		
-		UploadClient client = null;
-		
 		if (!type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER) && !type.equals(Receiver.TRANSFER_TYPE_FTP)) {
 			return Result.error("Sorry, receiver type \""+type+"\" not implemented.");
 		}
@@ -112,11 +110,29 @@ public class Beamer {
 		
 		if (type.equals(Receiver.TRANSFER_TYPE_OSDX_FILESERVER)) {
 			try {
-				Result result = initOSDXFileTransferClient(receiver, mh, defaultKeystore, signatureKey);
+//				Result result = initOSDXFileTransferClient(receiver, mh, defaultKeystore, signatureKey);
+//				if (!result.succeeded) {
+//					return result;
+//				}
+//				client = (OSDXFileTransferClient)result.userobject;
+				
+				Result result = initOSDXFileTransferAdapter(receiver, mh, defaultKeystore, signatureKey);
 				if (!result.succeeded) {
 					return result;
 				}
-				client = (OSDXFileTransferClient)result.userobject;
+				OSDXFileTransferAdapter aClient = (OSDXFileTransferAdapter)result.userobject;
+				try {
+					Beamer beam = new Beamer();
+					result = beam.uploadFeedSync(feed, aClient, signatureKey,mh, includeFiles, pg);
+					aClient.closeConnection();
+					return result;
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					Result r = Result.error("ERROR: Upload of Feed failed.");
+					r.exception = ex;
+					return r;
+				}
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 				Result r = Result.error("ERROR: Upload of Feed failed.");
@@ -130,7 +146,18 @@ public class Beamer {
 				if (!result.succeeded) {
 					return result;
 				}
-				client = (UploadClient)result.userobject;
+				UploadClient client = (UploadClient)result.userobject;
+				try {
+					Beamer beam = new Beamer();
+					result = beam.uploadFeedOld(feed, client, signatureKey,mh, includeFiles, pg);
+					client.closeConnection();
+					return result;
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					Result r = Result.error("ERROR: Upload of Feed failed.");
+					r.exception = ex;
+					return r;
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				Result r = Result.error("ERROR: Upload of Feed failed.");
@@ -139,19 +166,6 @@ public class Beamer {
 			}
 		}
 		
-		if (client!=null) {
-			try {
-				Beamer beam = new Beamer();
-				Result result = beam.uploadFeed(feed, client, signatureKey,mh, includeFiles, pg);
-				client.closeConnection();
-				return result;
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				Result r = Result.error("ERROR: Upload of Feed failed.");
-				r.exception = ex;
-				return r;
-			}
-		}
 		return Result.error("unknown error");
 	}
 	
@@ -223,7 +237,7 @@ public class Beamer {
 	private boolean hasAnswer = false;
 	
 	//private Result currentUploadResult = null; 
-	public Result uploadFeed(Feed currentFeed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh, final boolean includeFiles, final ProgressListener pg) throws Exception {
+	public Result uploadFeedOld(Feed currentFeed, UploadClient client, OSDXKey signaturekey, final MessageHandler mh, final boolean includeFiles, final ProgressListener pg) throws Exception {
 		final String normFeedid = currentFeed.getNormFeedID();
 		
 		final Result[] result = new Result[] {Result.succeeded()};
@@ -587,6 +601,209 @@ public class Beamer {
 		return result[0];
 	}
 	
+	public Result uploadFeedSync(Feed currentFeed, OSDXFileTransferAdapter client, OSDXKey signaturekey, final MessageHandler mh, final boolean includeFiles, final ProgressListener pg) throws Exception {
+		System.out.println("Upload Feed Sync");
+		
+		final String normFeedid = currentFeed.getNormFeedID();
+		
+		Result result = Result.succeeded();
+		//make a copy to remove private information and change to relative file paths  
+		//Feed copyOfFeed = Feed.fromBusinessObject(BusinessObject.fromElement(feed.toElement()));
+		//copy feed and set structeredNames
+		Feed feed = Feed.fromBusinessObject(BusinessObject.fromElement(currentFeed.toElement(true)));
+		
+		//check include files
+		int bundleCount = feed.getBundleCount();
+		for (int i=0;i<bundleCount;i++) { // for each bundle
+			Bundle b = feed.getBundle(i);
+			//bundle files
+			int bundlefilesCount = b.getFilesCount();
+			for (int k=0;k<bundlefilesCount;k++) { // for each bundle file
+				ItemFile itf = b.getFile(k);
+				itf.no_file_given(!includeFiles); //set no_file_given if not includeFiles
+			}
+			//item files
+			int itemCount = b.getItemsCount();
+			for (int j=0;j<itemCount;j++) {// for each item in bundle
+				Item it = b.getItem(j);
+				int filesCount = it.getFilesCount();
+				for (int k=0;k<filesCount;k++) {// for each file in item
+					ItemFile itf = it.getFile(k);
+					itf.no_file_given(!includeFiles); //set no_file_given if not includeFiles
+				}
+			}
+		}
+		
+		//norm feedid
+		String dir = normFeedid;
+		//String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,19).replace(' ', '_');
+		//dir = Util.filterCharactersFile(dir);
+		
+		
+		//test if dir already exists
+		boolean exists = false;
+		
+		RemoteFile testDirExists = client.fileinfo("/"+dir);
+		
+		if (testDirExists!=null) {
+			return Result.error("A feed with this id already exists on the server.\nPlease select another feedid.");
+		}
+		
+		//build file structure
+		String absolutePath = "/"+dir+"/";
+		
+		long maxProgress = 0;
+		long progress = 0;
+		
+		//upload feed
+		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+		//Element eFeed = copyOfFeed.toElement();
+		Element eFeed = feed.toElement(true);
+		Document.buildDocument(eFeed).output(bOut);
+		byte[] feedbytes = bOut.toByteArray();
+		maxProgress += feedbytes.length;
+		
+		try {
+			System.out.println("\nUploading "+normFeedid+".xml ...");
+			boolean ok = client.upload(feedbytes, absolutePath+normFeedid+".xml",false, null);
+			if (ok) {
+				System.out.println("Upload of "+normFeedid+".xml successful.");	
+			} else {
+				if (mh!=null) {
+					mh.showErrorMessage("Upload failed", "Upload of feed xml failed.");
+				}
+				result = Result.error("Upload of feed xml failed.");
+				return result;
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			if (mh!=null) {
+				mh.showErrorMessage("Upload failed", "Upload of feed xml failed.");
+			}
+			result = Result.error("Upload of feed xml failed.");
+			return result;
+		}
+		
+		
+		//upload feed signature
+		byte[][] checks  = SecurityHelper.getMD5SHA1SHA256(feedbytes);
+		Signature feed_sig = Signature.createSignature(checks[1], checks[2], checks[3], normFeedid+".xml",signaturekey);
+		bOut = new ByteArrayOutputStream();
+		Document.buildDocument(feed_sig.toElement()).output(bOut);
+		byte[] feedSignatureBytes = bOut.toByteArray();
+		maxProgress += feedSignatureBytes.length;
+		try {
+			System.out.println("\nUploading signature ...");
+			boolean ok = client.upload(feedSignatureBytes, absolutePath+normFeedid+".xml.osdx.sig",false, null);
+			if (ok) {
+				System.out.println("Upload of signature successful.");	
+			} else {
+				if (mh!=null) {
+					mh.showErrorMessage("Upload failed", "Upload of signature failed.");
+				}
+				result = Result.error("Upload of signature failed.");
+				return result;
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			if (mh!=null) {
+				mh.showErrorMessage("Upload failed", "Upload of signature failed.");
+			}
+			result = Result.error("Upload of signature failed.");
+			return result;
+		}
+		
+		
+		//upload all bundle and item files
+		if (includeFiles) {
+			Vector<BundleItemStructuredName> files = feed.getStructuredFilenames();
+			
+			if (pg!=null) { // count max progress
+				progress = maxProgress;
+				pg.setProgress(progress);
+				for (BundleItemStructuredName f : files) {
+					maxProgress += f.file.length();
+				}
+				pg.setMaxProgress(maxProgress);
+				pg.onUpate();
+			}
+			
+			for (BundleItemStructuredName f : files) {
+				try {
+					//ItemFile nextItemFile = f.itemFile;
+					//nextItemFile.setLocation(FileLocation.make(filename)); //relative filename to location path
+					
+					File nextFile = f.file;
+					final String filename = f.new_filename;
+					final long len = f.file.length();
+					try {
+						System.out.println("\nUploading "+filename+" ...");
+						if (pg!=null) {
+							pg.saveProgress();
+						}
+						
+						boolean ok = client.upload(nextFile, absolutePath+filename,false, new ProgressListener() {
+							public void onUpate() {
+								if (pg!=null) {
+									pg.setProgress(pg.getProgressSave()+this.getProgress());
+									pg.onUpate();
+								}
+							}
+						});
+						if (ok) {
+							System.out.println("Upload of "+filename+" successful.");
+							if (pg!=null) {
+								pg.setProgress(pg.getProgressSave()+len);
+								pg.onUpate();
+							}
+						} else {
+							if (mh!=null) {
+								mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed.");
+							}
+							result = Result.error("Upload of "+filename+" failed.");
+							return result;
+						}
+						
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						if (mh!=null) {
+							mh.showErrorMessage("Upload failed", "Upload of "+filename+" failed.");
+						}
+						result = Result.error("Upload of "+filename+" failed.");
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+		
+		//upload feed finished file
+		try {
+			System.out.println("\nUploading finish token ...");
+			hasAnswer = false;
+			boolean ok = client.upload(new byte[]{0},absolutePath+normFeedid+".finished", false, null);
+			if (ok) {
+				System.out.println("Upload of finish token successful.");
+			} else {
+				if (mh!=null) {
+					mh.showErrorMessage("Upload failed", "Upload of finish token failed.");
+				}
+				result = Result.error("Upload of finish token failed.");
+				return result;
+			}
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			if (mh!=null) {
+				mh.showErrorMessage("Upload failed", "Upload of finish token failed.");
+			}
+			result = Result.error("Upload of finish token failed.");
+			return result;
+		}
+
+		return result;
+	}
+	
 
 	public static Result exportFeedToDirectory(Feed currentFeed, File targetDir, OSDXKey signaturekey, boolean includeFiles) throws Exception {
 		if (targetDir==null) {
@@ -807,6 +1024,108 @@ public class Beamer {
 		
 		try {
 			OSDXFileTransferClient c = new OSDXFileTransferClient();
+			
+			try {
+				boolean ok = c.connect(servername, port, prepath, mysigning, username);
+				if (!ok) {
+					return Result.error("ERROR: Connection to server could not be established.");
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				return Result.error("ERROR: Connection to server could not be established.");
+			}
+			Result res = Result.succeeded();
+			res.userobject = c;
+			
+			//uploadFeed(client);
+			//c.closeConnection();
+			
+			return res; 
+		} catch (Exception e) {
+			e.printStackTrace();
+			Result res = Result.error("ERROR: Upload of Feed failed.");
+			res.exception = e;
+			return res;
+		}
+//		
+	}
+	
+private static Result initOSDXFileTransferAdapter(Receiver r, MessageHandler mh, String keystore, OSDXKey key) {
+		
+		String servername = r.getServername();
+		int port = r.getPort();
+		if (port<=0) port = 4221;
+		String prepath = r.getPrepath();
+		String username = r.getUsername();
+		if (username==null || username.length()==0) {
+			return Result.error("Missing parameter: username"); 
+		}
+		
+		File f = null;
+		
+		String keyid = r.getKeyID();
+		
+		OSDXKey mysigning = null;
+		if (key!=null && keyid.equals(key.getKeyID())) {
+			mysigning = key;
+		}
+		
+		if (mysigning==null) { // get key from keystore
+			if (keystore!=null) {
+				f = new File(keystore);
+			} else {
+				f = mh.requestOpenKeystore();
+			}
+			if (f==null) return Result.error("keystore could not be opened.");
+			
+			
+			MessageHandler mh2 = new DefaultMessageHandler() {
+				public boolean requestOverwriteFile(File file) {
+					return false;
+				}
+				public boolean requestIgnoreVerificationFailure() {
+					return false;
+				}
+				public boolean requestIgnoreKeyLogVerificationFailure() {
+					return false;
+				}
+			};
+			try {
+				KeyApprovingStore store = KeyApprovingStore.fromFile(f, mh2); 
+				
+				if (keyid!=null) {
+					mysigning = store.getKey(keyid);
+					while (mysigning==null) {
+						String msg = "You given key id \""+keyid+"\"\nfor authentification could not be found in default keystore.\nPlease select the corresponding keystore.";
+						mh.showErrorMessage("Key not found.", msg);
+						f = mh.requestOpenKeystore();
+						if (f==null || !f.exists()) {
+							return Result.error("Key for authentification could not be found.");	
+						}
+						store = KeyApprovingStore.fromFile(f, mh2);
+						mysigning = store.getKey(keyid);
+					}
+				}
+				
+			} catch (Exception e1) {
+				Result.error("Error opening keystore:\n"+f.getAbsolutePath());
+		}
+		}
+		
+		if (mysigning==null) return Result.error("no signing key");
+		try {
+			mysigning.unlockPrivateKey(mh);
+		} catch (Exception e1) {
+			//e1.printStackTrace();
+			return Result.error("Sorry, wrong password.");
+		}
+		
+		if (!mysigning.isPrivateKeyUnlocked()) {
+			return Result.error("Sorry, private is is locked.");
+		}
+		
+		try {
+			OSDXFileTransferAdapter c = new OSDXFileTransferAdapter();
 			
 			try {
 				boolean ok = c.connect(servername, port, prepath, mysigning, username);

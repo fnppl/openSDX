@@ -588,6 +588,8 @@ public class OSDXFileTransferClient implements UploadClient {
 				nextCommandBlockTimeout = -1L;
 			}
 			if (!(command instanceof OSDXFileTransferDownloadCommand || command instanceof OSDXFileTransferUploadCommand)) {
+				//TODO check
+				System.out.println("removeCommandFromInProgress "+commandid);
 				removeCommandFromInProgress(commandid);
 			}
 		} catch (Exception e) {
