@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>openSDX :: KeyServer :: Key Info</title>
+	</head>
+	<body>
+		<h1>openSDX :: KeyServer :: Key Info</h1>
+		<div id="main">
+#if ($key_found)
+	<h3>Key Basics</h3>
+	<table cellspacing="10">
+        <tr><td>keyid</td><td>$key.getKeyID()</td></tr>
+        <tr><td>level</td><td>$key.getLevelName()</td></tr>
+        <tr><td>usage</td><td>$key.getUsageName()</td></tr>
+        <tr><td>valid from</td><td>$key.getValidFromString()</td></tr>
+        <tr><td>valid until</td><td>$key.getValidUntilString()</td></tr>
+	</table>
+	
+	<h3>Key Owner</h3>
+	#if ($keyowner_found)
+	<table cellspacing="10">
+	      <tr><td>email</td><td>$keyowner.getEmail()</td></tr>
+	      <tr><td>mnemonic</td><td>$keyowner.getMnemonic()</td></tr>
+	</table>
+	#else
+		<p>No information to key owner for this key found</p>
+	#end
+						
+	<h3>Key Logs</h3>
+	#if ($keylogs_found)
+		<table cellspacing="10">
+		<thead><tr><td>num</td><td>keyid from</td><td>datetime</td><td>action</td></tr></thead>
+		<tbody>
+#foreach($kl in $keylogs)
+	      	<tr><td>$velocityCount</td><td>$kl.getKeyIDFrom()</td><td>$kl.getActionDatetimeString()</td><td>$kl.getAction()</td></tr>
+#end
+		</tbody>
+		</table>
+	#else
+		<p>No keylogs for this key found</p>
+	#end
+#else
+	<p>No key with keyid $param_keyid found</p>
+#end
+		</div>
+	</body>
+</html>
