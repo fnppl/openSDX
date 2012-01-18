@@ -47,9 +47,14 @@ public abstract class ProgressListener {
 
 	private long progress = 0;
 	private long maxProgress = 0;
+	private long progressSave = 0;
 	
 	public void setProgress(long p) {
 		progress = p;
+	}
+	
+	public void increaseProgress(long p) {
+		progress += p;
 	}
 	
 	public long getProgress() {
@@ -63,6 +68,19 @@ public abstract class ProgressListener {
 	public long getMaxProgress() {
 		return maxProgress;
 	}
+	
+	public void setProgressSave(long p) {
+		progressSave = p;
+	}
+	
+	public long getProgressSave() {
+		return progressSave;
+	}
+	
+	public void saveProgress() {
+		progressSave = progress;
+	}
+	
 	
 	public abstract void onUpate();
 	

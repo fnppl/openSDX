@@ -106,7 +106,7 @@ public class FeedGui extends JFrame implements MyObserver {
 	public final static String RESSOURCE_FEEDGUI_MANUAL = "https://atlas.fnppl.org/display/OSDX/Manual+-+FeedGui";
 	
 	private static FeedGui instance = null;
-	private static String version = "v. 2011-12-22";
+	private static String version = "v. 2012-01-14";
 	private URL configGenres = FeedGui.class.getResource("resources/config_genres.xml");
 	private static URL configLanguageCodes = FeedGui.class.getResource("resources/iso639-1_language_codes.csv");
 	private XMLTree tree;

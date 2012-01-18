@@ -92,7 +92,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	
 	private static boolean DEBUG = false;
 	
-	private static String version = "osdx_ftclient v.2011-10-25";
+	private static String version = "osdx_ftclient v.2012-01-12";
 	
 	private Logger logger = Logger.getFileTransferLogger();
 	
@@ -474,6 +474,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	//calls from receiver thread come in here
 	public void onResponseReceived(long commandid, int num, byte code, byte[] content) {
 		try {
+			System.out.println("response received");
 			if (DEBUG) {
 				//System.out.println("RESPONSE commandid="+commandid);
 				if (code == SecureConnection.TYPE_DATA) {
@@ -587,6 +588,8 @@ public class OSDXFileTransferClient implements UploadClient {
 				nextCommandBlockTimeout = -1L;
 			}
 			if (!(command instanceof OSDXFileTransferDownloadCommand || command instanceof OSDXFileTransferUploadCommand)) {
+				//TODO check
+				System.out.println("removeCommandFromInProgress "+commandid);
 				removeCommandFromInProgress(commandid);
 			}
 		} catch (Exception e) {
