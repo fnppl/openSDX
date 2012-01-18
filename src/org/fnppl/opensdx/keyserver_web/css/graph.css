@@ -1,0 +1,58 @@
+h1 {
+  color: gray;  
+}
+
+
+.masterkey {
+	    width: 30px;
+        height: 22px;
+      	background-color:  #DAA520;
+        position: absolute;
+        text-align: center;
+}
+.masterkey:hover {
+	background-color: red;
+}
+.subkey {
+	    width: 0px;
+        height: 0px;
+        border-left: 25px solid transparent;
+        border-right: 25px solid transparent;
+        border-bottom: 25px solid #B8860B;
+        position: absolute;
+        text-indent: -13px;
+}
+.subkey:hover {
+	border-bottom: 20px solid #FF0000;
+}
+
+.revokekey {
+        width: 0px;
+        height: 0px;
+        border-left: 30px solid transparent;
+        border-right: 30px solid #B8860B;
+        border-bottom: 30px solid transparent;
+        position: absolute;
+        text-indent: 10px;
+}
+.revokekey:hover {
+    border-right: 30px solid #FF0000;
+}
+
+.arrow {
+    border-color: #88aadd;
+}
+.arrow:hover {
+    border-color: red;
+}
+
+.line {
+        position: absolute;
+        height: 0px;
+        border-width: 5px 0px 0px 0px;
+        border-style: solid;
+        border-color: #88aadd;
+}
+.line:hover {
+    border-color: red;
+}	

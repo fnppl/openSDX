@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>openSDX :: KeyServer :: KeyGraph</title>
+		<link rel="stylesheet" type="text/css" href="/osdx_keyserver/css/graph.css">
+		</link>
+		<script type="text/javascript" src="/osdx_keyserver/scripts/jquery-1.7.1.min.js"></script>
+		<script type="text/javascript" src="/osdx_keyserver/scripts/jquery-ui-1.8.17.custom.min.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				
+				var nodes = [
+					{keyid: "A", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "B", level: "subkey",    usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "C", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "D", level: "subkey",    usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "E", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "F", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "G", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "H", level: "revokekey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "I", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "J", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "K", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "L", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "M", level: "revokekey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "N", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "O", level: "revokekey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "P", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "Q", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "R", level: "subkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "S", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "T", level: "subkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"}
+					
+				];
+				
+				var edges = [
+					 { keyFrom: "A", keyTo: "B", action: "approve"},
+					 { keyFrom: "C", keyTo: "D", action: "disapprove"},
+					 { keyFrom: "B", keyTo: "C", action: "revoke"},
+					 { keyFrom: "G", keyTo: "H", action: "revoke"},
+					 { keyFrom: "O", keyTo: "A", action: "revoke"},
+					 { keyFrom: "A", keyTo: "B", action: "approve"},
+					 { keyFrom: "A", keyTo: "B", action: "approve"},
+					 { keyFrom: "N", keyTo: "B", action: "approve"},
+					 { keyFrom: "A", keyTo: "B", action: "approve"},
+					 { keyFrom: "T", keyTo: "L", action: "approve"},
+					 { keyFrom: "L", keyTo: "R", action: "approve"},
+					 { keyFrom: "K", keyTo: "T", action: "approve"}
+				];
+				
+				
+				//create nodes
+				function createAllNodes() {
+					$("#nodes").empty();
+					var nodecount = nodes.length;
+					var pos = $("#lines").offset();
+					
+					var mX = $("#lines").width()/2 + pos.left;
+					var mY = $("#lines").height()/2 + pos.top;
+					var radius = $("#lines").height()/2-30;
+					
+					var winkel = 2.0 * Math.PI / nodecount;
+					
+					for (var i = 0; i< nodecount; i++) {
+						var el = document.createElement("span");
+						el.className = nodes[i].level;
+						el.id = nodes[i].keyid;
+						var x = mX + Math.cos(i*winkel)*radius;
+						var y = mY + Math.sin(i*winkel)*radius;
+						if (el.className == "revokekey") {
+							x = x - 50;
+						}
+						el.style.top = y+'px';
+						el.style.left = x+'px';
+						$("#nodes").append(el);
+						
+						//$('#'+el.id).draggable({containment: '#lines',drag: layoutEvent, stop: layoutEvent});
+						$(el).html(''+i*10);
+						$(el).draggable({containment: '#lines',drag: layoutEvent, stop: layoutEvent});
+					}
+				}
+				
+				
+				//create Edges
+				var isIE = navigator.userAgent.indexOf("MSIE") > -1;				
+				
+				function createLine(x1, y1, x2, y2) {
+					if(x2 < x1) {
+						var temp = x1;
+						x1 = x2;
+						x2 = temp;
+						temp = y1;
+						y1 = y2;
+						y2 = temp;
+					}
+					var line = document.createElement("span");
+					line.className = "line";
+					var length = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+					line.style.width = length + "px";
+
+					if(isIE) {
+						line.style.top = (y2 > y1) ? y1 + "px" : y2 + "px";
+						line.style.left = x1 + "px";
+						var nCos = (x2 - x1) / length;
+						var nSin = (y2 - y1) / length;
+						line.style.filter = "progid:DXImageTransform.Microsoft.Matrix(sizingMethod='auto expand', M11=" + nCos + ", M12=" + -1 * nSin + ", M21=" + nSin + ", M22=" + nCos + ")";
+					} else {
+						var angle = Math.atan((y2 - y1) / (x2 - x1));
+						line.style.top = y1 + 0.5 * length * Math.sin(angle) + "px";
+						line.style.left = x1 - 0.5 * length * (1 - Math.cos(angle)) + "px";
+						line.style.MozTransform = line.style.WebkitTransform = line.style.OTransform = "rotate(" + angle + "rad)";
+					}
+					
+					return line;
+				};
+				
+				function createArrow(x1, y1, x2, y2) {
+					var arrow = document.createElement("span");
+					arrow.className = "arrow";
+					arrow.appendChild(createLine(x1,y1,x2,y2));
+					
+					//TODO create arrow lines
+					//arrow.appendChild(createLine(x1-5,y1-5,x2,y2));
+					//arrow.appendChild(createLine(x1+5,y1+5,x2,y2));
+					
+					
+					return arrow;
+				};
+				
+				function getX(nodeid) {
+					//var msg = 'hallo '+$('#'+nodeid).attr("class").indexOf("revokekey"); 
+					//alert(msg);
+					if ($('#'+nodeid).attr("class").indexOf("revokekey") != -1) {
+						 return parseFloat($('#'+nodeid).css("left"))+45;
+					}
+					return parseFloat($('#'+nodeid).css("left"))+20;
+				}
+				function getY(nodeid) {
+					return parseFloat($('#'+nodeid).css("top"))+10;
+				}
+				function createAllLines() {
+					$("#lines").empty();
+					
+					for each (var keylog in edges){ 
+			         	$("#lines").append(createArrow( getX(keylog.keyFrom), getY(keylog.keyFrom), getX(keylog.keyTo), getY(keylog.keyTo) ) );
+			      	}
+				}
+				
+				
+				//redraw button
+				$("#b1").click(function(e) { 
+					createAllNodes();
+					createAllLines();
+				});
+				
+				
+				//init
+				createAllNodes();
+				createAllLines();
+				
+				//mousedrag on all nodes
+				$("#nodes").each(function() {
+					$(this).find('*').draggable({containment: '#lines',drag: layoutEvent, stop: layoutEvent});
+				});
+					
+				function layoutEvent( event, ui ) {
+					createAllLines();
+				}
+				
+			});
+
+			
+		</script>
+		<noscript>
+			JavaScript not available.
+		</noscript>
+	</head>
+	<body>
+		<h1>openSDX :: KeyServer :: KeyGraph</h1>
+		<div id="lines" style="width: 700px; height: 600px; background-color: #eeeeee;"></div>
+		<div id="nodes"></div>
+		<button id="b1">redraw</button>
+	</body>
+</html>

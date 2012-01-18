@@ -4,6 +4,7 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>openSDX :: KeyServer :: Echo</title>
+		<link rel="stylesheet" type="text/css" href="/osdx_keyserver/css/graph.css">
 	</head>
 	<body>
 		<h1>openSDX :: KeyServer :: Echo</h1>

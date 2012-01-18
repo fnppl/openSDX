@@ -213,6 +213,46 @@ public class ActionServlet extends HttpServlet {
         	};
         	handleAction(action, cmd, args, request);
         }
+        else if("keygraph".equals(cmd)){
+        	RenderVelocityAction action = new RenderVelocityAction(request, response, method, "keygraph.vm") {
+        		@Override
+        		protected void process() {        		
+        			//get key
+        			String keyid = getParamString("keyid");
+        			if (keyid==null) {
+        				putObject("key_found", false);
+        				
+        			} else {
+        				//key basics
+	        			OSDXKey key = getBackend().getKey(keyid);
+	        			if (key==null) {
+	        				putObject("key_found", false);
+	        				putObject("keyowner_found", false);
+	        			} else {
+	        				
+	        				putObject("key_found", true);
+	        				putObject("key",key);
+	        				
+	        				//TODO get all referenced keys and keylogs
+	        				
+//	        				//keylogs
+//	        				Vector<KeyLog> logs = getBackend().getKeyLogsToID(keyid);
+//	        				if (logs==null || logs.size()==0) {
+//	        					putObject("keylogs_found", false);
+//	        				} else {
+//	        					putObject("keylogs_found", true);
+//	        					putObject("keylogs",logs);
+//	        					for (KeyLog kl : logs) {
+//	        						System.out.println("KeyLog:"+kl.getKeyIDFrom()+", "+kl.getActionDatetimeString()+", "+kl.getAction());
+//	        					}
+//	        				}
+	        			}
+	        			
+        			}
+        		}
+        	};
+        	handleAction(action, cmd, args, request);
+        }
         else if("echo".equals(cmd)){
         	RenderVelocityAction action = new RenderVelocityAction(request, response, method, "echo.vm");
         	handleAction(action, cmd, args, request);
