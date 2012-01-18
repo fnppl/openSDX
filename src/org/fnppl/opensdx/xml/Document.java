@@ -187,9 +187,12 @@ public class Document {
 	}
 	
 	public static org.jdom.Document buildJDOMDocument(Element openSDXRoot) {
+		return buildJDOMDocument(openSDXRoot, "openSDX_00-00-00-01.xsd");
+	}
+	public static org.jdom.Document buildJDOMDocument(Element openSDXRoot, String url) {
 		org.jdom.Element root = (org.jdom.Element)openSDXRoot.base.detach();
 		Namespace ns = Namespace.getNamespace("xsi","http://www.w3.org/2001/XMLSchema-instance");
-		root.setAttribute("noNamespaceSchemaLocation","https://fineblade.finetunes.net/openSDX/xsd/openSDX_00-00-00-01.xsd",ns);
+		root.setAttribute("noNamespaceSchemaLocation", url, ns);
 		Document d = new Document();
 		d.base = new org.jdom.Document(root);
 		return d.base;
