@@ -1,19 +1,18 @@
-h1 {
+h1{
   color: gray;  
 }
 
-
-.masterkey {
+.MASTER {
 	    width: 30px;
         height: 22px;
       	background-color:  #DAA520;
         position: absolute;
         text-align: center;
 }
-.masterkey:hover {
+.MASTER:hover {
 	background-color: red;
 }
-.subkey {
+.SUB {
 	    width: 0px;
         height: 0px;
         border-left: 25px solid transparent;
@@ -22,11 +21,11 @@ h1 {
         position: absolute;
         text-indent: -13px;
 }
-.subkey:hover {
-	border-bottom: 20px solid #FF0000;
+.SUB:hover {
+	border-bottom: 25px solid #FF0000;
 }
 
-.revokekey {
+.REVOKE {
         width: 0px;
         height: 0px;
         border-left: 30px solid transparent;
@@ -35,7 +34,7 @@ h1 {
         position: absolute;
         text-indent: 10px;
 }
-.revokekey:hover {
+.REVOKE:hover {
     border-right: 30px solid #FF0000;
 }
 

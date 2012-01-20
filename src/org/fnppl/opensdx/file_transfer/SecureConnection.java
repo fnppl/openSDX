@@ -265,6 +265,7 @@ public class SecureConnection {
 				}
 			}
 			else if (read<0){
+				System.out.println("Socket closed.");
 				return null; //socket closed
 			}
 		}
@@ -279,6 +280,7 @@ public class SecureConnection {
 					offset += read;
 				}
 				else if (read<0){
+					System.out.println("Socket closed.");
 					return null; //socket closed
 				}
 			}

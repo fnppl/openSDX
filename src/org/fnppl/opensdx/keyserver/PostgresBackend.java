@@ -690,7 +690,7 @@ public class PostgresBackend implements KeyServerBackend {
 		try {
 			Signature asig = log.getActionSignature();
 			
-			SQLStatement sql = new SQLStatement("SELECT keylogid FROM keylogs WHERE keysha1_to=? AND keysh1_from=? AND asig_datetime=?");
+			SQLStatement sql = new SQLStatement("SELECT keylogid FROM keylogs WHERE keysha1_to=? AND keysha1_from=? AND asig_datetime=?");
 			sql.setString(1, OSDXKey.getFormattedKeyIDModulusOnly(log.getKeyIDTo()));
 			sql.setString(2, OSDXKey.getFormattedKeyIDModulusOnly(log.getKeyIDFrom()));
 			sql.setTimestamp(3, new Timestamp(asig.getSignDatetime()));

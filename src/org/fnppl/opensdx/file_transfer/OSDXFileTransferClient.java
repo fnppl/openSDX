@@ -285,8 +285,7 @@ public class OSDXFileTransferClient implements UploadClient {
 			dataOut = new SecureConnection(null, null, out);
 			dataIn = new SecureConnection(null, in, null);
 			//secureConnectionEstablished =
-			initSecureConnection(host, mySigningKey);
-			return true;
+			return initSecureConnection(host, mySigningKey);
 		} else {
 //			System.out.println("ERROR: Connection to server could NOT be established!");
 			return false;
@@ -297,7 +296,7 @@ public class OSDXFileTransferClient implements UploadClient {
 		return socket.isConnected() && secureConnectionEstablished;
 	}
 	
-	private void initSecureConnection(String host, OSDXKey key) {
+	private boolean initSecureConnection(String host, OSDXKey key) {
 		try {
 			logger.logMsg("init secure connection to host: "+host+" with keyid: "+key.getKeyID()+" ...");
 			//send request
@@ -314,8 +313,15 @@ public class OSDXFileTransferClient implements UploadClient {
 			
 			dataOut.sendRawBytes(init.getBytes("UTF-8"));
 			byte[] responsePartKeyData = dataIn.receiveRawBytesPackage();
+			if (responsePartKeyData==null) {
+				logger.logError("initSecureConnection::no response for keydata part");
+				return false;
+			}
 			byte[] responsePartEncData = dataIn.receiveRawBytesPackage();
-			
+			if (responsePartEncData==null) {
+				logger.logError("initSecureConnection::no response for encdata part");
+				return false;
+			}
 			//process response
 			try {
 				String[] lines = new String(responsePartKeyData,"UTF-8").split("\n");
@@ -367,7 +373,7 @@ public class OSDXFileTransferClient implements UploadClient {
 					
 					receiver.start();
 					login();
-					
+					return true;
 				} else {
 					System.out.println("init msg signature NOT verified!");
 					logger.logError("init msg signature NOT verified!");
@@ -381,6 +387,7 @@ public class OSDXFileTransferClient implements UploadClient {
 			ex.printStackTrace();
 			logger.logException(ex);
 		}
+		return false;
 	}
 	
 	public RemoteFile getRoot() {

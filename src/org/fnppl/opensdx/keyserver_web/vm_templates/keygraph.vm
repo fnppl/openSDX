@@ -12,42 +12,43 @@
 			$(document).ready(function() {
 				
 				var nodes = [
-					{keyid: "A", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "B", level: "subkey",    usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "C", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "D", level: "subkey",    usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "E", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "F", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "G", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "H", level: "revokekey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "I", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "J", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "K", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "L", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "M", level: "revokekey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "N", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "O", level: "revokekey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "P", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "Q", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "R", level: "subkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "S", level: "masterkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
-					{keyid: "T", level: "subkey", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"}
+					{keyid: "A", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "B", level: "SUB",    usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "C", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "D", level: "SUB",    usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "E", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "F", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "G", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "H", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "I", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "J", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "K", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "L", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "M", level: "REVOKE", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "N", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "O", level: "REVOKE", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "P", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "Q", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "R", level: "SUB", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "S", level: "MASTER", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"},
+					{keyid: "T", level: "SUB", usage: "onlysign", validFrom: "2011-01-01", validUntil: "2012-12-31", owner: "bert@it-is-awesome.de"}
 					
 				];
 				
 				var edges = [
-					 { keyFrom: "A", keyTo: "B", action: "approve"},
-					 { keyFrom: "C", keyTo: "D", action: "disapprove"},
-					 { keyFrom: "B", keyTo: "C", action: "revoke"},
-					 { keyFrom: "G", keyTo: "H", action: "revoke"},
-					 { keyFrom: "O", keyTo: "A", action: "revoke"},
-					 { keyFrom: "A", keyTo: "B", action: "approve"},
-					 { keyFrom: "A", keyTo: "B", action: "approve"},
-					 { keyFrom: "N", keyTo: "B", action: "approve"},
-					 { keyFrom: "A", keyTo: "B", action: "approve"},
-					 { keyFrom: "T", keyTo: "L", action: "approve"},
-					 { keyFrom: "L", keyTo: "R", action: "approve"},
-					 { keyFrom: "K", keyTo: "T", action: "approve"}
+				 { keyFrom: "A", keyTo: "B", action: "approve"},
+				 { keyFrom: "C", keyTo: "D", action: "disapprove"},
+				 { keyFrom: "B", keyTo: "C", action: "revoke"},
+				 { keyFrom: "G", keyTo: "H", action: "revoke"},
+				 { keyFrom: "O", keyTo: "A", action: "revoke"},
+				 { keyFrom: "A", keyTo: "B", action: "approve"},
+				 { keyFrom: "A", keyTo: "B", action: "approve"},
+				 { keyFrom: "N", keyTo: "B", action: "approve"},
+				 { keyFrom: "A", keyTo: "B", action: "approve"},
+				 { keyFrom: "T", keyTo: "L", action: "approve"},
+				 { keyFrom: "L", keyTo: "R", action: "approve"},
+				 { keyFrom: "K", keyTo: "T", action: "approve"}
+				
 				];
 				
 				
@@ -77,7 +78,7 @@
 						$("#nodes").append(el);
 						
 						//$('#'+el.id).draggable({containment: '#lines',drag: layoutEvent, stop: layoutEvent});
-						$(el).html(''+i*10);
+						$(el).html(''+(i+1));
 						$(el).draggable({containment: '#lines',drag: layoutEvent, stop: layoutEvent});
 					}
 				}
@@ -132,7 +133,7 @@
 				function getX(nodeid) {
 					//var msg = 'hallo '+$('#'+nodeid).attr("class").indexOf("revokekey"); 
 					//alert(msg);
-					if ($('#'+nodeid).attr("class").indexOf("revokekey") != -1) {
+					if ($('#'+nodeid).attr("class").indexOf("REVOKE") != -1) {
 						 return parseFloat($('#'+nodeid).css("left"))+45;
 					}
 					return parseFloat($('#'+nodeid).css("left"))+20;
@@ -148,13 +149,104 @@
 			      	}
 				}
 				
+				function getID(keyid) {
+					for (i = 0;i<19;i++) {
+						keyid = keyid.replace(":","_");
+					}
+					return keyid.replace("@","_");
+				}
+				
+				function hasNode(keyid) {
+					var nid = getID(keyid);
+					var len = nodes.length;
+					if (len>0) {
+						for (i =0; i< len; i++) {
+							if (nodes[i].keyid == nid) {
+								return true;
+							}	
+						}
+					}
+					return false;
+				}
+				
+				function hasEdge(fromkey, tokey, action) {
+					
+					var len = edges.length;
+					if (len>0) {
+						for (i =0; i< len; i++) {
+							if (edges[i].keyFrom == fromkey && edges[i].keyTo == tokey && edges[i].action == action) {
+								return true;
+							}	
+						}
+					}
+					return false;
+				}
 				
 				//redraw button
-				$("#b1").click(function(e) { 
+				$("#bu_redraw").click(function(e) { 
 					createAllNodes();
 					createAllLines();
 				});
 				
+				//clear button
+				$("#bu_clear").click(function(e) {
+					nodes = [];
+					edges = [];
+					createAllNodes();
+					createAllLines();
+				});
+				
+
+				//addkey button
+				$("#bu_addkey").click(function(e) {
+					//var url = '/osdx_keyserver/ActionServlet/ajax_nodes_edges/keyid/'+$(#tx_keyid).value();
+					var url = '/osdx_keyserver/ActionServlet/ajax_nodes_edges/keyid/'+escape($("#tx_keyid").attr("value"));
+                    jQuery.get(
+					    url,
+					    function(xml) {
+					    	
+					    	//parse nodes
+					    	$(xml).children("nodes_edges").children("pubkey").each(function() {
+					    		if (!hasNode($(this).children("keyid").text())) {
+						    		var node = {
+						    			keyid: getID($(this).children("keyid").text()),
+						    			level: $(this).children("level").text(),
+						    			usage: $(this).children("usage").text(),
+						    			validFrom: $(this).children("valid_from").text(),
+						    			validUntil: $(this).children("valid_until").text(),
+						    			owner: "unknown"
+						    		};
+					    			nodes.push(node);
+					    		}
+					    	});
+					    	
+					    	//parse edges
+					    	$(xml).children("nodes_edges").children("keylog").each(function() {
+					    		var act = "unknown";
+					    		if ($(this).find("approval_pending").length>0) {
+					    			act = "approval_pending";
+					    		}
+					    		else if ($(this).find("approval").length>0) {
+					    			act = "approval";
+					    		}
+					    		var edge = {
+					    			keyFrom: getID($(this).find("from_keyid").text()),
+									keyTo: getID($(this).find("to_keyid").text()),
+					    			action: act
+					    		};
+					    		if (!hasEdge(edge.keyFrom, edge.keyTo, edge.action)) {
+					    			edges.push(edge);	
+					    		}
+					    	});
+					    	createAllNodes();
+							createAllLines();
+							
+					    	//alert(nodes.toSource());
+					    	//alert(edges.toSource());
+					    },
+					    "xml"
+					);
+				});
 				
 				//init
 				createAllNodes();
@@ -169,6 +261,7 @@
 					createAllLines();
 				}
 				
+				//alert(edges.toSource());
 			});
 
 			
@@ -178,9 +271,24 @@
 		</noscript>
 	</head>
 	<body>
-		<h1>openSDX :: KeyServer :: KeyGraph</h1>
+		<h1>Graph</h1>
 		<div id="lines" style="width: 700px; height: 600px; background-color: #eeeeee;"></div>
-		<div id="nodes"></div>
-		<button id="b1">redraw</button>
+		<div id="nodes">
+			<span id="A" class="MASTER" style="top: 122px; left: 208px;"></span>
+			<span id="B" class="subkey" style="top: 218px; left: 328px;"></span>
+			<span id="C" class="MASTER" style="top: 230px; left: 128px;"></span>
+			<span id="D" class="MASTER" style="top: 145px; left: 77px;"></span>
+			<span id="E" class="subkey" style="top: 303px; left: 251px;"></span>
+			<span id="F" class="subkey" style="top: 165px; left: 430px;"></span>
+		</div>
+		<button id="bu_redraw">redraw</button>
+		<button id="bu_clear">clear</button>
+		<p>
+			<input type="text" name="keyid" id="tx_keyid" size="80" value="D8D9B36CA80CAF2516EEC9D1AE8631AB1E65D4A1"/>
+			<button id="bu_addkey">add key</button>
+		</p>
+		<div id="keydetails">
+			
+		</div>
 	</body>
 </html>

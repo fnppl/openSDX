@@ -44,6 +44,9 @@ package org.fnppl.opensdx.keyserver_web;
  * 
  */
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URLDecoder;
 import java.util.*;
 
 import javax.servlet.http.*;
@@ -143,7 +146,7 @@ public class ActionServlet extends HttpServlet {
     	if(kk.countTokens()!=0) {
         	cmd = kk.nextToken();
 	    	while(kk.hasMoreTokens()) {
-	    		String kkk = kk.nextToken();
+	    		String kkk = URLDecoder.decode(kk.nextToken());
 	    		System.out.println("["+method+"] PATHINFO["+i+"]: "+kkk);
 	    		args[i%2].add(kkk);
 	    		i++;
@@ -155,110 +158,158 @@ public class ActionServlet extends HttpServlet {
         	cmd="index";
         }
 
-        if("index".equals(cmd)){
-        	RenderVelocityAction action = new RenderVelocityAction(request, response, method, "index.vm");
-        	handleAction(action, cmd, args, request);
-        }
-        else if("keyinfo".equals(cmd)){
-        	RenderVelocityAction action = new RenderVelocityAction(request, response, method, "keyinfo.vm") {
-        		@Override
-        		protected void process() {        		
-        			//get key
-        			String keyid = getParamString("keyid");
-        			if (keyid==null) {
-        				putObject("key_found", false);
-        				putObject("keyowner_found", false);
-        			} else {
-        				//key basics
-	        			OSDXKey key = getBackend().getKey(keyid);
-	        			if (key==null) {
-	        				putObject("key_found", false);
-	        				putObject("keyowner_found", false);
-	        			} else {
-	        				putObject("key_found", true);
-	        				putObject("key",key);
-	        				
-	        				//key owner
-	        				Identity owner = null;
-	        				if (key.isMaster()) {
-	        					Vector<Identity> ids = ((MasterKey)key).getIdentities();
-	        					if (ids!=null && ids.size()>0) {
-	        						owner = ids.lastElement();
-	        					}
-	        				} else {
-	        					//TODO get id of masterkey of subkey 
-	        				}
-	        				if (owner!=null) {
-	        					putObject("keyowner_found", true);
-		        				putObject("keyowner",owner);
-	        				} else {
-	        					putObject("keyowner_found", false);
-	        				}
-	        				
-	        				//keylogs
-	        				Vector<KeyLog> logs = getBackend().getKeyLogsToID(keyid);
-	        				if (logs==null || logs.size()==0) {
-	        					putObject("keylogs_found", false);
-	        				} else {
-	        					putObject("keylogs_found", true);
-	        					putObject("keylogs",logs);
-	        					for (KeyLog kl : logs) {
-	        						System.out.println("KeyLog:"+kl.getKeyIDFrom()+", "+kl.getActionDatetimeString()+", "+kl.getAction());
-	        					}
-	        				}
-	        			}
-	        			
-        			}
-        		}
-        	};
-        	handleAction(action, cmd, args, request);
+        if("keyinfo".equals(cmd)){
+        	handleKeyInfo(request, response, method, cmd, args);
         }
         else if("keygraph".equals(cmd)){
-        	RenderVelocityAction action = new RenderVelocityAction(request, response, method, "keygraph.vm") {
-        		@Override
-        		protected void process() {        		
-        			//get key
-        			String keyid = getParamString("keyid");
-        			if (keyid==null) {
-        				putObject("key_found", false);
-        				
-        			} else {
-        				//key basics
-	        			OSDXKey key = getBackend().getKey(keyid);
-	        			if (key==null) {
-	        				putObject("key_found", false);
-	        				putObject("keyowner_found", false);
-	        			} else {
-	        				
-	        				putObject("key_found", true);
-	        				putObject("key",key);
-	        				
-	        				//TODO get all referenced keys and keylogs
-	        				
-//	        				//keylogs
-//	        				Vector<KeyLog> logs = getBackend().getKeyLogsToID(keyid);
-//	        				if (logs==null || logs.size()==0) {
-//	        					putObject("keylogs_found", false);
-//	        				} else {
-//	        					putObject("keylogs_found", true);
-//	        					putObject("keylogs",logs);
-//	        					for (KeyLog kl : logs) {
-//	        						System.out.println("KeyLog:"+kl.getKeyIDFrom()+", "+kl.getActionDatetimeString()+", "+kl.getAction());
-//	        					}
-//	        				}
-	        			}
-	        			
-        			}
-        		}
-        	};
-        	handleAction(action, cmd, args, request);
+        	handleKeyGraph(request, response, method, cmd, args);
+        }
+        else  if("index".equals(cmd)){
+    		RenderVelocityAction action = new RenderVelocityAction(request, response, method, "index.vm");
+    		handleAction(action, cmd, args, request);
         }
         else if("echo".equals(cmd)){
         	RenderVelocityAction action = new RenderVelocityAction(request, response, method, "echo.vm");
         	handleAction(action, cmd, args, request);
         }
-        
+        else if ("ajax_nodes_edges".equals(cmd)) {
+        	
+        	Element res = new Element("nodes_edges");
+        	//add key
+			String keyid = getValueString("keyid", args);
+			if (keyid!=null) {
+				System.out.println("ajax_nodes_edges:: keyid="+keyid);
+				Vector<String> keyids = new Vector<String>();
+				//key basics
+				OSDXKey key = getBackend().getKey(keyid);
+				if (key!=null) {
+					res.addContent(key.getSimplePubKeyElement());
+					keyids.add(key.getKeyID());
+					
+					//add keylogs and fromKeys
+					Vector<KeyLog> logs = getBackend().getKeyLogsToID(key.getKeyID());
+					if (logs!=null && logs.size()>0) {
+						for (KeyLog l : logs) {
+							if (!keyids.contains(l.getKeyIDFrom())) {
+								OSDXKey fromkey = getBackend().getKey(l.getKeyIDFrom());
+								if (fromkey!=null) {
+									res.addContent(fromkey.getSimplePubKeyElement());
+									keyids.add(fromkey.getKeyID());
+								}	
+							}
+							res.addContent(l.toElement(false));
+						}
+					}
+				}
+			}
+            response.setContentType("text/xml");
+			try {
+				PrintWriter out = response.getWriter();
+	            out.println(Document.buildDocument(res).toStringCompact());
+	            out.flush();
+	            out.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        }
     }
+	
+	private String getValueString(String key, Vector[] args) {
+		Vector<String> keys = args[0];
+		for (int i=0;i<keys.size();i++) {
+			if (keys.get(i).equals(key)) {
+				return (String)args[1].get(i);
+			}
+		}
+		return null;
+	}
+	 
+
+	private void handleKeyGraph(HttpServletRequest request, HttpServletResponse response, String method, String cmd, Vector[] args) {
+		
+		RenderVelocityAction action = new RenderVelocityAction(request, response, method, "keygraph.vm") {
+			@Override
+			protected void process() {
+				
+				HttpSession session = request.getSession(true);
+				UserSession sess = (UserSession)session.getAttribute("usersession");
+				if (sess==null) {
+					//init a new session
+					sess = new UserSession();
+					sess.keys = new Vector<OSDXKey>();
+					sess.logs = new Vector<KeyLog>();
+				}
+				
+				//add a key
+				String keyid = getParamString("addkeyid");
+				if (keyid!=null) {
+					//key basics
+					OSDXKey key = getBackend().getKey(keyid);
+					if (key!=null && sess.getKey(key.getKeyID())==null) {
+						sess.keys.add(key);
+						
+					}
+				}
+				
+			}
+		};
+		handleAction(action, cmd, args, request);
+	}
+
+	private void handleKeyInfo(HttpServletRequest request, HttpServletResponse response, String method, String cmd, Vector[] args) {
+		RenderVelocityAction action = new RenderVelocityAction(request, response, method, "keyinfo.vm") {
+			@Override
+			protected void process() {        		
+				//get key
+				String keyid = getParamString("keyid");
+				if (keyid==null) {
+					putObject("key_found", false);
+					putObject("keyowner_found", false);
+				} else {
+					//key basics
+					OSDXKey key = getBackend().getKey(keyid);
+					if (key==null) {
+						putObject("key_found", false);
+						putObject("keyowner_found", false);
+					} else {
+						putObject("key_found", true);
+						putObject("key",key);
+						
+						//key owner
+						Identity owner = null;
+						if (key.isMaster()) {
+							Vector<Identity> ids = ((MasterKey)key).getIdentities();
+							if (ids!=null && ids.size()>0) {
+								owner = ids.lastElement();
+							}
+						} else {
+							//TODO get id of masterkey of subkey 
+						}
+						if (owner!=null) {
+							putObject("keyowner_found", true);
+		    				putObject("keyowner",owner);
+						} else {
+							putObject("keyowner_found", false);
+						}
+						
+						//keylogs
+						Vector<KeyLog> logs = getBackend().getKeyLogsToID(keyid);
+						if (logs==null || logs.size()==0) {
+							putObject("keylogs_found", false);
+						} else {
+							putObject("keylogs_found", true);
+							putObject("keylogs",logs);
+							for (KeyLog kl : logs) {
+								System.out.println("KeyLog:"+kl.getKeyIDFrom()+", "+kl.getActionDatetimeString()+", "+kl.getAction());
+							}
+						}
+					}
+					
+				}
+			}
+		};
+		handleAction(action, cmd, args, request);
+	}
 	
 	@SuppressWarnings("unchecked")
 	private void handleAction(RenderVelocityAction action, String cmd, Vector[] args, HttpServletRequest request) {
