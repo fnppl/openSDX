@@ -125,7 +125,7 @@ public class KeyServerMain extends HTTPServer {
 	
 	private Properties mailProps = null;
 	private MailAuthenticator mailAuth = null;
-	
+	private String mailToServerPath = null;  // from config file e.g. http://keyserver.fnppl.org:80/
 	
 	private String servername = null;
 	private KeyVerificator keyverificator = null;
@@ -244,6 +244,13 @@ public class KeyServerMain extends HTTPServer {
 //			host = ks.getChildText("host");
 			port = ks.getChildInt("port");
 			prepath = ks.getChildTextNN("prepath");
+			mailToServerPath = ks.getChildText("approve_mail_serverpath");
+			if (mailToServerPath==null) {
+				mailToServerPath = "http://"+servername+":"+port+"/";
+			}
+			else if (!mailToServerPath.endsWith("/")) {
+				mailToServerPath += "/";
+			}
 			
 			String ip4 = ks.getChildText("ipv4");
 			try {
@@ -442,9 +449,9 @@ public class KeyServerMain extends HTTPServer {
 		byte[] tokenbytes = SecurityHelper.getRandomBytes(20);
 		String token = SecurityHelper.HexDecoder.encode(tokenbytes, '\0',-1);
 		
-		//TODO HT 2011-06-26 port must also be checked because of http-reverse-proxy...
-		//String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+":"+port+"/approve_mail?id="+token;
-		String verificationMsg = "Please verify your mail-address by clicking on the following link:\nhttp://"+servername+":"+port+"/approve_mail?id="+token;
+		String verificationMsg =
+			"Please verify your mail-address by clicking on the following link:\n"
+			+mailToServerPath+"approve_mail?id="+token;
 		
 		backend.addOpenToken(token, kl);
 		try {

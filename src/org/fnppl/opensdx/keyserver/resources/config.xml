@@ -54,6 +54,7 @@
 		<!--  <host>localhost</host> -->
 		<port>8889</port>
 		<prepath></prepath><!-- e.g. /osdxkeyserver as path-prefix -->
+		<approve_mail_serverpath>http://localhost:8889/</approve_mail_serverpath>
 		<ipv4>127.0.0.1</ipv4>
       	<ipv6>127.0.0.1</ipv6>
       	<mail>
