@@ -56,6 +56,7 @@ import java.util.HashMap;
 
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.helper.ClientSettings;
+import org.fnppl.opensdx.file_transfer.helper.FileTransferLog;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
@@ -78,6 +79,7 @@ public class OSDXFileTransferServerThread extends Thread {
 	
 	private OSDXKey mySigningKey;
 	private String clientID = "";
+	private String addr = "unknown";
 	private SymmetricKey key= null;
 	private String client_keyid = null; 
 	private byte[] client_nonce = null;
@@ -96,7 +98,9 @@ public class OSDXFileTransferServerThread extends Thread {
 		out = new BufferedOutputStream(socket.getOutputStream());
 		data = new SecureConnection(null, in,out);
 		clientID = socket.getInetAddress().getHostAddress()+":"+socket.getPort();
-		System.out.println("connected to client: "+clientID);
+		addr = socket.getInetAddress().getHostAddress();
+		System.out.println("connected to client: "+clientID+ " at "+FileTransferLog.getDateString());
+		server.log.logIncomingConnection(clientID, addr,"");
 	}
 
 
@@ -114,15 +118,17 @@ public class OSDXFileTransferServerThread extends Thread {
 				}
 			} catch (Exception ex) {
 				run = false;
+				server.log.logError(clientID, addr, ex.getMessage());	
 				ex.printStackTrace();
 			}
 		}
-		System.out.println("closing socket to client: "+clientID);
+		System.out.println("closing socket to client: "+clientID+ " at "+FileTransferLog.getDateString());
+		server.log.logConnectionClose(clientID, socket.getInetAddress().getHostAddress(),"");
 	}
 
 	public void onRequestReceived(long commandid, int num, byte code, byte[] content) {
 		try {
-			System.out.print("RECEIVED REQUEST : id="+commandid);
+			System.out.print("RECEIVED REQUEST at "+FileTransferLog.getDateString()+" : id="+commandid);
 			if (code == SecureConnection.TYPE_DATA && content !=null) {
 				System.out.println(", DATA len="+content.length);
 				//handle data
@@ -208,6 +214,7 @@ public class OSDXFileTransferServerThread extends Thread {
 			}
 			
 		} catch (Exception e) {
+			server.log.logError(clientID, addr, "onRequestReceived :: Exception :: "+e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -284,6 +291,7 @@ public class OSDXFileTransferServerThread extends Thread {
 				return ok;
 			}
 		} catch (Exception e1) {
+			server.log.logError(clientID, addr, "initSecureConnection :: Exception :: "+e1.getMessage());
 			e1.printStackTrace();
 		}
 		return false;
@@ -296,6 +304,7 @@ public class OSDXFileTransferServerThread extends Thread {
 		System.out.println("COMMAND NOT UNDERSTOOD: "+command+" PARAM="+param);
 		data.setErrorCommandNotUnderstood(commandid, num);
 		data.sendPackage();
+		server.log.logError(clientID, addr, "COMMAND NOT UNDERSTOOD :: "+command);
 	}
 	
 	public void handle_login(long commandid, int num, byte code, String username) throws Exception {
@@ -310,16 +319,19 @@ public class OSDXFileTransferServerThread extends Thread {
 				System.out.println("SENDING: ACK :: "+param);
 				data.setAck(commandid, num, param);
 				data.sendPackage();
+				server.log.logCommand(clientID, addr, "LOGIN", username, param);
 			}
 			else {
 				//login failed
 				data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED");
 				data.sendPackage();
+				server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: ACCESS DENIED");
 			}
 		} else {
 			//login failed
 			data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME");
 			data.sendPackage();
+			server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: MISSING USERNAME");
 		}
 	}
 	
@@ -333,28 +345,34 @@ public class OSDXFileTransferServerThread extends Thread {
 				if (!cs.isAllowed(path)) {
 					data.setError(commandid, num, "restricted path");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "MKDIR", param, "restricted path");
 				}
 				else if (path.exists()) {
 					data.setError(commandid, num, "path already exists");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "MKDIR", param, "path already exists");
 				}
 				else {
 					boolean ok = path.mkdirs();
 					if (ok) {
 						data.setAck(commandid, num);
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "MKDIR", param, "ACK");
 					} else {
 						data.setError(commandid, num, "error in mkdir");
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "MKDIR", param, "error in mkdir");
 					}
 				}
 			} else {
 				data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
+				server.log.logCommand(clientID, addr, "MKDIR", param, "path must be absolute");
 			}
 		} else {
 			data.setError(commandid, num, "missing path parameter");
 			data.sendPackage();
+			server.log.logCommand(clientID, addr, "MKDIR", param, "missing path parameter");
 		}
 	}
 	
@@ -369,10 +387,12 @@ public class OSDXFileTransferServerThread extends Thread {
 				if (!cs.isAllowed(file)) {
 					data.setError(commandid, num, "restricted file");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "DELETE", param, "restricted file");
 				}
 				else if (!file.exists()) {
 					data.setError(commandid, num, "file does not exist");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "DELETE", param, "file does not exist");
 				} else {
 					//delete
 					System.out.println("DELETING: "+file.getAbsolutePath());
@@ -381,28 +401,34 @@ public class OSDXFileTransferServerThread extends Thread {
 						if (ok) {
 							data.setAck(commandid, num);
 							data.sendPackage();
+							server.log.logCommand(clientID, addr, "DELETE", param,"ACK");
 						} else {
 							data.setError(commandid, num, "directory \""+param+"\" could not be deleted");
 							data.sendPackage();
+							server.log.logCommand(clientID, addr, "DELETE", param, "directory \""+param+"\" could not be deleted");
 						}
 					} else {
 						boolean ok = file.delete();
 						if (ok) {
 							data.setAck(commandid, num);
 							data.sendPackage();
+							server.log.logCommand(clientID, addr, "DELETE", param, "ACK");
 						} else {
 							data.setError(commandid, num, "file \""+param+"\" could not be deleted");
 							data.sendPackage();
+							server.log.logCommand(clientID, addr, "DELETE", param,"file \""+param+"\" could not be deleted");
 						}
 					}
 				}
 			}  else {
 				data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
+				server.log.logCommand(clientID, addr, "DELETE", param, "path must be absolute");
 			}
 		} else {
 			data.setError(commandid, num, "missing path/file parameter");
 			data.sendPackage();
+			server.log.logCommand(clientID, addr, "DELETE", param, "missing path/file parameter");
 		}
 	}
 	
@@ -433,6 +459,7 @@ public class OSDXFileTransferServerThread extends Thread {
 				if (p[1].contains("/") || p[1].contains("\\")) {
 					data.setError(commandid, num, "wrong destination filename");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "RENAME", param, "wrong destination filename" );
 				} else {
 					File file = null;
 					if (p[0].startsWith("/")) {
@@ -441,20 +468,24 @@ public class OSDXFileTransferServerThread extends Thread {
 						if (!cs.isAllowed(file)) {
 							data.setError(commandid, num, "restricted file");
 							data.sendPackage();
+							server.log.logCommand(clientID, addr, "RENAME", param, "restricted file");
 						}
 						else if (!file.exists()) {
 							data.setError(commandid, num, "file does not exist");
 							data.sendPackage();
+							server.log.logCommand(clientID, addr, "RENAME", param, "file does not exist");
 						} else {
 							//init destination file
 							File dest = new File(file.getParentFile(),p[1]);
 							if (!cs.isAllowed(file)) {
 								data.setError(commandid, num, "restricted destination file");
 								data.sendPackage();
+								server.log.logCommand(clientID, addr, "RENAME", param, "restricted destination file");
 							}
 							else if (dest.exists()) {
 								data.setError(commandid, num, "destination file already exists");
 								data.sendPackage();
+								server.log.logCommand(clientID, addr, "RENAME", param, "destination file already exists");
 							}
 							else {
 								//rename
@@ -463,24 +494,29 @@ public class OSDXFileTransferServerThread extends Thread {
 								if (ok) {
 									data.setAck(commandid, num);
 									data.sendPackage();
+									server.log.logCommand(clientID, addr, "RENAME", param, "ACK");
 								} else {
 									data.setError(commandid, num, "file \""+p[0]+"\" could not be renamed to "+p[1]);
 									data.sendPackage();
+									server.log.logCommand(clientID, addr, "RENAME", param, "file \""+p[0]+"\" could not be renamed to "+p[1]);
 								}
 							}
 						}
 					}  else {
 						data.setError(commandid, num, "path must be absolute");
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "RENAME", param, "path must be absolute");
 					}
 				}
 			} else {
 				data.setError(commandid, num, "missing destination filename parameter");
 				data.sendPackage();
+				server.log.logCommand(clientID, addr, "RENAME", param, "missing destination filename parameter");
 			}
 		} else {
 			data.setError(commandid, num, "missing path/file parameter");
 			data.sendPackage();
+			server.log.logCommand(clientID, addr, "RENAME", param,"missing path/file parameter" );
 		}
 	}
 	
@@ -495,28 +531,34 @@ public class OSDXFileTransferServerThread extends Thread {
 				if (!cs.isAllowed(file)) {
 					data.setError(commandid, num, "restricted file");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "FILE", param, "restricted file");
 				}
 				else if (!file.exists()) {
 					data.setError(commandid, num, "file does not exist");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "FILE", param, "file does not exist" );
 				} else {
 					//ack -> send fileinfo
 					RemoteFile rf = cs.getAsRemoteFile(file);
 					if (rf!=null) {
 						data.setAck(commandid, num, rf.toParamString());
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "FILE", param, "ACK + file info");
 					} else {
 						data.setError(commandid, num, "error retrieving file information");
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "FILE", param, "error retrieving file information" );
 					}
 				}
 			}  else {
 				data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
+				server.log.logCommand(clientID, addr, "FILE", param, "path must be absolute" );
 			}
 		} else {
 			data.setError(commandid, num, "missing path/file parameter");
 			data.sendPackage();
+			server.log.logCommand(clientID, addr, "FILE", param, "missing path/file parameter"  );
 		}
 	}
 	
@@ -529,14 +571,17 @@ public class OSDXFileTransferServerThread extends Thread {
 				if (!cs.isAllowed(file)) {
 					data.setError(commandid, num, "restricted file");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "LIST", param, "restricted file");
 				}
 				else if (!file.exists()) {
 					data.setError(commandid, num, "directory does not exist");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "LIST", param, "directory does not exist");
 				}
 				else if (!file.isDirectory()) {
 					data.setError(commandid, num, "this is not a directory");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "LIST", param, "this is not a directory");
 				}
 				else {
 					//ack -> send list
@@ -551,14 +596,17 @@ public class OSDXFileTransferServerThread extends Thread {
 					}
 					data.setAck(commandid, num, b.toString());
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "LIST", param, "ACK + list of files");
 				}
 			} else {
 				data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
+				server.log.logCommand(clientID, addr, "LIST", param, "path must be absolute");
 			}
 		} else {
 			data.setError(commandid, num, "missing path parameter");
 			data.sendPackage();
+			server.log.logCommand(clientID, addr, "LIST", param, "missing path parameter");
 		}
 	}
 	
@@ -574,17 +622,20 @@ public class OSDXFileTransferServerThread extends Thread {
 			} catch (Exception ex) {}
 			if (length<0) {
 				data.setError(commandid, num, "missing or wrong file length parameter");
-				data.sendPackage();	
+				data.sendPackage();
+				server.log.logCommand(clientID, addr, "PUT", param, "missing or wrong file length parameter");
 			} else {
 				if (p[0].startsWith("/")) {
 					file = new File(cs.getLocalRootPath()+p[0]);
 					if (!cs.isAllowed(file)) {
 						data.setError(commandid, num, "restricted file");
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "PUT", param, "restricted file");
 					}
 					else if (file.exists()) {
 						data.setError(commandid, num, "file already exists");
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "PUT", param, "file already exists");
 					} else {
 						//ensure directories exists
 						file.getParentFile().mkdirs();
@@ -592,6 +643,7 @@ public class OSDXFileTransferServerThread extends Thread {
 						//ack -> ready for upload
 						data.setAck(commandid, num);
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "PUT", param, "ACK");
 						if (length==0) {
 							file.createNewFile();
 						} else {
@@ -611,11 +663,13 @@ public class OSDXFileTransferServerThread extends Thread {
 				} else {
 					data.setError(commandid, num, "path must be absolute");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "PUT", param, "path must be absolute");
 				}
 			}
 		} else {
 			data.setError(commandid, num, "missing path/file parameter");
 			data.sendPackage();
+			server.log.logCommand(clientID, addr, "PUT", param, "missing path/file parameter");
 		}
 	}
 	
@@ -680,23 +734,27 @@ public class OSDXFileTransferServerThread extends Thread {
 			} catch (Exception ex) {}
 			if (length<0) {
 				data.setError(commandid, num, "missing or wrong file length parameter");
-				data.sendPackage();	
+				data.sendPackage();
+				server.log.logCommand(clientID, addr, "RESUMEPUT", param, "missing or wrong file length parameter");
 			} else {
 				if (p[0].startsWith("/")) {
 					file = new File(cs.getLocalRootPath()+p[0]);
 					if (!cs.isAllowed(file)) {
 						data.setError(commandid, num, "restricted file");
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "RESUMEPUT", param, "restricted file");
 					}
 					else if (file.exists()) {
 						long loaded = file.length();
 						if (loaded>=length) {
 							data.setAck(commandid, num, "upload already complete");
 							data.sendPackage();
+							server.log.logCommand(clientID, addr, "RESUMEPUT", param, "upload already complete");
 						} else {
 							//ack -> ready for upload
 							data.setAck(commandid, num,""+loaded); //Startpos = file.length
 							data.sendPackage();
+							server.log.logCommand(clientID, addr, "RESUMEPUT", param, "ACK");
 							if (length==0) {
 								file.createNewFile();
 							} else {
@@ -721,6 +779,7 @@ public class OSDXFileTransferServerThread extends Thread {
 						//ack -> ready for upload
 						data.setAck(commandid, num,"0"); //Startpos 0
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "RESUMEPUT", param, "ACK");
 						if (length==0) {
 							file.createNewFile();
 						} else {
@@ -740,6 +799,7 @@ public class OSDXFileTransferServerThread extends Thread {
 				} else {
 					data.setError(commandid, num, "path must be absolute");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "RESUMEPUT", param, "path must be absolute");
 				}
 			}
 		}
@@ -756,14 +816,17 @@ public class OSDXFileTransferServerThread extends Thread {
 				if (!cs.isAllowed(file)) {
 					data.setError(commandid, num, "restricted file");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "GET", param, "restricted file");
 				}
 				else if (!file.exists()) {
 					data.setError(commandid, num, "file does not exist");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "GET", param, "file does not exist");
 				}
 				else if (file.isDirectory()) {
 					data.setError(commandid, num, "directory download not implemented");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "GET", param, "directory download not implemented");
 				} else {
 					//send ack with file length and md5
 					String md5 = null;
@@ -784,6 +847,7 @@ public class OSDXFileTransferServerThread extends Thread {
 					}
 					data.setAck(commandid, num, Util.makeParamsString(response));
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "GET", param, "ACK + filelength + md5");
 					
 					//send file data
 					FileInputStream fileIn = new FileInputStream(file);
@@ -797,7 +861,6 @@ public class OSDXFileTransferServerThread extends Thread {
 							data.setData(commandid, num, content);
 						}
 						data.sendPackage();
-						
 						//TODO it would be a good idea to check for error or cancel messages
 						//     when sending large files
 					}
@@ -805,10 +868,12 @@ public class OSDXFileTransferServerThread extends Thread {
 			} else {
 				data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
+				server.log.logCommand(clientID, addr, "GET", param, "path must be absolute");
 			}
 		} else {
 			data.setError(commandid, num, "missing path/file parameter");
 			data.sendPackage();
+			server.log.logCommand(clientID, addr, "GET", param, "missing path/file parameter");
 		}
 	}
 	
@@ -824,7 +889,8 @@ public class OSDXFileTransferServerThread extends Thread {
 			} catch (Exception ex) {}
 			if (length<0) {
 				data.setError(commandid, num, "missing or wrong file length parameter");
-				data.sendPackage();	
+				data.sendPackage();
+				server.log.logCommand(clientID, addr, "RESUMEGET", param, "missing or wrong file length parameter");
 			} else {
 				if (p[0].startsWith("/")) {
 					file = new File(cs.getLocalRootPath()+p[0]);
@@ -832,14 +898,17 @@ public class OSDXFileTransferServerThread extends Thread {
 					if (!cs.isAllowed(file)) {
 						data.setError(commandid, num, "restricted file");
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "RESUMEGET", param, "restricted file");
 					}
 					else if (!file.exists()) {
 						data.setError(commandid, num, "file does not exist");
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "RESUMEGET", param, "file does not exist");
 					}
 					else if (file.isDirectory()) {
 						data.setError(commandid, num, "directory download not implemented");
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "RESUMEGET", param, "directory download not implemented");
 					} else {
 						//send ack with file length and md5
 						String md5 = null;
@@ -860,6 +929,7 @@ public class OSDXFileTransferServerThread extends Thread {
 						}
 						data.setAck(commandid, num, Util.makeParamsString(response));
 						data.sendPackage();
+						server.log.logCommand(clientID, addr, "RESUMEGET", param, "ACK + filelength + md5");
 						
 						//send file data, starting at position "length"
 						FileInputStream fileIn = new FileInputStream(file);
@@ -882,16 +952,19 @@ public class OSDXFileTransferServerThread extends Thread {
 				} else {
 					data.setError(commandid, num, "path must be absolute");
 					data.sendPackage();
+					server.log.logCommand(clientID, addr, "RESUMEGET", param, "path must be absolute");
 				}
 			}
 		} else {
 			data.setError(commandid, num, "missing path/file parameter");
 			data.sendPackage();
+			server.log.logCommand(clientID, addr, "RESUMEGET", param,"missing path/file parameter" );
 		}
 	}
 	
 	public void handle_quit(long commandid, int num, byte code, String param) throws Exception {
-		//do nothing... socket closes automatically on client disconnection 
+		//do nothing... socket closes automatically on client disconnection
+		server.log.logCommand(clientID, addr, "QUIT", param, "");
 	}
 	
 	

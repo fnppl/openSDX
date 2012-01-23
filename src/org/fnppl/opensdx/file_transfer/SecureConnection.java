@@ -47,6 +47,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.UnsupportedEncodingException;
 
+import org.fnppl.opensdx.file_transfer.helper.FileTransferLog;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
 
@@ -90,11 +91,16 @@ public class SecureConnection {
 	
 	public BufferedInputStream in;
 	public BufferedOutputStream out;
-
+	private FileTransferLog log = null;
+	
 	public SecureConnection(SymmetricKey key, BufferedInputStream in, BufferedOutputStream out) {
 		this.key = key;
 		this.out = out;
 		this.in = in;
+	}
+	
+	public void setLog(FileTransferLog log) {
+		this.log = log;
 	}
 
 	public boolean receiveNextPackage() throws Exception {

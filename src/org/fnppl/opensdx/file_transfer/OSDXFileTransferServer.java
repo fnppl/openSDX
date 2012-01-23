@@ -71,8 +71,9 @@ public class OSDXFileTransferServer {
 	private boolean backupClientsConfigOnUpdate = true;
 
 	
+	
 	//accessable for serverthreads
-	private FileTransferLog log = null;
+	public FileTransferLog log = null;
 	private int maxByteLength = 4*1024*1024;
 	private HashMap<String, ClientSettings> clients = null; //client id := username::keyid
 	//private HashMap<OSDXSocketServerThread, FileTransferState> states = null;
@@ -207,6 +208,7 @@ public class OSDXFileTransferServer {
 	
 	public void startService() throws Exception {
 		ServerSocket so = new ServerSocket(port);
+		if (log!=null) log.logServerStart(address.getHostAddress(), port);
 		while (true) {
 			try {
 				final Socket socket = so.accept();
@@ -218,6 +220,7 @@ public class OSDXFileTransferServer {
 			}
 		}
 	}
+	
 	
 	public static void main(String args[]) {
 		try {
