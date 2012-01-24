@@ -172,6 +172,10 @@ public class FileTransferLog {
 		appendToLogfile(new String[]{getTimestamp(),addr,"ERROR",id,msg});
 	}
 	
+	public void logDebug(String id, String addr, String msg) {
+		appendToLogfile(new String[]{getTimestamp(),addr,"DEBUG",id,msg});
+	}
+	
 	public void logFiledataUpload(String id, String addr, String filename, long startPos, int length) {
 		appendToLogfile(new String[]{getTimestamp(),addr,"FILEDATA UPLOAD",id,filename,""+startPos,""+length});
 	}

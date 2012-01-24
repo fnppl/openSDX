@@ -260,24 +260,30 @@ public class PublicKey {
 		boolean succeededone = false;
 		if(md5 != null) {
 			if(!Arrays.equals(md5, md5Check)) {
+				System.out.println("md5 check failed.");
+				System.out.println("md5       : "+SecurityHelper.HexDecoder.encode(md5));
+				System.out.println("md5 check : "+SecurityHelper.HexDecoder.encode(md5Check));
 				return false;
 			}
 			succeededone = true;
 		}
 		if(sha1 != null) {
 			if(!Arrays.equals(sha1, sha1Check)) {
+				System.out.println("sha1 check failed.");
 				return false;
 			}
 			succeededone = true;
 		}
 		if(sha256 != null) {
 			if(!Arrays.equals(sha256, sha256Check)) {
+				System.out.println("sha256 check failed.");
 				return false;
 			}
 			succeededone = true;
 		}
 		if(timestamp != -1) {
 			if(ts != timestamp) {
+				System.out.println("timestamp check failed.");
 				return false;
 			}
 //			succeededone = true; //naht. this is no hash

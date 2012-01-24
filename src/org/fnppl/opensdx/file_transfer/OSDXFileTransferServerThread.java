@@ -225,10 +225,6 @@ public class OSDXFileTransferServerThread extends Thread {
 			byte[] clientRequest = data.receiveRawBytesPackage();
 			String[] lines = new String(clientRequest,"UTF-8").split("\n");
 			if (lines!=null) {
-//				for (int i=0;i<lines.length;i++) {
-//					System.out.println("("+(i+1)+")"+" "+lines[i]);
-//				}
-
 				boolean ok = true;
 				String version = lines[0];
 				String host = lines[1];
@@ -243,6 +239,7 @@ public class OSDXFileTransferServerThread extends Thread {
 				byte[][] checks = SecurityHelper.getMD5SHA1SHA256(client_nonce);
 				boolean verifySig = client_pubkey.verify(client_signature, checks[1],checks[2],checks[3],0L);
 				if (verifySig) {
+					server.log.logDebug(clientID, addr, "initSecureConnection :: signature of client_nonce verified.");
 					//generate response
 					server_nonce = SecurityHelper.getRandomBytes(32);
 					StringBuffer msg = new StringBuffer();
@@ -283,6 +280,14 @@ public class OSDXFileTransferServerThread extends Thread {
 				//	data.setAck(0, 0);
 
 				} else {
+					server.log.logError(clientID, addr, "initSecureConnection :: ERROR: verification of client_nonce signature faild!");
+					System.out.println("ERROR: verification of client_nonce signature faild!");
+					String debugMsg = "";
+					for (int i=0;i<lines.length;i++) {
+						System.out.println("("+(i+1)+")"+" "+lines[i]);
+						debugMsg += lines[i]+"\n";
+					}
+					server.log.logDebug(clientID, addr, debugMsg);
 					ok = false;
 					//				String msg = version+" 421 You are not authorized to make the connection\n";
 					//				msg += host+"\n";
