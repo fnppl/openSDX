@@ -1409,6 +1409,9 @@ public class OSDXFileTransferClient implements UploadClient {
 				key.unlockPrivateKey(keypw);
 			} else if (keypwfile!=null) {
 				keypw = Util.loadText(keypwfile);
+				while (keypw.endsWith("\n") || keypw.endsWith("\r")) {
+					keypw = keypw.substring(0, keypw.length()-1);
+				}
 				key.unlockPrivateKey(keypw);
 			} else {
 				key.unlockPrivateKey(mh);
