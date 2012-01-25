@@ -107,41 +107,55 @@ public class KeyStatus {
 		 if (key.getValidFrom() > datetime || datetime > key.getValidUntil()) {
 			 return new KeyStatus(STATUS_OUTDATED, 0, key.getValidFrom(), key.getValidUntil(), null);
 		 }
-			 
-		 //check keyserver approval and not revoked
-		 System.out.println("Keyserverkeyid: "+keyidKeyserver);
-		 String alternativeKeyIDKeyserver = null;
-		 boolean hasKeyServerApproval = false;
-		 boolean approval_pending = false;
-		 KeyLog referenced = null;
-		 for (KeyLog kl : keylogs) {
-			 System.out.println("KEYLOG :: "+kl.getKeyIDFrom()+" -> "+kl.getKeyIDTo()+" "+kl.getAction()+" "+kl.getActionDatetimeString());
-			 if (kl.getAction().equals(KeyLogAction.REVOCATION)) {
-				 return new KeyStatus(STATUS_REVOKED, 0, key.getValidFrom(), key.getValidUntil(), kl);
-			 }
-			 else if (kl.getAction().equals(KeyLogAction.APPROVAL_PENDING)) {
-				 alternativeKeyIDKeyserver = kl.getKeyIDFrom();
-				 approval_pending = true;
-			 }
-			 else if (kl.getAction().equals(KeyLogAction.APPROVAL)) {
-				 if (keyidKeyserver!=null && kl.getKeyIDFrom().equals(keyidKeyserver)) {
-					 hasKeyServerApproval = true;
-					 referenced = kl;
+		
+		 if (key.isMaster()) {
+			 //check keyserver approval and not revoked
+			 System.out.println("Keyserverkeyid: "+keyidKeyserver);
+			 String alternativeKeyIDKeyserver = null;
+			 boolean hasKeyServerApproval = false;
+			 boolean approval_pending = false;
+			 KeyLog referenced = null;
+			 for (KeyLog kl : keylogs) {
+				 System.out.println("KEYLOG :: "+kl.getKeyIDFrom()+" -> "+kl.getKeyIDTo()+" "+kl.getAction()+" "+kl.getActionDatetimeString());
+				 if (kl.getAction().equals(KeyLogAction.REVOCATION)) {
+					 return new KeyStatus(STATUS_REVOKED, 0, key.getValidFrom(), key.getValidUntil(), kl);
 				 }
-				 else if (alternativeKeyIDKeyserver!=null && kl.getKeyIDFrom().equals(alternativeKeyIDKeyserver)) {
-					 hasKeyServerApproval = true;
-					 referenced = kl;
+				 else if (kl.getAction().equals(KeyLogAction.APPROVAL_PENDING)) {
+					 alternativeKeyIDKeyserver = kl.getKeyIDFrom();
+					 approval_pending = true;
 				 }
+				 else if (kl.getAction().equals(KeyLogAction.APPROVAL)) {
+					 if (keyidKeyserver!=null && kl.getKeyIDFrom().equals(keyidKeyserver)) {
+						 hasKeyServerApproval = true;
+						 referenced = kl;
+					 }
+					 else if (alternativeKeyIDKeyserver!=null && kl.getKeyIDFrom().equals(alternativeKeyIDKeyserver)) {
+						 hasKeyServerApproval = true;
+						 referenced = kl;
+					 }
+				 }
+			 }
+			 if (hasKeyServerApproval) { //and not revoked
+				 return new KeyStatus(STATUS_VALID, 100, key.getValidFrom(), key.getValidUntil(), referenced);
+			 }
+			 else if (approval_pending) { //and not keyserver approval and not revoked
+				 return new KeyStatus(STATUS_UNAPPROVED, 100, key.getValidFrom(), key.getValidUntil(), referenced);
+			 } else {
+				 //this should not happen, since the keyserver should always build the approval_pending keylog 
+				 return new KeyStatus(STATUS_UNAPPROVED, 100, key.getValidFrom(), key.getValidUntil(), null);
 			 }
 		 }
-		 if (hasKeyServerApproval) { //and not revoked
-			 return new KeyStatus(STATUS_VALID, 100, key.getValidFrom(), key.getValidUntil(), referenced);
-		 }
-		 else if (approval_pending) { //and not keyserver approval and not revoked
-			 return new KeyStatus(STATUS_UNAPPROVED, 100, key.getValidFrom(), key.getValidUntil(), referenced);
-		 } else {
-			 //this should not happen, since the keyserver should always build the approval_pending keylog 
-			 return new KeyStatus(STATUS_UNAPPROVED, 100, key.getValidFrom(), key.getValidUntil(), null);
+		 else {
+			//sub or revokekey
+			//check not revoked
+			for (KeyLog kl : keylogs) {
+				 System.out.println("KEYLOG :: "+kl.getKeyIDFrom()+" -> "+kl.getKeyIDTo()+" "+kl.getAction()+" "+kl.getActionDatetimeString());
+				 if (kl.getAction().equals(KeyLogAction.REVOCATION)) {
+					 return new KeyStatus(STATUS_REVOKED, 0, key.getValidFrom(), key.getValidUntil(), kl);
+				 }
+			} 
+			//key is valid if it is not revoked
+			return new KeyStatus(STATUS_VALID, 100, key.getValidFrom(), key.getValidUntil(), null);
 		 }
 	}
 	
