@@ -770,11 +770,11 @@ public class OSDXKey {
 		datapath.add(ds);
 	}
 	
-//	private void setAuthoritativeKeyServer(String aks) {
-//		authoritativekeyserver = aks;
-//		unsavedChanges = true;
-//	}
-	
+	public void setAuthoritativeKeyServer(String aks) {
+		authoritativekeyserver = aks;
+		unsavedChanges = true;
+	}
+
 	public void setUnsavedChanges(boolean b) {
 		unsavedChanges = b;
 	}

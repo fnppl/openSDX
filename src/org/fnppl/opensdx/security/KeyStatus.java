@@ -86,7 +86,7 @@ public class KeyStatus {
 	
 	public static KeyStatus getKeyStatus(OSDXKey key, Vector<KeyLog> keylogs, String usage, long datetime, String keyidKeyserver) {
 		String keyid = key.getKeyID();
-		System.out.println("Checking keyvalid:\n  keyid: "+keyid+"\n  usage: "+(usage==null?"not checked":usage)+"\n  datetime: "+SecurityHelper.getFormattedDate(datetime));
+		//System.out.println("Checking keyvalid:\n  keyid: "+keyid+"\n  usage: "+(usage==null?"not checked":usage)+"\n  datetime: "+SecurityHelper.getFormattedDate(datetime));
 		
 		boolean valid = false;
 		//check usage

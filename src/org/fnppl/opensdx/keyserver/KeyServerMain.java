@@ -1010,6 +1010,38 @@ public class KeyServerMain extends HTTPServer {
 		}
 	    
 	}
+	
+	public static void initEmtpyDB() throws Exception {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		
+		System.out.print("Please enter hostname for postgres-server: ");		
+		String host = br.readLine().trim();
+		
+		System.out.print("Please enter port for postgres-server: ");		
+		int port = Integer.parseInt(br.readLine().trim());
+		
+		System.out.print("Please enter username for postgres-server: ");		
+		String user = br.readLine().trim();
+		
+		System.out.print("Please enter password for postgres-server: ");		
+		String pass = br.readLine().trim();
+		
+		System.out.print("Please enter dbname for postgres-server: ");		
+		String dbname = br.readLine().trim();
+		
+		System.out.println("Trying to connect to postgres..");
+		PostgresBackend be = PostgresBackend.init(user, pass, "jdbc:postgresql://"+host+":"+port+"/"+dbname, null);
+		if (be.isConnected()) {
+			System.out.println("Connected. Setting up empty-db-structure - this will erase existing data!!! [ENTER]");
+			br.readLine();
+			be.setupEmptyDB();
+			be.closeDBConnection();
+			System.out.println("Connection closed...[FINISHED].");
+		} else {
+			System.out.println("Error: Could not connect to db: jdbc:postgresql://"+host+":"+port+"/"+dbname);
+		}
+	}
+	
 	public static void migrateFromXMLKeyStoreToDBKeyStore() throws Exception {
 		System.out.print("Please enter location of XML-KeyStore: ");
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -1019,19 +1051,19 @@ public class KeyServerMain extends HTTPServer {
 			throw new Exception("File not exist or whatever: "+f.getAbsolutePath());
 		}
 		
-		System.out.print("Please enter hostname for postres-server: ");		
+		System.out.print("Please enter hostname for postgres-server: ");		
 		String host = br.readLine().trim();
 		
-		System.out.print("Please enter port for postres-server: ");		
+		System.out.print("Please enter port for postgres-server: ");		
 		int port = Integer.parseInt(br.readLine().trim());
 		
-		System.out.print("Please enter username for postres-server: ");		
+		System.out.print("Please enter username for postgres-server: ");		
 		String user = br.readLine().trim();
 		
-		System.out.print("Please enter password for postres-server: ");		
+		System.out.print("Please enter password for postgres-server: ");		
 		String pass = br.readLine().trim();
 		
-		System.out.print("Please enter dbname for postres-server: ");		
+		System.out.print("Please enter dbname for postgres-server: ");		
 		String dbname = br.readLine().trim();
 		
 		System.out.println("Trying to connect to postgres..");
@@ -1059,6 +1091,10 @@ public class KeyServerMain extends HTTPServer {
 		}
 		if (args!=null && args.length==1 && args[0].equals("--migrate")) {
 			migrateFromXMLKeyStoreToDBKeyStore();
+			return;
+		}
+		if (args!=null && args.length==1 && args[0].equals("--createdbtables")) {
+			initEmtpyDB();
 			return;
 		}
 		if (args==null || args.length!=6) {

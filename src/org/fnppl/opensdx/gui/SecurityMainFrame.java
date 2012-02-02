@@ -3874,10 +3874,10 @@ public class SecurityMainFrame extends JFrame {
 		};
 		t.start();
 
-		System.out.println("Before wait blocks...");
+		//System.out.println("Before wait blocks...");
 		wait.setVisible(true); //blocks...
 
-		System.out.println("AFTER wait blocks...");
+		//System.out.println("AFTER wait blocks...");
 		return result[0];
 	}
 
@@ -3908,9 +3908,9 @@ public class SecurityMainFrame extends JFrame {
 				public void run() {
 					try {
 						KeyClient client = control.getKeyClient(key.getAuthoritativekeyserver());
-						System.out.println("Before calling key.uploadtoKeyServer...");
+						//System.out.println("Before calling key.uploadtoKeyServer...");
 						r[0] = key.uploadToKeyServer(client);
-						System.out.println("AFTER calling key.uploadtoKeyServer...");
+						//System.out.println("AFTER calling key.uploadtoKeyServer...");
 						releaseUILock();
 
 						wait.dispose();
@@ -3924,9 +3924,9 @@ public class SecurityMainFrame extends JFrame {
 			};
 			t.start();
 
-			System.out.println("Before WAIT2 blocks...");
+			//System.out.println("Before WAIT2 blocks...");
 			wait.setVisible(true);
-			System.out.println("After WAIT2 blocks...");
+			//System.out.println("After WAIT2 blocks...");
 			if (r[0].succeeded) {
 				props.put(key.getKeyID(), "VISIBLE");
 				update();

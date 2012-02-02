@@ -64,6 +64,9 @@ public class KeyServerIdentity {
 		k.host = host;
 		k.port = port;
 		k.prepath = prepath;
+		if (prepath == null || prepath.equals("/")) {
+			k.prepath = "";
+		}
 		return k;
 	}
 	

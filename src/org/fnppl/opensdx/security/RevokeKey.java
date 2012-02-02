@@ -114,9 +114,9 @@ public class RevokeKey extends SubKey {
 //					"", 
 //					keyverificator
 //				);
-			System.out.println("Before RevokeKey.putSubkey...");
+			//System.out.println("Before RevokeKey.putSubkey...");
 			boolean ok = client.putRevokeKey(this, parentKey);
-			System.out.println("AFTER RevokeKey.putSubkey -> "+ok);
+			//System.out.println("AFTER RevokeKey.putSubkey -> "+ok);
 			if (ok) {
 				return Result.succeeded();
 			} else {

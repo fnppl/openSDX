@@ -83,9 +83,9 @@ public class SubKey extends OSDXKey {
 //					"", 
 //					keyverificator
 //				);
-			System.out.println("Before SubKey.putSubkey...");
+			//System.out.println("Before SubKey.putSubkey...");
 			boolean ok = client.putSubKey(this, parentKey);
-			System.out.println("AFTER SubKey.putSubkey -> "+ok);
+			//System.out.println("AFTER SubKey.putSubkey -> "+ok);
 			if (ok) {
 				return Result.succeeded();
 			} else {
