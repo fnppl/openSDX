@@ -1,0 +1,115 @@
+h1 {
+ font-size: 2em;
+ font-weight: bold;
+ color: #888888;
+ margin: 10px 0px 20px;
+ text-align: center;
+}
+
+h3 {
+ font-size: 1.3em;
+ font-weight: bold;
+ color: #000;
+ margin: 2px 0px 2px;
+ text-align: left;
+}
+
+.sendButton {
+  display: block;
+  font-size: 16pt;
+}
+
+.errorLabel {
+  color: red;
+}
+
+
+#mainPanel {
+ background: #CCC;
+ border: 1px solid #666;
+ width: 900px;
+ margin-left: auto;
+ margin-right: auto;             
+}
+
+.innerPanel {
+ background: #EEE;
+ border: 1px solid #666;
+ margin: 10px;
+ padding: 5px 5px;
+}
+
+#loginPanel > table td {
+	padding: 2px 5px;
+}
+
+#anonymousPanel > table td {
+	padding: 2px 5px;
+}
+
+#addPanel {
+	margin: 3px 10px;
+}          
+#addPanel > table td {
+	padding: 2px 5px;
+}
+#buttonsPanel {
+	margin: 3px 10px;
+}          
+#buttonsPanel > table td {
+	padding: 2px 5px;
+}
+#selectionsPanel {
+	margin: 3px 10px;
+}          
+#selectionsPanel > table td {
+	padding: 2px 5px;
+}
+
+#keytablePanel {	
+ font: normal 10px verdana, arial, helvetica, sans-serif;
+ background: #EEE;
+}
+#keytablePanel > table td {
+ padding: 1px 6px;
+}
+.scrollPanel {	
+ font: normal 10px verdana, arial, helvetica, sans-serif;
+ background: #EEE;
+ border: 1px solid #666;
+ margin: 10px;
+ padding: 5px 5px;
+}
+
+#keylogPanel {	
+ font: normal 10px verdana, arial, helvetica, sans-serif;
+ background: #EEE;
+}
+#keylogPanel > table td {
+ padding: 1px 6px;
+}
+
+#graphPanel {
+ background: #EEE;
+ border: 1px solid #666;
+ margin: 10px;
+}
+
+.myTableHeader {
+ font: normal 10px verdana, arial, helvetica, sans-serif;
+ background-color: #888888;
+ color: white;
+ font-style: bold;
+}
+
+.myTableChecks {
+ margin-left: 12px;
+}
+
+.keylogButton {
+ font: normal 8px verdana, arial, helvetica, sans-serif;
+ height: 20px;
+ border-style: solid;
+ border-width: 1px;
+ padding: 0px 7px;
+}

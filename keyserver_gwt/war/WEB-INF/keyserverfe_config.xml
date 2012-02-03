@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opensdxkeyserverfe>
+	<db>
+   		<name>jdbc:postgresql://localhost:5432/keyserverdb</name>
+   		<user>keyserver</user>
+   		<password>oo0oo_keyserverDBpassword_..Q..</password>
+   		<!-- DEFAULT DATA PATH IS user.home/db_data -->
+   		<!--  <data_path>/home/keyserver/db_data</data_path>  --> 
+   	</db>
+</opensdxkeyserverfe>
+
