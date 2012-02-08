@@ -4088,9 +4088,22 @@ public class SecurityMainFrame extends JFrame {
 
 	public void closeCurrentStore() {
 		if (control.getKeyStore()!=null && control.getKeyStore().hasUnsavedChanges()) {
-			int a = Dialogs.showYES_NO_Dialog("Save keystore", "Your current keystore has unsaved changes.\nDo you want to save it?");
-			if (a==Dialogs.YES) {
-				writeCurrentKeyStore(false);
+			boolean ok = false;
+			while (!ok) {
+				int a = Dialogs.showYES_NO_Dialog("Save keystore", "Your current keystore has unsaved changes.\nDo you want to save it?");
+				if (a==Dialogs.YES) {
+					int count = 0;
+					while (!ok && count<3) {
+						count++;
+						ok = writeCurrentKeyStore(false);
+					}
+				} else {
+					ok = true;
+				}
+				if (!ok) {
+					//remove signing key -> ask for a new key
+					control.getKeyStore().setSigningKey(null);
+				}
 			}
 		}
 		control.setKeyStore(null);
@@ -4290,8 +4303,8 @@ public class SecurityMainFrame extends JFrame {
 			}
 			if (f!=null) {
 				try {
-					control.getKeyStore().toFile(f);
-					return true;
+					boolean ok = control.getKeyStore().toFile(f);
+					return ok;
 				} catch (Exception ex) {
 					Dialogs.showMessage("ERROR: keystore could not be saved to "+control.getKeyStore().getFile().getAbsolutePath());
 					ex.printStackTrace();
