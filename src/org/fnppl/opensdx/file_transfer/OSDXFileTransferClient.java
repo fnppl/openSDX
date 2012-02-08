@@ -1011,7 +1011,12 @@ public class OSDXFileTransferClient implements UploadClient {
 				
 				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
 					if (command instanceof OSDXFileTransferUploadCommand) {
-						int aProz = (int) ((currentProgressOfReadyFile+progress)*100L/completeProgress);
+						int aProz;
+						if (completeProgress>0) {
+							aProz = (int) ((currentProgressOfReadyFile+progress)*100L/completeProgress);
+						} else {
+							aProz = 100;
+						}
 						if (aProz>proz) {
 							proz = aProz;
 							System.out.println("Uploading :: total progress: "+proz+" %");
