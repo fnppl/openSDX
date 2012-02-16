@@ -22,7 +22,7 @@ How to create a fresh GWT Project from theses sources that will work with the ex
    - OSDXKeyserverFE/war/WEB-INF/lib
    - OSDXKeyserverFE/war/WEB-INF/web.xml
 
-5) Create the following links to your openSDX project
+5) Create the following symbolic links to your openSDX project
    - OSDXKeyserverFE/src -> openSDX/keyserver_gwt/src
    - OSDXKeyserverFE/test -> openSDX/keyserver_gwt/test
    - OSDXKeyserverFE/war/OSDXKeyserverFE.css -> openSDX/keyserver_gwt/war/OSDXKeyserverFE.css
@@ -36,12 +36,17 @@ How to create a fresh GWT Project from theses sources that will work with the ex
 7) Start Eclipse
 8) Refresh the content from your OSDXKeyserverFE Project (F5)
 9) Add all libs from war/WEB-INF/lib to your buildpath
-10) Give it a try and run the app!
-
+10) Give it a try and run the app in the gwt integrated jetty server!
+11) If your browser answers with a 404 error and the console says something like "[WARN] Aliased resource",
+   you need to add the following parameter to your java VM arguments (Run Configurations... -> Arguments -> VM arguments):
+   -Dorg.mortbay.util.FileResource.checkAliases=false
+   [This parameter is only needed for the test jetty servlet engine, because the content files are resolved by following
+   the symbolic links created in (5)]  
+   
 ---
 For deployment:
-A) Rightclick on the project folder and select google -> GWT compile
-B) Wait a minute and copy the whole content of your OSDXKeyserverFE/war/ directory to your app server.
+A) Rightclick on the project folder and select google -> GWT compile  ... wait for a minute
+B) Copy the whole content of your OSDXKeyserverFE/war/ directory to your app server.
 -
 
 Feel free to contact me for further questions.
