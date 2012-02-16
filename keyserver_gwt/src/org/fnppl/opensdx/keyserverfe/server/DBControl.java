@@ -46,28 +46,28 @@ package org.fnppl.opensdx.keyserverfe.server;
  */
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Vector;
 
+import org.fnppl.opensdx.keyserver.helper.IdGenerator;
 import org.fnppl.opensdx.keyserver.helper.SQLStatement;
 import org.fnppl.opensdx.keyserverfe.shared.KeyConnection;
 import org.fnppl.opensdx.keyserverfe.shared.KeyInfo;
-import org.fnppl.opensdx.keyserverfe.shared.User;
 import org.fnppl.opensdx.keyserverfe.shared.NodeState;
+import org.fnppl.opensdx.keyserverfe.shared.User;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyLog;
 import org.fnppl.opensdx.security.KeyStatus;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
-import org.fnppl.opensdx.security.Signature;
 import org.fnppl.opensdx.security.SubKey;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
@@ -78,6 +78,7 @@ public class DBControl {
 	
 	public Connection con;
 	private File data_path = null;
+	private HashMap<String, Long> activeUsers = new HashMap<String, Long>();
 	
 	private DBControl() {
 		con = null;
@@ -135,18 +136,106 @@ public class DBControl {
 		return instance;
 	}
 	
+	
+	
 	public static DBControl init(String user, String pw, String dbname, File data_path) {
-		DBControl be = new DBControl();
+		DBControl dbControl = new DBControl();
 		if (data_path==null) {
-			be.data_path = new File(System.getProperty("user.home"), "db_data");
+			dbControl.data_path = new File(System.getProperty("user.home"), "db_data");
 		} else {
-			be.data_path = data_path;
+			dbControl.data_path = data_path;
 		}
-		be.data_path.mkdirs();
+		dbControl.data_path.mkdirs();
 		
-		System.out.println("DBControl::init::using data_path: "+be.data_path.getAbsolutePath());
-		be.connect(user, pw, dbname);
-		return be;
+		System.out.println("DBControl::init::using data_path: "+dbControl.data_path.getAbsolutePath());
+		dbControl.connect(user, pw, dbname);
+		
+		//check for user tables
+		dbControl.ensureUserTables();
+		
+		//create test user
+		//dbControl.registerNewUser("test", null, "test", null, null, null, true);
+		
+		return dbControl;
+	}
+	
+	private boolean doesTableExist(String tablename) {
+		boolean exists = false;
+		try {
+			SQLStatement sql = new SQLStatement("SELECT count(*) FROM information_schema.tables WHERE table_name = ? AND table_catalog = CURRENT_CATALOG AND table_schema = CURRENT_SCHEMA");
+			sql.setString(1, tablename);
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
+			if (rs.next()) {
+				if (rs.getInt(1)>0) {
+					exists = true;
+				}
+			}
+			rs.close();
+			stmt.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return exists;		
+	}
+	
+	private void ensureUserTables() {
+		
+		if (!doesTableExist("fe_user")) {
+			//table fe_user
+			String tUser = 
+				"CREATE TABLE \"fe_user\" ("
+			+	"		\"userid\"		    BIGINT not null,"
+			+	"		\"email\"			VARCHAR(200) not null,"
+			+	"		\"passwordsha1\"	CHAR(60) not null,"
+			+	"		\"firstname\"		VARCHAR(200),"
+			+	"		\"surname\"			VARCHAR(200),"
+			+	"		\"company\"			VARCHAR(200),"
+			+	"		\"approved\"		BOOLEAN default false,"
+			+	"		\"last_seen\"   BIGINT not null,"
+			+	"		PRIMARY KEY(userid)"
+			+	"	);";
+			try {
+				Statement stmt = con.createStatement();
+				try {
+					stmt.execute(tUser);
+				} catch (SQLException innerEx) {
+					innerEx.printStackTrace();
+				}
+	        } catch (Exception ex) {
+	        	ex.printStackTrace();
+	        }
+		}
+		
+		if (!doesTableExist("fe_user_nodes")) {
+			//table fe_user_node
+			String tNodes = 
+				"CREATE TABLE \"fe_user_nodes\" ("
+			+	"		\"id\"		    BIGINT not null,"
+			+	"		\"userid\"	    BIGINT not null,"
+			+	"		\"keysha1\"		VARCHAR(200),"
+			+	"		\"keyserver\"	VARCHAR(200) not null default 'LOCAL',"
+			+	"		\"posx\"		INTEGER not null default -1,"
+			+	"		\"posy\"		INTEGER not null default -1,"
+			+	"		\"showin\"		BOOLEAN,"
+			+	"		\"showout\"		BOOLEAN,"
+			+	"		\"mykey\"		BOOLEAN,"
+			+	"		\"directtrust\"	BOOLEAN,"
+			+	"		\"vislevel\"	INTEGER not null default 4,"
+			+	"		PRIMARY KEY(id)"
+			+	"	);";
+			try {
+				Statement stmt = con.createStatement();
+				try {
+					stmt.execute(tNodes);
+				} catch (SQLException innerEx) {
+					innerEx.printStackTrace();
+				}
+	        } catch (Exception ex) {
+	        	ex.printStackTrace();
+	        }
+		}	
+		
 	}
 	
 	private File getFileFromID(long id, String ending) {
@@ -188,19 +277,203 @@ public class DBControl {
 	}
 	
 	//user information
-	public User loadUserInformation(String username) {
-		//TABLE user_keyids  //user, keyid, x, y, showIn, showOut
-		
-		//load list of keys
-		
-		return null;
-	}
-	
-	public void saveUserInformation(String username, Vector<NodeState> states) {
-		//data
+	public User loadUserInformation(String username, long userid) {
 
+		User user = new User(username);
+		
+		try {
+			SQLStatement sql = new SQLStatement("SELECT id,userid,keysha1,keyserver,posx,posy,showin,showout,mykey,directtrust,vislevel FROM fe_user_nodes WHERE userid=?");
+			sql.setLong(1, userid);
+			
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
+			
+			HashMap<String, NodeState> keyid_state = new HashMap<String, NodeState>();
+			while (rs.next()) {
+				
+				String keyid = rs.getString(3);
+				String keyserver = rs.getString(4);
+				
+				int posx = rs.getInt(5);
+				int posy = rs.getInt(6);
+				boolean showIn = rs.getBoolean(7);
+				boolean showOut = rs.getBoolean(8);
+				boolean mykey = rs.getBoolean(9);
+				boolean directTrust = rs.getBoolean(10);
+				int vislevel = rs.getInt(11);
+				System.out.println("loading node: "+keyid+"(at)"+keyserver);
+				NodeState s = keyid_state.get(keyid);
+				if (s==null) {
+					s = addNewKeyToUser(getKey(keyid), user, keyid_state, showIn);
+					System.out.println(" - addNewKeyToUser");
+				}
+				
+				if (s!=null && showIn && !s.isShowIn()) {
+					s.setShowIn(true);
+					Vector<KeyLog> keylogs = getKeyLogsToID(keyid);
+					if (keylogs==null) {
+						keylogs = new Vector<KeyLog>();
+					}
+					for (KeyLog kl : keylogs) {
+						String fromKey = kl.getKeyIDFrom();
+						
+						//add fromKey if not present
+						NodeState sFrom = keyid_state.get(fromKey);
+						if (sFrom==null) {
+							addNewKeyToUser(getKey(fromKey),user, keyid_state, false);
+						}
+						
+						KeyConnection kc = new KeyConnection(kl.getKeyIDFrom(), kl.getKeyIDTo(), 0, kl.getActionDatetime());
+						kc.setType(kl.getAction());
+						user.addConnection(kc);
+					}
+				}
+				
+				if (s!=null && showOut && !s.isShowOut()) {
+					s.setShowOut(true);
+					Vector<KeyLog> keylogs = getKeyLogsFromID(keyid);
+					if (keylogs==null) {
+						keylogs = new Vector<KeyLog>();
+					}
+					for (KeyLog kl : keylogs) {
+						String toKey = kl.getKeyIDTo();
+						
+						//add toKey if not present
+						NodeState sTo = keyid_state.get(toKey);
+						if (sTo==null) {
+							addNewKeyToUser(getKey(toKey),user, keyid_state, false);
+						}
+						//add connection
+						KeyConnection kc = new KeyConnection(kl.getKeyIDFrom(), kl.getKeyIDTo(), 0, kl.getActionDatetime());
+						kc.setType(kl.getAction());
+						user.addConnection(kc);
+					}
+					
+					//add sub- and revokekeys
+					Vector<OSDXKey> childKeys = getSubAndRevokeKeysTo(keyid);
+					for (OSDXKey key : childKeys) {
+						//add key if not present
+						NodeState sTo = keyid_state.get(key.getKeyID());
+						if (sTo==null) {
+							addNewKeyToUser(key, user, keyid_state,false);
+						}
+						//add connection
+						int type  = KeyConnection.TYPE_SUBKEY;
+						if (key.isRevoke()) {
+							type = KeyConnection.TYPE_REVOKEKEY;
+						}
+						KeyConnection kc = new KeyConnection(keyid, key.getKeyID(), type, -1L);
+						user.addConnection(kc);
+					}
+					
+				}
+				
+				//set node state
+				Vector<KeyInfo> keys = user.getKeys();
+				String kid = keyid+"@"+keyserver;
+				System.out.println("load user information: searching for keyid: "+kid);
+				for (int i=0;i<keys.size();i++) {
+					KeyInfo ki = keys.get(i);
+					if (ki.getId().equals(kid)) {
+						ki.setPosX(posx);
+						ki.setPosY(posy);
+						//ki.setIncomingLogs(showIn);
+						//ki.setOutgoingLogs(showOut);
+						ki.setMyKey(mykey);
+						ki.setDirectTrust(directTrust);
+						ki.setVisibilityLevel(vislevel);
+						System.out.println("found at i="+i);
+						break;
+					}
+				}
+				
+			}
+			rs.close();
+			stmt.close();
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		if (user!=null) {
+			activeUsers.put(user.getName(), userid);
+		}
+		
+		return user;
 	}
 	
+	public void saveUserInformation(long userid, Vector<NodeState> states) {
+		//remove old data
+		try {
+			SQLStatement sql = new SQLStatement("DELETE FROM fe_user_nodes WHERE userid=?");
+			sql.setLong(1, userid);
+			Statement stmt = con.createStatement();
+			stmt.executeUpdate(sql.toString());
+			stmt.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		
+		//save new node data
+		for (NodeState st : states) {
+			try {
+				String keysha1 = st.getKeyid();
+				String keyserver = "";
+				String[] key = keysha1.split("@");
+				if (key.length==2) {
+					keysha1 = key[0];
+					keyserver = key[1];
+				}
+				SQLStatement sql = new SQLStatement("INSERT INTO fe_user_nodes (id, userid, keysha1, keyserver, posx, posy, showin, showout, mykey, directtrust,vislevel) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
+				sql.setLong(1, IdGenerator.getTimestamp());
+				sql.setLong(2, userid);
+				sql.setString(3, keysha1);
+				sql.setString(4, keyserver);
+				sql.setInt(5, st.getPosX());
+				sql.setInt(6, st.getPosY());
+				sql.setBoolean(7, st.isShowIn());
+				sql.setBoolean(8, st.isShowOut());
+				sql.setBoolean(9, st.isMyKey());
+				sql.setBoolean(10, st.isDirectTrust());
+				sql.setInt(11, st.getVisibilityLevel());
+				
+				Statement stmt = con.createStatement();
+				System.out.println("add node :: "+sql.toString());
+				stmt.executeUpdate(sql.toString());
+				stmt.close();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
+	
+	public long registerNewUser(String email, String pwsha1, String password, String firstname, String surname, String company, boolean approved) {
+		long userid = IdGenerator.getTimestamp();
+		long last_seen = System.currentTimeMillis();
+		if (pwsha1==null && password!=null) {
+			try {
+				pwsha1 = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(password.getBytes("UTF-8")));
+			} catch (UnsupportedEncodingException e) {e.printStackTrace();}
+		}
+		try {
+			SQLStatement sql = new SQLStatement("INSERT INTO fe_user (userid, email, passwordsha1, firstname, surname, company, last_seen, approved) VALUES (?,?,?,?,?,?,?,?)");
+			sql.setLong(1, userid);
+			sql.setString(2, email);
+			sql.setString(3, pwsha1);
+			sql.setString(4, firstname);
+			sql.setString(5, surname);
+			sql.setString(6, company);
+			sql.setLong(7, last_seen);
+			sql.setBoolean(8, approved);
+			
+			Statement stmt = con.createStatement();
+			System.out.println("add user :: "+sql.toString());
+			stmt.executeUpdate(sql.toString());
+			stmt.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return userid;
+	}
 	
 	/**
 	 * Gets an updated lists of KeyInfo and KeyConncetions which
@@ -218,7 +491,11 @@ public class DBControl {
 	 */
 	public User updateKeyInfoAndLogs(String username, Vector<NodeState> states, Vector<String> keyids, boolean inLogs, boolean outLogs) { 
 		User user = new User(username);
-		HashMap<String, NodeState> keyid_state = new HashMap<String, NodeState>(); 
+		Long userID = -1L;
+		if (!username.equals("anonymous")) {
+			 userID = activeUsers.get(username);
+		}
+		HashMap<String, NodeState> keyid_state = new HashMap<String, NodeState>();
 		for (int i=0;i<states.size();i++) {
 			NodeState d = states.get(i);
 			keyid_state.put(d.getKeyid(), d);
@@ -290,11 +567,50 @@ public class DBControl {
 				}
 			}
 		}
-
 	
-		if (!user.getName().equals("anonymous")) {
-			saveUserInformation(username, states);
+		if (userID!=null && userID.longValue()!=-1L) {
+			saveUserInformation(userID.longValue(), states);
 		}
+		return user;
+	}
+	
+	public User loadUserSession(String email, String password) { 
+		if (email==null || password == null) return null;
+		User user = null;
+		long userid = -1L;
+		long last_seen = System.currentTimeMillis();
+		
+		//check username and password combination
+		try {
+			String pwsha1 = SecurityHelper.HexDecoder.encode(SecurityHelper.getSHA1(password.getBytes("UTF-8")));
+			SQLStatement sql = new SQLStatement("SELECT userid FROM fe_user WHERE email=? AND passwordsha1=?");
+			sql.setString(1, email);
+			sql.setString(2, pwsha1);
+			
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
+			if (rs.next()) {
+				user = new User(email);
+				userid = rs.getLong(1);
+			}
+			rs.close();
+			stmt.close();
+			
+			if (user!=null) {
+				//update last_seen
+				sql = new SQLStatement("UPDATE fe_user SET last_seen=? WHERE userid=?");
+				sql.setLong(1, last_seen);
+				sql.setLong(2,userid);
+				stmt = con.createStatement();
+				stmt.executeUpdate(sql.toString());
+				stmt.close();
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		
+		user = loadUserInformation(email,userid);
+		
 		return user;
 	}
 
@@ -661,7 +977,7 @@ public class DBControl {
 			String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
 			SQLStatement sql = new SQLStatement("SELECT * FROM keylogs WHERE keysha1_to=? ORDER BY asig_datetime");
 			sql.setString(1, keysha1);
-			System.out.println("SQL: "+sql.toString());
+			//System.out.println("SQL: "+sql.toString());
 			
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql.toString());
@@ -688,7 +1004,7 @@ public class DBControl {
 			String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
 			SQLStatement sql = new SQLStatement("SELECT * FROM keylogs WHERE keysha1_from=? ORDER BY asig_datetime");
 			sql.setString(1, keysha1);
-			System.out.println("SQL: "+sql.toString());
+			//System.out.println("SQL: "+sql.toString());
 			
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql.toString());
@@ -758,7 +1074,7 @@ public class DBControl {
 			String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(parentkeyid);
 			SQLStatement sql = new SQLStatement("SELECT * FROM keys WHERE parentkeysha1=?");
 			sql.setString(1, keysha1);
-			System.out.println("SQL: "+sql.toString());
+			//System.out.println("SQL: "+sql.toString());
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql.toString());
 			while (rs.next()) {
@@ -778,32 +1094,9 @@ public class DBControl {
 		return keys;
 	}
 
-	private void initEmptyUserTables() {
-		String tUser = 
-			"CREATE TABLE \"fe_user\" ("
-		+	"		\"email\"			VARCHAR(200) not null,"
-		+	"		\"passwordsha1\"	CHAR(60) not null,"
-		+	"		\"firstname\"		VARCHAR(200),"
-		+	"		\"surname\"			VARCHAR(200),"
-		+	"		\"company\"			VARCHAR(200),"
-		+	"		PRIMARY KEY(keysha1)"
-		+	"	);";
+	private void initEmptyUserTables(boolean user, boolean nodes) {
 		
-		String tNodes = 
-			"CREATE TABLE \"fe_user_nodes\" ("
-		+	"		\"id\"		    BIGINT not null,"
-		+	"		\"email\"		VARCHAR(200),"
-		+	"		\"keysha1\"		VARCHAR(200),"
-		+	"		\"keyserver\"	VARCHAR(200) not null default 'LOCAL',"
-		+	"		\"posx\"		INTEGER not null default -1,"
-		+	"		\"posy\"		INTEGER not null default -1,"
-		+	"		\"showin\"		BOOLEAN,"
-		+	"		\"showout\"		BOOLEAN,"
-		+	"		\"mykey\"		BOOLEAN,"
-		+	"		\"directtrust\"	BOOLEAN,"
-		+	"		\"vislevel\"	INTEGER not null default 4,"
-		+	"		PRIMARY KEY(id)"
-		+	"	);";
+		
 	}
 }
 

@@ -501,8 +501,36 @@ public class OSDXKeyserverFE implements EntryPoint {
 			}
 			
 			private void login() {
+				//errorLabel1.setText("Login not implemented");
+				errorLabel1.setText("");
+				String username = txUser.getText();
+				String password = txPW.getText();
+				if (username.length()==0) {
+					errorLabel1.setText("Please enter a correct email address");
+					return;
+				}
+				if (password.length()==0) {
+					errorLabel1.setText("Please enter a password");
+					return;
+				}
 				buLogin.setEnabled(false);
-				errorLabel1.setText("Login not implemented");				
+				keyserverService.login(username, password,
+					new AsyncCallback<User>() {
+						public void onFailure(Throwable caught) {
+							errorLabel1.setText(SERVER_ERROR);
+							buLogin.setEnabled(true);
+						}
+						public void onSuccess(User result) {
+							if (result == null) {
+								errorLabel1.setText("Wrong email or password");
+								buLogin.setEnabled(true);
+							} else {
+								user = result;
+								updateUI(UI_USER);
+							}
+						}
+					}
+				);
 			}
 		}
 		LoginHandler lHandler = new LoginHandler();

@@ -1,7 +1,5 @@
 package org.fnppl.opensdx.keyserverfe.client;
 
-import org.fnppl.opensdx.keyserverfe.shared.KeyConnection;
-import org.fnppl.opensdx.keyserverfe.shared.KeyInfo;
 import org.fnppl.opensdx.keyserverfe.shared.NodeState;
 import org.fnppl.opensdx.keyserverfe.shared.User;
 import java.util.Vector;

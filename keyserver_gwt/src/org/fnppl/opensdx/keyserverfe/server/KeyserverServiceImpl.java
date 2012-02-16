@@ -15,7 +15,7 @@ public class KeyserverServiceImpl  extends RemoteServiceServlet implements Keyse
 	private static final long serialVersionUID = -2218898109562808572L;
 
 	public User login(String username, String password)	throws IllegalArgumentException {
-		return null;
+		return DBControl.getInstance().loadUserSession(username, password);
 	}
 
 	public User loginAnonymous(String keyid) throws IllegalArgumentException {
@@ -77,12 +77,7 @@ public class KeyserverServiceImpl  extends RemoteServiceServlet implements Keyse
 	 * @return
 	 */
 	public User updateKeyInfoAndLogs(String username, Vector<NodeState> states, Vector<String> keyids, boolean inLogs, boolean outLogs) { 
-		if (DBControl.getInstance()==null) {
-			long aYear = 1000L*3600L*24L*356L;
-			User user = new User(username);
-			user.addKey(new KeyInfo("12:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11:11@it-is-awesome.de", "12:11...11:11", "SUB", "BOTH","boedeker@it-is-awesome.de","[restricted]",System.currentTimeMillis(), System.currentTimeMillis()+aYear, false, KeyInfo.STATUS_VALID, false));			
-			return user; 
-		}
+
 		return DBControl.getInstance().updateKeyInfoAndLogs(username, states, keyids, inLogs, outLogs);
 	}
 	
