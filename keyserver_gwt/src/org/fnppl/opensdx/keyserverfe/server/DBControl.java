@@ -67,6 +67,7 @@ import org.fnppl.opensdx.security.KeyLog;
 import org.fnppl.opensdx.security.KeyStatus;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
+import org.fnppl.opensdx.security.RevokeKey;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SubKey;
 import org.fnppl.opensdx.xml.Document;
@@ -155,7 +156,7 @@ public class DBControl {
 		
 		//create test user
 		//dbControl.registerNewUser("test", null, "test", null, null, null, true);
-		
+		KeyStatus.DEBUG = false;
 		return dbControl;
 	}
 	
@@ -278,116 +279,174 @@ public class DBControl {
 	
 	//user information
 	public User loadUserInformation(String username, long userid) {
-
 		User user = new User(username);
-		
 		try {
 			SQLStatement sql = new SQLStatement("SELECT id,userid,keysha1,keyserver,posx,posy,showin,showout,mykey,directtrust,vislevel FROM fe_user_nodes WHERE userid=?");
 			sql.setLong(1, userid);
 			
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql.toString());
+
+			HashMap<String, Vector<String>> masterSub = new HashMap<String, Vector<String>>();
+			HashMap<String, Vector<String>> masterRevoke = new HashMap<String, Vector<String>>();
 			
-			HashMap<String, NodeState> keyid_state = new HashMap<String, NodeState>();
 			while (rs.next()) {
-				
+				//add all saved nodes/keys
 				String keyid = rs.getString(3);
 				String keyserver = rs.getString(4);
-				
 				int posx = rs.getInt(5);
 				int posy = rs.getInt(6);
-				boolean showIn = rs.getBoolean(7);
-				boolean showOut = rs.getBoolean(8);
+				//boolean showIn = rs.getBoolean(7);
+				//boolean showOut = rs.getBoolean(8);
 				boolean mykey = rs.getBoolean(9);
 				boolean directTrust = rs.getBoolean(10);
 				int vislevel = rs.getInt(11);
-				System.out.println("loading node: "+keyid+"(at)"+keyserver);
-				NodeState s = keyid_state.get(keyid);
-				if (s==null) {
-					s = addNewKeyToUser(getKey(keyid), user, keyid_state, showIn);
-					System.out.println(" - addNewKeyToUser");
-				}
 				
-				if (s!=null && showIn && !s.isShowIn()) {
-					s.setShowIn(true);
-					Vector<KeyLog> keylogs = getKeyLogsToID(keyid);
-					if (keylogs==null) {
-						keylogs = new Vector<KeyLog>();
-					}
-					for (KeyLog kl : keylogs) {
-						String fromKey = kl.getKeyIDFrom();
-						
-						//add fromKey if not present
-						NodeState sFrom = keyid_state.get(fromKey);
-						if (sFrom==null) {
-							addNewKeyToUser(getKey(fromKey),user, keyid_state, false);
+				OSDXKey key = getKey(keyid+"@"+keyserver);
+				if (key!=null) {
+					if (key.isRevoke()) {
+						String masterid = ((RevokeKey)key).getParentKeyID();
+						System.out.println("revokekey: "+key.getKeyID()+"  parent: "+masterid);
+						if (masterid!=null) {
+							Vector<String> v = masterRevoke.get(masterid);
+							if (v==null) {
+								v = new Vector<String>();
+								v.add(key.getKeyID());
+								masterRevoke.put(masterid, v);
+							} else {
+								v.add(key.getKeyID());
+							}
 						}
-						
-						KeyConnection kc = new KeyConnection(kl.getKeyIDFrom(), kl.getKeyIDTo(), 0, kl.getActionDatetime());
-						kc.setType(kl.getAction());
-						user.addConnection(kc);
 					}
-				}
-				
-				if (s!=null && showOut && !s.isShowOut()) {
-					s.setShowOut(true);
-					Vector<KeyLog> keylogs = getKeyLogsFromID(keyid);
-					if (keylogs==null) {
-						keylogs = new Vector<KeyLog>();
-					}
-					for (KeyLog kl : keylogs) {
-						String toKey = kl.getKeyIDTo();
-						
-						//add toKey if not present
-						NodeState sTo = keyid_state.get(toKey);
-						if (sTo==null) {
-							addNewKeyToUser(getKey(toKey),user, keyid_state, false);
+					else if (key.isSub()) {
+						String masterid = ((SubKey)key).getParentKeyID();
+						System.out.println("subkey: "+key.getKeyID()+"  parent: "+masterid);
+						if (masterid!=null) {
+							Vector<String> v = masterSub.get(masterid);
+							if (v==null) {
+								v = new Vector<String>();
+								v.add(key.getKeyID());
+								masterSub.put(masterid, v);
+							} else {
+								v.add(key.getKeyID());
+							}
 						}
-						//add connection
-						KeyConnection kc = new KeyConnection(kl.getKeyIDFrom(), kl.getKeyIDTo(), 0, kl.getActionDatetime());
-						kc.setType(kl.getAction());
-						user.addConnection(kc);
 					}
-					
-					//add sub- and revokekeys
-					Vector<OSDXKey> childKeys = getSubAndRevokeKeysTo(keyid);
-					for (OSDXKey key : childKeys) {
-						//add key if not present
-						NodeState sTo = keyid_state.get(key.getKeyID());
-						if (sTo==null) {
-							addNewKeyToUser(key, user, keyid_state,false);
-						}
-						//add connection
-						int type  = KeyConnection.TYPE_SUBKEY;
-						if (key.isRevoke()) {
-							type = KeyConnection.TYPE_REVOKEKEY;
-						}
-						KeyConnection kc = new KeyConnection(keyid, key.getKeyID(), type, -1L);
-						user.addConnection(kc);
-					}
-					
-				}
-				
-				//set node state
-				Vector<KeyInfo> keys = user.getKeys();
-				String kid = keyid+"@"+keyserver;
-				System.out.println("load user information: searching for keyid: "+kid);
-				for (int i=0;i<keys.size();i++) {
-					KeyInfo ki = keys.get(i);
-					if (ki.getId().equals(kid)) {
+					KeyInfo ki = buildKeyInfo(key);
+					if (ki!=null) {
 						ki.setPosX(posx);
 						ki.setPosY(posy);
 						//ki.setIncomingLogs(showIn);
 						//ki.setOutgoingLogs(showOut);
+						ki.setIncomingLogs(false); // mark as incomplete
+						ki.setOutgoingLogs(false); // mark as incomplete
 						ki.setMyKey(mykey);
 						ki.setDirectTrust(directTrust);
 						ki.setVisibilityLevel(vislevel);
-						System.out.println("found at i="+i);
-						break;
+						
+						user.addKey(ki);
 					}
 				}
-				
 			}
+			
+			
+			//build key connections
+			Vector<KeyLog> logs = getKeyLogsForUser(userid);//get all connections between the nodes
+			for (KeyLog kl : logs) {
+				//add connection
+				KeyConnection kc = new KeyConnection(kl.getKeyIDFrom(), kl.getKeyIDTo(), 0, kl.getActionDatetime());
+				kc.setType(kl.getAction());
+				user.addConnection(kc);
+			}
+			
+			//build subkey/revokekey relations
+			for (KeyInfo ki : user.getKeys()) {
+				Vector<String> v = masterSub.get(ki.getId());
+				if (v!=null) {
+					for (String keyidTo : v) {
+						KeyConnection kc = new KeyConnection(ki.getId(), keyidTo, KeyConnection.TYPE_SUBKEY, -1L);
+						user.addConnection(kc);
+					}
+				}
+				v = masterRevoke.get(ki.getId());
+				if (v!=null) {
+					for (String keyidTo : v) {
+						KeyConnection kc = new KeyConnection(ki.getId(), keyidTo, KeyConnection.TYPE_REVOKEKEY, -1L);
+						user.addConnection(kc);
+					}
+				}
+			}
+			
+//			for (int i=0;i<keyids.size();i++) {
+//				String keyid = keyids.get(i);
+//				boolean[] io = inOut.get(i);
+//				boolean showIn = io[0];
+//				boolean showOut = io[1];
+//				
+//				NodeState s = keyid_state.get(keyid);
+//				
+//				//incoming connections
+//				if (s!=null && showIn && !s.isShowIn()) {
+//					s.setShowIn(true);
+//					Vector<KeyLog> keylogs = getKeyLogsToID(keyid);
+//					if (keylogs==null) {
+//						keylogs = new Vector<KeyLog>();
+//					}
+//					for (KeyLog kl : keylogs) {
+//						String fromKey = kl.getKeyIDFrom();
+//						
+//						//add fromKey if not present
+//						NodeState sFrom = keyid_state.get(fromKey);
+//						if (sFrom==null) {
+//							addNewKeyToUser(getKey(fromKey),user, keyid_state, false);
+//						}
+//						
+//						KeyConnection kc = new KeyConnection(kl.getKeyIDFrom(), kl.getKeyIDTo(), 0, kl.getActionDatetime());
+//						kc.setType(kl.getAction());
+//						user.addConnection(kc);
+//					}
+//				}
+//				
+//				//outgoing connections
+//				if (s!=null && showOut && !s.isShowOut()) {
+//					s.setShowOut(true);
+//					Vector<KeyLog> keylogs = getKeyLogsFromID(keyid);
+//					if (keylogs==null) {
+//						keylogs = new Vector<KeyLog>();
+//					}
+//					for (KeyLog kl : keylogs) {
+//						String toKey = kl.getKeyIDTo();
+//						
+//						//add toKey if not present
+//						NodeState sTo = keyid_state.get(toKey);
+//						if (sTo==null) {
+//							addNewKeyToUser(getKey(toKey),user, keyid_state, false);
+//						}
+//						//add connection
+//						KeyConnection kc = new KeyConnection(kl.getKeyIDFrom(), kl.getKeyIDTo(), 0, kl.getActionDatetime());
+//						kc.setType(kl.getAction());
+//						user.addConnection(kc);
+//					}
+//					
+//					//add sub- and revokekeys
+//					Vector<OSDXKey> childKeys = getSubAndRevokeKeysTo(keyid);
+//					for (OSDXKey key : childKeys) {
+//						//add key if not present
+//						NodeState sTo = keyid_state.get(key.getKeyID());
+//						if (sTo==null) {
+//							addNewKeyToUser(key, user, keyid_state,false);
+//						}
+//						//add connection
+//						int type  = KeyConnection.TYPE_SUBKEY;
+//						if (key.isRevoke()) {
+//							type = KeyConnection.TYPE_REVOKEKEY;
+//						}
+//						KeyConnection kc = new KeyConnection(keyid, key.getKeyID(), type, -1L);
+//						user.addConnection(kc);
+//					}
+//				}
+//			}
+			
 			rs.close();
 			stmt.close();
 			
@@ -444,6 +503,11 @@ public class DBControl {
 				ex.printStackTrace();
 			}
 		}
+		
+		//update last_seen
+		long last_seen = System.currentTimeMillis();
+		updateUserLastSeen(userid, last_seen);
+		
 	}
 	
 	public long registerNewUser(String email, String pwsha1, String password, String firstname, String surname, String company, boolean approved) {
@@ -597,13 +661,7 @@ public class DBControl {
 			stmt.close();
 			
 			if (user!=null) {
-				//update last_seen
-				sql = new SQLStatement("UPDATE fe_user SET last_seen=? WHERE userid=?");
-				sql.setLong(1, last_seen);
-				sql.setLong(2,userid);
-				stmt = con.createStatement();
-				stmt.executeUpdate(sql.toString());
-				stmt.close();
+				updateUserLastSeen(userid, last_seen);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -611,7 +669,43 @@ public class DBControl {
 		
 		user = loadUserInformation(email,userid);
 		
+		//test
+		for (KeyInfo ki : user.getKeys()) {
+			System.out.println("Keyid: "+ki.getId()+"  posx="+ki.getPosX()+"  posy="+ki.getPosY());
+		}
+		
 		return user;
+	}
+	
+	private void updateUserLastSeen(long userid, long last_seen) {
+		try {
+			SQLStatement sql = new SQLStatement("UPDATE fe_user SET last_seen=? WHERE userid=?");
+			sql.setLong(1, last_seen);
+			sql.setLong(2,userid);
+			
+			Statement stmt = con.createStatement();
+			stmt.executeUpdate(sql.toString());
+			stmt.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private KeyInfo buildKeyInfo(OSDXKey key) {
+		if (key!=null) { //key exists
+			//get incomig keylogs
+			Vector<KeyLog> keylogs = getKeyLogsToID(key.getKeyID());
+			if (keylogs==null) {
+				keylogs = new Vector<KeyLog>();
+			}
+			//keystatus
+			KeyStatus ks = KeyStatus.getKeyStatus(key, keylogs, null, System.currentTimeMillis(), null);
+			
+			//build keyinfo
+			KeyInfo ki = buildKeyInfo(key, ks);
+			return ki;
+		}
+		return null;
 	}
 
 	private NodeState addNewKeyToUser(OSDXKey key, User user, HashMap<String, NodeState> keyid_state, boolean addInLogs) {
@@ -843,7 +937,7 @@ public class DBControl {
 			if (key instanceof SubKey) {
 				String parentkeysha1 = rs.getString("parentkeysha1");
 				if (parentkeysha1!=null && parentkeysha1.length()>0) {
-					((SubKey)key).setParentKeyID(parentkeysha1+"@"+rs.getString("parentkeyserver"));
+					((SubKey)key).setParentKeyID(parentkeysha1.trim()+"@"+rs.getString("parentkeyserver"));
 				}
 			}
 			return key;
@@ -1005,6 +1099,37 @@ public class DBControl {
 			SQLStatement sql = new SQLStatement("SELECT * FROM keylogs WHERE keysha1_from=? ORDER BY asig_datetime");
 			sql.setString(1, keysha1);
 			//System.out.println("SQL: "+sql.toString());
+			
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(sql.toString());
+			
+			while (rs.next()) {
+				try {
+					logs.add(buildKeylog(rs));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			rs.close();
+			stmt.close();
+			//con.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return logs;
+	}
+	
+	public Vector<KeyLog> getKeyLogsForUser(long userid) {
+		Vector<KeyLog> logs = new Vector<KeyLog>();
+		try {
+			SQLStatement sql = new SQLStatement(
+				"SELECT DISTINCT * FROM keylogs WHERE "
+			  + "keysha1_from IN (select keysha1 from fe_user_nodes where userid=?) "
+			  + "AND "
+			  + "keysha1_to IN (select keysha1 from fe_user_nodes where userid=?)"
+			);
+			sql.setLong(1, userid);
+			sql.setLong(2, userid);
 			
 			Statement stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(sql.toString());

@@ -53,6 +53,7 @@ import org.fnppl.opensdx.xml.Element;
  */
 
 public class KeyStatus {
+	public static boolean DEBUG = true;
 	public KeyLog referencedKeyLog = null;
 	
 	public static int STATUS_UNAPPROVED = 0;
@@ -103,20 +104,20 @@ public class KeyStatus {
 		}
 			
 		 //check timeframe
-		 System.out.println("timeframe: "+SecurityHelper.getFormattedDate(key.getValidFrom())+"  ...   "+SecurityHelper.getFormattedDate(key.getValidUntil()));
+		 if (DEBUG) System.out.println("timeframe: "+SecurityHelper.getFormattedDate(key.getValidFrom())+"  ...   "+SecurityHelper.getFormattedDate(key.getValidUntil()));
 		 if (key.getValidFrom() > datetime || datetime > key.getValidUntil()) {
 			 return new KeyStatus(STATUS_OUTDATED, 0, key.getValidFrom(), key.getValidUntil(), null);
 		 }
 		
 		 if (key.isMaster()) {
 			 //check keyserver approval and not revoked
-			 System.out.println("Keyserverkeyid: "+keyidKeyserver);
+			 if (DEBUG) System.out.println("Keyserverkeyid: "+keyidKeyserver);
 			 String alternativeKeyIDKeyserver = null;
 			 boolean hasKeyServerApproval = false;
 			 boolean approval_pending = false;
 			 KeyLog referenced = null;
 			 for (KeyLog kl : keylogs) {
-				 System.out.println("KEYLOG :: "+kl.getKeyIDFrom()+" -> "+kl.getKeyIDTo()+" "+kl.getAction()+" "+kl.getActionDatetimeString());
+				 if (DEBUG) System.out.println("KEYLOG :: "+kl.getKeyIDFrom()+" -> "+kl.getKeyIDTo()+" "+kl.getAction()+" "+kl.getActionDatetimeString());
 				 if (kl.getAction().equals(KeyLogAction.REVOCATION)) {
 					 return new KeyStatus(STATUS_REVOKED, 0, key.getValidFrom(), key.getValidUntil(), kl);
 				 }
@@ -149,7 +150,7 @@ public class KeyStatus {
 			//sub or revokekey
 			//check not revoked
 			for (KeyLog kl : keylogs) {
-				 System.out.println("KEYLOG :: "+kl.getKeyIDFrom()+" -> "+kl.getKeyIDTo()+" "+kl.getAction()+" "+kl.getActionDatetimeString());
+				if (DEBUG) System.out.println("KEYLOG :: "+kl.getKeyIDFrom()+" -> "+kl.getKeyIDTo()+" "+kl.getAction()+" "+kl.getActionDatetimeString());
 				 if (kl.getAction().equals(KeyLogAction.REVOCATION)) {
 					 return new KeyStatus(STATUS_REVOKED, 0, key.getValidFrom(), key.getValidUntil(), kl);
 				 }

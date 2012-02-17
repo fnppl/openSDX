@@ -31,7 +31,7 @@ public class User implements Serializable {
 	public void addKey(KeyInfo ki) {
 		keys.add(ki);
 	}
-
+	
 	public void addConnection(KeyConnection kc) {
 		if (!connections.contains(kc)) {
 			connections.add(kc);
@@ -45,6 +45,15 @@ public class User implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public KeyInfo getKey(String keyid) {
+		for (KeyInfo ki : keys) {
+			if (ki.getId().equals(keyid)) {
+				return ki;
+			}
+		}
+		return null;
 	}
 
 	public Vector<KeyInfo> getKeys() {

@@ -620,9 +620,9 @@ public class OSDXKeyserverFE implements EntryPoint {
 		
 		// 13:1E:17:1A:A6:55:87:FA:20:0B:20:43:F7:79:DE:0C:09:6D:89:C8@localhost
 	}
-	private void addKeysAndLogsForSelection(boolean inLogs, boolean outLogs, final Label errorLabel) {
+	private void addKeysAndLogsForSelection(final boolean inLogs, final boolean outLogs, final Label errorLabel) {
 		
-		Vector<String> keyids = getSelectedKeyIds();
+		final Vector<String> keyids = getSelectedKeyIds();
 		if (keyids.size()==0) {
 			errorLabel.setVisible(true);
 			errorLabel.setText("Please select a key first.");
@@ -657,6 +657,15 @@ public class OSDXKeyserverFE implements EntryPoint {
 							}
 							for (KeyConnection kc : result.getConnections()) {
 								user.addConnection(kc);
+							}
+							
+							//update keys states of selected keys
+							for (int i=0;i<keyids.size();i++) {
+								KeyInfo ki = user.getKey(keyids.get(i));
+								if (ki!=null) {
+									ki.setIncomingLogs(inLogs);
+									ki.setOutgoingLogs(outLogs);
+								}
 							}
 							updateUI(UI_USER);
 						}
@@ -976,7 +985,7 @@ public class OSDXKeyserverFE implements EntryPoint {
 			}
 		}
 		
-		if (layouted.size()<3) {
+		if (layouted.size()<2) {
 			//circular
 			int mX = w/2;
 			int mY = h/2;
