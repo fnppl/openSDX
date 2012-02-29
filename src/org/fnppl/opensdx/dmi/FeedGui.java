@@ -773,11 +773,15 @@ public class FeedGui extends JFrame implements MyObserver {
 //	}
 	
 	public static OSDXKey selectPrivateSigningKey(KeyApprovingStore store) {
+		return selectPrivateSigningKey(store, null);
+	}
+	public static OSDXKey selectPrivateSigningKey(KeyApprovingStore store, String desiredKeyId) {
 		Vector<OSDXKey> storedPrivateKeys = store.getAllPrivateSigningKeys();
 		if (storedPrivateKeys==null || storedPrivateKeys.size()==0) {
 			Dialogs.showMessage("Sorry, no private key for signing in keystore");
 			return null;
 		}
+		int def = 0;
 		Vector<String> select = new Vector<String>();
 		int[] map = new int[storedPrivateKeys.size()];
 		for (int i=0;i<storedPrivateKeys.size();i++) {
@@ -787,15 +791,19 @@ public class FeedGui extends JFrame implements MyObserver {
 					select.add(k.getKeyID()+", "+((MasterKey)k).getIDEmailAndMnemonic());
 				}
 				else if (k.isSub()) {
-					select.add(k.getKeyID()+" subkey of "+((SubKey)k).getParentKey().getIDEmailAndMnemonic());
+					select.add(k.getKeyID()+" subkey of "+((SubKey)k).getParentKey().getIDEmailAndMnemonic());				
 				}
 				else {
 					select.add(k.getKeyID());
 				}
+				
+				if(desiredKeyId!=null && k.getKeyID().indexOf(desiredKeyId)==0) {
+					def = i;
+				}
 				map[select.size()-1] = i;
 			}
 		}
-		int ans = Dialogs.showSelectDialog("Select private key","Please select a private key for signing", select);
+		int ans = Dialogs.showSelectDialog("Select private key","Please select a private key for signing", select, def);
 		if (ans>=0 && ans<select.size()) {
 			return storedPrivateKeys.get(map[ans]);
 		}

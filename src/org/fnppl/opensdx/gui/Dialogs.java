@@ -521,14 +521,19 @@ public class Dialogs {
 	}
 	
 	public static int showSelectDialog(String title, String message, Vector values) {
+		return showSelectDialog(title, message, values, 0);
+	}
+	public static int showSelectDialog(String title, String message, Vector values, int def) {
 		Object[] os = values.toArray();
 		
 //		File[] select = new File[values.size()];
 //		for (int i=0;i<select.length;i++) {
 //			select[i] = values.get(i);
 //		}
-		Object ans = (Object)JOptionPane.showInputDialog(null,message,title,JOptionPane.QUESTION_MESSAGE, null, os, os[0]);
-		if (ans==null) return -1;
+		Object ans = (Object)JOptionPane.showInputDialog(null,message,title,JOptionPane.QUESTION_MESSAGE, null, os, os[def]);
+		if (ans==null) {
+			return -1;
+		}
 		return values.indexOf(ans);
 //		
 //		if (ans != null) {
