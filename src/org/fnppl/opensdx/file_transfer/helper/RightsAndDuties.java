@@ -55,8 +55,13 @@ import java.util.regex.Pattern;
 
 import org.fnppl.opensdx.xml.Element;
 
+import com.sun.xml.internal.messaging.saaj.util.transform.EfficientStreamingTransformer;
+
 public class RightsAndDuties {
 
+	public static final int UNLIMETED_DIRECTORY_DEPTH = -1;
+	public static final int DEFAULT_DIRECTORY_DEPTH = Integer.MIN_VALUE;
+	
 	public static final int IS_ADMIN       = 1;
 	public static final int ALLOW_MKDIR    = 2;
 	public static final int ALLOW_DELETE   = 3;
@@ -78,16 +83,18 @@ public class RightsAndDuties {
 	private boolean allow_list = true;
 	private boolean allow_upload = true;
 	private boolean allow_download = true;
+	private int maxDirectoryDepth = Integer.MIN_VALUE; 		//-1 = no limit,  Integer.MIN_VALUE -> default value
+	private int defaultDirectoryDepth = -1;
 	
 	private Vector<String> signature_needed = null;
 	private Pattern signature_needed_pattern = null;
 	
-	public RightsAndDuties() {
-		
+	public RightsAndDuties(int defaultDirectoryDepth) {
+		this.defaultDirectoryDepth = defaultDirectoryDepth;
 	}
 
-	public static RightsAndDuties fromElement(Element e) {
-		RightsAndDuties r = new RightsAndDuties();
+	public static RightsAndDuties fromElement(Element e, int defaultDirectoryDepth) {
+		RightsAndDuties r = new RightsAndDuties(defaultDirectoryDepth);
 		r.admin = parse(e,"admin",false);
 		r.allow_mkdir = parse(e,"allow_mkdir",true);
 		r.allow_delete = parse(e,"allow_delete",true);
@@ -103,6 +110,13 @@ public class RightsAndDuties {
 			for (Element es : sigs) {
 				r.signature_needed.add(es.getText());
 			}
+		}
+		
+		int mdd = e.getChildInt("max_directory_depth"); 
+		if (mdd>=-1) { 
+			r.maxDirectoryDepth = mdd; 
+		} else {
+			r.maxDirectoryDepth = DEFAULT_DIRECTORY_DEPTH;
 		}
 		return r;
 	}
@@ -177,7 +191,7 @@ public class RightsAndDuties {
 		return admin;
 	}
 	
-	public Element toElement() {
+	public Element toElement(boolean forceMaxDirDepth) {
 		Element e = new Element("rights_and_duties");
 		if (admin) e.addContent("admin", "true");
 		if (!allow_mkdir) e.addContent("allow_mkdir", "false");
@@ -192,6 +206,13 @@ public class RightsAndDuties {
 			for (String s : signature_needed) {
 				e.addContent("signature_needed", s);
 			}
+		}
+		if (maxDirectoryDepth==DEFAULT_DIRECTORY_DEPTH) {
+			if (forceMaxDirDepth) {
+				e.addContent("max_directory_depth", ""+defaultDirectoryDepth);
+			}
+		} else {
+			e.addContent("max_directory_depth", ""+maxDirectoryDepth);
 		}
 		return e;
 	}
@@ -244,7 +265,29 @@ public class RightsAndDuties {
 			return s;
 		}
 	}
+
+	public boolean isAllowedDepth(int depth) {
+		if (maxDirectoryDepth==DEFAULT_DIRECTORY_DEPTH) {
+			if (defaultDirectoryDepth<0) {
+				return true;
+			} else {
+				return (depth <= defaultDirectoryDepth);
+			}
+		} else {
+			if (maxDirectoryDepth<0) {
+				return true;
+			} else {
+				return (depth <= maxDirectoryDepth);
+			}
+		}
+	}
 	
+	public int getMaxDirectoryDepth() {
+		if (maxDirectoryDepth==DEFAULT_DIRECTORY_DEPTH) {
+			return defaultDirectoryDepth;
+		}
+		return maxDirectoryDepth;
+	}
 	
 //	<rights_and_duties>
 //	  <allow_mkdir>true</allow_mkdir>       <!--  default true -->
@@ -257,5 +300,6 @@ public class RightsAndDuties {
 //	  <allow_download>true</allow_download> <!--  default true -->
 //	  <signature_needed>*.pdf</signature_needed> <!--  default no signatures needed -->
 //	  <signature_needed>*.txt</signature_needed>
+//    <max_directory_depth>-1</max_directory_depth>  <!-- default -1, unlimited -->	
 //	</rights_and_duties> 
 }

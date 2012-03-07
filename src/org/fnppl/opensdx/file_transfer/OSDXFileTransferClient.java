@@ -803,6 +803,71 @@ public class OSDXFileTransferClient implements UploadClient {
 		}
 	}
 	
+	public static void mkdir(String host, int port, String prepath, OSDXKey mysigning, String username, final Vector<String> files) {
+		if (files==null || files.size()==0) {
+			return;
+		}
+		
+		final OSDXFileTransferClient s = new OSDXFileTransferClient();
+		try {
+			s.addResponseListener(new CommandResponseListener() {
+				int count = files.size();
+				int next = 0;
+				
+				public void onSuccess(OSDXFileTransferCommand command) {
+					if (command instanceof OSDXFileTransferMkDirCommand) {
+						//next list
+						next++;
+						if (next<count) {
+							mkdir(next);
+						} else {
+							System.out.println("MKDIR ready. Closing connection.");
+							s.closeConnection();
+						}
+					}
+					else if (command instanceof OSDXFileTransferLoginCommand) {
+						System.out.println("Login successful.");
+						//start mkdir
+						mkdir(0);
+					}
+				}
+				
+				private void mkdir(int no) {
+					String absoluteRemoteFilename = files.get(no);
+					System.out.println("MKDIR :: "+absoluteRemoteFilename);
+					s.mkdir(absoluteRemoteFilename);
+				}
+				
+				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+					
+				}
+				
+				public void onError(OSDXFileTransferCommand command, String msg) {
+					System.out.println("Error making directory :: "+files.get(next)+(msg!=null?" :: "+msg:""));
+					
+					//next mkdir
+					next++;
+					if (next<count) {
+						mkdir(next);
+					} else {
+						System.out.println("MKDIR ready. Closing connection.");
+						s.closeConnection();
+					}
+				}
+			});
+			
+			s.connect(host, port, prepath,mysigning, username);
+			
+		} catch (Exception e) {
+			String msg = e.getMessage();
+			if (msg!=null && msg.equalsIgnoreCase("Connection refused")) {
+				System.out.println("Error: could not connect to host: "+host+" on port: "+port);
+			} else {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public static void download_files(String host, int port, String prepath, OSDXKey mysigning, String username, final File downloadpath, final Vector<String> files, final boolean resume) {
 		System.out.println("Download");
 		if (prepath==null || prepath.length()==0) prepath = "/";
@@ -1216,6 +1281,8 @@ public class OSDXFileTransferClient implements UploadClient {
 		File downloadpath = new File(".") ; // --downloadpath
 		boolean list = false; // --list
 		boolean delete = false; // --delete
+		boolean mkdir = false; // --mkdir
+		
 				
 		Vector<File> files = new Vector<File>();
 		Vector<String> remoteFiles = new Vector<String>();
@@ -1225,7 +1292,7 @@ public class OSDXFileTransferClient implements UploadClient {
 			while (i<args.length) {
 				String s = args[i];
 				if (start_files) {
-					if (download || list || delete) {
+					if (download || list || delete || mkdir) {
 						remoteFiles.add(s);
 						i++;
 					} else {
@@ -1292,6 +1359,10 @@ public class OSDXFileTransferClient implements UploadClient {
 					}
 					else if (s.equals("--delete")) {
 						delete = true;
+						i++;
+					}
+					else if (s.equals("--mkdir")) {
+						mkdir = true;
 						i++;
 					}
 					else if (s.equals("--downloadpath")) {
@@ -1389,10 +1460,13 @@ public class OSDXFileTransferClient implements UploadClient {
 			if (download && remoteFiles.size()==0) {
 				error("missing parameter: file(s) to download");
 			}
+			if (mkdir && remoteFiles.size()==0) {
+				error("missing parameter: directory(s) to make");
+			}
 			if (delete && remoteFiles.size()==0) {
 				error("missing parameter: file(s) to delete");
 			}
-			if (!download && !list && !delete && files.size()==0) {
+			if (!download && !list && !delete && !mkdir && files.size()==0) {
 				error("missing parameter: file(s) to upload");
 			}
 			
@@ -1424,12 +1498,16 @@ public class OSDXFileTransferClient implements UploadClient {
 			if (!key.isPrivateKeyUnlocked()) {
 				error("can not unlock private key");
 			}
+			
 
 			if (list) {
 				list_files(host, port, prepath, key, username, remoteFiles);
 			}
 			else if (delete) {
 				delete_files(host, port, prepath, key, username, remoteFiles);
+			}
+			else if (mkdir) {
+				mkdir(host, port, prepath, key, username, remoteFiles);
 			}
 			else if (download) {
 				//lets try to download the given files

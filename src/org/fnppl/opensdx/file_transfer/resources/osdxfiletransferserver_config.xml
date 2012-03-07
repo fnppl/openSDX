@@ -55,6 +55,7 @@
 		<ipv4>127.0.0.1</ipv4>
       	<ipv6>127.0.0.1</ipv6>
       	<logfile>/tmp/osdx_ftserver_log.txt</logfile>
+      	<max_directory_depth>-1</max_directory_depth>
       	<clients_config_file backup="true">filetransfer_config_clients.xml</clients_config_file>
 	</osdxfiletransferserver>
 	<clients>
@@ -80,7 +81,8 @@
 			  <signature_needed>*.pdf</signature_needed> <!--  default no signatures needed -->
 			  <signature_needed>*.xml</signature_needed>
 			  <signature_needed>*.jar</signature_needed>
-			</rights_and_duties> 
+			  <max_directory_depth>2</max_directory_depth>
+			</rights_and_duties>
 		</client>
 		<client>
 			<username>user_1</username> <!-- COULD -->

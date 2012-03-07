@@ -80,7 +80,7 @@ public class OSDXFileTransferLoginCommand extends OSDXFileTransferCommand {
 			String msg = new String(content,"UTF-8");
 			String[] param = Util.getParams(msg);
 			try {
-				rightsAndADuties = RightsAndDuties.fromElement(Document.fromString(param[1]).getRootElement());
+				rightsAndADuties = RightsAndDuties.fromElement(Document.fromString(param[1]).getRootElement(), -1);
 				notifySucces();
 			} catch (Exception ex) {
 				ex.printStackTrace();

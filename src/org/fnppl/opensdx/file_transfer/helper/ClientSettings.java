@@ -65,7 +65,7 @@ public class ClientSettings {
 		
 	}
 	
-	public static ClientSettings fromElement(Element e) {
+	public static ClientSettings fromElement(Element e, int defaultMaxDirDepth) {
 		ClientSettings s = new ClientSettings();
 		s.username = e.getChildText("username");
 		s.keyid = e.getChildText("keyid");
@@ -84,10 +84,11 @@ public class ClientSettings {
 			}
 		}
 		if (e.getChild("rights_and_duties")!=null) {
-			s.rights_duties = RightsAndDuties.fromElement(e.getChild("rights_and_duties"));
+			s.rights_duties = RightsAndDuties.fromElement(e.getChild("rights_and_duties"),defaultMaxDirDepth);
 		} else {
-			s.rights_duties = new RightsAndDuties();
+			s.rights_duties = new RightsAndDuties(defaultMaxDirDepth);
 		}
+		
 		return s;
 	}
 	
@@ -108,10 +109,11 @@ public class ClientSettings {
 			e.addContent(el);
 		}
 		if (rights_duties!=null) {
-			e.addContent(rights_duties.toElement());
+			e.addContent(rights_duties.toElement(false));
 		}
 		return e;
 	}
+
 	
 	public RightsAndDuties getRightsAndDuties() {
 		return rights_duties;
@@ -148,6 +150,32 @@ public class ClientSettings {
 			return false;
 		}
 	}
+	
+	public boolean isAllowedDepthFile(File f) {
+		return isAllowedDepthDir(f.getParentFile());
+	}
+	
+	public boolean isAllowedDepthDir(File dir) {
+		try {
+			int baseDepth = getDirDepth(local_path.getCanonicalFile());
+			int dirDepth = getDirDepth(dir.getCanonicalFile());
+			return rights_duties.isAllowedDepth(dirDepth-baseDepth);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+	}
+	
+	private int getDirDepth(File dir) {
+		int d = 1;
+		while (dir.getParentFile()!=null) {
+			d++;
+			dir = dir.getParentFile();
+		}
+		return d;
+	}
+
+	
 	
 	public RemoteFile getAsRemoteFile(File f) {
 		try {

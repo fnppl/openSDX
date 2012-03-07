@@ -271,7 +271,7 @@ public class OSDXFileTransferAdapter {
 					String msg = new String(dataIn.content,"UTF-8");
 					String[] param = Util.getParams(msg);
 					try {
-						rightsAndDuties = RightsAndDuties.fromElement(Document.fromString(param[1]).getRootElement());
+						rightsAndDuties = RightsAndDuties.fromElement(Document.fromString(param[1]).getRootElement(), -1);
 						return true;
 					} catch (Exception ex) {
 						ex.printStackTrace();

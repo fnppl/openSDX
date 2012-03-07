@@ -320,7 +320,7 @@ public class OSDXFileTransferServerThread extends Thread {
 			cs  = server.getClientSetting(userid);
 			if (cs!=null) {
 				//login ok -> ACK with rights and duties
-				String param = Util.makeParamsString(new String[]{client_keyid, Document.buildDocument(cs.getRightsAndDuties().toElement()).toStringCompact()});
+				String param = Util.makeParamsString(new String[]{client_keyid, Document.buildDocument(cs.getRightsAndDuties().toElement(true)).toStringCompact()});
 				System.out.println("SENDING: ACK :: "+param);
 				data.setAck(commandid, num, param);
 				data.sendPackage();
@@ -356,6 +356,12 @@ public class OSDXFileTransferServerThread extends Thread {
 					data.setError(commandid, num, "path already exists");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "MKDIR", param, "path already exists");
+				}
+				else if (!cs.isAllowedDepthDir(path)) {
+					String msg = "max directory depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth();
+					data.setError(commandid, num, msg);
+					data.sendPackage();
+					server.log.logCommand(clientID, addr, "MKDIR", param, msg);
 				}
 				else {
 					boolean ok = path.mkdirs();
@@ -641,7 +647,14 @@ public class OSDXFileTransferServerThread extends Thread {
 						data.setError(commandid, num, "file already exists");
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "PUT", param, "file already exists");
-					} else {
+					}
+					else if (!cs.isAllowedDepthFile(file)) {
+						String msg = "max directory depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth();
+						data.setError(commandid, num, msg);
+						data.sendPackage();
+						server.log.logCommand(clientID, addr, "PUT", param, msg);
+					}
+					else {
 						//ensure directories exists
 						file.getParentFile().mkdirs();
 						
@@ -748,6 +761,12 @@ public class OSDXFileTransferServerThread extends Thread {
 						data.setError(commandid, num, "restricted file");
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "RESUMEPUT", param, "restricted file");
+					}
+					else if (!cs.isAllowedDepthFile(file)) {
+						String msg = "max directory depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth();
+						data.setError(commandid, num, msg);
+						data.sendPackage();
+						server.log.logCommand(clientID, addr, "RESUMEPUT", param, msg);
 					}
 					else if (file.exists()) {
 						long loaded = file.length();

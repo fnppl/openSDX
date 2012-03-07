@@ -65,6 +65,7 @@ public class OSDXFileTransferServer {
 	
 	protected int port = 8899;
 	protected InetAddress address = null;
+	private int defaultMaxDirectoryDepth = -1;
 	
 	private OSDXKey mySigningKey = null;
 	private File clients_config_file = null;
@@ -120,6 +121,12 @@ public class OSDXFileTransferServer {
 				System.out.println("CAUTION: error while parsing ip adress");
 				ex.printStackTrace();
 			}
+			
+			defaultMaxDirectoryDepth = ks.getChildInt("max_directory_depth");
+			if (defaultMaxDirectoryDepth == Integer.MIN_VALUE) {
+				defaultMaxDirectoryDepth = -1;
+			}
+			System.out.println("default max directory depth = "+defaultMaxDirectoryDepth);
 
 			String logFile = ks.getChildText("logfile");
 			if (logFile==null) {
@@ -153,9 +160,9 @@ public class OSDXFileTransferServer {
 			Vector<Element> ecClients = eClients.getChildren("client");
 			for (Element e : ecClients) {
 				try {
-					ClientSettings cs = ClientSettings.fromElement(e);
+					ClientSettings cs = ClientSettings.fromElement(e, defaultMaxDirectoryDepth);
 					clients.put(cs.getSettingsID(),cs);
-					System.out.println("adding client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath());
+					System.out.println("adding client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath()+"\t max dir depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth());
 
 					cs.getLocalRootPath().mkdirs();
 
@@ -171,9 +178,9 @@ public class OSDXFileTransferServer {
 					ecClients = eClients.getChildren("client");
 					for (Element e : ecClients) {
 						try {
-							ClientSettings cs = ClientSettings.fromElement(e);
+							ClientSettings cs = ClientSettings.fromElement(e, defaultMaxDirectoryDepth);
 							clients.put(cs.getSettingsID(),cs);
-							System.out.println("adding extra client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath());							
+							System.out.println("adding extra client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath()+"\t max dir depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth());							
 							cs.getLocalRootPath().mkdirs();
 						} catch (Exception ex) {
 							ex.printStackTrace();
