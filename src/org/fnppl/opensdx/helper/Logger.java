@@ -10,7 +10,7 @@ import java.util.Locale;
 import sun.nio.cs.ext.TIS_620;
 
 /*
- * Copyright (C) 2010-2011 
+ * Copyright (C) 2010-2012 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 

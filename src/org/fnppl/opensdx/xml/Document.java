@@ -2,7 +2,7 @@ package org.fnppl.opensdx.xml;
 
 
 /*
- * Copyright (C) 2010-2011 
+ * Copyright (C) 2010-2012 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
@@ -198,5 +198,3 @@ public class Document {
 		return d.base;
 	}
 }
-
-

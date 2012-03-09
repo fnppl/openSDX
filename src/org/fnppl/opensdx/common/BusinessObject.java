@@ -1,7 +1,7 @@
 package org.fnppl.opensdx.common;
 
 /*
- * Copyright (C) 2010-2011 
+ * Copyright (C) 2010-2012 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
@@ -407,5 +407,3 @@ public abstract class BusinessObject implements XMLElementable {
 		return b.intValue();
 	}
 }
-
-
