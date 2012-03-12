@@ -117,11 +117,11 @@ public class BalancingConnectionManager {
         String drivermanager = config.getChildText("drivermanager");
         String dbserver = local ? config.getChildText("dblocal") : config.getChildText("dbserver");
         
-
-        System.err.println("hostname: "+hostname);
-        if((System.getProperty("isrzdb")!=null && System.getProperty("isrzdb").equals("true")) || hostname.indexOf("finestblade")>=0  || hostname.equals("fineblade2.finetunes.net") || hostname.equals("finestblade.finetunes.net") || hostname.equals("raidblade2.finetunes.net") ) {
-            dbserver = config.getChildText("dbserver");
-        }
+//TODO
+//        System.err.println("hostname: "+hostname);
+//        if((System.getProperty("isrzdb")!=null && System.getProperty("isrzdb").equals("true")) || hostname.indexOf("finestblade")>=0  || hostname.equals("fineblade2.finetunes.net") || hostname.equals("finestblade.finetunes.net") || hostname.equals("raidblade2.finetunes.net") ) {
+//            dbserver = config.getChildText("dbserver");
+//        }
         
         String dbdbname=config.getChildText("dbdbname");
         String dbusername=config.getChildText("dbusername");

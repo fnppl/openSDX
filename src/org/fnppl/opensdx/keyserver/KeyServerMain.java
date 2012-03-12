@@ -306,7 +306,9 @@ public class KeyServerMain extends HTTPServer {
 					if (data_path!=null) {
 						dp = new File(data_path);
 					}
-					backend = PostgresBackend.init(eDB.getChildText("user"), eDB.getChildText("password"), eDB.getChildText("name"),dp);
+					//backend = PostgresBackend.init(eDB.getChildText("user"), eDB.getChildText("password"), eDB.getChildText("name"),dp);
+					backend = PostgresBackendBCM.init(eDB.getChildText("user"), eDB.getChildText("password"), eDB.getChildText("name"),dp);
+					
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}

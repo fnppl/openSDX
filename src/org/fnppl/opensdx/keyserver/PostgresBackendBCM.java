@@ -51,7 +51,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -59,6 +58,8 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.fnppl.dbaccess.BalancingConnectionManager;
+import org.fnppl.dbaccess.DBResultSet;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.keyserver.helper.IdGenerator;
@@ -66,7 +67,6 @@ import org.fnppl.opensdx.keyserver.helper.SQLStatement;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.KeyLog;
-import org.fnppl.opensdx.security.KeyLogAction;
 import org.fnppl.opensdx.security.KeyStatus;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
@@ -76,26 +76,27 @@ import org.fnppl.opensdx.security.SubKey;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
-public class PostgresBackend implements KeyServerBackend {
+public class PostgresBackendBCM implements KeyServerBackend {
 
-	private String DB_DRIVER = "org.postgresql.Driver";
+	private static String DB_DRIVER = "org.postgresql.Driver";
 	
-	public Connection con;
+	//public Connection con;
 	private File data_path = null;
 	
-	private PostgresBackend() {
-		con = null;
-		
-		//Load DB_Driver
-		try {
-			Class.forName(DB_DRIVER);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	
+	private PostgresBackendBCM() {
+//		con = null;
+//		
+//		//Load DB_Driver
+//		try {
+//			Class.forName(DB_DRIVER);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 	
-	public static PostgresBackend init(String user, String pw, String dbname, File data_path) {
-		PostgresBackend be = new PostgresBackend();
+	public static PostgresBackendBCM init(String dbusername, String dbpassword, String name, File data_path) {
+		PostgresBackendBCM be = new PostgresBackendBCM();
 		if (data_path==null) {
 			be.data_path = new File(System.getProperty("user.home"), "db_data");
 		} else {
@@ -104,7 +105,45 @@ public class PostgresBackend implements KeyServerBackend {
 		be.data_path.mkdirs();
 		
 		System.out.println("PostgresBackend::init::using data_path: "+be.data_path.getAbsolutePath());
-		be.connect(user, pw, dbname);
+		
+		String dbname = "postgresql";
+		String dbserver = "localhost";
+		int dbport = 5432;
+		String dbdbname = "keyserverdb";
+
+		//parse name, e.g. jdbc:postgresql://localhost:5432/keyserverdb
+		try {
+			String[] parts = name.split("[:/]");
+			if (parts.length==7) {
+				dbport = Integer.parseInt(parts[5]);
+				dbname = parts[1];
+				dbserver = parts[4];
+				dbdbname = parts[6];
+			} else {
+				throw new RuntimeException("Error parsing db config <name> :: "+name);
+			}
+		} catch (Exception ex) {
+			throw new RuntimeException("Error parsing db config <name> :: "+name);
+		}
+		System.out.println("DB Connection URL :: jdbc:"+dbname+":"+dbport+"/"+dbdbname);
+		
+		String drivermanager = DB_DRIVER;
+		int initialconnections = 1;
+		int maxconnections = 10;
+		BalancingConnectionManager.init(drivermanager, dbserver, dbport, dbname, dbdbname, dbusername, dbpassword, initialconnections, maxconnections);
+		
+//		try {
+//			SQLStatement sql = new SQLStatement("SELECT keysha1 FROM keys");
+//			DBResultSet rs = BalancingConnectionManager.execQuery(sql.toString());
+//			if (rs!=null && rs.height()>0) {
+//				for (int i=0;i<rs.height();i++) {
+//					System.out.println("Key :: "+rs.getValueOf(i,"keysha1"));
+//				}
+//			}
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
+		
 		return be;
 	}
 	
@@ -141,14 +180,10 @@ public class PostgresBackend implements KeyServerBackend {
 		try {
 			SQLStatement sql = new SQLStatement("SELECT keysha1 FROM keys WHERE keysha1=?");
 			sql.setString(1, keyid);
-			
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());
-			if (rs.next()) {
+			DBResultSet rs = BalancingConnectionManager.execQuery(sql.toString());
+			if (rs!=null && rs.getValueAt(0,0)!=null) {
 				has = true;
 			}
-			rs.close();
-			stmt.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -156,9 +191,9 @@ public class PostgresBackend implements KeyServerBackend {
 	}
 	
 	public void setupEmptyDB() {
-		URL emptyDB = PostgresBackend.class.getResource("resources/setupEmptyDB.txt");
+		URL emptyDB = PostgresBackendBCM.class.getResource("resources/setupEmptyDB.txt");
 		try {
-			Statement stmt = con.createStatement();
+			
             BufferedReader in = new BufferedReader(new InputStreamReader(emptyDB.openStream()));
             String line = null;
             String nextCommand = "";
@@ -168,12 +203,8 @@ public class PostgresBackend implements KeyServerBackend {
             		nextCommand += line.substring(0,trenn);
             		//executeCommand
             		if (nextCommand.length()>3) {
-    					try {
     					System.out.println("SQL::"+nextCommand);
-    					stmt.execute(nextCommand);
-    					} catch (SQLException innerEx) {
-    						innerEx.printStackTrace();
-    					}		
+    					BalancingConnectionManager.execUpdate(nextCommand);
     				}
             		nextCommand = line.substring(trenn+1);
             	} else {
@@ -182,12 +213,8 @@ public class PostgresBackend implements KeyServerBackend {
             }
             //execute last command
 			if (nextCommand.length()>3) {
-				try {
 				System.out.println("SQL::"+nextCommand);
-				stmt.execute(nextCommand);
-				} catch (SQLException innerEx) {
-					innerEx.printStackTrace();
-				}		
+				BalancingConnectionManager.execUpdate(nextCommand);
 			}
             in.close();
         } catch (Exception ex) {
@@ -225,33 +252,33 @@ public class PostgresBackend implements KeyServerBackend {
 //        	);;
 	}
 	
-	public void connect(String user, String pw, String dbname) {
-		try {
-			con = DriverManager.getConnection(dbname, user, pw);
-			System.out.println("Connection established DB: "+dbname); 
-		} catch (Exception e) {
-			con = null;
-			e.printStackTrace();
-			throw new RuntimeException("Connection to DB could not be established.");
-		}
-	}
+//	public void connect(String user, String pw, String dbname) {
+//		try {
+//			con = DriverManager.getConnection(dbname, user, pw);
+//			System.out.println("Connection established DB: "+dbname); 
+//		} catch (Exception e) {
+//			con = null;
+//			e.printStackTrace();
+//			throw new RuntimeException("Connection to DB could not be established.");
+//		}
+//	}
 	
-	public boolean isConnected() {
-		if (con==null) {
-			return false;
-		} else {
-			return true;
-		}
-	}
+//	public boolean isConnected() {
+//		if (con==null) {
+//			return false;
+//		} else {
+//			return true;
+//		}
+//	}
 	
 	
-	public void closeDBConnection() {
-		try {
-			con.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	public void closeDBConnection() {
+//		try {
+//			con.close();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 	
 	public void addKey(OSDXKey key) {
 		if (hasKey(key.getKeyID())) return;
@@ -282,10 +309,9 @@ public class PostgresBackend implements KeyServerBackend {
 				sql.setString(12, key.getAuthoritativekeyserver());
 			}
 			
-			Statement stmt = con.createStatement();
+			
 			System.out.println("addKey:: "+sql.toString());
-			stmt.executeUpdate(sql.toString());
-			stmt.close();
+			BalancingConnectionManager.execUpdate(sql.toString());
 			
 			//add identities for masterkey
 			if (key.isMaster()) {
@@ -308,33 +334,30 @@ public class PostgresBackend implements KeyServerBackend {
 			SQLStatement sql = new SQLStatement("SELECT * FROM keys WHERE keysha1=?");
 			sql.setString(1, keysha1);
 			
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());
 			
-			if (rs.next()) {
-				key = buildKey(rs);
+			DBResultSet rs = BalancingConnectionManager.execQuery(sql.toString());
+			if (rs!=null && rs.height()>0) {
+				key = buildKey(rs,0);
 			}
-			rs.close();
-			stmt.close();
-			//con.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 		return key;
 	}
 	
-	private OSDXKey buildKey(ResultSet rs) {
+	private OSDXKey buildKey(DBResultSet rs, int no) {
 		try {
 			Element pk = new Element("pubkey");
-			pk.addContent("keyid", rs.getString("keysha1")+"@"+rs.getString("keyserver"));
-			pk.addContent("level", rs.getString("level"));
-			pk.addContent("usage", rs.getString("usage"));
-			pk.addContent("valid_from", SecurityHelper.getFormattedDate(rs.getTimestamp("valid_from").getTime()));
-			pk.addContent("valid_until", SecurityHelper.getFormattedDate(rs.getTimestamp("valid_until").getTime()));
-			pk.addContent("algo", rs.getString("algo"));
-			pk.addContent("bits", ""+rs.getInt("bits"));
-			pk.addContent("modulus", rs.getString("modulus"));
-			pk.addContent("exponent", rs.getString("exponent"));
+
+			pk.addContent("keyid", rs.getValueOf(no,"keysha1")+"@"+rs.getValueOf(0,"keyserver"));
+			pk.addContent("level", rs.getValueOf(no,"level"));
+			pk.addContent("usage", rs.getValueOf(no,"usage"));
+			pk.addContent("valid_from", SecurityHelper.getFormattedDate(Timestamp.valueOf(rs.getValueOf(no,"valid_from")).getTime()));
+			pk.addContent("valid_until", SecurityHelper.getFormattedDate(Timestamp.valueOf(rs.getValueOf(no,"valid_until")).getTime()));
+			pk.addContent("algo", rs.getValueOf(no,"algo"));
+			pk.addContent("bits", ""+rs.getIntOf(no,"bits"));
+			pk.addContent("modulus", rs.getValueOf(no,"modulus"));
+			pk.addContent("exponent", rs.getValueOf(no,"exponent"));
 			//Document.buildDocument(pk).output(System.out);
 			OSDXKey key = OSDXKey.fromPubKeyElement(pk);
 			if (key.isMaster()) {
@@ -352,9 +375,9 @@ public class PostgresBackend implements KeyServerBackend {
 //				}
 			}
 			if (key instanceof SubKey) {
-				String parentkeysha1 = rs.getString("parentkeysha1");
-				if (parentkeysha1!=null && parentkeysha1.length()>0) {
-					((SubKey)key).setParentKeyID(parentkeysha1+"@"+rs.getString("parentkeyserver"));
+				String parentkeysha1 = rs.getValueOf(no,"parentkeysha1");
+				if (parentkeysha1!=null && parentkeysha1.trim().length()>0) {
+					((SubKey)key).setParentKeyID(parentkeysha1.trim()+"@"+rs.getValueOf(no,"parentkeyserver"));
 				}
 			}
 			return key;
@@ -370,17 +393,17 @@ public class PostgresBackend implements KeyServerBackend {
 			String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
 			SQLStatement sql = new SQLStatement("SELECT * FROM identities WHERE keysha1=? ORDER BY identnum");
 			sql.setString(1, keysha1);
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());
-			while (rs.next()) {
-				Identity id = buildIdentitiy(rs);
-				if (id!=null) {
-					ids.add(id);
+			
+			DBResultSet rs = BalancingConnectionManager.execQuery(sql.toString());
+			if (rs!=null) {
+				for (int i=0;i<rs.height();i++) {
+					Identity id = buildIdentitiy(rs, i);
+					if (id!=null) {
+						ids.add(id);
+					}
 				}
 			}
-			rs.close();
-			stmt.close();
-			//con.close();
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -393,15 +416,12 @@ public class PostgresBackend implements KeyServerBackend {
 			String keysha1 = OSDXKey.getFormattedKeyIDModulusOnly(keyid);
 			SQLStatement sql = new SQLStatement("SELECT * FROM identities WHERE keysha1=? ORDER BY identnum DESC LIMIT 1");
 			sql.setString(1, keysha1);
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());
+			
 			Identity id = null;
-			if (rs.next()) {
-				id = buildIdentitiy(rs);
+			DBResultSet rs = BalancingConnectionManager.execQuery(sql.toString());
+			if (rs!=null && rs.height()>0) {
+				id = buildIdentitiy(rs,0);
 			}
-			rs.close();
-			stmt.close();
-			//con.close();
 			return id;
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -472,18 +492,16 @@ public class PostgresBackend implements KeyServerBackend {
 			sql.setBoolean(41, id.is_photo_restricted());
 			sql.setBoolean(42, true); //most_recent
 			
-			Statement stmt = con.createStatement();
+			
 			//System.out.println("add identity:: "+sql.toString());
-			stmt.executeUpdate(sql.toString());
-			stmt.close();
+			BalancingConnectionManager.execUpdate(sql.toString());
 			
 			//set all other most_recent for this keyid to false
 			sql = new SQLStatement("UPDATE identities SET most_recent=\'false\' WHERE keysha1=? AND identnum<>?");
 			sql.setString(1, keysha1);
 			sql.setInt(2, id.getIdentNum());
 			
-			stmt = con.createStatement();
-			stmt.executeUpdate(sql.toString());
+			BalancingConnectionManager.execUpdate(sql.toString());
 			
 //			if (keyid!=null) {
 //				long kiid = IdGenerator.getTimestamp();
@@ -502,7 +520,7 @@ public class PostgresBackend implements KeyServerBackend {
 		return -1L;
 	}
 	
-	private Identity buildIdentitiy(ResultSet rs) {
+	private Identity buildIdentitiy(DBResultSet rs, int no) {
 		try {
 			Identity idd = null;
 //			SQLStatement sql = new SQLStatement("SELECT * FROM identities WHERE id=?");
@@ -512,57 +530,57 @@ public class PostgresBackend implements KeyServerBackend {
 //			if (rs.next()) {
 				try {
 					idd = Identity.newEmptyIdentity();
-					idd.setIdentNum(rs.getInt("identnum"));
-					idd.setEmail(rs.getString("email"));
-					idd.setMnemonic(rs.getString("mnemonic"));
-					idd.set_mnemonic_restricted(rs.getBoolean("mnemonic_r"));
-					idd.setCompany(rs.getString("company"));
-					idd.set_company_restricted(rs.getBoolean("company_r"));
-					idd.setUnit(rs.getString("unit"));
-					idd.set_unit_restricted(rs.getBoolean("unit_r"));
-					idd.setSubunit(rs.getString("subunit"));
-					idd.set_subunit_restricted(rs.getBoolean("subunit_r"));
-					idd.setFunction(rs.getString("function"));
-					idd.set_function_restricted(rs.getBoolean("function_r"));
-					idd.setSurname(rs.getString("surname"));
-					idd.set_surname_restricted(rs.getBoolean("surname_r"));
-					idd.setMiddlename(rs.getString("middlename"));
-					idd.set_middlename_restricted(rs.getBoolean("middlename_r"));
-					String bd = rs.getString("birthday");
+					idd.setIdentNum(rs.getIntOf(no,"identnum"));
+					idd.setEmail(rs.getValueOf(no,"email"));
+					idd.setMnemonic(rs.getValueOf(no,"mnemonic"));
+					idd.set_mnemonic_restricted(rs.getBooleanOf(no,"mnemonic_r"));
+					idd.setCompany(rs.getValueOf(no,"company"));
+					idd.set_company_restricted(rs.getBooleanOf(no,"company_r"));
+					idd.setUnit(rs.getValueOf(no,"unit"));
+					idd.set_unit_restricted(rs.getBooleanOf(no,"unit_r"));
+					idd.setSubunit(rs.getValueOf(no,"subunit"));
+					idd.set_subunit_restricted(rs.getBooleanOf(no,"subunit_r"));
+					idd.setFunction(rs.getValueOf(no,"function"));
+					idd.set_function_restricted(rs.getBooleanOf(no,"function_r"));
+					idd.setSurname(rs.getValueOf(no,"surname"));
+					idd.set_surname_restricted(rs.getBooleanOf(no,"surname_r"));
+					idd.setMiddlename(rs.getValueOf(no,"middlename"));
+					idd.set_middlename_restricted(rs.getBooleanOf(no,"middlename_r"));
+					String bd = rs.getValueOf(no,"birthday");
 					if (bd!=null) {
 						idd.setBirthday_gmt(bd);
 					}
-					idd.set_birthday_gmt_restricted(rs.getBoolean("birthday_r"));
-					idd.setPlaceofbirth(rs.getString("placeofbirth"));
-					idd.set_placeofbirth_restricted(rs.getBoolean("placeofbirth_r"));
-					idd.setCity(rs.getString("city"));
-					idd.set_city_restricted(rs.getBoolean("city_r"));
-					idd.setPostcode(rs.getString("postcode"));
-					idd.set_postcode_restricted(rs.getBoolean("postcode_r"));
-					idd.setRegion(rs.getString("region"));
-					idd.set_region_restricted(rs.getBoolean("region_r"));
-					idd.setCountry(rs.getString("country"));
-					idd.set_country_restricted(rs.getBoolean("country_r"));
-					idd.setPhone(rs.getString("phone"));
-					idd.set_phone_restricted(rs.getBoolean("phone_r"));
-					idd.setFax(rs.getString("fax"));
-					idd.set_fax_restricted(rs.getBoolean("fax_r"));
-					idd.setNote(rs.getString("note"));
-					idd.set_note_restricted(rs.getBoolean("note_r"));
-					long photoId = rs.getLong("photo_id");
+					idd.set_birthday_gmt_restricted(rs.getBooleanOf(no,"birthday_r"));
+					idd.setPlaceofbirth(rs.getValueOf(no,"placeofbirth"));
+					idd.set_placeofbirth_restricted(rs.getBooleanOf(no,"placeofbirth_r"));
+					idd.setCity(rs.getValueOf(no,"city"));
+					idd.set_city_restricted(rs.getBooleanOf(no,"city_r"));
+					idd.setPostcode(rs.getValueOf(no,"postcode"));
+					idd.set_postcode_restricted(rs.getBooleanOf(no,"postcode_r"));
+					idd.setRegion(rs.getValueOf(no,"region"));
+					idd.set_region_restricted(rs.getBooleanOf(no,"region_r"));
+					idd.setCountry(rs.getValueOf(no,"country"));
+					idd.set_country_restricted(rs.getBooleanOf(no,"country_r"));
+					idd.setPhone(rs.getValueOf(no,"phone"));
+					idd.set_phone_restricted(rs.getBooleanOf(no,"phone_r"));
+					idd.setFax(rs.getValueOf(no,"fax"));
+					idd.set_fax_restricted(rs.getBooleanOf(no,"fax_r"));
+					idd.setNote(rs.getValueOf(no,"note"));
+					idd.set_note_restricted(rs.getBooleanOf(no,"note_r"));
+					long photoId = rs.getLongOf(no,"photo_id");
 					if (photoId!=-1L) {
 						File f = getFileFromID(photoId, ".png");
 						if (!f.exists()) {	
 							throw new RuntimeException("DB DataBackend Error: File "+f.getAbsolutePath()+" does not exist.");
 						}
 						byte[] calc_md5 = SecurityHelper.getMD5(f);
-						byte[] given_md5 = SecurityHelper.HexDecoder.decode(rs.getString("photo_md5"));
+						byte[] given_md5 = SecurityHelper.HexDecoder.decode(rs.getValueOf(no,"photo_md5"));
 						if (!Arrays.equals(calc_md5, given_md5)) {
 							throw new RuntimeException("DB DataBackend Error: MD5 Check for file "+f.getAbsolutePath()+" FAILED!");
 						}
 						idd.setPhoto(f);
 					}
-					idd.set_photo_restricted(rs.getBoolean("photo_r"));
+					idd.set_photo_restricted(rs.getBooleanOf(no,"photo_r"));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -585,9 +603,7 @@ public class PostgresBackend implements KeyServerBackend {
 			SQLStatement sql = new SQLStatement("REMOVE FROM keys WHERE keysha1=?");
 			sql.setString(1, key.getKeyID());
 			
-			Statement stmt = con.createStatement();
-			stmt.executeUpdate(sql.toString());
-			stmt.close();
+			BalancingConnectionManager.execUpdate(sql.toString());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -622,9 +638,7 @@ public class PostgresBackend implements KeyServerBackend {
 			sql.setTimestamp(8, new Timestamp(sig.getSignDatetime()));
 			
 			System.out.println("addKeylog:: "+sql.toString());
-			Statement stmt = con.createStatement();
-			stmt.executeUpdate(sql.toString());
-			stmt.close();
+			BalancingConnectionManager.execUpdate(sql.toString());
 			return ts;
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -698,18 +712,15 @@ public class PostgresBackend implements KeyServerBackend {
 			sql.setTimestamp(3, new Timestamp(asig.getSignDatetime()));
 			System.out.println("getKeyLogIndex :: "+sql.toString());
 			
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());
-			if (rs.next()) {
+			DBResultSet rs = BalancingConnectionManager.execQuery(sql.toString());
+			if (rs!=null && rs.height()>0) {
 				try {
-					index = rs.getLong(1);
+					index = rs.getLongAt(0,0);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-			rs.close();
-			stmt.close();
-			//con.close();
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -728,9 +739,8 @@ public class PostgresBackend implements KeyServerBackend {
 			sql.setString(2, token);
 			sql.setLong(3, klIndex);
 			
-			Statement stmt = con.createStatement();
-			stmt.executeUpdate(sql.toString());
-			stmt.close();
+			BalancingConnectionManager.execUpdate(sql.toString());
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -742,18 +752,17 @@ public class PostgresBackend implements KeyServerBackend {
 		try {
 			SQLStatement sql = new SQLStatement("SELECT * FROM approval_token, keylogs WHERE approval_token.keylogid = keylogs.keylogid AND token=?");
 			sql.setString(1, id);
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());
-			if (rs.next()) {
+			
+			
+			DBResultSet rs = BalancingConnectionManager.execQuery(sql.toString());
+			if (rs!=null && rs.height()>0) {
 				try {
-					log = buildKeylog(rs);
+					log = buildKeylog(rs,0);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-			rs.close();
-			stmt.close();
-			//con.close();
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -781,15 +790,15 @@ public class PostgresBackend implements KeyServerBackend {
 		return log;
 	}
 	
-	private KeyLog buildKeylog(ResultSet rs) {
+	private KeyLog buildKeylog(DBResultSet rs, int no) {
 		try {
-			long id = rs.getLong("keylogid");
+			long id = rs.getLongOf(no,"keylogid");
 			File f = getFileFromID(id, "_keylog.xml");
 			if (!f.exists()) {	
 				throw new RuntimeException("DB DataBackend Error: File "+f.getAbsolutePath()+" does not exist.");
 			}
 			byte[] calc_md5 = SecurityHelper.getMD5(f);
-			byte[] given_md5 = SecurityHelper.HexDecoder.decode(rs.getString("keylog_md5"));
+			byte[] given_md5 = SecurityHelper.HexDecoder.decode(rs.getValueOf(no,"keylog_md5"));
 			if (!Arrays.equals(calc_md5, given_md5)) {
 				throw new RuntimeException("DB DataBackend Error: MD5 Check for file "+f.getAbsolutePath()+" FAILED!");
 			}
@@ -873,19 +882,16 @@ public class PostgresBackend implements KeyServerBackend {
 			sql.setString(1, keysha1);
 			System.out.println("SQL: "+sql.toString());
 			
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());
-			
-			while (rs.next()) {
-				try {
-					logs.add(buildKeylog(rs));
-				} catch (Exception e) {
-					e.printStackTrace();
+			DBResultSet rs = BalancingConnectionManager.execQuery(sql.toString());
+			if (rs!=null && rs.height()>0) {
+				for (int i=0;i<rs.height();i++) {
+					try {
+						logs.add(buildKeylog(rs,i));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
-			rs.close();
-			stmt.close();
-			//con.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -947,19 +953,18 @@ public class PostgresBackend implements KeyServerBackend {
 		try {
 			SQLStatement sql = new SQLStatement("SELECT DISTINCT keysha1,keyserver FROM identities WHERE email=?");
 			sql.setString(1, email);
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());
-			while (rs.next()) {
-				try {
-					OSDXKey key = getKey(rs.getString(1));
-					keys.add(key);
-				} catch (Exception e) {
-					e.printStackTrace();
+			
+			DBResultSet rs = BalancingConnectionManager.execQuery(sql.toString());
+			if (rs!=null && rs.height()>0) {
+				for (int i=0;i<rs.height();i++) {
+					try {
+						OSDXKey key = getKey(rs.getValueAt(i, 0));
+						keys.add(key);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}	
 				}
 			}
-			rs.close();
-			stmt.close();
-			//con.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -974,19 +979,18 @@ public class PostgresBackend implements KeyServerBackend {
 			SQLStatement sql = new SQLStatement("SELECT * FROM keys WHERE parentkeysha1=?");
 			sql.setString(1, keysha1);
 			System.out.println("SQL: "+sql.toString());
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());
-			while (rs.next()) {
-				try {
-					OSDXKey key = buildKey(rs);
-					if (key!=null) keys.add(key);
-				} catch (Exception e) {
-					e.printStackTrace();
+			
+			DBResultSet rs = BalancingConnectionManager.execQuery(sql.toString());
+			if (rs!=null && rs.height()>0) {
+				for (int i=0;i<rs.height();i++) {
+					try {
+						OSDXKey key = buildKey(rs, i);
+						if (key!=null) keys.add(key);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
-			rs.close();
-			stmt.close();
-			//con.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -998,9 +1002,7 @@ public class PostgresBackend implements KeyServerBackend {
 		try {
 			SQLStatement sql = new SQLStatement("DELETE FROM approval_token WHERE token=?");
 			sql.setString(1, token);
-			Statement stmt = con.createStatement();
-			stmt.executeUpdate(sql.toString());
-			stmt.close();
+			BalancingConnectionManager.execUpdate(sql.toString());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

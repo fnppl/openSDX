@@ -235,9 +235,14 @@ public class OSDXKey {
 		ret.akp = askp;
 		ret.modulussha1 = SecurityHelper.getSHA1(askp.getModulus());
 		
+		if (ret instanceof SubKey) {
+			String pkid = e.getChildText("parentkeyid");
+			if (pkid!=null) {
+				((SubKey)ret).setParentKeyID(pkid);
+			}
+		}
 		return ret;
 	}//fromElement
-	
 	
 	public static OSDXKey fromElement(Element kp) throws Exception {
 		
@@ -460,6 +465,9 @@ public class OSDXKey {
 			Element ret = new Element("pubkey");
 			ret.addContent("keyid",getKeyID());
 			ret.addContent("level",getLevelName());
+			if (this instanceof SubKey) {
+				ret.addContent("parentkeyid", ((SubKey)this).getParentKeyID());
+			}
 			ret.addContent("usage",getUsageName());
 			if (getUsageRestriction()!=null) {
 				ret.addContent("usage_restriction",getUsageRestriction());
@@ -469,6 +477,7 @@ public class OSDXKey {
 			}
 			//ret.addContent("authoritativekeyserver",authoritativekeyserver);
 			//ret.addContent("authoritativekeyserver_port",""+authoritativekeyserverPort);
+			
 			ret.addContent("valid_from",getValidFromString());
 			ret.addContent("valid_until",getValidUntilString());
 			ret.addContent("algo", algo_name.elementAt(algo));
