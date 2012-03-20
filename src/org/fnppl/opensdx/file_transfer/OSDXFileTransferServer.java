@@ -43,8 +43,10 @@ package org.fnppl.opensdx.file_transfer;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
+import java.io.FileReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -266,8 +268,16 @@ public class OSDXFileTransferServer {
 			}
 			
 			if(pwS == null) {
-				Console console = System.console();
-				pwS = console.readLine("Please enter password for unlocking private-key: ");			
+				File f = new File("osdxserver_pass.txt");
+				if(f.exists()) {
+					BufferedReader bin = new BufferedReader(new FileReader(f));
+					String zeile = bin.readLine();
+					pwS = zeile.trim();
+				}
+				else {
+					Console console = System.console();
+					pwS = console.readLine("Please enter password for unlocking private-key: ");
+				}
 			}
 			
 			
