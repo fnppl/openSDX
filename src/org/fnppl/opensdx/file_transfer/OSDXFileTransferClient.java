@@ -1327,7 +1327,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	    }
 	    System.out.println("Connection to Server:");
 	    System.out.println("---------------------");
-	    String host = console.readLine("host: ");
+	    String host = console.readLine("host: ");	    
 	    String port = console.readLine("port (ENTER for default 4221): ");
 	    if (port.length()==0) port = "4221";
 	    String prepath = console.readLine("prepath (ENTER for default): ");
@@ -1335,6 +1335,8 @@ public class OSDXFileTransferClient implements UploadClient {
 	    System.out.println("Login:");
 	    System.out.println("------");
 	    String username = console.readLine("username: ");
+	    
+	    String pass = console.readLine("pass\n(just enter a password here when using plain-authorization and NOT when using keyfile.\nWhen using keyfile, just press [ENTER]: ");
 	  
 	    boolean ok = false;
 	    String pathToKeyStore = "";
@@ -1403,6 +1405,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	    //write config xml
 	    Element ec = new Element("osdx_filetransfer_config");
 		
+	    if (pass.length()>0) ec.addContent("pass",pass);
 		if (host.length()>0) ec.addContent("host",host);
 		if (port.length()>0) ec.addContent("port",port);
 		if (prepath.length()>0) ec.addContent("prepath",prepath);
@@ -1708,6 +1711,7 @@ public class OSDXFileTransferClient implements UploadClient {
 			}
 		} catch (Exception ex) {
 			System.out.println("usage: OSDXFileTransferClient --host localhost --port 4221 --prepath \"/\" --user username --keystore defautlKeyStore.xml --keyid 11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:11:22:33:44:55 --keypw key-password [file or list of files to upload]");
+			System.out.println("usage: OSDXFileTransferClient --host localhost --port 4221 --prepath \"/\" --user username --pass PLAINAUTHPASSWORD [file or list of files to upload]");
 			System.out.println("usage: OSDXFileTransferClient --config configfile.xml [file or list of files to upload]");
 			ex.printStackTrace();
 		}
@@ -1717,6 +1721,7 @@ public class OSDXFileTransferClient implements UploadClient {
 		System.out.println(msg);
 		System.out.println("usage: OSDXFileTransferClient --host localhost --port 4221 --prepath \"/\" --user username --keystore defautlKeyStore.xml --keyid 11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:11:22:33:44:55 --keypw key-password --remotepath \"/bla/blub\" [file or list of files to upload]");
 		System.out.println("or : OSDXFileTransferClient --host localhost --port 4221 --prepath \"/\" --user username --keystore defautlKeyStore.xml --keyid 11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:11:22:33:44:55 --keypwfile key-password.txt [file or list of files to upload]");
+		System.out.println("or : OSDXFileTransferClient --host localhost --port 4221 --prepath \"/\" --user username --pass PLAINAUTHPASSWORD [file or list of files to upload]");
 		System.out.println("or : OSDXFileTransferClient --config configfile.xml [file or list of files to upload]");
 
 		System.exit(1);
