@@ -70,6 +70,7 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferLoginCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferMkDirCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadCommand;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUserPassLoginCommand;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.FileTransferAccount;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
@@ -79,6 +80,7 @@ import org.fnppl.opensdx.gui.Dialogs;
 import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.helper.ProgressListener;
+import org.fnppl.opensdx.keyserver.helper.IdGenerator;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
@@ -104,8 +106,13 @@ public class OSDXFileTransferAdapter {
 	private String host;
 	private int port;
 	private String prepath;
+	
 	private OSDXKey mySigningKey;
+	
 	private String username = null;
+	
+	private static AsymmetricKeyPair userSessionKey = null; //HT 2012-03-20 really good idea to have it static?!
+	private String password = null;
 
 	private Socket socket;
 	private BufferedInputStream in;
@@ -130,6 +137,48 @@ public class OSDXFileTransferAdapter {
 		}
 	}
 
+	public boolean connect(String host, int port, String prepath, String username, String pass) throws Exception {
+		this.host = host;
+		this.port = port;
+		
+		this.username = username;
+		this.password = pass;
+		this.mySigningKey = null;
+		
+		if (prepath==null || prepath.length()==0) {
+			this.prepath = "/";
+		} else {
+			this.prepath = prepath;
+		}
+		
+		secureConnectionEstablished = false;
+		client_nonce = null;
+		server_nonce = null;
+		try {
+			logger.logMsg("trying to connect to host: "+host+" port: "+port+" version: "+version);
+			socket = new Socket(host, port);
+		} catch (Exception ex) {
+			logger.logException(ex);
+			throw ex;
+		}
+		logger.logMsg("Socket connected.");
+
+		//		System.out.println("inner connect ok: "+socket.isConnected());
+		if (socket.isConnected()) {
+			in = new BufferedInputStream(socket.getInputStream());
+			out = new BufferedOutputStream(socket.getOutputStream());
+			dataOut = new SecureConnection(null, null, out);
+			dataIn = new SecureConnection(null, in, null);
+			//secureConnectionEstablished =
+			
+			initSecureConnection(host, mySigningKey);
+			return true;
+		} else {
+			//			System.out.println("ERROR: Connection to server could NOT be established!");
+			return false;
+		}
+	}
+	
 	public boolean connect(String host, int port, String prepath, OSDXKey mySigningKey, String username) throws Exception {
 		this.host = host;
 		this.port = port;
@@ -174,6 +223,112 @@ public class OSDXFileTransferAdapter {
 		return socket.isConnected() && secureConnectionEstablished;
 	}
 
+	private void ensureAsymmetricKeyPair() throws Exception {
+		if(userSessionKey == null) {
+			logger.logMsg("Creating asymmetric keyPair for this session...");
+			long l = System.currentTimeMillis();
+			userSessionKey = AsymmetricKeyPair.generateAsymmetricKeyPair();
+			l = System.currentTimeMillis() -l ;
+			logger.logMsg("Creating asymmetric keyPair for this session took "+l+"ms");
+		}
+	}
+	
+	private boolean initSecureUserPassConnection(String host) {
+		try {
+			logger.logMsg("init secure connection to host: "+host+"...");
+
+			ensureAsymmetricKeyPair();
+			
+			//send request
+			client_nonce = SecurityHelper.getRandomBytes(32);
+//			userSessionKey
+//			sessionKey = SymmetricKey.getKeyFromPass(pass.toCharArray(), client_nonce);
+			
+//			String pass_username
+//			asd
+			String init = version +"\n";
+			init += host+"\n";
+			init += SecurityHelper.HexDecoder.encode(client_nonce,':',-1)+"\n";			
+			init += userSessionKey.getKeyIDHex()+"\n";
+			init += SecurityHelper.HexDecoder.encode(userSessionKey.getPublicModulus(),':',-1)+"\n";
+			init += SecurityHelper.HexDecoder.encode(userSessionKey.getPublicExponent(),':',-1)+"\n";
+			byte[][] checks = SecurityHelper.getMD5SHA1SHA256(client_nonce);
+			init += SecurityHelper.HexDecoder.encode(userSessionKey.sign(checks[1],checks[2],checks[3],0L),':',-1)+"\n";
+			init += "\n";
+
+			dataOut.sendRawBytes(init.getBytes("UTF-8"));
+			byte[] responsePartKeyData = dataIn.receiveRawBytesPackage();
+			byte[] responsePartEncData = dataIn.receiveRawBytesPackage();
+
+			//process response
+			try {
+				String[] lines = new String(responsePartKeyData,"UTF-8").split("\n");
+				//				for (int i=0;i<lines.length;i++) {
+				//					System.out.println("("+(i+1)+")"+" "+lines[i]);
+				//				}
+
+
+				//check signature
+				byte[] server_mod = SecurityHelper.HexDecoder.decode(lines[3]);
+				byte[] server_exp = SecurityHelper.HexDecoder.decode(lines[4]);
+				byte[] server_signature = SecurityHelper.HexDecoder.decode(lines[5]);
+
+				AsymmetricKeyPair server_pubkey = new AsymmetricKeyPair(server_mod, server_exp, null);
+
+				byte[] encdata = responsePartEncData;
+				checks = SecurityHelper.getMD5SHA1SHA256(encdata);
+				boolean verifySig = server_pubkey.verify(server_signature, checks[1],checks[2],checks[3],0L);
+
+				//System.out.println("signature verified: "+verifySig);
+				if (verifySig)  {
+					//System.out.println("init msg signature verified!");
+					//build enc key
+
+					byte[] decData =  userSessionKey.decryptBlocks(encdata);
+					String[] encLines = new String(decData, "UTF-8").split("\n");
+					//					for (int i=0;i<encLines.length;i++) {
+					//						System.out.println("ENC "+(i+1)+" :: "+encLines[i]);
+					//					}
+					server_nonce = SecurityHelper.HexDecoder.decode(encLines[1]);
+
+					byte[] concat_nonce = SecurityHelper.concat(client_nonce, server_nonce);
+					//					System.out.println("byte len :: concat_nonce = "+concat_nonce.length);
+					byte[] key_bytes = SecurityHelper.getSHA256(concat_nonce); 			//32 bytes = 256 bit
+					byte[] iv = Arrays.copyOf(SecurityHelper.getMD5(concat_nonce),16);	//16 bytes = 128 bit				
+					//					System.out.println("byte len :: iv = "+iv.length+"  b = "+key_bytes.length);
+					//					System.out.println(SecurityHelper.HexDecoder.encode(iv, '\0', -1));
+					//					System.out.println(SecurityHelper.HexDecoder.encode(key_bytes, '\0', -1));
+					dataOut.key = new SymmetricKey(key_bytes, iv);
+					dataIn.key = dataOut.key;
+					secureConnectionEstablished = true;
+
+					if (loginUserPass()) {
+						System.out.println("Login successful...");
+					} else {
+						if (errorMsg == null) {
+							System.out.println("ERROR at Login :: unknown error");
+						} else {
+							System.out.println("ERROR at Login :: "+errorMsg);
+						}
+					}
+
+				} else {
+					System.out.println("init msg signature NOT verified!");
+					logger.logError("init msg signature NOT verified!");
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				logger.logException(ex);
+			}
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			logger.logException(ex);
+		}
+		
+		return false;
+	}
+	
 	private void initSecureConnection(String host, OSDXKey key) {
 		try {
 			logger.logMsg("init secure connection to host: "+host+" with keyid: "+key.getKeyID()+" ...");
@@ -286,6 +441,32 @@ public class OSDXFileTransferAdapter {
 			}
 		};
 		boolean ok = cmd.process("LOGIN "+username);
+		errorMsg = cmd.errorMsg;
+		return ok;
+	}
+	
+	private boolean loginUserPass() {
+		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut) {
+			public boolean onACK() {
+				try {
+					String msg = new String(dataIn.content,"UTF-8");
+					String[] param = Util.getParams(msg);
+					try {
+						rightsAndDuties = RightsAndDuties.fromElement(Document.fromString(param[1]).getRootElement(), -1);
+						return true;
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						rightsAndDuties = null;
+						errorMsg = getMessageFromContent(dataIn.content);
+						return false;
+					}
+				} catch (UnsupportedEncodingException ex) {
+					errorMsg = "unsupported encoding";
+					return false;
+				}
+			}
+		};
+		boolean ok = cmd.process("USERPASSLOGIN "+username+"\t"+OSDXFileTransferUserPassLoginCommand.getUserPassAuth(username, password));
 		errorMsg = cmd.errorMsg;
 		return ok;
 	}

@@ -48,6 +48,7 @@ import java.util.*;
 
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUserPassLoginCommand;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
+import org.fnppl.opensdx.keyserverfe.Helper;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.Element;
 
@@ -72,12 +73,20 @@ public class ClientSettings {
 	public static Vector<ClientSettings> fromElement(Element e, int defaultMaxDirDepth) {
 		Vector<ClientSettings> ret = new Vector<ClientSettings>();
 		
-		List<Element> l = e.getChildren("keyid");
-		for(int i=0;i<l.size();i++) {
-			Element p = l.get(i);
-			
+		System.out.println(e.toString());
+		
+		List<Element> keyids = e.getChildren("keyid");
+		int key_index = 0;
+		while(true) {
 			ClientSettings s = new ClientSettings();
-			s.keyid = p.getText();
+			
+			if(key_index<keyids.size()) {
+				s.keyid = keyids.get(key_index).getText();
+				key_index++;
+			}
+			else {
+				s.keyid = "";
+			}
 			
 			s.username = e.getChildText("username");
 			s.pass = e.getChildText("pass");
@@ -101,8 +110,17 @@ public class ClientSettings {
 			} else {
 				s.rights_duties = new RightsAndDuties(defaultMaxDirDepth);
 			}
+			
+			if(key_index<keyids.size()) {
+				
+			}
+			
+			ret.addElement(s);
+			
+			if(key_index>=keyids.size()) {
+				break;
+			}
 		}
-		
 		
 		return ret;
 	}

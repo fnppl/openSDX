@@ -80,7 +80,9 @@ public class OSDXFileTransferServer {
 	//private HashMap<OSDXSocketServerThread, FileTransferState> states = null;
 	
 	
-	public OSDXFileTransferServer(String pwS) throws Exception {
+	public OSDXFileTransferServer(String pwS, File configFile) throws Exception {
+		this.configFile = configFile;
+		
 		readConfig();
 		if (mySigningKey!=null && !mySigningKey.isPrivateKeyUnlocked()) {
 			mySigningKey.unlockPrivateKey(pwS);
@@ -96,7 +98,7 @@ public class OSDXFileTransferServer {
 				configFile = alterConfigFile;
 			}
 			if (!configFile.exists()) {
-				System.out.println("Sorry, uploadserver_config.xml not found.");
+				System.out.println("Sorry, "+configFile.getAbsolutePath()+" not found.");
 				System.exit(0);
 			}
 			Element root = Document.fromFile(configFile).getRootElement();
@@ -130,7 +132,8 @@ public class OSDXFileTransferServer {
 
 			String logFile = ks.getChildText("logfile");
 			if (logFile==null) {
-				log = FileTransferLog.initNoLogging();
+//				log = FileTransferLog.initNoLogging();
+				log = FileTransferLog.initTmpLog();
 			} else {
 				log = FileTransferLog.initLog(new File(logFile));
 			}
@@ -252,14 +255,27 @@ public class OSDXFileTransferServer {
 			}
 
 			String pwS = null;
+			File configfile = null;
+			
 			if(args.length > 0 ) {
-				pwS = args[0];
+				configfile = new File(args[0]);
+				if(!configfile.exists()) {
+					pwS = args[0];
+					configfile = null;
+				}
 			}
-			else {
+			
+			if(pwS == null) {
 				Console console = System.console();
-				pwS = console.readLine("Please enter password for unlocking private-key: ");
+				pwS = console.readLine("Please enter password for unlocking private-key: ");			
 			}
-			OSDXFileTransferServer server = new OSDXFileTransferServer(pwS);
+			
+			
+			if(args.length > 1) {
+				configfile = new File(args[1]);	
+			}
+			
+			OSDXFileTransferServer server = new OSDXFileTransferServer(pwS, configfile);
 			server.startService();
 			
 		} catch (Exception ex) {

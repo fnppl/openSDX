@@ -90,9 +90,9 @@ public class FileTransferLog {
 	private FileTransferLog(File log) {
 		logfile = log;
 		if (log!=null) {
-			System.out.println("logging to: "+logfile.getAbsolutePath());
+			System.out.println("file-logging to: "+logfile.getAbsolutePath());
 		} else {
-			System.out.println("logging disabled.");
+			System.out.println("file-logging disabled.");
 		}
 	}
 	

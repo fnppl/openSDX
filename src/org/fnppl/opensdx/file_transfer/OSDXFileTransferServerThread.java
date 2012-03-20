@@ -347,7 +347,7 @@ public class OSDXFileTransferServerThread extends Thread {
 		String auth = userauth.substring(userauth.indexOf("\t")+1);
 		
 		if (username != null && auth != null) {
-			String userid = username+"::"+userauth;
+			String userid = username+"::"+auth;
 			
 			System.out.println("userid: "+userid);
 			cs  = server.getClientSetting(userid);
