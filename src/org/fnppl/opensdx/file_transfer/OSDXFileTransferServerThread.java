@@ -319,8 +319,6 @@ public class OSDXFileTransferServerThread extends Thread {
 			System.out.println("userid: "+userid);
 			cs  = server.getClientSetting(userid);
 			
-			//TODO HT 2012-03-20 wird hier auf die keyid gecheckt?!
-			
 			if (cs!=null) {
 				//login ok -> ACK with rights and duties
 				String param = Util.makeParamsString(new String[]{client_keyid, Document.buildDocument(cs.getRightsAndDuties().toElement(true)).toStringCompact()});
@@ -349,10 +347,11 @@ public class OSDXFileTransferServerThread extends Thread {
 		String auth = userauth.substring(userauth.indexOf("\t")+1);
 		
 		if (username != null && auth != null) {
-			String userid = username+"::"+client_keyid;
+			String userid = username+"::"+userauth;
+			
 			System.out.println("userid: "+userid);
 			cs  = server.getClientSetting(userid);
-			//TODO check for auth
+
 			if(cs != null) {
 				//login ok -> ACK with rights and duties
 				String param = Util.makeParamsString(new String[]{client_keyid, Document.buildDocument(cs.getRightsAndDuties().toElement(true)).toStringCompact()});

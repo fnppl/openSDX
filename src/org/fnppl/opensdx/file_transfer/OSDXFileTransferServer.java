@@ -160,11 +160,15 @@ public class OSDXFileTransferServer {
 			Vector<Element> ecClients = eClients.getChildren("client");
 			for (Element e : ecClients) {
 				try {
-					ClientSettings cs = ClientSettings.fromElement(e, defaultMaxDirectoryDepth);
-					clients.put(cs.getSettingsID(),cs);
-					System.out.println("adding client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath()+"\t max dir depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth());
-
-					cs.getLocalRootPath().mkdirs();
+					Vector<ClientSettings> cs = ClientSettings.fromElement(e, defaultMaxDirectoryDepth);
+					for(int i=0; i<cs.size(); i++) {
+						ClientSettings c = cs.elementAt(i);
+						clients.put(c.getSettingsID(), c);
+						System.out.println("adding client: "+c.getSettingsID()+" -> "+c.getLocalRootPath().getAbsolutePath()+"\t max dir depth = "+c.getRightsAndDuties().getMaxDirectoryDepth());
+						if(i==0) {
+							c.getLocalRootPath().mkdirs();
+						}
+					}
 
 				} catch (Exception ex) {
 					ex.printStackTrace();
@@ -178,10 +182,20 @@ public class OSDXFileTransferServer {
 					ecClients = eClients.getChildren("client");
 					for (Element e : ecClients) {
 						try {
-							ClientSettings cs = ClientSettings.fromElement(e, defaultMaxDirectoryDepth);
-							clients.put(cs.getSettingsID(),cs);
-							System.out.println("adding extra client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath()+"\t max dir depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth());							
-							cs.getLocalRootPath().mkdirs();
+//							ClientSettings cs = ClientSettings.fromElement(e, defaultMaxDirectoryDepth);
+//							clients.put(cs.getSettingsID(),cs);
+//							System.out.println("adding extra client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath()+"\t max dir depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth());							
+//							cs.getLocalRootPath().mkdirs();
+							
+							Vector<ClientSettings> cs = ClientSettings.fromElement(e, defaultMaxDirectoryDepth);
+							for(int i=0; i<cs.size(); i++) {
+								ClientSettings c = cs.elementAt(i);
+								clients.put(c.getSettingsID(), c);
+								System.out.println("adding extra client: "+c.getSettingsID()+" -> "+c.getLocalRootPath().getAbsolutePath()+"\t max dir depth = "+c.getRightsAndDuties().getMaxDirectoryDepth());
+								if(i==0) {
+									c.getLocalRootPath().mkdirs();
+								}
+							}
 						} catch (Exception ex) {
 							ex.printStackTrace();
 						}
@@ -209,8 +223,8 @@ public class OSDXFileTransferServer {
 		}
 	}
 	
-	public ClientSettings getClientSetting(String userid) {
-		return clients.get(userid);
+	public ClientSettings getClientSetting(String userid_keyid) {
+		return clients.get(userid_keyid);
 	}
 	
 	public void startService() throws Exception {

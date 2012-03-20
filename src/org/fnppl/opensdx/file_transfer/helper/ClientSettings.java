@@ -44,7 +44,9 @@ package org.fnppl.opensdx.file_transfer.helper;
  * 
  */
 import java.io.File;
+import java.util.*;
 
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUserPassLoginCommand;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.Element;
@@ -67,41 +69,53 @@ public class ClientSettings {
 		
 	}
 	
-	public static ClientSettings fromElement(Element e, int defaultMaxDirDepth) {
-		ClientSettings s = new ClientSettings();
-		s.username = e.getChildText("username");
-		s.pass = e.getChildText("pass");
-		s.keyid = e.getChildText("keyid");
-		if (e.getChildText("local_path")!=null) {
-			s.local_path = new File(e.getChildText("local_path"));
-		}
-		s.auth_type = e.getChildText("auth_type");
-		if (s.username==null || s.keyid==null || s.local_path==null || s.auth_type==null) {
-			throw new RuntimeException("Format ERROR in client settings");
-		}
-		//TODO HT 2012-03-20 
-		if (e.getChild("login") != null) {
-			s.login_sha256 = SecurityHelper.HexDecoder.decode(e.getChild("login").getChildText("sha256"));
-			s.login_initv = SecurityHelper.HexDecoder.decode(e.getChild("login").getChildText("initv"));
-			if (s.login_initv==null || s.login_sha256==null) {
+	public static Vector<ClientSettings> fromElement(Element e, int defaultMaxDirDepth) {
+		Vector<ClientSettings> ret = new Vector<ClientSettings>();
+		
+		List<Element> l = e.getChildren("keyid");
+		for(int i=0;i<l.size();i++) {
+			Element p = l.get(i);
+			
+			ClientSettings s = new ClientSettings();
+			s.keyid = p.getText();
+			
+			s.username = e.getChildText("username");
+			s.pass = e.getChildText("pass");
+			if (e.getChildText("local_path")!=null) {
+				s.local_path = new File(e.getChildText("local_path"));
+			}
+			s.auth_type = e.getChildText("auth_type");
+			if (s.username==null || s.keyid==null || s.local_path==null || s.auth_type==null) {
 				throw new RuntimeException("Format ERROR in client settings");
 			}
-		}
-		if(e.getChild("rights_and_duties") != null) {
-			s.rights_duties = RightsAndDuties.fromElement(e.getChild("rights_and_duties"),defaultMaxDirDepth);
-		} else {
-			s.rights_duties = new RightsAndDuties(defaultMaxDirDepth);
+			//TODO HT 2012-03-20 
+			if (e.getChild("login") != null) {
+				s.login_sha256 = SecurityHelper.HexDecoder.decode(e.getChild("login").getChildText("sha256"));
+				s.login_initv = SecurityHelper.HexDecoder.decode(e.getChild("login").getChildText("initv"));
+				if (s.login_initv==null || s.login_sha256==null) {
+					throw new RuntimeException("Format ERROR in client settings");
+				}
+			}
+			if(e.getChild("rights_and_duties") != null) {
+				s.rights_duties = RightsAndDuties.fromElement(e.getChild("rights_and_duties"),defaultMaxDirDepth);
+			} else {
+				s.rights_duties = new RightsAndDuties(defaultMaxDirDepth);
+			}
 		}
 		
-		return s;
+		
+		return ret;
 	}
 	
 	public Element toElement() {
 		Element e = new Element("client");
 		if (username!=null) e.addContent("username",username);
-		if (keyid!=null) e.addContent("keyid",keyid);
+		if (keyid != null) {
+			e.addContent("keyid",keyid);
+		}
 		if (local_path!=null) e.addContent("local_path",local_path.getAbsolutePath());
 		if (auth_type!=null) e.addContent("auth_type",auth_type);
+		if (pass!=null) e.addContent("pass", pass);
 		if (login_initv!=null || login_sha256 != null)  {
 			Element el = new Element("login");
 			if (login_sha256 != null)  {
@@ -123,8 +137,21 @@ public class ClientSettings {
 		return rights_duties;
 	}
 	
+	public static String getUserPassAuth(String user, String pass) {
+		//see OSDXFileTransferUserPassLoginCommand.getUserPassAuth
+		return SecurityHelper.HexDecoder.encode(SecurityHelper.getMD5((user+"\0"+pass).getBytes()));
+	}
+	
+	//public static String getSettingsID(String auth_type, String username, String keyid, String pass) {
 	public String getSettingsID() {
-		return username+"::"+keyid;
+		if(auth_type.equalsIgnoreCase("keyfile")) {
+			return username+"::"+keyid;
+		}
+		if(auth_type.equalsIgnoreCase("login")) {
+			return username+"::"+getUserPassAuth(username, pass);
+		}
+		
+		return null;
 	}
 	
 	public String getKeyID() {
