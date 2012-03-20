@@ -171,7 +171,7 @@ public class OSDXFileTransferAdapter {
 			dataIn = new SecureConnection(null, in, null);
 			//secureConnectionEstablished =
 			
-			initSecureConnection(host, mySigningKey);
+			initSecureUserPassConnection(host);
 			return true;
 		} else {
 			//			System.out.println("ERROR: Connection to server could NOT be established!");
@@ -1234,12 +1234,24 @@ public class OSDXFileTransferAdapter {
 	//	}
 
 
-	public static void main(String[] args) {
-		test();
+	public static void main(String[] args) throws Exception {
+		testPlain();
 
 	}
 
+	public static void testPlain() throws Exception {
+		OSDXFileTransferAdapter client = new OSDXFileTransferAdapter();
 
+		String username = "testuser";
+		String pass = "testpass";
+
+		client.connect("localhost", 4221,"/", username, pass);
+		Vector<RemoteFile> rfs = client.list("/");
+		for(int i=0;i<rfs.size();i++) {
+			RemoteFile r = rfs.elementAt(i);
+			System.out.println(r.toString());
+		}
+	}
 	public static void test() {
 		try {
 
