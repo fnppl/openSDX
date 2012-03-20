@@ -125,7 +125,7 @@ public class OSDXKey {
 	
 	public PublicKey getPubKey() {
 		PublicKey ll = new PublicKey(
-				new BigInteger(akp.getModulus()), 
+				new BigInteger(akp.getPublicModulus()), 
 				new BigInteger(akp.getPublicExponent())
 			);
 		return ll;
@@ -136,7 +136,7 @@ public class OSDXKey {
 	}
 	
 	public byte[] getPublicModulusBytes() {
-		return akp.getModulus();
+		return akp.getPublicModulus();
 	}
 	
 	public byte[] getPublicExponentBytes() {
@@ -233,7 +233,7 @@ public class OSDXKey {
 		
 		AsymmetricKeyPair askp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
 		ret.akp = askp;
-		ret.modulussha1 = SecurityHelper.getSHA1(askp.getModulus());
+		ret.modulussha1 = SecurityHelper.getSHA1(askp.getPublicModulus());
 		
 		if (ret instanceof SubKey) {
 			String pkid = e.getChildText("parentkeyid");
@@ -482,7 +482,7 @@ public class OSDXKey {
 			ret.addContent("valid_until",getValidUntilString());
 			ret.addContent("algo", algo_name.elementAt(algo));
 			ret.addContent("bits", ""+akp.getBitCount());
-			ret.addContent("modulus", akp.getModulusAsHex());
+			ret.addContent("modulus", akp.getPublicModulusAsHex());
 			ret.addContent("exponent", akp.getPublicExponentAsHex());
 			return ret;
 		}
@@ -587,14 +587,14 @@ public class OSDXKey {
 				
 				SymmetricKey sk = SymmetricKey.getKeyFromPass(password, SecurityHelper.HexDecoder.decode(Sinitv));
 				byte[] exponent = sk.decrypt(bytes);
-				byte[] modulus = akp.getModulus();
+				byte[] modulus = akp.getPublicModulus();
 				byte[] pubkey_exponent = akp.getPublicExponent();
 				akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
 			}
 			else if (lockedPrivateKey.getName().equals("pgp")) {
 				byte[] exponent = PGPKeyStore.getExponentFromSecretKey(SecurityHelper.HexDecoder.decode(lockedPrivateKey.getText()), password);
 				if (exponent == null) throw new Exception("wrong password");
-				byte[] modulus = akp.getModulus();
+				byte[] modulus = akp.getPublicModulus();
 				byte[] pubkey_exponent = akp.getPublicExponent();
 				akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
 			}
@@ -655,7 +655,7 @@ public class OSDXKey {
 		}
 		ekp.addContent("algo",algo_name.get(algo));
 		ekp.addContent("bits", ""+akp.getBitCount());
-		ekp.addContent("modulus", SecurityHelper.HexDecoder.encode(akp.getModulus(), ':', -1));
+		ekp.addContent("modulus", SecurityHelper.HexDecoder.encode(akp.getPublicModulus(), ':', -1));
 		
 		//pubkey
 		Element epk = new Element("pubkey");

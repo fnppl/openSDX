@@ -52,6 +52,8 @@ import org.fnppl.opensdx.xml.Element;
 public class ClientSettings {
 	
 	private String username;
+	private String pass;
+	
 	private String keyid;
 	private String auth_type = null;
 	private byte[] login_sha256 = null;
@@ -68,6 +70,7 @@ public class ClientSettings {
 	public static ClientSettings fromElement(Element e, int defaultMaxDirDepth) {
 		ClientSettings s = new ClientSettings();
 		s.username = e.getChildText("username");
+		s.pass = e.getChildText("pass");
 		s.keyid = e.getChildText("keyid");
 		if (e.getChildText("local_path")!=null) {
 			s.local_path = new File(e.getChildText("local_path"));
@@ -76,14 +79,15 @@ public class ClientSettings {
 		if (s.username==null || s.keyid==null || s.local_path==null || s.auth_type==null) {
 			throw new RuntimeException("Format ERROR in client settings");
 		}
-		if (e.getChild("login")!=null) {
+		//TODO HT 2012-03-20 
+		if (e.getChild("login") != null) {
 			s.login_sha256 = SecurityHelper.HexDecoder.decode(e.getChild("login").getChildText("sha256"));
 			s.login_initv = SecurityHelper.HexDecoder.decode(e.getChild("login").getChildText("initv"));
 			if (s.login_initv==null || s.login_sha256==null) {
 				throw new RuntimeException("Format ERROR in client settings");
 			}
 		}
-		if (e.getChild("rights_and_duties")!=null) {
+		if(e.getChild("rights_and_duties") != null) {
 			s.rights_duties = RightsAndDuties.fromElement(e.getChild("rights_and_duties"),defaultMaxDirDepth);
 		} else {
 			s.rights_duties = new RightsAndDuties(defaultMaxDirDepth);

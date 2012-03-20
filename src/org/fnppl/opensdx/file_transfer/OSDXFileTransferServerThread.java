@@ -318,7 +318,42 @@ public class OSDXFileTransferServerThread extends Thread {
 			String userid = username+"::"+client_keyid;
 			System.out.println("userid: "+userid);
 			cs  = server.getClientSetting(userid);
+			
+			//TODO HT 2012-03-20 wird hier auf die keyid gecheckt?!
+			
 			if (cs!=null) {
+				//login ok -> ACK with rights and duties
+				String param = Util.makeParamsString(new String[]{client_keyid, Document.buildDocument(cs.getRightsAndDuties().toElement(true)).toStringCompact()});
+				System.out.println("SENDING: ACK :: "+param);
+				data.setAck(commandid, num, param);
+				data.sendPackage();
+				server.log.logCommand(clientID, addr, "LOGIN", username, param);
+			}
+			else {
+				//login failed
+				data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED");
+				data.sendPackage();
+				server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: ACCESS DENIED");
+			}
+		} else {
+			//login failed
+			data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME");
+			data.sendPackage();
+			server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: MISSING USERNAME");
+		}
+	}
+	
+	public void handle_userpasslogin(long commandid, int num, byte code, String userauth) throws Exception {
+		System.out.println("handle_userpasslogin :: "+userauth);
+		String username = userauth.substring(0, userauth.indexOf("\t"));
+		String auth = userauth.substring(userauth.indexOf("\t")+1);
+		
+		if (username != null && auth != null) {
+			String userid = username+"::"+client_keyid;
+			System.out.println("userid: "+userid);
+			cs  = server.getClientSetting(userid);
+			//TODO check for auth
+			if(cs != null) {
 				//login ok -> ACK with rights and duties
 				String param = Util.makeParamsString(new String[]{client_keyid, Document.buildDocument(cs.getRightsAndDuties().toElement(true)).toStringCompact()});
 				System.out.println("SENDING: ACK :: "+param);

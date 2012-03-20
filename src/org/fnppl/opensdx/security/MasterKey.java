@@ -66,7 +66,7 @@ public class MasterKey extends OSDXKey {
 		ret.akp = kp;
 		ret.usage = USAGE_SIGN;
 		ret.authoritativekeyserver = "LOCAL";
-		ret.modulussha1 = SecurityHelper.getSHA1(kp.getModulus());
+		ret.modulussha1 = SecurityHelper.getSHA1(kp.getPublicModulus());
 		ret.datapath = new Vector<DataSourceStep>();
 		long now = System.currentTimeMillis();
 		now = now - now%1000; //no milliseconds in datetime;
@@ -130,7 +130,7 @@ public class MasterKey extends OSDXKey {
 		ret.akp = kp;
 		ret.usage = USAGE_SIGN;
 		ret.authoritativekeyserver = authoritativekeyserver;
-		ret.modulussha1 = SecurityHelper.getSHA1(kp.getModulus());
+		ret.modulussha1 = SecurityHelper.getSHA1(kp.getPublicModulus());
 		ret.datapath = new Vector<DataSourceStep>();
 		long now = System.currentTimeMillis();
 		now = now - now%1000; //no milliseconds in datetime;
@@ -148,7 +148,7 @@ public class MasterKey extends OSDXKey {
 		ret.akp = kp;
 		ret.usage = USAGE_SIGN;
 		ret.authoritativekeyserver = authoritativekeyserver;
-		ret.modulussha1 = SecurityHelper.getSHA1(kp.getModulus());
+		ret.modulussha1 = SecurityHelper.getSHA1(kp.getPublicModulus());
 		ret.datapath = new Vector<DataSourceStep>();
 		long now = System.currentTimeMillis();
 		now = now - now%1000; //no milliseconds in datetime;

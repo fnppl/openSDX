@@ -76,6 +76,9 @@ public class PrivateKey {
 	public BigInteger getExponent() {
 		return priv.getExponent();
 	}
+	public BigInteger getModulus() {
+		return priv.getModulus();
+	}
 	
 	public byte[] sign(byte[] data) throws Exception {
 		RSAEngine rsae = new RSAEngine();

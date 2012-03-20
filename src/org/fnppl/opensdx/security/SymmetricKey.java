@@ -224,7 +224,7 @@ public class SymmetricKey {
 		byte[] encPrivKey =  akp.getEncrytedPrivateKey(sk);
 		byte[] decPrivKey = sk.decrypt(encPrivKey);
 		
-		System.out.println("PUB_KEY_MODULUS     : "+SecurityHelper.HexDecoder.encode(akp.getModulus(),':',-1));
+		System.out.println("PUB_KEY_MODULUS     : "+SecurityHelper.HexDecoder.encode(akp.getPublicModulus(),':',-1));
 		System.out.println("PUB_KEY_EXP     : "+SecurityHelper.HexDecoder.encode(akp.getPublicExponent(),':',-1));
 		System.out.println("ENC_PRIV_KEY_EXP: "+SecurityHelper.HexDecoder.encode(encPrivKey,':',-1));
 		System.out.println("DEC_PRIV_KEY_EXP: "+SecurityHelper.HexDecoder.encode(decPrivKey,':',-1));

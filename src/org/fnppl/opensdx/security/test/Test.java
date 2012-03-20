@@ -527,7 +527,7 @@ public class Test {
 		
 		ekp.addContent("algo","RSA");
 		ekp.addContent("bits","3072");
-		ekp.addContent("modulus",kp.getModulusAsHex());
+		ekp.addContent("modulus",kp.getPublicModulusAsHex());
 		
 		//public key
 		Element epk = new Element("pubkey");
