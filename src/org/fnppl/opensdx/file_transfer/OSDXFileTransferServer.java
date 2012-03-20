@@ -83,7 +83,9 @@ public class OSDXFileTransferServer {
 	
 	
 	public OSDXFileTransferServer(String pwS, File configFile) throws Exception {
-		this.configFile = configFile;
+		if(configFile!=null) {
+			this.configFile = configFile;
+		}
 		
 		readConfig();
 		if (mySigningKey!=null && !mySigningKey.isPrivateKeyUnlocked()) {
