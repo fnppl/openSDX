@@ -43,14 +43,7 @@ package org.fnppl.opensdx.file_transfer;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.Console;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.util.ArrayList;
@@ -90,8 +83,6 @@ import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
-
-import sun.java2d.pipe.hw.ExtendedBufferCapabilities.VSyncType;
 
 public class OSDXFileTransferAdapter {
 
@@ -1166,6 +1157,157 @@ public class OSDXFileTransferAdapter {
 					if (fileOut!=null) {
 						fileOut.close();
 					}
+				} catch (Exception ex) {
+					//ex.printStackTrace();
+				}
+				errorMsg = getMessageFromContent(dataIn.content);
+				return false;
+			}
+		}
+
+		if (!hasPkg) {
+			handleConnectionClosed();
+			return false;
+		} else {
+			System.out.println("should never be in this state!!!");
+			return false;
+		}
+	}
+	
+	public boolean download(String absoluteRemoteFilename, OutputStream out, ProgressListener pg) throws Exception {
+		errorMsg = null;
+		long id = SecureConnection.getID();
+		int num = 0;
+		
+		long fileLen = -1L;
+		long filePos = -1L;
+		byte[] md5 = null;
+
+		String command;
+		
+		command = "GET "+absoluteRemoteFilename;
+		filePos = 0L;
+		
+		dataOut.setCommand(id, command);
+		if (DEBUG) {
+			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
+		}
+		dataOut.sendPackage();
+
+		boolean hasPkg = false;
+		while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+			handleUnexpectedPackageID();
+		}
+		while (hasPkg) {
+			if (!SecureConnection.isError(dataIn.type)) {
+				if (dataIn.type == SecureConnection.TYPE_ACK) {
+					String[] p = Util.getParams(getMessageFromContentNN(dataIn.content));
+					fileLen = Long.parseLong(p[0]);
+					//System.out.println("filelength = "+fileLen);
+					if (p.length==2) {
+						try {
+							md5 = SecurityHelper.HexDecoder.decode(p[1]);
+							System.out.println("md5 = "+p[1]);
+						} catch (Exception ex) {
+							System.out.println("Warning: could not parse md5 hash: "+p[1]);
+							md5 = null;
+						}
+					}	
+					if (fileLen==0) {
+//						localFile.createNewFile();
+						if (pg!=null) {
+							pg.setMaxProgress(1);
+							pg.setProgress(1);
+							pg.onUpate();
+						}
+						return true;
+
+					} 
+					else {
+						//open file for output
+					}
+					
+					
+					if (pg!=null) {
+						pg.setMaxProgress(fileLen);
+						pg.setProgress(filePos);
+						pg.onUpate();
+					}
+					
+					//receive next package
+					while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+						handleUnexpectedPackageID();
+					}
+					if (!hasPkg) {
+						handleConnectionClosed();
+						return false;
+					}
+				}
+				else if (dataIn.type == SecureConnection.TYPE_DATA) {
+					//write content
+					out.write(dataIn.content);
+					filePos += dataIn.content.length;
+
+					//update progress
+					if (pg!=null) {
+						pg.setMaxProgress(fileLen);
+						pg.setProgress(filePos);
+						pg.onUpate();
+					}
+					
+					//finish if filePos at end
+					if (filePos>=fileLen) { //finished
+						//System.out.println("Download finished: "+localFile.getAbsolutePath());
+						try {
+							out.flush();
+//							fileOut.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+
+						if (filePos>fileLen) {
+							errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
+							//System.out.println("ERROR wrong filesize.");
+							return false;
+						} 
+						else {
+							//successfully finished download
+//							if (md5 != null) {
+//								//check md5
+//								byte[] myMd5 = SecurityHelper.getMD5(localFile);
+//								if (Arrays.equals(md5, myMd5)) {
+//									System.out.println("MD5 check ok");
+//									return true;
+//								} else {
+//									System.out.println("MD5 check FAILD!");
+//									errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!";
+//									return false;
+//								}
+//							} else {
+								//notifyUpdate(filePos, fileLen, null);
+								return true;
+//							}
+						}
+					}
+					else {  //not finished yet
+						
+						//receive next package
+						while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+							handleUnexpectedPackageID();
+						}
+						if (!hasPkg) {
+							handleConnectionClosed();
+							return false;
+						}
+					}
+				}
+			} //end of if !error
+			else {
+				//stop download
+				try {
+//					if (fileOut!=null) {
+//						fileOut.close();
+//					}
 				} catch (Exception ex) {
 					//ex.printStackTrace();
 				}
