@@ -111,7 +111,7 @@ public class SecureConnection {
 		int offset = 0;
 		boolean headerNotComplete = true;
 		while (headerNotComplete && read>0) {//don't block, if socket is closed
-			read = in.read(header,offset,32-offset); //this one blocks
+			read = in.read(header, offset, 32-offset); //this one blocks
 			if (read>0) {
 				offset += read;
 				if (offset>=32) {
@@ -218,10 +218,10 @@ public class SecureConnection {
 		//content
 		len = 0;
 		byte[] encContent = null;
-		if (content!=null) {
+		if (content != null) {
 			encContent = key.encrypt(content);
 			len = encContent.length;
-			if (len>16777216) {
+			if (len > 16777216) {
 				throw new RuntimeException("Max. 16Mb of content allowed.");
 			}
 		}
@@ -240,7 +240,7 @@ public class SecureConnection {
 		}
 		
 		out.write(encHeader);
-		if (encContent!=null) {
+		if (encContent != null) {
 			out.write(encContent);
 		}
 		out.flush();
@@ -271,7 +271,7 @@ public class SecureConnection {
 				}
 			}
 			else if (read<0){
-				System.out.println("Socket closed.");
+//				System.out.println("Socket closed.");
 				return null; //socket closed
 			}
 		}
@@ -286,7 +286,7 @@ public class SecureConnection {
 					offset += read;
 				}
 				else if (read<0){
-					System.out.println("Socket closed.");
+//					System.out.println("Socket closed.");
 					return null; //socket closed
 				}
 			}
