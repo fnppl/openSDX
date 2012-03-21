@@ -128,7 +128,7 @@ public class OSDXFileTransferServerThread extends Thread {
 
 	public void onRequestReceived(long commandid, int num, byte code, byte[] content) {
 		try {
-			System.out.print("RECEIVED REQUEST at "+FileTransferLog.getDateString()+" : id="+commandid);
+			System.out.print("RECEIVED REQUEST at "+FileTransferLog.getDateString()+" : id="+commandid+"\tCLIENTID["+clientID+"]");
 			if (code == SecureConnection.TYPE_DATA && content !=null) {
 				System.out.println(", DATA len="+content.length);
 				//handle data
