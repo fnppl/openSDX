@@ -43,17 +43,8 @@ package org.fnppl.opensdx.file_transfer.trigger;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
-import java.io.File;
-import java.util.*;
 
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUserPassLoginCommand;
-import org.fnppl.opensdx.file_transfer.model.RemoteFile;
-import org.fnppl.opensdx.keyserverfe.Helper;
-import org.fnppl.opensdx.security.SecurityHelper;
-import org.fnppl.opensdx.xml.Element;
+public interface FunctionCall {
 
-public class TriggerDelete extends TriggerBase {
-	public TriggerDelete() {
-		super();
-	}
+	public void run(boolean async);
 }

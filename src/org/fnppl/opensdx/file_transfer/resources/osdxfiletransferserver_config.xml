@@ -57,6 +57,36 @@
       	<logfile>/tmp/osdx_ftserver_log.txt</logfile>
       	<max_directory_depth>-1</max_directory_depth>
       	<clients_config_file backup="true">filetransfer_config_clients.xml</clients_config_file>
+      	<triggers>
+      		<trigger>
+      			<event>login</event>  <!-- login, logout, mkdir, delete, upload_start, upload_end, download_start, download_end -->
+      			<async>true</async> <!-- true / false: default = false -->
+      			<api_call>
+      				<class>org.fnppl.opensdx.file_transfer.trigger.Trigger</class>
+      				<method>writeln</method>
+      				<param type="String">Hello World!</param> <!--  type: {String (default), int, byte, long, double, float, File}  -->
+      			</api_call>
+      		</trigger>
+      		<trigger>
+      			<event>logout</event>  <!-- login, logout, mkdir, delete, upload_start, upload_end, download_start, download_end -->
+      			<async>false</async> <!-- true / false: default = false -->
+      			<system_exec_call>
+      				<command>ls</command> <!-- direct command (does not resolve wildcards), arguments as param -->
+      				<param>-All</param>
+      				<pwd>~/openSDX</pwd>
+      				<sysout>true</sysout> <!-- true (default if not output_file) / false -->
+      				<output_file append="true">/tmp/osdx_outputs.txt</output_file> <!-- optional output to file, default: append = true -->
+      			</system_exec_call>
+      		</trigger>
+      		<trigger>
+      			<event>mkdir</event>  <!-- login, logout, mkdir, delete, upload_start, upload_end, download_start, download_end -->
+      			<async>false</async> <!-- true / false: default = false -->
+      			<system_exec_call>
+      				<bash>ls -All *.xml</bash> <!-- run with bash (resolves wildcards) -->
+      				<output_file append="false">/tmp/osdx_bash_outputs.txt</output_file> <!-- default: append = true -->
+      			</system_exec_call>
+      		</trigger>
+      	</triggers>
 	</osdxfiletransferserver>
 	<clients>
 		<client> <!--  testkey in OSDXFielTransferClient main() -->

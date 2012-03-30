@@ -43,18 +43,79 @@ package org.fnppl.opensdx.file_transfer.trigger;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+
 import java.io.File;
-import java.util.*;
+import java.util.Vector;
 
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUserPassLoginCommand;
-import org.fnppl.opensdx.file_transfer.model.RemoteFile;
-import org.fnppl.opensdx.keyserverfe.Helper;
-import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.Document;
 
-public class TriggerConnected extends TriggerBase {
-	public TriggerConnected() {
-		super();
+
+public class TriggerCollection {
+
+	private Vector<Trigger> triggers = new Vector<Trigger>();
+	
+	
+	public TriggerCollection() {}
+	
+	public void addTrigger(Trigger trigger) {
+		triggers.add(trigger);
 	}
+	
+	public void removeTriggersForEvent(String event) {
+		Vector<Trigger> remove = new Vector<Trigger>();
+		for (Trigger t : triggers) {
+			if (t.getEventType().equals(event)) {
+				remove.add(t);
+			}
+		}
+		triggers.removeAll(remove);
+	}
+	
+	public void triggerEvent(String event) { 
+		for (Trigger t : triggers) {
+			if (t.getEventType().equals(event)) {
+				t.doAction();
+			}
+		}
+	}
+	
+	//use this for copying the system triggers
+	public TriggerCollection getCopy() {
+		TriggerCollection c = new TriggerCollection();
+		c.triggers.addAll(triggers);
+		return c;
+	}
+	
+	public String toString() {
+		StringBuffer b = new StringBuffer();
+		for (Trigger t : triggers) {
+			b.append(t.toString()+"\n\n");
+		}
+		return b.toString();
+	}
+	
+	
+	//TEST
+	public static void main(String[] args) {
+		try {
+			TriggerCollection col = new TriggerCollection();
+			Element config = Document.fromFile(new File("src/org/fnppl/opensdx/file_transfer/resources/osdxfiletransferserver_config.xml")).getRootElement();
+			Element eTriggers = config.getChild("osdxfiletransferserver").getChild("triggers");
+			Vector<Element> triggers = eTriggers.getChildren("trigger");
+			for (Element e : triggers) {
+				col.addTrigger(Trigger.fromElement(e));
+			}
+			System.out.println(col.toString());
+			
+			col.triggerEvent(Trigger.TRIGGER_MKDIR);
+			col.triggerEvent(Trigger.TRIGGER_LOGIN);
+			col.triggerEvent(Trigger.TRIGGER_LOGOUT);
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	
 }
-

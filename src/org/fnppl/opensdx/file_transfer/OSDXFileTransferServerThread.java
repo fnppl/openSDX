@@ -103,7 +103,7 @@ public class OSDXFileTransferServerThread extends Thread {
 		
 //		if(DEBUG) System.out.println("connected to client: "+clientID+ " at "+FileTransferLog.getDateString()); 
 		if(DEBUG) System.out.println("connected to client: "+clientID+ " at "+FileTransferLog.getDateString());
-		server.log.logIncomingConnection(clientID, addr,"");
+		if (server!=null) server.log.logIncomingConnection(clientID, addr,"");
 	}
 
 
