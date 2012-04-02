@@ -55,6 +55,8 @@ import java.util.Vector;
 
 import org.fnppl.opensdx.file_transfer.helper.ClientSettings;
 import org.fnppl.opensdx.file_transfer.helper.FileTransferLog;
+import org.fnppl.opensdx.file_transfer.trigger.Trigger;
+import org.fnppl.opensdx.file_transfer.trigger.TriggerCollection;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.xml.Document;
@@ -68,11 +70,12 @@ public class OSDXFileTransferServer {
 	protected int port = 8899;
 	protected InetAddress address = null;
 	private int defaultMaxDirectoryDepth = -1;
+	private TriggerCollection defaultTriggers = null;
 	
 	private OSDXKey mySigningKey = null;
 	private File clients_config_file = null;
 	private boolean backupClientsConfigOnUpdate = true;
-
+	
 	
 	
 	//accessable for serverthreads
@@ -134,6 +137,16 @@ public class OSDXFileTransferServer {
 			}
 			System.out.println("default max directory depth = "+defaultMaxDirectoryDepth);
 
+			//default trigger
+			defaultTriggers = new TriggerCollection();
+			Element eTriggers = ks.getChild("triggers");
+			if (eTriggers!=null) {
+				Vector<Element> triggers = eTriggers.getChildren("trigger");
+				for (Element e : triggers) {
+					defaultTriggers.addTrigger(Trigger.fromElement(e));
+				}
+			}
+			
 			String logFile = ks.getChildText("logfile");
 			if (logFile==null) {
 //				log = FileTransferLog.initNoLogging();
@@ -167,7 +180,7 @@ public class OSDXFileTransferServer {
 			Vector<Element> ecClients = eClients.getChildren("client");
 			for (Element e : ecClients) {
 				try {
-					Vector<ClientSettings> cs = ClientSettings.fromElement(e, defaultMaxDirectoryDepth);
+					Vector<ClientSettings> cs = ClientSettings.fromElement(e, defaultMaxDirectoryDepth, defaultTriggers);
 					for(int i=0; i<cs.size(); i++) {
 						ClientSettings c = cs.elementAt(i);
 						clients.put(c.getSettingsID(), c);
@@ -194,7 +207,7 @@ public class OSDXFileTransferServer {
 //							System.out.println("adding extra client: "+cs.getSettingsID()+" -> "+cs.getLocalRootPath().getAbsolutePath()+"\t max dir depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth());							
 //							cs.getLocalRootPath().mkdirs();
 							
-							Vector<ClientSettings> cs = ClientSettings.fromElement(e, defaultMaxDirectoryDepth);
+							Vector<ClientSettings> cs = ClientSettings.fromElement(e, defaultMaxDirectoryDepth, defaultTriggers);
 							for(int i=0; i<cs.size(); i++) {
 								ClientSettings c = cs.elementAt(i);
 								clients.put(c.getSettingsID(), c);

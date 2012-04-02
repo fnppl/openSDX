@@ -59,6 +59,7 @@ import org.fnppl.opensdx.file_transfer.helper.ClientSettings;
 import org.fnppl.opensdx.file_transfer.helper.FileTransferLog;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
+import org.fnppl.opensdx.file_transfer.trigger.Trigger;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
@@ -180,6 +181,9 @@ public class OSDXFileTransferServerThread extends Thread {
 							data.setError(commandid, num, "wrong filesize");
 							data.sendPackage();
 						}
+						
+						//trigger upload_end event
+						cs.triggerEvent(Trigger.TRIGGER_UPLOAD_END);
 					} else {
 						//dont ack every package ?
 					}
@@ -334,6 +338,9 @@ public class OSDXFileTransferServerThread extends Thread {
 				data.setAck(commandid, num, param);
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "LOGIN", username, param);
+				
+				//trigger login event
+				cs.triggerEvent(Trigger.TRIGGER_LOGIN);
 			}
 			else {
 				//login failed
@@ -367,6 +374,9 @@ public class OSDXFileTransferServerThread extends Thread {
 				data.setAck(commandid, num, param);
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "LOGIN", username, param);
+				
+				//trigger login event
+				cs.triggerEvent(Trigger.TRIGGER_LOGIN);
 			}
 			else {
 				//login failed
@@ -411,6 +421,8 @@ public class OSDXFileTransferServerThread extends Thread {
 						data.setAck(commandid, num);
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "MKDIR", param, "ACK");
+						//trigger mkdir event
+						cs.triggerEvent(Trigger.TRIGGER_MKDIR);
 					} else {
 						data.setError(commandid, num, "error in mkdir");
 						data.sendPackage();
@@ -455,6 +467,9 @@ public class OSDXFileTransferServerThread extends Thread {
 							data.setAck(commandid, num);
 							data.sendPackage();
 							server.log.logCommand(clientID, addr, "DELETE", param,"ACK");
+							
+							//trigger delete event
+							cs.triggerEvent(Trigger.TRIGGER_DELETE);
 						} else {
 							data.setError(commandid, num, "directory \""+param+"\" could not be deleted");
 							data.sendPackage();
@@ -466,6 +481,9 @@ public class OSDXFileTransferServerThread extends Thread {
 							data.setAck(commandid, num);
 							data.sendPackage();
 							server.log.logCommand(clientID, addr, "DELETE", param, "ACK");
+							
+							//trigger delete event
+							cs.triggerEvent(Trigger.TRIGGER_DELETE);
 						} else {
 							data.setError(commandid, num, "file \""+param+"\" could not be deleted");
 							data.sendPackage();
@@ -548,6 +566,9 @@ public class OSDXFileTransferServerThread extends Thread {
 									data.setAck(commandid, num);
 									data.sendPackage();
 									server.log.logCommand(clientID, addr, "RENAME", param, "ACK");
+									
+									//trigger rename event
+									cs.triggerEvent(Trigger.TRIGGER_RENAME);
 								} else {
 									data.setError(commandid, num, "file \""+p[0]+"\" could not be renamed to "+p[1]);
 									data.sendPackage();
@@ -704,6 +725,10 @@ public class OSDXFileTransferServerThread extends Thread {
 						data.setAck(commandid, num);
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "PUT", param, "ACK");
+						
+						//trigger upload_start event
+						cs.triggerEvent(Trigger.TRIGGER_UPLOAD_START);
+						
 						if (length==0) {
 							file.createNewFile();
 						} else {
@@ -821,6 +846,10 @@ public class OSDXFileTransferServerThread extends Thread {
 							data.setAck(commandid, num,""+loaded); //Startpos = file.length
 							data.sendPackage();
 							server.log.logCommand(clientID, addr, "RESUMEPUT", param, "ACK");
+							
+							//trigger upload_start event
+							cs.triggerEvent(Trigger.TRIGGER_UPLOAD_START);
+							
 							if (length==0) {
 								file.createNewFile();
 							} else {
@@ -846,6 +875,10 @@ public class OSDXFileTransferServerThread extends Thread {
 						data.setAck(commandid, num,"0"); //Startpos 0
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "RESUMEPUT", param, "ACK");
+						
+						//trigger upload_start event
+						cs.triggerEvent(Trigger.TRIGGER_UPLOAD_START);
+						
 						if (length==0) {
 							file.createNewFile();
 						} else {
@@ -915,6 +948,10 @@ public class OSDXFileTransferServerThread extends Thread {
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "GET", param, "ACK + filelength + md5");
 					
+					//trigger download_start event
+					cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_START);
+					
+					
 					//send file data
 					FileInputStream fileIn = new FileInputStream(file);
 					int read = 0;
@@ -930,6 +967,9 @@ public class OSDXFileTransferServerThread extends Thread {
 						//TODO it would be a good idea to check for error or cancel messages
 						//     when sending large files
 					}
+					
+					//trigger download_end event
+					cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_END);
 				}
 			} else {
 				data.setError(commandid, num, "path must be absolute");
@@ -997,6 +1037,9 @@ public class OSDXFileTransferServerThread extends Thread {
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "RESUMEGET", param, "ACK + filelength + md5");
 						
+						//trigger download_start event
+						cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_START);
+						
 						//send file data, starting at position "length"
 						FileInputStream fileIn = new FileInputStream(file);
 						fileIn.skip(length);
@@ -1014,6 +1057,9 @@ public class OSDXFileTransferServerThread extends Thread {
 							//TODO it would be a good idea to check for error or cancel messages
 							//     when sending large files
 						}
+						
+						//trigger download_end event
+						cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_END);
 					}
 				} else {
 					data.setError(commandid, num, "path must be absolute");
@@ -1031,6 +1077,9 @@ public class OSDXFileTransferServerThread extends Thread {
 	public void handle_quit(long commandid, int num, byte code, String param) throws Exception {
 		//do nothing... socket closes automatically on client disconnection
 		server.log.logCommand(clientID, addr, "QUIT", param, "");
+		
+		//trigger logout event
+		cs.triggerEvent(Trigger.TRIGGER_LOGOUT);
 	}
 	
 	

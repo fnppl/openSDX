@@ -59,7 +59,7 @@
       	<clients_config_file backup="true">filetransfer_config_clients.xml</clients_config_file>
       	<triggers>
       		<trigger>
-      			<event>login</event>  <!-- login, logout, mkdir, delete, upload_start, upload_end, download_start, download_end -->
+      			<event>login</event>  <!-- login, logout, mkdir, delete, rename, upload_start, upload_end, download_start, download_end -->
       			<async>true</async> <!-- true / false: default = false -->
       			<api_call>
       				<class>org.fnppl.opensdx.file_transfer.trigger.Trigger</class>
@@ -68,7 +68,7 @@
       			</api_call>
       		</trigger>
       		<trigger>
-      			<event>logout</event>  <!-- login, logout, mkdir, delete, upload_start, upload_end, download_start, download_end -->
+      			<event>logout</event>  <!-- login, logout, mkdir, delete, rename, upload_start, upload_end, download_start, download_end -->
       			<async>false</async> <!-- true / false: default = false -->
       			<system_exec_call>
       				<command>ls</command> <!-- direct command (does not resolve wildcards), arguments as param -->
@@ -79,7 +79,7 @@
       			</system_exec_call>
       		</trigger>
       		<trigger>
-      			<event>mkdir</event>  <!-- login, logout, mkdir, delete, upload_start, upload_end, download_start, download_end -->
+      			<event>mkdir</event>  <!-- login, logout, mkdir, delete, rename, upload_start, upload_end, download_start, download_end -->
       			<async>false</async> <!-- true / false: default = false -->
       			<system_exec_call>
       				<bash>ls -All *.xml</bash> <!-- run with bash (resolves wildcards) -->
@@ -113,6 +113,17 @@
 			  <signature_needed>*.jar</signature_needed>
 			  <max_directory_depth>2</max_directory_depth>
 			</rights_and_duties>
+			<triggers>
+	      		<trigger>
+	      			<event replace_default="true">login</event>  <!-- login, logout, mkdir, delete, rename, upload_start, upload_end, download_start, download_end -->
+	      			<async>true</async> <!-- true / false: default = false -->
+	      			<api_call>
+	      				<class>org.fnppl.opensdx.file_transfer.trigger.Trigger</class>
+	      				<method>writeln</method>
+	      				<param type="String">Hello test_user!</param> <!--  type: {String (default), int, byte, long, double, float, File}  -->
+	      			</api_call>
+	      		</trigger>
+      		</triggers>
 		</client>
 		<client>
 			<username>user_1</username> <!-- COULD -->

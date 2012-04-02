@@ -48,8 +48,11 @@ import java.util.*;
 
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUserPassLoginCommand;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
+import org.fnppl.opensdx.file_transfer.trigger.Trigger;
+import org.fnppl.opensdx.file_transfer.trigger.TriggerCollection;
 import org.fnppl.opensdx.keyserverfe.Helper;
 import org.fnppl.opensdx.security.SecurityHelper;
+import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
 public class ClientSettings {
@@ -62,6 +65,7 @@ public class ClientSettings {
 	private byte[] login_sha256 = null;
 	private byte[] login_initv = null;
 	private RightsAndDuties rights_duties = null;
+	private TriggerCollection triggers = null;
 	
 	private File local_path;
 	
@@ -70,7 +74,7 @@ public class ClientSettings {
 		
 	}
 	
-	public static Vector<ClientSettings> fromElement(Element e, int defaultMaxDirDepth) {
+	public static Vector<ClientSettings> fromElement(Element e, int defaultMaxDirDepth, TriggerCollection defaultTriggers) {
 		Vector<ClientSettings> ret = new Vector<ClientSettings>();
 		
 		System.out.println(e.toString());
@@ -111,6 +115,47 @@ public class ClientSettings {
 				s.rights_duties = new RightsAndDuties(defaultMaxDirDepth);
 			}
 			
+			//Trigger
+			Element eTriggers = e.getChild("triggers");
+			Vector<Trigger> triggList = new Vector<Trigger>(); 
+			if (eTriggers!=null) {
+				Vector<Element> triggers = eTriggers.getChildren("trigger");
+				for (Element et : triggers) {
+					triggList.add(Trigger.fromElement(et));
+				}	
+			}
+			
+			if (defaultTriggers==null) {
+				s.triggers = new TriggerCollection();
+			} else {
+				s.triggers = defaultTriggers.getCopy();
+				
+				//replace system trigger
+				int tlCount = Trigger.TRIGGER_LIST.size();
+				boolean[] replaceSystemTrigger = new boolean[tlCount];
+				for (int i=0;i<tlCount;i++) {
+					replaceSystemTrigger[i] = false;
+				}
+				for (Trigger t : triggList) {
+					if (t.isReplaceDefault()) {
+						int ind = Trigger.TRIGGER_LIST.indexOf(t.getEventType());
+						if (ind>=0) {
+							replaceSystemTrigger[ind] = true;
+						}
+					}
+				}
+				for (int i=0;i<tlCount;i++) {
+					if (replaceSystemTrigger[i]) {
+						s.triggers.removeTriggersForEvent(Trigger.TRIGGER_LIST.get(i));
+					}
+				}
+			}
+			//add new trigger
+			for (Trigger t : triggList) {
+				s.triggers.addTrigger(t);
+			}
+			
+			
 			if(key_index<keyids.size()) {
 				
 			}
@@ -150,6 +195,11 @@ public class ClientSettings {
 		return e;
 	}
 
+	public void triggerEvent(String event) { 
+		if (triggers!=null) {
+			triggers.triggerEvent(event);
+		}
+	}
 	
 	public RightsAndDuties getRightsAndDuties() {
 		return rights_duties;
