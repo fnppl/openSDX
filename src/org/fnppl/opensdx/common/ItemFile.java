@@ -158,6 +158,7 @@ public class ItemFile extends BusinessObject {
 		file.comment = BusinessStringItem.fromBusinessObject(bo, "comment");
 		file.checksums = Checksums.fromBusinessObject(bo);
 		file.location = FileLocation.fromBusinessObject(bo);
+		file.no_file_given = BusinessBooleanItem.fromBusinessObject(bo, "no_file_given");
 		BusinessObject dim = file.handleBusinessObject("dimension");
 		if (dim==null) {
 			file.dimension = null;
