@@ -45,6 +45,7 @@ package org.fnppl.opensdx.file_transfer.trigger;
  */
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.fnppl.opensdx.xml.Element;
@@ -72,10 +73,10 @@ public class TriggerCollection {
 		triggers.removeAll(remove);
 	}
 	
-	public void triggerEvent(String event) { 
+	public void triggerEvent(String event, HashMap<String, Object> context) { 
 		for (Trigger t : triggers) {
 			if (t.getEventType().equals(event)) {
-				t.doAction();
+				t.doAction(context);
 			}
 		}
 	}
@@ -95,7 +96,10 @@ public class TriggerCollection {
 		return b.toString();
 	}
 	
-	
+	public void testmethode(String username, File dir, String dirname) {
+		System.out.println("testmethode triggered: "+username+" file: "+dir.getAbsolutePath()+", "+dirname);
+		
+	}
 	//TEST
 	public static void main(String[] args) {
 		try {
@@ -107,10 +111,15 @@ public class TriggerCollection {
 				col.addTrigger(Trigger.fromElement(e));
 			}
 			System.out.println(col.toString());
+			HashMap<String, Object> context = new HashMap<String, Object>();
+			File file = new File(".");
+			context.put(TriggerContext.USERNAME, "testuser");
+			context.put(TriggerContext.RELATED_FILE, file);
+			context.put(TriggerContext.RELATED_FILENAME, file.getAbsolutePath());
 			
-			col.triggerEvent(Trigger.TRIGGER_MKDIR);
-			col.triggerEvent(Trigger.TRIGGER_LOGIN);
-			col.triggerEvent(Trigger.TRIGGER_LOGOUT);
+			col.triggerEvent(Trigger.TRIGGER_MKDIR, context);
+			col.triggerEvent(Trigger.TRIGGER_LOGIN, context);
+			col.triggerEvent(Trigger.TRIGGER_LOGOUT, context);
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();

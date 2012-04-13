@@ -1,4 +1,7 @@
 package org.fnppl.opensdx.file_transfer.trigger;
+
+import java.util.HashMap;
+
 /*
  * Copyright (C) 2010-2012 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -46,5 +49,6 @@ package org.fnppl.opensdx.file_transfer.trigger;
 
 public interface FunctionCall {
 
-	public void run(boolean async);
+	public void run(boolean async, HashMap<String, Object> context);
+	
 }

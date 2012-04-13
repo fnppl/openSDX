@@ -195,9 +195,9 @@ public class ClientSettings {
 		return e;
 	}
 
-	public void triggerEvent(String event) { 
+	public void triggerEvent(String event, HashMap<String, Object> context) { 
 		if (triggers!=null) {
-			triggers.triggerEvent(event);
+			triggers.triggerEvent(event, context);
 		}
 	}
 	

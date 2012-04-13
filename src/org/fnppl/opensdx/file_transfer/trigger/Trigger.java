@@ -43,6 +43,7 @@ package org.fnppl.opensdx.file_transfer.trigger;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.fnppl.opensdx.xml.Element;
@@ -116,9 +117,9 @@ public class Trigger {
 		return event;
 	}
 
-	public void doAction() {
+	public void doAction(HashMap<String, Object> context) {
 		for (FunctionCall c : calls) {
-			c.run(async);
+			c.run(async, context);
 		}
 	}
 

@@ -54,12 +54,15 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import javax.naming.NoInitialContextException;
+
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.helper.ClientSettings;
 import org.fnppl.opensdx.file_transfer.helper.FileTransferLog;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.file_transfer.trigger.Trigger;
+import org.fnppl.opensdx.file_transfer.trigger.TriggerContext;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
@@ -130,6 +133,21 @@ public class OSDXFileTransferServerThread extends Thread {
 		server.log.logConnectionClose(clientID, socket.getInetAddress().getHostAddress(),"");
 	}
 
+	public HashMap<String, Object> buildContextParams(ClientSettings cs) {
+		HashMap<String, Object> context = new HashMap<String, Object>();
+		context.put(TriggerContext.USERNAME, cs.getUsername());
+		context.put(TriggerContext.KEYID, cs.getKeyID());
+		return context;
+	}
+
+	public HashMap<String, Object> buildContextParamsWithDate(ClientSettings cs) {
+		HashMap<String, Object> context = buildContextParams(cs);
+		long datetime = System.currentTimeMillis();
+		context.put(TriggerContext.RELATED_START_DATE, datetime);
+		context.put(TriggerContext.RELATED_END_DATE, datetime);
+		return context;
+	}
+	
 	public void onRequestReceived(long commandid, int num, byte code, byte[] content) {
 		try {
 			
@@ -183,7 +201,12 @@ public class OSDXFileTransferServerThread extends Thread {
 						}
 						
 						//trigger upload_end event
-						cs.triggerEvent(Trigger.TRIGGER_UPLOAD_END);
+						HashMap<String, Object> context = buildContextParams(cs);
+						context.put(TriggerContext.RELATED_FILE,upload.file);
+						context.put(TriggerContext.RELATED_FILENAME,upload.file.getAbsolutePath());
+						context.put(TriggerContext.RELATED_START_DATE,upload.uploadStartDatetime);
+						context.put(TriggerContext.RELATED_END_DATE,System.currentTimeMillis());
+						cs.triggerEvent(Trigger.TRIGGER_UPLOAD_END, context);
 					} else {
 						//dont ack every package ?
 					}
@@ -340,7 +363,8 @@ public class OSDXFileTransferServerThread extends Thread {
 				server.log.logCommand(clientID, addr, "LOGIN", username, param);
 				
 				//trigger login event
-				cs.triggerEvent(Trigger.TRIGGER_LOGIN);
+				HashMap<String, Object> context = buildContextParamsWithDate(cs);
+				cs.triggerEvent(Trigger.TRIGGER_LOGIN, context);
 			}
 			else {
 				//login failed
@@ -376,7 +400,8 @@ public class OSDXFileTransferServerThread extends Thread {
 				server.log.logCommand(clientID, addr, "LOGIN", username, param);
 				
 				//trigger login event
-				cs.triggerEvent(Trigger.TRIGGER_LOGIN);
+				HashMap<String, Object> context = buildContextParams(cs);
+				cs.triggerEvent(Trigger.TRIGGER_LOGIN, context);
 			}
 			else {
 				//login failed
@@ -422,7 +447,10 @@ public class OSDXFileTransferServerThread extends Thread {
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "MKDIR", param, "ACK");
 						//trigger mkdir event
-						cs.triggerEvent(Trigger.TRIGGER_MKDIR);
+						HashMap<String, Object> context = buildContextParams(cs);
+						context.put(TriggerContext.RELATED_FILE,path);
+						context.put(TriggerContext.RELATED_FILENAME,path.getAbsolutePath());
+						cs.triggerEvent(Trigger.TRIGGER_MKDIR,context);
 					} else {
 						data.setError(commandid, num, "error in mkdir");
 						data.sendPackage();
@@ -469,7 +497,10 @@ public class OSDXFileTransferServerThread extends Thread {
 							server.log.logCommand(clientID, addr, "DELETE", param,"ACK");
 							
 							//trigger delete event
-							cs.triggerEvent(Trigger.TRIGGER_DELETE);
+							HashMap<String, Object> context = buildContextParams(cs);
+							context.put(TriggerContext.RELATED_FILE,file);
+							context.put(TriggerContext.RELATED_FILENAME,file.getAbsolutePath());
+							cs.triggerEvent(Trigger.TRIGGER_DELETE, context);
 						} else {
 							data.setError(commandid, num, "directory \""+param+"\" could not be deleted");
 							data.sendPackage();
@@ -483,7 +514,10 @@ public class OSDXFileTransferServerThread extends Thread {
 							server.log.logCommand(clientID, addr, "DELETE", param, "ACK");
 							
 							//trigger delete event
-							cs.triggerEvent(Trigger.TRIGGER_DELETE);
+							HashMap<String, Object> context = buildContextParams(cs);
+							context.put(TriggerContext.RELATED_FILE,file);
+							context.put(TriggerContext.RELATED_FILENAME,file.getAbsolutePath());
+							cs.triggerEvent(Trigger.TRIGGER_DELETE, context);
 						} else {
 							data.setError(commandid, num, "file \""+param+"\" could not be deleted");
 							data.sendPackage();
@@ -561,6 +595,7 @@ public class OSDXFileTransferServerThread extends Thread {
 							else {
 								//rename
 								if(DEBUG) System.out.println("RENAMEING: "+file.getAbsolutePath()+" -> "+dest.getAbsolutePath());
+								
 								boolean ok = file.renameTo(dest);
 								if (ok) {
 									data.setAck(commandid, num);
@@ -568,7 +603,10 @@ public class OSDXFileTransferServerThread extends Thread {
 									server.log.logCommand(clientID, addr, "RENAME", param, "ACK");
 									
 									//trigger rename event
-									cs.triggerEvent(Trigger.TRIGGER_RENAME);
+									HashMap<String, Object> context = buildContextParams(cs);
+									context.put(TriggerContext.RELATED_FILE,file);
+									context.put(TriggerContext.RELATED_FILENAME,file.getAbsolutePath());
+									cs.triggerEvent(Trigger.TRIGGER_RENAME, context);
 								} else {
 									data.setError(commandid, num, "file \""+p[0]+"\" could not be renamed to "+p[1]);
 									data.sendPackage();
@@ -727,10 +765,16 @@ public class OSDXFileTransferServerThread extends Thread {
 						server.log.logCommand(clientID, addr, "PUT", param, "ACK");
 						
 						//trigger upload_start event
-						cs.triggerEvent(Trigger.TRIGGER_UPLOAD_START);
+						HashMap<String, Object> context = buildContextParams(cs);
+						context.put(TriggerContext.RELATED_FILE,file);
+						context.put(TriggerContext.RELATED_FILENAME,file.getAbsolutePath());
+						context.put(TriggerContext.RELATED_START_DATE,System.currentTimeMillis());
+						cs.triggerEvent(Trigger.TRIGGER_UPLOAD_START, context);
 						
 						if (length==0) {
 							file.createNewFile();
+							context = buildContextParams(cs);
+							cs.triggerEvent(Trigger.TRIGGER_UPLOAD_END, context);
 						} else {
 							FileUploadInfo info = new FileUploadInfo();
 							info.file = file;
@@ -742,6 +786,7 @@ public class OSDXFileTransferServerThread extends Thread {
 							} else {
 								info.md5 = null;
 							}
+							info.uploadStartDatetime = System.currentTimeMillis();
 							uploads.put(commandid,info);
 						}
 					}
@@ -848,10 +893,16 @@ public class OSDXFileTransferServerThread extends Thread {
 							server.log.logCommand(clientID, addr, "RESUMEPUT", param, "ACK");
 							
 							//trigger upload_start event
-							cs.triggerEvent(Trigger.TRIGGER_UPLOAD_START);
+							HashMap<String, Object> context = buildContextParams(cs);
+							context.put(TriggerContext.RELATED_FILE,file);
+							context.put(TriggerContext.RELATED_FILENAME,file.getAbsolutePath());
+							context.put(TriggerContext.RELATED_START_DATE, System.currentTimeMillis());
+							cs.triggerEvent(Trigger.TRIGGER_UPLOAD_START, context);
 							
 							if (length==0) {
 								file.createNewFile();
+								context = buildContextParams(cs);
+								cs.triggerEvent(Trigger.TRIGGER_UPLOAD_END, context);
 							} else {
 								FileUploadInfo info = new FileUploadInfo();
 								info.file = file;
@@ -863,6 +914,7 @@ public class OSDXFileTransferServerThread extends Thread {
 								} else {
 									info.md5 = null;
 								}
+								info.uploadStartDatetime = System.currentTimeMillis();
 								uploads.put(commandid,info);
 							}
 						}
@@ -877,10 +929,16 @@ public class OSDXFileTransferServerThread extends Thread {
 						server.log.logCommand(clientID, addr, "RESUMEPUT", param, "ACK");
 						
 						//trigger upload_start event
-						cs.triggerEvent(Trigger.TRIGGER_UPLOAD_START);
+						HashMap<String, Object> context = buildContextParams(cs);
+						context.put(TriggerContext.RELATED_FILE,file);
+						context.put(TriggerContext.RELATED_FILENAME,file.getAbsolutePath());
+						context.put(TriggerContext.RELATED_START_DATE, System.currentTimeMillis());
+						cs.triggerEvent(Trigger.TRIGGER_UPLOAD_START, context);
 						
 						if (length==0) {
 							file.createNewFile();
+							context = buildContextParams(cs);
+							cs.triggerEvent(Trigger.TRIGGER_UPLOAD_END, context);
 						} else {
 							FileUploadInfo info = new FileUploadInfo();
 							info.file = file;
@@ -892,6 +950,7 @@ public class OSDXFileTransferServerThread extends Thread {
 							} else {
 								info.md5 = null;
 							}
+							info.uploadStartDatetime = System.currentTimeMillis();
 							uploads.put(commandid,info);
 						}
 					}
@@ -949,7 +1008,11 @@ public class OSDXFileTransferServerThread extends Thread {
 					server.log.logCommand(clientID, addr, "GET", param, "ACK + filelength + md5");
 					
 					//trigger download_start event
-					cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_START);
+					HashMap<String, Object> context = buildContextParams(cs);
+					context.put(TriggerContext.RELATED_FILE,file);
+					context.put(TriggerContext.RELATED_FILENAME,file.getAbsolutePath());
+					context.put(TriggerContext.RELATED_START_DATE, System.currentTimeMillis());
+					cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_START, context);
 					
 					
 					//send file data
@@ -969,7 +1032,8 @@ public class OSDXFileTransferServerThread extends Thread {
 					}
 					
 					//trigger download_end event
-					cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_END);
+					context.put(TriggerContext.RELATED_END_DATE,System.currentTimeMillis());
+					cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_END, context);
 				}
 			} else {
 				data.setError(commandid, num, "path must be absolute");
@@ -1038,7 +1102,11 @@ public class OSDXFileTransferServerThread extends Thread {
 						server.log.logCommand(clientID, addr, "RESUMEGET", param, "ACK + filelength + md5");
 						
 						//trigger download_start event
-						cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_START);
+						HashMap<String, Object> context = buildContextParams(cs);
+						context.put(TriggerContext.RELATED_FILE,file);
+						context.put(TriggerContext.RELATED_FILENAME,file.getAbsolutePath());
+						context.put(TriggerContext.RELATED_START_DATE, System.currentTimeMillis());
+						cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_START, context);
 						
 						//send file data, starting at position "length"
 						FileInputStream fileIn = new FileInputStream(file);
@@ -1059,7 +1127,8 @@ public class OSDXFileTransferServerThread extends Thread {
 						}
 						
 						//trigger download_end event
-						cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_END);
+						context.put(TriggerContext.RELATED_END_DATE, System.currentTimeMillis());
+						cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_END, context);
 					}
 				} else {
 					data.setError(commandid, num, "path must be absolute");
@@ -1079,7 +1148,8 @@ public class OSDXFileTransferServerThread extends Thread {
 		server.log.logCommand(clientID, addr, "QUIT", param, "");
 		
 		//trigger logout event
-		cs.triggerEvent(Trigger.TRIGGER_LOGOUT);
+		HashMap<String, Object> context = buildContextParamsWithDate(cs);
+		cs.triggerEvent(Trigger.TRIGGER_LOGOUT, context);
 	}
 	
 	
@@ -1098,5 +1168,6 @@ public class OSDXFileTransferServerThread extends Thread {
 		public long loaded = 0L;
 		public FileOutputStream out = null;
 		public String md5 = null;
+		public long uploadStartDatetime = -1L;
 	}
 }

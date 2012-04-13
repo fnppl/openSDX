@@ -48,18 +48,21 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Vector;
+import java.util.Map.Entry;
 
 import org.fnppl.opensdx.xml.Element;
 
 public class APICall implements FunctionCall {
-
+		
+	
 	@SuppressWarnings("unchecked")
 	private Class[] paramTypes = null;	
 	private String classname = null;
 	private String methodname = null;
 	private Object[] params = null;
-	
+	private HashMap<Integer,String> placeHolder = new HashMap<Integer, String>();
 	
 	
 //	<api_call>
@@ -82,54 +85,92 @@ public class APICall implements FunctionCall {
 			c.params = new Object[pCount];
 			for (int i=0;i<pCount;i++) {
 				Element ep = params.get(i);
-				String pType = ep.getAttribute("type");
-				String value = ep.getText();
-				if (value==null) value = "";
-				
-				if (pType.equalsIgnoreCase("int")) {
-					c.paramTypes[i] = Integer.TYPE;
-					c.params[i] = Integer.parseInt(value);
-				}
-				else if (pType.equalsIgnoreCase("byte")) {
-					c.paramTypes[i] = Byte.TYPE;
-					c.params[i] = Byte.parseByte(value);
-				}
-				else if (pType.equalsIgnoreCase("long")) {
-					c.paramTypes[i] = Long.TYPE;
-					c.params[i] = Long.parseLong(value);
-				}
-				else if (pType.equalsIgnoreCase("double")) {
-					c.paramTypes[i] = Double.TYPE;
-					c.params[i] = Double.parseDouble(value);
-				}
-				else if (pType.equalsIgnoreCase("float")) {
-					c.paramTypes[i] = Float.TYPE;
-					c.params[i] = Float.parseFloat(value);
-				}
-				else if (pType.equalsIgnoreCase("file")) {
-					c.paramTypes[i] = File.class;
-					c.params[i] = new File(value);
-				} else {
-					//use String for no type or anything else
+				String pUse = ep.getAttribute("use");
+				if (pUse!=null) {
+					//replace with parameter
 					c.paramTypes[i] = String.class;
-					c.params[i] = value;
+					c.params[i] = "${"+pUse+"}";
+					c.placeHolder.put(i, pUse);
+				} else {
+					String pType = ep.getAttribute("type");
+					String value = ep.getText();
+					if (value==null) value = "";
+					
+					if (pType.equalsIgnoreCase("int")) {
+						c.paramTypes[i] = Integer.TYPE;
+						c.params[i] = Integer.parseInt(value);
+					}
+					else if (pType.equalsIgnoreCase("byte")) {
+						c.paramTypes[i] = Byte.TYPE;
+						c.params[i] = Byte.parseByte(value);
+					}
+					else if (pType.equalsIgnoreCase("long")) {
+						c.paramTypes[i] = Long.TYPE;
+						c.params[i] = Long.parseLong(value);
+					}
+					else if (pType.equalsIgnoreCase("double")) {
+						c.paramTypes[i] = Double.TYPE;
+						c.params[i] = Double.parseDouble(value);
+					}
+					else if (pType.equalsIgnoreCase("float")) {
+						c.paramTypes[i] = Float.TYPE;
+						c.params[i] = Float.parseFloat(value);
+					}
+					else if (pType.equalsIgnoreCase("file")) {
+						c.paramTypes[i] = File.class;
+						c.params[i] = new File(value);
+					} else {
+						//use String for no type or anything else
+						c.paramTypes[i] = String.class;
+						c.params[i] = value;	
+					}
 				}
 			}
 		}
 		return c;
 	}
 	
-	public void run(boolean async) {
+	public void run(boolean async, final HashMap<String, Object> context) {
+		//prepare params
+		
 		if (async) {
 			Thread t = new Thread() { 
 				public void run() {
-					makeAPICall(classname, methodname, paramTypes, params);
+					Object[] myParams = prepareParams(context);
+					if (myParams!=null) {
+						makeAPICall(classname, methodname, paramTypes, myParams);
+					}
 				}
 			};
 			t.start();
 		} else {
-			makeAPICall(classname, methodname, paramTypes, params);
+			Object[] myParams = prepareParams(context);
+			if (myParams!=null) {
+				makeAPICall(classname, methodname, paramTypes, myParams);
+			}
 		}
+	}
+	
+	private Object[] prepareParams(HashMap<String, Object> context) {
+		if (placeHolder.isEmpty()) return params;
+		
+		Object[] myParams = new Object[params.length];
+		for (int i=0;i<params.length;i++) {
+			myParams[i] = params[i];
+		}
+		
+		for (Entry<Integer, String> e : placeHolder.entrySet()) {
+			int i = e.getKey().intValue();
+			String contextKey = e.getValue();
+			Object value = context.get(contextKey);
+			if (value==null) {
+				System.out.println("ERROR in API CALL :: MISSING CONTEXT VARIABLE: "+contextKey);
+				return null;
+			}
+			paramTypes[i] = value.getClass();
+			myParams[i] = value;
+		}
+		return myParams;
 	}
 	
 	public String toString() {

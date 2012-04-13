@@ -50,8 +50,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Vector;
+import java.util.Map.Entry;
 
+import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.Element;
 
 public class SystemExecCall implements FunctionCall {
@@ -63,7 +66,7 @@ public class SystemExecCall implements FunctionCall {
 	private boolean sysout = true;
 	private File outputFile = null;
 	private boolean appendToOutputFile = true;
-	
+	private HashMap<Integer,String> placeHolder = new HashMap<Integer, String>();
 	
 //	<system_exec_call>
 //		<command>ls</command> <!-- direct command (does not resolve wildcards), arguments as param -->
@@ -96,9 +99,19 @@ public class SystemExecCall implements FunctionCall {
 				pCount = params.size();
 			}
 			c.cmdArray = new String[pCount+1];
+			
+			
 			c.cmdArray[0] = e.getChildText("command"); 
 			for (int i=0;i<pCount;i++) {
-				c.cmdArray[i+1] = params.get(i).getText();
+				Element ep = params.get(i);
+				String pUse = ep.getAttribute("use");
+				if (pUse!=null) {
+					c.placeHolder.put(i+1, pUse);
+					c.cmdArray[i+1] = "${"+pUse+"}";
+				}
+				else {
+					c.cmdArray[i+1] = ep.getText();
+				}
 			}
 		}
 		
@@ -149,8 +162,41 @@ public class SystemExecCall implements FunctionCall {
 		return c;
 	}
 	
-	public void run(boolean async) {
-		makeSystemExecCall(cmdArray, envp, dir, async, sysout, outputFile, appendToOutputFile);
+	public void run(boolean async, HashMap<String, Object> context) {
+		//TODO replace cmdArray with context values
+		String[] myCmdArray = prepareCommands(context);
+		if (myCmdArray!=null) {
+			makeSystemExecCall(myCmdArray, envp, dir, async, sysout, outputFile, appendToOutputFile);
+		}
+	}
+	
+	private String[] prepareCommands(HashMap<String, Object> context) {
+		if (placeHolder.isEmpty()) return cmdArray;
+		
+		String[] myCmdArray = new String[cmdArray.length];
+		for (int i=0;i<cmdArray.length;i++) {
+			myCmdArray[i] = cmdArray[i];
+		}
+		
+		for (Entry<Integer, String> e : placeHolder.entrySet()) {
+			int i = e.getKey().intValue();
+			String contextKey = e.getValue();
+			Object value = context.get(contextKey);
+			if (value==null) {
+				System.out.println("ERROR in API CALL :: MISSING CONTEXT VARIABLE: "+contextKey);
+				return null;
+			}
+			if (value instanceof File) {
+				myCmdArray[i] = ((File)value).getAbsolutePath();
+			}
+			else if (value instanceof Long) {
+				myCmdArray[i] = SecurityHelper.getFormattedDate(((Long)value).longValue());
+			}
+			else {
+				myCmdArray[i] = value.toString();
+			}
+		}
+		return myCmdArray;
 	}
 	
 	public void makeSystemExecCall(String[] cmdArray, String[] envp, File dir, boolean async, final boolean sysout, final File outputFile, final boolean appendToOutputFile) {
