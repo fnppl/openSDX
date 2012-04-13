@@ -54,6 +54,7 @@ import org.fnppl.opensdx.keyserverfe.Helper;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLHelper;
 
 public class ClientSettings {
 	
@@ -66,6 +67,7 @@ public class ClientSettings {
 	private byte[] login_initv = null;
 	private RightsAndDuties rights_duties = null;
 	private TriggerCollection triggers = null;
+	private Element eTriggers = null;
 	
 	private File local_path;
 	
@@ -116,10 +118,10 @@ public class ClientSettings {
 			}
 			
 			//Trigger
-			Element eTriggers = e.getChild("triggers");
+			s.eTriggers = e.getChild("triggers");
 			Vector<Trigger> triggList = new Vector<Trigger>(); 
-			if (eTriggers!=null) {
-				Vector<Element> triggers = eTriggers.getChildren("trigger");
+			if (s.eTriggers!=null) {
+				Vector<Element> triggers = s.eTriggers.getChildren("trigger");
 				for (Element et : triggers) {
 					triggList.add(Trigger.fromElement(et));
 				}	
@@ -191,6 +193,9 @@ public class ClientSettings {
 		}
 		if (rights_duties!=null) {
 			e.addContent(rights_duties.toElement(false));
+		}
+		if (eTriggers!=null) {
+			e.addContent(XMLHelper.cloneElement(eTriggers));
 		}
 		return e;
 	}
