@@ -300,6 +300,10 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 		out.println("200 type set");
 	}
 	
+	public void handle_SYST(String str) {
+		out.println("215 UNIX Type: L8");
+	}
+	
 	public void handle_DELE(String str) {
 		//TODO
 		try {
