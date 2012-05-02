@@ -56,6 +56,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -441,6 +442,46 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 			//System.out.println("next port = "+next_port);	
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		}
+	}
+	
+	// eg: EPRT |2|::1|36299|
+	public void handle_EPRT(String str) {
+		String[] part = null;
+		try {
+			String delimiter = str.substring(0,1);
+			part = str.split("["+delimiter+"]"); 
+			//part[1] = net-protocoll: 1 = IPv4, 2 = IPv6
+			//part[2] = net-address
+			//part[3] = tcp-port
+			
+			next_port = Integer.parseInt(part[3]);
+			out.println("200 EPRT command successful");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			if (part!=null) {
+				System.out.println("EPRT parsing error: "+Arrays.toString(part));
+			}
+			out.println("500 EPRT command error");
+		}
+	}
+	//eg: EPSV |||6446|
+	public void handle_EPSV(String str) {
+		String[] part = null;
+		try {
+			String delimiter = str.substring(0,1);
+			part = str.split("["+delimiter+"]"); 
+			//part[3] = tcp-port
+			
+			next_port = Integer.parseInt(part[3]);
+			out.println("200 EPSV command successful");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			if (part!=null) {
+				System.out.println("EPSV parsing error: "+Arrays.toString(part));
+			}
+			out.println("200 EPSV command successful");
+			
 		}
 	}
 
