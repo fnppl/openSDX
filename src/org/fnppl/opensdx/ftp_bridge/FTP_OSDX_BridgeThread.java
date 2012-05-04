@@ -55,7 +55,9 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
@@ -78,7 +80,9 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	private int next_port = -1;
 	private boolean running;
 	
-	private Socket ftpsocket;
+	private Socket ftpSocket;
+	//private ServerSocket ftpPassiveDataSocket = null;
+	
 	private PrintWriter out;
 	
 	private OSDXFileTransferClient osdxclient = null;
@@ -89,7 +93,7 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	private String pwd = "/";
 	
 	public FTP_OSDX_BridgeThread(Socket ftpsocket, FTP_OSDX_Bridge control) {
-		this.ftpsocket = ftpsocket;
+		this.ftpSocket = ftpsocket;
 		this.control = control;
 	}
 	
@@ -100,14 +104,14 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 		try {
 			osdxclient = new OSDXFileTransferClient();
 			osdxclient.addResponseListener(this);
-			inet = ftpsocket.getInetAddress();
+			inet = ftpSocket.getInetAddress();
 			host = inet.getHostName();
 			
 			System.out.println("host: "+host);
 			
 			//init connection
-			BufferedReader in = new BufferedReader(new InputStreamReader(ftpsocket.getInputStream()));
-			out = new PrintWriter(ftpsocket.getOutputStream(), true);
+			BufferedReader in = new BufferedReader(new InputStreamReader(ftpSocket.getInputStream()));
+			out = new PrintWriter(ftpSocket.getOutputStream(), true);
 			out.println("220 FTP Server ready.\r");
 
 			
@@ -142,7 +146,7 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 					running = false;
 				}
 			}
-			ftpsocket.close();
+			ftpSocket.close();
 			osdxclient.closeConnection();
 		} catch (Exception e) { // System.out.println(e);
 			e.printStackTrace();
@@ -467,6 +471,10 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	}
 	//eg: EPSV |||6446|
 	public void handle_EPSV(String str) {
+		if (str==null) {
+			out.println("500 EPSV missing command parameter");
+			return;
+		}
 		String[] part = null;
 		try {
 			String delimiter = str.substring(0,1);
@@ -479,8 +487,10 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 			ex.printStackTrace();
 			if (part!=null) {
 				System.out.println("EPSV parsing error: "+Arrays.toString(part));
+			} else {
+				System.out.println("EPSV parsing error");
 			}
-			out.println("200 EPSV command successful");
+			out.println("500 EPSV command error");
 			
 		}
 	}
@@ -522,10 +532,19 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	}
 	
 	public void handle_PASV(String str) {
-		int port = ftpsocket.getLocalPort();
-		int p1 = port/256;
-		int p2 = port%256;
-		out.println("227 Entering Passive Mode (127,0,0,1,"+p1+","+p2+")");
+		out.println("500 passive mode not implemented");
+//		if (ftpPassiveDataSocket==null) {
+//			try {
+//				ftpPassiveDataSocket = new ServerSocket(0); //0 = any free port
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		int port = ftpPassiveDataSocket.getLocalPort();
+//		int p1 = port/256;
+//		int p2 = port%256;
+//		//next_port = p1 * 16 * 16 + p2;
+//		out.println("227 Entering Passive Mode (127,0,0,1,"+p1+","+p2+")");
 	}
 	public void handle_command_not_implemented(String str) {
 		out.println("500 "+str+" not understood");
@@ -588,7 +607,8 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 			else if (command instanceof OSDXFileTransferListCommand) {
 				try {
 					out.println("150 ASCII data");
-					Socket t = new Socket(host, next_port);
+					//TODO Socket t = new Socket(host, next_port);
+					Socket t = getDataSocket();
 					PrintWriter out2 = new PrintWriter(t.getOutputStream(),	true);
 					Vector<RemoteFile> list = ((OSDXFileTransferListCommand)command).getList();
 					for (RemoteFile f : list) {
@@ -628,6 +648,11 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 		
 	}
 
-
+	private Socket getDataSocket() throws UnknownHostException, IOException {
+		if (next_port<=0) {
+			return ftpSocket;
+		}
+		return new Socket(host, next_port);
+	}
 	
 }
