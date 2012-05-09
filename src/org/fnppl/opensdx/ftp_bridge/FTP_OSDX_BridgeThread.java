@@ -310,7 +310,23 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	}
 	
 	public void handle_DELE(String str) {
-		//TODO
+		try {
+			String filename = str;
+			if (!filename.startsWith("/")) {
+				if (pwd.equals("/")) {
+					filename = "/"+str;
+				} else {
+					filename = pwd+"/"+str;
+				}
+			}
+			osdxclient.delete(filename);
+			//TODO check if really successful
+			out.println("250 DELE command succesful");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	public void handle_RMD(String str) {
 		try {
 			//if (ensureConnection()) {
 			String filename = str;
@@ -322,7 +338,8 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 				}
 			}
 			osdxclient.delete(filename);
-				//out.println("250 CWD command succesful");
+			//TODO check if really successful
+			out.println("250 RWD command succesful");
 			//}
 		} catch (Exception ex) {
 			ex.printStackTrace();
