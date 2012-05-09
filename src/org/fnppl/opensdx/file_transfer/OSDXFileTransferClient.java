@@ -557,8 +557,10 @@ public class OSDXFileTransferClient implements UploadClient {
 		addCommand(new OSDXFileTransferMkDirCommand(IdGenerator.getTimestamp(),absoluteDirectoryName));
 	}
 	
-	public void delete(String absoluteDirectoryName) {
-		addCommand(new OSDXFileTransferDeleteCommand(IdGenerator.getTimestamp(),absoluteDirectoryName));
+	public long delete(String absoluteDirectoryName) {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferDeleteCommand(id,absoluteDirectoryName));
+		return id;
 	}
 	
 	public void rename(String absoluteDirectoryName, String newfilename) {

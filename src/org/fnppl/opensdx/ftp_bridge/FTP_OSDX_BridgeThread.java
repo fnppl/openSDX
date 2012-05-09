@@ -69,20 +69,30 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferDeleteCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferListCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferMkDirCommand;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadCommand;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.file_transfer.model.Transfer;
+import org.fnppl.opensdx.keyserver.helper.IdGenerator;
 
 public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseListener {
 
 	private FTP_OSDX_Bridge control = null;
 	private String host;
-	private int next_port = -1;
+	
 	private boolean running;
 	
 	private Socket ftpSocket;
-	//private ServerSocket ftpPassiveDataSocket = null;
 	
+
+	private static final int MODE_NOT_SET = 0;
+	private static final int MODE_ACTIVE = 1;
+	private static final int MODE_PASSIVE = 2;
+	private int connectionMode = MODE_NOT_SET; 
+	private int next_port = -1;
+	private ServerSocket ftpPassiveDataServerSocket = null;
+	private Socket ftpPassiveDataSocket = null;
+	  
 	private PrintWriter out;
 	
 	private OSDXFileTransferClient osdxclient = null;
@@ -119,27 +129,30 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 			while (running) {
 				try {
 					String str = in.readLine();
-					
-					String command = str;
-					String param = null;
-					int ind = str.indexOf(' ');
-					if (ind>0) {
-						command = str.substring(0,ind);
-						if (str.length()>ind+1) {
-							param = str.substring(ind+1);
+					if (str==null) {
+						running = false;
+					} else {
+						String command = str;
+						String param = null;
+						int ind = str.indexOf(' ');
+						if (ind>0) {
+							command = str.substring(0,ind);
+							if (str.length()>ind+1) {
+								param = str.substring(ind+1);
+							}
 						}
-					}
-					command = command.toUpperCase();
-					try {
-						Method commandHandler = getClass().getMethod("handle_"+command, String.class);
-						commandHandler.invoke(this, param);
-	
-					} catch (NoSuchMethodException ex) {
-						handle_command_not_implemented(str);
-					} catch (InvocationTargetException ex) {
-						handle_command_not_implemented(str);
-					} catch (IllegalAccessException ex) {
-						handle_command_not_implemented(str);
+						command = command.toUpperCase();
+						try {
+							Method commandHandler = getClass().getMethod("handle_"+command, String.class);
+							commandHandler.invoke(this, param);
+		
+						} catch (NoSuchMethodException ex) {
+							handle_command_not_implemented(str);
+						} catch (InvocationTargetException ex) {
+							handle_command_not_implemented(str);
+						} catch (IllegalAccessException ex) {
+							handle_command_not_implemented(str);
+						}
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
@@ -269,7 +282,8 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 								filename = pwd+"/"+param;
 							}
 						}
-						Socket t = new Socket(host, next_port);
+						Socket t = getDataSocket();
+						if (t==null) return;
 						InputStream in2 = t.getInputStream();
 						byte buffer[] = new byte[1024];
 						int read;
@@ -309,6 +323,42 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 		out.println("215 UNIX Type: L8");
 	}
 	
+	private String lastRenameFilename = null; 
+	public void handle_RNFR(String str) {
+		try {
+			String filename = str;
+			if (!filename.startsWith("/")) {
+				if (pwd.equals("/")) {
+					filename = "/"+str;
+				} else {
+					filename = pwd+"/"+str;
+				}
+			}
+			lastRenameFilename = filename;
+			out.println("350 Ready for destination name");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			lastRenameFilename = null;
+			out.println("500 Error in RNFR command");
+		}
+	}
+	
+	public void handle_RNTO(String str) {
+		try {
+			if (lastRenameFilename!=null) {
+				String filename = str;
+				if (filename.contains("/")) {
+					filename = filename.substring(filename.lastIndexOf('/')+1);
+				}
+				System.out.println("Renaming: "+lastRenameFilename+" -> "+filename);
+				osdxclient.rename(lastRenameFilename, filename);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			out.println("500 Error in RNTO command");
+		}
+	}
+	
 	public void handle_DELE(String str) {
 		try {
 			String filename = str;
@@ -320,15 +370,15 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 				}
 			}
 			osdxclient.delete(filename);
-			//TODO check if really successful
-			out.println("250 DELE command succesful");
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
+	
+	private long lastRMDCommandID = -1L;
 	public void handle_RMD(String str) {
 		try {
-			//if (ensureConnection()) {
 			String filename = str;
 			if (!filename.startsWith("/")) {
 				if (pwd.equals("/")) {
@@ -337,10 +387,7 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 					filename = pwd+"/"+str;
 				}
 			}
-			osdxclient.delete(filename);
-			//TODO check if really successful
-			out.println("250 RWD command succesful");
-			//}
+			lastRMDCommandID = osdxclient.delete(filename);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -348,26 +395,21 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	}
 	public void handle_CDUP(String str) {
 		try {
-			//if (ensureConnection()) {
-				//osdxclient.cd_up();
-				if (!pwd.equals("/")) {
-					int ind = pwd.lastIndexOf('/');
-					if (ind>0) {
-						pwd = pwd.substring(0,ind);
-					} else {
-						pwd="/";
-					}
-					out.println("250 CWD command succesful");
+			if (!pwd.equals("/")) {
+				int ind = pwd.lastIndexOf('/');
+				if (ind>0) {
+					pwd = pwd.substring(0,ind);
+				} else {
+					pwd="/";
 				}
-				//
-			//}
+			}
+			out.println("250 CWD command succesful");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 	public void handle_CWD(String param) {
 		try {
-			//if (ensureConnection()) {
 				if (param.startsWith("/")) {
 					pwd = param;
 				} else {
@@ -377,15 +419,14 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 						pwd = pwd+"/"+param;
 					}
 				}
-				//osdxclient.cd(param);
 				out.println("250 CWD command succesful");
-			//}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 	public void handle_QUIT(String param) {
 		osdxclient.closeConnection();
+		closePassiveSocket();
 		running = false;
 		out.println("221 Goodbye");
 	}
@@ -410,30 +451,23 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	
 	public void handle_PWD(String str) {
 		try {
-			//if (ensureConnection()) {
-				//String pwd = osdxclient.pwd();
-				out.println("257 \""+pwd+"\" is current directory");
-			//}
+			out.println("257 \""+pwd+"\" is current directory");
 		} catch (Exception ex) {
-			
 			ex.printStackTrace();
 		}
 	}
 	
 	public void handle_MKD(String param) {
 		try {
-			//if (ensureConnection()) {
-				if (param.startsWith("/")) {
-					osdxclient.mkdir(param);
+			if (param.startsWith("/")) {
+				osdxclient.mkdir(param);
+			} else {
+				if (pwd.equals("/")) {
+					osdxclient.mkdir("/"+param);
 				} else {
-					if (pwd.equals("/")) {
-						osdxclient.mkdir("/"+param);
-					} else {
-						osdxclient.mkdir(pwd+"/"+param);
-					}
+					osdxclient.mkdir(pwd+"/"+param);
 				}
-				
-			//}
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -460,8 +494,11 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 			int ip1 = Integer.parseInt(a1);
 			int ip2 = Integer.parseInt(a2);
 			next_port = ip1 * 16 * 16 + ip2;
+			connectionMode = MODE_ACTIVE;
+			closePassiveSocket();
 			//System.out.println("next port = "+next_port);	
 		} catch (Exception ex) {
+			connectionMode = MODE_NOT_SET;
 			ex.printStackTrace();
 		}
 	}
@@ -474,11 +511,14 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 			part = str.split("["+delimiter+"]"); 
 			//part[1] = net-protocoll: 1 = IPv4, 2 = IPv6
 			//part[2] = net-address
-			//part[3] = tcp-port
+			//part[3] = tcp-port			
 			
 			next_port = Integer.parseInt(part[3]);
+			connectionMode = MODE_ACTIVE;
+			closePassiveSocket();
 			out.println("200 EPRT command successful");
 		} catch (Exception ex) {
+			connectionMode = MODE_NOT_SET;
 			ex.printStackTrace();
 			if (part!=null) {
 				System.out.println("EPRT parsing error: "+Arrays.toString(part));
@@ -499,8 +539,11 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 			//part[3] = tcp-port
 			
 			next_port = Integer.parseInt(part[3]);
+			connectionMode = MODE_ACTIVE;
+			closePassiveSocket();
 			out.println("200 EPSV command successful");
 		} catch (Exception ex) {
+			connectionMode = MODE_NOT_SET;
 			ex.printStackTrace();
 			if (part!=null) {
 				System.out.println("EPSV parsing error: "+Arrays.toString(part));
@@ -514,7 +557,6 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 
 	public void handle_LIST(String param) {
 		try {
-			//if (ensureConnection()) {
 			if (param==null || param.length()==0) {
 				osdxclient.list(pwd,null);
 			}
@@ -527,7 +569,6 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 					osdxclient.list(pwd+"/"+param,null);	
 				}
 			}
-			//}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 //			try {
@@ -549,22 +590,54 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	}
 	
 	public void handle_PASV(String str) {
-		out.println("500 passive mode not implemented");
-//		if (ftpPassiveDataSocket==null) {
-//			try {
-//				ftpPassiveDataSocket = new ServerSocket(0); //0 = any free port
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		int port = ftpPassiveDataSocket.getLocalPort();
-//		int p1 = port/256;
-//		int p2 = port%256;
-//		//next_port = p1 * 16 * 16 + p2;
-//		out.println("227 Entering Passive Mode (127,0,0,1,"+p1+","+p2+")");
+		//out.println("502 passive mode not implemented");
+		
+		if (ftpPassiveDataServerSocket==null) {
+			try {
+				ftpPassiveDataServerSocket = new ServerSocket(0); //0 = any free port
+			} catch (IOException e) {
+				ftpPassiveDataServerSocket = null;
+				e.printStackTrace();
+			}
+		}
+		if (ftpPassiveDataServerSocket==null) {
+			out.println("451 Requested action aborted: local error in processing");
+			return;
+		}
+		
+		try {
+			int port = ftpPassiveDataServerSocket.getLocalPort();
+			int p1 = port/256;
+			int p2 = port%256;
+			//next_port = p1 * 16 * 16 + p2;
+			connectionMode = MODE_PASSIVE;
+			out.println("227 Entering Passive Mode (127,0,0,1,"+p1+","+p2+")");
+			
+			if (ftpPassiveDataSocket!=null && ftpPassiveDataSocket.isConnected()) {
+				try {
+					ftpPassiveDataSocket.close();
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				}
+			}
+			new Thread() {
+				public void run() {
+					try {
+						ftpPassiveDataSocket = ftpPassiveDataServerSocket.accept();
+					} catch (IOException ex) {
+						ftpPassiveDataServerSocket = null;
+						ftpPassiveDataSocket = null;
+						ex.printStackTrace();
+					}
+				}
+			}.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 	public void handle_command_not_implemented(String str) {
-		out.println("500 "+str+" not understood");
+		out.println("502 "+str+" not understood");
 		System.out.println("command: "+str+" not implemented");
 	}
 
@@ -572,9 +645,9 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	public void onSuccess(OSDXFileTransferCommand command) {
 		System.out.println("Command "+command.getID()+" successful :: "+command.getClass().getSimpleName());
 		Transfer transfer = transfersInProgress.get(command.getID());
-		if (transfer==null) {
-			System.out.println("no transfer type");
-		}
+//		if (transfer==null) {
+//			System.out.println("no transfer type");
+//		}
 		if (transfer!=null) {
 			if (transfer.type.equals("upload")) {
 				if (command instanceof OSDXFileTransferUploadCommand) {
@@ -594,7 +667,10 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 						//transfer downloaded file to ftp client
 						FileInputStream fin = new FileInputStream(tmpFile);
 						
-						Socket t = new Socket(host, next_port);
+						Socket t = getDataSocket();
+						if (t==null) {
+							return;
+						}
 						OutputStream out2 = t.getOutputStream();
 						byte buffer[] = new byte[1024];
 						int read;
@@ -619,13 +695,22 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 			}
 		} else {
 			if (command instanceof OSDXFileTransferDeleteCommand) {
-				out.println("250 CWD command succesful");
+				if (command.getID() == lastRMDCommandID) {
+					out.println("250 RMD command succesful");
+				} else {
+					out.println("250 DELE command succesful");
+				}
+			}
+			else if (command instanceof OSDXFileTransferRenameCommand) {
+				out.println("250 Rename command succesful");
 			}
 			else if (command instanceof OSDXFileTransferListCommand) {
 				try {
 					out.println("150 ASCII data");
-					//TODO Socket t = new Socket(host, next_port);
 					Socket t = getDataSocket();
+					if (t==null) {
+						return;
+					}
 					PrintWriter out2 = new PrintWriter(t.getOutputStream(),	true);
 					Vector<RemoteFile> list = ((OSDXFileTransferListCommand)command).getList();
 					for (RemoteFile f : list) {
@@ -655,10 +740,19 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	}
 	
 	public void onError(OSDXFileTransferCommand command, String msg) {
-		//Transfer transfer = transfersInProgress.get(command.getID());
-		//if (transfer!=null) {
+		System.out.println(msg);
+//		if (command instanceof OSDXFileTransferListCommand) {
+//			out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
+//		}
+//		else if (command instanceof OSDXFileTransferMkDirCommand) {
+//			out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
+//		}
+//		if (command instanceof OSDXFileTransferRenameCommand) {
+//			out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
+//		}
+//		else {
 			out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
-		//}
+//		}
 	}
 
 	public void onStatusUpdate(OSDXFileTransferCommand command, long progress,long maxProgress, String msg) {
@@ -666,10 +760,32 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	}
 
 	private Socket getDataSocket() throws UnknownHostException, IOException {
-		if (next_port<=0) {
-			return ftpSocket;
+		if (connectionMode==MODE_ACTIVE && next_port>0) {
+			return new Socket(host, next_port); 
 		}
-		return new Socket(host, next_port);
+		else if (connectionMode == MODE_PASSIVE && ftpPassiveDataSocket != null && ftpPassiveDataSocket.isConnected()) {
+			return ftpPassiveDataSocket;
+		}
+		out.println("425 Error: Can't open data connection");
+		return null; 
 	}
 	
+	private void closePassiveSocket() {
+		if (ftpPassiveDataSocket !=null) {
+			try {
+				ftpPassiveDataSocket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			ftpPassiveDataSocket = null;
+		}
+		if (ftpPassiveDataServerSocket != null) {
+			try {
+				ftpPassiveDataServerSocket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			ftpPassiveDataServerSocket = null;
+		}
+	}
 }
