@@ -43,6 +43,8 @@ package org.fnppl.opensdx.ftp_bridge;
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+import java.awt.BorderLayout;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,8 +61,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 
 import org.fnppl.opensdx.file_transfer.CommandResponseListener;
@@ -73,9 +81,10 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadCommand;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.file_transfer.model.Transfer;
+import org.fnppl.opensdx.helper.QueueWaiting;
 import org.fnppl.opensdx.keyserver.helper.IdGenerator;
 
-public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseListener {
+public class FTP_OSDX_BridgeThread extends Thread {
 
 	private FTP_OSDX_Bridge control = null;
 	private String host;
@@ -93,27 +102,21 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	private ServerSocket ftpPassiveDataServerSocket = null;
 	private Socket ftpPassiveDataSocket = null;
 	  
-	private PrintWriter out;
+	public PrintWriter out;
 	
-	private OSDXFileTransferClient osdxclient = null;
-	private FTP_OSDX_BridgeUser user = null;
-	
-	private HashMap<Long,Transfer> transfersInProgress = new HashMap<Long, Transfer>();
-	
-	private String pwd = "/";
 	
 	public FTP_OSDX_BridgeThread(Socket ftpsocket, FTP_OSDX_Bridge control) {
+		System.out.println("NEW FTP_OSDX_BridgeThread");
+		System.out.println("SOCKET: "+ftpsocket.getPort()+", "+ftpsocket.getLocalPort()+", "+ftpsocket.getInetAddress());
 		this.ftpSocket = ftpsocket;
 		this.control = control;
 	}
 	
 	
 	public void run() {
-		
 		InetAddress inet;
 		try {
-			osdxclient = new OSDXFileTransferClient();
-			osdxclient.addResponseListener(this);
+			
 			inet = ftpSocket.getInetAddress();
 			host = inet.getHostName();
 			
@@ -124,8 +127,8 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 			out = new PrintWriter(ftpSocket.getOutputStream(), true);
 			out.println("220 FTP Server ready.\r");
 
-			
 			running = true;
+			
 			while (running) {
 				try {
 					String str = in.readLine();
@@ -160,7 +163,7 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 				}
 			}
 			ftpSocket.close();
-			osdxclient.closeConnection();
+			//TODO osdxclient.closeConnection();
 		} catch (Exception e) { // System.out.println(e);
 			e.printStackTrace();
 		}
@@ -199,23 +202,46 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 						//loading file data to tmp file
 						String filename = param;
 						if (!filename.startsWith("/")) {
-							if (pwd.equals("/")) {
+							if (control.pwd.equals("/")) {
 								filename = "/"+param;
 							} else {
-								filename = pwd+"/"+param;
+								filename = control.pwd+"/"+param;
 							}
 						}
 						
-						System.out.println("downloading file: "+filename);
-						final File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
-						tmpFile.delete();
+						//download with stream
+						try {
+							System.out.println("downloading file: "+filename);
+							out.println("150 Binary data connection");
+							
+							Socket t = getDataSocket();
+							if (t==null) {
+								return;
+							}
+							BufferedOutputStream outData = new BufferedOutputStream(t.getOutputStream());
+							
+							long id = control.osdxclient.download(filename, outData);
+							control.commandThread.put(id, FTP_OSDX_BridgeThread.this);
+							
+						} catch (Exception ex) {
+							out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
+							ex.printStackTrace();
+						}
 						
-						long id = osdxclient.download(filename, tmpFile);
-						Transfer t = new Transfer();
-						t.type = "download";
-						t.file = tmpFile;
 						
-						transfersInProgress.put(id,t);
+						//download with temp file
+//						System.out.println("downloading file: "+filename);
+//						final File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
+//						tmpFile.delete();
+//						
+//						long id = control.osdxclient.download(filename, tmpFile);
+//						Transfer t = new Transfer();
+//						t.type = "download";
+//						t.file = tmpFile;
+//						
+//						control.transfersInProgress.put(id,t);
+//						control.commandThread.put(id,FTP_OSDX_BridgeThread.this);
+						
 						
 //						final FileTransferProgress progress = new FileTransferProgress(FileTransferProgress.END_UNKNOWN) {
 //							public void onUpdate() {
@@ -271,36 +297,44 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 					//if (ensureConnection()) {
 						out.println("150 Binary data connection");
 						System.out.println("HANDLE_STOR :: "+param);
-						File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
-						tmpFile.deleteOnExit();
-						FileOutputStream fout = new FileOutputStream(tmpFile);
-						String filename = param;
-						if (!filename.startsWith("/")) {
-							if (pwd.equals("/")) {
-								filename = "/"+param;
-							} else {
-								filename = pwd+"/"+param;
-							}
-						}
+						
 						Socket t = getDataSocket();
 						if (t==null) return;
-						InputStream in2 = t.getInputStream();
+						InputStream inFromFTP = t.getInputStream();
+						
+						File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
+						tmpFile.deleteOnExit();
+						FileOutputStream outFileBuffer = new FileOutputStream(tmpFile);
+						String filename = param;
+						if (!filename.startsWith("/")) {
+							if (control.pwd.equals("/")) {
+								filename = "/"+param;
+							} else {
+								filename = control.pwd+"/"+param;
+							}
+						}
+						
 						byte buffer[] = new byte[1024];
 						int read;
 						try {
-							while ((read = in2.read(buffer)) != -1) {
-								fout.write(buffer, 0, read);
+							//write input stream from FTP to buffer file
+							while ((read = inFromFTP.read(buffer)) != -1) {
+								outFileBuffer.write(buffer, 0, read);
 							}
-							in2.close();
-							fout.close();
+							inFromFTP.close();
+							outFileBuffer.close();
 							t.close();
-							System.out.println("starting upload ...");
-							long id = osdxclient.upload(tmpFile, filename);
+							
+							//send ACK (caution: ack before transfer to OSDX Server ready
+							out.println("226 transfer complete");
+							
+							System.out.println("Queueing upload to OSDX Server of "+filename);
 							Transfer transfer = new Transfer();
 							transfer.type = "upload";
 							transfer.file = tmpFile;
-							System.out.println("STOR command "+id);
-							transfersInProgress.put(id,transfer);
+							transfer.fileLen = tmpFile.length();
+							transfer.originalFilename = filename;
+							control.waitingUploads.put(transfer);
 							
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -328,10 +362,10 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 		try {
 			String filename = str;
 			if (!filename.startsWith("/")) {
-				if (pwd.equals("/")) {
+				if (control.pwd.equals("/")) {
 					filename = "/"+str;
 				} else {
-					filename = pwd+"/"+str;
+					filename = control.pwd+"/"+str;
 				}
 			}
 			lastRenameFilename = filename;
@@ -350,8 +384,9 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 				if (filename.contains("/")) {
 					filename = filename.substring(filename.lastIndexOf('/')+1);
 				}
-				System.out.println("Renaming: "+lastRenameFilename+" -> "+filename);
-				osdxclient.rename(lastRenameFilename, filename);
+				System.out.println("Rename: "+lastRenameFilename+" -> "+filename);
+				long id = control.osdxclient.rename(lastRenameFilename, filename);
+				control.commandThread.put(id,this);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -363,31 +398,34 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 		try {
 			String filename = str;
 			if (!filename.startsWith("/")) {
-				if (pwd.equals("/")) {
+				if (control.pwd.equals("/")) {
 					filename = "/"+str;
 				} else {
-					filename = pwd+"/"+str;
+					filename = control.pwd+"/"+str;
 				}
 			}
-			osdxclient.delete(filename);
-
+			System.out.println("Remove file: "+filename);
+			long id = control.osdxclient.delete(filename);
+			control.commandThread.put(id,this);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 	
-	private long lastRMDCommandID = -1L;
+	public long lastRMDCommandID = -1L;
 	public void handle_RMD(String str) {
 		try {
 			String filename = str;
 			if (!filename.startsWith("/")) {
-				if (pwd.equals("/")) {
+				if (control.pwd.equals("/")) {
 					filename = "/"+str;
 				} else {
-					filename = pwd+"/"+str;
+					filename = control.pwd+"/"+str;
 				}
 			}
-			lastRMDCommandID = osdxclient.delete(filename);
+			lastRMDCommandID = control.osdxclient.delete(filename);
+			control.commandThread.put(lastRMDCommandID,this);
+			System.out.println("Remove dir: "+filename);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -395,14 +433,15 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	}
 	public void handle_CDUP(String str) {
 		try {
-			if (!pwd.equals("/")) {
-				int ind = pwd.lastIndexOf('/');
+			if (!control.pwd.equals("/")) {
+				int ind = control.pwd.lastIndexOf('/');
 				if (ind>0) {
-					pwd = pwd.substring(0,ind);
+					control.pwd = control.pwd.substring(0,ind);
 				} else {
-					pwd="/";
+					control.pwd="/";
 				}
 			}
+			System.out.println("PWD: "+control.pwd);
 			out.println("250 CWD command succesful");
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -411,47 +450,52 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	public void handle_CWD(String param) {
 		try {
 				if (param.startsWith("/")) {
-					pwd = param;
+					control.pwd = param;
 				} else {
-					if (pwd.equals("/")) {
-						pwd = "/"+param;
+					if (control.pwd.equals("/")) {
+						control.pwd = "/"+param;
 					} else {
-						pwd = pwd+"/"+param;
+						control.pwd = control.pwd+"/"+param;
 					}
 				}
+				System.out.println("PWD: "+control.pwd);
 				out.println("250 CWD command succesful");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 	public void handle_QUIT(String param) {
-		osdxclient.closeConnection();
+		control.osdxclient.closeConnection();
 		closePassiveSocket();
 		running = false;
+		System.out.println("Goodbye");
 		out.println("221 Goodbye");
 	}
 	public void handle_USER(String param) {
-		user = control.getUser(param);
+		control.user = control.getUser(param);
 		out.println("331 Password");	
 	}
 	
 	public void handle_PASS(String param) {
-		if (user!=null && user.ftppassword.equals(param)) { //&& ensureConnection()) {
-			try {
-				osdxclient.connect(user.host, user.port, user.prepath, user.signingKey, user.username);
-				out.println("230 User " + user.ftpusername + " logged in.");	
-			} catch (Exception e) {
-				e.printStackTrace();
-				out.println("430 Error: cannot connect to given account");
-			}
+		if (control.user!=null && control.user.ftppassword.equals(param)) { //&& ensureConnection()) {
+			//try {
+				out.println("230 User " + control.user.ftpusername + " logged in.");
+				System.out.println("User "+control.user.ftpusername + " logged in.");
+			//} catch (Exception e) {
+			//	e.printStackTrace();
+			//	out.println("430 Error: cannot connect to given account");
+			//	System.out.println("Error: cannot connect to given account");
+			//}
 		} else {
 			out.println("430 Invalid username or password");
+			System.out.println("Invalid username or password");
 		}
 	}
 	
 	public void handle_PWD(String str) {
 		try {
-			out.println("257 \""+pwd+"\" is current directory");
+			out.println("257 \""+control.pwd+"\" is current directory");
+			System.out.println("PWD: "+control.pwd);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -460,12 +504,18 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	public void handle_MKD(String param) {
 		try {
 			if (param.startsWith("/")) {
-				osdxclient.mkdir(param);
+				long id = control.osdxclient.mkdir(param);
+				control.commandThread.put(id,this);
+				System.out.println("MKDIR: "+param);
 			} else {
-				if (pwd.equals("/")) {
-					osdxclient.mkdir("/"+param);
+				if (control.pwd.equals("/")) {
+					long id = control.osdxclient.mkdir("/"+param);
+					control.commandThread.put(id,this);
+					System.out.println("MKDIR: /"+param);
 				} else {
-					osdxclient.mkdir(pwd+"/"+param);
+					long id = control.osdxclient.mkdir(control.pwd+"/"+param);
+					control.commandThread.put(id,this);
+					System.out.println("MKDIR: "+control.pwd+"/"+param);
 				}
 			}
 		} catch (Exception ex) {
@@ -558,15 +608,19 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	public void handle_LIST(String param) {
 		try {
 			if (param==null || param.length()==0) {
-				osdxclient.list(pwd,null);
+				long id = control.osdxclient.list(control.pwd,null);
+				control.commandThread.put(id,this);
 			}
 			else if (param.startsWith("/")) {
-				osdxclient.list(param,null);
+				long id = control.osdxclient.list(param,null);
+				control.commandThread.put(id,this);
 			} else {
-				if (pwd.equals("/")) {
-					osdxclient.list("/"+param,null);
+				if (control.pwd.equals("/")) {
+					long id = control.osdxclient.list("/"+param,null);
+					control.commandThread.put(id,this);
 				} else {
-					osdxclient.list(pwd+"/"+param,null);	
+					long id = control.osdxclient.list(control.pwd+"/"+param,null);
+					control.commandThread.put(id,this);
 				}
 			}
 		} catch (Exception ex) {
@@ -642,124 +696,7 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 	}
 
 
-	public void onSuccess(OSDXFileTransferCommand command) {
-		System.out.println("Command "+command.getID()+" successful :: "+command.getClass().getSimpleName());
-		Transfer transfer = transfersInProgress.get(command.getID());
-//		if (transfer==null) {
-//			System.out.println("no transfer type");
-//		}
-		if (transfer!=null) {
-			if (transfer.type.equals("upload")) {
-				if (command instanceof OSDXFileTransferUploadCommand) {
-					
-					System.out.println("upload success");
-					
-					out.println("226 transfer complete");
-					//transfer.file.delete();
-					//transfersInProgress.remove(command.getID());
-				}
-			} else {
-				try {
-					File tmpFile = transfer.file;
-					if (tmpFile.exists()) {
-						out.println("150 Binary data connection");
-						
-						//transfer downloaded file to ftp client
-						FileInputStream fin = new FileInputStream(tmpFile);
-						
-						Socket t = getDataSocket();
-						if (t==null) {
-							return;
-						}
-						OutputStream out2 = t.getOutputStream();
-						byte buffer[] = new byte[1024];
-						int read;
-						try {
-							while ((read = fin.read(buffer)) != -1) {
-								out2.write(buffer, 0, read);
-							}
-							out2.close();
-							out.println("226 transfer complete");
-							fin.close();
-							tmpFile.delete();
-							t.close();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					} else {
-						out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-		} else {
-			if (command instanceof OSDXFileTransferDeleteCommand) {
-				if (command.getID() == lastRMDCommandID) {
-					out.println("250 RMD command succesful");
-				} else {
-					out.println("250 DELE command succesful");
-				}
-			}
-			else if (command instanceof OSDXFileTransferRenameCommand) {
-				out.println("250 Rename command succesful");
-			}
-			else if (command instanceof OSDXFileTransferListCommand) {
-				try {
-					out.println("150 ASCII data");
-					Socket t = getDataSocket();
-					if (t==null) {
-						return;
-					}
-					PrintWriter out2 = new PrintWriter(t.getOutputStream(),	true);
-					Vector<RemoteFile> list = ((OSDXFileTransferListCommand)command).getList();
-					for (RemoteFile f : list) {
-						//System.out.println("LIST::"+f.getName());
-						String di;
-						if (f.isDirectory()) {
-							di = "drwxr-xr-x ";
-						} else {
-							di = "-rw-r--r--";
-						}
-						String name = f.getName();
-						//name = name.replace(' ', '_');
-						String e = di+"1 user group "+f.getLength()+" Jul 04 20:00 "+name+"";
-						out2.println(e);
-					}
-					t.close();
-					out.println("226 transfer complete");
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				
-			}
-			else if (command instanceof OSDXFileTransferMkDirCommand) {
-				out.println("250 MKD command succesful");
-			}
-		}
-	}
-	
-	public void onError(OSDXFileTransferCommand command, String msg) {
-		System.out.println(msg);
-//		if (command instanceof OSDXFileTransferListCommand) {
-//			out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
-//		}
-//		else if (command instanceof OSDXFileTransferMkDirCommand) {
-//			out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
-//		}
-//		if (command instanceof OSDXFileTransferRenameCommand) {
-//			out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
-//		}
-//		else {
-			out.println("550 Requested action not taken. File unavailable (e.g., file not found, no access).");
-//		}
-	}
-
-	public void onStatusUpdate(OSDXFileTransferCommand command, long progress,long maxProgress, String msg) {
-		
-	}
-
-	private Socket getDataSocket() throws UnknownHostException, IOException {
+	public Socket getDataSocket() throws UnknownHostException, IOException {
 		if (connectionMode==MODE_ACTIVE && next_port>0) {
 			return new Socket(host, next_port); 
 		}
@@ -767,7 +704,7 @@ public class FTP_OSDX_BridgeThread extends Thread implements CommandResponseList
 			return ftpPassiveDataSocket;
 		}
 		out.println("425 Error: Can't open data connection");
-		return null; 
+		return null;
 	}
 	
 	private void closePassiveSocket() {

@@ -75,7 +75,7 @@ import org.fnppl.opensdx.xml.Element;
 //import sun.java2d.pipe.hw.ExtendedBufferCapabilities.VSyncType;
 
 public class OSDXFileTransferClient implements UploadClient {
-	private static boolean DEBUG = true;
+	private static boolean DEBUG = false;
 	
 	private static String version = "osdx_ftclient v.2012-01-24";
 	
@@ -233,6 +233,7 @@ public class OSDXFileTransferClient implements UploadClient {
 	}
 	
 	public void removeCommandFromInProgress(long id) {
+		//System.out.println("removing command from in progress: "+id);
 		commandsInProgress.remove(id);
 	}
 	
@@ -546,15 +547,21 @@ public class OSDXFileTransferClient implements UploadClient {
 	}
 
 	
-	private void login() {
-		addCommand(new OSDXFileTransferLoginCommand(IdGenerator.getTimestamp(), username).setBlocking());
+	private long login() {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferLoginCommand(id, username).setBlocking());
+		return id;
 	}
-	private void loginUserPass() {
-		addCommand(new OSDXFileTransferUserPassLoginCommand(IdGenerator.getTimestamp(), username, password).setBlocking());
+	private long loginUserPass() {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferUserPassLoginCommand(id, username, password).setBlocking());
+		return id;
 	}
 	
-	public void mkdir(String absoluteDirectoryName) {
-		addCommand(new OSDXFileTransferMkDirCommand(IdGenerator.getTimestamp(),absoluteDirectoryName));
+	public long mkdir(String absoluteDirectoryName) {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferMkDirCommand(id,absoluteDirectoryName));
+		return id;
 	}
 	
 	public long delete(String absoluteDirectoryName) {
@@ -563,19 +570,28 @@ public class OSDXFileTransferClient implements UploadClient {
 		return id;
 	}
 	
-	public void rename(String absoluteDirectoryName, String newfilename) {
-		addCommand(new OSDXFileTransferRenameCommand(IdGenerator.getTimestamp(),absoluteDirectoryName,newfilename));
+	public long rename(String absoluteDirectoryName, String newfilename) {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferRenameCommand(id,absoluteDirectoryName,newfilename));
+		return id;
 	}
 	
-	public void list(String absoluteDirectoryName, CommandResponseListener listener) {
-		addCommandNext(new OSDXFileTransferListCommand(IdGenerator.getTimestamp(),absoluteDirectoryName, listener).setBlocking());
+	public long list(String absoluteDirectoryName, CommandResponseListener listener) {
+		long id = IdGenerator.getTimestamp();
+		addCommandNext(new OSDXFileTransferListCommand(id,absoluteDirectoryName, listener).setBlocking());
 		//addCommand(new OSDXFileTransferListCommand(IdGenerator.getTimestamp(),absoluteDirectoryName, listener).setBlocking());
-		
+		return id;
 	}
 	
 	public long download(String absoluteRemoteFilename, File localFile) {
 		long id = IdGenerator.getTimestamp();
 		addCommand(new OSDXFileTransferDownloadCommand(id,absoluteRemoteFilename, localFile,false, this));
+		return id;
+	}
+	
+	public long download(String absoluteRemoteFilename, BufferedOutputStream out) {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferDownloadStreamCommand(id,absoluteRemoteFilename, out, this));
 		return id;
 	}
 	
@@ -597,8 +613,10 @@ public class OSDXFileTransferClient implements UploadClient {
 		return id;
 	}
 	
-	public void fileinfo(String absoluteDirectoryName) {
-		addCommand(new OSDXFileTransferFileInfoCommand(IdGenerator.getTimestamp(),absoluteDirectoryName));
+	public long fileinfo(String absoluteDirectoryName) {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferFileInfoCommand(id,absoluteDirectoryName));
+		return id;
 	}
 	
 //	public void uploadFile(File f) throws FileTransferException {
@@ -756,7 +774,7 @@ public class OSDXFileTransferClient implements UploadClient {
 			if (commandIdBlocks == commandid) {
 				nextCommandBlockTimeout = -1L;
 			}
-			if (!(command instanceof OSDXFileTransferDownloadCommand || command instanceof OSDXFileTransferUploadCommand)) {
+			if (!(command instanceof OSDXFileTransferDownloadCommand || command instanceof OSDXFileTransferDownloadStreamCommand || command instanceof OSDXFileTransferUploadCommand)) {
 				//TODO check
 				//System.out.println("removeCommandFromInProgress "+commandid);
 				removeCommandFromInProgress(commandid);

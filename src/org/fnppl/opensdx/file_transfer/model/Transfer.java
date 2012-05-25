@@ -53,6 +53,8 @@ public class Transfer {
 	public long startTime = -1L;
 	public long dataAtTime = 0L;
 	public String[] msg = null;
-	public int pos = 0;
+	public long pos = 0;
 	public long fileLen = -1L;
+	public String originalFilename = null;
+	
 }

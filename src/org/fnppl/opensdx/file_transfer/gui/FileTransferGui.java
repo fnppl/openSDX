@@ -1385,7 +1385,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 			//setStatus(t.pos, t.msg+ "    ERROR "+msg);
 			t.msg[2] += "    ERROR "+msg;
 			t.msg[4] = "ERROR";
-			setStatus(t.pos, t.msg);
+			setStatus((int)t.pos, t.msg);
 			
 			//update status
 			try {
@@ -1432,7 +1432,7 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 			}
 			//setStatus(t.pos, t.msg+proz+transferRate);
 			t.msg[4] = proz+transferRate;
-			setStatus(t.pos, t.msg);
+			setStatus((int)t.pos, t.msg);
 
 			if (panelStatus.isVisible()) {
 				int value = (int)(progressCompleteFiles+progress);
