@@ -127,7 +127,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class FileTransferGui extends JFrame implements MyObserver, CommandResponseListener {
 
-	public static final String version = "v. 2011-11-23";
+	public static final String version = "v. 2012-05-28";
 	private Vector<FileTransferAccount> accounts = new Vector<FileTransferAccount>();
 	private Vector<FileTransferAccount> supportedAccounts = new Vector<FileTransferAccount>();
 
@@ -219,8 +219,14 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 						a.host = e.getChildText("host");
 						a.port = Integer.parseInt(e.getChildTextNN("port"));
 						a.prepath = e.getChildTextNN("prepath");
-						a.keyid = e.getChildText("keyid");
-						a.keystore_filename = e.getChildTextNN("keystore");
+						Element eKey = e.getChild("keypair");
+						if (eKey==null) {
+							a.keyid = e.getChildText("keyid");
+							a.keystore_filename = e.getChildTextNN("keystore");
+						} else {
+							a.key = OSDXKey.fromElement(eKey);
+							a.keyid = a.key.getKeyID();
+						}
 						accounts.add(a);
 						supportedAccounts.add(a);
 					}
@@ -719,14 +725,19 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 						Dialogs.showMessage("Sorry, missing host in account settings");
 						return;
 					}
-					if (a.keystore_filename==null || a.keystore_filename.length()==0) {
-						Dialogs.showMessage("Sorry, missing keystore filename in account settings");
-						return;
+					if (a.key == null) {
+						if (a.keystore_filename==null || a.keystore_filename.length()==0) {
+							Dialogs.showMessage("Sorry, missing keystore filename in account settings");
+							return;
+						}
+						if (a.keyid==null || a.keyid.length()==0) {
+							Dialogs.showMessage("Sorry, missing key id in account settings");
+							return;
+						}
+					} else {
+						a.keyid = a.key.getKeyID();
 					}
-					if (a.keyid==null || a.keyid.length()==0) {
-						Dialogs.showMessage("Sorry, missing key id in account settings");
-						return;
-					}
+					
 
 					//get osdx key out of keystoreOSDXKey key = null;
 					MessageHandler mh = new DefaultMessageHandler();
@@ -857,8 +868,16 @@ public class FileTransferGui extends JFrame implements MyObserver, CommandRespon
 						ea.addContent("prepath", a.prepath);
 					}
 					ea.addContent("username", a.username);
-					ea.addContent("keystore", a.keystore_filename);
-					ea.addContent("keyid", a.keyid);
+					if (a.keystore_filename == null) {
+						try {
+							ea.addContent(a.key.toElement(new DefaultMessageHandler()));
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
+					} else {
+						ea.addContent("keystore", a.keystore_filename);
+						ea.addContent("keyid", a.keyid);
+					}
 					e.addContent(ea);
 				}
 				else if (a.type.equals(FileTransferAccount.TYPE_FTP)) {
