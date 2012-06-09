@@ -1194,6 +1194,7 @@
         <xsd:restriction base="notemptystring">
             <xsd:minLength value="8"/>
             <xsd:pattern value="([A-F0-9]{2}:){15}[A-F0-9]{2}"/>
+            <xsd:pattern value="[a-f0-9]{32}"/>
         </xsd:restriction>
     </xsd:simpleType>
     
