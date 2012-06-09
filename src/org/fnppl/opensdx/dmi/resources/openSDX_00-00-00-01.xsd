@@ -85,7 +85,7 @@
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="onlytest" type="xsd:boolean"/>
-            <xsd:element name="feedid" type="xsd:string"/>
+            <xsd:element name="feedid" type="notemptystring"/>
             <xsd:element name="creationdatetime" type="datetimeGMT"/>
             <xsd:element name="effectivedatetime" type="datetimeGMT"/>
             <xsd:element name="creator" type="creator" maxOccurs="1" minOccurs="0"/>
@@ -108,10 +108,10 @@
             by evaluating the contributors (see below) for this.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="displayname" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="name" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="version" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="display_artistname" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="displayname" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="name" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="version" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="display_artistname" type="notemptystring" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="ids" type="ids"/>
             <xsd:element name="items" type="items" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="contributors" type="contributors" maxOccurs="1" minOccurs="0"/>
@@ -142,9 +142,9 @@
             A year should be provided in case the type equals copyright or production.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="name" type="notemptystring"/>
             <xsd:element name="type" type="contributorType"/>
-            <xsd:element name="year" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="year" type="year" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="ids" type="ids"/>
             <xsd:element name="www" type="www" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
@@ -156,19 +156,19 @@
             the associated element. </xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="grid" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="grid" type="grid" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="upc" type="upc" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="isrc" type="isrc" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="iswc" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="contentauth" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="labelordernum" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="amzn" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="isbn" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="iswc" type="iswc" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="contentauth" type="contentauth" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="labelordernum" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="amzn" type="amzn" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="isbn" type="isbn" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="finetunes" type="finetunes" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="licensor" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="licensee" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="gvl" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="amg" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="licensor" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="licensee" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="gvl" type="gvl" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="amg" type="amg" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="www">
@@ -180,17 +180,17 @@
             is granted.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="facebook" type="publishable" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="myspace" type="publishable" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="homepage" type="publishable" maxOccurs="5" minOccurs="0"/>
-            <xsd:element name="twitter" type="publishable" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="blog" type="publishable" maxOccurs="5" minOccurs="0"/>
-            <xsd:element name="phone" type="publishable" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="facebook" type="publishable_url" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="myspace" type="publishable_url" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="homepage" type="publishable_url" maxOccurs="5" minOccurs="0"/>
+            <xsd:element name="twitter" type="publishable_url" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="blog" type="publishable_url" maxOccurs="5" minOccurs="0"/>
+            <xsd:element name="phone" type="publishable_url" maxOccurs="1" minOccurs="0"/>
         </xsd:sequence>
     </xsd:complexType>
-    <xsd:complexType name="publishable">
+    <xsd:complexType name="publishable_url">
         <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
+            <xsd:extension base="url">
                 <xsd:attribute name="publishable" type="xsd:boolean"/>
             </xsd:extension>
         </xsd:simpleContent>
@@ -300,8 +300,8 @@
             <xsd:documentation xml:lang="en">Contains optional information about youtube url und channel.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="url" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="channel" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="url" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="channel" type="notemptystring" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="fingerprint">
@@ -397,7 +397,7 @@
             Type can be "allow" or "disallow" and tells about the allowance of corresponding territory.</xsd:documentation>
         </xsd:annotation>
         <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
+            <xsd:extension base="cc:countryCode">
                 <xsd:attribute name="type" type="allowance" use="optional"/>
             </xsd:extension>
         </xsd:simpleContent>
@@ -525,7 +525,7 @@
                     <xsd:documentation xml:lang="en">Type tells about the type of the file and MUST be "prelistining", "full", "frontcover", "backcover" or "booklet".</xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
-            <xsd:element name="filetype" type="xsd:string" maxOccurs="1" minOccurs="0">
+            <xsd:element name="filetype" type="notemptystring" maxOccurs="1" minOccurs="0">
                 <xsd:annotation>
                     <xsd:documentation xml:lang="en">Filetype should accept e.g. "MP3" also as "MPEG-1 Audio Layer III".</xsd:documentation>
                 </xsd:annotation>
@@ -590,9 +590,9 @@
             <xsd:documentation xml:lang="en">This element contains checksums for the file.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="md5" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="sha1" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="sha256" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="md5" type="md5" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="sha1" type="sha1" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="sha256" type="sha256" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="dimension">
@@ -805,8 +805,8 @@
             <xsd:extension base="action">
                 <xsd:all>
                     <xsd:element name="url" type="url"/>
-                    <xsd:element name="user" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-                    <xsd:element name="pass" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+                    <xsd:element name="user" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+                    <xsd:element name="pass" type="notemptystring" maxOccurs="1" minOccurs="0"/>
                     <xsd:element name="expiresdatetime" type="datetimeGMT"/>
                 </xsd:all>
             </xsd:extension>
@@ -881,14 +881,14 @@
             <xsd:documentation xml:lang="en">This element contains information about recipient.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="name" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="department" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="nameperson" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="street" type="xsd:string"/>
-            <xsd:element name="postcode" type="xsd:string"/>
-            <xsd:element name="country" type="xsd:string"/>
-            <xsd:element name="additionaladdressinfo" type="xsd:string" minOccurs="0" maxOccurs="1"
-            />
+            <xsd:element name="name" type="notemptystring" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="department" type="notemptystring" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="nameperson" type="notemptystring" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="street" type="notemptystring"/>
+            <xsd:element name="postcode" type="notemptystring"/>
+            <xsd:element name="country" type="cc:countryCode"/>
+            <xsd:element name="additionaladdressinfo" type="notemptystring" minOccurs="0"
+                maxOccurs="1"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="costscoveredby">
@@ -896,9 +896,9 @@
             <xsd:documentation xml:lang="en">This element contains information about who covered the costs of event.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="contractpartnerid" type="xsd:string"/>
-            <xsd:element name="ourcontractpartnerid" type="xsd:string"/>
-            <xsd:element name="maxcostscovered" type="xsd:string" minOccurs="0" maxOccurs="1">
+            <xsd:element name="contractpartnerid" type="notemptystring"/>
+            <xsd:element name="ourcontractpartnerid" type="notemptystring"/>
+            <xsd:element name="maxcostscovered" type="notemptystring" minOccurs="0" maxOccurs="1">
                 <xsd:annotation>
                     <xsd:documentation xml:lang="en">This contains the max amount that will be covered.</xsd:documentation>
                 </xsd:annotation>
@@ -911,8 +911,8 @@
             feeds recipient is a POS.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="pos" type="xsd:string"/>
-            <xsd:element name="url" type="xsd:string"/>
+            <xsd:element name="pos" type="notemptystring"/>
+            <xsd:element name="url" type="notemptystring"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="reporting">
@@ -1003,7 +1003,7 @@
     </xsd:simpleType>
     <xsd:simpleType name="upc">
         <xsd:restriction base="xsd:string">
-            <xsd:pattern value="(\d{10,13})?">
+            <xsd:pattern value="(\d{10,13})">
                 <xsd:annotation>
                     <xsd:documentation xml:lang="en">The Universal Product Code (UPC) is a barcode symbology (i.e., a specific type of barcode), that is widely used in North America, and in countries including the UK, Australia, and New Zealand for tracking trade items in stores. 
             		Its most common form, the UPC-A, consists of 12 numerical digits, which are uniquely assigned to each trade item. Along with the related EAN barcode, the UPC is the only barcode allowed for scanning trade items at the point of sale, per GS1 standards.</xsd:documentation>
@@ -1012,9 +1012,11 @@
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="isbn">
+        <!-- 978-3-943061-03-1 
+        ISBN-10: 3943061035 - ISBN-13: 9783943061031 -->
         <xsd:restriction base="xsd:string">
             <xsd:pattern
-                value="(\d{1}-\d{5}-\d{3}-\d{1}|\d{1}-\d{3}-\d{5}-\d{1}|\d{1}-\d{2}-\d{6}-\d{1})?">
+                value="(\d{1}-\d{5}-\d{3}-\d{1}|\d{1}-\d{3}-\d{5}-\d{1}|\d{1}-\d{2}-\d{6}-\d{1}|\d{3}-\d{1}-\d{6}-\d{2}-\d{1})">
                 <xsd:annotation>
                     <xsd:documentation xml:lang="en">The International Standard Book Number (ISBN) is a unique numeric commercial book identifier based upon the 9-digit Standard Book Numbering (SBN) code.</xsd:documentation>
                 </xsd:annotation>
@@ -1026,15 +1028,20 @@
             <xsd:pattern value="([a-zA-Z]{2}(\-)?[0-9a-zA-Z]{3}(\-)?\d{2}(\-)?\d{5})">
                 <xsd:annotation>
                     <xsd:documentation xml:lang="en">The International Standard Recording Code (ISRC), defined by ISO 3901, is an international standard code for uniquely identifying sound recordings and music video recordings.</xsd:documentation>
-                </xsd:annotation>
+                </xsd:annotation>                
             </xsd:pattern>
+            <xsd:minLength value="1"/>
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="finetunes">
         <xsd:restriction base="xsd:long">
             <xsd:annotation>
-                <xsd:documentation xml:lang="en">The 1-13 digits long identifier of a item at finetunes.</xsd:documentation>
+                <xsd:documentation xml:lang="en">The 13 digits long identifier of a item at finetunes.</xsd:documentation>
             </xsd:annotation>
+            <xsd:totalDigits value="13"/>
+            <xsd:minExclusive value="1000000000000"/>
+            <xsd:maxExclusive value="2000000000000"/>
+            <xsd:pattern value="[0-9]{13}"/>
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="ipv4">
@@ -1053,8 +1060,11 @@
             <!-- not pattern defined yet... --> </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="url">
-        <xsd:restriction base="xsd:string">
-            <!-- not pattern defined yet... --> </xsd:restriction>
+        <xsd:restriction base="xsd:anyURI">
+            <xsd:minLength value="1"/>
+            <xsd:pattern value="http://..*\...*"/>
+            <xsd:pattern value="https://..*\...*"/>
+        </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="authtype">
         <xsd:restriction base="xsd:string">
@@ -1131,6 +1141,74 @@
             <xsd:enumeration value="stereo"/>
             <xsd:enumeration value="joint-stereo"/>
             <xsd:enumeration value="5.1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="notemptystring">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="year">
+        <xsd:restriction base="xsd:integer">
+            <xsd:totalDigits value="4"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="grid">
+        <!-- examples: http://en.wikipedia.org/wiki/Global_Release_Identifier
+            A12425GABC1234002M
+            A1-2425G-ABC1234002-M
+            GRid:A1-2425G-ABC1234002-M  -->
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="18"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="amg">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="iswc">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="amzn">
+        <!-- example: http://de.wikipedia.org/wiki/Amazon_Standard_Identification_Number -->
+        <xsd:restriction base="xsd:integer">
+
+            <xsd:minExclusive value="0"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="contentauth">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="gvl">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="8"/>
+            <xsd:pattern value="LC \d{5}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="md5">
+        <xsd:restriction base="notemptystring">
+            <xsd:minLength value="8"/>
+            <xsd:pattern value="([A-F0-9]{2}\:){15}[A-F0-9]{2}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="sha1">
+        <!-- example: E8:27:4E:86:68:9E:CC:67:F0:93:BC:AC:A6:E2:09:C1:C6:25:7D:7B -->
+        <xsd:restriction base="notemptystring">
+            <xsd:minLength value="8"/>
+            <xsd:pattern value="([A-F0-9]{2}\:){19}[A-F0-9]{2}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="sha256">
+        <!-- example: 7E:DB:34:A2:E8:38:1C:FE:58:67:97:D0:4F:1A:37:0D:6C:CD:0D:87:62:00:75:FF:FA:71:47:80:DA:A4:8F:38 -->
+        <xsd:restriction base="notemptystring">
+            <xsd:minLength value="8"/>
+            <xsd:pattern value="([A-F0-9]{2}\:){31}[A-F0-9]{2}"/>
         </xsd:restriction>
     </xsd:simpleType>
 </xsd:schema>
