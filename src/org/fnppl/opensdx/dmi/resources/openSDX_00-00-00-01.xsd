@@ -1193,7 +1193,7 @@
     <xsd:simpleType name="md5">
         <xsd:restriction base="notemptystring">
             <xsd:minLength value="8"/>
-            <xsd:pattern value="([A-F0-9]{2}\:){15}[A-F0-9]{2}"/>
+            <xsd:pattern value="([A-F0-9]{2}:){15}[A-F0-9]{2}"/>
         </xsd:restriction>
     </xsd:simpleType>
     
@@ -1201,14 +1201,14 @@
         <!-- example: E8:27:4E:86:68:9E:CC:67:F0:93:BC:AC:A6:E2:09:C1:C6:25:7D:7B -->
         <xsd:restriction base="notemptystring">
             <xsd:minLength value="8"/>
-            <xsd:pattern value="([A-F0-9]{2}\:){19}[A-F0-9]{2}"/>
+            <xsd:pattern value="([A-F0-9]{2}:){19}[A-F0-9]{2}"/>
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="sha256">
         <!-- example: 7E:DB:34:A2:E8:38:1C:FE:58:67:97:D0:4F:1A:37:0D:6C:CD:0D:87:62:00:75:FF:FA:71:47:80:DA:A4:8F:38 -->
         <xsd:restriction base="notemptystring">
             <xsd:minLength value="8"/>
-            <xsd:pattern value="([A-F0-9]{2}\:){31}[A-F0-9]{2}"/>
+            <xsd:pattern value="([A-F0-9]{2}:){31}[A-F0-9]{2}"/>
         </xsd:restriction>
     </xsd:simpleType>
 </xsd:schema>
