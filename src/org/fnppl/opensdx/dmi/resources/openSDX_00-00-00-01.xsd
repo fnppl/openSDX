@@ -1198,10 +1198,12 @@
     </xsd:simpleType>
     
     <xsd:simpleType name="sha1">
-        <!-- example: E8:27:4E:86:68:9E:CC:67:F0:93:BC:AC:A6:E2:09:C1:C6:25:7D:7B -->
+        <!-- example: E8:27:4E:86:68:9E:CC:67:F0:93:BC:AC:A6:E2:09:C1:C6:25:7D:7B 44
+            b2f5171e85760127d04390a7f549da3b669755 -->
         <xsd:restriction base="notemptystring">
             <xsd:minLength value="8"/>
             <xsd:pattern value="([A-F0-9]{2}:){19}[A-F0-9]{2}"/>
+            <xsd:pattern value="[a-f0-9]{40}"/>
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="sha256">
