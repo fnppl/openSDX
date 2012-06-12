@@ -195,7 +195,7 @@
 						<country>DK</country><!-- ISO -->
 						<additionaladdressinfo>Building 7</additionaladdressinfo>
 					</to>
-					<text></text><!-- text which MUST be on that letter -->
+					<text>I MAY NOT BE EMPTY</text><!-- text which MUST be on that letter -->
 					<costscoveredby>
 						<contractpartnerid>SOMEID 1234</contractpartnerid><!-- MUST contractpartnerid on your side ; see above -->
 						<ourcontractpartnerid>SOMEID_OTHERSIDE 1234</ourcontractpartnerid><!-- MUST contractpartnerid on our side ; see above -->					
@@ -306,8 +306,8 @@
         	<main_language>de</main_language>
         	
 			<related>
-				<physical_distributor></physical_distributor><!-- COULD (one of) the physical distributors  -->
-				<physical_distributor publishable="false"></physical_distributor><!-- COULD (one of) the physical distributors  -->
+				<physical_distributor>Physical Publishing Inc.</physical_distributor><!-- COULD (one of) the physical distributors  -->
+				<physical_distributor publishable="false">Secret Physical Publishing Inc.</physical_distributor><!-- COULD (one of) the physical distributors  -->
 				<utube>
 					<url>http://www.youtube.com/user/someuser</url>
 					<channel>MontyPython</channel>					
@@ -438,9 +438,9 @@
 				
 		<items> <!-- those items aka tracks/videos/flash/apps/whatever contained in this bundle -->
 			<item>
-				<displayname></displayname><!-- MUST this is how this should be displayed in pos -->
-				<name></name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
-				<version></version><!-- MUST version if different versions of this bundle exist - can be empty -->
+				<displayname>Some Itemname (original version)</displayname><!-- MUST this is how this should be displayed in pos -->
+				<name>Some Itemname</name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
+				<version>original</version><!-- MUST version if different versions of this bundle exist - can be empty -->
 				<type>audio</type><!-- MUST ; audio, video, android-app, win32-program, whatever -->
 				<display_artistname>Artist</display_artistname>
 				<ids>
@@ -577,11 +577,11 @@
 						<prelistening_length>90</prelistening_length><!-- SHOULD ; for type "prelistening" -->
 						<location>
 							<ftp>
-								<server></server>
-								<port></port>
-								<path></path>
-								<user></user><!-- COULD ; -->
-								<pass></pass><!-- COULD ; -->
+								<server>yourserver</server>
+								<port>1234</port>
+								<path>/</path>
+								<user>username</user><!-- COULD ; -->
+								<pass>userpassword</pass><!-- COULD ; -->
 								<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
 							</ftp><!-- http means that, this file is not delivered, but it can be pulled by the receiving parties ; integrity is assured by checksums -->
 						</location>
@@ -591,8 +591,8 @@
 						<decryptinfo>
 							<cipher>AES/256/CTR</cipher><!-- MUST ; AES, RIJNDAEL, XOR, Arcfour, whatever - should be "convenient" -->
 							<initvector>19191919199</initvector>
-							<key></key><!-- MUST ; base64-encoded this key is encrypted by the public-key, therefore only the receiver (in possession of the private key) can decrypt this key and with that decrypted key decrypt the file -->
-							<bytes></bytes>
+							<key>somekey_base64_encoded</key><!-- MUST ; base64-encoded this key is encrypted by the public-key, therefore only the receiver (in possession of the private key) can decrypt this key and with that decrypted key decrypt the file -->
+							<bytes>some_bytes</bytes>
 							<checksums>
 								<sha1>E8:27:4E:86:68:9E:CC:67:F0:93:BC:AC:A6:E2:09:C1:C6:25:7D:7B</sha1><!-- SHOULD sha1-checksum of that file -->
 								<md5>F6:67:22:97:52:E6:0B:36:CB:D9:59:7C:2A:E1:66:74</md5><!-- SHOULD sha1-checksum of that file -->

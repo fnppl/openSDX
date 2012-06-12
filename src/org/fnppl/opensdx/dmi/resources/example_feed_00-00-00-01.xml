@@ -70,9 +70,10 @@
  -->
 
 <feed xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="openSDX_00-00-00-01.xsd">
+<!-- feed -->
 	<feedinfo>
 		<onlytest>true</onlytest><!-- MUST testmode true|false -->
-		<feedid>kaakka</feedid><!-- MUST id is provided by sender; should be unique -->
+		<feedid>SOMEID_20101001_143559</feedid><!-- MUST id is provided by sender; should be unique -->
 		<creationdatetime>2010-10-01 00:00:00 GMT+00:00</creationdatetime><!-- MUST datetime of creation of this feed -->
 		<effectivedatetime>2010-10-01 00:00:00 GMT+00:00</effectivedatetime><!-- MUST ; most probably the same as creationdate ; datetime when this feed may be come ACTIVE as earliest; mainly used for deferred update-feeds with an effective-date not *asap* -->
 		<creator>
@@ -84,7 +85,7 @@
 		<receiver>
 			<type>ftp</type><!-- openSDX fileserver|ftp|sftp|ftps|webdav -->
 			<servername>myftpserver.org</servername><!-- MUST provider should really give hostname instead of ip ; if hostname is given as ip, then put that one here -->
-			<serveripv4>127.0.0.1</serveripv4><!-- MUST resolved servername ipv4 -->
+			<serveripv4>0.0.0.0</serveripv4><!-- MUST resolved servername ipv4 -->
 			<serveripv6></serveripv6><!-- COULD resolved servername ipv6 -->
 			<authtype>login</authtype><!-- MUST login|keyfile|token|other -->
 			<username>testuser</username><!-- MUST for authtype login or keyfile -->
@@ -194,10 +195,10 @@
 						<country>DK</country><!-- ISO -->
 						<additionaladdressinfo>Building 7</additionaladdressinfo>
 					</to>
-					<text></text><!-- text which MUST be on that letter -->
+					<text>I MAY NOT BE EMPTY</text><!-- text which MUST be on that letter -->
 					<costscoveredby>
-						<contractpartnerid></contractpartnerid><!-- MUST contractpartnerid on your side ; see above -->
-						<ourcontractpartnerid></ourcontractpartnerid><!-- MUST contractpartnerid on our side ; see above -->					
+						<contractpartnerid>SOMEID 1234</contractpartnerid><!-- MUST contractpartnerid on your side ; see above -->
+						<ourcontractpartnerid>SOMEID_OTHERSIDE 1234</ourcontractpartnerid><!-- MUST contractpartnerid on our side ; see above -->					
 						<maxcostscovered>EUR 0.77</maxcostscovered>
 					</costscoveredby>
 				</letter><!-- would be total awesome, if someone would provide even *non*-digital reports; of course this costs money ; receving party can decide to ignore this -->			
@@ -208,130 +209,79 @@
 	
 	<bundle>
 		<ids>
-			<grid></grid><!-- COULD grid -->
-			<upc></upc><!-- SHOULD ean/upc -->
-			<isrc>DE3DF1104333</isrc><!-- SHOULD isrc - not applicable on bundle-level, but for  -->
-			<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
-			<labelordernum></labelordernum><!-- COULD -->
-			<amzn></amzn><!-- COULD ; amazon-id-stuff -->
-			<isbn></isbn><!-- COULD -->
-			<finetunes>1234567890123</finetunes><!-- COULD -->
+			<grid>A12425GABC1234002M</grid><!-- COULD grid -->
+			<upc>08919287717</upc><!-- SHOULD ean/upc -->
+			<isrc>DEZ650000000</isrc><!-- SHOULD isrc - not applicable on bundle-level, but for  -->
+			<contentauth>isrc:DEZ650000000</contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
+			<labelordernum>SOME_LABEL_ORDER_CODE #65</labelordernum><!-- COULD -->
+			<amzn>3898530213</amzn><!-- COULD ; amazon-id-stuff -->
+			<isbn>978-3-943061-03-1</isbn><!-- COULD -->
+			<finetunes>1111222333445</finetunes><!-- COULD -->
 			<licensor>ourid</licensor><!-- COULD -->
-			<licensee></licensee><!-- COULD -->
+			<licensee>SOME_IDE_GIVEN_BY_LICENSEE</licensee><!-- COULD -->
 		</ids><!-- MUST -->
-		<displayname></displayname><!-- MUST this is how this should be displayed in pos -->
-		<name></name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
-		<version></version><!-- MUST version if different versions of this bundle exist - can be empty -->
-		<display_artistname></display_artistname><!-- SHOULD ; convenience-info receiver can decide to ignore this and to create from the give contributors -->	
+		<displayname>SOME_DISPLAYNAME_CONTAINING_VERSION</displayname><!-- MUST this is how this should be displayed in pos -->
+		<name>SOME_DISPLAYNAME</name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
+		<version>SOME_VERSION</version><!-- MUST version if different versions of this bundle exist - can be empty -->
+		<display_artistname>SOME_ARTIST_DISPLAYNAME</display_artistname><!-- SHOULD ; convenience-info receiver can decide to ignore this and to create from the give contributors -->	
 		<contributors>
 			<contributor num="1">
-				<name></name><!-- MUST could be labelname -->
+				<name>SOME_LABELNAME</name><!-- MUST could be labelname -->
 				<type>label</type><!-- MUST e.g. label|composer|texter|writer|conductor -->
-				<year></year><!-- SHOULD for copyright/production -->
+				<year>1975</year><!-- SHOULD for copyright/production -->
 				<ids>
-					<gvl></gvl><!-- gvl -->
-					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
-					<licensor></licensor><!-- must be unique for that contributor/sender/licensor -->
-					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
-					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
-				</ids><!-- MUST -->
-				<www>
-					<facebook></facebook>
-					<myspace></myspace>
-					<homepage></homepage>
-					<twitter></twitter>
-					<phone publishable="false">+49 44 9191919</phone><!-- COULD international format -->
-				</www><!-- SHOULD further information on this ; every single information-entry cold be tagged *publishable* which would then mean wether customers of receiver are also allowed to be given this information ; if publishable is not given, then this is granted -->
+					<gvl>LC 12345</gvl><!-- gvl -->
+					<finetunes>1111222333445</finetunes><!-- finetunes-strange-id -->
+					<licensor>SOME_ID_GIVEN_BY_LICENSOR_UNIQUE</licensor><!-- must be unique for that contributor/sender/licensor -->
+					<licensee>SOME_ID_GIVEN_BY_LICENSEE_UNIQUE</licensee><!-- if given some kind of "your" id: thats it -->
+					<contentauth>gvl:LC 12345</contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
+				</ids><!-- MUST -->				
 			</contributor><!-- MUST -->
 			<contributor num="2">
-				<name></name><!-- could be artistname -->
-				<type>display_artist</type><!-- e.g. display_artist -->
-				<year></year><!-- SHOULD for copyright/production -->
+				<name>SOME_ARTISTNAME</name><!-- could be artistname -->
+				<type>display_artist</type><!-- e.g. display_artist -->				
 				<ids>
-					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
-					<licensor></licensor><!-- must be unique for that contributor/licensor -->
-					<licensee></licensee><!-- if given some kind of "your" id: thats it -->					
-					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
+					<finetunes>1111222333445</finetunes><!-- finetunes-strange-id -->
+					<licensor>SOME_ID_GIVEN_BY_LICENSOR_UNIQUE</licensor><!-- must be unique for that contributor/licensor -->
+					<licensee>SOME_ID_GIVEN_BY_LICENSEE_UNIQUE</licensee><!-- if given some kind of "your" id: thats it -->					
+					<contentauth>fnt:1111222333445</contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
 				</ids>
 				<www>
-					<facebook></facebook>
-					<myspace></myspace>
-					<homepage></homepage>
-					<twitter></twitter>
-					<phone publishable="false">+49 44 9191919</phone><!-- COULD international format -->
+					<facebook>http://facbook.com/someone</facebook>
+					<myspace>http://myspace.com/someone</myspace>
+					<homepage>http://somewhere.com</homepage>
+					<twitter>http://twitter.com/someone</twitter>
 				</www><!-- SHOULD further information on this ; every single information-entry cold be tagged *publishable* which would then mean wether customers of receiver are also allowed to be given this information ; if publishable is not given, then this is granted -->				
 			</contributor>
 			<contributor num="3">
-				<name></name><!-- could be compilator -->
+				<name>SOME_COMPILATOR</name><!-- could be compilator -->
 				<type>compilator</type><!-- e.g. compilator -->
-				<year></year><!-- SHOULD for copyright/production -->
+				<year>2010</year><!-- SHOULD for copyright/production -->
 				<ids>
-					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
-					<licensor></licensor><!-- must be unique for that contributor/licensor -->
-					<licensee></licensee><!-- if given some kind of "your" id: thats it -->					
-					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
+					<finetunes>1111222333445</finetunes><!-- finetunes-strange-id -->					
 				</ids>
-				<www>
-					<facebook></facebook>
-					<myspace></myspace>
-					<homepage></homepage>
-					<twitter></twitter>
-					<phone publishable="false">+49 44 9191919</phone><!-- COULD international format -->
-				</www><!-- SHOULD further information on this ; every single information-entry cold be tagged *publishable* which would then mean wether customers of receiver are also allowed to be given this information ; if publishable is not given, then this is granted -->				
 			</contributor>
 			<contributor num="4">
-				<name></name><!-- could be compilator -->
+				<name>SOME_SINGER</name><!-- could be compilator -->
 				<type>singer</type><!-- e.g. vocals -->
-				<year></year><!-- SHOULD for copyright/production -->
+				<year>2010</year><!-- SHOULD for copyright/production -->
 				<ids>
-					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
-					<licensor></licensor><!-- must be unique for that contributor/licensor -->
-					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
-					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
+					<licensor>SOME_LICENSOR_ID_UNIQUE</licensor><!-- must be unique for that contributor/licensor -->									
 				</ids>
-				<www>
-					<facebook></facebook>
-					<myspace></myspace>
-					<homepage></homepage>
-					<twitter></twitter>
-					<phone publishable="false">+49 44 9191919</phone><!-- COULD international format -->
-			</www><!-- SHOULD further information on this ; every single information-entry cold be tagged *publishable* which would then mean wether customers of receiver are also allowed to be given this information ; if publishable is not given, then this is granted -->				
 			</contributor>
 			<contributor num="5">
-				<name></name><!-- could be compilator -->
+				<name>COPYRIGHTSHOLDER_INC_TOTAL_BUYOUT_LTD</name><!-- could be compilator -->
 				<type>copyright</type><!-- e.g. vocals -->
 				<year>2005</year><!-- SHOULD for copyright/production -->
-				<ids>
-					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
-					<licensor></licensor><!-- must be unique for that contributor/licensor -->
-					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
-					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
-				</ids>
-				<www>
-					<facebook></facebook>
-					<myspace></myspace>
-					<homepage></homepage>
-					<twitter></twitter>
-					<phone publishable="false">+49 44 9191919</phone><!-- COULD international format -->
-			</www><!-- SHOULD further information on this ; every single information-entry cold be tagged *publishable* which would then mean wether customers of receiver are also allowed to be given this information ; if publishable is not given, then this is granted -->				
+				<ids></ids>
+				<www></www>
 			</contributor>	
 			<contributor num="6">
-				<name></name><!-- could be compilator -->
+				<name>SOME_COOL_PRODUCTION_PAYER</name><!-- could be compilator -->
 				<type>production</type><!-- e.g. vocals -->
 				<year>2004</year><!-- SHOULD for copyright/production -->
-				<ids>
-					<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
-					<licensor></licensor><!-- must be unique for that contributor/licensor -->
-					<licensee></licensee><!-- if given some kind of "your" id: thats it -->
-					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->					
-				</ids>
-				<www>
-					<facebook></facebook>
-					<myspace></myspace>
-					<homepage></homepage>
-					<twitter></twitter>
-					<phone publishable="false">+49 44 9191919</phone><!-- COULD international format -->
-			</www><!-- SHOULD further information on this ; every single information-entry cold be tagged *publishable* which would then mean wether customers of receiver are also allowed to be given this information ; if publishable is not given, then this is granted -->				
+				<ids></ids>
+				<www></www>
 			</contributor>					
 			<!-- HT 14.02.2011 - could also have some "restrictions/conditions" on it - e.g. when an artist is different for some territory or such... -->
 		</contributors><!-- MUST the contributors are ordered from 1 to n - most significant ones (per type) are the ones with the smalles n -->
@@ -356,17 +306,16 @@
         	<main_language>de</main_language>
         	
 			<related>
-				<physical_distributor></physical_distributor><!-- COULD (one of) the physical distributors  -->
-				<physical_distributor publishable="false"></physical_distributor><!-- COULD (one of) the physical distributors  -->
+				<physical_distributor>Physical Publishing Inc.</physical_distributor><!-- COULD (one of) the physical distributors  -->
+				<physical_distributor publishable="false">Secret Physical Publishing Inc.</physical_distributor><!-- COULD (one of) the physical distributors  -->
 				<utube>
-					<url></url>
-					<channel></channel>
+					<url>http://www.youtube.com/user/someuser</url>
+					<channel>MontyPython</channel>					
 				</utube>
 				<bundle>
 					<ids>
-						<upc></upc>
-						<amzn></amzn>
-						<isbn></isbn>
+						<upc>08919287717</upc>
+						<amzn>3898530213</amzn>						
 					</ids>
 					<purchase>
 						<pos>itms</pos>
@@ -375,9 +324,8 @@
 				</bundle>
 				<bundle>
 					<ids>
-						<upc></upc>
-						<amzn></amzn>
-						<isbn></isbn>
+						<upc>08919287718</upc>
+						<amzn>3898530213</amzn>
 					</ids>
 				</bundle>
 			</related><!-- SHOULD ; if available any other forms of this product (versions, cover, tracks included in mix etc.) -->
@@ -385,9 +333,9 @@
 		
 		<license_basis>
 			<territorial>
-				<territory type="allow">GB</territory><!-- type explicitly given -->
+				<territory type="allow">DE</territory><!-- type explicitly given -->
 				<territory type="disallow">US</territory><!-- for use for eg. WW -AT -->
-				<territory></territory><!-- type omitted: allow -->
+				<territory>CH</territory><!-- type omitted: allow -->
 				<!-- U more territories -->
 			</territorial>
 			<timeframe>
@@ -401,8 +349,8 @@
 			</pricing>
 			<streaming_allowed>true</streaming_allowed>
 	        <channels>
-	          <channel type="allow">ad supported</channel>  <!-- all | ad supported | premium | ringtones -->
-			  <channel type="disallow">Shop XYZ</channel>  <!-- if specific channels (or shop) should be excluded from further use -->
+	          <channel type="allow">ad supported</channel>  <!-- all | ad supported | premium -->
+			  <channel type="disallow">Shop XYZ</channel>  <!-- if specific channels (or shops) should be excluded from further use -->
 	        </channels>
 		</license_basis><!-- these are the basic rules under which this bundle is provided to u (of course on basis of those agreed on in the contracting phase) -->
 		
@@ -445,7 +393,7 @@
 						<echo>YOU CANNOT EVEN REACH ME - since RULE1 breaks and DE is in EU</echo>					
 					</then>				
 				</rule>
-			</rules><!-- if no specific rules should be applied: no rules-node - dont use empty-rules-node! -->
+			</rules>
 		</license_specifics><!-- MUST ; if no specific rules should be applied: empty node -->
 		
 		<reporting>
@@ -479,7 +427,7 @@
 		<tags>
 			<genres>
 				<genre>Rock</genre>
-				<genre>Surf Rock</genre>
+				<genre>Beat</genre>
 			</genres>
 			<bundle_only>false</bundle_only> <!--  true|false -->
 			<explicit_lyrics>cleaned</explicit_lyrics> <!--  true|false|cleaned -->
@@ -490,38 +438,26 @@
 				
 		<items> <!-- those items aka tracks/videos/flash/apps/whatever contained in this bundle -->
 			<item>
-				<displayname></displayname><!-- MUST this is how this should be displayed in pos -->
-				<name></name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
-				<version></version><!-- MUST version if different versions of this bundle exist - can be empty -->
+				<displayname>Some Itemname (original version)</displayname><!-- MUST this is how this should be displayed in pos -->
+				<name>Some Itemname</name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
+				<version>original</version><!-- MUST version if different versions of this bundle exist - can be empty -->
 				<type>audio</type><!-- MUST ; audio, video, android-app, win32-program, whatever -->
 				<display_artistname>Artist</display_artistname>
 				<ids>
-					<grid></grid><!-- COULD grid -->
-					<isrc>DE3DF1212345</isrc><!-- SHOULD isrc - not applicable on bundle-level, but for. If present it must match the following schema: AAXXX0000000 or AA-XXX-00-00000 (A = chars, 0 = numbers, X = alphanumeric)-->
-					<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com -->
-					<finetunes>1234567890123</finetunes><!-- strange finetunes id -->
+					<isrc>DEZ650000000</isrc><!-- SHOULD isrc - not applicable on bundle-level, but for -->
+					<finetunes>1111222333445</finetunes><!-- strange finetunes id -->
 				</ids><!-- MUST -->
 				<fingerprint>
 					<echoprint></echoprint><!-- see http://echoprint.me | https://github.com/echonest/echoprint-codegen -->
 				</fingerprint><!-- COULD -->
 				<contributors>
 					<contributor num="1">
-						<name></name><!-- could be artistname -->
+						<name>SOME_DISPLAY_ARTISTNAME</name><!-- could be artistname -->
 						<type>display_artist</type><!-- e.g. display_artist -->
-						<year></year><!-- SHOULD for copyright/production -->
+						<year>2005</year><!-- SHOULD for copyright/production -->
 						<ids>
-							<finetunes>1234567890123</finetunes><!-- finetunes-strange-id -->
-							<licensor></licensor><!-- must be unique for that contributor/licensor -->
-							<licensee></licensee><!-- if given some kind of "your" id: thats it -->					
-							<contentauth></contentauth><!-- SHOULD content-authority-id - https://contentauthority.com  -->
+							<finetunes>1111222333445</finetunes><!-- finetunes-strange-id -->							
 						</ids>
-						<www>
-							<facebook></facebook>
-							<myspace></myspace>
-							<homepage></homepage>
-							<twitter></twitter>
-							<phone publishable="false">+49 44 9191919</phone><!-- COULD international format -->
-						</www><!-- SHOULD further information on this ; every single information-entry cold be tagged *publishable* which would then mean wether customers of receiver are also allowed to be given this information ; if publishable is not given, then this is granted -->				
 					</contributor>
 					<!-- HT 14.02.2011 - could also have some "restrictions/conditions" on it - e.g. when an artist is different for some territory or such... -->
 				</contributors><!-- MUST the contributors are ordered from 1 to n - most significant ones (per type) are the ones with the smalles n -->
@@ -550,8 +486,8 @@
 		            <main_language>de</main_language>
 					<related>					
 						<utube>
-							<url></url>
-							<channel></channel>
+							<url>http://www.youtube.com/user/someuser</url>
+							<channel>MontyPython</channel>
 						</utube>
 					</related><!-- SHOULD ; if available any other forms of this product (versions, cover, tracks included in mix etc.) -->
 				</information>
@@ -562,39 +498,15 @@
 						<pricecode>LOW</pricecode><!-- COULD ; arbitrary-info ; mainly agreed in  -->
 						<wholesale>EUR 0.99</wholesale><!-- COULD ; an explicitly given wholesale-price overrides the basic pricecode-given-wp ; most probably either one of pricecode OR wholesaleprice should be given -->
 					</pricing><!--  given the "as_on_bunlde"-tag, but giving also tags here would override those in effect ... - should also check for "nullable" -->
-				</license_basis><!-- MUST ; must not be empty. -->
-				<license_specifics>					
-					<as_on_bundle>true</as_on_bundle><!-- COULD ; if as_on_bundle 'true', this means to take the enclosing bundle's license-specifics; could also be omitted ; could otherwise be the same rules as above -->
-					<rules><!-- COULD; MUST not be empty -->
-						<rule num="1"><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
-							<if>
-								<what>territory</what>
-								<operator>containedin</operator><!-- equals/before/after/contains/containedin -->
-								<value>EU</value>
-							</if>
-							<then>
-								<echo>me is debugging output for happy programmers...</echo><!-- HT 14.02.2011 - much appreciated... -->
-								<break /><!-- this means to not process any more rules...; just leave it away to "continue" -->
-							</then>
-							<else><!-- HT 14.02.2011 we should not cascade this now..., but could easily do -->
-								<proclaim>
-									<what>price</what>
-									<for>EUR 9.99</for>
-								</proclaim>
-								<proclaim>
-									<what>pricelevel</what>
-									<for>medium</for>
-								</proclaim>
-								<break />
-							</else>
-						</rule><!-- numbered since we need an ordered mode here - first come first match -->
-					</rules>		
-				</license_specifics><!-- MUST ; must not be empty. -->
+				</license_basis>
+				<license_specifics>
+					<rules /><!-- MUST ; no rules -> empty -->
+				</license_specifics>
 
 				<tags>
 					<genres>
 						<genre>Rock</genre>
-						<genre>Surf Rock</genre>
+						<genre>Beat</genre>
 					</genres>
 					<bundle_only>false</bundle_only>
 					<explicit_lyrics>false</explicit_lyrics>
@@ -646,51 +558,44 @@
 						<bytes>84848483838</bytes><!-- length of file in bytes -->
 						<location>
 							<http>
-								<url></url><!-- MUST ; should be tls -->
-								<user></user><!-- COULD ; http-basic-header-auth -->
-								<pass></pass><!-- COULD ; http-basic-header-auth -->
+								<url>https://myfileserver.com/FEEDID/FILE_MD5</url><!-- MUST ; should be tls -->
+								<user>SOME_USER</user><!-- COULD ; http-basic-header-auth -->
+								<pass>SOME_PASS</pass><!-- COULD ; http-basic-header-auth -->
 								<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
 							</http><!-- http means that, this file is not delivered, but it can be pulled by the receiving parties ; integrity is assured by checksums -->
-							<origin_file>../ajajaj.flv</origin_file> <!-- COULD path to file on creator side -->
-							<filename>kaakka_2_90C70236ABE34F9D22BC1EB082CCF183</filename> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->
 						</location>
 						<checksums>
-							<sha1>8A:17:4F:86:DB:B4:05:62:5A:E7:3B:58:63:53:AD:F5:D6:23:D3:48</sha1><!-- SHOULD sha1-checksum of that file -->
-							<md5>90:C7:02:36:AB:E3:4F:9D:22:BC:1E:B0:82:CC:F1:83</md5><!-- SHOULD sha1-checksum of that file -->
-						</checksums><!-- MUST one checksum must be given; -->
-						
+							<sha1>E8:27:4E:86:68:9E:CC:67:F0:93:BC:AC:A6:E2:09:C1:C6:25:7D:7B</sha1><!-- SHOULD sha1-checksum of that file -->
+						</checksums>
 					</file>
 					<file>
 						<type>prelistening</type><!-- MUST ; full|prelistening -->
-						<filetype></filetype><!-- MUST ; FILEFORMAT/BITRATE[KBIT/s]/CODEC/CODECSETTINGS e.g. mp3/320/unknown/CBR -->
+						<filetype>mp3/320/unknown/CBR</filetype><!-- MUST ; FILEFORMAT/BITRATE[KBIT/s]/CODEC/CODECSETTINGS e.g. mp3/320/unknown/CBR -->
 						<channels>stereo</channels>
 						<bytes>84848483838</bytes><!-- length of file in bytes -->
 						<prelistening_offset>90</prelistening_offset><!-- SHOULD ; for type "prelistening" -->
 						<prelistening_length>90</prelistening_length><!-- SHOULD ; for type "prelistening" -->
 						<location>
 							<ftp>
-								<server></server>
-								<port></port>
-								<path></path>
-								<user></user><!-- COULD ; -->
-								<pass></pass><!-- COULD ; -->
+								<server>yourserver</server>
+								<port>1234</port>
+								<path>/</path>
+								<user>username</user><!-- COULD ; -->
+								<pass>userpassword</pass><!-- COULD ; -->
 								<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
 							</ftp><!-- http means that, this file is not delivered, but it can be pulled by the receiving parties ; integrity is assured by checksums -->
-							<origin_file>../ajajaj.flv</origin_file> <!-- COULD path to file on creator side -->
-							<filename>kaakka_3_90C70236ABE34F9D22BC1EB082CCF183</filename> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->
 						</location>
 						<checksums>
-							<sha1></sha1><!-- SHOULD sha1-checksum of that file -->
-							<md5></md5><!-- SHOULD sha1-checksum of that file -->
+							<md5>F6:67:22:97:52:E6:0B:36:CB:D9:59:7C:2A:E1:66:74</md5><!-- SHOULD md5-checksum of that file -->
 						</checksums><!-- MUST one checksum must be given; if encrypted file is referenced, those bytes/checksums are those of the encrypted file -->
 						<decryptinfo>
 							<cipher>AES/256/CTR</cipher><!-- MUST ; AES, RIJNDAEL, XOR, Arcfour, whatever - should be "convenient" -->
 							<initvector>19191919199</initvector>
-							<key></key><!-- MUST ; base64-encoded this key is encrypted by the public-key, therefore only the receiver (in possession of the private key) can decrypt this key and with that decrypted key decrypt the file -->
-							<bytes></bytes>
+							<key>somekey_base64_encoded</key><!-- MUST ; base64-encoded this key is encrypted by the public-key, therefore only the receiver (in possession of the private key) can decrypt this key and with that decrypted key decrypt the file -->
+							<bytes>some_bytes</bytes>
 							<checksums>
-								<sha1></sha1><!-- SHOULD sha1-checksum of that file -->
-								<md5></md5><!-- SHOULD sha1-checksum of that file -->
+								<sha1>E8:27:4E:86:68:9E:CC:67:F0:93:BC:AC:A6:E2:09:C1:C6:25:7D:7B</sha1><!-- SHOULD sha1-checksum of that file -->
+								<md5>F6:67:22:97:52:E6:0B:36:CB:D9:59:7C:2A:E1:66:74</md5><!-- SHOULD sha1-checksum of that file -->
 							</checksums>
 						</decryptinfo>
 					</file>
@@ -699,19 +604,13 @@
 						<filetype>FLV/96/YUV/ajja</filetype><!-- MUST ; FILEFORMAT/BITRATE[KBIT/s]/CODEC/CODECSETTINGS e.g. mp3/320/unknown/CBR -->
 						<bytes>84848483838</bytes><!-- length of file in bytes -->
 						<location>
-							<origin_file>../ajajaj.flv</origin_file> <!-- COULD path to file on creator side -->
-							<filename>kaakka_4_90C70236ABE34F9D22BC1EB082CCF183</filename> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->
+							<path>../ajajaj.flv</path><!-- relative-paths are relative to this xml -->
 						</location>
 						<checksums>
-							<sha1></sha1><!-- SHOULD sha1-checksum of that file -->
-							<md5></md5><!-- SHOULD sha1-checksum of that file -->
-						</checksums><!-- MUST one checksum must be given; if encrypted file is referenced, those bytes/checksums are those of the encrypted file -->
+							<sha1>E8:27:4E:86:68:9E:CC:67:F0:93:BC:AC:A6:E2:09:C1:C6:25:7D:7B</sha1><!-- SHOULD sha1-checksum of that file -->
+							<md5>F6:67:22:97:52:E6:0B:36:CB:D9:59:7C:2A:E1:66:74</md5><!-- SHOULD md5-checksum of that file -->
+						</checksums><!-- MUST one checksum must be given; if encrypted file is referenced, those bytes/checksums are those of the encrypted file -->						
 					</file>
-					<file><!-- In the case of an update or takedown with no extra file given, set "no_file_given" to "true" -->
-			            <location />
-			            <checksums />
-			            <no_file_given>true</no_file_given>
-			         </file>
 				</files>
 			</item>
 		</items>
@@ -719,7 +618,7 @@
 		<files>
 			<file>
 				<type>frontcover</type><!-- MUST ; cover / booklet -->
-				<filetype></filetype><!-- MUST ; FILEFORMAT/BITRATE[KBIT/s]/CODEC/CODECSETTINGS e.g. mp3/320/unknown/CBR -->
+				<filetype>JPEG</filetype><!-- MUST ; FILEFORMAT/BITRATE[KBIT/s]/CODEC/CODECSETTINGS e.g. mp3/320/unknown/CBR -->
 				<bytes>84848483838</bytes><!-- length of file in bytes -->
 				<dimension>
 					<width>600</width>
@@ -727,17 +626,15 @@
 				</dimension><!-- MUST for images: width and height in pixels -->
 				<location>
 					<http>
-						<url></url><!-- MUST ; should be tls -->
-						<user></user><!-- COULD ; http-basic-header-auth -->
-						<pass></pass><!-- COULD ; http-basic-header-auth -->
-						<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->
+						<url>https://myfileserver.com/FEEDID/FILE_MD5</url><!-- MUST ; should be tls -->
+						<user>SOME_USER</user><!-- COULD ; http-basic-header-auth -->
+						<pass>SOME_PASS</pass><!-- COULD ; http-basic-header-auth -->
+						<expiresdatetime>2011-06-10 20:24:00 GMT+00:00</expiresdatetime><!-- MUST ; until when this file is definitely available to be called -->					
 					</http><!-- http means that, this file is not delivered, but it can be pulled by the receiving parties ; integrity is assured by checksums -->
-					<origin_file>../ajajaj.flv</origin_file> <!-- COULD path to file on creator side -->
-					<filename>kaakka_1_90C70236ABE34F9D22BC1EB082CCF183</filename> <!-- COULD filename as uploaded on server in format feedid_num_md5 -->	
 				</location>
 				<checksums>
-					<sha1></sha1><!-- SHOULD sha1-checksum of that file -->
-					<md5></md5><!-- SHOULD sha1-checksum of that file -->
+					<sha1>E8:27:4E:86:68:9E:CC:67:F0:93:BC:AC:A6:E2:09:C1:C6:25:7D:7B</sha1><!-- SHOULD sha1-checksum of that file -->
+					<md5>F6:67:22:97:52:E6:0B:36:CB:D9:59:7C:2A:E1:66:74</md5><!-- SHOULD md5-checksum of that file -->
 				</checksums><!-- MUST one checksum must be given; -->
 			</file>
 		</files><!-- mainly/only used for cover or pdf-booklet -->
