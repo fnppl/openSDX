@@ -827,6 +827,11 @@
 					<xsd:documentation>Netherlands</xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
+			<xsd:enumeration value="AN">
+				<xsd:annotation>
+					<xsd:documentation>Netherlands Antilles</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
 			<xsd:enumeration value="NC">
 				<xsd:annotation>
 					<xsd:documentation>New Caledonia</xsd:documentation>
