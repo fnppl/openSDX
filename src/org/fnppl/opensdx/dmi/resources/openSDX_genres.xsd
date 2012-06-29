@@ -834,6 +834,43 @@
 		<xsd:enumeration value="South Africa (ZA)"/>
 		<xsd:enumeration value="Zambia (ZM)"/>
 		<xsd:enumeration value="Zimbabwe (ZW)"/>
+		<xsd:enumeration value="Axé"/>
+		<xsd:enumeration value="Baile Funk"/>
+		<xsd:enumeration value="Brazilian"/>
+		<xsd:enumeration value="Choro"/>
+		<xsd:enumeration value="Forró"/>
+		<xsd:enumeration value="Frevo"/>
+		<xsd:enumeration value="MPB"/>
+		<xsd:enumeration value="Pagode"/>
+		<xsd:enumeration value="Sertanejo"/>
+		<xsd:enumeration value="Chinese Alt"/>
+		<xsd:enumeration value="Chinese Classical"/>
+		<xsd:enumeration value="Chinese Flute"/>
+		<xsd:enumeration value="Chinese Hip-Hop"/>
+		<xsd:enumeration value="Chinese Opera"/>
+		<xsd:enumeration value="Chinese Orchestral"/>
+		<xsd:enumeration value="Chinese Regional Folk"/>
+		<xsd:enumeration value="Chinese Rock"/>
+		<xsd:enumeration value="Chinese Strings"/>
+		<xsd:enumeration value="C-Pop"/>
+		<xsd:enumeration value="Cantopop/HK Pop"/>
+		<xsd:enumeration value="Kayokyoku"/>
+		<xsd:enumeration value="Korean Classical"/>
+		<xsd:enumeration value="Korean Folk-Pop"/>
+		<xsd:enumeration value="Korean Hip-Hop"/>
+		<xsd:enumeration value="Korean Indie"/>
+		<xsd:enumeration value="Korean Rock"/>
+		<xsd:enumeration value="Korean Trad Instrumental"/>
+		<xsd:enumeration value="Korean Trad Song"/>
+		<xsd:enumeration value="Korean Trad Theater"/>
+		<xsd:enumeration value="Trot"/>
+		<xsd:enumeration value="Original Pilipino Music"/>
+		<xsd:enumeration value="Pinoy Pop"/>
+		<xsd:enumeration value="Indo Pop"/>
+		<xsd:enumeration value="Tai-Pop"/>
+		<xsd:enumeration value="Taiwanese Folk"/>
+		<xsd:enumeration value="Thai Pop"/>
+		<xsd:enumeration value="Tibetan Native Music"/>
     </xsd:restriction>
   </xsd:simpleType>    
 </xsd:schema>
