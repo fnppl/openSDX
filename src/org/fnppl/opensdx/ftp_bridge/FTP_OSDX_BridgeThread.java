@@ -295,8 +295,10 @@ public class FTP_OSDX_BridgeThread extends Thread {
 			public void run() {
 				try {
 					//if (ensureConnection()) {
+						String filename = removeDoubleSlashes(param);
+					
 						out.println("150 Binary data connection");
-						System.out.println("HANDLE_STOR :: "+param);
+						System.out.println("HANDLE_STOR :: "+filename);
 						
 						Socket t = getDataSocket();
 						if (t==null) return;
@@ -305,12 +307,12 @@ public class FTP_OSDX_BridgeThread extends Thread {
 						File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
 						tmpFile.deleteOnExit();
 						FileOutputStream outFileBuffer = new FileOutputStream(tmpFile);
-						String filename = param;
+						//String filename = param;
 						if (!filename.startsWith("/")) {
 							if (control.pwd.equals("/")) {
-								filename = "/"+param;
+								filename = "/"+filename;
 							} else {
-								filename = control.pwd+"/"+param;
+								filename = control.pwd+"/"+filename;
 							}
 						}
 						
@@ -449,6 +451,7 @@ public class FTP_OSDX_BridgeThread extends Thread {
 	}
 	public void handle_CWD(String param) {
 		try {
+				param = removeDoubleSlashes(param);
 				if (param.startsWith("/")) {
 					control.pwd = param;
 				} else {
@@ -458,7 +461,10 @@ public class FTP_OSDX_BridgeThread extends Thread {
 						control.pwd = control.pwd+"/"+param;
 					}
 				}
-				System.out.println("PWD: "+control.pwd);
+				if (control.pwd.endsWith("/") && control.pwd.length()>1) {
+					control.pwd = control.pwd.substring(0,control.pwd.length()-2);
+				}
+				System.out.println("PWD after \"CWD "+param+"\" :: "+control.pwd);
 				out.println("250 CWD command succesful");
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -724,5 +730,12 @@ public class FTP_OSDX_BridgeThread extends Thread {
 			}
 			ftpPassiveDataServerSocket = null;
 		}
+	}
+	
+	private String removeDoubleSlashes(String text) {
+		while (text.contains("//")) {
+			text = text.replace("//", "/");
+		}
+		return text;
 	}
 }
