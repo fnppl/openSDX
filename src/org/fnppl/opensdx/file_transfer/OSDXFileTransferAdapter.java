@@ -479,6 +479,12 @@ public class OSDXFileTransferAdapter {
 		errorMsg = cmd.errorMsg;
 		return ok;
 	}
+	public String getMostRecentErrorMSG() {
+		return errorMsg;
+	}
+//	public Exception getMostRecentException() {
+//		return last_exception;
+//	}
 
 	public boolean delete(String absoluteRemoteFilename) {
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut);
@@ -554,22 +560,28 @@ public class OSDXFileTransferAdapter {
 		}
 	}
 
-	public void upload(File localFile, String absoluteRemotePath) {
+	public boolean upload(File localFile, String absoluteRemotePath) {
+		boolean ret = false;
 		try {
 			System.out.println("Upload of file: "+localFile.getCanonicalPath()+" -> "+absoluteRemotePath);
 			boolean ok = upload(localFile, absoluteRemotePath, false, null);
 			if (ok) {
 				System.out.println("Upload finished.\n");
-			} else {
-				if (errorMsg==null) {
+				ret = true;
+			} 
+			else {
+				if(errorMsg==null) {
 					System.out.println("ERROR\n");
-				} else {
+				} 
+				else {
 					System.out.println("ERROR: "+errorMsg+"\n");
 				}
+				
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		return ret;
 	}
 
 	public void uploadResume(File localFile, String absoluteRemotePath) {
