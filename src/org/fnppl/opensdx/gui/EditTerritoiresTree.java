@@ -123,9 +123,11 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 			//private Dimension panel_dimension = new Dimension(400, 20);
 			
 			public Component getTreeCellRendererComponent(JTree tree, Object value,	boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-				TerritoryTreeNode node = (TerritoryTreeNode)value;
+				final TerritoryTreeNode node = (TerritoryTreeNode)value;
 				final String code = node.xml.getName();
 				final String name = node.xml.getAttribute("name");
+				final boolean isCountryCode = (node.xml.getChildren().size()==0); 
+				
 				JPanel p = map.get(value);
 				if (p==null) {
 					p = new JPanel();
@@ -141,9 +143,12 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 						JButton buAllow = new JButton("allow");
 						buAllow.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
-								allow.put(code, Boolean.TRUE);
+								setAllow(node.xml, Boolean.TRUE);
+								//allow.put(code, Boolean.TRUE);
 								pan.setBackground(Color.GREEN.darker());
 								notifyChanges();
+								EditTerritoiresTree.this.invalidate();
+								EditTerritoiresTree.this.repaint();
 							}
 						});
 						buAllow.setPreferredSize(button_dimension);
@@ -152,9 +157,12 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 						JButton buDisallow = new JButton("disallow");
 						buDisallow.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
-								allow.put(code, Boolean.FALSE);
+								setAllow(node.xml, Boolean.FALSE);
+								//allow.put(code, Boolean.FALSE);
 								pan.setBackground(Color.RED);
 								notifyChanges();
+								EditTerritoiresTree.this.invalidate();
+								EditTerritoiresTree.this.repaint();
 							}
 						});
 						buDisallow.setPreferredSize(button_dimension);
@@ -163,9 +171,12 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 						JButton buRemove = new JButton("unset");
 						buRemove.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
-								allow.remove(code);
+								setAllow(node.xml, null);
+								//allow.remove(code);
 								pan.setBackground(Color.lightGray);
 								notifyChanges();
+								EditTerritoiresTree.this.invalidate();
+								EditTerritoiresTree.this.repaint();
 							}
 						});
 						buRemove.setPreferredSize(button_dimension);
@@ -173,18 +184,104 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 					}
 					map.put(value,p);
 				}
-				if (allow.containsKey(code)) {
-					if (allow.get(code).booleanValue()) {
-						p.setBackground(Color.GREEN.darker());
+				if (isCountryCode) {
+					if (allow.containsKey(code)) {
+						if (allow.get(code).booleanValue()) {
+							p.setBackground(Color.GREEN.darker());
+						} else {
+							p.setBackground(Color.RED);
+						}
 					} else {
-						p.setBackground(Color.RED);
+						p.setBackground(Color.lightGray);
 					}
 				} else {
-					p.setBackground(Color.lightGray);
+					if (!code.equals("WW")) {
+						//look in children
+						//System.out.println("Looking for children of: "+code);
+						Vector<Element> children =  node.xml.getChildren();
+						boolean allAllow = true;
+						boolean allDisallow = true;
+						boolean anyEntry = false;
+						while (!children.isEmpty()) {
+							Element e = children.remove(0);
+							if (e.getChildren().size()==0) {
+								if (allow.containsKey(e.getName())) {
+									anyEntry = true;
+									if (allow.get(e.getName()).booleanValue()) {
+										allDisallow = false;
+									} else {
+										allAllow = false;
+									}
+								} else {
+									allAllow = false;
+									allDisallow = false;
+								}
+							} else {
+								children.addAll(e.getChildren());
+							}
+						}
+						//System.out.println("allAllow: "+allAllow);
+						//System.out.println("allDisallow: "+allDisallow);
+						//System.out.println("any Entry: "+anyEntry);
+						if (allAllow) {
+							p.setBackground(Color.GREEN.darker());
+						}
+						else if (allDisallow) {
+							p.setBackground(Color.RED);
+						}
+						else if (anyEntry) {
+							p.setBackground(Color.YELLOW);
+						}
+						else {
+							p.setBackground(Color.lightGray);
+						}
+					}
 				}
 				return p;
 			}
-		});
+		
+			
+		private void setAllow(Element element, Boolean value) {
+			if (element.getName().equals("WW")) {
+				allow.clear();
+				if (value!=null) {
+					allow.put(element.getName(), value);
+				}
+				return;
+			}
+			if (element.getChildren().size()==0) {
+				if (value==null) {
+					allow.remove(element.getName());
+				} else {
+					allow.put(element.getName(), value);
+				}
+			} else {
+				//look in children
+				//System.out.println("Looking for children of: "+element.getName());
+				Vector<Element> children =  element.getChildren();
+				if (value==null) {
+					while (!children.isEmpty()) {
+						Element e = children.remove(0);
+						if (e.getChildren().size()==0) {
+							allow.remove(e.getName());	
+						} else {
+							children.addAll(e.getChildren());
+						}
+					}	
+				} else {
+					while (!children.isEmpty()) {
+						Element e = children.remove(0);
+						if (e.getChildren().size()==0) {
+							allow.put(e.getName(), value);	
+						} else {
+							children.addAll(e.getChildren());
+						}
+					}
+				}
+			}
+		}
+		}
+		);
 		setCellEditor(new TreeCellEditor() {
 			public Component getTreeCellEditorComponent(JTree tree,
 					Object value, boolean isSelected, boolean expanded,
@@ -219,6 +316,7 @@ public class EditTerritoiresTree extends JTree implements MyObservable {
 		setEditable(true);
 		//expandAllRows();
 	}
+
 	
 	public void setTerritories(Territorial t) {
 		allow.clear();
