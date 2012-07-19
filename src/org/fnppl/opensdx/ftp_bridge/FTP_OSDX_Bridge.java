@@ -80,6 +80,8 @@ import org.fnppl.opensdx.xml.Element;
 
 public class FTP_OSDX_Bridge implements CommandResponseListener {
 
+	public final static String VERSION = "v.2012-07-19";
+	
 	private File configFile = new File("ftp_bridge_config.xml"); 
 	private File alterConfigFile = new File("src/org/fnppl/opensdx/ftp_bridge/resources/ftp_bridge_config.xml"); 
 
@@ -144,7 +146,7 @@ public class FTP_OSDX_Bridge implements CommandResponseListener {
 
 	public void startService() {
 		try {
-			System.out.println("Starting FTP-to-OSDXFiletransfer-Bridge on port "+port);
+			System.out.println("Starting FTP-to-OSDXFiletransfer-Bridge "+VERSION+" on port "+port);
 
 			osdxclient = new OSDXFileTransferClient();
 			osdxclient.addResponseListener(this);
