@@ -471,10 +471,10 @@ public class FTP_OSDX_BridgeThread extends Thread {
 		}
 	}
 	public void handle_QUIT(String param) {
-		control.osdxclient.closeConnection();
-		closePassiveSocket();
-		running = false;
-		System.out.println("Goodbye");
+		//control.osdxclient.closeConnection();
+		//closePassiveSocket();
+		//running = false;
+		System.out.println("got QUIT command");
 		out.println("221 Goodbye");
 	}
 	public void handle_USER(String param) {
