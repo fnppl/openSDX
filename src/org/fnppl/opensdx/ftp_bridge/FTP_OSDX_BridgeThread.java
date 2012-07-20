@@ -462,7 +462,7 @@ public class FTP_OSDX_BridgeThread extends Thread {
 					}
 				}
 				if (control.pwd.endsWith("/") && control.pwd.length()>1) {
-					control.pwd = control.pwd.substring(0,control.pwd.length()-2);
+					control.pwd = control.pwd.substring(0,control.pwd.length()-1);
 				}
 				System.out.println("PWD after \"CWD "+param+"\" :: "+control.pwd);
 				out.println("250 CWD command succesful");
