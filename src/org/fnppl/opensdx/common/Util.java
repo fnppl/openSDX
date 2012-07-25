@@ -326,13 +326,20 @@ public class Util {
 				if (list.length==0) {
 					emptyDirectories.add(directory);
 				} else {
+					Arrays.sort(list);
+					Vector<File> toTheEnd = new Vector<File>();
 					for(int i=0; i<list.length; i++) {
 						if(list[i].isDirectory()) {
 							listFiles(list[i],result, emptyDirectories);
 						} else {
-							result.add(list[i]);
+							if (list[i].getName().endsWith(".finished")) {
+								toTheEnd.add(list[i]);
+							} else {
+								result.add(list[i]);
+							}
 						}
 					}
+					result.addAll(toTheEnd);
 				}
 			} else {
 				result.add(directory);

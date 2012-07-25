@@ -53,7 +53,7 @@ import org.fnppl.opensdx.file_transfer.SecureConnection;
 import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.security.SecurityHelper;
 
-public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
+public class OSDXFileTransferUploadOldStyleCommand extends OSDXFileTransferCommand {
 
 	private File file = null;
 	private String remoteName = null;
@@ -67,7 +67,7 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	private OSDXFileTransferClient client = null;
 	private boolean resume = false;
 
-	public OSDXFileTransferUploadCommand(long id, File file, String absolutePathname, boolean resume, OSDXFileTransferClient client) {
+	public OSDXFileTransferUploadOldStyleCommand(long id, File file, String absolutePathname, boolean resume, OSDXFileTransferClient client) {
 		super();
 		fileLen = file.length();
 		this.resume = resume;
@@ -109,7 +109,7 @@ public class OSDXFileTransferUploadCommand extends OSDXFileTransferCommand {
 	
 	
 	
-	public OSDXFileTransferUploadCommand(long id,byte[] data, String absolutePathname, OSDXFileTransferClient client) {
+	public OSDXFileTransferUploadOldStyleCommand(long id,byte[] data, String absolutePathname, OSDXFileTransferClient client) {
 		super();
 		this.data = data;
 		fileLen = data.length;

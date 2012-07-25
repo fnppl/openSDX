@@ -175,7 +175,7 @@ public class FeedCreator {
 			.addAction(
 				TriggeredActions.TRIGGER_ONINITIALRECEIVE,
 				ActionHttp.make(
-					"check.fnppl.org",
+					"http://check.fnppl.org",
 					"GET"
 				)
 			    .addHeader("header1", "value1")
@@ -198,8 +198,8 @@ public class FeedCreator {
 		Bundle bundle
 		= Bundle.make(
 			IDs.make()
-				.amzn("amazon")
-				.finetunes("123456789123")
+				.amzn("12345678")
+				.finetunes("1234567890123")
 				.upc("1234567890")
 			,
 			"displayname",
@@ -234,6 +234,8 @@ public class FeedCreator {
 					System.currentTimeMillis(),
 					System.currentTimeMillis()
 				)
+				.pricing_pricecode("MEDIUM")
+				.streaming_allowed(false)
 			,
 			LicenseSpecifics.make()
 		)
@@ -245,8 +247,8 @@ public class FeedCreator {
 				   .labelordernum("123124124")
 			)
 			.www(InfoWWW.make()
-				.homepage("super-label-homepage.nät")
-				.phone("+49 44 9191919", false)
+				.homepage("http://super-label-homepage.nät")
+				//.phone("+49 44 9191919", false)
 			)
 		)
 		;

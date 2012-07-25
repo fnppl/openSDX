@@ -62,7 +62,7 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferListCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferLoginCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferMkDirCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadCommand;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadOldStyleCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUserPassLoginCommand;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.FileTransferAccount;
@@ -77,6 +77,7 @@ import org.fnppl.opensdx.keyserver.helper.IdGenerator;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
 import org.fnppl.opensdx.security.Identity;
 import org.fnppl.opensdx.security.KeyApprovingStore;
+import org.fnppl.opensdx.security.MD5;
 import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
@@ -89,7 +90,7 @@ public class OSDXFileTransferAdapter {
 
 	private static boolean DEBUG = false;
 
-	private static String version = "osdx_ftclient_sync v.2012-01-13";
+	private static String version = "osdx_ftclient_sync v.2012-07-25";
 	protected int maxPacketSize = 50*1024; //50kB
 
 	private Logger logger = Logger.getFileTransferLogger();
@@ -560,11 +561,11 @@ public class OSDXFileTransferAdapter {
 		}
 	}
 
-	public boolean upload(File localFile, String absoluteRemotePath) {
+	public boolean uploadOldStyle(File localFile, String absoluteRemotePath) {
 		boolean ret = false;
 		try {
 			System.out.println("Upload of file: "+localFile.getCanonicalPath()+" -> "+absoluteRemotePath);
-			boolean ok = upload(localFile, absoluteRemotePath, false, null);
+			boolean ok = uploadOldStyle(localFile, absoluteRemotePath, false, null);
 			if (ok) {
 				System.out.println("Upload finished.\n");
 				ret = true;
@@ -584,11 +585,11 @@ public class OSDXFileTransferAdapter {
 		return ret;
 	}
 
-	public boolean uploadResume(File localFile, String absoluteRemotePath) {
+	public boolean uploadResumeOldStyle(File localFile, String absoluteRemotePath) {
 		boolean ret = false;
 		try {
 			System.out.println("Upload/Resume of file: "+localFile.getCanonicalPath()+" -> "+absoluteRemotePath);
-			boolean ok = upload(localFile, absoluteRemotePath, true, null);
+			boolean ok = uploadOldStyle(localFile, absoluteRemotePath, true, null);
 			if (ok) {
 				System.out.println("Upload/Resume finished.\n");
 				ret = true;
@@ -605,7 +606,7 @@ public class OSDXFileTransferAdapter {
 		return ret;
 	}
 
-	public boolean upload(File localFile, String absoluteRemoteFilename, boolean resume, ProgressListener pg) throws Exception {
+	public boolean uploadOldStyle(File localFile, String absoluteRemoteFilename, boolean resume, ProgressListener pg) throws Exception {
 		errorMsg = null;
 		long id = SecureConnection.getID();
 		int num = 0;
@@ -788,8 +789,321 @@ public class OSDXFileTransferAdapter {
 			return false;
 		}
 	}
-
+	
 	public boolean upload(byte[] data, String absoluteRemoteFilename, boolean resume, ProgressListener pg) throws Exception {
+		// -> PUT [absoluteRemoteFilename]			// -> PUT_RESUME [filename]
+		// <- ACK									// <- ACK [length], [MD5_part]
+		// -> send data packages					// -> check length & MD5_part
+		// -> PUT_EOF [length], [MD5]				// -> send data package after [length]
+		// <- ACK_COMPLETE							// -> PUT_EOF [length], [MD5]
+													// <- ACK_COMPLETE
+		
+		
+		errorMsg = null;
+		long id = SecureConnection.getID();
+		int num = 0;
+
+		long dataPos = -1L;
+		long dataLen = data.length;
+		MD5 md5 = new MD5();
+		
+		if (pg!=null) {
+			if (dataLen>0) {
+				pg.setMaxProgress(dataLen);
+			} else {
+				pg.setMaxProgress(1);
+			}
+			pg.setProgress(0);	
+			pg.onUpate();
+		}
+		String command = null;
+		String[] param = new String[] {absoluteRemoteFilename};
+		
+
+		if (resume) {
+			command = "PUT_RESUME "+Util.makeParamsString(param);
+		} else {
+			command = "PUT "+Util.makeParamsString(param);
+		}
+
+		dataOut.setCommand(id, command);
+		if (DEBUG) {
+			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
+		}
+		dataOut.sendPackage();
+
+
+		boolean hasPkg = false;
+		while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+			handleUnexpectedPackageID();
+		}
+		
+		boolean transferData = false;
+		
+		while (hasPkg) {
+			if (!SecureConnection.isError(dataIn.type)) {
+				if (dataIn.type == SecureConnection.TYPE_ACK) {
+					//System.out.println("ACK upload of file: "+remoteName);
+					dataPos = 0;
+
+					if (resume) {
+//						String msg = getMessageFromContent(dataIn.content);
+//						//System.out.println("resume msg :: "+msg+"  filePos before = "+dataPos);
+//						if (msg!=null && msg.equals("upload already complete")) {
+//							hasNext = false;
+//							System.out.println(msg);
+//							//notifyUpdate(fileLen-1, fileLen, null);
+//							//progress ready
+//							if (pg!=null) {
+//								pg.setProgress(pg.getMaxProgress());
+//								pg.onUpate();
+//							}
+//							return true;
+//						} else {
+//							try {
+//								dataPos = Long.parseLong(getMessageFromContent(dataIn.content));
+//								//System.out.println("data pos = "+dataPos);
+//								if (dataPos>=dataLen) {
+//									errorMsg = "data position > data length";
+//									return false;	
+//								}
+//								if (pg!=null) {
+//									pg.setProgress(dataPos);
+//									pg.onUpate();
+//								}
+//							} catch (Exception ex) {
+//								//ex.printStackTrace();
+//								errorMsg = "wrong format: data upload resume position not parseable";
+//								return false;
+//							}
+//						}
+					}
+
+					//send data
+					transferData = (dataLen>dataPos);
+					while (transferData) {
+						//read from data
+						int nextPackSize = (int)(dataLen-dataPos);
+						if (nextPackSize>maxPacketSize) {
+							nextPackSize = maxPacketSize;
+						}
+						if (nextPackSize>0) {
+							num++;
+							byte[] send = Arrays.copyOfRange(data, (int)dataPos, (int)dataPos+nextPackSize);
+							dataOut.setData(id, num, send);
+							dataOut.sendPackage();
+							md5.update(send);
+							dataPos += nextPackSize;
+						}
+						//notify update
+						if (pg!=null) {
+							pg.setProgress(dataPos);
+							pg.onUpate();
+						}
+						if (dataPos>=dataLen) {
+							transferData = false;
+						}
+					}
+					
+					//send length and md5
+					dataOut.setCommand(id, "PUT_EOF "+Util.makeParamsString(new String[] {""+dataPos, md5.getMD5HexString()}));
+					dataOut.sendPackage();
+					
+					//receive next package
+					while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+						handleUnexpectedPackageID();
+					}
+
+					if (!hasPkg) {
+						handleConnectionClosed();
+						return false;
+					}
+				}
+				else if (dataIn.type == SecureConnection.TYPE_ACK_COMPLETE) {
+					//System.out.println("Upload complete");
+					//progress ready after receiving ACK_COMPLETE
+					if (pg!=null) {
+						pg.setProgress(pg.getMaxProgress());
+						pg.onUpate();
+					}
+					return true;
+				}
+			} else {
+				//stop upload (if running)
+				transferData = false;
+				errorMsg = getMessageFromContent(dataIn.content);
+				return false;
+			}
+		}
+		if (!hasPkg) {
+			handleConnectionClosed();
+			return false;
+		} else {
+			System.out.println("should never be in this state!!!");
+			return false;
+		}
+	}
+	
+	public boolean upload(File localFile, String absoluteRemoteFilename, boolean resume, ProgressListener pg) throws Exception {
+		// -> PUT [absoluteRemoteFilename]			// -> PUT_RESUME [filename]
+		// <- ACK									// <- ACK [length], [MD5_part]
+		// -> send data packages					// -> check length & MD5_part
+		// -> PUT_EOF [length], [MD5]				// -> send data package after [length]
+		// <- ACK_COMPLETE							// -> PUT_EOF [length], [MD5]
+													// <- ACK_COMPLETE
+		
+		
+		errorMsg = null;
+		long id = SecureConnection.getID();
+		int num = 0;
+
+		long dataPos = -1L;
+		long dataLen = localFile.length();
+		MD5 md5 = new MD5();
+		
+		if (pg!=null) {
+			if (dataLen>0) {
+				pg.setMaxProgress(dataLen);
+			} else {
+				pg.setMaxProgress(1);
+			}
+			pg.setProgress(0);	
+			pg.onUpate();
+		}
+		String command = null;
+		String[] param = new String[] {absoluteRemoteFilename};
+		
+
+		if (resume) {
+			command = "PUT_RESUME "+Util.makeParamsString(param);
+		} else {
+			command = "PUT "+Util.makeParamsString(param);
+		}
+
+		dataOut.setCommand(id, command);
+		if (DEBUG) {
+			Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
+		}
+		dataOut.sendPackage();
+
+
+		boolean hasPkg = false;
+		while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+			handleUnexpectedPackageID();
+		}
+		
+		boolean transferData = false;
+		
+		while (hasPkg) {
+			if (!SecureConnection.isError(dataIn.type)) {
+				if (dataIn.type == SecureConnection.TYPE_ACK) {
+					//System.out.println("ACK upload of file: "+remoteName);
+					dataPos = 0;
+
+					if (resume) {
+//						String msg = getMessageFromContent(dataIn.content);
+//						//System.out.println("resume msg :: "+msg+"  filePos before = "+dataPos);
+//						if (msg!=null && msg.equals("upload already complete")) {
+//							hasNext = false;
+//							System.out.println(msg);
+//							//notifyUpdate(fileLen-1, fileLen, null);
+//							//progress ready
+//							if (pg!=null) {
+//								pg.setProgress(pg.getMaxProgress());
+//								pg.onUpate();
+//							}
+//							return true;
+//						} else {
+//							try {
+//								dataPos = Long.parseLong(getMessageFromContent(dataIn.content));
+//								//System.out.println("data pos = "+dataPos);
+//								if (dataPos>=dataLen) {
+//									errorMsg = "data position > data length";
+//									return false;	
+//								}
+//								if (pg!=null) {
+//									pg.setProgress(dataPos);
+//									pg.onUpate();
+//								}
+//							} catch (Exception ex) {
+//								//ex.printStackTrace();
+//								errorMsg = "wrong format: data upload resume position not parseable";
+//								return false;
+//							}
+//						}
+					}
+
+					//send data
+					FileInputStream fileIn = null;
+					byte[] buffer = null;
+					
+					transferData = (dataLen>dataPos);
+					if (transferData) {
+						fileIn = new FileInputStream(localFile);
+						buffer = new byte[maxPacketSize];
+					}
+					while (transferData) {
+						//read from file
+						int read = fileIn.read(buffer);
+						if (read<0) {
+							//end of file
+							transferData = false;
+						}
+						else if (read>0 && read<maxPacketSize) {
+							dataOut.setData(id, num, Arrays.copyOf(buffer, read));
+							dataOut.sendPackage();
+							md5.update(buffer, read);
+							dataPos += read;
+							
+							//notify update
+							if (pg!=null) {
+								pg.setProgress(dataPos);
+								pg.onUpate();
+							}
+						}
+					}
+					
+					//send length and md5
+					dataOut.setCommand(id, "PUT_EOF "+Util.makeParamsString(new String[] {""+dataPos, md5.getMD5HexString()}));
+					dataOut.sendPackage();
+					
+					//receive next package
+					while ((hasPkg = dataIn.receiveNextPackage()) && dataIn.id != id) {
+						handleUnexpectedPackageID();
+					}
+
+					if (!hasPkg) {
+						handleConnectionClosed();
+						return false;
+					}
+				}
+				else if (dataIn.type == SecureConnection.TYPE_ACK_COMPLETE) {
+					//System.out.println("Upload complete");
+					//progress ready after receiving ACK_COMPLETE
+					if (pg!=null) {
+						pg.setProgress(pg.getMaxProgress());
+						pg.onUpate();
+					}
+					return true;
+				}
+			} else {
+				//stop upload (if running)
+				transferData = false;
+				errorMsg = getMessageFromContent(dataIn.content);
+				return false;
+			}
+		}
+		if (!hasPkg) {
+			handleConnectionClosed();
+			return false;
+		} else {
+			System.out.println("should never be in this state!!!");
+			return false;
+		}
+	}
+	
+
+	public boolean uploadOldStyle(byte[] data, String absoluteRemoteFilename, boolean resume, ProgressListener pg) throws Exception {
 		errorMsg = null;
 		long id = SecureConnection.getID();
 		int num = 0;
@@ -1420,7 +1734,7 @@ public class OSDXFileTransferAdapter {
 
 			client.connect("localhost", 4221,"/", mysigning, username);
 			
-			client.upload(new File("FDL.txt"), "/FDL.txt");
+			client.uploadOldStyle(new File("FDL.txt"), "/FDL.txt");
 			client.download("/FDL.txt", new File("/tmp/FDL.txt"),true);
 			
 			client.mkdir("/blub");

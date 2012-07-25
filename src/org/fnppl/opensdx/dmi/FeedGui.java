@@ -1130,9 +1130,12 @@ public class FeedGui extends JFrame implements MyObserver {
 //			.authtype(Receiver.AUTH_TYPE_KEYFILE);
 //		currentFeed.getFeedinfo().receiver(receiver);
 		currentFeed.getBundle(0).addItem(
-				Item.make(IDs.make().amzn("item1 id"), "testitem1", "testitem", "v0.1", "video", "display artist",
+				Item.make(IDs.make().amzn("12345678"), "testitem1", "testitem", "v0.1", "video", "display artist",
 						BundleInformation.make(now,now), LicenseBasis.makeAsOnBundle(), LicenseSpecifics.make())
-						.addFile(ItemFile.make(new File("fnppl_contributor_license.pdf")))
+						.addFile(
+								ItemFile.make(
+										new File("fnppl_contributor_license.pdf"))
+										.type("full"))
 					.tags(ItemTags.make()
 						.addGenre("Rock")
 					)	

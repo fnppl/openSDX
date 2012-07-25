@@ -133,6 +133,7 @@ public abstract class OSDXFileTransferCommand {
 	}
 	protected void notifyError(String msg) {
 		for (CommandResponseListener l : listener) {
+			//System.out.println("notifyError to "+l.getClass().getSimpleName());
 			l.onError(this, msg);
 		}
 	}

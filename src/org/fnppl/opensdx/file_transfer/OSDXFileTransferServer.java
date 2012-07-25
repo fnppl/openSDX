@@ -64,6 +64,7 @@ import org.fnppl.opensdx.xml.Element;
 
 public class OSDXFileTransferServer {
 
+	public final static String VERSION = "v.2012-07-25";
 	private File configFile = new File("osdxserver_config.xml"); 
 	private File alterConfigFile = new File("src/org/fnppl/opensdx/file_transfer/resources/osdxfiletransferserver_config.xml");
 	

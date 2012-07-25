@@ -69,7 +69,7 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferDownloadStreamCo
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferListCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferMkDirCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadCommand;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadOldStyleCommand;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.file_transfer.model.Transfer;
 import org.fnppl.opensdx.helper.QueueWaiting;
@@ -90,6 +90,11 @@ public class FTP_OSDX_Bridge implements CommandResponseListener {
 
 
 	public FTP_OSDX_Bridge() {
+		readConfig();
+	}
+	
+	public FTP_OSDX_Bridge(File configFile) {
+		this.configFile = configFile;
 		readConfig();
 	}
 
@@ -196,7 +201,17 @@ public class FTP_OSDX_Bridge implements CommandResponseListener {
 	}
 
 	public static void main(String[] args) {
-		new FTP_OSDX_Bridge().startService();
+		if (args.length>0) {
+			File f = new File(args[0]);
+			if (f.exists()) {
+				System.out.println("Using config file "+f.getAbsolutePath());
+				new FTP_OSDX_Bridge(f).startService();	
+			} else {
+				System.out.println("Error: config file "+f.getAbsolutePath()+" does not exist!");
+			}
+		} else {
+			new FTP_OSDX_Bridge().startService();
+		}
 	}
 
 
@@ -228,7 +243,7 @@ public class FTP_OSDX_Bridge implements CommandResponseListener {
 		//}
 		if (transfer!=null) {
 			if (transfer.type.equals("upload")) {
-				if (command instanceof OSDXFileTransferUploadCommand) {
+				if (command instanceof OSDXFileTransferUploadOldStyleCommand) {
 
 					System.out.println("upload succeeded\n");
 					waitingUploads.readyForNext();
@@ -342,7 +357,7 @@ public class FTP_OSDX_Bridge implements CommandResponseListener {
 		
 		if (transfer!=null) {
 			if (transfer.type.equals("upload")) {
-				if (command instanceof OSDXFileTransferUploadCommand) {
+				if (command instanceof OSDXFileTransferUploadOldStyleCommand) {
 
 					System.out.println("ERROR upload failed!!!\n");
 					waitingUploads.readyForNext();
@@ -454,9 +469,15 @@ public class FTP_OSDX_Bridge implements CommandResponseListener {
 				if (t.pos == t.fileLen) {
 					lastProgress = -1L;
 				}
+//				if ("upload".equals(t.type)) {
+//					String msg = "Upload progress "+t.originalFilename
+//								+ "\t"+(t.pos/1024)+" kB of "+(t.fileLen/1024)+" kB"+speed+"\t\t "
+//								+countWaiting+" file(s) in queue" ;
+//					System.out.println(msg);
+//				}
 				if ("upload".equals(t.type)) {
 					String msg = "Upload progress "+t.originalFilename
-								+ "\t"+(t.pos/1024)+" kB of "+(t.fileLen/1024)+" kB"+speed+"\t\t "
+								+ "\t"+(t.pos/1024)+" kB transferred "+speed+"\t\t "
 								+countWaiting+" file(s) in queue" ;
 					System.out.println(msg);
 				}

@@ -45,8 +45,11 @@ package org.fnppl.opensdx.file_transfer;
  */
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.Console;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -77,7 +80,7 @@ import org.fnppl.opensdx.xml.Element;
 public class OSDXFileTransferClient implements UploadClient {
 	private static boolean DEBUG = false;
 	
-	private static String version = "osdx_ftclient v.2012-01-24";
+	private static String version = "osdx_ftclient v.2012-07-25";
 	
 	private Logger logger = Logger.getFileTransferLogger();
 	
@@ -601,15 +604,54 @@ public class OSDXFileTransferClient implements UploadClient {
 		return id;
 	}
 
+	public long uploadOldStyle(File localFile, String absoluteRemotePath) {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferUploadOldStyleCommand(id,localFile, absoluteRemotePath,false, this).setBlocking());
+		return id;
+	}
+	
 	public long upload(File localFile, String absoluteRemotePath) {
 		long id = IdGenerator.getTimestamp();
-		addCommand(new OSDXFileTransferUploadCommand(id,localFile, absoluteRemotePath,false, this).setBlocking());
+		try {
+			BufferedInputStream in = new BufferedInputStream(new FileInputStream(localFile));
+			OSDXFileTransferUploadStreamCommand c = new OSDXFileTransferUploadStreamCommand(id,absoluteRemotePath,in,this);
+			c.setBlocking();
+			//c.addListener(listener);
+			addCommand(c);
+			return id;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return -1L;
+		}
+	}
+	
+	public long uploadStream(BufferedInputStream in, String absoluteRemotePath, CommandResponseListener listener) {
+		long id = IdGenerator.getTimestamp();
+		OSDXFileTransferUploadStreamCommand c = new OSDXFileTransferUploadStreamCommand(id,absoluteRemotePath,in,this);
+		c.setBlocking();
+		if (listener!=null) {
+			c.addListener(listener);
+		}
+		addCommand(c);
 		return id;
 	}
 	
 	public long uploadResume(File localFile, String absoluteRemotePath) {
 		long id = IdGenerator.getTimestamp();
-		addCommand(new OSDXFileTransferUploadCommand(id,localFile, absoluteRemotePath,true, this).setBlocking());
+		try {
+			BufferedInputStream in = new BufferedInputStream(new FileInputStream(localFile));
+			OSDXFileTransferUploadStreamCommand c = new OSDXFileTransferUploadStreamCommand(id,absoluteRemotePath,in, true, this);
+			c.setBlocking();
+			addCommand(c);
+			return id;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return -1L;
+		}
+	}
+	public long uploadResumeOldStyle(File localFile, String absoluteRemotePath) {
+		long id = IdGenerator.getTimestamp();
+		addCommand(new OSDXFileTransferUploadOldStyleCommand(id,localFile, absoluteRemotePath,true, this).setBlocking());
 		return id;
 	}
 	
@@ -774,7 +816,7 @@ public class OSDXFileTransferClient implements UploadClient {
 			if (commandIdBlocks == commandid) {
 				nextCommandBlockTimeout = -1L;
 			}
-			if (!(command instanceof OSDXFileTransferDownloadCommand || command instanceof OSDXFileTransferDownloadStreamCommand || command instanceof OSDXFileTransferUploadCommand)) {
+			if (!(command instanceof OSDXFileTransferDownloadCommand || command instanceof OSDXFileTransferDownloadStreamCommand || command instanceof OSDXFileTransferUploadOldStyleCommand || command instanceof OSDXFileTransferUploadStreamCommand)) {
 				//TODO check
 				//System.out.println("removeCommandFromInProgress "+commandid);
 				removeCommandFromInProgress(commandid);
@@ -800,16 +842,44 @@ public class OSDXFileTransferClient implements UploadClient {
 	
 	public void uploadFile(File f, String remoteAbsoluteFilename, CommandResponseListener listener) {
 		long id = IdGenerator.getTimestamp();
-		OSDXFileTransferUploadCommand c = new OSDXFileTransferUploadCommand(id,f, remoteAbsoluteFilename,false,this);
+		try {
+			BufferedInputStream in = new BufferedInputStream(new FileInputStream(f));
+			OSDXFileTransferUploadStreamCommand c = new OSDXFileTransferUploadStreamCommand(id,remoteAbsoluteFilename,in,this);
+			c.setBlocking();
+			if (listener!=null) {
+				c.addListener(listener);
+			}
+			addCommand(c);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void  uploadFile(byte[] data, String remoteAbsoluteFilename, CommandResponseListener listener) {
+		long id = IdGenerator.getTimestamp();
+		ByteArrayInputStream _in = new ByteArrayInputStream(data);
+		BufferedInputStream in = new BufferedInputStream(_in); 
+		OSDXFileTransferUploadStreamCommand c = new OSDXFileTransferUploadStreamCommand(id,remoteAbsoluteFilename,in,this);
+		c.setBlocking();
+		if (listener!=null) {
+			c.addListener(listener);
+		}
+		addCommand(c);
+	}
+	
+	
+	public void uploadFileOldStyle(File f, String remoteAbsoluteFilename, CommandResponseListener listener) {
+		long id = IdGenerator.getTimestamp();
+		OSDXFileTransferUploadOldStyleCommand c = new OSDXFileTransferUploadOldStyleCommand(id,f, remoteAbsoluteFilename,false,this);
 		if (listener!=null) {
 			c.addListener(listener);
 		}
 		addCommand(c);
 	}
 
-	public void  uploadFile(byte[] data, String remoteAbsoluteFilename, CommandResponseListener listener) {
+	public void  uploadFileOldStyle(byte[] data, String remoteAbsoluteFilename, CommandResponseListener listener) {
 		long id = IdGenerator.getTimestamp();
-		OSDXFileTransferUploadCommand c = new OSDXFileTransferUploadCommand(id,data, remoteAbsoluteFilename,this);
+		OSDXFileTransferUploadOldStyleCommand c = new OSDXFileTransferUploadOldStyleCommand(id,data, remoteAbsoluteFilename,this);
 		if (listener!=null) {
 			c.addListener(listener);
 		}
@@ -1132,7 +1202,7 @@ public class OSDXFileTransferClient implements UploadClient {
 				
 				public void onError(OSDXFileTransferCommand command, String msg) {
 					System.out.println("ERROR :: "+msg);
-					if (command instanceof OSDXFileTransferUploadCommand) {
+					if (command instanceof OSDXFileTransferDownloadCommand) {
 						//currentProgressOfReadyFile +=  ((OSDXFileTransferUploadCommand)command).getFileLength();
 						next++;
 						if (next<count) {
@@ -1142,6 +1212,7 @@ public class OSDXFileTransferClient implements UploadClient {
 							s.closeConnection();
 						}
 					}
+					
 				}
 			});
 			
@@ -1216,10 +1287,21 @@ public class OSDXFileTransferClient implements UploadClient {
 				int proz = 0;
 				int count = localFiles.size();
 				int next = 0;
+				private File currentUpload = null;
 				
 				public void onSuccess(OSDXFileTransferCommand command) {
-					if (command instanceof OSDXFileTransferUploadCommand) {
-						currentProgressOfReadyFile +=  ((OSDXFileTransferUploadCommand)command).getFileLength();
+					if (command instanceof OSDXFileTransferUploadStreamCommand) {
+						currentProgressOfReadyFile +=  ((OSDXFileTransferUploadStreamCommand)command).getFilePos();
+						next++;
+						if (next<count) {
+							upload(next,resume);
+						} else {
+							System.out.println("Upload ready. Closing connection.");
+							s.closeConnection();
+						}
+					}
+					else if (command instanceof OSDXFileTransferUploadOldStyleCommand) {
+						currentProgressOfReadyFile +=  ((OSDXFileTransferUploadOldStyleCommand)command).getFileLength();
 						next++;
 						if (next<count) {
 							upload(next,resume);
@@ -1255,7 +1337,7 @@ public class OSDXFileTransferClient implements UploadClient {
 				
 				private void upload(int no, boolean resume) {
 					File from = localFiles.get(no);
-					
+					currentUpload = from;
 					String filenameTo = ""+targetDir;
 					if (baseDirectory==null) {
 						filenameTo += from.getName();
@@ -1263,6 +1345,9 @@ public class OSDXFileTransferClient implements UploadClient {
 						try {
 							//System.out.println("from path :: "+from.getCanonicalPath());
 							filenameTo += from.getCanonicalPath().substring(baseDirectory.length()+1);
+							if (File.separatorChar != '/') {
+								filenameTo = filenameTo.replace(File.separatorChar, '/');
+							}
 						} catch (IOException e) {
 							filenameTo += from.getName();
 							e.printStackTrace();
@@ -1278,7 +1363,7 @@ public class OSDXFileTransferClient implements UploadClient {
 				}
 				
 				public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
-					if (command instanceof OSDXFileTransferUploadCommand) {
+					if (command instanceof OSDXFileTransferUploadOldStyleCommand) {
 						int aProz;
 						if (completeProgress>0) {
 							aProz = (int) ((currentProgressOfReadyFile+progress)*100L/completeProgress);
@@ -1294,8 +1379,20 @@ public class OSDXFileTransferClient implements UploadClient {
 				
 				public void onError(OSDXFileTransferCommand command, String msg) {
 					System.out.println("ERROR :: "+msg);
-					if (command instanceof OSDXFileTransferUploadCommand) {
-						currentProgressOfReadyFile +=  ((OSDXFileTransferUploadCommand)command).getFileLength();
+					if (command instanceof OSDXFileTransferUploadStreamCommand) {
+						if (currentUpload!=null) {
+							currentProgressOfReadyFile += currentUpload.length();
+						}
+						next++;
+						if (next<count) {
+							upload(next, resume);
+						} else {
+							System.out.println("Upload ready. Closing connection.");
+							s.closeConnection();
+						}
+					}
+					else if (command instanceof OSDXFileTransferUploadOldStyleCommand) {
+						currentProgressOfReadyFile +=  ((OSDXFileTransferUploadOldStyleCommand)command).getFileLength();
 						next++;
 						if (next<count) {
 							upload(next, resume);

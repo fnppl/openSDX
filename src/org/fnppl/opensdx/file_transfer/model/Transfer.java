@@ -48,7 +48,11 @@ import java.io.File;
  */
 public class Transfer {
 	
+	public static String TYPE_UPLOAD = "upload";
+	public static String TYPE_DOWNLOAD = "download";
+	
 	public File file = null;
+	public String remoteAbsoluteFilename = null;
 	public String type = "";
 	public long startTime = -1L;
 	public long dataAtTime = 0L;
@@ -56,5 +60,6 @@ public class Transfer {
 	public long pos = 0;
 	public long fileLen = -1L;
 	public String originalFilename = null;
-	
+	public long commandid = -1L;
+	public long lastUpdate = -1L;
 }

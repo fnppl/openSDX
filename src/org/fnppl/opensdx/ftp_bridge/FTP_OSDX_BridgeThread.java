@@ -44,6 +44,7 @@ package org.fnppl.opensdx.ftp_bridge;
  * 
  */
 import java.awt.BorderLayout;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -78,7 +79,7 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferDeleteCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferListCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferMkDirCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadCommand;
+import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadOldStyleCommand;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.file_transfer.model.Transfer;
 import org.fnppl.opensdx.helper.QueueWaiting;
@@ -290,7 +291,7 @@ public class FTP_OSDX_BridgeThread extends Thread {
 		t.start();
 	}
 	
-	public void handle_STOR(final String param) { //upload file to osdx server
+	public void handle_STOR_ORIG(final String param) { //upload file to osdx server
 		Thread t = new Thread() {
 			public void run() {
 				try {
@@ -348,6 +349,74 @@ public class FTP_OSDX_BridgeThread extends Thread {
 			}
 		};
 		t.start();
+	}
+	
+	public void handle_STOR(final String param) { //upload file to osdx server
+		try {
+			//if (ensureConnection()) {
+				String filename = removeDoubleSlashes(param);
+			
+				out.println("150 Binary data connection");
+				System.out.println("HANDLE_STOR :: "+filename);
+				
+				final Socket t = getDataSocket();
+				if (t==null) return;
+				InputStream inFromFTP = t.getInputStream();
+				
+				//File tmpFile = File.createTempFile("osdx"+System.currentTimeMillis(), ".tmp");
+				//tmpFile.deleteOnExit();
+				//FileOutputStream outFileBuffer = new FileOutputStream(tmpFile);
+				//String filename = param;
+				
+				if (!filename.startsWith("/")) {
+					if (control.pwd.equals("/")) {
+						filename = "/"+filename;
+					} else {
+						filename = control.pwd+"/"+filename;
+					}
+				}
+				
+				System.out.println("handle STOR :: "+filename);
+				final String tFilename = filename;
+				try {
+					long id = control.osdxclient.uploadStream(new BufferedInputStream(inFromFTP), filename, new CommandResponseListener() {
+						private long lastProgress = 0;
+						public void onSuccess(OSDXFileTransferCommand command) {
+							//block[0] = false;
+							try {
+								t.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							out.println("226 transfer complete");
+							System.out.println("Transfer succeeded: "+tFilename);
+						}
+						
+						public void onStatusUpdate(OSDXFileTransferCommand command, long progress, long maxProgress, String msg) {
+							//
+							if (progress-lastProgress>1024*1024-1) {
+								lastProgress = progress;
+								System.out.println("transferred: "+progress/1024+" kB");
+							}
+						}
+						
+						public void onError(OSDXFileTransferCommand command, String msg) {
+							try {
+								t.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							//out.println("226 transfer complete");
+							System.out.println("Transfer failed: "+tFilename+" :: "+msg);
+						}
+					});
+				} catch (Exception ex)  {
+					ex.printStackTrace();
+				}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		
 	}
 		
 	
