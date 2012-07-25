@@ -584,6 +584,27 @@ public class OSDXFileTransferAdapter {
 		}
 		return ret;
 	}
+	
+	public boolean uploadResume(File localFile, String absoluteRemotePath) {
+		boolean ret = false;
+		try {
+			System.out.println("Upload/Resume of file: "+localFile.getCanonicalPath()+" -> "+absoluteRemotePath);
+			boolean ok = upload(localFile, absoluteRemotePath, true, null);
+			if (ok) {
+				System.out.println("Upload/Resume finished.\n");
+				ret = true;
+			} else {
+				if (errorMsg==null) {
+					System.out.println("ERROR\n");
+				} else {
+					System.out.println("ERROR: "+errorMsg+"\n");
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return ret;
+	}
 
 	public boolean uploadResumeOldStyle(File localFile, String absoluteRemotePath) {
 		boolean ret = false;
@@ -944,6 +965,30 @@ public class OSDXFileTransferAdapter {
 		}
 	}
 	
+	public boolean upload(File localFile, String absoluteRemoteFilename) throws Exception {
+		boolean ret = false;
+		try {
+			System.out.println("Upload of file: "+localFile.getCanonicalPath()+" -> "+absoluteRemoteFilename);
+			boolean ok = upload(localFile, absoluteRemoteFilename, false, null);
+			if (ok) {
+				System.out.println("Upload finished.\n");
+				ret = true;
+			} 
+			else {
+				if(errorMsg==null) {
+					System.out.println("ERROR\n");
+				} 
+				else {
+					System.out.println("ERROR: "+errorMsg+"\n");
+				}
+				
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return ret;
+	}
+	
 	public boolean upload(File localFile, String absoluteRemoteFilename, boolean resume, ProgressListener pg) throws Exception {
 		// -> PUT [absoluteRemoteFilename]			// -> PUT_RESUME [filename]
 		// <- ACK									// <- ACK [length], [MD5_part]
@@ -999,68 +1044,90 @@ public class OSDXFileTransferAdapter {
 				if (dataIn.type == SecureConnection.TYPE_ACK) {
 					//System.out.println("ACK upload of file: "+remoteName);
 					dataPos = 0;
-
+					
+					FileInputStream fileIn = new FileInputStream(localFile);
+					byte[] buffer = new byte[maxPacketSize];
+					
 					if (resume) {
-//						String msg = getMessageFromContent(dataIn.content);
-//						//System.out.println("resume msg :: "+msg+"  filePos before = "+dataPos);
-//						if (msg!=null && msg.equals("upload already complete")) {
-//							hasNext = false;
-//							System.out.println(msg);
-//							//notifyUpdate(fileLen-1, fileLen, null);
-//							//progress ready
-//							if (pg!=null) {
-//								pg.setProgress(pg.getMaxProgress());
-//								pg.onUpate();
-//							}
-//							return true;
-//						} else {
-//							try {
-//								dataPos = Long.parseLong(getMessageFromContent(dataIn.content));
-//								//System.out.println("data pos = "+dataPos);
-//								if (dataPos>=dataLen) {
-//									errorMsg = "data position > data length";
-//									return false;	
-//								}
-//								if (pg!=null) {
-//									pg.setProgress(dataPos);
-//									pg.onUpate();
-//								}
-//							} catch (Exception ex) {
-//								//ex.printStackTrace();
-//								errorMsg = "wrong format: data upload resume position not parseable";
-//								return false;
-//							}
-//						}
+						String[] resumeParam = Util.getParams(getMessageFromContentNN(dataIn.content));
+						if (resumeParam.length>=2) {
+							long transferred = Long.parseLong(resumeParam[0]);
+							String md5String = resumeParam[1];
+							MD5 md5Local = new MD5();
+							//System.out.println("Resuming upload at pos "+transferred+"  md5 given = "+md5String);
+							//get md5String
+							byte[] buf = new byte[maxPacketSize];
+							
+							int nextPackSize = (int)(transferred-dataPos);
+							if (nextPackSize>maxPacketSize) {
+								nextPackSize = maxPacketSize;
+							}
+							while (nextPackSize>0) {
+								if (nextPackSize<maxPacketSize) {
+									buf = new byte[nextPackSize];
+								}
+								int read = fileIn.read(buf);
+								if (read>0) {
+									md5.update(buf,read);
+									md5Local.update(buf,read);
+									dataPos += read;
+								}
+								
+								nextPackSize = (int)(transferred-dataPos);
+								if (nextPackSize>maxPacketSize) {
+									nextPackSize = maxPacketSize;
+								}
+							}
+							//compare md5
+							byte[] my_md5 = md5Local.getMD5bytes(); //can only read the md5 bytes one time !!!
+							byte[] your_md5 = SecurityHelper.HexDecoder.decode(md5String);
+							if (!Arrays.equals(my_md5,your_md5)) {
+								//System.out.println("MD5 check failed for resuming upload");
+								errorMsg = "MD5 check failed for resuming upload";
+								return false;
+							}
+						}
+						else if (resumeParam.length==1 && resumeParam[0].equals("0")) {
+							//normal put
+						}
+						else {
+							errorMsg = "wrong format: data upload resume position not parseable";
+							return false;
+						}
 					}
 
 					//send data
-					FileInputStream fileIn = null;
-					byte[] buffer = null;
-					
 					transferData = (dataLen>dataPos);
-					if (transferData) {
-						fileIn = new FileInputStream(localFile);
-						buffer = new byte[maxPacketSize];
-					}
 					while (transferData) {
 						//read from file
 						int read = fileIn.read(buffer);
 						if (read<0) {
 							//end of file
 							transferData = false;
-						}
-						else if (read>0 && read<maxPacketSize) {
-							dataOut.setData(id, num, Arrays.copyOf(buffer, read));
-							dataOut.sendPackage();
-							md5.update(buffer, read);
-							dataPos += read;
 							
+						}
+						else if (read>0) {
+							if (read<maxPacketSize) {
+								dataOut.setData(id, num, Arrays.copyOf(buffer, read));
+								dataOut.sendPackage();
+								md5.update(buffer, read);
+								dataPos += read;
+							} else {
+								dataOut.setData(id, num, buffer);
+								dataOut.sendPackage();
+								md5.update(buffer);
+								dataPos += read;
+							}
+							//System.out.println("data pos = "+dataPos+ " of "+dataLen);
 							//notify update
 							if (pg!=null) {
 								pg.setProgress(dataPos);
 								pg.onUpate();
 							}
 						}
+					}
+					if (fileIn !=null) {
+						fileIn.close();
 					}
 					
 					//send length and md5
@@ -1706,7 +1773,8 @@ public class OSDXFileTransferAdapter {
 
 
 	public static void main(String[] args) throws Exception {
-		testPlain();
+		test();
+		//testPlain();
 
 	}
 
@@ -1734,7 +1802,9 @@ public class OSDXFileTransferAdapter {
 
 			client.connect("localhost", 4221,"/", mysigning, username);
 			
-			client.uploadOldStyle(new File("FDL.txt"), "/FDL.txt");
+			client.upload(new File("FDL.txt"), "/FDL.txt");
+			//client.uploadResume(new File("/data/tvtv/BigBang_S05/The_Big_Bang_Theory_S05x01_12.03.13.HQ.avi"), "/test.avi");
+			
 			client.download("/FDL.txt", new File("/tmp/FDL.txt"),true);
 			
 			client.mkdir("/blub");
