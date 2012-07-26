@@ -880,6 +880,7 @@ public class OSDXFileTransferServerThread extends Thread {
 					if (length==0) {
 						file.createNewFile();
 						context = buildContextParams(cs);
+						//this can only be triggered in oldstyle PUT method with given file.length
 						cs.triggerEvent(Trigger.TRIGGER_UPLOAD_END, context);
 					} else {
 						FileUploadInfo info = new FileUploadInfo();
@@ -928,6 +929,7 @@ public class OSDXFileTransferServerThread extends Thread {
 				data.setError(commandid, num, "missing or wrong file length parameter");
 				server.log.logCommand(clientID, addr, "PUT_EOF", param, "missing or wrong file length parameter");
 				data.sendPackage();
+				triggerUploadEndEvent(upload);
 				return;
 			}
 			
@@ -940,6 +942,8 @@ public class OSDXFileTransferServerThread extends Thread {
 				upload.file.createNewFile();
 				data.setAckComplete(commandid, num);
 				data.sendPackage();
+				
+				triggerUploadEndEvent(upload);
 				return;				
 			}
 			if (length>0) {	
@@ -947,6 +951,7 @@ public class OSDXFileTransferServerThread extends Thread {
 					data.setError(commandid, num, "wrong filesize :: is="+upload.file.length()+", given="+length);
 					server.log.logCommand(clientID, addr, "PUT_EOF", param, "wrong filesize :: is="+upload.file.length()+", given="+length);
 					data.sendPackage();
+					triggerUploadEndEvent(upload);
 					return;
 				}
 				
@@ -982,12 +987,24 @@ public class OSDXFileTransferServerThread extends Thread {
 					data.setAckComplete(commandid, num);
 					data.sendPackage();
 				}
+				triggerUploadEndEvent(upload);
+				return;
 			}
 		} else {
 			data.setError(commandid, num, "PUT_EOF :: no matching open stream id = "+commandid);
 			server.log.logCommand(clientID, addr, "PUT_EOF", param,  "no matching open stream id = "+commandid);
 			data.sendPackage();
 		}
+	}
+	
+	private void triggerUploadEndEvent(FileUploadInfo upload) {
+		//trigger upload_end event
+		HashMap<String, Object> context = buildContextParams(cs);
+		context.put(TriggerContext.RELATED_FILE,upload.file);
+		context.put(TriggerContext.RELATED_FILENAME,upload.file.getAbsolutePath());
+		context.put(TriggerContext.RELATED_START_DATE,upload.uploadStartDatetime);
+		context.put(TriggerContext.RELATED_END_DATE,System.currentTimeMillis());
+		cs.triggerEvent(Trigger.TRIGGER_UPLOAD_END, context);
 	}
 	
 	public void handle_put_cancel(long commandid, int num, byte code, String param) throws Exception {
