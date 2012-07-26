@@ -86,8 +86,6 @@ import org.fnppl.opensdx.xml.Document;
 import org.fnppl.opensdx.xml.Element;
 
 public class OSDXFileTransferAdapter {
-
-
 	private static boolean DEBUG = false;
 
 	private static String version = "osdx_ftclient_sync v.2012-07-25";

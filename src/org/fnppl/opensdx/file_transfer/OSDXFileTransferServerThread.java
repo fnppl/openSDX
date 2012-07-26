@@ -71,7 +71,7 @@ import org.fnppl.opensdx.security.SymmetricKey;
 import org.fnppl.opensdx.xml.Document;
 
 public class OSDXFileTransferServerThread extends Thread {
-	public final static boolean DEBUG = false;
+	public final static boolean DEBUG = true;
 	
 	private OSDXFileTransferServer server;
 	private Socket socket;
