@@ -1,0 +1,3333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+/*
+ * Copyright (C) 2010-2012 
+ * 							fine people e.V. <opensdx@fnppl.org> 
+ * 							Henning Thieß <ht@fnppl.org>
+ * 
+ * 							http://fnppl.org
+*/
+
+/*
+ * Software license
+ *
+ * For those parts of this file, which are identified as software, rather than documentation, this software-license applies / shall be applied. 
+ * 
+ * This file is part of openSDX
+ * openSDX is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * openSDX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * and GNU General Public License along with openSDX.
+ * If not, see <http://www.gnu.org/licenses/>.
+ *      
+ */
+
+/*
+ * Documentation license
+ * 
+ * For those parts of this file, which are identified as documentation, rather than software, this documentation-license applies / shall be applied.
+ * 
+ * This file is part of openSDX.
+ * Permission is granted to copy, distribute and/or modify this document 
+ * under the terms of the GNU Free Documentation License, Version 1.3 
+ * or any later version published by the Free Software Foundation; 
+ * with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. 
+ * A copy of the license is included in the section entitled "GNU 
+ * Free Documentation License" resp. in the file called "FDL.txt".
+ * 
+ */
+
+/*
+ * Convert simfy genres to opensdx and fudge to opensdx genres
+ * Couls also be used for some other genre guys
+ *
+ */
+ -->
+ 
+<root>
+  <matches>
+    <genreid>1000</genreid>
+    <genre>Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1100</genreid>
+    <genre>Beat</genre>
+  </matches>
+  <matches>
+    <genreid>1101</genreid>
+    <genre>Blues Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1102</genreid>
+    <genre>Rock'n'Roll</genre>
+  </matches>
+  <matches>
+    <genreid>1200</genreid>
+    <genre>Art Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1201</genreid>
+    <genre>Classic Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1202</genreid>
+    <genre>Deutschrock</genre>
+  </matches>
+  <matches>
+    <genreid>1203</genreid>
+    <genre>Emo</genre>
+  </matches>
+  <matches>
+    <genreid>1204</genreid>
+    <genre>Experimental Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1205</genreid>
+    <genre>Glam Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1206</genreid>
+    <genre>Hard Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1207</genreid>
+    <genre>Krautrock</genre>
+  </matches>
+  <matches>
+    <genreid>1208</genreid>
+    <genre>Progressive Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1209</genreid>
+    <genre>Psychedelic Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1210</genreid>
+    <genre>Psychobilly Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1211</genreid>
+    <genre>Rockabilly</genre>
+  </matches>
+  <matches>
+    <genreid>1212</genreid>
+    <genre>Soft Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1213</genreid>
+    <genre>Southern Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1214</genreid>
+    <genre>Surf Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1300</genreid>
+    <genre>Alternative</genre>
+  </matches>
+  <matches>
+    <genreid>1301</genreid>
+    <genre>Crossover</genre>
+  </matches>
+  <matches>
+    <genreid>1302</genreid>
+    <genre>Dark Wave</genre>
+  </matches>
+  <matches>
+    <genreid>1303</genreid>
+    <genre>Garage Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1304</genreid>
+    <genre>Goth / Industrial</genre>
+  </matches>
+  <matches>
+    <genreid>1305</genreid>
+    <genre>Grunge</genre>
+  </matches>
+  <matches>
+    <genreid>1306</genreid>
+    <genre>Hardcore</genre>
+  </matches>
+  <matches>
+    <genreid>1307</genreid>
+    <genre>Indie Rock</genre>
+  </matches>
+  <matches>
+    <genreid>1308</genreid>
+    <genre>New Wave</genre>
+  </matches>
+  <matches>
+    <genreid>1309</genreid>
+    <genre>Punk</genre>
+  </matches>
+  <matches>
+    <genreid>1310</genreid>
+    <genre>Funpunk</genre>
+  </matches>
+  <matches>
+    <genreid>1400</genreid>
+    <genre>Black Metal</genre>
+  </matches>
+  <matches>
+    <genreid>1401</genreid>
+    <genre>Death Metal</genre>
+  </matches>
+  <matches>
+    <genreid>1402</genreid>
+    <genre>Heavy Metal</genre>
+  </matches>
+  <matches>
+    <genreid>1403</genreid>
+    <genre>Power Metal</genre>
+  </matches>
+  <matches>
+    <genreid>1404</genreid>
+    <genre>Thrash / Speed Metal</genre>
+  </matches>
+  <matches>
+    <genreid>1405</genreid>
+    <genre>Doom Metal</genre>
+  </matches>
+  <matches>
+    <genreid>1406</genreid>
+    <genre>Grind Core</genre>
+  </matches>
+  <matches>
+    <genreid>2000</genreid>
+    <genre>Pop</genre>
+  </matches>
+  <matches>
+    <genreid>2001</genreid>
+    <genre>Britpop</genre>
+  </matches>
+  <matches>
+    <genreid>2002</genreid>
+    <genre>Dance Pop</genre>
+  </matches>
+  <matches>
+    <genreid>2003</genreid>
+    <genre>Deutschpop</genre>
+  </matches>
+  <matches>
+    <genreid>2004</genreid>
+    <genre>Disco</genre>
+  </matches>
+  <matches>
+    <genreid>2005</genreid>
+    <genre>Easy Listening</genre>
+  </matches>
+  <matches>
+    <genreid>2006</genreid>
+    <genre>Electropop</genre>
+  </matches>
+  <matches>
+    <genreid>2007</genreid>
+    <genre>Euro Dance</genre>
+  </matches>
+  <matches>
+    <genreid>2008</genreid>
+    <genre>Euro Pop</genre>
+  </matches>
+  <matches>
+    <genreid>2009</genreid>
+    <genre>French Pop</genre>
+  </matches>
+  <matches>
+    <genreid>2010</genreid>
+    <genre>Indie Pop</genre>
+  </matches>
+  <matches>
+    <genreid>2011</genreid>
+    <genre>Italo Pop</genre>
+  </matches>
+  <matches>
+    <genreid>2012</genreid>
+    <genre>J-Pop</genre>
+  </matches>
+  <matches>
+    <genreid>2013</genreid>
+    <genre>K-Pop</genre>
+  </matches>
+  <matches>
+    <genreid>2014</genreid>
+    <genre>Neue Deutsche Welle</genre>
+  </matches>
+  <matches>
+    <genreid>2015</genreid>
+    <genre>New Age</genre>
+  </matches>
+  <matches>
+    <genreid>2016</genreid>
+    <genre>Pop Rock</genre>
+  </matches>
+  <matches>
+    <genreid>2017</genreid>
+    <genre>Power Pop</genre>
+  </matches>
+  <matches>
+    <genreid>2018</genreid>
+    <genre>Schlager</genre>
+  </matches>
+  <matches>
+    <genreid>2019</genreid>
+    <genre>Singer / Songwriter</genre>
+  </matches>
+  <matches>
+    <genreid>2020</genreid>
+    <genre>Synthpop</genre>
+  </matches>
+  <matches>
+    <genreid>2021</genreid>
+    <genre>Teen Pop</genre>
+  </matches>
+  <matches>
+    <genreid>3000</genreid>
+    <genre>Country</genre>
+  </matches>
+  <matches>
+    <genreid>3001</genreid>
+    <genre>Alternative Country</genre>
+  </matches>
+  <matches>
+    <genreid>3002</genreid>
+    <genre>Bluegrass</genre>
+  </matches>
+  <matches>
+    <genreid>3003</genreid>
+    <genre>Contemporary Folk</genre>
+  </matches>
+  <matches>
+    <genreid>3004</genreid>
+    <genre>Country Gospel</genre>
+  </matches>
+  <matches>
+    <genreid>3005</genreid>
+    <genre>Honky-Tonk</genre>
+  </matches>
+  <matches>
+    <genreid>3006</genreid>
+    <genre>Jewish / Yiddish Music</genre>
+  </matches>
+  <matches>
+    <genreid>3007</genreid>
+    <genre>Nashville Sound</genre>
+  </matches>
+  <matches>
+    <genreid>3008</genreid>
+    <genre>Outlaw / Progressive Country</genre>
+  </matches>
+  <matches>
+    <genreid>3009</genreid>
+    <genre>Texas Country</genre>
+  </matches>
+  <matches>
+    <genreid>3010</genreid>
+    <genre>Traditional Country</genre>
+  </matches>
+  <matches>
+    <genreid>3011</genreid>
+    <genre>Western Swing</genre>
+  </matches>
+  <matches>
+    <genreid>4000</genreid>
+    <genre>Folk</genre>
+  </matches>
+  <matches>
+    <genreid>4001</genreid>
+    <genre>Americana</genre>
+  </matches>
+  <matches>
+    <genreid>4002</genreid>
+    <genre>Folk Rock</genre>
+  </matches>
+  <matches>
+    <genreid>4003</genreid>
+    <genre>Irish Folk</genre>
+  </matches>
+  <matches>
+    <genreid>4004</genreid>
+    <genre>German Folk / Volksmusik</genre>
+  </matches>
+  <matches>
+    <genreid>5000</genreid>
+    <genre>Jazz</genre>
+  </matches>
+  <matches>
+    <genreid>5001</genreid>
+    <genre>Acid Jazz</genre>
+  </matches>
+  <matches>
+    <genreid>5002</genreid>
+    <genre>Avantgarde</genre>
+  </matches>
+  <matches>
+    <genreid>5003</genreid>
+    <genre>Bebop</genre>
+  </matches>
+  <matches>
+    <genreid>5004</genreid>
+    <genre>Big Band</genre>
+  </matches>
+  <matches>
+    <genreid>5005</genreid>
+    <genre>Classic Jazz</genre>
+  </matches>
+  <matches>
+    <genreid>5006</genreid>
+    <genre>Cool Jazz</genre>
+  </matches>
+  <matches>
+    <genreid>5007</genreid>
+    <genre>Dixieland music</genre>
+  </matches>
+  <matches>
+    <genreid>5008</genreid>
+    <genre>Free jazz</genre>
+  </matches>
+  <matches>
+    <genreid>5009</genreid>
+    <genre>Hard Bop</genre>
+  </matches>
+  <matches>
+    <genreid>5010</genreid>
+    <genre>Jazz Fusion</genre>
+  </matches>
+  <matches>
+    <genreid>5011</genreid>
+    <genre>New Orleans Jazz</genre>
+  </matches>
+  <matches>
+    <genreid>5012</genreid>
+    <genre>Nu-Jazz</genre>
+  </matches>
+  <matches>
+    <genreid>5013</genreid>
+    <genre>Smooth Jazz</genre>
+  </matches>
+  <matches>
+    <genreid>5014</genreid>
+    <genre>Swing</genre>
+  </matches>
+  <matches>
+    <genreid>5015</genreid>
+    <genre>Vocal Jazz</genre>
+  </matches>
+  <matches>
+    <genreid>6000</genreid>
+    <genre>Hip Hop</genre>
+  </matches>
+  <matches>
+    <genreid>6001</genreid>
+    <genre>Alternative Hip Hop</genre>
+  </matches>
+  <matches>
+    <genreid>6002</genreid>
+    <genre>Crunk</genre>
+  </matches>
+  <matches>
+    <genreid>6003</genreid>
+    <genre>Dirty South</genre>
+  </matches>
+  <matches>
+    <genreid>6004</genreid>
+    <genre>G-Funk</genre>
+  </matches>
+  <matches>
+    <genreid>6005</genreid>
+    <genre>Gangsta Rap</genre>
+  </matches>
+  <matches>
+    <genreid>6006</genreid>
+    <genre>Golden Era</genre>
+  </matches>
+  <matches>
+    <genreid>6007</genreid>
+    <genre>Grime</genre>
+  </matches>
+  <matches>
+    <genreid>6008</genreid>
+    <genre>Hyphy</genre>
+  </matches>
+  <matches>
+    <genreid>6009</genreid>
+    <genre>Instrumental Hip Hop</genre>
+  </matches>
+  <matches>
+    <genreid>6010</genreid>
+    <genre>Miami Bass</genre>
+  </matches>
+  <matches>
+    <genreid>6011</genreid>
+    <genre>New School</genre>
+  </matches>
+  <matches>
+    <genreid>6012</genreid>
+    <genre>Old School</genre>
+  </matches>
+  <matches>
+    <genreid>6013</genreid>
+    <genre>Turntablism</genre>
+  </matches>
+  <matches>
+    <genreid>6014</genreid>
+    <genre>US Eastcoast</genre>
+  </matches>
+  <matches>
+    <genreid>6015</genreid>
+    <genre>US Midwest</genre>
+  </matches>
+  <matches>
+    <genreid>6016</genreid>
+    <genre>US Southern</genre>
+  </matches>
+  <matches>
+    <genreid>6017</genreid>
+    <genre>US Westcoast</genre>
+  </matches>
+  <matches>
+    <genreid>7000</genreid>
+    <genre>Blues</genre>
+  </matches>
+  <matches>
+    <genreid>7001</genreid>
+    <genre>Boogie-Woogie</genre>
+  </matches>
+  <matches>
+    <genreid>7002</genreid>
+    <genre>Electric Blues Guitar</genre>
+  </matches>
+  <matches>
+    <genreid>7003</genreid>
+    <genre>Modern Blues</genre>
+  </matches>
+  <matches>
+    <genreid>7004</genreid>
+    <genre>Regional Blues</genre>
+  </matches>
+  <matches>
+    <genreid>7005</genreid>
+    <genre>Traditional Blues</genre>
+  </matches>
+  <matches>
+    <genreid>8000</genreid>
+    <genre>Soul</genre>
+  </matches>
+  <matches>
+    <genreid>8001</genreid>
+    <genre>Motown Sound</genre>
+  </matches>
+  <matches>
+    <genreid>8002</genreid>
+    <genre>Neo Soul</genre>
+  </matches>
+  <matches>
+    <genreid>8003</genreid>
+    <genre>Philly Sound</genre>
+  </matches>
+  <matches>
+    <genreid>9000</genreid>
+    <genre>Funk</genre>
+  </matches>
+  <matches>
+    <genreid>10000</genreid>
+    <genre>R&amp;B</genre>
+  </matches>
+  <matches>
+    <genreid>10001</genreid>
+    <genre>Contemporary R&amp;B</genre>
+  </matches>
+  <matches>
+    <genreid>10002</genreid>
+    <genre>Doo-wop</genre>
+  </matches>
+  <matches>
+    <genreid>11000</genreid>
+    <genre>Electronic</genre>
+  </matches>
+  <matches>
+    <genreid>11001</genreid>
+    <genre>Ambient</genre>
+  </matches>
+  <matches>
+    <genreid>11002</genreid>
+    <genre>Chill Out</genre>
+  </matches>
+  <matches>
+    <genreid>11003</genreid>
+    <genre>Lounge</genre>
+  </matches>
+  <matches>
+    <genreid>11100</genreid>
+    <genre>Downbeat</genre>
+  </matches>
+  <matches>
+    <genreid>11101</genreid>
+    <genre>Electronica</genre>
+  </matches>
+  <matches>
+    <genreid>11102</genreid>
+    <genre>Indie Disco</genre>
+  </matches>
+  <matches>
+    <genreid>11103</genreid>
+    <genre>Industrial / EBM</genre>
+  </matches>
+  <matches>
+    <genreid>11200</genreid>
+    <genre>Techno</genre>
+  </matches>
+  <matches>
+    <genreid>11201</genreid>
+    <genre>Dance</genre>
+  </matches>
+  <matches>
+    <genreid>11202</genreid>
+    <genre>Electro</genre>
+  </matches>
+  <matches>
+    <genreid>11203</genreid>
+    <genre>Glitch hop</genre>
+  </matches>
+  <matches>
+    <genreid>11300</genreid>
+    <genre>House</genre>
+  </matches>
+  <matches>
+    <genreid>11301</genreid>
+    <genre>Acid House</genre>
+  </matches>
+  <matches>
+    <genreid>11302</genreid>
+    <genre>Deep House</genre>
+  </matches>
+  <matches>
+    <genreid>11303</genreid>
+    <genre>Disco House</genre>
+  </matches>
+  <matches>
+    <genreid>11304</genreid>
+    <genre>Electro House</genre>
+  </matches>
+  <matches>
+    <genreid>11305</genreid>
+    <genre>Fidget House</genre>
+  </matches>
+  <matches>
+    <genreid>11306</genreid>
+    <genre>Hard House</genre>
+  </matches>
+  <matches>
+    <genreid>11307</genreid>
+    <genre>Progressive House</genre>
+  </matches>
+  <matches>
+    <genreid>11308</genreid>
+    <genre>Soulful House</genre>
+  </matches>
+  <matches>
+    <genreid>11309</genreid>
+    <genre>Tech House</genre>
+  </matches>
+  <matches>
+    <genreid>11310</genreid>
+    <genre>Tribal</genre>
+  </matches>
+  <matches>
+    <genreid>11311</genreid>
+    <genre>Vocal House</genre>
+  </matches>
+  <matches>
+    <genreid>11400</genreid>
+    <genre>Big Beat</genre>
+  </matches>
+  <matches>
+    <genreid>11401</genreid>
+    <genre>Breakbeat</genre>
+  </matches>
+  <matches>
+    <genreid>11402</genreid>
+    <genre>Drum'n'Bass</genre>
+  </matches>
+  <matches>
+    <genreid>11403</genreid>
+    <genre>Dubstep</genre>
+  </matches>
+  <matches>
+    <genreid>11404</genreid>
+    <genre>Garage / UK Funky</genre>
+  </matches>
+  <matches>
+    <genreid>11405</genreid>
+    <genre>IDM</genre>
+  </matches>
+  <matches>
+    <genreid>11406</genreid>
+    <genre>Trip-Hop</genre>
+  </matches>
+  <matches>
+    <genreid>11407</genreid>
+    <genre>Bass</genre>
+  </matches>
+  <matches>
+    <genreid>11500</genreid>
+    <genre>Trance</genre>
+  </matches>
+  <matches>
+    <genreid>11501</genreid>
+    <genre>Goa Trance</genre>
+  </matches>
+  <matches>
+    <genreid>11502</genreid>
+    <genre>Hard Trance</genre>
+  </matches>
+  <matches>
+    <genreid>11503</genreid>
+    <genre>Psychedelic Trance</genre>
+  </matches>
+  <matches>
+    <genreid>11600</genreid>
+    <genre>Gabba</genre>
+  </matches>
+  <matches>
+    <genreid>11601</genreid>
+    <genre>Jumpstyle / Hardstyle</genre>
+  </matches>
+  <matches>
+    <genreid>12000</genreid>
+    <genre>Classic</genre>
+  </matches>
+  <matches>
+    <genreid>12001</genreid>
+    <genre>Ancient music</genre>
+  </matches>
+  <matches>
+    <genreid>12002</genreid>
+    <genre>Medieval music</genre>
+  </matches>
+  <matches>
+    <genreid>12003</genreid>
+    <genre>Renaissance</genre>
+  </matches>
+  <matches>
+    <genreid>12004</genreid>
+    <genre>Baroque</genre>
+  </matches>
+  <matches>
+    <genreid>12005</genreid>
+    <genre>Classical period</genre>
+  </matches>
+  <matches>
+    <genreid>12006</genreid>
+    <genre>Romantic</genre>
+  </matches>
+  <matches>
+    <genreid>12007</genreid>
+    <genre>Neoromanticism</genre>
+  </matches>
+  <matches>
+    <genreid>12008</genreid>
+    <genre>Neoclassicism</genre>
+  </matches>
+  <matches>
+    <genreid>12009</genreid>
+    <genre>New Music / Contemporary Music</genre>
+  </matches>
+  <matches>
+    <genreid>12010</genreid>
+    <genre>Modern, 20th / 21st Century</genre>
+  </matches>
+  <matches>
+    <genreid>12011</genreid>
+    <genre>Postmodern Music</genre>
+  </matches>
+  <matches>
+    <genreid>12012</genreid>
+    <genre>Music and other Media / Arts</genre>
+  </matches>
+  <matches>
+    <genreid>12013</genreid>
+    <genre>Music and Word</genre>
+  </matches>
+  <matches>
+    <genreid>12100</genreid>
+    <genre>12-Tone Composition</genre>
+  </matches>
+  <matches>
+    <genreid>12101</genreid>
+    <genre>Anthem</genre>
+  </matches>
+  <matches>
+    <genreid>12102</genreid>
+    <genre>Ballet</genre>
+  </matches>
+  <matches>
+    <genreid>12103</genreid>
+    <genre>Cantata</genre>
+  </matches>
+  <matches>
+    <genreid>12104</genreid>
+    <genre>Chamber Music</genre>
+  </matches>
+  <matches>
+    <genreid>12105</genreid>
+    <genre>Choral</genre>
+  </matches>
+  <matches>
+    <genreid>12106</genreid>
+    <genre>Crossover / Popular Classicism</genre>
+  </matches>
+  <matches>
+    <genreid>12107</genreid>
+    <genre>Electronic Music / Computer Music</genre>
+  </matches>
+  <matches>
+    <genreid>12108</genreid>
+    <genre>Madrigal</genre>
+  </matches>
+  <matches>
+    <genreid>12109</genreid>
+    <genre>March</genre>
+  </matches>
+  <matches>
+    <genreid>12110</genreid>
+    <genre>Minimal Music</genre>
+  </matches>
+  <matches>
+    <genreid>12111</genreid>
+    <genre>Motet</genre>
+  </matches>
+  <matches>
+    <genreid>12112</genreid>
+    <genre>Musical</genre>
+  </matches>
+  <matches>
+    <genreid>12113</genreid>
+    <genre>Opera Arias</genre>
+  </matches>
+  <matches>
+    <genreid>12114</genreid>
+    <genre>Opera Baroque</genre>
+  </matches>
+  <matches>
+    <genreid>12115</genreid>
+    <genre>Opera Classical</genre>
+  </matches>
+  <matches>
+    <genreid>12116</genreid>
+    <genre>Opera Renaissance</genre>
+  </matches>
+  <matches>
+    <genreid>12117</genreid>
+    <genre>Opera Romantic</genre>
+  </matches>
+  <matches>
+    <genreid>12118</genreid>
+    <genre>Operetta</genre>
+  </matches>
+  <matches>
+    <genreid>12119</genreid>
+    <genre>Oratorio</genre>
+  </matches>
+  <matches>
+    <genreid>12120</genreid>
+    <genre>Passion</genre>
+  </matches>
+  <matches>
+    <genreid>12121</genreid>
+    <genre>Requiem</genre>
+  </matches>
+  <matches>
+    <genreid>12122</genreid>
+    <genre>Serialism</genre>
+  </matches>
+  <matches>
+    <genreid>12123</genreid>
+    <genre>Sonata</genre>
+  </matches>
+  <matches>
+    <genreid>12124</genreid>
+    <genre>Suite</genre>
+  </matches>
+  <matches>
+    <genreid>12125</genreid>
+    <genre>Symphonic Music / Orchestral Music</genre>
+  </matches>
+  <matches>
+    <genreid>12126</genreid>
+    <genre>Symphony</genre>
+  </matches>
+  <matches>
+    <genreid>12127</genreid>
+    <genre>Waltz</genre>
+  </matches>
+  <matches>
+    <genreid>12200</genreid>
+    <genre>Brass Ensemble</genre>
+  </matches>
+  <matches>
+    <genreid>12201</genreid>
+    <genre>Concerto / Solo Instrument with Orchestra</genre>
+  </matches>
+  <matches>
+    <genreid>12202</genreid>
+    <genre>Mixed Ensemble (Strings / Wind)</genre>
+  </matches>
+  <matches>
+    <genreid>12203</genreid>
+    <genre>Mixed Wind Ensemble (Woodwind / Brass)</genre>
+  </matches>
+  <matches>
+    <genreid>12204</genreid>
+    <genre>Several Solo Instruments</genre>
+  </matches>
+  <matches>
+    <genreid>12205</genreid>
+    <genre>Solo Instrument</genre>
+  </matches>
+  <matches>
+    <genreid>12206</genreid>
+    <genre>String Ensemble</genre>
+  </matches>
+  <matches>
+    <genreid>12207</genreid>
+    <genre>String Orchestra</genre>
+  </matches>
+  <matches>
+    <genreid>12208</genreid>
+    <genre>String Quartet</genre>
+  </matches>
+  <matches>
+    <genreid>12209</genreid>
+    <genre>String Trio</genre>
+  </matches>
+  <matches>
+    <genreid>12210</genreid>
+    <genre>Woodwind Ensemble</genre>
+  </matches>
+  <matches>
+    <genreid>12300</genreid>
+    <genre>A cappella</genre>
+  </matches>
+  <matches>
+    <genreid>12301</genreid>
+    <genre>Vocal Ensemble</genre>
+  </matches>
+  <matches>
+    <genreid>12302</genreid>
+    <genre>Vocal Music</genre>
+  </matches>
+  <matches>
+    <genreid>12303</genreid>
+    <genre>Choir</genre>
+  </matches>
+  <matches>
+    <genreid>12304</genreid>
+    <genre>Boy's Choir</genre>
+  </matches>
+  <matches>
+    <genreid>12305</genreid>
+    <genre>Children's Choir</genre>
+  </matches>
+  <matches>
+    <genreid>12306</genreid>
+    <genre>Choir with Orchestra</genre>
+  </matches>
+  <matches>
+    <genreid>12307</genreid>
+    <genre>Women's Choir</genre>
+  </matches>
+  <matches>
+    <genreid>12308</genreid>
+    <genre>Men's Choir</genre>
+  </matches>
+  <matches>
+    <genreid>12309</genreid>
+    <genre>Mixed Choir</genre>
+  </matches>
+  <matches>
+    <genreid>12310</genreid>
+    <genre>Soprano</genre>
+  </matches>
+  <matches>
+    <genreid>12311</genreid>
+    <genre>Mezzosoprano</genre>
+  </matches>
+  <matches>
+    <genreid>12312</genreid>
+    <genre>Alto</genre>
+  </matches>
+  <matches>
+    <genreid>12313</genreid>
+    <genre>Tenor</genre>
+  </matches>
+  <matches>
+    <genreid>12314</genreid>
+    <genre>Baritone</genre>
+  </matches>
+  <matches>
+    <genreid>12315</genreid>
+    <genre>Bass</genre>
+  </matches>
+  <matches>
+    <genreid>12400</genreid>
+    <genre>Accordion</genre>
+  </matches>
+  <matches>
+    <genreid>12401</genreid>
+    <genre>Ancient Instruments</genre>
+  </matches>
+  <matches>
+    <genreid>12402</genreid>
+    <genre>Bassoon</genre>
+  </matches>
+  <matches>
+    <genreid>12403</genreid>
+    <genre>Cembalo</genre>
+  </matches>
+  <matches>
+    <genreid>12404</genreid>
+    <genre>Clarinet</genre>
+  </matches>
+  <matches>
+    <genreid>12405</genreid>
+    <genre>Double Bass</genre>
+  </matches>
+  <matches>
+    <genreid>12406</genreid>
+    <genre>Flute</genre>
+  </matches>
+  <matches>
+    <genreid>12407</genreid>
+    <genre>Guitar</genre>
+  </matches>
+  <matches>
+    <genreid>12408</genreid>
+    <genre>Harp</genre>
+  </matches>
+  <matches>
+    <genreid>12409</genreid>
+    <genre>Harpsichord</genre>
+  </matches>
+  <matches>
+    <genreid>12410</genreid>
+    <genre>Horn</genre>
+  </matches>
+  <matches>
+    <genreid>12411</genreid>
+    <genre>Lute</genre>
+  </matches>
+  <matches>
+    <genreid>12412</genreid>
+    <genre>Mandolin</genre>
+  </matches>
+  <matches>
+    <genreid>12413</genreid>
+    <genre>Oboe</genre>
+  </matches>
+  <matches>
+    <genreid>12414</genreid>
+    <genre>Organ</genre>
+  </matches>
+  <matches>
+    <genreid>12415</genreid>
+    <genre>Percussion (Vibraphone etc.)</genre>
+  </matches>
+  <matches>
+    <genreid>12416</genreid>
+    <genre>Piano</genre>
+  </matches>
+  <matches>
+    <genreid>12417</genreid>
+    <genre>Recorder / English Flute</genre>
+  </matches>
+  <matches>
+    <genreid>12418</genreid>
+    <genre>Saxophone</genre>
+  </matches>
+  <matches>
+    <genreid>12419</genreid>
+    <genre>Trombone</genre>
+  </matches>
+  <matches>
+    <genreid>12420</genreid>
+    <genre>Trumpet</genre>
+  </matches>
+  <matches>
+    <genreid>12421</genreid>
+    <genre>Tuba</genre>
+  </matches>
+  <matches>
+    <genreid>12422</genreid>
+    <genre>Viola</genre>
+  </matches>
+  <matches>
+    <genreid>12423</genreid>
+    <genre>Violin</genre>
+  </matches>
+  <matches>
+    <genreid>12424</genreid>
+    <genre>Violoncello</genre>
+  </matches>
+  <matches>
+    <genreid>12425</genreid>
+    <genre>Miscellaneous Lead Instrument</genre>
+  </matches>
+  <matches>
+    <genreid>13000</genreid>
+    <genre>Reggae</genre>
+  </matches>
+  <matches>
+    <genreid>13001</genreid>
+    <genre>Contemporary Reggae</genre>
+  </matches>
+  <matches>
+    <genreid>13002</genreid>
+    <genre>Dancehall</genre>
+  </matches>
+  <matches>
+    <genreid>13003</genreid>
+    <genre>Dub</genre>
+  </matches>
+  <matches>
+    <genreid>13004</genreid>
+    <genre>Lover's Rock</genre>
+  </matches>
+  <matches>
+    <genreid>13005</genreid>
+    <genre>Reggaeton</genre>
+  </matches>
+  <matches>
+    <genreid>13006</genreid>
+    <genre>Roots</genre>
+  </matches>
+  <matches>
+    <genreid>13007</genreid>
+    <genre>Ska</genre>
+  </matches>
+  <matches>
+    <genreid>14000</genreid>
+    <genre>World</genre>
+  </matches>
+  <matches>
+    <genreid>14001</genreid>
+    <genre>African Music</genre>
+  </matches>
+  <matches>
+    <genreid>14002</genreid>
+    <genre>Afro Beat</genre>
+  </matches>
+  <matches>
+    <genreid>14003</genreid>
+    <genre>Afro Pop</genre>
+  </matches>
+  <matches>
+    <genreid>14004</genreid>
+    <genre>Asian Music</genre>
+  </matches>
+  <matches>
+    <genreid>14005</genreid>
+    <genre>Austropop</genre>
+  </matches>
+  <matches>
+    <genreid>14006</genreid>
+    <genre>Bhangra</genre>
+  </matches>
+  <matches>
+    <genreid>14007</genreid>
+    <genre>Calypso</genre>
+  </matches>
+  <matches>
+    <genreid>14008</genreid>
+    <genre>Caribbean Music</genre>
+  </matches>
+  <matches>
+    <genreid>14009</genreid>
+    <genre>Celtic Music</genre>
+  </matches>
+  <matches>
+    <genreid>14010</genreid>
+    <genre>Chanson</genre>
+  </matches>
+  <matches>
+    <genreid>14011</genreid>
+    <genre>Coupé Decalé</genre>
+  </matches>
+  <matches>
+    <genreid>14012</genreid>
+    <genre>Enka</genre>
+  </matches>
+  <matches>
+    <genreid>14013</genreid>
+    <genre>European Music</genre>
+  </matches>
+  <matches>
+    <genreid>14014</genreid>
+    <genre>Ghazal</genre>
+  </matches>
+  <matches>
+    <genreid>14015</genreid>
+    <genre>Griot</genre>
+  </matches>
+  <matches>
+    <genreid>14016</genreid>
+    <genre>Gypsy</genre>
+  </matches>
+  <matches>
+    <genreid>14017</genreid>
+    <genre>Highlife</genre>
+  </matches>
+  <matches>
+    <genreid>14018</genreid>
+    <genre>Judaica Music / Yiddish / Klezmer</genre>
+  </matches>
+  <matches>
+    <genreid>14019</genreid>
+    <genre>Kuduro</genre>
+  </matches>
+  <matches>
+    <genreid>14020</genreid>
+    <genre>Kwaito</genre>
+  </matches>
+  <matches>
+    <genreid>14021</genreid>
+    <genre>Makossa</genre>
+  </matches>
+  <matches>
+    <genreid>14022</genreid>
+    <genre>Marching Band</genre>
+  </matches>
+  <matches>
+    <genreid>14023</genreid>
+    <genre>Mento</genre>
+  </matches>
+  <matches>
+    <genreid>14024</genreid>
+    <genre>Middle Eastern Music</genre>
+  </matches>
+  <matches>
+    <genreid>14025</genreid>
+    <genre>Nordic / Scandinavia</genre>
+  </matches>
+  <matches>
+    <genreid>14026</genreid>
+    <genre>North American Music</genre>
+  </matches>
+  <matches>
+    <genreid>14027</genreid>
+    <genre>South American Music</genre>
+  </matches>
+  <matches>
+    <genreid>14028</genreid>
+    <genre>Parang</genre>
+  </matches>
+  <matches>
+    <genreid>14029</genreid>
+    <genre>Polka</genre>
+  </matches>
+  <matches>
+    <genreid>14030</genreid>
+    <genre>Rai</genre>
+  </matches>
+  <matches>
+    <genreid>14031</genreid>
+    <genre>Soca</genre>
+  </matches>
+  <matches>
+    <genreid>14032</genreid>
+    <genre>Soukous</genre>
+  </matches>
+  <matches>
+    <genreid>14033</genreid>
+    <genre>Zouk</genre>
+  </matches>
+  <matches>
+    <genreid>14034</genreid>
+    <genre>Zulu</genre>
+  </matches>
+  <matches>
+    <genreid>14100</genreid>
+    <genre>Axé</genre>
+  </matches>
+  <matches>
+    <genreid>14101</genreid>
+    <genre>Baile Funk</genre>
+  </matches>
+  <matches>
+    <genreid>14102</genreid>
+    <genre>Brazilian</genre>
+  </matches>
+  <matches>
+    <genreid>14103</genreid>
+    <genre>Choro</genre>
+  </matches>
+  <matches>
+    <genreid>14104</genreid>
+    <genre>Forró</genre>
+  </matches>
+  <matches>
+    <genreid>14105</genreid>
+    <genre>Frevo</genre>
+  </matches>
+  <matches>
+    <genreid>14106</genreid>
+    <genre>MPB</genre>
+  </matches>
+  <matches>
+    <genreid>14107</genreid>
+    <genre>Pagode</genre>
+  </matches>
+  <matches>
+    <genreid>14108</genreid>
+    <genre>Sertanejo</genre>
+  </matches>
+  <matches>
+    <genreid>14200</genreid>
+    <genre>Chinese Alt</genre>
+  </matches>
+  <matches>
+    <genreid>14201</genreid>
+    <genre>Chinese Classical</genre>
+  </matches>
+  <matches>
+    <genreid>14202</genreid>
+    <genre>Chinese Flute</genre>
+  </matches>
+  <matches>
+    <genreid>14203</genreid>
+    <genre>Chinese Hip-Hop</genre>
+  </matches>
+  <matches>
+    <genreid>14204</genreid>
+    <genre>Chinese Opera</genre>
+  </matches>
+  <matches>
+    <genreid>14205</genreid>
+    <genre>Chinese Orchestral</genre>
+  </matches>
+  <matches>
+    <genreid>14206</genreid>
+    <genre>Chinese Regional Folk</genre>
+  </matches>
+  <matches>
+    <genreid>14207</genreid>
+    <genre>Chinese Rock</genre>
+  </matches>
+  <matches>
+    <genreid>14208</genreid>
+    <genre>Chinese Strings</genre>
+  </matches>
+  <matches>
+    <genreid>14209</genreid>
+    <genre>C-Pop</genre>
+  </matches>
+  <matches>
+    <genreid>14210</genreid>
+    <genre>Cantopop/HK Pop</genre>
+  </matches>
+  <matches>
+    <genreid>14300</genreid>
+    <genre>Kayokyoku</genre>
+  </matches>
+  <matches>
+    <genreid>14400</genreid>
+    <genre>Korean Classical</genre>
+  </matches>
+  <matches>
+    <genreid>14401</genreid>
+    <genre>Korean Folk-Pop</genre>
+  </matches>
+  <matches>
+    <genreid>14402</genreid>
+    <genre>Korean Hip-Hop</genre>
+  </matches>
+  <matches>
+    <genreid>14403</genreid>
+    <genre>Korean Indie</genre>
+  </matches>
+  <matches>
+    <genreid>14404</genreid>
+    <genre>Korean Rock</genre>
+  </matches>
+  <matches>
+    <genreid>14405</genreid>
+    <genre>Korean Trad Instrumental</genre>
+  </matches>
+  <matches>
+    <genreid>14406</genreid>
+    <genre>Korean Trad Song</genre>
+  </matches>
+  <matches>
+    <genreid>14407</genreid>
+    <genre>Korean Trad Theater</genre>
+  </matches>
+  <matches>
+    <genreid>14408</genreid>
+    <genre>Trot</genre>
+  </matches>
+  <matches>
+    <genreid>14500</genreid>
+    <genre>Original Pilipino Music</genre>
+  </matches>
+  <matches>
+    <genreid>14501</genreid>
+    <genre>Pinoy Pop</genre>
+  </matches>
+  <matches>
+    <genreid>14502</genreid>
+    <genre>Indo Pop</genre>
+  </matches>
+  <matches>
+    <genreid>14503</genreid>
+    <genre>Tai-Pop</genre>
+  </matches>
+  <matches>
+    <genreid>14504</genreid>
+    <genre>Taiwanese Folk</genre>
+  </matches>
+  <matches>
+    <genreid>14505</genreid>
+    <genre>Thai Pop</genre>
+  </matches>
+  <matches>
+    <genreid>14506</genreid>
+    <genre>Tibetan Native Music</genre>
+  </matches>
+  <matches>
+    <genreid>15000</genreid>
+    <genre>Latin</genre>
+  </matches>
+  <matches>
+    <genreid>15001</genreid>
+    <genre>Bachata</genre>
+  </matches>
+  <matches>
+    <genreid>15002</genreid>
+    <genre>Banda</genre>
+  </matches>
+  <matches>
+    <genreid>15003</genreid>
+    <genre>Bolero</genre>
+  </matches>
+  <matches>
+    <genreid>15004</genreid>
+    <genre>Bossa Nova</genre>
+  </matches>
+  <matches>
+    <genreid>15005</genreid>
+    <genre>Corridos</genre>
+  </matches>
+  <matches>
+    <genreid>15006</genreid>
+    <genre>Cumbia</genre>
+  </matches>
+  <matches>
+    <genreid>15007</genreid>
+    <genre>Fado</genre>
+  </matches>
+  <matches>
+    <genreid>15008</genreid>
+    <genre>Flamenco</genre>
+  </matches>
+  <matches>
+    <genreid>15009</genreid>
+    <genre>Grupero</genre>
+  </matches>
+  <matches>
+    <genreid>15010</genreid>
+    <genre>Mambo</genre>
+  </matches>
+  <matches>
+    <genreid>15011</genreid>
+    <genre>Mariachi</genre>
+  </matches>
+  <matches>
+    <genreid>15012</genreid>
+    <genre>Merengue</genre>
+  </matches>
+  <matches>
+    <genreid>15013</genreid>
+    <genre>Norteno</genre>
+  </matches>
+  <matches>
+    <genreid>15014</genreid>
+    <genre>Ranchero</genre>
+  </matches>
+  <matches>
+    <genreid>15015</genreid>
+    <genre>Rock En Espanol</genre>
+  </matches>
+  <matches>
+    <genreid>15016</genreid>
+    <genre>Salsa</genre>
+  </matches>
+  <matches>
+    <genreid>15017</genreid>
+    <genre>Samba</genre>
+  </matches>
+  <matches>
+    <genreid>15018</genreid>
+    <genre>Son Cubana</genre>
+  </matches>
+  <matches>
+    <genreid>15019</genreid>
+    <genre>Sonidero</genre>
+  </matches>
+  <matches>
+    <genreid>15020</genreid>
+    <genre>Tango</genre>
+  </matches>
+  <matches>
+    <genreid>15021</genreid>
+    <genre>Tejano</genre>
+  </matches>
+  <matches>
+    <genreid>16000</genreid>
+    <genre>Religious</genre>
+  </matches>
+  <matches>
+    <genreid>16001</genreid>
+    <genre>Christian Rock</genre>
+  </matches>
+  <matches>
+    <genreid>16002</genreid>
+    <genre>Christian Hip Hop</genre>
+  </matches>
+  <matches>
+    <genreid>16003</genreid>
+    <genre>Christian Pop</genre>
+  </matches>
+  <matches>
+    <genreid>16004</genreid>
+    <genre>Chants</genre>
+  </matches>
+  <matches>
+    <genreid>16005</genreid>
+    <genre>Gospel</genre>
+  </matches>
+  <matches>
+    <genreid>16006</genreid>
+    <genre>Gregorian Music</genre>
+  </matches>
+  <matches>
+    <genreid>16007</genreid>
+    <genre>Hymn</genre>
+  </matches>
+  <matches>
+    <genreid>16008</genreid>
+    <genre>Mass</genre>
+  </matches>
+  <matches>
+    <genreid>16009</genreid>
+    <genre>Spiritual</genre>
+  </matches>
+  <matches>
+    <genreid>16010</genreid>
+    <genre>Worship</genre>
+  </matches>
+  <matches>
+    <genreid>17000</genreid>
+    <genre>Miscellaneous</genre>
+  </matches>
+  <matches>
+    <genreid>17001</genreid>
+    <genre>Anime / Video Game Soundtracks</genre>
+  </matches>
+  <matches>
+    <genreid>17002</genreid>
+    <genre>Bollywood</genre>
+  </matches>
+  <matches>
+    <genreid>17003</genreid>
+    <genre>Instrumental</genre>
+  </matches>
+  <matches>
+    <genreid>17004</genreid>
+    <genre>Vocal</genre>
+  </matches>
+  <matches>
+    <genreid>17005</genreid>
+    <genre>Acoustic</genre>
+  </matches>
+  <matches>
+    <genreid>17006</genreid>
+    <genre>Unplugged</genre>
+  </matches>
+  <matches>
+    <genreid>17007</genreid>
+    <genre>Live</genre>
+  </matches>
+  <matches>
+    <genreid>17008</genreid>
+    <genre>Traditional</genre>
+  </matches>
+  <matches>
+    <genreid>17009</genreid>
+    <genre>Karaoke</genre>
+  </matches>
+  <matches>
+    <genreid>17010</genreid>
+    <genre>Movie Scores</genre>
+  </matches>
+  <matches>
+    <genreid>17011</genreid>
+    <genre>Movie Soundtracks</genre>
+  </matches>
+  <matches>
+    <genreid>17012</genreid>
+    <genre>Sound Effects</genre>
+  </matches>
+  <matches>
+    <genreid>17013</genreid>
+    <genre>Soundtrack</genre>
+  </matches>
+  <matches>
+    <genreid>17014</genreid>
+    <genre>TV Soundtrack</genre>
+  </matches>
+  <matches>
+    <genreid>17015</genreid>
+    <genre>Wedding Music</genre>
+  </matches>
+  <matches>
+    <genreid>17016</genreid>
+    <genre>Holiday</genre>
+  </matches>
+  <matches>
+    <genreid>17017</genreid>
+    <genre>Mashup</genre>
+  </matches>
+  <matches>
+    <genreid>17100</genreid>
+    <genre>Unclassifiable</genre>
+  </matches>
+  <matches>
+    <genreid>18000</genreid>
+    <genre>Word</genre>
+  </matches>
+  <matches>
+    <genreid>18100</genreid>
+    <genre>Business &amp; Career</genre>
+  </matches>
+  <matches>
+    <genreid>18101</genreid>
+    <genre>Abstracts &amp; Dossiers</genre>
+  </matches>
+  <matches>
+    <genreid>18102</genreid>
+    <genre>Accounting</genre>
+  </matches>
+  <matches>
+    <genreid>18103</genreid>
+    <genre>Business &amp; Investing</genre>
+  </matches>
+  <matches>
+    <genreid>18104</genreid>
+    <genre>Communication</genre>
+  </matches>
+  <matches>
+    <genreid>18105</genreid>
+    <genre>Computers &amp; Internet</genre>
+  </matches>
+  <matches>
+    <genreid>18106</genreid>
+    <genre>Economics</genre>
+  </matches>
+  <matches>
+    <genreid>18107</genreid>
+    <genre>Finance</genre>
+  </matches>
+  <matches>
+    <genreid>18108</genreid>
+    <genre>Management &amp; Leadership</genre>
+  </matches>
+  <matches>
+    <genreid>18109</genreid>
+    <genre>Marketing &amp; Sales</genre>
+  </matches>
+  <matches>
+    <genreid>18110</genreid>
+    <genre>Politics</genre>
+  </matches>
+  <matches>
+    <genreid>18111</genreid>
+    <genre>Self-Help</genre>
+  </matches>
+  <matches>
+    <genreid>18112</genreid>
+    <genre>Self-Organization</genre>
+  </matches>
+  <matches>
+    <genreid>18113</genreid>
+    <genre>Skills</genre>
+  </matches>
+  <matches>
+    <genreid>18114</genreid>
+    <genre>Small Business &amp; Entrepeneurship</genre>
+  </matches>
+  <matches>
+    <genreid>18200</genreid>
+    <genre>Children's Audiobooks</genre>
+  </matches>
+  <matches>
+    <genreid>18201</genreid>
+    <genre>Popular Characters</genre>
+  </matches>
+  <matches>
+    <genreid>18202</genreid>
+    <genre>Animal Stories</genre>
+  </matches>
+  <matches>
+    <genreid>18203</genreid>
+    <genre>Children's Book Classics</genre>
+  </matches>
+  <matches>
+    <genreid>18204</genreid>
+    <genre>Children's Detective Stories</genre>
+  </matches>
+  <matches>
+    <genreid>18205</genreid>
+    <genre>Fairy Tales</genre>
+  </matches>
+  <matches>
+    <genreid>18206</genreid>
+    <genre>Fantasy &amp; Spook</genre>
+  </matches>
+  <matches>
+    <genreid>18207</genreid>
+    <genre>Knowledge for Children</genre>
+  </matches>
+  <matches>
+    <genreid>18208</genreid>
+    <genre>Pirates, Knights &amp; Historical</genre>
+  </matches>
+  <matches>
+    <genreid>18209</genreid>
+    <genre>Poems &amp; Song</genre>
+  </matches>
+  <matches>
+    <genreid>18300</genreid>
+    <genre>Comedy &amp; Humour</genre>
+  </matches>
+  <matches>
+    <genreid>18301</genreid>
+    <genre>Comedy &amp; Cabaret</genre>
+  </matches>
+  <matches>
+    <genreid>18302</genreid>
+    <genre>Humoristic Novel</genre>
+  </matches>
+  <matches>
+    <genreid>18400</genreid>
+    <genre>Crime</genre>
+  </matches>
+  <matches>
+    <genreid>18401</genreid>
+    <genre>Detective Stories</genre>
+  </matches>
+  <matches>
+    <genreid>18402</genreid>
+    <genre>Detective Stories „Noir“</genre>
+  </matches>
+  <matches>
+    <genreid>18403</genreid>
+    <genre>Classic Detective Stories</genre>
+  </matches>
+  <matches>
+    <genreid>18404</genreid>
+    <genre>Scandinavian Detective Stories</genre>
+  </matches>
+  <matches>
+    <genreid>18405</genreid>
+    <genre>Temporary Detective Stories</genre>
+  </matches>
+  <matches>
+    <genreid>18500</genreid>
+    <genre>Education &amp; Knowledge</genre>
+  </matches>
+  <matches>
+    <genreid>18501</genreid>
+    <genre>Art &amp; Culture</genre>
+  </matches>
+  <matches>
+    <genreid>18502</genreid>
+    <genre>Biography &amp; Memento</genre>
+  </matches>
+  <matches>
+    <genreid>18503</genreid>
+    <genre>Foreign Language</genre>
+  </matches>
+  <matches>
+    <genreid>18504</genreid>
+    <genre>History</genre>
+  </matches>
+  <matches>
+    <genreid>18505</genreid>
+    <genre>Pilosophy</genre>
+  </matches>
+  <matches>
+    <genreid>18506</genreid>
+    <genre>Politics &amp; Current Affairs</genre>
+  </matches>
+  <matches>
+    <genreid>18507</genreid>
+    <genre>Science &amp; Technology</genre>
+  </matches>
+  <matches>
+    <genreid>18600</genreid>
+    <genre>Health, Mind &amp; Body</genre>
+  </matches>
+  <matches>
+    <genreid>18601</genreid>
+    <genre>Autogenous Training</genre>
+  </matches>
+  <matches>
+    <genreid>18602</genreid>
+    <genre>Creativity</genre>
+  </matches>
+  <matches>
+    <genreid>18603</genreid>
+    <genre>Esoteric</genre>
+  </matches>
+  <matches>
+    <genreid>18604</genreid>
+    <genre>Fitness</genre>
+  </matches>
+  <matches>
+    <genreid>18605</genreid>
+    <genre>Health</genre>
+  </matches>
+  <matches>
+    <genreid>18606</genreid>
+    <genre>Lifestyle</genre>
+  </matches>
+  <matches>
+    <genreid>18607</genreid>
+    <genre>Love &amp; Erotic</genre>
+  </matches>
+  <matches>
+    <genreid>18608</genreid>
+    <genre>Meditation / Yoga</genre>
+  </matches>
+  <matches>
+    <genreid>18609</genreid>
+    <genre>Memory Training</genre>
+  </matches>
+  <matches>
+    <genreid>18610</genreid>
+    <genre>Mental Training</genre>
+  </matches>
+  <matches>
+    <genreid>18611</genreid>
+    <genre>Motivation</genre>
+  </matches>
+  <matches>
+    <genreid>18612</genreid>
+    <genre>Philosophy</genre>
+  </matches>
+  <matches>
+    <genreid>18613</genreid>
+    <genre>Positive Thinking &amp; Attitude</genre>
+  </matches>
+  <matches>
+    <genreid>18614</genreid>
+    <genre>Psychology</genre>
+  </matches>
+  <matches>
+    <genreid>18615</genreid>
+    <genre>Spirituality &amp; Religion</genre>
+  </matches>
+  <matches>
+    <genreid>18616</genreid>
+    <genre>Sports</genre>
+  </matches>
+  <matches>
+    <genreid>18617</genreid>
+    <genre>Wellness &amp; Beauty</genre>
+  </matches>
+  <matches>
+    <genreid>18700</genreid>
+    <genre>Science Fiction &amp; Fantasy</genre>
+  </matches>
+  <matches>
+    <genreid>18701</genreid>
+    <genre>Ancient World</genre>
+  </matches>
+  <matches>
+    <genreid>18702</genreid>
+    <genre>Fantasy-Romance</genre>
+  </matches>
+  <matches>
+    <genreid>18703</genreid>
+    <genre>Historical Thriller</genre>
+  </matches>
+  <matches>
+    <genreid>18704</genreid>
+    <genre>Horror Classics</genre>
+  </matches>
+  <matches>
+    <genreid>18705</genreid>
+    <genre>Medieval Times &amp; Early Modern Era</genre>
+  </matches>
+  <matches>
+    <genreid>18800</genreid>
+    <genre>Thriller</genre>
+  </matches>
+  <matches>
+    <genreid>18801</genreid>
+    <genre>Mystery &amp; Conspiracy</genre>
+  </matches>
+  <matches>
+    <genreid>18802</genreid>
+    <genre>Psychological Thriller</genre>
+  </matches>
+  <matches>
+    <genreid>18803</genreid>
+    <genre>Espionage, Politics &amp; Justice</genre>
+  </matches>
+  <matches>
+    <genreid>18804</genreid>
+    <genre>Vatican &amp; Secret Societies</genre>
+  </matches>
+  <matches>
+    <genreid>18810</genreid>
+    <genre>Science &amp; Medicine</genre>
+  </matches>
+  <matches>
+    <genreid>18820</genreid>
+    <genre>Literature</genre>
+  </matches>
+  <matches>
+    <genreid>18821</genreid>
+    <genre>Novels</genre>
+  </matches>
+  <matches>
+    <genreid>18822</genreid>
+    <genre>Erotica</genre>
+  </matches>
+  <matches>
+    <genreid>18823</genreid>
+    <genre>Romance</genre>
+  </matches>
+  <matches>
+    <genreid>18823</genreid>
+    <genre>Contemporary Literature</genre>
+  </matches>
+  <matches>
+    <genreid>18824</genreid>
+    <genre>Contemporary German Literature</genre>
+  </matches>
+  <matches>
+    <genreid>18825</genreid>
+    <genre>Entertainment</genre>
+  </matches>
+  <matches>
+    <genreid>18900</genreid>
+    <genre>Youth</genre>
+  </matches>
+  <matches>
+    <genreid>18901</genreid>
+    <genre>Youth Detective Stories</genre>
+  </matches>
+  <matches>
+    <genreid>18902</genreid>
+    <genre>Fantasy</genre>
+  </matches>
+  <matches>
+    <genreid>18903</genreid>
+    <genre>For Girls</genre>
+  </matches>
+  <matches>
+    <genreid>18904</genreid>
+    <genre>Knowledge for Teenagers</genre>
+  </matches>
+  <matches>
+    <genreid>18905</genreid>
+    <genre>Mystery</genre>
+  </matches>
+  <matches>
+    <genreid>18906</genreid>
+    <genre>Youth Classics</genre>
+  </matches>
+  <matches>
+    <genreid>18907</genreid>
+    <genre>Youth Today</genre>
+  </matches>
+  <matches>
+    <genreid>19000</genreid>
+    <genre>Language</genre>
+  </matches>
+  <matches>
+    <genreid>19001</genreid>
+    <genre>Afrikaans</genre>
+  </matches>
+  <matches>
+    <genreid>19002</genreid>
+    <genre>Albanian</genre>
+  </matches>
+  <matches>
+    <genreid>19003</genreid>
+    <genre>Arabic</genre>
+  </matches>
+  <matches>
+    <genreid>19004</genreid>
+    <genre>Bengali</genre>
+  </matches>
+  <matches>
+    <genreid>19005</genreid>
+    <genre>Bosnian</genre>
+  </matches>
+  <matches>
+    <genreid>19006</genreid>
+    <genre>Bulgarian</genre>
+  </matches>
+  <matches>
+    <genreid>19007</genreid>
+    <genre>Cantonese / Yue</genre>
+  </matches>
+  <matches>
+    <genreid>19008</genreid>
+    <genre>Croatian</genre>
+  </matches>
+  <matches>
+    <genreid>19009</genreid>
+    <genre>Czech</genre>
+  </matches>
+  <matches>
+    <genreid>19010</genreid>
+    <genre>Danish</genre>
+  </matches>
+  <matches>
+    <genreid>19011</genreid>
+    <genre>Dutch</genre>
+  </matches>
+  <matches>
+    <genreid>19012</genreid>
+    <genre>English</genre>
+  </matches>
+  <matches>
+    <genreid>19013</genreid>
+    <genre>Finnish</genre>
+  </matches>
+  <matches>
+    <genreid>19014</genreid>
+    <genre>French</genre>
+  </matches>
+  <matches>
+    <genreid>19015</genreid>
+    <genre>German</genre>
+  </matches>
+  <matches>
+    <genreid>19016</genreid>
+    <genre>Greek</genre>
+  </matches>
+  <matches>
+    <genreid>19017</genreid>
+    <genre>Hebrew</genre>
+  </matches>
+  <matches>
+    <genreid>19018</genreid>
+    <genre>Hindi / Urdu</genre>
+  </matches>
+  <matches>
+    <genreid>19019</genreid>
+    <genre>Hungarian</genre>
+  </matches>
+  <matches>
+    <genreid>19020</genreid>
+    <genre>Italian</genre>
+  </matches>
+  <matches>
+    <genreid>19021</genreid>
+    <genre>Japanese</genre>
+  </matches>
+  <matches>
+    <genreid>19022</genreid>
+    <genre>Korean</genre>
+  </matches>
+  <matches>
+    <genreid>19023</genreid>
+    <genre>Macedonian</genre>
+  </matches>
+  <matches>
+    <genreid>19024</genreid>
+    <genre>Mandarin</genre>
+  </matches>
+  <matches>
+    <genreid>19025</genreid>
+    <genre>Norwegian</genre>
+  </matches>
+  <matches>
+    <genreid>19026</genreid>
+    <genre>Patois</genre>
+  </matches>
+  <matches>
+    <genreid>19027</genreid>
+    <genre>Portuguese</genre>
+  </matches>
+  <matches>
+    <genreid>19028</genreid>
+    <genre>Russian</genre>
+  </matches>
+  <matches>
+    <genreid>19029</genreid>
+    <genre>Serbian</genre>
+  </matches>
+  <matches>
+    <genreid>19030</genreid>
+    <genre>Spanish</genre>
+  </matches>
+  <matches>
+    <genreid>19031</genreid>
+    <genre>Swedish</genre>
+  </matches>
+  <matches>
+    <genreid>19032</genreid>
+    <genre>Tamil</genre>
+  </matches>
+  <matches>
+    <genreid>19033</genreid>
+    <genre>Turkish</genre>
+  </matches>
+  <matches>
+    <genreid>19034</genreid>
+    <genre>Vietnamese</genre>
+  </matches>
+  <matches>
+    <genreid>20000</genreid>
+    <genre>Film</genre>
+  </matches>
+  <matches>
+    <genreid>20001</genreid>
+    <genre>Action</genre>
+  </matches>
+  <matches>
+    <genreid>20002</genreid>
+    <genre>3D</genre>
+  </matches>
+  <matches>
+    <genreid>20003</genreid>
+    <genre>Adventure</genre>
+  </matches>
+  <matches>
+    <genreid>20004</genreid>
+    <genre>Animation</genre>
+  </matches>
+  <matches>
+    <genreid>20005</genreid>
+    <genre>Author's Film</genre>
+  </matches>
+  <matches>
+    <genreid>20006</genreid>
+    <genre>Biography</genre>
+  </matches>
+  <matches>
+    <genreid>20007</genreid>
+    <genre>Cartoon</genre>
+  </matches>
+  <matches>
+    <genreid>20008</genreid>
+    <genre>Children</genre>
+  </matches>
+  <matches>
+    <genreid>20009</genreid>
+    <genre>Comedy</genre>
+  </matches>
+  <matches>
+    <genreid>20010</genreid>
+    <genre>Crime &amp; Gangster</genre>
+  </matches>
+  <matches>
+    <genreid>20011</genreid>
+    <genre>Disaster</genre>
+  </matches>
+  <matches>
+    <genreid>20012</genreid>
+    <genre>Documentary</genre>
+  </matches>
+  <matches>
+    <genreid>20013</genreid>
+    <genre>Drama</genre>
+  </matches>
+  <matches>
+    <genreid>20014</genreid>
+    <genre>Epic / Historical</genre>
+  </matches>
+  <matches>
+    <genreid>20015</genreid>
+    <genre>Erotic</genre>
+  </matches>
+  <matches>
+    <genreid>20016</genreid>
+    <genre>Expressionism</genre>
+  </matches>
+  <matches>
+    <genreid>20017</genreid>
+    <genre>Family</genre>
+  </matches>
+  <matches>
+    <genreid>20018</genreid>
+    <genre>Fantasy</genre>
+  </matches>
+  <matches>
+    <genreid>20019</genreid>
+    <genre>Film-Noir</genre>
+  </matches>
+  <matches>
+    <genreid>20020</genreid>
+    <genre>GLBT</genre>
+  </matches>
+  <matches>
+    <genreid>20021</genreid>
+    <genre>Horror</genre>
+  </matches>
+  <matches>
+    <genreid>20022</genreid>
+    <genre>Independent Film</genre>
+  </matches>
+  <matches>
+    <genreid>20023</genreid>
+    <genre>Martial-Arts / Eastern</genre>
+  </matches>
+  <matches>
+    <genreid>20024</genreid>
+    <genre>Monumental</genre>
+  </matches>
+  <matches>
+    <genreid>20025</genreid>
+    <genre>Musical / Dance</genre>
+  </matches>
+  <matches>
+    <genreid>20026</genreid>
+    <genre>Music</genre>
+  </matches>
+  <matches>
+    <genreid>20027</genreid>
+    <genre>Mystery</genre>
+  </matches>
+  <matches>
+    <genreid>20028</genreid>
+    <genre>Reality-TV</genre>
+  </matches>
+  <matches>
+    <genreid>20029</genreid>
+    <genre>Romantic</genre>
+  </matches>
+  <matches>
+    <genreid>20030</genreid>
+    <genre>Science Fiction</genre>
+  </matches>
+  <matches>
+    <genreid>20031</genreid>
+    <genre>Silent Movie</genre>
+  </matches>
+  <matches>
+    <genreid>20032</genreid>
+    <genre>Sport</genre>
+  </matches>
+  <matches>
+    <genreid>20033</genreid>
+    <genre>Thriller</genre>
+  </matches>
+  <matches>
+    <genreid>20034</genreid>
+    <genre>TV-Series</genre>
+  </matches>
+  <matches>
+    <genreid>20035</genreid>
+    <genre>Tragicomedy</genre>
+  </matches>
+  <matches>
+    <genreid>20036</genreid>
+    <genre>War / Anti-War</genre>
+  </matches>
+  <matches>
+    <genreid>20037</genreid>
+    <genre>Western</genre>
+  </matches>
+  <matches>
+    <genreid>20038</genreid>
+    <genre>Youth</genre>
+  </matches>
+  <matches>
+    <genreid>21000</genreid>
+    <genre>Time</genre>
+  </matches>
+  <matches>
+    <genreid>21001</genreid>
+    <genre>Middle Ages</genre>
+  </matches>
+  <matches>
+    <genreid>21002</genreid>
+    <genre>20's</genre>
+  </matches>
+  <matches>
+    <genreid>21003</genreid>
+    <genre>30's</genre>
+  </matches>
+  <matches>
+    <genreid>21004</genreid>
+    <genre>40's</genre>
+  </matches>
+  <matches>
+    <genreid>21005</genreid>
+    <genre>50's</genre>
+  </matches>
+  <matches>
+    <genreid>21006</genreid>
+    <genre>60's</genre>
+  </matches>
+  <matches>
+    <genreid>21007</genreid>
+    <genre>70'</genre>
+  </matches>
+  <matches>
+    <genreid>21008</genreid>
+    <genre>80's</genre>
+  </matches>
+  <matches>
+    <genreid>21009</genreid>
+    <genre>90's</genre>
+  </matches>
+  <matches>
+    <genreid>21010</genreid>
+    <genre>2000's</genre>
+  </matches>
+  <matches>
+    <genreid>21011</genreid>
+    <genre>2010's</genre>
+  </matches>
+  <matches>
+    <genreid>21012</genreid>
+    <genre>2020's</genre>
+  </matches>
+  <matches>
+    <genreid>22000</genreid>
+    <genre>Adult</genre>
+  </matches>
+  <matches>
+    <genreid>23000</genreid>
+    <genre>Children</genre>
+  </matches>
+  <matches>
+    <genreid>23001</genreid>
+    <genre>Age: up to 6 years</genre>
+  </matches>
+  <matches>
+    <genreid>23002</genreid>
+    <genre>Age: 6 years +</genre>
+  </matches>
+  <matches>
+    <genreid>23003</genreid>
+    <genre>Age: 8 years +</genre>
+  </matches>
+  <matches>
+    <genreid>23004</genreid>
+    <genre>Kids &amp; Family</genre>
+  </matches>
+  <matches>
+    <genreid>24000</genreid>
+    <genre>Country</genre>
+  </matches>
+  <matches>
+    <genreid>24001</genreid>
+    <genre>United Arab Emirates (AE)</genre>
+  </matches>
+  <matches>
+    <genreid>24002</genreid>
+    <genre>Afghanistan (AF)</genre>
+  </matches>
+  <matches>
+    <genreid>24003</genreid>
+    <genre>Antigua and Barbuda (AG)</genre>
+  </matches>
+  <matches>
+    <genreid>24004</genreid>
+    <genre>Anguilla (AI)</genre>
+  </matches>
+  <matches>
+    <genreid>24005</genreid>
+    <genre>Albania (AL)</genre>
+  </matches>
+  <matches>
+    <genreid>24006</genreid>
+    <genre>Armenia (AM)</genre>
+  </matches>
+  <matches>
+    <genreid>24007</genreid>
+    <genre>Angola (AO)</genre>
+  </matches>
+  <matches>
+    <genreid>24008</genreid>
+    <genre>Antarctica (AQ)</genre>
+  </matches>
+  <matches>
+    <genreid>24009</genreid>
+    <genre>Argentina (AR)</genre>
+  </matches>
+  <matches>
+    <genreid>24010</genreid>
+    <genre>American Samoa (AS)</genre>
+  </matches>
+  <matches>
+    <genreid>24011</genreid>
+    <genre>Austria (AT)</genre>
+  </matches>
+  <matches>
+    <genreid>24012</genreid>
+    <genre>Australia (AU)</genre>
+  </matches>
+  <matches>
+    <genreid>24013</genreid>
+    <genre>Aruba (AW)</genre>
+  </matches>
+  <matches>
+    <genreid>24014</genreid>
+    <genre>Åland Islands (AX)</genre>
+  </matches>
+  <matches>
+    <genreid>24015</genreid>
+    <genre>Azerbaijan (AZ)</genre>
+  </matches>
+  <matches>
+    <genreid>24016</genreid>
+    <genre>Bosnia and Herzegovina (BA)</genre>
+  </matches>
+  <matches>
+    <genreid>24017</genreid>
+    <genre>Barbados (BB)</genre>
+  </matches>
+  <matches>
+    <genreid>24018</genreid>
+    <genre>Bangladesh (BD)</genre>
+  </matches>
+  <matches>
+    <genreid>24019</genreid>
+    <genre>Belgium (BE)</genre>
+  </matches>
+  <matches>
+    <genreid>24020</genreid>
+    <genre>Burkina Faso (BF)</genre>
+  </matches>
+  <matches>
+    <genreid>24021</genreid>
+    <genre>Bulgaria (BG)</genre>
+  </matches>
+  <matches>
+    <genreid>24022</genreid>
+    <genre>Bahrain (BH)</genre>
+  </matches>
+  <matches>
+    <genreid>24023</genreid>
+    <genre>Burundi (BI)</genre>
+  </matches>
+  <matches>
+    <genreid>24024</genreid>
+    <genre>Benin (BJ)</genre>
+  </matches>
+  <matches>
+    <genreid>24025</genreid>
+    <genre>Saint Barthélemy (BL)</genre>
+  </matches>
+  <matches>
+    <genreid>24026</genreid>
+    <genre>Bermuda (BM)</genre>
+  </matches>
+  <matches>
+    <genreid>24027</genreid>
+    <genre>Brunei Darussalam (BN)</genre>
+  </matches>
+  <matches>
+    <genreid>24028</genreid>
+    <genre>Bolivia Plurinational State of (BO)</genre>
+  </matches>
+  <matches>
+    <genreid>24029</genreid>
+    <genre>Bonaire Saint Eustatius and Saba (BQ)</genre>
+  </matches>
+  <matches>
+    <genreid>24030</genreid>
+    <genre>Brazil (BR)</genre>
+  </matches>
+  <matches>
+    <genreid>24031</genreid>
+    <genre>Bahamas (BS)</genre>
+  </matches>
+  <matches>
+    <genreid>24032</genreid>
+    <genre>Bhutan (BT)</genre>
+  </matches>
+  <matches>
+    <genreid>24033</genreid>
+    <genre>Bouvet Island (BV)</genre>
+  </matches>
+  <matches>
+    <genreid>24034</genreid>
+    <genre>Botswana (BW)</genre>
+  </matches>
+  <matches>
+    <genreid>24035</genreid>
+    <genre>Belarus (BY)</genre>
+  </matches>
+  <matches>
+    <genreid>24036</genreid>
+    <genre>Belize (BZ)</genre>
+  </matches>
+  <matches>
+    <genreid>24037</genreid>
+    <genre>Canada (CA)</genre>
+  </matches>
+  <matches>
+    <genreid>24038</genreid>
+    <genre>Cocos (Keeling) Islands (CC)</genre>
+  </matches>
+  <matches>
+    <genreid>24039</genreid>
+    <genre>Congo the Democratic Republic of the (CD)</genre>
+  </matches>
+  <matches>
+    <genreid>24040</genreid>
+    <genre>Central African Republic (CF)</genre>
+  </matches>
+  <matches>
+    <genreid>24041</genreid>
+    <genre>Congo (CG)</genre>
+  </matches>
+  <matches>
+    <genreid>24042</genreid>
+    <genre>Switzerland (CH)</genre>
+  </matches>
+  <matches>
+    <genreid>24043</genreid>
+    <genre>Côte d'Ivoire (CI)</genre>
+  </matches>
+  <matches>
+    <genreid>24044</genreid>
+    <genre>Cook Islands (CK)</genre>
+  </matches>
+  <matches>
+    <genreid>24045</genreid>
+    <genre>Chile (CL)</genre>
+  </matches>
+  <matches>
+    <genreid>24046</genreid>
+    <genre>Cameroon (CM)</genre>
+  </matches>
+  <matches>
+    <genreid>24047</genreid>
+    <genre>China (CN)</genre>
+  </matches>
+  <matches>
+    <genreid>24048</genreid>
+    <genre>Colombia (CO)</genre>
+  </matches>
+  <matches>
+    <genreid>24049</genreid>
+    <genre>Costa Rica (CR)</genre>
+  </matches>
+  <matches>
+    <genreid>24050</genreid>
+    <genre>Cuba (CU)</genre>
+  </matches>
+  <matches>
+    <genreid>24051</genreid>
+    <genre>Cape Verde (CV)</genre>
+  </matches>
+  <matches>
+    <genreid>24052</genreid>
+    <genre>Curaçao (CW)</genre>
+  </matches>
+  <matches>
+    <genreid>24053</genreid>
+    <genre>Christmas Island (CX)</genre>
+  </matches>
+  <matches>
+    <genreid>24054</genreid>
+    <genre>Cyprus (CY)</genre>
+  </matches>
+  <matches>
+    <genreid>24055</genreid>
+    <genre>Czech Republic (CZ)</genre>
+  </matches>
+  <matches>
+    <genreid>24056</genreid>
+    <genre>Germany (DE)</genre>
+  </matches>
+  <matches>
+    <genreid>24057</genreid>
+    <genre>Djibouti (DJ)</genre>
+  </matches>
+  <matches>
+    <genreid>24058</genreid>
+    <genre>Denmark (DK)</genre>
+  </matches>
+  <matches>
+    <genreid>24059</genreid>
+    <genre>Dominica (DM)</genre>
+  </matches>
+  <matches>
+    <genreid>24060</genreid>
+    <genre>Dominican Republic (DO)</genre>
+  </matches>
+  <matches>
+    <genreid>24061</genreid>
+    <genre>Algeria (DZ)</genre>
+  </matches>
+  <matches>
+    <genreid>24062</genreid>
+    <genre>Ecuador (EC)</genre>
+  </matches>
+  <matches>
+    <genreid>24063</genreid>
+    <genre>Estonia (EE)</genre>
+  </matches>
+  <matches>
+    <genreid>24064</genreid>
+    <genre>Egypt (EG)</genre>
+  </matches>
+  <matches>
+    <genreid>24065</genreid>
+    <genre>Western Sahara (EH)</genre>
+  </matches>
+  <matches>
+    <genreid>24066</genreid>
+    <genre>Eritrea (ER)</genre>
+  </matches>
+  <matches>
+    <genreid>24067</genreid>
+    <genre>Spain (ES)</genre>
+  </matches>
+  <matches>
+    <genreid>24068</genreid>
+    <genre>Ethiopia (ET)</genre>
+  </matches>
+  <matches>
+    <genreid>24069</genreid>
+    <genre>Finland (FI)</genre>
+  </matches>
+  <matches>
+    <genreid>24070</genreid>
+    <genre>Fiji (FJ)</genre>
+  </matches>
+  <matches>
+    <genreid>24071</genreid>
+    <genre>Falkland Islands (Malvinas) (FK)</genre>
+  </matches>
+  <matches>
+    <genreid>24072</genreid>
+    <genre>Micronesia Federated States of (FM)</genre>
+  </matches>
+  <matches>
+    <genreid>24073</genreid>
+    <genre>Faroe Islands (FO)</genre>
+  </matches>
+  <matches>
+    <genreid>24074</genreid>
+    <genre>France (FR)</genre>
+  </matches>
+  <matches>
+    <genreid>24075</genreid>
+    <genre>Gabon (GA)</genre>
+  </matches>
+  <matches>
+    <genreid>24076</genreid>
+    <genre>United Kingdom (GB)</genre>
+  </matches>
+  <matches>
+    <genreid>24077</genreid>
+    <genre>Grenada (GD)</genre>
+  </matches>
+  <matches>
+    <genreid>24078</genreid>
+    <genre>Georgia (GE)</genre>
+  </matches>
+  <matches>
+    <genreid>24079</genreid>
+    <genre>French Guiana (GF)</genre>
+  </matches>
+  <matches>
+    <genreid>24080</genreid>
+    <genre>Guernsey (GG)</genre>
+  </matches>
+  <matches>
+    <genreid>24081</genreid>
+    <genre>Ghana (GH)</genre>
+  </matches>
+  <matches>
+    <genreid>24082</genreid>
+    <genre>Gibraltar (GI)</genre>
+  </matches>
+  <matches>
+    <genreid>24083</genreid>
+    <genre>Greenland (GL)</genre>
+  </matches>
+  <matches>
+    <genreid>24084</genreid>
+    <genre>Gambia (GM)</genre>
+  </matches>
+  <matches>
+    <genreid>24085</genreid>
+    <genre>Guinea (GN)</genre>
+  </matches>
+  <matches>
+    <genreid>24086</genreid>
+    <genre>Guadeloupe (GP)</genre>
+  </matches>
+  <matches>
+    <genreid>24087</genreid>
+    <genre>Equatorial Guinea (GQ)</genre>
+  </matches>
+  <matches>
+    <genreid>24088</genreid>
+    <genre>Greece (GR)</genre>
+  </matches>
+  <matches>
+    <genreid>24089</genreid>
+    <genre>South Georgia and the South Sandwich Islands (GS)</genre>
+  </matches>
+  <matches>
+    <genreid>24090</genreid>
+    <genre>Guatemala (GT)</genre>
+  </matches>
+  <matches>
+    <genreid>24091</genreid>
+    <genre>Guam (GU)</genre>
+  </matches>
+  <matches>
+    <genreid>24092</genreid>
+    <genre>Guinea-Bissau (GW)</genre>
+  </matches>
+  <matches>
+    <genreid>24093</genreid>
+    <genre>Guyana (GY)</genre>
+  </matches>
+  <matches>
+    <genreid>24094</genreid>
+    <genre>Hong Kong (HK)</genre>
+  </matches>
+  <matches>
+    <genreid>24095</genreid>
+    <genre>Heard Island and McDonald Islands (HM)</genre>
+  </matches>
+  <matches>
+    <genreid>24096</genreid>
+    <genre>Honduras (HN)</genre>
+  </matches>
+  <matches>
+    <genreid>24097</genreid>
+    <genre>Croatia (HR)</genre>
+  </matches>
+  <matches>
+    <genreid>24098</genreid>
+    <genre>Haiti (HT)</genre>
+  </matches>
+  <matches>
+    <genreid>24099</genreid>
+    <genre>Hungary (HU)</genre>
+  </matches>
+  <matches>
+    <genreid>24100</genreid>
+    <genre>Indonesia (ID)</genre>
+  </matches>
+  <matches>
+    <genreid>24101</genreid>
+    <genre>Ireland (IE)</genre>
+  </matches>
+  <matches>
+    <genreid>24102</genreid>
+    <genre>Israel (IL)</genre>
+  </matches>
+  <matches>
+    <genreid>24103</genreid>
+    <genre>Isle of Man (IM)</genre>
+  </matches>
+  <matches>
+    <genreid>24104</genreid>
+    <genre>India (IN)</genre>
+  </matches>
+  <matches>
+    <genreid>24105</genreid>
+    <genre>British Indian Ocean Territory (IO)</genre>
+  </matches>
+  <matches>
+    <genreid>24106</genreid>
+    <genre>Iraq (IQ)</genre>
+  </matches>
+  <matches>
+    <genreid>24107</genreid>
+    <genre>Iran Islamic Republic of (IR)</genre>
+  </matches>
+  <matches>
+    <genreid>24108</genreid>
+    <genre>Iceland (IS)</genre>
+  </matches>
+  <matches>
+    <genreid>24109</genreid>
+    <genre>Italy (IT)</genre>
+  </matches>
+  <matches>
+    <genreid>24110</genreid>
+    <genre>Jersey (JE)</genre>
+  </matches>
+  <matches>
+    <genreid>24111</genreid>
+    <genre>Jamaica (JM)</genre>
+  </matches>
+  <matches>
+    <genreid>24112</genreid>
+    <genre>Jordan (JO)</genre>
+  </matches>
+  <matches>
+    <genreid>24113</genreid>
+    <genre>Japan (JP)</genre>
+  </matches>
+  <matches>
+    <genreid>24114</genreid>
+    <genre>Kenya (KE)</genre>
+  </matches>
+  <matches>
+    <genreid>24115</genreid>
+    <genre>Kyrgyzstan (KG)</genre>
+  </matches>
+  <matches>
+    <genreid>24116</genreid>
+    <genre>Cambodia (KH)</genre>
+  </matches>
+  <matches>
+    <genreid>24117</genreid>
+    <genre>Kiribati (KI)</genre>
+  </matches>
+  <matches>
+    <genreid>24118</genreid>
+    <genre>Comoros (KM)</genre>
+  </matches>
+  <matches>
+    <genreid>24119</genreid>
+    <genre>Saint Kitts and Nevis (KN)</genre>
+  </matches>
+  <matches>
+    <genreid>24120</genreid>
+    <genre>Korea Democratic People's Republic of (KP)</genre>
+  </matches>
+  <matches>
+    <genreid>24121</genreid>
+    <genre>Korea Republic of (KR)</genre>
+  </matches>
+  <matches>
+    <genreid>24122</genreid>
+    <genre>Kuwait (KW)</genre>
+  </matches>
+  <matches>
+    <genreid>24123</genreid>
+    <genre>Cayman Islands (KY)</genre>
+  </matches>
+  <matches>
+    <genreid>24124</genreid>
+    <genre>Kazakhstan (KZ)</genre>
+  </matches>
+  <matches>
+    <genreid>24125</genreid>
+    <genre>Lao People's Democratic Republic (LA)</genre>
+  </matches>
+  <matches>
+    <genreid>24126</genreid>
+    <genre>Lebanon (LB)</genre>
+  </matches>
+  <matches>
+    <genreid>24127</genreid>
+    <genre>Saint Lucia (LC)</genre>
+  </matches>
+  <matches>
+    <genreid>24128</genreid>
+    <genre>Liechtenstein (LI)</genre>
+  </matches>
+  <matches>
+    <genreid>24129</genreid>
+    <genre>Sri Lanka (LK)</genre>
+  </matches>
+  <matches>
+    <genreid>24130</genreid>
+    <genre>Liberia (LR)</genre>
+  </matches>
+  <matches>
+    <genreid>24131</genreid>
+    <genre>Lesotho (LS)</genre>
+  </matches>
+  <matches>
+    <genreid>24132</genreid>
+    <genre>Lithuania (LT)</genre>
+  </matches>
+  <matches>
+    <genreid>24133</genreid>
+    <genre>Luxembourg (LU)</genre>
+  </matches>
+  <matches>
+    <genreid>24134</genreid>
+    <genre>Latvia (LV)</genre>
+  </matches>
+  <matches>
+    <genreid>24135</genreid>
+    <genre>Libyan Arab Jamahiriya (LY)</genre>
+  </matches>
+  <matches>
+    <genreid>24136</genreid>
+    <genre>Morocco (MA)</genre>
+  </matches>
+  <matches>
+    <genreid>24137</genreid>
+    <genre>Monaco (MC)</genre>
+  </matches>
+  <matches>
+    <genreid>24138</genreid>
+    <genre>Moldova Republic of (MD)</genre>
+  </matches>
+  <matches>
+    <genreid>24139</genreid>
+    <genre>Montenegro (ME)</genre>
+  </matches>
+  <matches>
+    <genreid>24140</genreid>
+    <genre>Saint Martin (French part) (MF)</genre>
+  </matches>
+  <matches>
+    <genreid>24141</genreid>
+    <genre>Madagascar (MG)</genre>
+  </matches>
+  <matches>
+    <genreid>24142</genreid>
+    <genre>Marshall Islands (MH)</genre>
+  </matches>
+  <matches>
+    <genreid>24143</genreid>
+    <genre>Macedonia the former Yugoslav Republic of (MK)</genre>
+  </matches>
+  <matches>
+    <genreid>24144</genreid>
+    <genre>Mali (ML)</genre>
+  </matches>
+  <matches>
+    <genreid>24145</genreid>
+    <genre>Myanmar (MM)</genre>
+  </matches>
+  <matches>
+    <genreid>24146</genreid>
+    <genre>Mongolia (MN)</genre>
+  </matches>
+  <matches>
+    <genreid>24147</genreid>
+    <genre>Macao (MO)</genre>
+  </matches>
+  <matches>
+    <genreid>24148</genreid>
+    <genre>Northern Mariana Islands (MP)</genre>
+  </matches>
+  <matches>
+    <genreid>24149</genreid>
+    <genre>Martinique (MQ)</genre>
+  </matches>
+  <matches>
+    <genreid>24150</genreid>
+    <genre>Mauritania (MR)</genre>
+  </matches>
+  <matches>
+    <genreid>24151</genreid>
+    <genre>Montserrat (MS)</genre>
+  </matches>
+  <matches>
+    <genreid>24152</genreid>
+    <genre>Malta (MT)</genre>
+  </matches>
+  <matches>
+    <genreid>24153</genreid>
+    <genre>Mauritius (MU)</genre>
+  </matches>
+  <matches>
+    <genreid>24154</genreid>
+    <genre>Maldives (MV)</genre>
+  </matches>
+  <matches>
+    <genreid>24155</genreid>
+    <genre>Malawi (MW)</genre>
+  </matches>
+  <matches>
+    <genreid>24156</genreid>
+    <genre>Mexico (MX)</genre>
+  </matches>
+  <matches>
+    <genreid>24157</genreid>
+    <genre>Malaysia (MY)</genre>
+  </matches>
+  <matches>
+    <genreid>24158</genreid>
+    <genre>Mozambique (MZ)</genre>
+  </matches>
+  <matches>
+    <genreid>24159</genreid>
+    <genre>Namibia (NA)</genre>
+  </matches>
+  <matches>
+    <genreid>24160</genreid>
+    <genre>New Caledonia (NC)</genre>
+  </matches>
+  <matches>
+    <genreid>24161</genreid>
+    <genre>Niger (NE)</genre>
+  </matches>
+  <matches>
+    <genreid>24162</genreid>
+    <genre>Norfolk Island (NF)</genre>
+  </matches>
+  <matches>
+    <genreid>24163</genreid>
+    <genre>Nigeria (NG)</genre>
+  </matches>
+  <matches>
+    <genreid>24164</genreid>
+    <genre>Nicaragua (NI)</genre>
+  </matches>
+  <matches>
+    <genreid>24165</genreid>
+    <genre>Netherlands (NL)</genre>
+  </matches>
+  <matches>
+    <genreid>24166</genreid>
+    <genre>Norway (NO)</genre>
+  </matches>
+  <matches>
+    <genreid>24167</genreid>
+    <genre>Nepal (NP)</genre>
+  </matches>
+  <matches>
+    <genreid>24168</genreid>
+    <genre>Nauru (NR)</genre>
+  </matches>
+  <matches>
+    <genreid>24169</genreid>
+    <genre>Niue (NU)</genre>
+  </matches>
+  <matches>
+    <genreid>24170</genreid>
+    <genre>New Zealand (NZ)</genre>
+  </matches>
+  <matches>
+    <genreid>24171</genreid>
+    <genre>Oman (OM)</genre>
+  </matches>
+  <matches>
+    <genreid>24172</genreid>
+    <genre>Panama (PA)</genre>
+  </matches>
+  <matches>
+    <genreid>24173</genreid>
+    <genre>Peru (PE)</genre>
+  </matches>
+  <matches>
+    <genreid>24174</genreid>
+    <genre>French Polynesia (PF)</genre>
+  </matches>
+  <matches>
+    <genreid>24175</genreid>
+    <genre>Papua New Guinea (PG)</genre>
+  </matches>
+  <matches>
+    <genreid>24176</genreid>
+    <genre>Philippines (PH)</genre>
+  </matches>
+  <matches>
+    <genreid>24177</genreid>
+    <genre>Pakistan (PK)</genre>
+  </matches>
+  <matches>
+    <genreid>24178</genreid>
+    <genre>Poland (PL)</genre>
+  </matches>
+  <matches>
+    <genreid>24179</genreid>
+    <genre>Saint Pierre and Miquelon (PM)</genre>
+  </matches>
+  <matches>
+    <genreid>24180</genreid>
+    <genre>Pitcairn (PN)</genre>
+  </matches>
+  <matches>
+    <genreid>24181</genreid>
+    <genre>Puerto Rico (PR)</genre>
+  </matches>
+  <matches>
+    <genreid>24182</genreid>
+    <genre>Palestinian Territory Occupied (PS)</genre>
+  </matches>
+  <matches>
+    <genreid>24183</genreid>
+    <genre>Portugal (PT)</genre>
+  </matches>
+  <matches>
+    <genreid>24184</genreid>
+    <genre>Palau (PW)</genre>
+  </matches>
+  <matches>
+    <genreid>24185</genreid>
+    <genre>Paraguay (PY)</genre>
+  </matches>
+  <matches>
+    <genreid>24186</genreid>
+    <genre>Qatar (QA)</genre>
+  </matches>
+  <matches>
+    <genreid>24187</genreid>
+    <genre>Réunion (RE)</genre>
+  </matches>
+  <matches>
+    <genreid>24188</genreid>
+    <genre>Romania (RO)</genre>
+  </matches>
+  <matches>
+    <genreid>24189</genreid>
+    <genre>Serbia (RS)</genre>
+  </matches>
+  <matches>
+    <genreid>24190</genreid>
+    <genre>Russian Federation (RU)</genre>
+  </matches>
+  <matches>
+    <genreid>24191</genreid>
+    <genre>Rwanda (RW)</genre>
+  </matches>
+  <matches>
+    <genreid>24192</genreid>
+    <genre>Saudi Arabia (SA)</genre>
+  </matches>
+  <matches>
+    <genreid>24193</genreid>
+    <genre>Solomon Islands (SB)</genre>
+  </matches>
+  <matches>
+    <genreid>24194</genreid>
+    <genre>Seychelles (SC)</genre>
+  </matches>
+  <matches>
+    <genreid>24195</genreid>
+    <genre>Sudan (SD)</genre>
+  </matches>
+  <matches>
+    <genreid>24196</genreid>
+    <genre>Sweden (SE)</genre>
+  </matches>
+  <matches>
+    <genreid>24197</genreid>
+    <genre>Singapore (SG)</genre>
+  </matches>
+  <matches>
+    <genreid>24198</genreid>
+    <genre>Saint Helena Ascension and Tristan da Cunha (SH)</genre>
+  </matches>
+  <matches>
+    <genreid>24199</genreid>
+    <genre>Slovenia (SI)</genre>
+  </matches>
+  <matches>
+    <genreid>24200</genreid>
+    <genre>Svalbard and Jan Mayen (SJ)</genre>
+  </matches>
+  <matches>
+    <genreid>24201</genreid>
+    <genre>Slovakia (SK)</genre>
+  </matches>
+  <matches>
+    <genreid>24202</genreid>
+    <genre>Sierra Leone (SL)</genre>
+  </matches>
+  <matches>
+    <genreid>24203</genreid>
+    <genre>San Marino (SM)</genre>
+  </matches>
+  <matches>
+    <genreid>24204</genreid>
+    <genre>Senegal (SN)</genre>
+  </matches>
+  <matches>
+    <genreid>24205</genreid>
+    <genre>Somalia (SO)</genre>
+  </matches>
+  <matches>
+    <genreid>24206</genreid>
+    <genre>Suriname (SR)</genre>
+  </matches>
+  <matches>
+    <genreid>24207</genreid>
+    <genre>South Sudan (SS)</genre>
+  </matches>
+  <matches>
+    <genreid>24208</genreid>
+    <genre>Sao Tome and Principe (ST)</genre>
+  </matches>
+  <matches>
+    <genreid>24209</genreid>
+    <genre>El Salvador (SV)</genre>
+  </matches>
+  <matches>
+    <genreid>24210</genreid>
+    <genre>Sint Maarten (Dutch part) (SX)</genre>
+  </matches>
+  <matches>
+    <genreid>24211</genreid>
+    <genre>Syrian Arab Republic (SY)</genre>
+  </matches>
+  <matches>
+    <genreid>24212</genreid>
+    <genre>Swaziland (SZ)</genre>
+  </matches>
+  <matches>
+    <genreid>24213</genreid>
+    <genre>Turks and Caicos Islands (TC)</genre>
+  </matches>
+  <matches>
+    <genreid>24214</genreid>
+    <genre>Chad (TD)</genre>
+  </matches>
+  <matches>
+    <genreid>24215</genreid>
+    <genre>French Southern Territories (TF)</genre>
+  </matches>
+  <matches>
+    <genreid>24216</genreid>
+    <genre>Togo (TG)</genre>
+  </matches>
+  <matches>
+    <genreid>24217</genreid>
+    <genre>Thailand (TH)</genre>
+  </matches>
+  <matches>
+    <genreid>24218</genreid>
+    <genre>Tajikistan (TJ)</genre>
+  </matches>
+  <matches>
+    <genreid>24219</genreid>
+    <genre>Tokelau (TK)</genre>
+  </matches>
+  <matches>
+    <genreid>24220</genreid>
+    <genre>Timor-Leste (TL)</genre>
+  </matches>
+  <matches>
+    <genreid>24221</genreid>
+    <genre>Turkmenistan (TM)</genre>
+  </matches>
+  <matches>
+    <genreid>24222</genreid>
+    <genre>Tunisia (TN)</genre>
+  </matches>
+  <matches>
+    <genreid>24223</genreid>
+    <genre>Tonga (TO)</genre>
+  </matches>
+  <matches>
+    <genreid>24224</genreid>
+    <genre>Turkey (TR)</genre>
+  </matches>
+  <matches>
+    <genreid>24225</genreid>
+    <genre>Trinidad and Tobago (TT)</genre>
+  </matches>
+  <matches>
+    <genreid>24226</genreid>
+    <genre>Tuvalu (TV)</genre>
+  </matches>
+  <matches>
+    <genreid>24227</genreid>
+    <genre>Taiwan Province of China (TW)</genre>
+  </matches>
+  <matches>
+    <genreid>24228</genreid>
+    <genre>Tanzania United Republic of (TZ)</genre>
+  </matches>
+  <matches>
+    <genreid>24229</genreid>
+    <genre>Ukraine (UA)</genre>
+  </matches>
+  <matches>
+    <genreid>24230</genreid>
+    <genre>Uganda (UG)</genre>
+  </matches>
+  <matches>
+    <genreid>24231</genreid>
+    <genre>United States Minor Outlying Islands (UM)</genre>
+  </matches>
+  <matches>
+    <genreid>24232</genreid>
+    <genre>United States (US)</genre>
+  </matches>
+  <matches>
+    <genreid>24233</genreid>
+    <genre>Uruguay (UY)</genre>
+  </matches>
+  <matches>
+    <genreid>24234</genreid>
+    <genre>Uzbekistan (UZ)</genre>
+  </matches>
+  <matches>
+    <genreid>24235</genreid>
+    <genre>Holy See (Vatican City State) (VA)</genre>
+  </matches>
+  <matches>
+    <genreid>24236</genreid>
+    <genre>Saint Vincent and the Grenadines (VC)</genre>
+  </matches>
+  <matches>
+    <genreid>24237</genreid>
+    <genre>Venezuela Bolivarian Republic of (VE)</genre>
+  </matches>
+  <matches>
+    <genreid>24238</genreid>
+    <genre>Virgin Islands British (VG)</genre>
+  </matches>
+  <matches>
+    <genreid>24239</genreid>
+    <genre>Virgin Islands U.S. (VI)</genre>
+  </matches>
+  <matches>
+    <genreid>24240</genreid>
+    <genre>Viet Nam (VN)</genre>
+  </matches>
+  <matches>
+    <genreid>24241</genreid>
+    <genre>Vanuatu (VU)</genre>
+  </matches>
+  <matches>
+    <genreid>24242</genreid>
+    <genre>Wallis and Futuna (WF)</genre>
+  </matches>
+  <matches>
+    <genreid>24243</genreid>
+    <genre>Samoa (WS)</genre>
+  </matches>
+  <matches>
+    <genreid>24244</genreid>
+    <genre>Yemen (YE)</genre>
+  </matches>
+  <matches>
+    <genreid>24245</genreid>
+    <genre>Mayotte (YT)</genre>
+  </matches>
+  <matches>
+    <genreid>24246</genreid>
+    <genre>South Africa (ZA)</genre>
+  </matches>
+  <matches>
+    <genreid>24247</genreid>
+    <genre>Zambia (ZM)</genre>
+  </matches>
+  <matches>
+    <genreid>24248</genreid>
+    <genre>Zimbabwe (ZW)</genre>
+  </matches>
+</root>

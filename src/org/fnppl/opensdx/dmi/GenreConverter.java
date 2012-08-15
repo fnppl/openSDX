@@ -60,16 +60,16 @@ public class GenreConverter {
 	private final static URL CONVERTER_LIST_XML = GenreConverter.class.getResource("resources/genreConverterList.xml");
 	private int type;
 	private HashMap<String, String> matchMap = new HashMap<String, String>();
-	
+
 	private GenreConverter() {
 		this.setType(0);
 	}
-	
+
 	public static GenreConverter getInstance(int type) {
 		GenreConverter gc = new GenreConverter();
 		gc.setType(type);		
 		gc.initMatchMap(CONVERTER_LIST_XML);		
-		
+
 		return gc;
 	}
 
@@ -83,71 +83,71 @@ public class GenreConverter {
 		}
 		return convertedGenre;
 	}
-	
+
 	private void initMatchMap(URL url) {
 		try {
 			Document doc = Document.fromURL(url);
-			
+
 			Vector<Element> matches = doc.getRootElement().getChildren("matches");
-        	for (Iterator<Element> itMatches = matches.iterator(); itMatches.hasNext();) {
-        		Element match = itMatches.next();
-        		if(this.type==SIMFY_TO_OPENSDX) {
-        			if(match.getChild("simfy")!=null && match.getChild("opensdx")!=null) {
-		        		String key = match.getChildTextNN("simfy").toLowerCase();
-		        		String value = match.getChildTextNN("opensdx");
-		        		if(!matchMap.containsKey(key)) {
-		        			// first entry in xml delivers the value for a key - important if matching the other way
-		        			matchMap.put(key, value);
-		        		}
-        			}
-        		}
-        		else if(this.type==FUDGE_TO_OPENSDX) {
-        			if(match.getChild("fudge")!=null && match.getChild("opensdx")!=null) {
-		        		String key = match.getChildTextNN("fudge").toLowerCase();
-		        		String value = match.getChildTextNN("opensdx");
-		        		if(!matchMap.containsKey(key)) {
-		        			// first entry in xml delivers the value for a key - important if matching the other way
-		        			matchMap.put(key, value);
-		        		}
-        			}
-        		}
-        		else if(this.type==PIE_TO_OPENSDX) {
-        			if(match.getChild("pie")!=null && match.getChild("opensdx")!=null) {
-		        		String key = match.getChildTextNN("pie").toLowerCase();
-		        		String value = match.getChildTextNN("opensdx");
-		        		if(!matchMap.containsKey(key)) {
-		        			// first entry in xml delivers the value for a key - important if matching the other way
-		        			matchMap.put(key, value);
-		        		}
-        			}
-        		} 
-        		else if(this.type==DDS_TO_OPENSDX) {
-        			if(match.getChild("dds")!=null && match.getChild("opensdx")!=null) {
-		        		String key = match.getChildTextNN("dds").toLowerCase();
-		        		String value = match.getChildTextNN("opensdx");
-		        		if(!matchMap.containsKey(key)) {
-		        			// first entry in xml delivers the value for a key - important if matching the other way
-		        			matchMap.put(key, value);
-		        		}
-        			}
-        		}
-        		else if(this.type==EXACTMOBILE_TO_OPENSDX) {
-        			if(match.getChild("exactmobile")!=null && match.getChild("opensdx")!=null) {
-		        		String key = match.getChildTextNN("exactmobile").toLowerCase();
-		        		String value = match.getChildTextNN("opensdx");
-		        		if(!matchMap.containsKey(key)) {
-		        			// first entry in xml delivers the value for a key - important if matching the other way
-		        			matchMap.put(key, value);
-		        		}
-        			}
-        		}        		
-            }
-            
+			for (Iterator<Element> itMatches = matches.iterator(); itMatches.hasNext();) {
+				Element match = itMatches.next();
+				if(this.type==SIMFY_TO_OPENSDX) {
+					if(match.getChild("simfy")!=null && match.getChild("opensdx")!=null) {
+						String key = match.getChildTextNN("simfy").toLowerCase();
+						String value = match.getChildTextNN("opensdx");
+						if(!matchMap.containsKey(key)) {
+							// first entry in xml delivers the value for a key - important if matching the other way
+							matchMap.put(key, value);
+						}
+					}
+				}
+				else if(this.type==FUDGE_TO_OPENSDX) {
+					if(match.getChild("fudge")!=null && match.getChild("opensdx")!=null) {
+						String key = match.getChildTextNN("fudge").toLowerCase();
+						String value = match.getChildTextNN("opensdx");
+						if(!matchMap.containsKey(key)) {
+							// first entry in xml delivers the value for a key - important if matching the other way
+							matchMap.put(key, value);
+						}
+					}
+				}
+				else if(this.type==PIE_TO_OPENSDX) {
+					if(match.getChild("pie")!=null && match.getChild("opensdx")!=null) {
+						String key = match.getChildTextNN("pie").toLowerCase();
+						String value = match.getChildTextNN("opensdx");
+						if(!matchMap.containsKey(key)) {
+							// first entry in xml delivers the value for a key - important if matching the other way
+							matchMap.put(key, value);
+						}
+					}
+				} 
+				else if(this.type==DDS_TO_OPENSDX) {
+					if(match.getChild("dds")!=null && match.getChild("opensdx")!=null) {
+						String key = match.getChildTextNN("dds").toLowerCase();
+						String value = match.getChildTextNN("opensdx");
+						if(!matchMap.containsKey(key)) {
+							// first entry in xml delivers the value for a key - important if matching the other way
+							matchMap.put(key, value);
+						}
+					}
+				}
+				else if(this.type==EXACTMOBILE_TO_OPENSDX) {
+					if(match.getChild("exactmobile")!=null && match.getChild("opensdx")!=null) {
+						String key = match.getChildTextNN("exactmobile").toLowerCase();
+						String value = match.getChildTextNN("opensdx");
+						if(!matchMap.containsKey(key)) {
+							// first entry in xml delivers the value for a key - important if matching the other way
+							matchMap.put(key, value);
+						}
+					}
+				}        		
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}	
 	}
-	
+
 	public int getType() {
 		return type;
 	}
@@ -155,5 +155,50 @@ public class GenreConverter {
 	public void setType(int type) {
 		this.type = type;
 	}
+
+
+	//openSDXGenreID, openSDXGenreName
+	private static Hashtable <Integer, String> genreList = null;
+
+	private static void initGenrelist() {
+		if (genreList == null || genreList.size() == 0) {
+			genreList = new Hashtable<Integer, String>();
+			try {
+				Document doc = Document.fromURL(GenreConverter.class.getResource("resources/genrelist.xml"));
+				Vector<Element> matches = doc.getRootElement().getChildren("matches");
+				for (Iterator<Element> itMatches = matches.iterator(); itMatches.hasNext();) {
+					Element match = itMatches.next();
+					if(match.getChild("genre")!=null && match.getChild("genreid")!=null) {
+						Integer key = Integer.parseInt(match.getChildTextNN("genreid"));
+						genreList.put(key, match.getChildTextNN("genre"));
+					}
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}	
+		}
+	}
 	
+	
+	public static int getGenreIdByName(String name) {
+		if (name == null || name.length() == 0) {
+			return -1;
+		}
+		initGenrelist();
+		if (!genreList.containsValue(name)) {
+			return -1;
+		}
+		// List the entries using Set()
+		Set<Integer> set = genreList.keySet();
+		Iterator<Integer> itr = set.iterator();
+		int genreid = -1;
+		while (itr.hasNext()) {
+			genreid = itr.next();
+			if (genreList.get(genreid).equals(name)) {
+				return genreid;
+			}
+		}
+		return -1;
+	}
 }
