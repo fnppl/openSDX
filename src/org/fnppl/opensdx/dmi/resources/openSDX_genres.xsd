@@ -580,6 +580,7 @@
 		<xsd:enumeration value="2010's"/>
 		<xsd:enumeration value="2020's"/>
 		<xsd:enumeration value="Adult"/>
+		<!-- xsd:enumeration value="Adult Contemporary"/ -->
 		<xsd:enumeration value="Children"/>
 		<xsd:enumeration value="Age: up to 6 years"/>
 		<xsd:enumeration value="Age: 6 years +"/>
