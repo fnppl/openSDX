@@ -53,42 +53,48 @@ import org.fnppl.opensdx.xml.Document;
 
 import java.io.File;
 import java.util.*;
+import java.util.Map.Entry;
 
 public class FeedComparer {
 	private Feed originalFeed;
 	private Feed newFeed;
 
-	public Hashtable<String, String> addedBundleVals; //Parameter, String{newVal}
-	public Hashtable<String, String> deletedBundleVals; //Parameter, String{oldVal}
-	public Hashtable<String, String[]> changedBundleVals; //Parameter, String{oldVal,newVal}
+	public LinkedHashMap<String, String> addedBundleVals; //Parameter, String{newVal}
+	public LinkedHashMap<String, String> deletedBundleVals; //Parameter, String{oldVal}
+	public LinkedHashMap<String, String[]> changedBundleVals; //Parameter, String{oldVal,newVal}
 
-	public Hashtable<String, Hashtable<String, String>> addedTrackVals; //settracknum, < Parameter, String{newVal}>
-	public Hashtable<String, Hashtable<String, String>> deletedTrackVals; //settracknum, < Parameter, String{newVal}>
-	public Hashtable<String, Hashtable<String, String[]>> changedTrackVals; //settracknum, < Parameter, String{oldVal,newVal}>
+	public LinkedHashMap<String, LinkedHashMap<String, String>> addedTrackVals; //setnum-tracknum, < Parameter, String{newVal}>
+	public LinkedHashMap<String, LinkedHashMap<String, String>> deletedTrackVals; //setnum-tracknum, < Parameter, String{newVal}>
+	public LinkedHashMap<String, LinkedHashMap<String, String[]>> changedTrackVals; //setnum-tracknum, < Parameter, String{oldVal,newVal}>
+
+	public LinkedHashMap<String, String> allTrackSetNumsIsrcs;
 
 	public static final int TYPE_NO_CHANGE = 0;
 	public static final int TYPE_ADDED = 1;
 	public static final int TYPE_DELETED = 2;
 	public static final int TYPE_CHANGED = 3;
+	
+	public static final int TYPE_NO_CHANNELS = 100;
 
 	public FeedComparer(Feed originalFeed, Feed newFeed) {
 		this.originalFeed = originalFeed;
 		this.newFeed = newFeed;
 	}
 
-	public void compareFeedValues() {
+	public void compareFeedValues(int compareType) {
 		if (originalFeed == null || newFeed == null) {
 			return;
 		}
 
-		addedBundleVals = new Hashtable<String, String>();
-		deletedBundleVals = new Hashtable<String, String>();
-		changedBundleVals = new Hashtable<String, String[]>();
+		addedBundleVals = new LinkedHashMap<String, String>();
+		deletedBundleVals = new LinkedHashMap<String, String>();
+		changedBundleVals = new LinkedHashMap<String, String[]>();
 
-		addedTrackVals = new Hashtable<String, Hashtable<String,String>>();
-		deletedTrackVals = new Hashtable<String, Hashtable<String,String>>();
-		changedTrackVals = new Hashtable<String, Hashtable<String,String[]>>();
+		addedTrackVals = new LinkedHashMap<String, LinkedHashMap<String,String>>();
+		deletedTrackVals = new LinkedHashMap<String, LinkedHashMap<String,String>>();
+		changedTrackVals = new LinkedHashMap<String, LinkedHashMap<String,String[]>>();
 
+		allTrackSetNumsIsrcs = new LinkedHashMap<String, String>();
 
 		//First all bundle values
 		parseAndSaveCompareValues("grid",originalFeed.getBundle(0).getIds().getGrid(),newFeed.getBundle(0).getIds().getGrid(), null);
@@ -106,7 +112,7 @@ public class FeedComparer {
 		parseAndSaveCompareValues("version",originalFeed.getBundle(0).getVersion(),newFeed.getBundle(0).getVersion(), null);
 		//display_artistname
 		parseAndSaveCompareValues("display_artistname",originalFeed.getBundle(0).getDisplay_artistname(),newFeed.getBundle(0).getDisplay_artistname(), null);
-		//parse through contibutors
+		//parse through contributors
 		parseAndSaveCompareValues(originalFeed.getBundle(0).getAllBundleContributors(), newFeed.getBundle(0).getAllBundleContributors(), null);
 		//parse through Texts
 		try {
@@ -147,7 +153,9 @@ public class FeedComparer {
 		parseAndSaveCompareValues("streaming_allowed",originalFeed.getBundle(0).getLicense_basis().isStreaming_allowed(), newFeed.getBundle(0).getLicense_basis().isStreaming_allowed(), null); 
 
 		//channels ==> LicBasis
-		parseAndSaveCompareValues(originalFeed.getBundle(0).getLicense_basis(), newFeed.getBundle(0).getLicense_basis(), null);
+		if (compareType != TYPE_NO_CHANNELS) {
+			parseAndSaveCompareValues(originalFeed.getBundle(0).getLicense_basis(), newFeed.getBundle(0).getLicense_basis(), null);
+		}
 
 		//TODO: LicSpecific
 
@@ -166,11 +174,14 @@ public class FeedComparer {
 		//NOW ITEMS/TRACKS, go through all NEW tracks
 		for (int i = 0; i < newFeed.getBundle(0).getItemsCount(); i++) {
 			String settracknum = newFeed.getBundle(0).getItem(i).getInformation().getSetNum()+"-"+newFeed.getBundle(0).getItem(i).getInformation().getNum();
+			String isrc = newFeed.getBundle(0).getItem(i).getIds().getIsrc();
 			Item originalItem = null, newItem = null;
 			if (originalFeed.getBundle(0).getItemsCount() > i) {
 				originalItem = originalFeed.getBundle(0).getItem(i);
 			}
 			newItem = newFeed.getBundle(0).getItem(i);
+
+			allTrackSetNumsIsrcs.put(settracknum, isrc);
 
 			//displayname
 			parseAndSaveCompareValues("displayname",originalItem!=null?originalItem.getDisplayname():null,newItem.getDisplayname(), settracknum);
@@ -196,51 +207,63 @@ public class FeedComparer {
 				parseAndSaveCompareValues("origin_country",originalItem!=null?originalItem.getInformation().getOrigin_country():null, newItem.getInformation().getOrigin_country(), settracknum);
 				//main_language
 				parseAndSaveCompareValues("main_language",originalItem!=null?originalItem.getInformation().getMain_language():null, newItem.getInformation().getMain_language(), settracknum);
+				//suggested_prelistening_offset
+				parseAndSaveCompareValues("suggested_prelistening_offset",originalItem!=null?""+originalItem.getInformation().getSuggestedPrelistiningOffset():null, ""+newItem.getInformation().getSuggestedPrelistiningOffset(), settracknum);
 			}
 			catch (Exception ex) {
 			}
 			LicenseBasis originalLicB = originalItem!=null?originalItem.getLicense_basis():null;
-			if (originalLicB != null && originalLicB.isAsOnBundle()) {
-				originalLicB = originalFeed.getBundle(0).getLicense_basis();
-			}
-
 			LicenseBasis newLicB = newItem.getLicense_basis();
-			if (newLicB != null && newLicB.isAsOnBundle()) {
-				newLicB = newFeed.getBundle(0).getLicense_basis();
+			//Nur wenn beide nicht gleichzeitig asOnBundle sind....
+			if (!(originalLicB != null && originalLicB.isAsOnBundle() && newLicB != null && newLicB.isAsOnBundle())) {
+				//wenn nur newTrack da ist und dort AsOnBundle is
+				if (newLicB.isAsOnBundle()) {
+					addToTrackAddData(settracknum, "license_basis", "AsOnBundle");
+				}
+				else if (originalItem!=null && originalLicB.isAsOnBundle()) {
+					addToTrackDeleteData(settracknum, "license_basis", "AsOnBundle");
+				}
+				//else {
+				//				
+				//				if (originalLicB != null && originalLicB.isAsOnBundle()) {
+				//					originalLicB = originalFeed.getBundle(0).getLicense_basis();
+				//				}
+				//				if (newLicB != null && newLicB.isAsOnBundle()) {
+				//					newLicB = newFeed.getBundle(0).getLicense_basis();
+				//				}
+				//parse through Territories
+				parseAndSaveCompareValues(originalLicB!=null?originalLicB.getTerritorial():null, newLicB.getTerritorial(), settracknum);
+				//timeframe
+				parseAndSaveCompareValues("timeframe_from",originalLicB!=null?originalLicB.getTimeframeFromText():null, newLicB.getTimeframeFromText(), settracknum);
+				//timeframe to
+				parseAndSaveCompareValues("timeframe_to",originalLicB!=null?originalLicB.getTimeframeToText():null, newLicB.getTimeframeToText(), settracknum);
+				//pricing PriceCode
+				parseAndSaveCompareValues("pricecode",originalLicB!=null?originalLicB.getPricingPricecode():null, newLicB.getPricingPricecode(), settracknum);
+				//pricing wholesale
+				parseAndSaveCompareValues("wholesale",originalLicB!=null?originalLicB.getPricingWholesale():null, newLicB.getPricingWholesale(), settracknum);
+				//}
 			}
-			//parse through Territories
-			parseAndSaveCompareValues(originalLicB!=null?originalLicB.getTerritorial():null, newLicB.getTerritorial(), settracknum);
-
-			//timeframe
-			parseAndSaveCompareValues("timeframe_from",originalLicB!=null?originalLicB.getTimeframeFromText():null, newLicB.getTimeframeFromText(), settracknum);
-			//timeframe to
-			parseAndSaveCompareValues("timeframe_to",originalLicB!=null?originalLicB.getTimeframeToText():null, newLicB.getTimeframeToText(), settracknum);
-
-			//pricing PriceCode
-			parseAndSaveCompareValues("pricecode",originalLicB!=null?originalLicB.getPricingPricecode():null, newLicB.getPricingPricecode(), settracknum);
-
-			//pricing wholesale
-			parseAndSaveCompareValues("wholesale",originalLicB!=null?originalLicB.getPricingWholesale():null, newLicB.getPricingWholesale(), settracknum);
-
 			//genre
 			parseAndSaveCompareValues(originalItem!=null?originalItem.getTags():null, newItem.getTags(), settracknum);
 			//explicit_lyrics
-			parseAndSaveCompareValues("explicit_lyrics",originalItem!=null?originalItem.getTags().isExplicit_lyrics():null, newItem.getTags().isExplicit_lyrics(), settracknum);
+			parseAndSaveCompareValues("explicit_lyrics",originalItem!=null?originalItem.getTags().isExplicit_lyrics():false, newItem.getTags().isExplicit_lyrics(), settracknum);
 			//live
-			parseAndSaveCompareValues("live",originalItem!=null?originalItem.getTags().isLive():null, newItem.getTags().isLive(), settracknum);
+			parseAndSaveCompareValues("live",originalItem!=null?originalItem.getTags().isLive():false, newItem.getTags().isLive(), settracknum);
 			//accoustic
-			parseAndSaveCompareValues("accoustic",originalItem!=null?originalItem.getTags().isAccoustic():null, newItem.getTags().isAccoustic(), settracknum);
+			parseAndSaveCompareValues("accoustic",originalItem!=null?originalItem.getTags().isAccoustic():false, newItem.getTags().isAccoustic(), settracknum);
 			//instrumental
-			parseAndSaveCompareValues("instrumental",originalItem!=null?originalItem.getTags().isInstrumental():null, newItem.getTags().isInstrumental(), settracknum);
+			parseAndSaveCompareValues("instrumental",originalItem!=null?originalItem.getTags().isInstrumental():false, newItem.getTags().isInstrumental(), settracknum);
 		}
 
 
 		//Delete tracks that are not in the newFeed
-		if ( newFeed.getBundle(0).getItemsCount() <  originalFeed.getBundle(0).getItemsCount()) {
+		if ( newFeed.getBundle(0).getItemsCount() < originalFeed.getBundle(0).getItemsCount()) {
 			int x = originalFeed.getBundle(0).getItemsCount() - newFeed.getBundle(0).getItemsCount();
-			for (int i = x+1; i < originalFeed.getBundle(0).getItemsCount(); i++) {
+			for (int i = originalFeed.getBundle(0).getItemsCount()-x; i < originalFeed.getBundle(0).getItemsCount(); i++) {
 				String settracknum = originalFeed.getBundle(0).getItem(i).getInformation().getSetNum()+"-"+originalFeed.getBundle(0).getItem(i).getInformation().getNum();
 				addToTrackDeleteData(settracknum, "fulltrack", "");
+				String isrc = originalFeed.getBundle(0).getItem(i).getIds().getIsrc();
+				allTrackSetNumsIsrcs.put(settracknum, isrc);
 			}
 		}
 	}
@@ -302,6 +325,7 @@ public class FeedComparer {
 					addToTrackAddData(settracknum, "contributor_"+c.getType(), val);
 				}
 			}
+			return;
 		}
 		else if (c2 == null || c2.size() == 0) {
 			//add all to delete
@@ -315,6 +339,7 @@ public class FeedComparer {
 					addToTrackDeleteData(settracknum, "contributor_"+c.getType(), val);
 				}
 			}
+			return;
 		}
 
 		//now the tricky part, what is added/deleted
@@ -388,11 +413,15 @@ public class FeedComparer {
 				deletedBundleVals.put("promotext_"+t1.getPromotextLanguage(i), t1.getPromotext(i));
 			}	
 		}
-		else if ((t1 == null || t1.getTeasertextCount() == 0) && t2.getTeasertextCount() > 0) {
-			//alle aus t1 zu adden
+		else if ((t2 == null || t2.getTeasertextCount() == 0) && t1.getTeasertextCount() > 0) {
+			//alle aus t1 zu deleten
 			for (int i = 0; i < t1.getTeasertextCount(); i++) {
 				deletedBundleVals.put("teasertext_"+t1.getTeasertextLanguage(i), t1.getTeasertext(i));
 			}	
+		}
+
+		if (t1 == null || t2 == null) {
+			return;
 		}
 
 		HashSet<String> tmpVals = new HashSet<String>();
@@ -470,17 +499,19 @@ public class FeedComparer {
 					addToTrackAddData(settracknum, "territory_"+t2.getTerritory(i), t2.isTerritoryAllowed(i) ? "allow" : "disallow");
 				}
 			}	
+			return;
 		}
 		else if ((t2 == null || t2.getTerritorialCount() == 0) && t1.getTerritorialCount() > 0) {
 			//alle aus t1 zu deleten
 			for (int i = 0; i < t1.getTerritorialCount(); i++) {
 				if (settracknum == null) {
-					deletedBundleVals.put("territory_"+t2.getTerritory(i), t2.isTerritoryAllowed(i) ? "allow" : "disallow");
+					deletedBundleVals.put("territory_"+t1.getTerritory(i), t1.isTerritoryAllowed(i) ? "allow" : "disallow");
 				}
 				else {
-					addToTrackDeleteData(settracknum, "territory_"+t2.getTerritory(i), t2.isTerritoryAllowed(i) ? "allow" : "disallow");
+					addToTrackDeleteData(settracknum, "territory_"+t1.getTerritory(i), t1.isTerritoryAllowed(i) ? "allow" : "disallow");
 				}
 			}	
+			return;
 		}
 
 		HashSet<String> tmpVals = new HashSet<String>();
@@ -545,17 +576,19 @@ public class FeedComparer {
 					addToTrackAddData(settracknum, "channel_"+l2.getChannelName(i), l2.getChannelAllowed(i) ? "allow" : "disallow");
 				}
 			}	
+			return;
 		}
 		else if ((l2 == null || l2.getChannelsCount() == 0) && l1.getChannelsCount() > 0) {
 			//alle aus l1 zu deleten
 			for (int i = 0; i < l1.getChannelsCount(); i++) {
 				if (settracknum == null) {
-					deletedBundleVals.put("channel_"+l2.getChannelName(i), l2.getChannelAllowed(i) ? "allow" : "disallow");
+					deletedBundleVals.put("channel_"+l1.getChannelName(i), l1.getChannelAllowed(i) ? "allow" : "disallow");
 				}
 				else {
-					addToTrackDeleteData(settracknum, "channel_"+l2.getChannelName(i), l2.getChannelAllowed(i) ? "allow" : "disallow");
+					addToTrackDeleteData(settracknum, "channel_"+l1.getChannelName(i), l1.getChannelAllowed(i) ? "allow" : "disallow");
 				}
 			}	
+			return;
 		}
 
 		HashSet<String> tmpVals = new HashSet<String>();
@@ -614,69 +647,64 @@ public class FeedComparer {
 			//alle aus t2 zu adden
 			for (int i = 0; i < t2.getGenresCount(); i++) {
 				if (settracknum == null) {
-					addedBundleVals.put("genre", t2.getGenre(i));
+					addedBundleVals.put("genre_"+(i+1), t2.getGenre(i));
 				}
 				else {
-					addToTrackAddData(settracknum, "genre", t2.getGenre(i));
+					addToTrackAddData(settracknum, "genre"+(i+1), t2.getGenre(i));
 				}
 			}	
+			return;
 		}
 		else if ((t2 == null || t2.getGenresCount() == 0) && t1.getGenresCount() > 0) {
 			//alle aus t1 zu deleten
 			for (int i = 0; i < t1.getGenresCount(); i++) {
 				if (settracknum == null) {
-					deletedBundleVals.put("genre", t2.getGenre(i));
+					deletedBundleVals.put("genre"+(i+1), t1.getGenre(i));
 				}
 				else {
-					addToTrackDeleteData(settracknum, "genre", t2.getGenre(i));
+					addToTrackDeleteData(settracknum, "genre"+(i+1), t1.getGenre(i));
 				}
 			}	
+			return;
 		}
 
-		HashSet<String> tmpVals = new HashSet<String>();
-
+		//HashSet<String> tmpVals = new HashSet<String>();
+		int idx = 0;
 		//Now test every old with new value
-		for (int i = 0; i < t1.getGenresCount(); i++) {
-			String tmpVal = "t"+t1.getGenre(i);
-			tmpVals.add(tmpVal);
-			boolean foundEntry = false;
-			for (int j = 0; j < t2.getGenresCount(); j++) {
-				if (t1.getGenre(i).equals(t2.getGenre(j))) {
-					foundEntry = true;
-					//Teste, ob inhalte gleich sind
-					if (!t1.getGenre(i).equals(t2.getGenre(j))) {
-						//value changed
-						if (settracknum == null) {
-							changedBundleVals.put("genre",new String[]{t1.getGenre(i),t2.getGenre(j)});
-						}
-						else {
-							addToTrackChangeData(settracknum, "genre",new String[]{t1.getGenre(i),t2.getGenre(j)});
-						}
-					}
-					break;
-				}				
-			}
-			if (!foundEntry) {
+		for (idx = 0; idx < t1.getGenresCount(); idx++) {
+			if (idx >= t2.getGenresCount()) {
+				//if more old than new genres
 				if (settracknum == null) {
-					deletedBundleVals.put("genre",t1.getGenre(i));
+					deletedBundleVals.put("genre_"+(idx+1),t1.getGenre(idx));
 				}
 				else {
-					addToTrackDeleteData(settracknum, "genre",t1.getGenre(i));
+					addToTrackDeleteData(settracknum, "genre"+(idx+1),t1.getGenre(idx));
 				}
-			}
-		}
-
-		//now check newly added texts
-		for (int i = 0; i < t2.getGenresCount(); i++) {
-			if (!tmpVals.contains("t"+t2.getGenre(i))) {
+				continue;
+			}			
+			//now test the same entry (i) in new Feed
+			//Teste, ob inhalte gleich sind
+			if (!t1.getGenre(idx).equals(t2.getGenre(idx))) {
+				//value changed
 				if (settracknum == null) {
-					addedBundleVals.put("genre", t2.getGenre(i));
+					changedBundleVals.put("genre_"+(idx+1),new String[]{t1.getGenre(idx),t2.getGenre(idx)});
 				}
 				else {
-					addToTrackAddData(settracknum, "genre", t2.getGenre(i));
+					addToTrackChangeData(settracknum, "genre_"+(idx+1),new String[]{t1.getGenre(idx),t2.getGenre(idx)});
 				}
 			}				
 		}
+		//Now the rest must be newly added
+		//if more new than old genres
+		//alle aus t2 zu adden
+		for (int idx2 = idx; idx2 < t2.getGenresCount(); idx2++) {
+			if (settracknum == null) {
+				addedBundleVals.put("genre_"+(idx2+1), t2.getGenre(idx2));
+			}
+			else {
+				addToTrackAddData(settracknum, "genre"+(idx2+1), t2.getGenre(idx2));
+			}
+		}			
 	}
 
 
@@ -715,7 +743,7 @@ public class FeedComparer {
 			addedTrackVals.get(settracknum).put(para, value);
 		}
 		else {
-			Hashtable<String, String> values = new Hashtable<String, String>();
+			LinkedHashMap<String, String> values = new LinkedHashMap<String, String>();
 			values.put(para, value);
 			addedTrackVals.put(settracknum, values);
 		}
@@ -726,7 +754,7 @@ public class FeedComparer {
 			deletedTrackVals.get(settracknum).put(para, value);
 		}
 		else {
-			Hashtable<String, String> values = new Hashtable<String, String>();
+			LinkedHashMap<String, String> values = new LinkedHashMap<String, String>();
 			values.put(para, value);
 			deletedTrackVals.put(settracknum, values);
 		}
@@ -737,13 +765,13 @@ public class FeedComparer {
 			changedTrackVals.get(settracknum).put(para, valuesOldNew);
 		}
 		else {
-			Hashtable<String, String[]> values = new Hashtable<String, String[]>();
+			LinkedHashMap<String, String[]> values = new LinkedHashMap<String, String[]>();
 			values.put(para, valuesOldNew);
 			changedTrackVals.put(settracknum, values);
 		}
 	}
-	
-	
+
+
 	/**
 	 * @param args
 	 * @throws Exception 
@@ -751,32 +779,79 @@ public class FeedComparer {
 	public static void main(String[] args) throws Exception {
 
 		//args0 = origFile, args1 = newFile
-		
+
 		Document doc1 = Document.fromFile(new File(args[0]));
 		Document doc2 = Document.fromFile(new File(args[1]));
-		
+
 		Feed originalFeed = Feed.fromBusinessObject(BusinessObject.fromElement(doc1.getRootElement()));
 		Feed newFeed = Feed.fromBusinessObject(BusinessObject.fromElement(doc2.getRootElement()));
-		
+
 		FeedComparer fc = new FeedComparer(originalFeed, newFeed);
-		
-		Enumeration<String> e = fc.addedBundleVals.keys();
-	    while (e.hasMoreElements()) {
-	    	String para = e.nextElement();
-	    	System.out.println("Added to New Album PARA: "+para+" DATA: "+fc.addedBundleVals.get(para));
-	    }
-	    
-	    e = fc.deletedBundleVals.keys();
-	    while (e.hasMoreElements()) {
-	    	String para = e.nextElement();
-	    	System.out.println("Delete from New Album PARA: "+para+" DATA: "+fc.deletedBundleVals.get(para));
-	    }
-	    
-	    e = fc.changedBundleVals.keys();
-	    while (e.hasMoreElements()) {
-	    	String para = e.nextElement();
-	    	System.out.println("Change in New Album PARA: "+para+" DATA old: "+fc.changedBundleVals.get(para)[0]+" - DATA new: "+fc.changedBundleVals.get(para)[1]);
-	    }
-		
+
+		fc.compareFeedValues(0);
+
+		Iterator<Entry<String, String>> it = fc.addedBundleVals.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, String> e = it.next();
+			String para = e.getKey();
+			System.out.println("Added to New Album PARA: "+para+" DATA: "+fc.addedBundleVals.get(para));
+		}
+
+		it = fc.deletedBundleVals.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, String> e = it.next();
+			String para = e.getKey();
+			System.out.println("Delete from New Album PARA: "+para+" DATA: "+fc.deletedBundleVals.get(para));
+		}
+
+		Iterator<Entry<String, String[]>> it2 = fc.changedBundleVals.entrySet().iterator();
+		while (it2.hasNext()) {
+			Entry<String, String[]> e = it2.next();
+			String para = e.getKey();
+			System.out.println("Change in New Album PARA: "+para+" DATA old: "+fc.changedBundleVals.get(para)[0]+" - DATA new: "+fc.changedBundleVals.get(para)[1]);
+		}
+
+		System.out.println("TRACK DATA .... No of tracks: "+fc.allTrackSetNumsIsrcs.size());
+
+		it = fc.allTrackSetNumsIsrcs.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, String> e1 = it.next();
+			String s = e1.getKey();
+			String isrc = e1.getValue();
+			System.out.println("TRACK No: "+s+" - ISRC: "+isrc);
+			boolean change = false;
+			if (fc.addedTrackVals.containsKey(s)) {
+				Iterator<Entry<String, String>> it3 = fc.addedTrackVals.get(s).entrySet().iterator();
+				while (it3.hasNext()) {
+					Map.Entry<String, String> e = it3.next();
+					String para = e.getKey();
+					System.out.println("Added to New Track PARA: "+para+" DATA: "+fc.addedTrackVals.get(s).get(para));
+					change = true;
+				}	 	    	    
+			}
+			if (fc.deletedTrackVals.containsKey(s)) {
+				Iterator<Entry<String, String>> it3 = fc.deletedTrackVals.get(s).entrySet().iterator();
+				while (it3.hasNext()) {
+					Map.Entry<String, String> e = it3.next();
+					String para = e.getKey();
+					System.out.println("Delete from Old Track PARA: "+para+" DATA: "+fc.deletedTrackVals.get(s).get(para));
+					change = true;
+				}	 	    	    
+			}
+			if (fc.changedTrackVals.containsKey(s)) {
+				it2 = fc.changedTrackVals.get(s).entrySet().iterator();
+				while (it2.hasNext()) {
+					Map.Entry<String, String[]> e = it2.next();
+					String para = e.getKey();
+					System.out.println("Changed from Old to New Track PARA: "+para+" DATA old: "+fc.changedTrackVals.get(s).get(para)[0]+" - DATA new: "+fc.changedTrackVals.get(s).get(para)[1]);
+					change = true;
+				}	 	    	    
+			}
+			if (!change) {
+				System.out.println("... NO CHANGE");
+			}
+
+		}
+
 	}
 }
