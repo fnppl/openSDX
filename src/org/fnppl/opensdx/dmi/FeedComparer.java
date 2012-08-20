@@ -122,7 +122,7 @@ public class FeedComparer {
 			//digital_release_datetime
 			parseAndSaveCompareValues("digital_release_datetime",originalFeed.getBundle(0).getInformation().getDigitalReleaseDatetimeText(), newFeed.getBundle(0).getInformation().getDigitalReleaseDatetimeText(), null);
 			//playlength
-			parseAndSaveCompareValues("playlength",""+originalFeed.getBundle(0).getInformation().getPlaylength(), ""+newFeed.getBundle(0).getInformation().getPlaylength(), null);
+			parseAndSaveCompareValues("playlength (sec)",""+originalFeed.getBundle(0).getInformation().getPlaylength(), ""+newFeed.getBundle(0).getInformation().getPlaylength(), null);
 			//origin_country
 			parseAndSaveCompareValues("origin_country",originalFeed.getBundle(0).getInformation().getOrigin_country(), newFeed.getBundle(0).getInformation().getOrigin_country(), null);
 			//main_language
@@ -201,14 +201,14 @@ public class FeedComparer {
 				//digital_release_datetime
 				parseAndSaveCompareValues("digital_release_datetime",originalItem!=null?originalItem.getInformation().getDigitalReleaseDatetimeText():null,newItem.getInformation().getDigitalReleaseDatetimeText(), settracknum);
 				//playlength
-				parseAndSaveCompareValues("playlength",originalItem!=null?""+originalItem.getInformation().getPlaylength():null, ""+newItem.getInformation().getPlaylength(), settracknum);
+				parseAndSaveCompareValues("playlength (sec)",originalItem!=null?""+originalItem.getInformation().getPlaylength():null, ""+newItem.getInformation().getPlaylength(), settracknum);
 
 				//origin_country
 				parseAndSaveCompareValues("origin_country",originalItem!=null?originalItem.getInformation().getOrigin_country():null, newItem.getInformation().getOrigin_country(), settracknum);
 				//main_language
 				parseAndSaveCompareValues("main_language",originalItem!=null?originalItem.getInformation().getMain_language():null, newItem.getInformation().getMain_language(), settracknum);
 				//suggested_prelistening_offset
-				parseAndSaveCompareValues("suggested_prelistening_offset",originalItem!=null?""+originalItem.getInformation().getSuggestedPrelistiningOffset():null, ""+newItem.getInformation().getSuggestedPrelistiningOffset(), settracknum);
+				parseAndSaveCompareValues("suggested_prelistening_offset (sec)",originalItem!=null?""+originalItem.getInformation().getSuggestedPrelistiningOffset():null, ""+newItem.getInformation().getSuggestedPrelistiningOffset(), settracknum);
 			}
 			catch (Exception ex) {
 			}
@@ -525,7 +525,9 @@ public class FeedComparer {
 				if (t1.getTerritory(i).equals(t2.getTerritory(j))) {
 					foundEntry = true;
 					//Teste, ob inhalte gleich sind
-					if (t1.isTerritoryAllowed(i) == t2.isTerritoryAllowed(j)) {
+//					System.out.println("TErr 1: "+t1.getTerritory(i)+" Allowed? :"+t1.isTerritoryAllowed(i));
+//					System.out.println("TErr 2: "+t2.getTerritory(j)+" Allowed? :"+t2.isTerritoryAllowed(j));
+					if (t1.isTerritoryAllowed(i) != t2.isTerritoryAllowed(j)) {
 						//value changed
 						if (settracknum == null) {
 							changedBundleVals.put("territory_"+t1.getTerritory(i), new String[]{t1.isTerritoryAllowed(i)?"allow":"disallow",t2.isTerritoryAllowed(j)?"allow":"disallow"});
@@ -592,7 +594,6 @@ public class FeedComparer {
 		}
 
 		HashSet<String> tmpVals = new HashSet<String>();
-
 		//Now test every old with new value
 		for (int i = 0; i < l1.getChannelsCount(); i++) {
 			String tmpVal = "t"+l1.getChannelName(i);
@@ -602,7 +603,7 @@ public class FeedComparer {
 				if (l1.getChannelName(i).equals(l2.getChannelName(j))) {
 					foundEntry = true;
 					//Teste, ob inhalte gleich sind
-					if (l1.getChannelAllowed(i) == l2.getChannelAllowed(j)) {
+					if (l1.getChannelAllowed(i) != l2.getChannelAllowed(j)) {
 						//value changed
 						if (settracknum == null) {
 							changedBundleVals.put("channel_"+l1.getChannelName(i), new String[]{l1.getChannelAllowed(i)?"allow":"disallow",l2.getChannelAllowed(j)?"allow":"disallow"});
@@ -711,31 +712,25 @@ public class FeedComparer {
 
 
 
-	private int compareValues(Object o1, Object o2) {
-		if (o1 == null && o2 == null) {
+	private int compareValues(String o1, String o2) {
+		if ((o1 == null || o1.length() == 0) && (o2 == null || o2.length() == 0)) {
 			return TYPE_NO_CHANGE;
 		}
-		else if (o1 != null && o2 == null) {
+		else if (o1 != null && o1.length() > 0 && (o2 == null || o2.length() == 0)) {
 			return TYPE_DELETED;
 		}
-		else if (o1 == null && o2 != null) {
+		else if ((o1 == null || o1.length() == 0) && o2 != null && o2.length() > 0) {
 			return TYPE_ADDED;
 		}
-
-		if (o1 instanceof String && o2 instanceof String) {
-			if (((String)o1).length() > 0 && ((String)o2).length() == 0) {
-				return TYPE_DELETED;
-			}
-			else if (((String)o1).length() == 0 && ((String)o2).length() > 0) {
-				return TYPE_ADDED;
-			}
-			return ((String)o1).equals((String)o2) ? TYPE_NO_CHANGE : TYPE_CHANGED;
-		}
-		if (o1 instanceof Integer && o2 instanceof Integer) {
-			return ((Integer)o1) == ((Integer)o2) ? TYPE_NO_CHANGE : TYPE_CHANGED;
-		}
-		return TYPE_NO_CHANGE;
+		return o1.equals(o2) ? TYPE_NO_CHANGE : TYPE_CHANGED;
 	}
+	
+//	private int compareValues(Integer o1, Integer o2) {
+//		if (o1 == null && o2 == null) {
+//			return TYPE_NO_CHANGE;
+//		}
+//		return (o1 == o2) ? TYPE_NO_CHANGE : TYPE_CHANGED;
+//	}
 
 
 	private void addToTrackAddData(String settracknum, String para, String value) {
