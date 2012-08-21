@@ -67,7 +67,7 @@ public class FeedComparer {
 	public LinkedHashMap<String, LinkedHashMap<String, String>> deletedTrackVals; //setnum-tracknum, < Parameter, String{newVal}>
 	public LinkedHashMap<String, LinkedHashMap<String, String[]>> changedTrackVals; //setnum-tracknum, < Parameter, String{oldVal,newVal}>
 
-	public LinkedHashMap<String, String> allTrackSetNumsIsrcs;
+	public LinkedHashMap<String, String[]> allTracks;
 
 	public static final int TYPE_NO_CHANGE = 0;
 	public static final int TYPE_ADDED = 1;
@@ -94,7 +94,7 @@ public class FeedComparer {
 		deletedTrackVals = new LinkedHashMap<String, LinkedHashMap<String,String>>();
 		changedTrackVals = new LinkedHashMap<String, LinkedHashMap<String,String[]>>();
 
-		allTrackSetNumsIsrcs = new LinkedHashMap<String, String>();
+		allTracks = new LinkedHashMap<String, String[]>();
 
 		//First all bundle values
 		parseAndSaveCompareValues("grid",originalFeed.getBundle(0).getIds().getGrid(),newFeed.getBundle(0).getIds().getGrid(), null);
@@ -175,13 +175,14 @@ public class FeedComparer {
 		for (int i = 0; i < newFeed.getBundle(0).getItemsCount(); i++) {
 			String settracknum = newFeed.getBundle(0).getItem(i).getInformation().getSetNum()+"-"+newFeed.getBundle(0).getItem(i).getInformation().getNum();
 			String isrc = newFeed.getBundle(0).getItem(i).getIds().getIsrc();
+			String trackid = newFeed.getBundle(0).getItem(i).getIds().getFinetunes();
 			Item originalItem = null, newItem = null;
 			if (originalFeed.getBundle(0).getItemsCount() > i) {
 				originalItem = originalFeed.getBundle(0).getItem(i);
 			}
 			newItem = newFeed.getBundle(0).getItem(i);
 
-			allTrackSetNumsIsrcs.put(settracknum, isrc);
+			allTracks.put(settracknum, new String[]{isrc,trackid});
 
 			//displayname
 			parseAndSaveCompareValues("displayname",originalItem!=null?originalItem.getDisplayname():null,newItem.getDisplayname(), settracknum);
@@ -263,7 +264,8 @@ public class FeedComparer {
 				String settracknum = originalFeed.getBundle(0).getItem(i).getInformation().getSetNum()+"-"+originalFeed.getBundle(0).getItem(i).getInformation().getNum();
 				addToTrackDeleteData(settracknum, "fulltrack", "");
 				String isrc = originalFeed.getBundle(0).getItem(i).getIds().getIsrc();
-				allTrackSetNumsIsrcs.put(settracknum, isrc);
+				String trackid = originalFeed.getBundle(0).getItem(i).getIds().getFinetunes();
+				allTracks.put(settracknum, new String[]{isrc,trackid});
 			}
 		}
 	}
@@ -651,7 +653,7 @@ public class FeedComparer {
 					addedBundleVals.put("genre_"+(i+1), t2.getGenre(i));
 				}
 				else {
-					addToTrackAddData(settracknum, "genre"+(i+1), t2.getGenre(i));
+					addToTrackAddData(settracknum, "genre_"+(i+1), t2.getGenre(i));
 				}
 			}	
 			return;
@@ -660,10 +662,10 @@ public class FeedComparer {
 			//alle aus t1 zu deleten
 			for (int i = 0; i < t1.getGenresCount(); i++) {
 				if (settracknum == null) {
-					deletedBundleVals.put("genre"+(i+1), t1.getGenre(i));
+					deletedBundleVals.put("genre_"+(i+1), t1.getGenre(i));
 				}
 				else {
-					addToTrackDeleteData(settracknum, "genre"+(i+1), t1.getGenre(i));
+					addToTrackDeleteData(settracknum, "genre_"+(i+1), t1.getGenre(i));
 				}
 			}	
 			return;
@@ -679,7 +681,7 @@ public class FeedComparer {
 					deletedBundleVals.put("genre_"+(idx+1),t1.getGenre(idx));
 				}
 				else {
-					addToTrackDeleteData(settracknum, "genre"+(idx+1),t1.getGenre(idx));
+					addToTrackDeleteData(settracknum, "genre_"+(idx+1),t1.getGenre(idx));
 				}
 				continue;
 			}			
@@ -703,7 +705,7 @@ public class FeedComparer {
 				addedBundleVals.put("genre_"+(idx2+1), t2.getGenre(idx2));
 			}
 			else {
-				addToTrackAddData(settracknum, "genre"+(idx2+1), t2.getGenre(idx2));
+				addToTrackAddData(settracknum, "genre_"+(idx2+1), t2.getGenre(idx2));
 			}
 		}			
 	}
@@ -806,13 +808,14 @@ public class FeedComparer {
 			System.out.println("Change in New Album PARA: "+para+" DATA old: "+fc.changedBundleVals.get(para)[0]+" - DATA new: "+fc.changedBundleVals.get(para)[1]);
 		}
 
-		System.out.println("TRACK DATA .... No of tracks: "+fc.allTrackSetNumsIsrcs.size());
+		System.out.println("TRACK DATA .... No of tracks: "+fc.allTracks.size());
 
-		it = fc.allTrackSetNumsIsrcs.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, String> e1 = it.next();
+		Iterator <Entry<String, String[]>> it4 = fc.allTracks.entrySet().iterator();
+		while (it4.hasNext()) {
+			Map.Entry<String, String[]> e1 = it4.next();
 			String s = e1.getKey();
-			String isrc = e1.getValue();
+			String isrc = e1.getValue()[0];
+			String trackid = e1.getValue()[1];
 			System.out.println("TRACK No: "+s+" - ISRC: "+isrc);
 			boolean change = false;
 			if (fc.addedTrackVals.containsKey(s)) {
