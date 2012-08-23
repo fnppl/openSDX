@@ -1133,6 +1133,7 @@
             <xsd:enumeration value="frontcover"/>
             <xsd:enumeration value="backcover"/>
             <xsd:enumeration value="booklet"/>
+            <xsd:enumeration value="stillframe"/>
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="fileChannels">
