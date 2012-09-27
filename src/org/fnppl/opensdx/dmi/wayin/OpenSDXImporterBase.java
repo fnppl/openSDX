@@ -107,7 +107,11 @@ public class OpenSDXImporterBase {
 				case ImportType.EXACTMOBILE:
 					ExactMobileToOpenSDXImporter impEM = new ExactMobileToOpenSDXImporter(impType, impFile, savFile);
 					ir = impEM.formatToOpenSDXFile();		
-					break;						
+					break;	
+				case ImportType.XF:
+					XFToOpenSDXImporter xfEM = new XFToOpenSDXImporter(impType, impFile, savFile);
+					ir = xfEM.formatToOpenSDXFile();		
+					break;	
 				default:
 					break;
 			}

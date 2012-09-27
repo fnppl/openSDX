@@ -52,6 +52,7 @@ public class ImportType {
 	public static final int PIE = 4;
 	public static final int DDS = 5;
 	public static final int EXACTMOBILE = 6;
+	public static final int XF = 7;
 	
 	private int type;
 	
@@ -78,7 +79,10 @@ public class ImportType {
 		}
 		else if(type.equals("exactmobile")) {
 			it.setType(EXACTMOBILE);
-		}		
+		}
+		else if(type.equals("xf")) {
+			it.setType(XF);
+		}
 		return it;
 	}
 

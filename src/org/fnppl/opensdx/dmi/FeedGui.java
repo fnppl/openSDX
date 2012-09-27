@@ -260,6 +260,9 @@ public class FeedGui extends JFrame implements MyObserver {
 				else if(cmd.equalsIgnoreCase("import pie feed")) {
 					import_feed("pie");
 				}
+				else if(cmd.equalsIgnoreCase("import xf feed")) {
+					import_feed("xf");
+				}
 				else if(cmd.equalsIgnoreCase("import exactmobile feed")) {
 					import_feed("exactmobile");
 				}				
@@ -363,6 +366,11 @@ public class FeedGui extends JFrame implements MyObserver {
 		
 		jmi = new JMenuItem("Simfy Feed");
 		jmi.setActionCommand("import simfy feed");
+		jmi.addActionListener(ja);
+		jm2.add(jmi);	
+		
+		jmi = new JMenuItem("XF Feed");
+		jmi.setActionCommand("import xf feed");
 		jmi.addActionListener(ja);
 		jm2.add(jmi);	
 		
@@ -1219,6 +1227,11 @@ public class FeedGui extends JFrame implements MyObserver {
 				}				
 				else if(type.equals("simfy")) {
 					SimfyToOpenSDXImporter imp = new SimfyToOpenSDXImporter(f);				
+					feed = imp.getFormatedFeedFromImport();	
+					ir = imp.getIr();
+				}
+				else if(type.equals("xf")) {
+					XFToOpenSDXImporter imp = new XFToOpenSDXImporter(f);				
 					feed = imp.getFormatedFeedFromImport();	
 					ir = imp.getIr();
 				}

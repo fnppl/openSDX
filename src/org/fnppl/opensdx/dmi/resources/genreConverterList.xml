@@ -5764,5 +5764,119 @@
 	<matches>
 		<simfy>Zulu Traditional</simfy>
 		<opensdx>Zulu</opensdx>
-	</matches>		
+	</matches>
+	
+	<!--xf-->
+	<matches>
+		<xf>Rock</xf>
+		<opensdx>Rock</opensdx>
+	</matches>
+	<matches>
+		<xf>Indie/Alternative</xf>
+		<opensdx>Alternative</opensdx>
+	</matches>
+	<matches>
+		<xf>Pop</xf>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<xf>DeutschPop</xf>
+		<opensdx>Deutschpop</opensdx>
+	</matches>
+	<matches>
+		<xf>Easy Listening/Oldies</xf>
+		<opensdx>Easy Listening</opensdx>
+	</matches>
+	<matches>
+		<xf>J-Pop</xf>
+		<opensdx>J-Pop</opensdx>
+	</matches>
+	<matches>
+		<xf>Country and Western</xf>
+		<opensdx>Country</opensdx>
+	</matches>
+	<matches>
+		<xf>Folk/Roots</xf>
+		<opensdx>Folk</opensdx>
+	</matches>
+	<matches>
+		<xf>Jazz</xf>
+		<opensdx>Jazz</opensdx>
+	</matches>
+	<matches>
+		<xf>Rap/Hip Hop</xf>
+		<opensdx>Hip Hop</opensdx>
+	</matches>
+	<matches>
+		<xf>Blues</xf>
+		<opensdx>Blues</opensdx>
+	</matches>
+	<matches>
+		<xf>Soul/R 'n' B/Funk</xf>
+		<opensdx>Soul</opensdx>
+	</matches>
+	<matches>
+		<xf>Ambient/New Age</xf>
+		<opensdx>Ambient</opensdx>
+	</matches>
+	<matches>
+		<xf>Electronica</xf>
+		<opensdx>Electronica</opensdx>
+	</matches>
+	<matches>
+		<xf>Dance</xf>
+		<opensdx>Dance</opensdx>
+	</matches>
+	<matches>
+		<xf>Classical</xf>
+		<opensdx>Classic</opensdx>
+	</matches>
+	<matches>
+		<xf>Reggae</xf>
+		<opensdx>Reggae</opensdx>
+	</matches>
+	<matches>
+		<xf>Australian Music</xf>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<xf>World</xf>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<xf>Latin Music</xf>
+		<opensdx>Latin</opensdx>
+	</matches>
+	<matches>
+		<xf>Opera</xf>
+		<opensdx>Opera Classical</opensdx>
+	</matches>
+	<matches>
+		<xf>Soundtracks/Musicals/Theatre</xf>
+		<opensdx>Soundtrack</opensdx>
+	</matches>
+	<matches>
+		<xf>Spanish pop rock</xf>
+		<opensdx>Pop</opensdx>
+	</matches>
+	<matches>
+		<xf>Christmas</xf>
+		<opensdx>Holiday</opensdx>
+	</matches>
+	<matches>
+		<xf>Spoken Word</xf>
+		<opensdx>Word</opensdx>
+	</matches>
+	<matches>
+		<xf>Variété Française</xf>
+		<opensdx>World</opensdx>
+	</matches>
+	<matches>
+		<xf>Kids/Novelty</xf>
+		<opensdx>Children's Audiobooks</opensdx>
+	</matches>
+	<matches>
+		<xf>Comedy</xf>
+		<opensdx>Comedy &amp; Humour</opensdx>
+	</matches>	
 </root>

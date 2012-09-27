@@ -57,6 +57,7 @@ public class GenreConverter {
 	public static final int PIE_TO_OPENSDX = 3;
 	public static final int DDS_TO_OPENSDX = 4;
 	public static final int EXACTMOBILE_TO_OPENSDX = 5;
+	public static final int XF_TO_OPENSDX = 6;
 	private final static URL CONVERTER_LIST_XML = GenreConverter.class.getResource("resources/genreConverterList.xml");
 	private int type;
 	private HashMap<String, String> matchMap = new HashMap<String, String>();
@@ -73,6 +74,15 @@ public class GenreConverter {
 		return gc;
 	}
 
+	public String convert(String genre, String defaultGenre) {
+		if(genre.length()>0 && matchMap.containsKey(genre.trim().toLowerCase())) {
+			return matchMap.get(genre.trim().toLowerCase());	
+		}
+		else {
+			return defaultGenre;
+		}
+	}
+	
 	public String convert(String genre) {
 		String convertedGenre = null;
 		if(genre.length()>0 && matchMap.containsKey(genre.trim().toLowerCase())) {
@@ -140,7 +150,17 @@ public class GenreConverter {
 							matchMap.put(key, value);
 						}
 					}
-				}        		
+				}   
+				else if(this.type==XF_TO_OPENSDX) {
+					if(match.getChild("xf")!=null && match.getChild("opensdx")!=null) {
+						String key = match.getChildTextNN("xf").toLowerCase();
+						String value = match.getChildTextNN("opensdx");
+						if(!matchMap.containsKey(key)) {
+							// first entry in xml delivers the value for a key - important if matching the other way
+							matchMap.put(key, value);
+						}
+					}
+				}   
 			}
 
 		} catch (Exception e) {
