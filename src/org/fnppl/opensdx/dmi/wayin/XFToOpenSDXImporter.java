@@ -157,10 +157,10 @@ public class XFToOpenSDXImporter extends OpenSDXImporterBase {
 
 			long prd = cal.getTimeInMillis();
 
-			BundleInformation info = BundleInformation.make(srd, prd);	        
+			BundleInformation binfo = BundleInformation.make(srd, prd);	        
 
 			// language
-			info.main_language("en");
+			binfo.main_language("en");
 
 			// IDs of bundle -> more (?)
 			IDs bundleids = IDs.make();
@@ -168,7 +168,7 @@ public class XFToOpenSDXImporter extends OpenSDXImporterBase {
 			if(album.getChild("catalog_number")!=null) bundleids.labelordernum(album.getChildTextNN("catalog_number"));
 
 			//<price_class_id>1</price_class_id>
-			String	price_level = fromXFClass(album.getChildTextNN("price_class_id"));
+			String price_level = fromXFClass(album.getChildTextNN("price_class_id"));
 
 			// displayname
 			String displayname = album.getChild("titles").getChildTextNN("title");
@@ -213,7 +213,7 @@ public class XFToOpenSDXImporter extends OpenSDXImporterBase {
 
 			// license specifics -> empty!
 			LicenseSpecifics license_specifics = LicenseSpecifics.make();  
-			Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artistname, info, license_basis, license_specifics);  
+			Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artistname, binfo, license_basis, license_specifics);  
 
 			// add contributor label
 			Contributor con = Contributor.make(album.getChildTextNN("label_name"), Contributor.TYPE_LABEL, IDs.make());
@@ -330,6 +330,8 @@ public class XFToOpenSDXImporter extends OpenSDXImporterBase {
 
 			bundle.tags(tags);        	        
 
+			int bundleDuration = 0;
+			
 			//NOW TRACKS
 			//itarate over volumes
 
@@ -337,9 +339,11 @@ public class XFToOpenSDXImporter extends OpenSDXImporterBase {
 			for (Iterator<Element> itvolumes = volumes.iterator(); itvolumes.hasNext();) {
 				Element volume = itvolumes.next();
 				String setNum = volume.getAttribute("sequence");
+				if (setNum == null || setNum.length() == 0) {
+					continue;
+				}
 
 				//NOW TRACKS
-
 				Vector<Element> tracks = volume.getChild("tracks").getChildren("track");
 				for (Iterator<Element> itTracks = tracks.iterator(); itTracks.hasNext();) {
 					Element track = itTracks.next();
@@ -364,18 +368,19 @@ public class XFToOpenSDXImporter extends OpenSDXImporterBase {
 					}
 
 					// setnum
-					if(track.getChildTextNN("track_volume_number").length()>0) {
-						track_info.setnum(Integer.parseInt(setNum));
-					} 
-
+					track_info.setnum(Integer.parseInt(setNum));
+					
+					track_info.origin_country("SE"); //REALLY ??
+					
 					// tracklength
 					if(track.getChildTextNN("duration").length()>0) {
-						track_info.playlength(getParsedDuration(track.getChildText("duration")));     			
+						track_info.playlength(getParsedDuration(track.getChildText("duration"),-1));  
+						bundleDuration += getParsedDuration(track.getChildText("duration"),-1);
 					}
 
 					// suggested prelistining offset
 					if(track.getChild("preview")!=null && track.getChild("preview").getChild("start") != null && track.getChild("preview").getChildTextNN("start").length() > 0) {
-						track_info.suggested_prelistening_offset(getParsedDuration(track.getChild("preview").getChildTextNN("start")));     			
+						track_info.suggested_prelistening_offset(getParsedDuration(track.getChild("preview").getChildTextNN("start"),30));     			
 					}        		
 
 					// track license basis
@@ -492,6 +497,11 @@ public class XFToOpenSDXImporter extends OpenSDXImporterBase {
 							item.addFile(itemfile);
 						} 
 					}        		
+					
+					//bundleDuration
+					if (bundleDuration > 0) {
+						binfo.playlength(bundleDuration);
+					}
 					bundle.addItem(item);
 				}// End tracks
 			} // End volumes
@@ -526,7 +536,7 @@ public class XFToOpenSDXImporter extends OpenSDXImporterBase {
 		return "mid";
 	}
 
-	public static int getParsedDuration(String duration) throws Exception {
+	public static int getParsedDuration(String duration, int defaultValue) throws Exception {
 		Matcher m;
 		m = durationpattern.matcher( duration );
 		if( m.matches()) {
@@ -535,6 +545,9 @@ public class XFToOpenSDXImporter extends OpenSDXImporterBase {
 			if (m.groupCount() > 2) return (Integer.parseInt(m.group(1))*360) + (Integer.parseInt(m.group(2)) * 60) + Integer.parseInt(m.group(3));
 			if (m.groupCount() > 1) return (Integer.parseInt(m.group(1))*60) + Integer.parseInt(m.group(2));
 			return Integer.parseInt(m.group(1));
+		}
+		if (defaultValue > -1) {
+			return defaultValue;
 		}
 		throw new Exception("Can't parse track-duration, has to be of format hh:mm:ss");
 	}
