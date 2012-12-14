@@ -484,6 +484,8 @@
 					<suggested_prelistening_offset>90</suggested_prelistening_offset><!-- COULD ; in seconds ; for a nice prelistining -->
 		            <origin_country>DE</origin_country>
 		            <main_language>de</main_language>
+					<compositiontype>original</compositiontype> <!-- SHOULD: compositiontype, one of: Original, PublicDomain, Remastered, Soundslike, Cover, Tribute, ... -->
+					<recordingtype>original</recordingtype> <!-- SHOULD: recordingtype, one of: Original, PublicDomain, Remastered, Soundslike, Cover, Tribute, ... -->
 					<related>					
 						<utube>
 							<url>http://www.youtube.com/user/someuser</url>

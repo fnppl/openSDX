@@ -249,6 +249,8 @@
                 minOccurs="0"/>
             <xsd:element name="origin_country" type="cc:countryCode" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="main_language" type="l:language" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="compositiontype" type="compositionType" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="recordingtype" type="recordingType" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="related" type="related" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
@@ -1102,6 +1104,30 @@
             <xsd:enumeration value="production"/>
             <xsd:enumeration value="publisher"/>
             <xsd:enumeration value="clearinghouse"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="compositionType">
+        <xsd:restriction base="xsd:string">
+        	<xsd:enumeration value="undefined"/>
+            <xsd:enumeration value="original"/>
+            <xsd:enumeration value="public domain"/>
+            <xsd:enumeration value="rerecorded"/>
+            <xsd:enumeration value="remastered"/>
+            <xsd:enumeration value="soundalike"/>
+            <xsd:enumeration value="cover"/>
+            <xsd:enumeration value="tribute"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="recordingType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="undefined"/>
+            <xsd:enumeration value="original"/>
+            <xsd:enumeration value="public domain"/>
+            <xsd:enumeration value="rerecorded"/>
+            <xsd:enumeration value="remastered"/>
+            <xsd:enumeration value="soundalike"/>
+            <xsd:enumeration value="cover"/>
+            <xsd:enumeration value="tribute"/>
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="operator">

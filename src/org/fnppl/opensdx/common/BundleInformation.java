@@ -66,6 +66,8 @@ public class BundleInformation extends BusinessObject {
 	private BusinessStringItem origin_country;							//COULD
 	private BusinessStringItem main_language;							//COULD
 	private BusinessIntegerItem suggested_prelistening_offset;			//COULD
+	private BusinessStringItem compositiontype;							//COULD
+	private BusinessStringItem recordingtype;							//COULD
 	private BundleRelatedInformation related;							//SHOULD
 
 	public static BundleInformation make(long physical_release_datetime, long digital_release_datetime) {
@@ -79,6 +81,8 @@ public class BundleInformation extends BusinessObject {
 		information.related = null; 
 		information.origin_country = null;
 		information.main_language = null;
+		information.compositiontype = null;
+		information.recordingtype = null;
 		information.suggested_prelistening_offset = null;
 		return information;
 	}
@@ -102,6 +106,8 @@ public class BundleInformation extends BusinessObject {
 		information.related = BundleRelatedInformation.fromBusinessObject(bo);
 		information.origin_country = BusinessStringItem.fromBusinessObject(bo, "origin_country");
 		information.main_language = BusinessStringItem.fromBusinessObject(bo, "main_language");
+		information.compositiontype = BusinessStringItem.fromBusinessObject(bo, "compositiontype");
+		information.recordingtype = BusinessStringItem.fromBusinessObject(bo, "recordingtype");
 		information.suggested_prelistening_offset = BusinessIntegerItem.fromBusinessObject(bo, "suggested_prelistening_offset");
 		return information;
 	}
@@ -125,6 +131,24 @@ public class BundleInformation extends BusinessObject {
 		return this;
 	}
 	
+	public BundleInformation compositiontype(String compositiontype) {
+		if (compositiontype==null) {
+			this.compositiontype = null;
+		} else {
+			this.compositiontype = new BusinessStringItem("compositiontype", compositiontype);
+		}
+		return this;
+	}
+	
+	public BundleInformation recordingtype(String recordingtype) {
+		if (recordingtype==null) {
+			this.recordingtype = null;
+		} else {
+			this.recordingtype = new BusinessStringItem("recordingtype", recordingtype);
+		}
+		return this;
+	}
+	
 	public String getOrigin_country() {
 		if (origin_country==null) return null;
 		return origin_country.getString();
@@ -133,6 +157,16 @@ public class BundleInformation extends BusinessObject {
 	public String getMain_language() {
 		if (main_language==null) return null;
 		return main_language.getString();
+	}
+	
+	public String getCompositiontype() {
+		if (compositiontype==null) return null;
+		return compositiontype.getString();
+	}
+	
+	public String getRecordingtype() {
+		if (recordingtype==null) return null;
+		return recordingtype.getString();
 	}
 
 	public BundleInformation physical_release_datetime(long physical_release_datetime) {
