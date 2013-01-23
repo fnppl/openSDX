@@ -484,8 +484,8 @@
 					<suggested_prelistening_offset>90</suggested_prelistening_offset><!-- COULD ; in seconds ; for a nice prelistining -->
 		            <origin_country>DE</origin_country>
 		            <main_language>de</main_language>
-					<compositiontype>original</compositiontype> <!-- SHOULD: compositiontype, one of: original, public domain, rerecorded, remastered, soundalike, cover, tribute, undefined -->
-					<recordingtype>original</recordingtype> <!-- SHOULD: recordingtype, one of: original, public domain, rerecorded, remastered, soundalike, cover, tribute, undefined -->
+					<compositiontype>original</compositiontype> <!-- SHOULD: compositiontype, one of: original, public domain, cover, tribute, undefined -->
+					<recordingtype>original</recordingtype> <!-- SHOULD: recordingtype, one of: original, public domain, rerecorded, remastered, soundalike, undefined -->
 					<related>					
 						<utube>
 							<url>http://www.youtube.com/user/someuser</url>
