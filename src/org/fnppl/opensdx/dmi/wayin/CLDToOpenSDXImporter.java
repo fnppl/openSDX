@@ -159,8 +159,12 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 			}
 			long prd = d.getTime();
 
-			BundleInformation binfo = BundleInformation.make(prd, drd);	        
-
+			BundleInformation binfo = BundleInformation.make(prd, drd);	   
+			
+			BundleTexts bt = BundleTexts.make();
+			bt.setPromotext("de", root.getChildTextNN("description"));
+			binfo.texts(bt);
+			
 			// language
 			//if ("ger".equalsIgnoreCase(root.getChildText("language"))) {
 			binfo.main_language("de");
@@ -176,7 +180,7 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 			if(productId != null) bundleids.labelordernum(productId);
 
 			//<retailPrice>1</retailPrice>
-			String pricing_wholesale = root.getChildTextNN("retailPrice");
+			String pricing_wholesale = "EUR"+root.getChildTextNN("retailPrice");
 			
 			// displayname
 			String displayname = root.getChildTextNN("title");
@@ -221,6 +225,7 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 			
 			IDs ids = IDs.make();
 			Element publisher = root.getChild("publisher");
+			String labelname = publisher.getChildTextNN("corporateName");
 			Contributor con = Contributor.make(publisher.getChildTextNN("corporateName"), Contributor.TYPE_LABEL, ids.licensor(publisher.getChildTextNN("mvbIdentifier")));
 			bundle.addContributor(con);
 
@@ -243,22 +248,20 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 				bundle.addContributor(con);
 			}
 			
+			//productionYear
+			String productionYear = root.getChildTextNN("productionYear");
 			//<copyright>© 2007 audio media verlag</copyright><!-- Copyright Angabe (aka C-Line) -->
-			String copyright = root.getChildTextNN("copyright").substring(2);
-			//<phonogram>℗ 2007 audio media verlag</phonogram><!-- Phonographische Angabe (aka P-Line) -->
-			String production = root.getChildTextNN("phonogram").substring(2);
+//			String copyright = root.getChildTextNN("copyright").substring(2);
+//			//<phonogram>℗ 2007 audio media verlag</phonogram><!-- Phonographische Angabe (aka P-Line) -->
+//			String production = root.getChildTextNN("phonogram").substring(2);
 
-			if(copyright.length()>0) {
-				con = Contributor.make(copyright.substring(5), Contributor.TYPE_COPYRIGHT, IDs.make());
-				con.year(copyright.substring(0, 4));
-				bundle.addContributor(con);  
-			}
-
-			if(production.length()>0) {
-				con = Contributor.make(production.substring(5), Contributor.TYPE_PRODUCTION, IDs.make());
-				con.year(production.substring(0, 4));
-				bundle.addContributor(con);  
-			} 
+			con = Contributor.make(labelname, Contributor.TYPE_COPYRIGHT, IDs.make());
+			con.year(productionYear);
+			bundle.addContributor(con);  
+	
+			con = Contributor.make(labelname, Contributor.TYPE_PRODUCTION, IDs.make());
+			con.year(productionYear);
+			bundle.addContributor(con);  
 			
 			// add Tags
 			ItemTags tags = ItemTags.make();
@@ -278,7 +281,10 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 			//NOW TRACKS ??
 			
 			File[] trackFiles = getTrackFiles("wav", importFile.getParentFile());
-			
+			Arrays.sort(trackFiles);
+			List<File> tfs = Arrays.asList(trackFiles);
+
+			System.out.println("Found: "+tfs.size()+" wav-files...");
 			//itarate over totalDiscs
 			//<totalDiscs>3</totalDiscs><!-- Gesamtzahl CDs -->
 			int totalDiscs = root.getChildInt("totalDiscs");
@@ -304,18 +310,24 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 			}
 			
 			int newUsedIsrcs = 0;
+		
+	souterLoop:	
 			for (int i = 0; i < totalDiscs; i++) {
 				int currentSetNo = i+1;
 				int currentTrackNoPerSet = 1;
+	
 				for (int j = 0; j < trackFiles.length; j++) {
+					boolean foundFile = false;
 					//First check, if trackFilesNames are equal to: CXCL150677_01_001.wav
 					String filename = trackFiles[j].getName();
-					if (!filename.startsWith(productId)) {
+					if (!filename.startsWith(productId) || filename.indexOf("_SAMPLE") != -1) {
 						continue;
 					}
 					//no get trackNo
 					String testFilename = "_"+dc2.format(currentSetNo)+"_"+dc3.format(currentTrackNoPerSet);
+					System.out.println("Test for: "+testFilename+" in real file: "+filename);
 					if (filename.indexOf(testFilename) > 0) {
+						foundFile = true;
 						//here we find a real track, so setNo and trackNo are given
 						//make new trackItem + fileItem
 						IDs trackids = IDs.make();
@@ -337,18 +349,7 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 						
 						track_info.origin_country("DE"); //REALLY ??
 						track_info.main_language("de");
-						
-//						// tracklength
-//						if(track.getChildTextNN("duration").length()>0) {
-//							track_info.playlength(getParsedDuration(track.getChildText("duration"),-1));  
-//							bundleDuration += getParsedDuration(track.getChildText("duration"),-1);
-//						}
-//	
-//						// suggested prelistining offset
-//						if(track.getChild("preview")!=null && track.getChild("preview").getChild("start") != null && track.getChild("preview").getChildTextNN("start").length() > 0) {
-//							track_info.suggested_prelistening_offset(getParsedDuration(track.getChild("preview").getChildTextNN("start"),30));     			
-//						}        		
-	
+			
 						// track license basis
 						LicenseBasis track_license_basis = LicenseBasis.make();
 	
@@ -365,29 +366,24 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 	
 						item.type("audiobook");
 						
-						if(copyright.length()>0) {
-							con = Contributor.make(copyright.substring(5), Contributor.TYPE_COPYRIGHT, IDs.make());
-							con.year(copyright.substring(0, 4));
-							item.addContributor(con);  
-						}
-	
-						if(production.length()>0) {
-							con = Contributor.make(production.substring(5), Contributor.TYPE_PRODUCTION, IDs.make());
-							con.year(production.substring(0, 4));
-							item.addContributor(con);  
-						} 
-	
+						con = Contributor.make(labelname, Contributor.TYPE_COPYRIGHT, IDs.make());
+						con.year(productionYear);
+						item.addContributor(con);  
+				
+						con = Contributor.make(labelname, Contributor.TYPE_PRODUCTION, IDs.make());
+						con.year(productionYear);
+						item.addContributor(con); 
+						
 						// add Tags
 						ItemTags track_tags = ItemTags.make();   	
 						track_tags.addGenre("Word"); //DEFAULT-GENRE
 						if (recommended_age_from >= 0) {
 							track_tags.recommended_age_from(recommended_age_from);
 						}
+						track_tags.bundle_only(true); //Bundle Only
 						item.tags(track_tags);	     
-						
-						
+												
 						ItemFile itemfile = ItemFile.make();
-						
 						
 						itemfile.type("full");
 						
@@ -398,14 +394,15 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 							item.addFile(itemfile);
 						} 
 						
-						bundle.addItem(item);
-						
+						bundle.addItem(item);	
 						currentTrackNoPerSet++;
-					}        		
+					}
 					
 					
 					
-				}// End tracks
+				} 
+				
+				
 			} // End volumes
 						
 			//now re-write used ISRCs
@@ -586,6 +583,22 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 //				}// End tracks
 //			} // End volumes
 
+			
+			//now cover-file
+			//test for cover
+			//CXCL150785_COVER.jpg
+			String testFilename = productId+"_COVER.jpg";
+			File coverFile = new File(importFile.getParentFile(), testFilename);
+			if (coverFile.exists()) {
+				System.out.println("Found coverfile: "+testFilename);
+				ItemFile itemfile = ItemFile.make();
+				itemfile.type("frontcover");
+				itemfile.setFile(coverFile); //this will also set the filesize and calculate the checksums
+				// set delivered path to file 
+				itemfile.setLocation(FileLocation.make(testFilename,testFilename));   
+				bundle.addFile(itemfile);
+			} 
+			
 			feed.addBundle(bundle);        	
 
 		} catch (Exception e) {

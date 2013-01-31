@@ -1024,7 +1024,7 @@
         ISBN-10: 3943061035 - ISBN-13: 9783943061031 -->
         <xsd:restriction base="xsd:string">
             <xsd:pattern
-                value="(\d{1}-\d{5}-\d{3}-\d{1}|\d{1}-\d{3}-\d{5}-\d{1}|\d{1}-\d{2}-\d{6}-\d{1}|\d{3}-\d{1}-\d{6}-\d{2}-\d{1})">
+                value="(\d{1}(\-)?\d{5}(\-)?\d{3}(\-)?\d{1}|\d{1}(\-)?\d{3}(\-)?\d{5}(\-)?\d{1}|\d{1}(\-)?\d{2}(\-)?\d{6}(\-)?\d{1}|\d{3}(\-)?\d{1}(\-)?\d{6}(\-)?\d{2}(\-)?\d{1})">
                 <xsd:annotation>
                     <xsd:documentation xml:lang="en">The International Standard Book Number (ISBN) is a unique numeric commercial book identifier based upon the 9-digit Standard Book Numbering (SBN) code.</xsd:documentation>
                 </xsd:annotation>
@@ -1106,7 +1106,7 @@
             <xsd:enumeration value="meets"/>
             <xsd:enumeration value="presents"/>
             <xsd:enumeration value="compilator"/>
-            <!--  <xsd:enumeration value="narrator"/>   -->         
+            <xsd:enumeration value="narrator"/>       
             <xsd:enumeration value="copyright"/>
             <xsd:enumeration value="production"/>
             <xsd:enumeration value="publisher"/>
