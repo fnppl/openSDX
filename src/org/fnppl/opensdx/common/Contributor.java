@@ -81,6 +81,8 @@ public class Contributor extends BusinessObject {
 	public static String TYPE_PUBLISHER = "publisher";
 	public static String TYPE_CLEARINGHOUSE = "clearinghouse";
 	
+	public static String TYPE_NARRATOR = "narrator";
+	
 	public static final Vector<String> TYPES = new Vector<String>();
 	
 	static {
@@ -109,6 +111,7 @@ public class Contributor extends BusinessObject {
 		TYPES.add(TYPE_PRODUCTION);
 		TYPES.add(TYPE_PUBLISHER);
 		TYPES.add(TYPE_CLEARINGHOUSE);
+		TYPES.add(TYPE_NARRATOR);
 	}
 	
 	private BusinessStringItem name;	//MUST

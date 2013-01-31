@@ -112,6 +112,10 @@ public class OpenSDXImporterBase {
 					XFToOpenSDXImporter xfEM = new XFToOpenSDXImporter(impType, impFile, savFile);
 					ir = xfEM.formatToOpenSDXFile();		
 					break;	
+				case ImportType.CLD:
+					CLDToOpenSDXImporter impCLD = new CLDToOpenSDXImporter(impType, impFile, savFile);
+					ir = impCLD.formatToOpenSDXFile();		
+					break;		
 				default:
 					break;
 			}

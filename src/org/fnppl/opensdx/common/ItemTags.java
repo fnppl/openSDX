@@ -54,21 +54,24 @@ public class ItemTags extends BusinessObject {
 	public static String EXPLICIT_LYRICS_CLEANED = "cleaned";
 	
 	private BusinessCollection<BusinessStringItem> genres;	//COULD
-	private BusinessBooleanItem bundle_only;		//COULD
-	private BusinessStringItem explicit_lyrics;		//COULD
-	private BusinessBooleanItem live;				//COULD
-	private BusinessBooleanItem accoustic;			//COULD
-	private BusinessBooleanItem instrumental;		//COULD
-
+	private BusinessBooleanItem bundle_only;				//COULD
+	private BusinessStringItem explicit_lyrics;				//COULD
+	private BusinessIntegerItem recommended_age_from;		//COULD
+	private BusinessBooleanItem live;						//COULD
+	private BusinessBooleanItem accoustic;					//COULD
+	private BusinessBooleanItem instrumental;				//COULD
+	private BusinessBooleanItem abridged;					//COULD
 
 	public static ItemTags make() {
 		ItemTags tags = new ItemTags();
 		tags.genres = null;
 		tags.bundle_only = null;
 		tags.explicit_lyrics = null;
+		tags.recommended_age_from = null;
 		tags.live = null;
 		tags.accoustic = null;
 		tags.instrumental = null;
+		tags.abridged = null;
 		return tags;
 	}
 
@@ -97,9 +100,11 @@ public class ItemTags extends BusinessObject {
 		
 		tags.bundle_only = BusinessBooleanItem.fromBusinessObject(bo, "bundle_only");
 		tags.explicit_lyrics = BusinessStringItem.fromBusinessObject(bo, "explicit_lyrics");
+		tags.recommended_age_from = BusinessIntegerItem.fromBusinessObject(bo, "recommended_age_from");
 		tags.live = BusinessBooleanItem.fromBusinessObject(bo, "live");
 		tags.accoustic = BusinessBooleanItem.fromBusinessObject(bo, "accoustic");
 		tags.instrumental = BusinessBooleanItem.fromBusinessObject(bo, "instrumental");
+		tags.abridged = BusinessBooleanItem.fromBusinessObject(bo, "abridged");
 		return tags;
 	}
 	
@@ -153,6 +158,11 @@ public class ItemTags extends BusinessObject {
 		return this;
 	}
 	
+	public ItemTags recommended_age_from(int recommended_age_from) {
+		this.recommended_age_from = new BusinessIntegerItem("recommended_age_from", recommended_age_from);
+		return this;
+	}	
+	
 	public ItemTags live(boolean live) {
 		this.live = new BusinessBooleanItem("live", live);
 		return this;
@@ -165,6 +175,11 @@ public class ItemTags extends BusinessObject {
 	
 	public ItemTags instrumental(boolean instrumental) {
 		this.instrumental = new BusinessBooleanItem("instrumental", instrumental);
+		return this;
+	}	
+	
+	public ItemTags abridged(boolean abridged) {
+		this.abridged = new BusinessBooleanItem("abridged", abridged);
 		return this;
 	}	
 
@@ -188,6 +203,15 @@ public class ItemTags extends BusinessObject {
 		return (explicit_lyrics != null);
 	}
 		
+	public int getRecommended_age_from() {
+		if (recommended_age_from==null) return -1;
+		return recommended_age_from.getIntValue();
+	}
+	
+	public boolean hasRecommended_age_from() {
+		return (recommended_age_from != null);
+	}
+	
 	public String getExplicit_lyrics() {
 		if (explicit_lyrics==null) return null;
 		return explicit_lyrics.getString();
@@ -218,7 +242,16 @@ public class ItemTags extends BusinessObject {
 	
 	public boolean hasInstrumental() {
 		return (instrumental != null);
-	}	
+	}
+	
+	public boolean isAbridged() {
+		if (abridged==null) return false;
+		return abridged.getBoolean();
+	}
+	
+	public boolean hasAbridged() {
+		return (abridged != null);
+	}
 
 	public String getKeyname() {
 		return KEY_NAME;

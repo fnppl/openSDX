@@ -282,6 +282,12 @@
 				<year>2004</year><!-- SHOULD for copyright/production -->
 				<ids></ids>
 				<www></www>
+			</contributor>	
+			<contributor num="7">
+				<name>William Miller</name><!-- could be Narrator -->
+				<type>narrator</type><!-- e.g. vocals -->
+				<ids></ids>
+				<www></www>
 			</contributor>					
 			<!-- HT 14.02.2011 - could also have some "restrictions/conditions" on it - e.g. when an artist is different for some territory or such... -->
 		</contributors><!-- MUST the contributors are ordered from 1 to n - most significant ones (per type) are the ones with the smalles n -->
@@ -431,9 +437,11 @@
 			</genres>
 			<bundle_only>false</bundle_only> <!--  true|false -->
 			<explicit_lyrics>cleaned</explicit_lyrics> <!--  true|false|cleaned -->
+			<recommended_age_from>12</recommended_age_from> <!-- COULD : age in years -->
 			<live>false</live> <!--  true|false -->
 			<accoustic>false</accoustic> <!--  true|false -->
 			<instrumental>false</instrumental> <!--  true|false -->
+			<abridged>false</abridged> <!-- true|false -->
 		</tags><!-- SHOULD -->
 				
 		<items> <!-- those items aka tracks/videos/flash/apps/whatever contained in this bundle -->
@@ -441,7 +449,7 @@
 				<displayname>Some Itemname (original version)</displayname><!-- MUST this is how this should be displayed in pos -->
 				<name>Some Itemname</name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
 				<version>original</version><!-- MUST version if different versions of this bundle exist - can be empty -->
-				<type>audio</type><!-- MUST ; audio, video, android-app, win32-program, whatever -->
+				<type>audio</type><!-- MUST ; audio, video, audiobook, classical-item, android-app, win32-program, whatever -->
 				<display_artistname>Artist</display_artistname>
 				<ids>
 					<isrc>DEZ650000000</isrc><!-- SHOULD isrc - not applicable on bundle-level, but for -->

@@ -45,6 +45,10 @@
  * Free Documentation License" resp. in the file called "FDL.txt".
  * 
  */
+ 
+ /*
+  * Special xsd for audiobooks, derived from default openSDX_00-00-00-01.xsd
+  */
  -->
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:cc="http://fnppl.org/opensdx/countrycodes" xmlns:g="http://fnppl.org/opensdx/genres"
@@ -130,7 +134,7 @@
             <xsd:documentation xml:lang="en">This element contains a list of contributor.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="contributor" type="contributor" maxOccurs="unbounded" minOccurs="0"/>
+            <xsd:element name="contributor" type="contributor" maxOccurs="unbounded" minOccurs="2"/> <!--  minimum of AUTHOR and NARRARTOR necessary -->
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="contributor">
@@ -163,7 +167,7 @@
             <xsd:element name="contentauth" type="contentauth" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="labelordernum" type="notemptystring" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="amzn" type="amzn" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="isbn" type="isbn" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="isbn" type="isbn" maxOccurs="1" minOccurs="1"/> <!--  MUST -->
             <xsd:element name="finetunes" type="finetunes" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="licensor" type="notemptystring" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="licensee" type="notemptystring" maxOccurs="1" minOccurs="0"/>
@@ -494,11 +498,11 @@
             <xsd:element name="genres" type="genres" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="bundle_only" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="explicit_lyrics" type="explicitLyrics" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="recommended_age_from" type="xsd:integer" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="recommended_age_from" type="xsd:integer" maxOccurs="1" minOccurs="0"/> <!-- SHOULD -->
             <xsd:element name="live" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="accoustic" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="instrumental" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="abridged" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="abridged" type="xsd:boolean" maxOccurs="1" minOccurs="0"/> <!-- SHOULD -->
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="genres">
@@ -1109,7 +1113,7 @@
             <xsd:enumeration value="clearinghouse"/>
         </xsd:restriction>
     </xsd:simpleType>
-      <xsd:simpleType name="compositionType">
+    <xsd:simpleType name="compositionType">
         <xsd:restriction base="xsd:string">
         	<xsd:enumeration value="undefined"/>
             <xsd:enumeration value="original"/>
