@@ -1087,6 +1087,10 @@
             <xsd:enumeration value="editor"/>
             <xsd:enumeration value="conductor"/>
             <xsd:enumeration value="orchestra"/>
+            <xsd:enumeration value="ensemble"/>
+            <xsd:enumeration value="choir"/>
+            <xsd:enumeration value="accompanist"/>
+            <xsd:enumeration value="soloist"/>
             <xsd:enumeration value="display_artist"/>
             <xsd:enumeration value="singer"/>
             <xsd:enumeration value="composer"/>
