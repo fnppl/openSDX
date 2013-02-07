@@ -145,7 +145,7 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 
 			// Information
 			//<availabilityDate>2009-03-09T00:00:00+01:00</availabilityDate>
-			String digitalReleaseDate = root.getChildTextNN("availabilityDate");	   
+			String digitalReleaseDate = "2013-02-22T00:00:00+01:00";	   
 			Date d = new Date();
 			if(digitalReleaseDate.length()>0) {
 				d = getDateByISO8601String(digitalReleaseDate);
@@ -158,8 +158,15 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 				d = getDateByISO8601String(physicalReleaseDate);
 			}
 			long prd = d.getTime();
-
+			
+//			related>
+//			<physical_distributor>
+			
+			BundleRelatedInformation brel = BundleRelatedInformation.make();
+			brel.physical_distributor("Cargo");
+			
 			BundleInformation binfo = BundleInformation.make(prd, drd);	   
+			binfo.related(brel);
 			
 			BundleTexts bt = BundleTexts.make();
 			bt.setPromotext("de", root.getChildTextNN("description"));
@@ -234,6 +241,7 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 			bundle.addContributor(con);
 
 			contributors = root.getChild("contributors").getChildren("contributor");
+			Contributor texterContr = null;
 			for (Iterator<Element> itContributors = contributors.iterator(); itContributors.hasNext();) {
 				Element contributor = itContributors.next();
 				String role = contributor.getChildTextNN("role").toLowerCase();
@@ -242,6 +250,7 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 				}
 				else if(role.equals("author")) {
 					con = Contributor.make(contributor.getChildTextNN("firstName")+" "+contributor.getChildTextNN("lastName"), Contributor.TYPE_AUTHOR, IDs.make());	
+					texterContr = Contributor.make(contributor.getChildTextNN("firstName")+" "+contributor.getChildTextNN("lastName"), Contributor.TYPE_TEXTER, IDs.make());	
 				}
 				
 				// Maybe more roles? Insert!
@@ -373,6 +382,8 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 						con = Contributor.make(labelname, Contributor.TYPE_PRODUCTION, IDs.make());
 						con.year(productionYear);
 						item.addContributor(con); 
+						
+						item.addContributor(texterContr);
 						
 						// add Tags
 						ItemTags track_tags = ItemTags.make();   	
