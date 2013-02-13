@@ -258,7 +258,16 @@ public class CLDToOpenSDXImporter extends OpenSDXImporterBase {
 			}
 			
 			//productionYear
-			String productionYear = root.getChildTextNN("productionYear");
+			
+			String productionYear = null;
+			if (root.getChild("productionYear") != null && root.getChildTextNN("productionYear").length() > 0) {
+				productionYear = root.getChildTextNN("productionYear");
+			}
+			else {
+				productionYear = physicalReleaseDate.substring(0, 4);
+				System.out.println("productionYear: "+productionYear);
+			}
+				
 			//<copyright>© 2007 audio media verlag</copyright><!-- Copyright Angabe (aka C-Line) -->
 //			String copyright = root.getChildTextNN("copyright").substring(2);
 //			//<phonogram>℗ 2007 audio media verlag</phonogram><!-- Phonographische Angabe (aka P-Line) -->
