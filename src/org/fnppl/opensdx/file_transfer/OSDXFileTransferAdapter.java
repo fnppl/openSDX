@@ -111,7 +111,7 @@ public class OSDXFileTransferAdapter {
 	private SecureConnection dataOut = null;
 	private SecureConnection dataIn = null;
 	private String errorMsg = null;
-	private OSDXErrorCodes err = null;
+	private OSDXErrorCodes err = null; //Better way to determine errors
 
 	private boolean secureConnectionEstablished = false;
 	private byte[] client_nonce = null;
@@ -1747,7 +1747,6 @@ public class OSDXFileTransferAdapter {
 		}
 		return rightsAndDuties.hasRight(rightType);
 	}
-
 	private String getMessageFromContent(byte[] content) {
 		if (content==null) return null;
 		try {
@@ -1849,7 +1848,6 @@ public class OSDXFileTransferAdapter {
 
 	private class SimpleCommand {
 		public String errorMsg = null;
-
 		//hook in here
 		public boolean onACK() {
 			return true;

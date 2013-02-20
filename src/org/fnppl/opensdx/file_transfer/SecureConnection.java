@@ -82,6 +82,23 @@ public class SecureConnection {
 	public static byte TYPE_ERROR_ED      = -19; // = ED
 	public static byte TYPE_ERROR         = -18; // = EE // error with error message
 	
+	//Errorcodes
+	public static byte TYPE_ERROR_FILE_RESTRICTED		= 1;
+	public static byte TYPE_ERROR_FILE_NOT_EXISTS		= 2;
+	public static byte TYPE_ERROR_CANNOT_DELETE_DIR		= 3;
+	public static byte TYPE_ERROR_CANNOT_DELETE_FILE	= 4;
+	public static byte TYPE_ERROR_PATH_IS_NOT_ABSOLUTE	= 5;
+	public static byte TYPE_ERROR_PATH_IS_MISSING		= 6;
+	public static byte TYPE_ERROR_WRONG_DESTINATION		= 7;
+	public static byte TYPE_ERROR_FILE_ALREADY_EXISTS	= 8;
+	public static byte TYPE_ERROR_CANNOT_RENAME			= 9;
+	public static byte TYPE_ERROR_FILENAME_IS_MISSING	= 10;
+	public static byte TYPE_ERROR_RETRIEVING_FILE_INFO	= 11;
+	public static byte TYPE_ERROR_DIRECTORY_NOT_EXISTS	= 12;
+	public static byte TYPE_ERROR_NOT_A_DIRECTORY		= 13;
+	public static byte TYPE_ERROR_DIRECTORY_DEPTH		= 14;
+	public static byte TYPE_ERROR_FILE_LENGTH_PARAM		= 15;	
+	
 	public long id;
 	public int num;
 	public byte type;
@@ -179,6 +196,14 @@ public class SecureConnection {
 		this.content = null;
 	}
 
+	//TODO: Hier eine weitere Methode die den Errortype ebenfalls mit gibt! Error
+	public void setError(long id, int num, String message, byte type) {
+		this.id = id;
+		this.num = num;
+		this.type = type;
+		setContent(message);
+	}
+	
 	public void setError(long id, int num, String message) {
 		this.id = id;
 		this.num = num;
