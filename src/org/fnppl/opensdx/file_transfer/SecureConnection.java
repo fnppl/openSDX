@@ -98,6 +98,7 @@ public class SecureConnection {
 	public static byte TYPE_ERROR_NOT_A_DIRECTORY		= 13;
 	public static byte TYPE_ERROR_DIRECTORY_DEPTH		= 14;
 	public static byte TYPE_ERROR_FILE_LENGTH_PARAM		= 15;	
+	public static byte TYPE_ERROR_DIRECTORY_DOWNLOAD_NOT_IMPLEMENTED = 16;
 	
 	public long id;
 	public int num;

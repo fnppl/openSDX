@@ -1358,7 +1358,8 @@ public class OSDXFileTransferServerThread extends Thread {
 					server.log.logCommand(clientID, addr, "GET", param, "file does not exist");
 				}
 				else if (file.isDirectory()) {
-					data.setError(commandid, num, "directory download not implemented");
+					data.setError(commandid, num, "directory download not implemented", SecureConnection.TYPE_ERROR_DIRECTORY_DOWNLOAD_NOT_IMPLEMENTED);
+					//OLD: data.setError(commandid, num, "directory download not implemented");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "GET", param, "directory download not implemented");
 				} else {
@@ -1457,7 +1458,8 @@ public class OSDXFileTransferServerThread extends Thread {
 						server.log.logCommand(clientID, addr, "RESUMEGET", param, "file does not exist");
 					}
 					else if (file.isDirectory()) {
-						data.setError(commandid, num, "directory download not implemented");
+						data.setError(commandid, num, "directory download not implemented", SecureConnection.TYPE_ERROR_DIRECTORY_DOWNLOAD_NOT_IMPLEMENTED);
+						//OLD: data.setError(commandid, num, "directory download not implemented");
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "RESUMEGET", param, "directory download not implemented");
 					} else {
