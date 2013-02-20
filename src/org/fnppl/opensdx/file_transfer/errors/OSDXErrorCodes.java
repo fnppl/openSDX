@@ -55,14 +55,15 @@ import org.fnppl.opensdx.file_transfer.errors.exceptions.*;
  * @date 19.02.2013
  */
 public enum OSDXErrorCodes {
-	WRONG_FILE_SIZE(0, "Error downloading \"%s\" :: wrong filesize"),
-	MD5_DOWNLOAD_FAIL(1, "Error downloading \"%s\" :: MD5 check FAILD!"),
-	MD5_CHECK_FAIL(2, "MD5 check failed for resuming upload"),
-	WRONG_FORMAT(3, "wrong format: file upload resume position not parseable"),
+	DOWNLOAD_ERROR_WRONG_FILE_SIZE(0, "Error downloading \"%s\" :: wrong filesize"),
+	DOWNLOAD_ERROR_MD5_CHECK_FAIL(1, "Error downloading \"%s\" :: MD5 check FAILD!"),
+	UPLOAD_ERROR_MD5_CHECK_FAIL(2, "MD5 check failed for resuming upload"),
+	UPLOAD_ERROR_WRONG_FORMAT(3, "wrong format: file upload resume position not parseable"),
 	ERROR_FROM_CONTENT(4, "%s");
 	
 	//... more errors to come
 	
+	private String textinsert; //A simple idea to make filenames etc available in the Error enum Object
 	private final int code;
 	private final String description;
 	
@@ -79,12 +80,20 @@ public enum OSDXErrorCodes {
 		return code;
 	}
 	
+	public void setTextinsert(String textinsert){
+		this.textinsert = textinsert;
+	}
+	
+	public String getTextinsert(){
+		return this.textinsert;
+	}
+	
 	public void throwException() throws Exception{
 		switch(this){
-			case WRONG_FILE_SIZE : throw new WrongFileSizeException(WRONG_FILE_SIZE.getDescription());
-			case MD5_DOWNLOAD_FAIL : throw new MD5DownloadException(MD5_DOWNLOAD_FAIL.getDescription());
-			case MD5_CHECK_FAIL : throw new MD5CheckException(MD5_CHECK_FAIL.getDescription());
-			case WRONG_FORMAT : throw new WrongFormatException(WRONG_FORMAT.getDescription());
+			case DOWNLOAD_ERROR_WRONG_FILE_SIZE : throw new WrongFileSizeException(DOWNLOAD_ERROR_WRONG_FILE_SIZE.getDescription());
+			case DOWNLOAD_ERROR_MD5_CHECK_FAIL : throw new MD5DownloadException(DOWNLOAD_ERROR_MD5_CHECK_FAIL.getDescription());
+			case UPLOAD_ERROR_MD5_CHECK_FAIL : throw new MD5CheckException(UPLOAD_ERROR_MD5_CHECK_FAIL.getDescription());
+			case UPLOAD_ERROR_WRONG_FORMAT : throw new WrongFormatException(UPLOAD_ERROR_WRONG_FORMAT.getDescription());
 			case ERROR_FROM_CONTENT : throw new ErrorFromContentException(ERROR_FROM_CONTENT.getDescription());
 			default : throw new Exception("Undefined OSDXErrorCodes Exception");
 		}

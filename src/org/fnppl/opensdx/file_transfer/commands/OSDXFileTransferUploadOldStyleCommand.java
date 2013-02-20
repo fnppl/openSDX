@@ -191,7 +191,7 @@ public class OSDXFileTransferUploadOldStyleCommand extends OSDXFileTransferComma
 							System.out.println("file pos = "+filePos);
 							fileIn.skip(filePos);//skip forward to filepos
 						} catch (Exception ex) {
-							notifyError(OSDXErrorCodes.WRONG_FORMAT);
+							notifyError(OSDXErrorCodes.UPLOAD_ERROR_WRONG_FORMAT);
 							//OLD: notifyError("wrong format: file upload resume position not parseable");
 							//ex.printStackTrace();
 						}

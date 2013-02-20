@@ -140,7 +140,7 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 			}
 			if (resume) { //already finished download
 				if (filePos>fileLen) {
-					notifyError(OSDXErrorCodes.WRONG_FILE_SIZE, absoluteRemotePath);
+					notifyError(OSDXErrorCodes.DOWNLOAD_ERROR_WRONG_FILE_SIZE, absoluteRemotePath);
 					//OLD: notifyError("Error downloading \""+absoluteRemotePath+"\" :: wrong filesize");
 					System.out.println("ERROR wrong filesize.");
 				}
@@ -153,7 +153,7 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 							notifySucces();
 						} else {
 							System.out.println("MD5 check FAILD!");
-							notifyError(OSDXErrorCodes.MD5_DOWNLOAD_FAIL, absoluteRemotePath);
+							notifyError(OSDXErrorCodes.DOWNLOAD_ERROR_MD5_CHECK_FAIL, absoluteRemotePath);
 							//OLD: notifyError("Error downloading \""+absoluteRemotePath+"\" :: MD5 check FAILD!");
 						}
 					} else {
@@ -178,7 +178,7 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 				}
 				if (filePos>fileLen) {
 					notifyUpdate(filePos, fileLen, null);
-					notifyError(OSDXErrorCodes.WRONG_FILE_SIZE, absoluteRemotePath);
+					notifyError(OSDXErrorCodes.DOWNLOAD_ERROR_WRONG_FILE_SIZE, absoluteRemotePath);
 					//OLD: notifyError("Error downloading \""+absoluteRemotePath+"\" :: wrong filesize");
 					System.out.println("ERROR wrong filesize.");
 				} else {
@@ -192,7 +192,7 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 						} else {
 							System.out.println("MD5 check FAILD!");
 							notifyUpdate(filePos, fileLen, null);
-							notifyError(OSDXErrorCodes.MD5_DOWNLOAD_FAIL, absoluteRemotePath);
+							notifyError(OSDXErrorCodes.DOWNLOAD_ERROR_MD5_CHECK_FAIL, absoluteRemotePath);
 							//OLD: notifyError("Error downloading \""+absoluteRemotePath+"\" :: MD5 check FAILD!");
 						}
 					} else {

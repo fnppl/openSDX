@@ -141,7 +141,7 @@ public class OSDXFileTransferDownloadStreamCommand extends OSDXFileTransferComma
 				}
 				if (filePos>fileLen) {
 					notifyUpdate(filePos, fileLen, null);
-					notifyError(OSDXErrorCodes.WRONG_FILE_SIZE, absoluteRemotePath);
+					notifyError(OSDXErrorCodes.DOWNLOAD_ERROR_WRONG_FILE_SIZE, absoluteRemotePath);
 					//OLD: notifyError("Error downloading \""+absoluteRemotePath+"\" :: wrong filesize");
 					
 					System.out.println("ERROR wrong filesize.");
