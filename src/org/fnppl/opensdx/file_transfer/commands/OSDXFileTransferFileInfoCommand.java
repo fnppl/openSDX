@@ -77,7 +77,7 @@ public class OSDXFileTransferFileInfoCommand extends OSDXFileTransferCommand {
 			rf = RemoteFile.fromParamString(getMessageFromContentNN(content));
 			notifySucces();
 		} else {
-			notifyError(getMessageFromContent(content));
+			notifyErrorFromContent(getMessageFromContent(content));
 		}
 	}
 

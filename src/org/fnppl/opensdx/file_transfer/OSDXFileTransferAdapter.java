@@ -64,6 +64,7 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferMkDirCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadOldStyleCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUserPassLoginCommand;
+import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCodes;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.FileTransferAccount;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
@@ -110,6 +111,7 @@ public class OSDXFileTransferAdapter {
 	private SecureConnection dataOut = null;
 	private SecureConnection dataIn = null;
 	private String errorMsg = null;
+	private OSDXErrorCodes err = null;
 
 	private boolean secureConnectionEstablished = false;
 	private byte[] client_nonce = null;
@@ -480,6 +482,9 @@ public class OSDXFileTransferAdapter {
 	}
 	public String getMostRecentErrorMSG() {
 		return errorMsg;
+	}
+	public OSDXErrorCodes getMostRecentError(){
+		return err;
 	}
 //	public Exception getMostRecentException() {
 //		return last_exception;

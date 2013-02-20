@@ -52,6 +52,7 @@ import java.util.Arrays;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.file_transfer.SecureConnection;
+import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCodes;
 import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.security.SecurityHelper;
 
@@ -140,7 +141,9 @@ public class OSDXFileTransferDownloadStreamCommand extends OSDXFileTransferComma
 				}
 				if (filePos>fileLen) {
 					notifyUpdate(filePos, fileLen, null);
-					notifyError("Error downloading \""+absoluteRemotePath+"\" :: wrong filesize");
+					notifyError(OSDXErrorCodes.WRONG_FILE_SIZE, absoluteRemotePath);
+					//OLD: notifyError("Error downloading \""+absoluteRemotePath+"\" :: wrong filesize");
+					
 					System.out.println("ERROR wrong filesize.");
 				} else {
 					if (md5!=null){

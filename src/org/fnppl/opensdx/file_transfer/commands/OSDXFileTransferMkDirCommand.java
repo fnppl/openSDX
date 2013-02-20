@@ -76,7 +76,7 @@ public class OSDXFileTransferMkDirCommand extends OSDXFileTransferCommand {
 		if (!SecureConnection.isError(code)) {
 			notifySucces();
 		} else {
-			notifyError(getMessageFromContent(content));
+			notifyErrorFromContent(getMessageFromContent(content));
 		}
 	}
 	

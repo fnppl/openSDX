@@ -80,7 +80,7 @@ public class OSDXFileTransferRenameCommand extends OSDXFileTransferCommand {
 		if (!SecureConnection.isError(code)) {
 			notifySucces();
 		} else {
-			notifyError(getMessageFromContent(content));
+			notifyErrorFromContent(getMessageFromContent(content));
 		}
 	}
 

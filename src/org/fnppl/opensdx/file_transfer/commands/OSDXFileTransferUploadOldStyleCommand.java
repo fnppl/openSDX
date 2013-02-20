@@ -50,6 +50,7 @@ import java.util.Arrays;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.file_transfer.SecureConnection;
+import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCodes;
 import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.security.SecurityHelper;
 
@@ -190,7 +191,8 @@ public class OSDXFileTransferUploadOldStyleCommand extends OSDXFileTransferComma
 							System.out.println("file pos = "+filePos);
 							fileIn.skip(filePos);//skip forward to filepos
 						} catch (Exception ex) {
-							notifyError("wrong format: file upload resume position not parseable");
+							notifyError(OSDXErrorCodes.WRONG_FORMAT);
+							//OLD: notifyError("wrong format: file upload resume position not parseable");
 							//ex.printStackTrace();
 						}
 					}
@@ -224,7 +226,7 @@ public class OSDXFileTransferUploadOldStyleCommand extends OSDXFileTransferComma
 			} else {
 				data = null;
 			}
-			notifyError(getMessageFromContent(content));
+			notifyErrorFromContent(getMessageFromContent(content));
 		}
 	}
 	

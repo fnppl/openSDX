@@ -97,7 +97,7 @@ public class OSDXFileTransferListCommand extends OSDXFileTransferCommand {
 			}
 			notifySucces();
 		} else {
-			notifyError(getMessageFromContent(content));
+			notifyErrorFromContent(getMessageFromContent(content));
 		}
 	}
 

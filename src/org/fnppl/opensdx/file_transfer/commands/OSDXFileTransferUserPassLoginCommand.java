@@ -91,11 +91,11 @@ public class OSDXFileTransferUserPassLoginCommand extends OSDXFileTransferComman
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				rightsAndADuties = null;
-				notifyError(getMessageFromContent(content));
+				notifyErrorFromContent(getMessageFromContent(content));
 			}
 		}
 		else if (SecureConnection.isError(code)) {
-			notifyError(getMessageFromContent(content));
+			notifyErrorFromContent(getMessageFromContent(content));
 		}
 	}
 	

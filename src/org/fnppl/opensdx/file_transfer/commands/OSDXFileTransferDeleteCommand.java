@@ -74,7 +74,7 @@ public class OSDXFileTransferDeleteCommand extends OSDXFileTransferCommand {
 	
 	public void onResponseReceived(int num, byte code, byte[] content) throws Exception {
 		if (SecureConnection.isError(code)) {
-			notifyError(getMessageFromContent(content));
+			notifyErrorFromContent(getMessageFromContent(content));
 		} else {
 			notifySucces();
 		}
