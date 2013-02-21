@@ -194,7 +194,8 @@ public class OSDXFileTransferServerThread extends Thread {
 										ok = false;
 									}
 									if (!ok) {
-										data.setError(commandid, num, "md5 check failed");
+										data.setError(commandid, num, "md5 check failed", SecureConnection.TYPE_ERROR_MD5_CHECK);
+										//OLD: data.setError(commandid, num, "md5 check failed");
 										data.sendPackage();
 									}
 								}
@@ -203,7 +204,8 @@ public class OSDXFileTransferServerThread extends Thread {
 									data.sendPackage();
 								}
 							} else {
-								data.setError(commandid, num, "wrong filesize");
+								data.setError(commandid, num, "wrong filesize", SecureConnection.TYPE_ERROR_WRONG_FILESIZE);
+								//OLD: data.setError(commandid, num, "wrong filesize");
 								data.sendPackage();
 							}
 							
@@ -376,13 +378,15 @@ public class OSDXFileTransferServerThread extends Thread {
 			}
 			else {
 				//login failed
-				data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED");
+				data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED", SecureConnection.TYPE_ERROR_LOGIN_ACCESS_DENIED);
+				//OLD: data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: ACCESS DENIED");
 			}
 		} else {
 			//login failed
-			data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME");
+			data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME", SecureConnection.TYPE_ERROR_LOGIN_USERNAME_MISSING);
+			//OLD: data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: MISSING USERNAME");
 		}
@@ -413,13 +417,15 @@ public class OSDXFileTransferServerThread extends Thread {
 			}
 			else {
 				//login failed
-				data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED");
+				data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED", SecureConnection.TYPE_ERROR_LOGIN_ACCESS_DENIED);
+				//OLD: data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: ACCESS DENIED");
 			}
 		} else {
 			//login failed
-			data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME");
+			data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME", SecureConnection.TYPE_ERROR_LOGIN_USERNAME_MISSING);
+			//OLD: data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: MISSING USERNAME");
 		}
@@ -433,18 +439,21 @@ public class OSDXFileTransferServerThread extends Thread {
 				path = new File(cs.getLocalRootPath()+param);
 				
 				if (!cs.isAllowed(path)) {
-					data.setError(commandid, num, "restricted path");
+					data.setError(commandid, num, "restricted path", SecureConnection.TYPE_ERROR_PATH_IS_RESTRICTED);
+					//OLD: data.setError(commandid, num, "restricted path");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "MKDIR", param, "restricted path");
 				}
 				else if (path.exists()) {
-					data.setError(commandid, num, "path already exists");
+					data.setError(commandid, num, "path already exists", SecureConnection.TYPE_ERROR_PATH_ALREADY_EXISTS);
+					//OLD: data.setError(commandid, num, "path already exists");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "MKDIR", param, "path already exists");
 				}
 				else if (!cs.isAllowedDepthDir(path)) {
 					String msg = "max directory depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth();
-					data.setError(commandid, num, msg);
+					data.setError(commandid, num, msg, SecureConnection.TYPE_ERROR_DIRECTORY_DEPTH);
+					//OLD: data.setError(commandid, num, msg);
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "MKDIR", param, msg);
 				}
@@ -460,7 +469,8 @@ public class OSDXFileTransferServerThread extends Thread {
 						context.put(TriggerContext.RELATED_FILENAME,path.getAbsolutePath());
 						cs.triggerEvent(Trigger.TRIGGER_MKDIR,context);
 					} else {
-						data.setError(commandid, num, "error in mkdir");
+						data.setError(commandid, num, "error in mkdir", SecureConnection.TYPE_ERROR_MKDIR);
+						//OLD: data.setError(commandid, num, "error in mkdir");
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "MKDIR", param, "error in mkdir");
 					}
@@ -472,7 +482,8 @@ public class OSDXFileTransferServerThread extends Thread {
 				server.log.logCommand(clientID, addr, "MKDIR", param, "path must be absolute");
 			}
 		} else {
-			data.setError(commandid, num, "missing path parameter");
+			data.setError(commandid, num, "missing path parameter", SecureConnection.TYPE_ERROR_PATH_IS_MISSING);
+			//OLD: data.setError(commandid, num, "missing path parameter");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "MKDIR", param, "missing path parameter");
 		}
@@ -744,12 +755,13 @@ public class OSDXFileTransferServerThread extends Thread {
 				}
 			} else {
 				data.setError(commandid, num, "path must be absolute", SecureConnection.TYPE_ERROR_PATH_IS_NOT_ABSOLUTE);
-				data.setError(commandid, num, "path must be absolute");
+				//OLD: data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "LIST", param, "path must be absolute");
 			}
 		} else {
-			data.setError(commandid, num, "missing path parameter");
+			data.setError(commandid, num, "missing path parameter", SecureConnection.TYPE_ERROR_PATH_IS_MISSING);
+			//OLD: data.setError(commandid, num, "missing path parameter");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "LIST", param, "missing path parameter");
 		}
@@ -878,13 +890,15 @@ public class OSDXFileTransferServerThread extends Thread {
 					server.log.logCommand(clientID, addr, "PUT", param, "restricted file");
 				}
 				else if (file.exists()) {
-					data.setError(commandid, num, "file already exists");
+					data.setError(commandid, num, "file already exists", SecureConnection.TYPE_ERROR_FILE_ALREADY_EXISTS);
+					//OLD: data.setError(commandid, num, "file already exists");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "PUT", param, "file already exists");
 				}
 				else if (!cs.isAllowedDepthFile(file)) {
 					String msg = "max directory depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth();
-					data.setError(commandid, num, msg);
+					data.setError(commandid, num, msg, SecureConnection.TYPE_ERROR_DIRECTORY_DEPTH);
+					//OLD: data.setError(commandid, num, msg);
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "PUT", param, msg);
 				}
@@ -978,7 +992,8 @@ public class OSDXFileTransferServerThread extends Thread {
 			}
 			if (length>0) {	
 				if (upload.file.length()!=length) {
-					data.setError(commandid, num, "wrong filesize :: is="+upload.file.length()+", given="+length);
+					data.setError(commandid, num, "wrong filesize :: is="+upload.file.length()+", given="+length, SecureConnection.TYPE_ERROR_WRONG_FILESIZE);
+					//OLD: data.setError(commandid, num, "wrong filesize :: is="+upload.file.length()+", given="+length);
 					server.log.logCommand(clientID, addr, "PUT_EOF", param, "wrong filesize :: is="+upload.file.length()+", given="+length);
 					data.sendPackage();
 					triggerUploadEndEvent(upload);
@@ -1009,7 +1024,8 @@ public class OSDXFileTransferServerThread extends Thread {
 						ok = false;
 					}
 					if (!ok) {
-						data.setError(commandid, num, "md5 check failed");
+						data.setError(commandid, num, "md5 check failed", SecureConnection.TYPE_ERROR_MD5_CHECK);
+						//OLD: data.setError(commandid, num, "md5 check failed");
 						data.sendPackage();
 					}
 				}
@@ -1021,7 +1037,8 @@ public class OSDXFileTransferServerThread extends Thread {
 				return;
 			}
 		} else {
-			data.setError(commandid, num, "PUT_EOF :: no matching open stream id = "+commandid);
+			data.setError(commandid, num, "PUT_EOF :: no matching open stream id = "+commandid, SecureConnection.TYPE_ERROR_UPLOAD_IS_NULL);
+			//OLD: data.setError(commandid, num, "PUT_EOF :: no matching open stream id = "+commandid);
 			server.log.logCommand(clientID, addr, "PUT_EOF", param,  "no matching open stream id = "+commandid);
 			data.sendPackage();
 		}
@@ -1051,11 +1068,13 @@ public class OSDXFileTransferServerThread extends Thread {
 				data.setAck(commandid, num);
 				data.sendPackage();
 			} else {
-				data.setError(commandid, num, "PUT_CANCEL :: canceling upload not possible");
+				data.setError(commandid, num, "PUT_CANCEL :: canceling upload not possible", SecureConnection.TYPE_ERROR_UPLOAD_CANCEL);
+				//OLD: data.setError(commandid, num, "PUT_CANCEL :: canceling upload not possible");
 				data.sendPackage();
 			}
 		} else {
-			data.setError(commandid, num, "PUT_CANCEL :: no matching open stream id = "+commandid);
+			data.setError(commandid, num, "PUT_CANCEL :: no matching open stream id = "+commandid, SecureConnection.TYPE_ERROR_UPLOAD_IS_NULL);
+			//OLD: data.setError(commandid, num, "PUT_CANCEL :: no matching open stream id = "+commandid);			
 			data.sendPackage();
 		}
 	}
@@ -1071,11 +1090,13 @@ public class OSDXFileTransferServerThread extends Thread {
 				data.setAck(commandid, num);
 				data.sendPackage();
 			} else {
-				data.setError(commandid, num, "PUT_BREAK :: halting upload not possible");
+				data.setError(commandid, num, "PUT_BREAK :: halting upload not possible", SecureConnection.TYPE_ERROR_UPLOAD_HALT);
+				//OLD: data.setError(commandid, num, "PUT_BREAK :: halting upload not possible");
 				data.sendPackage();
 			}
 		} else {
-			data.setError(commandid, num, "PUT_BREAK :: no matching open stream id = "+commandid);
+			data.setError(commandid, num, "PUT_BREAK :: no matching open stream id = "+commandid, SecureConnection.TYPE_ERROR_UPLOAD_IS_NULL);
+			//OLD: data.setError(commandid, num, "PUT_BREAK :: no matching open stream id = "+commandid);			
 			data.sendPackage();
 		}
 	}
@@ -1110,7 +1131,8 @@ public class OSDXFileTransferServerThread extends Thread {
 				}
 				else if (!cs.isAllowedDepthFile(file)) {
 					String msg = "max directory depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth();
-					data.setError(commandid, num, msg);
+					data.setError(commandid, num, msg, SecureConnection.TYPE_ERROR_DIRECTORY_DEPTH);
+					//OLD: data.setError(commandid, num, msg);
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "PUT_RESUME", param, msg);
 				}
@@ -1540,7 +1562,8 @@ public class OSDXFileTransferServerThread extends Thread {
 	
 	private boolean ensureAllowed(int rightType, long id, int num, String msg) throws Exception {
 		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().hasRight(rightType)) {
-			data.setError(id, num, msg);
+			data.setError(id, num, msg, SecureConnection.TYPE_ERROR_RIGHTS_AND_DUTIES);
+			//OLD: data.setError(id, num, msg);
 			data.sendPackage();
 			return false;
 		}
