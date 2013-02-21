@@ -1,4 +1,5 @@
-package org.fnppl.opensdx.file_transfer.errors.exceptions;
+package org.fnppl.opensdx.file_transfer.errors;
+
 /*
  * Copyright (C) 2010-2013 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -45,26 +46,59 @@ package org.fnppl.opensdx.file_transfer.errors.exceptions;
  */
 
 /**
- * OSDX Exception Class
- * 
+ * This Class is an Enum of all ErrorCodes 
+ *
  * @author Aleksandar Jovanovic
- * @date 19.02.2013
+ * @date 21.02.2013
  */
-public class OSDXException extends Exception{
-
-	private static final long serialVersionUID = -3752395896495500741L;
-
-	public OSDXException(){};
+public enum OSDXErrorCode {
+	//FILE ERROS
+	 ERROR_FILE_RESTRICTED(500),
+	 ERROR_FILE_NOT_EXISTS(501),
+	 ERROR_FILE_ALREADY_EXISTS(502),
+	 ERROR_FILENAME_IS_MISSING(503),
+	 ERROR_FILE_LENGTH_PARAM(504),
+	 ERROR_CANNOT_DELETE_FILE(505),
+	 ERROR_RETRIEVING_FILE_INFO(506),
+	 ERROR_WRONG_FILESIZE(507),
 	
-	public OSDXException(String msg){
-		super(msg);
-	};
+	//DIRECTORY ERRORS
+	 ERROR_CANNOT_DELETE_DIR(600),
+	 ERROR_DIRECTORY_NOT_EXISTS(601),
+	 ERROR_DIRECTORY_DEPTH(602),
+	 ERROR_DIRECTORY_DOWNLOAD_NOT_IMPLEMENTED (603),
+	 ERROR_NOT_A_DIRECTORY(604),
 	
-	public OSDXException(Throwable cause){
-		super(cause);
-	};
+	//LOGIN ERRORS
+	 ERROR_LOGIN_ACCESS_DENIED(701),
+	 ERROR_LOGIN_USERNAME_MISSING(702),
 	
-	public OSDXException(String msg, Throwable cause){
-		super(msg, cause);
+	//UPLOAD ERRORS
+	 ERROR_UPLOAD_IS_NULL(801),
+	 ERROR_UPLOAD_CANCEL(802),
+	 ERROR_UPLOAD_HALT(803),
+	
+	//FILESYSTEM ERRORS
+	 ERROR_PATH_IS_NOT_ABSOLUTE(900),
+	 ERROR_PATH_IS_MISSING(901),
+	 ERROR_WRONG_DESTINATION(902),
+	 ERROR_CANNOT_RENAME(903),
+	 ERROR_PATH_IS_RESTRICTED(904),
+	 ERROR_PATH_ALREADY_EXISTS(905),
+	 ERROR_MKDIR(906),
+	
+	//OTHER ERRORS
+	 ERROR_WITH_MESSAGE (1000),
+	 ERROR_MD5_CHECK (1001),
+	 ERROR_RIGHTS_AND_DUTIES(1002);
+	
+	private final int errorCode;
+	
+	public int getErrorCode(){
+		return this.errorCode;
+	}
+	
+	private OSDXErrorCode(int errorCode) {
+		this.errorCode = errorCode;
 	}
 }

@@ -51,7 +51,7 @@ import java.util.Arrays;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.file_transfer.SecureConnection;
-import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCodes;
+import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCode;
 import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.security.SecurityHelper;
 
@@ -140,7 +140,7 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 			}
 			if (resume) { //already finished download
 				if (filePos>fileLen) {
-					notifyError(OSDXErrorCodes.DOWNLOAD_ERROR_WRONG_FILE_SIZE, absoluteRemotePath);
+					notifyError(OSDXErrorCode.ERROR_WRONG_FILESIZE, "Error downloading \""+absoluteRemotePath+"\" :: wrong filesize");
 					//OLD: notifyError("Error downloading \""+absoluteRemotePath+"\" :: wrong filesize");
 					System.out.println("ERROR wrong filesize.");
 				}
@@ -153,7 +153,7 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 							notifySucces();
 						} else {
 							System.out.println("MD5 check FAILD!");
-							notifyError(OSDXErrorCodes.DOWNLOAD_ERROR_MD5_CHECK_FAIL, absoluteRemotePath);
+							notifyError(OSDXErrorCode.ERROR_MD5_CHECK, "Error downloading \""+absoluteRemotePath+"\" :: MD5 check FAILD!"); 
 							//OLD: notifyError("Error downloading \""+absoluteRemotePath+"\" :: MD5 check FAILD!");
 						}
 					} else {
@@ -178,7 +178,7 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 				}
 				if (filePos>fileLen) {
 					notifyUpdate(filePos, fileLen, null);
-					notifyError(OSDXErrorCodes.DOWNLOAD_ERROR_WRONG_FILE_SIZE, absoluteRemotePath);
+					notifyError(OSDXErrorCode.ERROR_WRONG_FILESIZE, "Error downloading \""+absoluteRemotePath+"\" :: wrong filesize");
 					//OLD: notifyError("Error downloading \""+absoluteRemotePath+"\" :: wrong filesize");
 					System.out.println("ERROR wrong filesize.");
 				} else {
@@ -192,7 +192,7 @@ public class OSDXFileTransferDownloadCommand extends OSDXFileTransferCommand {
 						} else {
 							System.out.println("MD5 check FAILD!");
 							notifyUpdate(filePos, fileLen, null);
-							notifyError(OSDXErrorCodes.DOWNLOAD_ERROR_MD5_CHECK_FAIL, absoluteRemotePath);
+							notifyError(OSDXErrorCode.ERROR_MD5_CHECK, "Error downloading \""+absoluteRemotePath+"\" :: MD5 check FAILD!");
 							//OLD: notifyError("Error downloading \""+absoluteRemotePath+"\" :: MD5 check FAILD!");
 						}
 					} else {

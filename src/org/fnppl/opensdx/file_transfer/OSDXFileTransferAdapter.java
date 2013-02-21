@@ -65,7 +65,8 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadOldStyleCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUserPassLoginCommand;
 import org.fnppl.opensdx.file_transfer.errors.OSDXError;
-import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCodes;
+import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCode;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.FileTransferAccount;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
@@ -520,11 +521,15 @@ public class OSDXFileTransferAdapter {
 //		return last_exception;
 //	}
 
-	public boolean delete(String absoluteRemoteFilename) {
+	public boolean delete(String absoluteRemoteFilename) throws OSDXException {
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut);
 		boolean ok = cmd.process("DELETE "+absoluteRemoteFilename);
 		errorObj = cmd.errorObj;
 		errorMsgOld = cmd.errorMsgOLD;
+		//Throw Exception, ist this practicable via the Error Object?
+		if(!ok){
+			
+		}
 		//OLD: errorMsg = cmd.errorMsg;
 		return ok;
 	}
@@ -1981,7 +1986,7 @@ public class OSDXFileTransferAdapter {
 			this.dataOut = dataOut;
 		}
 
-		public boolean process(String command) {
+		public boolean process(String command) throws OSDXException {
 			long id = SecureConnection.getID();
 			errorMsgOld = null;
 			//OLD: errorMsg = null; 

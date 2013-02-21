@@ -48,7 +48,7 @@ import java.util.Vector;
 
 import org.fnppl.opensdx.file_transfer.CommandResponseListener;
 import org.fnppl.opensdx.file_transfer.SecureConnection;
-import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCodes;
+import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCode;
 
 public abstract class OSDXFileTransferCommand {
 
@@ -138,17 +138,15 @@ public abstract class OSDXFileTransferCommand {
 //			l.onError(this, msg);
 //		}
 //	}
-	protected void notifyErrorFromContent(String content){
-		notifyError(OSDXErrorCodes.ERROR_FROM_CONTENT, content);
-	}	
-	protected void notifyError(OSDXErrorCodes err){
+//	protected void notifyErrorFromContent(String content){
+//		notifyError(OSDXErrorCode.ERROR_FROM_CONTENT, content);
+//	}	
+	protected void notifyError(OSDXErrorCode err){
 		notifyError(err, null);
 	}
-	protected void notifyError(OSDXErrorCodes err, String textinsert){
-		String tmp = (textinsert != null) ? String.format(err.toString(), textinsert) : err.toString();
-		
+	protected void notifyError(OSDXErrorCode err, String msg){
 		for(CommandResponseListener l : listener){
-			l.onError(this, tmp);
+			l.onError(this, err.getErrorCode() + " " + msg);
 		}
 	}
 	protected void notifyUpdate(long progress, long progressMax, String msg) {

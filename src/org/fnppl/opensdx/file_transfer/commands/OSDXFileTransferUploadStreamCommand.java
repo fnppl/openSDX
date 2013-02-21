@@ -51,7 +51,7 @@ import java.util.Arrays;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.file_transfer.SecureConnection;
-import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCodes;
+import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCode;
 import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.security.MD5;
 import org.fnppl.opensdx.security.SecurityHelper;
@@ -169,7 +169,7 @@ public class OSDXFileTransferUploadStreamCommand extends OSDXFileTransferCommand
 						byte[] your_md5 = SecurityHelper.HexDecoder.decode(md5String);
 						if (!Arrays.equals(my_md5,your_md5)) {
 							//System.out.println("MD5 check failed for resuming upload");
-							notifyError(OSDXErrorCodes.UPLOAD_ERROR_MD5_CHECK_FAIL);
+							notifyError(OSDXErrorCode.UPLOAD_ERROR_MD5_CHECK_FAIL);
 							//OLD: notifyError("MD5 check failed for resuming upload");
 							
 							hasNext = false;

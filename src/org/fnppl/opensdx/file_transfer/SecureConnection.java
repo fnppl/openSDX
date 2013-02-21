@@ -83,35 +83,6 @@ public class SecureConnection {
 	public static byte TYPE_ERROR_ED      = -19; // = ED
 	public static byte TYPE_ERROR         = -18; // = EE // error with error message
 	
-	//Errorcodes
-	public static byte TYPE_ERROR_FILE_RESTRICTED			= 1;
-	public static byte TYPE_ERROR_FILE_NOT_EXISTS			= 2;
-	public static byte TYPE_ERROR_CANNOT_DELETE_DIR			= 3;
-	public static byte TYPE_ERROR_CANNOT_DELETE_FILE		= 4;
-	public static byte TYPE_ERROR_PATH_IS_NOT_ABSOLUTE		= 5;
-	public static byte TYPE_ERROR_PATH_IS_MISSING			= 6;
-	public static byte TYPE_ERROR_WRONG_DESTINATION			= 7;
-	public static byte TYPE_ERROR_FILE_ALREADY_EXISTS		= 8;
-	public static byte TYPE_ERROR_CANNOT_RENAME				= 9;
-	public static byte TYPE_ERROR_FILENAME_IS_MISSING		= 10;
-	public static byte TYPE_ERROR_RETRIEVING_FILE_INFO		= 11;
-	public static byte TYPE_ERROR_DIRECTORY_NOT_EXISTS		= 12;
-	public static byte TYPE_ERROR_NOT_A_DIRECTORY			= 13;
-	public static byte TYPE_ERROR_DIRECTORY_DEPTH			= 14;
-	public static byte TYPE_ERROR_FILE_LENGTH_PARAM			= 15;	
-	public static byte TYPE_ERROR_DIRECTORY_DOWNLOAD_NOT_IMPLEMENTED = 16;
-	public static byte TYPE_ERROR_MD5_CHECK 				= 17;
-	public static byte TYPE_ERROR_WRONG_FILESIZE			= 18;
-	public static byte TYPE_ERROR_LOGIN_ACCESS_DENIED		= 19;
-	public static byte TYPE_ERROR_LOGIN_USERNAME_MISSING	= 20;
-	public static byte TYPE_ERROR_PATH_IS_RESTRICTED		= 21;
-	public static byte TYPE_ERROR_PATH_ALREADY_EXISTS		= 22;
-	public static byte TYPE_ERROR_MKDIR						= 23;
-	public static byte TYPE_ERROR_UPLOAD_IS_NULL			= 24;
-	public static byte TYPE_ERROR_UPLOAD_CANCEL				= 25;
-	public static byte TYPE_ERROR_UPLOAD_HALT				= 26;
-	public static byte TYPE_ERROR_RIGHTS_AND_DUTIES			= 27;
-	
 	public long id;
 	public int num;
 	public byte type;
@@ -337,7 +308,7 @@ public class SecureConnection {
 	}
 	
 	public boolean isError() {
-		if (type <= TYPE_ERROR && type >= TYPE_ERROR_E0 || type >= TYPE_ERROR_FILE_RESTRICTED && type <= TYPE_ERROR_RIGHTS_AND_DUTIES) {
+		if (type <= TYPE_ERROR && type >= TYPE_ERROR_E0) {
 			return true;
 		} else {
 			return false;
@@ -345,7 +316,7 @@ public class SecureConnection {
 	}
 	
 	public static boolean isError(byte code) {
-		if (code <= TYPE_ERROR && code >= TYPE_ERROR_E0 || code >= TYPE_ERROR_FILE_RESTRICTED && code <= TYPE_ERROR_RIGHTS_AND_DUTIES) {
+		if (code <= TYPE_ERROR && code >= TYPE_ERROR_E0) {
 			return true;
 		} else {
 			return false;
@@ -368,12 +339,12 @@ public class SecureConnection {
 	 * @return Error Object
 	 * @see OSDXError
 	 */
-	public OSDXError getError(){
-		if(isError()){
-			return new OSDXError(id, num, getMessageFromContent(content) , type);
-		}
-		return null;
-	}
+//	public OSDXError getError(){
+//		if(isError()){
+//			return new OSDXError(id, num, getMessageFromContent(content) , type);
+//		}
+//		return null;
+//	}
 
 	private static byte[] buildPackageHeader(long id, int num, byte type, int length) {
 		byte[] b = new byte[16];

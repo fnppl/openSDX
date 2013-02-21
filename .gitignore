@@ -4,3 +4,4 @@
 bin/*
 lib/servlet.jar
 tokeyserver.sh
+startFileTransferServer.sh
