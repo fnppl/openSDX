@@ -336,7 +336,7 @@ public class SecureConnection {
 	}
 	
 	public boolean isError() {
-		if (type <= TYPE_ERROR && type >= TYPE_ERROR_E0) {
+		if (type <= TYPE_ERROR && type >= TYPE_ERROR_E0 || type >= TYPE_ERROR_FILE_RESTRICTED && type <= TYPE_ERROR_RIGHTS_AND_DUTIES) {
 			return true;
 		} else {
 			return false;
@@ -344,7 +344,7 @@ public class SecureConnection {
 	}
 	
 	public static boolean isError(byte code) {
-		if (code <= TYPE_ERROR && code >= TYPE_ERROR_E0) {
+		if (code <= TYPE_ERROR && code >= TYPE_ERROR_E0 || code >= TYPE_ERROR_FILE_RESTRICTED && code <= TYPE_ERROR_RIGHTS_AND_DUTIES) {
 			return true;
 		} else {
 			return false;
