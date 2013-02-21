@@ -47,6 +47,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.UnsupportedEncodingException;
 
+import org.fnppl.opensdx.file_transfer.errors.OSDXError;
 import org.fnppl.opensdx.file_transfer.helper.FileTransferLog;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
@@ -349,6 +350,29 @@ public class SecureConnection {
 		} else {
 			return false;
 		}
+	}
+	
+	private String getMessageFromContent(byte[] content) {
+		if (content==null) return null;
+		try {
+			return new String(content,"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+		}
+		return null;
+	}
+	
+	/**
+	 * Generates and returns an OSDXError Object if the SecureConnection has an error.<br>
+	 * Otherwise this will return <b>null</b>. 
+	 * 
+	 * @return Error Object
+	 * @see OSDXError
+	 */
+	public OSDXError getError(){
+		if(isError()){
+			return new OSDXError(id, num, getMessageFromContent(content) , type);
+		}
+		return null;
 	}
 
 	private static byte[] buildPackageHeader(long id, int num, byte type, int length) {

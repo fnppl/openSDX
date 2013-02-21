@@ -64,6 +64,7 @@ import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferMkDirCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadOldStyleCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUserPassLoginCommand;
+import org.fnppl.opensdx.file_transfer.errors.OSDXError;
 import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCodes;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.FileTransferAccount;
@@ -110,8 +111,8 @@ public class OSDXFileTransferAdapter {
 	private BufferedOutputStream out;
 	private SecureConnection dataOut = null;
 	private SecureConnection dataIn = null;
-	private String errorMsg = null;
-	private OSDXErrorCodes err = null; //Better way to determine errors
+	private String errorMsgOld = null; //We will keep this solution for now to avoid side effects
+	private OSDXError errorObj = null; //Better way to determine errors
 
 	private boolean secureConnectionEstablished = false;
 	private byte[] client_nonce = null;
@@ -297,11 +298,18 @@ public class OSDXFileTransferAdapter {
 					if (loginUserPass()) {
 						System.out.println("Login successful...");
 					} else {
-						if (errorMsg == null) {
+						if (errorMsgOld==null || errorObj == null) {
 							System.out.println("ERROR at Login :: unknown error");
 						} else {
-							System.out.println("ERROR at Login :: "+errorMsg);
-						}
+							String tmp = (errorObj != null) ? errorObj.getMessage() : errorMsgOld;
+							System.out.println("ERROR at Login :: "+tmp);
+						}	
+//						OLD
+//						if (errorMsg == null) {
+//							System.out.println("ERROR at Login :: unknown error");
+//						} else {
+//							System.out.println("ERROR at Login :: "+errorMsg);
+//						}
 					}
 
 				} else {
@@ -385,11 +393,18 @@ public class OSDXFileTransferAdapter {
 					if (login()) {
 						System.out.println("Login successful...");
 					} else {
-						if (errorMsg == null) {
+						if (errorMsgOld==null || errorObj == null) {
 							System.out.println("ERROR at Login :: unknown error");
 						} else {
-							System.out.println("ERROR at Login :: "+errorMsg);
-						}
+							String tmp = (errorObj != null) ? errorObj.getMessage() : errorMsgOld;
+							System.out.println("ERROR at Login :: "+tmp);
+						}	
+//						OLD
+//						if (errorMsg == null) {
+//							System.out.println("ERROR at Login :: unknown error");
+//						} else {
+//							System.out.println("ERROR at Login :: "+errorMsg);
+//						}
 					}
 
 				} else {
@@ -423,17 +438,23 @@ public class OSDXFileTransferAdapter {
 					} catch (Exception ex) {
 						ex.printStackTrace();
 						rightsAndDuties = null;
-						errorMsg = getMessageFromContent(dataIn.content);
+						errorObj = dataIn.getError();
+						errorMsgOld = errorObj.getMessage();
+						//OLD: errorMsg = getMessageFromContent(dataIn.content);
 						return false;
 					}
 				} catch (UnsupportedEncodingException ex) {
-					errorMsg = "unsupported encoding";
+					errorObj = new OSDXError("unsupported encoding");
+					errorMsgOld = errorObj.getMessage();
+					//OLD: errorMsg = "unsupported encoding";
 					return false;
 				}
 			}
 		};
 		boolean ok = cmd.process("LOGIN "+username);
-		errorMsg = cmd.errorMsg;
+		errorObj = cmd.errorObj;
+		errorMsgOld = cmd.errorMsgOLD;
+		//OLD: errorMsg = cmd.errorMsg;
 		return ok;
 	}
 	
@@ -449,17 +470,24 @@ public class OSDXFileTransferAdapter {
 					} catch (Exception ex) {
 						ex.printStackTrace();
 						rightsAndDuties = null;
-						errorMsg = getMessageFromContent(dataIn.content);
+						errorObj = dataIn.getError();
+						errorMsgOld = getMessageFromContent(dataIn.content);
+						//OLD: errorMsg = getMessageFromContent(dataIn.content);
 						return false;
 					}
 				} catch (UnsupportedEncodingException ex) {
-					errorMsg = "unsupported encoding";
+					//errorObj = new OSDXError(-1, -1, "unsupported encoding", type);
+					//TODO: How to fix this?
+					errorMsgOld = "unsupported encoding";
+					//OLD: errorMsg = "unsupported encoding";
 					return false;
 				}
 			}
 		};
 		boolean ok = cmd.process("USERPASSLOGIN "+username+"\t"+OSDXFileTransferUserPassLoginCommand.getUserPassAuth(username, password));
-		errorMsg = cmd.errorMsg;
+		errorObj = cmd.errorObj;
+		errorMsgOld = cmd.errorMsgOLD;
+		//OLD: errorMsg = cmd.errorMsg;
 		return ok;
 	}
 
@@ -477,14 +505,16 @@ public class OSDXFileTransferAdapter {
 	public boolean mkdir(String absoluteDirectoryName) {
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut);
 		boolean ok = cmd.process("MKDIR "+absoluteDirectoryName);
-		errorMsg = cmd.errorMsg;
+		errorObj = cmd.errorObj;
+		errorMsgOld = cmd.errorMsgOLD;
+		//OLD: errorMsg = cmd.errorMsg;
 		return ok;
 	}
 	public String getMostRecentErrorMSG() {
-		return errorMsg;
+		return errorMsgOld;
 	}
-	public OSDXErrorCodes getMostRecentError(){
-		return err;
+	public OSDXError getMostRecentError(){
+		return errorObj;
 	}
 //	public Exception getMostRecentException() {
 //		return last_exception;
@@ -493,7 +523,9 @@ public class OSDXFileTransferAdapter {
 	public boolean delete(String absoluteRemoteFilename) {
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut);
 		boolean ok = cmd.process("DELETE "+absoluteRemoteFilename);
-		errorMsg = cmd.errorMsg;
+		errorObj = cmd.errorObj;
+		errorMsgOld = cmd.errorMsgOLD;
+		//OLD: errorMsg = cmd.errorMsg;
 		return ok;
 	}
 
@@ -503,7 +535,9 @@ public class OSDXFileTransferAdapter {
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut);
 
 		boolean ok = cmd.process(command);
-		errorMsg = cmd.errorMsg;
+		errorObj = cmd.errorObj;
+		errorMsgOld = cmd.errorMsgOLD;
+		//OLD: errorMsg = cmd.errorMsg;
 		return ok;
 	}
 
@@ -528,7 +562,9 @@ public class OSDXFileTransferAdapter {
 		};
 
 		boolean ok = cmd.process("LIST "+absoluteDirectoryName);
-		errorMsg = cmd.errorMsg;
+		errorObj = cmd.errorObj;
+		errorMsgOld = cmd.errorMsgOLD;
+		//OLD: errorMsg = cmd.errorMsg;
 		if (!ok) {
 			return null;
 		} else {
@@ -552,7 +588,9 @@ public class OSDXFileTransferAdapter {
 		};
 
 		boolean ok = cmd.process("FILE "+absoluteRemoteFilename);
-		errorMsg = cmd.errorMsg;
+		errorObj = cmd.errorObj;
+		errorMsgOld = cmd.errorMsgOLD;
+		//OLD: errorMsg = cmd.errorMsg;
 		if (!ok) {
 			return null;
 		} else {
@@ -574,13 +612,19 @@ public class OSDXFileTransferAdapter {
 				ret = true;
 			} 
 			else {
-				if(errorMsg==null) {
+				if (errorMsgOld==null || errorObj == null) {
 					System.out.println("ERROR\n");
-				} 
-				else {
-					System.out.println("ERROR: "+errorMsg+"\n");
-				}
-				
+				} else {
+					String tmp = (errorObj != null) ? errorObj.getMessage() : errorMsgOld;
+					System.out.println("ERROR: "+tmp+"\n");
+				}					
+//				OLD
+//				if(errorMsg==null) {
+//					System.out.println("ERROR\n");
+//				} 
+//				else {
+//					System.out.println("ERROR: "+errorMsg+"\n");
+//				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -597,11 +641,18 @@ public class OSDXFileTransferAdapter {
 				System.out.println("Upload/Resume finished.\n");
 				ret = true;
 			} else {
-				if (errorMsg==null) {
+				if (errorMsgOld==null || errorObj == null) {
 					System.out.println("ERROR\n");
 				} else {
-					System.out.println("ERROR: "+errorMsg+"\n");
-				}
+					String tmp = (errorObj != null) ? errorObj.getMessage() : errorMsgOld;
+					System.out.println("ERROR: "+tmp+"\n");
+				}					
+//				OLD
+//				if (errorMsg==null) {
+//					System.out.println("ERROR\n");
+//				} else {
+//					System.out.println("ERROR: "+errorMsg+"\n");
+//				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -618,11 +669,18 @@ public class OSDXFileTransferAdapter {
 				System.out.println("Upload/Resume finished.\n");
 				ret = true;
 			} else {
-				if (errorMsg==null) {
+				if (errorMsgOld==null || errorObj == null) {
 					System.out.println("ERROR\n");
 				} else {
-					System.out.println("ERROR: "+errorMsg+"\n");
-				}
+					String tmp = (errorObj != null) ? errorObj.getMessage() : errorMsgOld;
+					System.out.println("ERROR: "+tmp+"\n");
+				}					
+//				OLD
+//				if (errorMsg==null) {
+//					System.out.println("ERROR\n");
+//				} else {
+//					System.out.println("ERROR: "+errorMsg+"\n");
+//				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -631,7 +689,9 @@ public class OSDXFileTransferAdapter {
 	}
 
 	public boolean uploadOldStyle(File localFile, String absoluteRemoteFilename, boolean resume, ProgressListener pg) throws Exception {
-		errorMsg = null;
+		errorMsgOld = null;
+		errorObj = null;
+		//errorMsg = null;
 		long id = SecureConnection.getID();
 		int num = 0;
 
@@ -725,7 +785,9 @@ public class OSDXFileTransferAdapter {
 								filePos = Long.parseLong(getMessageFromContent(dataIn.content));
 								System.out.println("file pos = "+filePos);
 								if (filePos>=fileLen) {
-									errorMsg = "file position > file length";
+									errorObj = new OSDXError("file position > file length");
+									errorMsgOld = errorObj.getMessage();
+									//OLD: errorMsg = "file position > file length";
 									return false;	
 								}
 								fileIn.skip(filePos);//skip forward to filepos
@@ -735,7 +797,9 @@ public class OSDXFileTransferAdapter {
 								}
 							} catch (Exception ex) {
 								//ex.printStackTrace();
-								errorMsg = "wrong format: file upload resume position not parseable";
+								errorObj = new OSDXError("wrong format: file upload resume position not parseable");
+								errorMsgOld = errorObj.getMessage();
+								//OLD: errorMsg = "wrong format: file upload resume position not parseable";
 								return false;
 							}
 						}
@@ -801,7 +865,9 @@ public class OSDXFileTransferAdapter {
 				} catch (Exception ex) {
 					//ex.printStackTrace();
 				}
-				errorMsg = getMessageFromContent(dataIn.content);
+				errorObj = dataIn.getError();
+				errorMsgOld = (errorObj != null) ? errorObj.getMessage() : getMessageFromContent(dataIn.content);
+				//OLD: errorMsg = getMessageFromContent(dataIn.content);
 				return false;
 			}
 		}
@@ -822,8 +888,9 @@ public class OSDXFileTransferAdapter {
 		// <- ACK_COMPLETE							// -> PUT_EOF [length], [MD5]
 													// <- ACK_COMPLETE
 		
-		
-		errorMsg = null;
+		errorMsgOld = null;
+		errorObj = null;
+		//OLD: errorMsg = null;
 		long id = SecureConnection.getID();
 		int num = 0;
 
@@ -955,7 +1022,9 @@ public class OSDXFileTransferAdapter {
 			} else {
 				//stop upload (if running)
 				transferData = false;
-				errorMsg = getMessageFromContent(dataIn.content);
+				errorObj = dataIn.getError();
+				errorMsgOld = (errorObj != null) ? errorObj.getMessage() : getMessageFromContent(dataIn.content);
+				//OLD: errorMsg = getMessageFromContent(dataIn.content);
 				return false;
 			}
 		}
@@ -978,13 +1047,19 @@ public class OSDXFileTransferAdapter {
 				ret = true;
 			} 
 			else {
-				if(errorMsg==null) {
+				if (errorMsgOld==null || errorObj == null) {
 					System.out.println("ERROR\n");
-				} 
-				else {
-					System.out.println("ERROR: "+errorMsg+"\n");
-				}
-				
+				} else {
+					String tmp = (errorObj != null) ? errorObj.getMessage() : errorMsgOld;
+					System.out.println("ERROR: "+tmp+"\n");
+				}				
+//				OLD
+//				if(errorMsg==null) {
+//					System.out.println("ERROR\n");
+//				} 
+//				else {
+//					System.out.println("ERROR: "+errorMsg+"\n");
+//				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1001,7 +1076,9 @@ public class OSDXFileTransferAdapter {
 													// <- ACK_COMPLETE
 		
 		
-		errorMsg = null;
+		errorMsgOld = null;
+		errorObj = null;
+		//OLD: errorMsg = null;
 		long id = SecureConnection.getID();
 		int num = 0;
 
@@ -1086,7 +1163,9 @@ public class OSDXFileTransferAdapter {
 							byte[] your_md5 = SecurityHelper.HexDecoder.decode(md5String);
 							if (!Arrays.equals(my_md5,your_md5)) {
 								//System.out.println("MD5 check failed for resuming upload");
-								errorMsg = "MD5 check failed for resuming upload";
+								errorObj = new OSDXError("MD5 check failed for resuming upload");
+								errorMsgOld = errorObj.getMessage();
+								//OLD: errorMsg = "MD5 check failed for resuming upload";
 								return false;
 							}
 						}
@@ -1094,7 +1173,9 @@ public class OSDXFileTransferAdapter {
 							//normal put
 						}
 						else {
-							errorMsg = "wrong format: data upload resume position not parseable";
+							errorObj = new OSDXError("wrong format: data upload resume position not parseable");
+							errorMsgOld = errorObj.getMessage();
+							//OLD: errorMsg = "wrong format: data upload resume position not parseable";
 							return false;
 						}
 					}
@@ -1159,7 +1240,9 @@ public class OSDXFileTransferAdapter {
 			} else {
 				//stop upload (if running)
 				transferData = false;
-				errorMsg = getMessageFromContent(dataIn.content);
+				errorObj = dataIn.getError();
+				errorMsgOld = (errorObj != null) ? errorObj.getMessage() : getMessageFromContent(dataIn.content); 
+				//OLD: errorMsg = getMessageFromContent(dataIn.content);
 				return false;
 			}
 		}
@@ -1174,7 +1257,9 @@ public class OSDXFileTransferAdapter {
 	
 
 	public boolean uploadOldStyle(byte[] data, String absoluteRemoteFilename, boolean resume, ProgressListener pg) throws Exception {
-		errorMsg = null;
+		errorObj = null;
+		errorMsgOld = null;
+		//OLD: errorMsg = null;
 		long id = SecureConnection.getID();
 		int num = 0;
 
@@ -1266,7 +1351,9 @@ public class OSDXFileTransferAdapter {
 								dataPos = Long.parseLong(getMessageFromContent(dataIn.content));
 								//System.out.println("data pos = "+dataPos);
 								if (dataPos>=dataLen) {
-									errorMsg = "data position > data length";
+									errorObj = new OSDXError("data position > data length");
+									errorMsgOld = "data position > data length";
+									//OLD: errorMsg = "data position > data length";
 									return false;	
 								}
 								if (pg!=null) {
@@ -1275,7 +1362,9 @@ public class OSDXFileTransferAdapter {
 								}
 							} catch (Exception ex) {
 								//ex.printStackTrace();
-								errorMsg = "wrong format: data upload resume position not parseable";
+								errorObj = new OSDXError("wrong format: data upload resume position not parseable");
+								errorMsgOld = "wrong format: data upload resume position not parseable";
+								//OLD: errorMsg = "wrong format: data upload resume position not parseable";
 								return false;
 							}
 						}
@@ -1326,7 +1415,9 @@ public class OSDXFileTransferAdapter {
 			} else {
 				//stop upload
 				hasNext = false;
-				errorMsg = getMessageFromContent(dataIn.content);
+				errorObj = dataIn.getError();
+				errorMsgOld = (errorObj != null) ? errorObj.getMessage() : getMessageFromContent(dataIn.content);
+				//OLD: errorMsg = getMessageFromContent(dataIn.content);
 				return false;
 			}
 		}
@@ -1363,11 +1454,18 @@ public class OSDXFileTransferAdapter {
 			if (ok) {
 				System.out.println("Download finished.\n");
 			} else {
-				if (errorMsg==null) {
+				if (errorMsgOld==null || errorObj == null) {
 					System.out.println("ERROR\n");
 				} else {
-					System.out.println("ERROR: "+errorMsg+"\n");
+					String tmp = (errorObj != null) ? errorObj.getMessage() : errorMsgOld;
+					System.out.println("ERROR: "+tmp+"\n");
 				}
+//				OLD:
+//				if (errorMsg==null) {
+//					System.out.println("ERROR\n");
+//				} else {
+//					System.out.println("ERROR: "+errorMsg+"\n");
+//				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1375,7 +1473,10 @@ public class OSDXFileTransferAdapter {
 	}
 	
 	public boolean download(String absoluteRemoteFilename, File localFile, boolean resume, ProgressListener pg) throws Exception {
-		errorMsg = null;
+		errorMsgOld = null;
+		errorObj = null;
+		//OLD: errorMsg = null;
+		
 		long id = SecureConnection.getID();
 		int num = 0;
 		
@@ -1450,7 +1551,9 @@ public class OSDXFileTransferAdapter {
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
-							errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
+							errorObj = new OSDXError("Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize");
+							errorMsgOld = errorObj.getMessage();
+							//OLD: errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
 							return false;
 						}
 						else if  (fileLen==filePos) {
@@ -1467,7 +1570,9 @@ public class OSDXFileTransferAdapter {
 									return true;
 								} else {
 									System.out.println("MD5 check FAILD!");
-									errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!";
+									errorObj = new OSDXError("Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!");
+									errorMsgOld = errorObj.getMessage();
+									//OLD: errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!";
 									return false;
 								}
 							} else {
@@ -1515,7 +1620,9 @@ public class OSDXFileTransferAdapter {
 						}
 
 						if (filePos>fileLen) {
-							errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
+							errorObj = new OSDXError("Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize");
+							errorMsgOld = errorObj.getMessage();
+							//OLD: errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
 							//System.out.println("ERROR wrong filesize.");
 							return false;
 						} else {
@@ -1528,7 +1635,9 @@ public class OSDXFileTransferAdapter {
 									return true;
 								} else {
 									System.out.println("MD5 check FAILD!");
-									errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!";
+									errorObj = new OSDXError("Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!");
+									errorMsgOld = errorObj.getMessage();
+									//OLD: errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!";
 									return false;
 								}
 							} else {
@@ -1559,7 +1668,9 @@ public class OSDXFileTransferAdapter {
 				} catch (Exception ex) {
 					//ex.printStackTrace();
 				}
-				errorMsg = getMessageFromContent(dataIn.content);
+				errorObj = dataIn.getError();
+				errorMsgOld = (errorObj != null) ? errorObj.getMessage() : getMessageFromContent(dataIn.content); 
+				//OLD: errorMsg = getMessageFromContent(dataIn.content);
 				return false;
 			}
 		}
@@ -1574,7 +1685,9 @@ public class OSDXFileTransferAdapter {
 	}
 	
 	public boolean download(String absoluteRemoteFilename, OutputStream out, ProgressListener pg) throws Exception {
-		errorMsg = null;
+		errorMsgOld = null;
+		errorObj = null;
+		//OLD: errorMsg = null;
 		long id = SecureConnection.getID();
 		int num = 0;
 		
@@ -1665,7 +1778,9 @@ public class OSDXFileTransferAdapter {
 						}
 
 						if (filePos>fileLen) {
-							errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
+							errorObj = new OSDXError("Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize");
+							errorMsgOld = errorObj.getMessage();
+							//OLD: errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
 							//System.out.println("ERROR wrong filesize.");
 							return false;
 						} 
@@ -1710,7 +1825,9 @@ public class OSDXFileTransferAdapter {
 				} catch (Exception ex) {
 					//ex.printStackTrace();
 				}
-				errorMsg = getMessageFromContent(dataIn.content);
+				errorObj = dataIn.getError();
+				errorMsgOld = (errorObj != null) ? errorObj.getMessage() : getMessageFromContent(dataIn.content); 
+				//OLD: errorMsg = getMessageFromContent(dataIn.content);
 				return false;
 			}
 		}
@@ -1727,7 +1844,9 @@ public class OSDXFileTransferAdapter {
 
 	public void closeConnection() {
 		System.out.println("Closing connection.");
-		errorMsg = null;
+		errorMsgOld = null;
+		errorObj = null;
+		//OLD: errorMsg = null;
 		long id = SecureConnection.getID();
 		String command = "QUIT ";
 		dataOut.setCommand(id, command);
@@ -1847,7 +1966,8 @@ public class OSDXFileTransferAdapter {
 	}
 
 	private class SimpleCommand {
-		public String errorMsg = null;
+		public String errorMsgOLD = null;
+		public OSDXError errorObj = null;
 		//hook in here
 		public boolean onACK() {
 			return true;
@@ -1863,7 +1983,8 @@ public class OSDXFileTransferAdapter {
 
 		public boolean process(String command) {
 			long id = SecureConnection.getID();
-			errorMsg = null; 
+			errorMsgOld = null;
+			//OLD: errorMsg = null; 
 			dataOut.setCommand(id, command);
 			if (DEBUG) {
 				Logger.getFileTransferLogger().logMsg("SEND CMD: "+command);
@@ -1880,7 +2001,9 @@ public class OSDXFileTransferAdapter {
 						return onACK();
 					}
 					else if (SecureConnection.isError(dataIn.type)) {
-						errorMsg = getMessageFromContent(dataIn.content);
+						errorObj = dataIn.getError();
+						errorMsgOld = (errorObj != null) ? errorObj.getMessage() : getMessageFromContent(dataIn.content); 
+						//OLD: errorMsg = getMessageFromContent(dataIn.content);
 						return false;
 					}
 					return false;
@@ -1890,7 +2013,9 @@ public class OSDXFileTransferAdapter {
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				errorMsg = ex.getMessage();
+				errorObj = new OSDXError(ex.getMessage());
+				errorMsgOld = errorObj.getMessage();
+				//OLD: errorMsg = ex.getMessage();
 				return false;
 			}
 		}
