@@ -47,7 +47,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.UnsupportedEncodingException;
 
-import org.fnppl.opensdx.file_transfer.errors.OSDXError;
+import org.fnppl.opensdx.file_transfer.errors.*;
 import org.fnppl.opensdx.file_transfer.helper.FileTransferLog;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
@@ -87,8 +87,8 @@ public class SecureConnection {
 	public int num;
 	public byte type;
 	int len = 0;
-	public byte[] content;
 	public SymmetricKey key;
+	public byte[] content;
 	
 	public BufferedInputStream in;
 	public BufferedOutputStream out;
@@ -180,12 +180,11 @@ public class SecureConnection {
 		this.content = null;
 	}
 
-	//TODO: Hier eine weitere Methode die den Errortype ebenfalls mit gibt! Error
-	public void setError(long id, int num, String message, byte type) {
+	public void setError(long id, int num, String message, OSDXErrorCode errCode) {
 		this.id = id;
 		this.num = num;
-		this.type = type;
-		setContent(message);
+		this.type = TYPE_ERROR;
+		setContent(errCode.getErrorCode() + " " + message);
 	}
 	
 	public void setErrorOLD(long id, int num, String message) {
@@ -333,18 +332,23 @@ public class SecureConnection {
 	}
 	
 	/**
-	 * Generates and returns an OSDXError Object if the SecureConnection has an error.<br>
-	 * Otherwise this will return <b>null</b>. 
+	 * Generates an OSDXError Object if the server returned an error code in the Message
 	 * 
-	 * @return Error Object
-	 * @see OSDXError
+	 * @return OSDXError Object
 	 */
-//	public OSDXError getError(){
-//		if(isError()){
-//			return new OSDXError(id, num, getMessageFromContent(content) , type);
-//		}
-//		return null;
-//	}
+	public OSDXError getError(){
+		if(isError()){
+			String msg = getMessageFromContent(content);
+			OSDXErrorCode errorCode;
+			try{
+				errorCode = OSDXErrorCode.valueOf(msg.substring(0, msg.indexOf(" ")));
+				return new OSDXError(id, num, msg, errorCode);
+			} catch (NumberFormatException nfe) {
+				
+			}
+		}
+		return null;
+	}
 
 	private static byte[] buildPackageHeader(long id, int num, byte type, int length) {
 		byte[] b = new byte[16];

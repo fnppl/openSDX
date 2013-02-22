@@ -599,6 +599,44 @@ public class OSDXException extends Exception{
 		}	
 	}
 	
+	//Programm Errors
+	public class InitSecureUserPassConnectionException extends OSDXException{
+		private static final long serialVersionUID = -936738326425741731L;
+
+		public InitSecureUserPassConnectionException(){};
+		
+		public InitSecureUserPassConnectionException(String msg){
+			super(msg);
+		};
+		
+		public InitSecureUserPassConnectionException(Throwable cause){
+			super(cause);
+		};
+		
+		public InitSecureUserPassConnectionException(String msg, Throwable cause){
+			super(msg, cause);
+		}	
+	}
+	
+	public class SocketNotConnectedException extends OSDXException{
+
+		private static final long serialVersionUID = -7183614070555778351L;
+
+		public SocketNotConnectedException(){};
+		
+		public SocketNotConnectedException(String msg){
+			super(msg);
+		};
+		
+		public SocketNotConnectedException(Throwable cause){
+			super(cause);
+		};
+		
+		public SocketNotConnectedException(String msg, Throwable cause){
+			super(msg, cause);
+		}	
+	}	
+	
 	public OSDXException(){};
 	
 	public OSDXException(String msg){

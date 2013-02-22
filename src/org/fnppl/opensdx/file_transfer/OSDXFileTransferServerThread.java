@@ -61,6 +61,7 @@ import org.fnppl.opensdx.file_transfer.helper.ClientSettings;
 import org.fnppl.opensdx.file_transfer.helper.FileTransferLog;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
+import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCode;
 import org.fnppl.opensdx.file_transfer.trigger.Trigger;
 import org.fnppl.opensdx.file_transfer.trigger.TriggerContext;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
@@ -194,7 +195,7 @@ public class OSDXFileTransferServerThread extends Thread {
 										ok = false;
 									}
 									if (!ok) {
-										data.setError(commandid, num, "md5 check failed", SecureConnection.TYPE_ERROR_MD5_CHECK);
+										data.setError(commandid, num, "md5 check failed", OSDXErrorCode.ERROR_MD5_CHECK);
 										//OLD: data.setError(commandid, num, "md5 check failed");
 										data.sendPackage();
 									}
@@ -204,7 +205,7 @@ public class OSDXFileTransferServerThread extends Thread {
 									data.sendPackage();
 								}
 							} else {
-								data.setError(commandid, num, "wrong filesize", SecureConnection.TYPE_ERROR_WRONG_FILESIZE);
+								data.setError(commandid, num, "wrong filesize", OSDXErrorCode.ERROR_WRONG_FILESIZE);
 								//OLD: data.setError(commandid, num, "wrong filesize");
 								data.sendPackage();
 							}
@@ -378,14 +379,14 @@ public class OSDXFileTransferServerThread extends Thread {
 			}
 			else {
 				//login failed
-				data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED", SecureConnection.TYPE_ERROR_LOGIN_ACCESS_DENIED);
+				data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED", OSDXErrorCode.ERROR_LOGIN_ACCESS_DENIED);
 				//OLD: data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: ACCESS DENIED");
 			}
 		} else {
 			//login failed
-			data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME", SecureConnection.TYPE_ERROR_LOGIN_USERNAME_MISSING);
+			data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME", OSDXErrorCode.ERROR_LOGIN_USERNAME_MISSING);
 			//OLD: data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: MISSING USERNAME");
@@ -417,14 +418,14 @@ public class OSDXFileTransferServerThread extends Thread {
 			}
 			else {
 				//login failed
-				data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED", SecureConnection.TYPE_ERROR_LOGIN_ACCESS_DENIED);
+				data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED", OSDXErrorCode.ERROR_LOGIN_ACCESS_DENIED);
 				//OLD: data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: ACCESS DENIED");
 			}
 		} else {
 			//login failed
-			data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME", SecureConnection.TYPE_ERROR_LOGIN_USERNAME_MISSING);
+			data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME", OSDXErrorCode.ERROR_LOGIN_USERNAME_MISSING);
 			//OLD: data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: MISSING USERNAME");
@@ -439,20 +440,20 @@ public class OSDXFileTransferServerThread extends Thread {
 				path = new File(cs.getLocalRootPath()+param);
 				
 				if (!cs.isAllowed(path)) {
-					data.setError(commandid, num, "restricted path", SecureConnection.TYPE_ERROR_PATH_IS_RESTRICTED);
+					data.setError(commandid, num, "restricted path", OSDXErrorCode.ERROR_PATH_IS_RESTRICTED);
 					//OLD: data.setError(commandid, num, "restricted path");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "MKDIR", param, "restricted path");
 				}
 				else if (path.exists()) {
-					data.setError(commandid, num, "path already exists", SecureConnection.TYPE_ERROR_PATH_ALREADY_EXISTS);
+					data.setError(commandid, num, "path already exists", OSDXErrorCode.ERROR_PATH_ALREADY_EXISTS);
 					//OLD: data.setError(commandid, num, "path already exists");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "MKDIR", param, "path already exists");
 				}
 				else if (!cs.isAllowedDepthDir(path)) {
 					String msg = "max directory depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth();
-					data.setError(commandid, num, msg, SecureConnection.TYPE_ERROR_DIRECTORY_DEPTH);
+					data.setError(commandid, num, msg, OSDXErrorCode.ERROR_DIRECTORY_DEPTH);
 					//OLD: data.setError(commandid, num, msg);
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "MKDIR", param, msg);
@@ -469,20 +470,20 @@ public class OSDXFileTransferServerThread extends Thread {
 						context.put(TriggerContext.RELATED_FILENAME,path.getAbsolutePath());
 						cs.triggerEvent(Trigger.TRIGGER_MKDIR,context);
 					} else {
-						data.setError(commandid, num, "error in mkdir", SecureConnection.TYPE_ERROR_MKDIR);
+						data.setError(commandid, num, "error in mkdir", OSDXErrorCode.ERROR_MKDIR);
 						//OLD: data.setError(commandid, num, "error in mkdir");
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "MKDIR", param, "error in mkdir");
 					}
 				}
 			} else {
-				data.setError(commandid, num, "path must be absolute", SecureConnection.TYPE_ERROR_PATH_IS_NOT_ABSOLUTE);
+				data.setError(commandid, num, "path must be absolute", OSDXErrorCode.ERROR_PATH_IS_NOT_ABSOLUTE);
 				//OLD: data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "MKDIR", param, "path must be absolute");
 			}
 		} else {
-			data.setError(commandid, num, "missing path parameter", SecureConnection.TYPE_ERROR_PATH_IS_MISSING);
+			data.setError(commandid, num, "missing path parameter", OSDXErrorCode.ERROR_PATH_IS_MISSING);
 			//OLD: data.setError(commandid, num, "missing path parameter");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "MKDIR", param, "missing path parameter");
@@ -498,13 +499,13 @@ public class OSDXFileTransferServerThread extends Thread {
 				file = new File(cs.getLocalRootPath()+param);
 				
 				if (!cs.isAllowed(file)) {
-					data.setError(commandid, num, "restricted file", SecureConnection.TYPE_ERROR_FILE_RESTRICTED);
+					data.setError(commandid, num, "restricted file", OSDXErrorCode.ERROR_FILE_RESTRICTED);
 					//OLD: data.setError(commandid, num, "restricted file");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "DELETE", param, "restricted file");
 				}
 				else if (!file.exists()) {
-					data.setError(commandid, num, "file does not exist", SecureConnection.TYPE_ERROR_FILE_NOT_EXISTS);
+					data.setError(commandid, num, "file does not exist", OSDXErrorCode.ERROR_FILE_NOT_EXISTS);
 					//OLD: data.setError(commandid, num, "file does not exist");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "DELETE", param, "file does not exist");
@@ -524,7 +525,7 @@ public class OSDXFileTransferServerThread extends Thread {
 							context.put(TriggerContext.RELATED_FILENAME,file.getAbsolutePath());
 							cs.triggerEvent(Trigger.TRIGGER_DELETE, context);
 						} else {
-							data.setError(commandid, num, "directory \""+param+"\" could not be deleted", SecureConnection.TYPE_ERROR_CANNOT_DELETE_DIR);
+							data.setError(commandid, num, "directory \""+param+"\" could not be deleted", OSDXErrorCode.ERROR_CANNOT_DELETE_DIR);
 							//OLD: data.setError(commandid, num, "directory \""+param+"\" could not be deleted");
 							data.sendPackage();
 							server.log.logCommand(clientID, addr, "DELETE", param, "directory \""+param+"\" could not be deleted");
@@ -542,7 +543,7 @@ public class OSDXFileTransferServerThread extends Thread {
 							context.put(TriggerContext.RELATED_FILENAME,file.getAbsolutePath());
 							cs.triggerEvent(Trigger.TRIGGER_DELETE, context);
 						} else {
-							data.setError(commandid, num, "file \""+param+"\" could not be deleted", SecureConnection.TYPE_ERROR_CANNOT_DELETE_FILE);
+							data.setError(commandid, num, "file \""+param+"\" could not be deleted", OSDXErrorCode.ERROR_CANNOT_DELETE_FILE);
 							//OLD: data.setError(commandid, num, "file \""+param+"\" could not be deleted");
 							data.sendPackage();
 							server.log.logCommand(clientID, addr, "DELETE", param,"file \""+param+"\" could not be deleted");
@@ -550,13 +551,13 @@ public class OSDXFileTransferServerThread extends Thread {
 					}
 				}
 			}  else {
-				data.setError(commandid, num, "path must be absolute", SecureConnection.TYPE_ERROR_PATH_IS_NOT_ABSOLUTE);
+				data.setError(commandid, num, "path must be absolute", OSDXErrorCode.ERROR_PATH_IS_NOT_ABSOLUTE);
 				//OLD: data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "DELETE", param, "path must be absolute");
 			}
 		} else {
-			data.setError(commandid, num, "missing path/file parameter", SecureConnection.TYPE_ERROR_PATH_IS_MISSING);
+			data.setError(commandid, num, "missing path/file parameter", OSDXErrorCode.ERROR_PATH_IS_MISSING);
 			//OLD: data.setError(commandid, num, "missing path/file parameter");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "DELETE", param, "missing path/file parameter");
@@ -588,7 +589,7 @@ public class OSDXFileTransferServerThread extends Thread {
 			String[] p = Util.getParams(param);
 			if (p.length==2) {
 				if (p[1].contains("/") || p[1].contains("\\")) {
-					data.setError(commandid, num, "wrong destination filename", SecureConnection.TYPE_ERROR_WRONG_DESTINATION);
+					data.setError(commandid, num, "wrong destination filename", OSDXErrorCode.ERROR_WRONG_DESTINATION);
 					//OLD: data.setError(commandid, num, "wrong destination filename");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "RENAME", param, "wrong destination filename" );
@@ -598,13 +599,13 @@ public class OSDXFileTransferServerThread extends Thread {
 						file = new File(cs.getLocalRootPath()+p[0]);
 						
 						if (!cs.isAllowed(file)) {
-							data.setError(commandid, num, "restricted file", SecureConnection.TYPE_ERROR_FILE_RESTRICTED);
+							data.setError(commandid, num, "restricted file", OSDXErrorCode.ERROR_FILE_RESTRICTED);
 							//OLD: data.setError(commandid, num, "restricted file");
 							data.sendPackage();
 							server.log.logCommand(clientID, addr, "RENAME", param, "restricted file");
 						}
 						else if (!file.exists()) {
-							data.setError(commandid, num, "file does not exist", SecureConnection.TYPE_ERROR_FILE_NOT_EXISTS);
+							data.setError(commandid, num, "file does not exist", OSDXErrorCode.ERROR_FILE_NOT_EXISTS);
 							//OLD: data.setError(commandid, num, "file does not exist");
 							data.sendPackage();
 							server.log.logCommand(clientID, addr, "RENAME", param, "file does not exist");
@@ -612,13 +613,13 @@ public class OSDXFileTransferServerThread extends Thread {
 							//init destination file
 							File dest = new File(file.getParentFile(),p[1]);
 							if (!cs.isAllowed(file)) {
-								data.setError(commandid, num, "restricted destination file", SecureConnection.TYPE_ERROR_FILE_RESTRICTED);
+								data.setError(commandid, num, "restricted destination file", OSDXErrorCode.ERROR_FILE_RESTRICTED);
 								//OLD: data.setError(commandid, num, "restricted destination file");
 								data.sendPackage();
 								server.log.logCommand(clientID, addr, "RENAME", param, "restricted destination file");
 							}
 							else if (dest.exists()) {
-								data.setError(commandid, num, "destination file already exists", SecureConnection.TYPE_ERROR_FILE_ALREADY_EXISTS);
+								data.setError(commandid, num, "destination file already exists", OSDXErrorCode.ERROR_FILE_ALREADY_EXISTS);
 								//OLD: data.setError(commandid, num, "destination file already exists");
 								data.sendPackage();
 								server.log.logCommand(clientID, addr, "RENAME", param, "destination file already exists");
@@ -639,7 +640,7 @@ public class OSDXFileTransferServerThread extends Thread {
 									context.put(TriggerContext.RELATED_FILENAME,file.getAbsolutePath());
 									cs.triggerEvent(Trigger.TRIGGER_RENAME, context);
 								} else {
-									data.setError(commandid, num, "file \""+p[0]+"\" could not be renamed to "+p[1], SecureConnection.TYPE_ERROR_CANNOT_RENAME);
+									data.setError(commandid, num, "file \""+p[0]+"\" could not be renamed to "+p[1], OSDXErrorCode.ERROR_CANNOT_RENAME);
 									//OLD: data.setError(commandid, num, "file \""+p[0]+"\" could not be renamed to "+p[1]);
 									data.sendPackage();
 									server.log.logCommand(clientID, addr, "RENAME", param, "file \""+p[0]+"\" could not be renamed to "+p[1]);
@@ -647,20 +648,20 @@ public class OSDXFileTransferServerThread extends Thread {
 							}
 						}
 					}  else {
-						data.setError(commandid, num, "path must be absolute", SecureConnection.TYPE_ERROR_PATH_IS_NOT_ABSOLUTE);
+						data.setError(commandid, num, "path must be absolute", OSDXErrorCode.ERROR_PATH_IS_NOT_ABSOLUTE);
 						//OLD: data.setError(commandid, num, "path must be absolute");
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "RENAME", param, "path must be absolute");
 					}
 				}
 			} else {
-				data.setError(commandid, num, "missing destination filename parameter", SecureConnection.TYPE_ERROR_FILENAME_IS_MISSING);
+				data.setError(commandid, num, "missing destination filename parameter", OSDXErrorCode.ERROR_FILENAME_IS_MISSING);
 				//OLD: data.setError(commandid, num, "missing destination filename parameter");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "RENAME", param, "missing destination filename parameter");
 			}
 		} else {
-			data.setError(commandid, num, "missing path/file parameter", SecureConnection.TYPE_ERROR_PATH_IS_MISSING);
+			data.setError(commandid, num, "missing path/file parameter", OSDXErrorCode.ERROR_PATH_IS_MISSING);
 			//OLD: data.setError(commandid, num, "missing path/file parameter");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "RENAME", param,"missing path/file parameter" );
@@ -676,13 +677,13 @@ public class OSDXFileTransferServerThread extends Thread {
 				file = new File(cs.getLocalRootPath()+param);
 				
 				if (!cs.isAllowed(file)) {
-					data.setError(commandid, num, "restricted file", SecureConnection.TYPE_ERROR_FILE_RESTRICTED);
+					data.setError(commandid, num, "restricted file", OSDXErrorCode.ERROR_FILE_RESTRICTED);
 					//OLD: data.setError(commandid, num, "restricted file");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "FILE", param, "restricted file");
 				}
 				else if (!file.exists()) {
-					data.setError(commandid, num, "file does not exist", SecureConnection.TYPE_ERROR_FILE_NOT_EXISTS);
+					data.setError(commandid, num, "file does not exist", OSDXErrorCode.ERROR_FILE_NOT_EXISTS);
 					//OLD: data.setError(commandid, num, "file does not exist");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "FILE", param, "file does not exist" );
@@ -694,20 +695,20 @@ public class OSDXFileTransferServerThread extends Thread {
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "FILE", param, "ACK + file info");
 					} else {
-						data.setError(commandid, num, "error retrieving file information", SecureConnection.TYPE_ERROR_RETRIEVING_FILE_INFO);
+						data.setError(commandid, num, "error retrieving file information", OSDXErrorCode.ERROR_RETRIEVING_FILE_INFO);
 						//OLD: data.setError(commandid, num, "error retrieving file information");
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "FILE", param, "error retrieving file information" );
 					}
 				}
 			}  else {
-				data.setError(commandid, num, "path must be absolute", SecureConnection.TYPE_ERROR_PATH_IS_NOT_ABSOLUTE);
+				data.setError(commandid, num, "path must be absolute", OSDXErrorCode.ERROR_PATH_IS_NOT_ABSOLUTE);
 				//OLD: data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "FILE", param, "path must be absolute" );
 			}
 		} else {
-			data.setError(commandid, num, "missing path/file parameter", SecureConnection.TYPE_ERROR_PATH_IS_MISSING);
+			data.setError(commandid, num, "missing path/file parameter", OSDXErrorCode.ERROR_PATH_IS_MISSING);
 			//OLD: data.setError(commandid, num, "missing path/file parameter");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "FILE", param, "missing path/file parameter"  );
@@ -721,19 +722,19 @@ public class OSDXFileTransferServerThread extends Thread {
 			if (param.startsWith("/")) {
 				file = new File(cs.getLocalRootPath()+param);
 				if (!cs.isAllowed(file)) {
-					data.setError(commandid, num, "restricted file", SecureConnection.TYPE_ERROR_FILE_RESTRICTED);
+					data.setError(commandid, num, "restricted file", OSDXErrorCode.ERROR_FILE_RESTRICTED);
 					//OLD: data.setError(commandid, num, "restricted file");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "LIST", param, "restricted file");
 				}
 				else if (!file.exists()) {
-					data.setError(commandid, num, "directory does not exist", SecureConnection.TYPE_ERROR_DIRECTORY_NOT_EXISTS);
+					data.setError(commandid, num, "directory does not exist", OSDXErrorCode.ERROR_DIRECTORY_NOT_EXISTS);
 					//OLD: data.setError(commandid, num, "directory does not exist");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "LIST", param, "directory does not exist");
 				}
 				else if (!file.isDirectory()) {
-					data.setError(commandid, num, "this is not a directory", SecureConnection.TYPE_ERROR_NOT_A_DIRECTORY);
+					data.setError(commandid, num, "this is not a directory", OSDXErrorCode.ERROR_NOT_A_DIRECTORY);
 					//OLD: data.setError(commandid, num, "this is not a directory");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "LIST", param, "this is not a directory");
@@ -754,13 +755,13 @@ public class OSDXFileTransferServerThread extends Thread {
 					server.log.logCommand(clientID, addr, "LIST", param, "ACK + list of files");
 				}
 			} else {
-				data.setError(commandid, num, "path must be absolute", SecureConnection.TYPE_ERROR_PATH_IS_NOT_ABSOLUTE);
+				data.setError(commandid, num, "path must be absolute", OSDXErrorCode.ERROR_PATH_IS_NOT_ABSOLUTE);
 				//OLD: data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "LIST", param, "path must be absolute");
 			}
 		} else {
-			data.setError(commandid, num, "missing path parameter", SecureConnection.TYPE_ERROR_PATH_IS_MISSING);
+			data.setError(commandid, num, "missing path parameter", OSDXErrorCode.ERROR_PATH_IS_MISSING);
 			//OLD: data.setError(commandid, num, "missing path parameter");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "LIST", param, "missing path parameter");
@@ -857,7 +858,7 @@ public class OSDXFileTransferServerThread extends Thread {
 		if (param!=null) {
 			String[] p = Util.getParams(param);
 			if (p.length<=0) {
-				data.setError(commandid, num, "missing path/file parameter", SecureConnection.TYPE_ERROR_PATH_IS_MISSING);
+				data.setError(commandid, num, "missing path/file parameter", OSDXErrorCode.ERROR_PATH_IS_MISSING);
 				//OLD: data.setError(commandid, num, "missing path/file parameter");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "PUT", param, "missing path/file parameter");
@@ -873,7 +874,7 @@ public class OSDXFileTransferServerThread extends Thread {
 					length = Long.parseLong(p[1]);
 				} catch (Exception ex) {}
 				if (length<0) {
-					data.setError(commandid, num, "missing or wrong file length parameter", SecureConnection.TYPE_ERROR_FILE_LENGTH_PARAM);
+					data.setError(commandid, num, "missing or wrong file length parameter", OSDXErrorCode.ERROR_FILE_LENGTH_PARAM);
 					//OLDdata.setError(commandid, num, "missing or wrong file length parameter");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "PUT", param, "missing or wrong file length parameter");
@@ -884,20 +885,20 @@ public class OSDXFileTransferServerThread extends Thread {
 			if (p[0].startsWith("/")) {
 				file = new File(cs.getLocalRootPath()+p[0]);
 				if (!cs.isAllowed(file)) {
-					data.setError(commandid, num, "restricted file", SecureConnection.TYPE_ERROR_FILE_RESTRICTED);
+					data.setError(commandid, num, "restricted file", OSDXErrorCode.ERROR_FILE_RESTRICTED);
 					//OLD: data.setError(commandid, num, "restricted file");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "PUT", param, "restricted file");
 				}
 				else if (file.exists()) {
-					data.setError(commandid, num, "file already exists", SecureConnection.TYPE_ERROR_FILE_ALREADY_EXISTS);
+					data.setError(commandid, num, "file already exists", OSDXErrorCode.ERROR_FILE_ALREADY_EXISTS);
 					//OLD: data.setError(commandid, num, "file already exists");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "PUT", param, "file already exists");
 				}
 				else if (!cs.isAllowedDepthFile(file)) {
 					String msg = "max directory depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth();
-					data.setError(commandid, num, msg, SecureConnection.TYPE_ERROR_DIRECTORY_DEPTH);
+					data.setError(commandid, num, msg, OSDXErrorCode.ERROR_DIRECTORY_DEPTH);
 					//OLD: data.setError(commandid, num, msg);
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "PUT", param, msg);
@@ -949,7 +950,7 @@ public class OSDXFileTransferServerThread extends Thread {
 					}
 				}
 			} else {
-				data.setError(commandid, num, "path must be absolute", SecureConnection.TYPE_ERROR_PATH_IS_NOT_ABSOLUTE);
+				data.setError(commandid, num, "path must be absolute", OSDXErrorCode.ERROR_PATH_IS_NOT_ABSOLUTE);
 				//OLD: data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "PUT", param, "path must be absolute");
@@ -969,7 +970,7 @@ public class OSDXFileTransferServerThread extends Thread {
 			try {
 				length = Long.parseLong(p[0]);
 			} catch (Exception ex) {
-				data.setError(commandid, num, "missing or wrong file length parameter", SecureConnection.TYPE_ERROR_FILE_LENGTH_PARAM);
+				data.setError(commandid, num, "missing or wrong file length parameter", OSDXErrorCode.ERROR_FILE_LENGTH_PARAM);
 				//OLDdata.setError(commandid, num, "missing or wrong file length parameter");
 				server.log.logCommand(clientID, addr, "PUT_EOF", param, "missing or wrong file length parameter");
 				data.sendPackage();
@@ -992,7 +993,7 @@ public class OSDXFileTransferServerThread extends Thread {
 			}
 			if (length>0) {	
 				if (upload.file.length()!=length) {
-					data.setError(commandid, num, "wrong filesize :: is="+upload.file.length()+", given="+length, SecureConnection.TYPE_ERROR_WRONG_FILESIZE);
+					data.setError(commandid, num, "wrong filesize :: is="+upload.file.length()+", given="+length, OSDXErrorCode.ERROR_WRONG_FILESIZE);
 					//OLD: data.setError(commandid, num, "wrong filesize :: is="+upload.file.length()+", given="+length);
 					server.log.logCommand(clientID, addr, "PUT_EOF", param, "wrong filesize :: is="+upload.file.length()+", given="+length);
 					data.sendPackage();
@@ -1024,7 +1025,7 @@ public class OSDXFileTransferServerThread extends Thread {
 						ok = false;
 					}
 					if (!ok) {
-						data.setError(commandid, num, "md5 check failed", SecureConnection.TYPE_ERROR_MD5_CHECK);
+						data.setError(commandid, num, "md5 check failed", OSDXErrorCode.ERROR_MD5_CHECK);
 						//OLD: data.setError(commandid, num, "md5 check failed");
 						data.sendPackage();
 					}
@@ -1037,7 +1038,7 @@ public class OSDXFileTransferServerThread extends Thread {
 				return;
 			}
 		} else {
-			data.setError(commandid, num, "PUT_EOF :: no matching open stream id = "+commandid, SecureConnection.TYPE_ERROR_UPLOAD_IS_NULL);
+			data.setError(commandid, num, "PUT_EOF :: no matching open stream id = "+commandid, OSDXErrorCode.ERROR_UPLOAD_IS_NULL);
 			//OLD: data.setError(commandid, num, "PUT_EOF :: no matching open stream id = "+commandid);
 			server.log.logCommand(clientID, addr, "PUT_EOF", param,  "no matching open stream id = "+commandid);
 			data.sendPackage();
@@ -1068,12 +1069,12 @@ public class OSDXFileTransferServerThread extends Thread {
 				data.setAck(commandid, num);
 				data.sendPackage();
 			} else {
-				data.setError(commandid, num, "PUT_CANCEL :: canceling upload not possible", SecureConnection.TYPE_ERROR_UPLOAD_CANCEL);
+				data.setError(commandid, num, "PUT_CANCEL :: canceling upload not possible", OSDXErrorCode.ERROR_UPLOAD_CANCEL);
 				//OLD: data.setError(commandid, num, "PUT_CANCEL :: canceling upload not possible");
 				data.sendPackage();
 			}
 		} else {
-			data.setError(commandid, num, "PUT_CANCEL :: no matching open stream id = "+commandid, SecureConnection.TYPE_ERROR_UPLOAD_IS_NULL);
+			data.setError(commandid, num, "PUT_CANCEL :: no matching open stream id = "+commandid, OSDXErrorCode.ERROR_UPLOAD_IS_NULL);
 			//OLD: data.setError(commandid, num, "PUT_CANCEL :: no matching open stream id = "+commandid);			
 			data.sendPackage();
 		}
@@ -1090,12 +1091,12 @@ public class OSDXFileTransferServerThread extends Thread {
 				data.setAck(commandid, num);
 				data.sendPackage();
 			} else {
-				data.setError(commandid, num, "PUT_BREAK :: halting upload not possible", SecureConnection.TYPE_ERROR_UPLOAD_HALT);
+				data.setError(commandid, num, "PUT_BREAK :: halting upload not possible", OSDXErrorCode.ERROR_UPLOAD_HALT);
 				//OLD: data.setError(commandid, num, "PUT_BREAK :: halting upload not possible");
 				data.sendPackage();
 			}
 		} else {
-			data.setError(commandid, num, "PUT_BREAK :: no matching open stream id = "+commandid, SecureConnection.TYPE_ERROR_UPLOAD_IS_NULL);
+			data.setError(commandid, num, "PUT_BREAK :: no matching open stream id = "+commandid, OSDXErrorCode.ERROR_UPLOAD_IS_NULL);
 			//OLD: data.setError(commandid, num, "PUT_BREAK :: no matching open stream id = "+commandid);			
 			data.sendPackage();
 		}
@@ -1112,7 +1113,7 @@ public class OSDXFileTransferServerThread extends Thread {
 		if (param!=null) {
 			String[] p = Util.getParams(param);
 			if (p.length<=0) {
-				data.setError(commandid, num, "missing path/file parameter", SecureConnection.TYPE_ERROR_PATH_IS_MISSING);
+				data.setError(commandid, num, "missing path/file parameter", OSDXErrorCode.ERROR_PATH_IS_MISSING);
 				//OLD: data.setError(commandid, num, "missing path/file parameter");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "PUT_RESUME", param, "missing path/file parameter");
@@ -1124,14 +1125,14 @@ public class OSDXFileTransferServerThread extends Thread {
 			if (p[0].startsWith("/")) {
 				file = new File(cs.getLocalRootPath()+p[0]);
 				if (!cs.isAllowed(file)) {
-					data.setError(commandid, num, "restricted file", SecureConnection.TYPE_ERROR_FILE_RESTRICTED);
+					data.setError(commandid, num, "restricted file", OSDXErrorCode.ERROR_FILE_RESTRICTED);
 					//OLD: data.setError(commandid, num, "restricted file");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "PUT_RESUME", param, "restricted file");
 				}
 				else if (!cs.isAllowedDepthFile(file)) {
 					String msg = "max directory depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth();
-					data.setError(commandid, num, msg, SecureConnection.TYPE_ERROR_DIRECTORY_DEPTH);
+					data.setError(commandid, num, msg, OSDXErrorCode.ERROR_DIRECTORY_DEPTH);
 					//OLD: data.setError(commandid, num, msg);
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "PUT_RESUME", param, msg);
@@ -1186,7 +1187,7 @@ public class OSDXFileTransferServerThread extends Thread {
 					
 				}
 			} else {
-				data.setError(commandid, num, "path must be absolute", SecureConnection.TYPE_ERROR_PATH_IS_NOT_ABSOLUTE);
+				data.setError(commandid, num, "path must be absolute", OSDXErrorCode.ERROR_PATH_IS_NOT_ABSOLUTE);
 				//OLD: data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "PUT", param, "path must be absolute");
@@ -1255,7 +1256,7 @@ public class OSDXFileTransferServerThread extends Thread {
 				length = Long.parseLong(p[1]);
 			} catch (Exception ex) {}
 			if (length<0) {
-				data.setError(commandid, num, "missing or wrong file length parameter", SecureConnection.TYPE_ERROR_FILE_LENGTH_PARAM);
+				data.setError(commandid, num, "missing or wrong file length parameter", OSDXErrorCode.ERROR_FILE_LENGTH_PARAM);
 				//OLD: data.setError(commandid, num, "missing or wrong file length parameter");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "RESUMEPUT", param, "missing or wrong file length parameter");
@@ -1263,14 +1264,14 @@ public class OSDXFileTransferServerThread extends Thread {
 				if (p[0].startsWith("/")) {
 					file = new File(cs.getLocalRootPath()+p[0]);
 					if (!cs.isAllowed(file)) {
-						data.setError(commandid, num, "restricted file", SecureConnection.TYPE_ERROR_FILE_RESTRICTED);
+						data.setError(commandid, num, "restricted file", OSDXErrorCode.ERROR_FILE_RESTRICTED);
 						//OLD: data.setError(commandid, num, "restricted file");
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "RESUMEPUT", param, "restricted file");
 					}
 					else if (!cs.isAllowedDepthFile(file)) {
 						String msg = "max directory depth = "+cs.getRightsAndDuties().getMaxDirectoryDepth();
-						data.setError(commandid, num, msg, SecureConnection.TYPE_ERROR_DIRECTORY_DEPTH);
+						data.setError(commandid, num, msg, OSDXErrorCode.ERROR_DIRECTORY_DEPTH);
 						//OLD: data.setError(commandid, num, msg);
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "RESUMEPUT", param, msg);
@@ -1350,7 +1351,7 @@ public class OSDXFileTransferServerThread extends Thread {
 						}
 					}
 				} else {
-					data.setError(commandid, num, "path must be absolute", SecureConnection.TYPE_ERROR_PATH_IS_NOT_ABSOLUTE);
+					data.setError(commandid, num, "path must be absolute", OSDXErrorCode.ERROR_PATH_IS_NOT_ABSOLUTE);
 					//OLD: data.setError(commandid, num, "path must be absolute");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "RESUMEPUT", param, "path must be absolute");
@@ -1368,19 +1369,19 @@ public class OSDXFileTransferServerThread extends Thread {
 				file = new File(cs.getLocalRootPath()+param);
 				
 				if (!cs.isAllowed(file)) {
-					data.setError(commandid, num, "restricted file", SecureConnection.TYPE_ERROR_FILE_RESTRICTED);
+					data.setError(commandid, num, "restricted file", OSDXErrorCode.ERROR_FILE_RESTRICTED);
 					//OLD: data.setError(commandid, num, "restricted file");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "GET", param, "restricted file");
 				}
 				else if (!file.exists()) {
-					data.setError(commandid, num, "file does not exist", SecureConnection.TYPE_ERROR_FILE_NOT_EXISTS);
+					data.setError(commandid, num, "file does not exist", OSDXErrorCode.ERROR_FILE_NOT_EXISTS);
 					//OLD: data.setError(commandid, num, "file does not exist");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "GET", param, "file does not exist");
 				}
 				else if (file.isDirectory()) {
-					data.setError(commandid, num, "directory download not implemented", SecureConnection.TYPE_ERROR_DIRECTORY_DOWNLOAD_NOT_IMPLEMENTED);
+					data.setError(commandid, num, "directory download not implemented", OSDXErrorCode.ERROR_DIRECTORY_DOWNLOAD_NOT_IMPLEMENTED);
 					//OLD: data.setError(commandid, num, "directory download not implemented");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "GET", param, "directory download not implemented");
@@ -1435,13 +1436,13 @@ public class OSDXFileTransferServerThread extends Thread {
 					cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_END, context);
 				}
 			} else {
-				data.setError(commandid, num, "path must be absolute", SecureConnection.TYPE_ERROR_PATH_IS_NOT_ABSOLUTE);
+				data.setError(commandid, num, "path must be absolute", OSDXErrorCode.ERROR_PATH_IS_NOT_ABSOLUTE);
 				//OLD: data.setError(commandid, num, "path must be absolute");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "GET", param, "path must be absolute");
 			}
 		} else {
-			data.setError(commandid, num, "missing path/file parameter", SecureConnection.TYPE_ERROR_PATH_IS_MISSING);
+			data.setError(commandid, num, "missing path/file parameter", OSDXErrorCode.ERROR_PATH_IS_MISSING);
 			//OLD: data.setError(commandid, num, "missing path/file parameter");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "GET", param, "missing path/file parameter");
@@ -1459,7 +1460,7 @@ public class OSDXFileTransferServerThread extends Thread {
 				length = Long.parseLong(p[1]);
 			} catch (Exception ex) {}
 			if (length<0) {
-				data.setError(commandid, num, "missing or wrong file length parameter", SecureConnection.TYPE_ERROR_FILE_LENGTH_PARAM);
+				data.setError(commandid, num, "missing or wrong file length parameter", OSDXErrorCode.ERROR_FILE_LENGTH_PARAM);
 				//OLDdata.setError(commandid, num, "missing or wrong file length parameter");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "RESUMEGET", param, "missing or wrong file length parameter");
@@ -1468,19 +1469,19 @@ public class OSDXFileTransferServerThread extends Thread {
 					file = new File(cs.getLocalRootPath()+p[0]);
 					
 					if (!cs.isAllowed(file)) {
-						data.setError(commandid, num, "restricted file", SecureConnection.TYPE_ERROR_FILE_RESTRICTED);
+						data.setError(commandid, num, "restricted file", OSDXErrorCode.ERROR_FILE_RESTRICTED);
 						//OLD: data.setError(commandid, num, "restricted file");
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "RESUMEGET", param, "restricted file");
 					}
 					else if (!file.exists()) {
-						data.setError(commandid, num, "file does not exist", SecureConnection.TYPE_ERROR_FILE_NOT_EXISTS);
+						data.setError(commandid, num, "file does not exist", OSDXErrorCode.ERROR_FILE_NOT_EXISTS);
 						//OLD:data.setError(commandid, num, "file does not exist");
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "RESUMEGET", param, "file does not exist");
 					}
 					else if (file.isDirectory()) {
-						data.setError(commandid, num, "directory download not implemented", SecureConnection.TYPE_ERROR_DIRECTORY_DOWNLOAD_NOT_IMPLEMENTED);
+						data.setError(commandid, num, "directory download not implemented", OSDXErrorCode.ERROR_DIRECTORY_DOWNLOAD_NOT_IMPLEMENTED);
 						//OLD: data.setError(commandid, num, "directory download not implemented");
 						data.sendPackage();
 						server.log.logCommand(clientID, addr, "RESUMEGET", param, "directory download not implemented");
@@ -1536,14 +1537,14 @@ public class OSDXFileTransferServerThread extends Thread {
 						cs.triggerEvent(Trigger.TRIGGER_DOWNLOAD_END, context);
 					}
 				} else {
-					data.setError(commandid, num, "path must be absolute", SecureConnection.TYPE_ERROR_PATH_IS_NOT_ABSOLUTE);
+					data.setError(commandid, num, "path must be absolute", OSDXErrorCode.ERROR_PATH_IS_NOT_ABSOLUTE);
 					//OLD: data.setError(commandid, num, "path must be absolute");
 					data.sendPackage();
 					server.log.logCommand(clientID, addr, "RESUMEGET", param, "path must be absolute");
 				}
 			}
 		} else {
-			data.setError(commandid, num, "missing path/file parameter", SecureConnection.TYPE_ERROR_PATH_IS_MISSING);
+			data.setError(commandid, num, "missing path/file parameter", OSDXErrorCode.ERROR_PATH_IS_MISSING);
 			//OLD: data.setError(commandid, num, "missing path/file parameter");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "RESUMEGET", param,"missing path/file parameter" );
@@ -1562,7 +1563,7 @@ public class OSDXFileTransferServerThread extends Thread {
 	
 	private boolean ensureAllowed(int rightType, long id, int num, String msg) throws Exception {
 		if (cs==null || cs.getRightsAndDuties()==null || !cs.getRightsAndDuties().hasRight(rightType)) {
-			data.setError(id, num, msg, SecureConnection.TYPE_ERROR_RIGHTS_AND_DUTIES);
+			data.setError(id, num, msg, OSDXErrorCode.ERROR_RIGHTS_AND_DUTIES);
 			//OLD: data.setError(id, num, msg);
 			data.sendPackage();
 			return false;

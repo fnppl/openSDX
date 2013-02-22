@@ -132,23 +132,30 @@ public abstract class OSDXFileTransferCommand {
 			l.onSuccess(this);
 		}
 	}
-//	protected void notifyError(String msg) {
-//		for (CommandResponseListener l : listener) {
-//			//System.out.println("notifyError to "+l.getClass().getSimpleName());
-//			l.onError(this, msg);
-//		}
-//	}
-//	protected void notifyErrorFromContent(String content){
-//		notifyError(OSDXErrorCode.ERROR_FROM_CONTENT, content);
-//	}	
-	protected void notifyError(OSDXErrorCode err){
-		notifyError(err, null);
-	}
-	protected void notifyError(OSDXErrorCode err, String msg){
-		for(CommandResponseListener l : listener){
-			l.onError(this, err.getErrorCode() + " " + msg);
+	protected void notifyError(OSDXErrorCode err, String msg) {
+		for (CommandResponseListener l : listener) {
+			//System.out.println("notifyError to "+l.getClass().getSimpleName());
+			l.onError(this, err.getErrorCode()+" "+msg);
 		}
 	}
+	protected void notifyError(String msg) {
+		for (CommandResponseListener l : listener) {
+			//System.out.println("notifyError to "+l.getClass().getSimpleName());
+			l.onError(this, msg);
+		}
+	}
+	protected void notifyErrorFromContent(String content){
+		
+		notifyError(content);
+	}	
+//	protected void notifyError(OSDXErrorCode err){
+//		notifyError(err, null);
+//	}
+//	protected void notifyError(OSDXErrorCode err, String msg){
+//		for(CommandResponseListener l : listener){
+//			l.onError(this, err.getErrorCode() + " " + msg);
+//		}
+//	}
 	protected void notifyUpdate(long progress, long progressMax, String msg) {
 		for (CommandResponseListener l : listener) {
 			l.onStatusUpdate(this, progress, progressMax, msg);

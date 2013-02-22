@@ -152,8 +152,7 @@ public class OSDXError {
 			break;
 		case ERROR_FILE_NOT_EXISTS:
 			break;
-		case ERROR_FILE_RESTRICTED:
-			break;
+		case ERROR_FILE_RESTRICTED: throw new OSDXException().new FileRestrictedException();
 		case ERROR_LOGIN_ACCESS_DENIED:
 			break;
 		case ERROR_LOGIN_USERNAME_MISSING:

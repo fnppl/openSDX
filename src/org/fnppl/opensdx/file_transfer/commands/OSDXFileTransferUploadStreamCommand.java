@@ -169,8 +169,7 @@ public class OSDXFileTransferUploadStreamCommand extends OSDXFileTransferCommand
 						byte[] your_md5 = SecurityHelper.HexDecoder.decode(md5String);
 						if (!Arrays.equals(my_md5,your_md5)) {
 							//System.out.println("MD5 check failed for resuming upload");
-							notifyError(OSDXErrorCode.UPLOAD_ERROR_MD5_CHECK_FAIL);
-							//OLD: notifyError("MD5 check failed for resuming upload");
+							notifyError(OSDXErrorCode.ERROR_MD5_CHECK, "MD5 check failed for resuming upload");
 							
 							hasNext = false;
 							startUpload = false;
