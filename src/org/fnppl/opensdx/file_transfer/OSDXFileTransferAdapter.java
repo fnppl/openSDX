@@ -1098,7 +1098,7 @@ public class OSDXFileTransferAdapter {
 							//normal put
 						}
 						else {
-							OSDXErrorCode.ERROR_WITH_MESSAGE.throwException("MD5 check failed for resuming upload");
+							OSDXErrorCode.ERROR_WITH_MESSAGE.throwException("wrong format: data upload resume position not parseable");
 							errorMsg = "wrong format: data upload resume position not parseable";
 							return false;
 						}

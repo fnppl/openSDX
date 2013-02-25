@@ -1,34 +1,6 @@
 package org.fnppl.opensdx.file_transfer.errors;
 
 import org.fnppl.opensdx.file_transfer.SecureConnection;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.DirectoryDeletionException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.DirectoryDepthException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.DirectoryDoesNotExistException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.DirectoryDownloadException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileAlreadyExistsException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileDeletionException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileDoesNotExistException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileFileLengthParamException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileInfoRetrievingException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileNameIsMissingException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileRestrictedException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileSizeException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.IsNotADirectoryException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.LoginAccesDeniedException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.LoginUsernaneIsMissingException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.MD5CheckException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.MakeDirectoryException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.PathAlreadyExistsException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.PathIsMissingException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.PathIsNotAbsoluteException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.RenameException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.RestrictedPathException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.RightsAndDutiesException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.UploadCancellationException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.UploadHaltException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.UploadIsNullException;
-import org.fnppl.opensdx.file_transfer.errors.OSDXException.WrongDestinationException;
-
 /*
  * Copyright (C) 2010-2013 
  * 							fine people e.V. <opensdx@fnppl.org> 

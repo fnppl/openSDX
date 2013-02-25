@@ -378,7 +378,7 @@ public class SecureConnection {
 	 */
 	public OSDXErrorCode getError(){
 		if(isError()){
-			OSDXErrorCode.byteToOSDXErrorCode(type);
+			return OSDXErrorCode.byteToOSDXErrorCode(type);
 		}
 		return null;
 	}
