@@ -286,6 +286,9 @@ public class OSDXFileTransferAdapter {
 					System.out.println("init msg signature NOT verified!");
 					logger.logError("init msg signature NOT verified!");
 				}
+			} catch (OSDXException osdxe){
+				osdxe.printStackTrace();
+				throw osdxe; //Rethrow
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				logger.logException(ex);
@@ -389,7 +392,7 @@ public class OSDXFileTransferAdapter {
 		return root;
 	}
 
-	private boolean login() {
+	private boolean login() throws OSDXException {
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut) {
 			public boolean onACK() {
 				try {
@@ -411,11 +414,14 @@ public class OSDXFileTransferAdapter {
 			}
 		};
 		boolean ok = cmd.process("LOGIN "+username);
+		if(dataIn.isError()){
+			dataIn.getError().throwException(cmd.errorMsg);
+		}
 		errorMsg = cmd.errorMsg;
 		return ok;
 	}
 	
-	private boolean loginUserPass() {
+	private boolean loginUserPass() throws OSDXException {
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut) {
 			public boolean onACK() {
 				try {
@@ -437,6 +443,9 @@ public class OSDXFileTransferAdapter {
 			}
 		};
 		boolean ok = cmd.process("USERPASSLOGIN "+username+"\t"+OSDXFileTransferUserPassLoginCommand.getUserPassAuth(username, password));
+		if(dataIn.isError()){
+			dataIn.getError().throwException(cmd.errorMsg);
+		}
 		errorMsg = cmd.errorMsg;
 		return ok;
 	}
