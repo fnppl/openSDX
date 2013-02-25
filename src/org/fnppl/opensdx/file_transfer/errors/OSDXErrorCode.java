@@ -1,6 +1,33 @@
 package org.fnppl.opensdx.file_transfer.errors;
 
 import org.fnppl.opensdx.file_transfer.SecureConnection;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.DirectoryDeletionException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.DirectoryDepthException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.DirectoryDoesNotExistException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.DirectoryDownloadException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileAlreadyExistsException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileDeletionException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileDoesNotExistException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileFileLengthParamException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileInfoRetrievingException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileNameIsMissingException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileRestrictedException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileSizeException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.IsNotADirectoryException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.LoginAccesDeniedException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.LoginUsernaneIsMissingException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.MD5CheckException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.MakeDirectoryException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.PathAlreadyExistsException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.PathIsMissingException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.PathIsNotAbsoluteException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.RenameException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.RestrictedPathException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.RightsAndDutiesException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.UploadCancellationException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.UploadHaltException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.UploadIsNullException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.WrongDestinationException;
 
 /*
  * Copyright (C) 2010-2013 
@@ -207,4 +234,40 @@ public enum OSDXErrorCode {
 			default: return SecureConnection.ERROR_WITH_MESSAGE;
 		}
 	}
+	
+	/**
+	 * Throws an OSDXError depending on the error type
+	 */
+	public void throwException(String msg) throws OSDXException{
+		switch(this){
+			case ERROR_CANNOT_DELETE_DIR: throw new OSDXException().new DirectoryDeletionException(msg);
+			case ERROR_CANNOT_DELETE_FILE: throw new OSDXException().new FileDeletionException(msg);
+			case ERROR_CANNOT_RENAME: throw new OSDXException().new RenameException(msg);
+			case ERROR_DIRECTORY_DEPTH: throw new OSDXException().new DirectoryDepthException(msg);
+			case ERROR_DIRECTORY_DOWNLOAD_NOT_IMPLEMENTED: throw new OSDXException().new DirectoryDownloadException(msg);
+			case ERROR_DIRECTORY_NOT_EXISTS: throw new OSDXException().new DirectoryDoesNotExistException(msg);
+			case ERROR_FILENAME_IS_MISSING: throw new OSDXException().new FileNameIsMissingException(msg);
+			case ERROR_FILE_ALREADY_EXISTS: throw new OSDXException().new FileAlreadyExistsException(msg);
+			case ERROR_FILE_LENGTH_PARAM: throw new OSDXException().new FileFileLengthParamException(msg);
+			case ERROR_FILE_NOT_EXISTS: throw new OSDXException().new FileDoesNotExistException(msg);
+			case ERROR_FILE_RESTRICTED: throw new OSDXException().new FileRestrictedException(msg);
+			case ERROR_LOGIN_ACCESS_DENIED: throw new OSDXException().new LoginAccesDeniedException(msg);
+			case ERROR_LOGIN_USERNAME_MISSING: throw new OSDXException().new LoginUsernaneIsMissingException(msg);
+			case ERROR_MD5_CHECK: throw new OSDXException().new MD5CheckException(msg);
+			case ERROR_MKDIR: throw new OSDXException().new MakeDirectoryException(msg);
+			case ERROR_NOT_A_DIRECTORY: throw new OSDXException().new IsNotADirectoryException(msg);
+			case ERROR_PATH_ALREADY_EXISTS: throw new OSDXException().new PathAlreadyExistsException(msg);
+			case ERROR_PATH_IS_MISSING: throw new OSDXException().new PathIsMissingException(msg);
+			case ERROR_PATH_IS_NOT_ABSOLUTE: throw new OSDXException().new PathIsNotAbsoluteException(msg);
+			case ERROR_PATH_IS_RESTRICTED: throw new OSDXException().new RestrictedPathException(msg);
+			case ERROR_RETRIEVING_FILE_INFO: throw new OSDXException().new FileInfoRetrievingException(msg);
+			case ERROR_RIGHTS_AND_DUTIES: throw new OSDXException().new RightsAndDutiesException(msg);
+			case ERROR_UPLOAD_CANCEL: throw new OSDXException().new UploadCancellationException(msg);
+			case ERROR_UPLOAD_HALT: throw new OSDXException().new UploadHaltException(msg);
+			case ERROR_UPLOAD_IS_NULL: throw new OSDXException().new UploadIsNullException(msg);
+			case ERROR_WRONG_DESTINATION: throw new OSDXException().new WrongDestinationException(msg);
+			case ERROR_WRONG_FILESIZE: throw new OSDXException().new FileSizeException(msg);
+			default: throw new OSDXException(msg); //That pretty much represents ERROR_WITH_MESSAGE
+		}
+	}	
 }

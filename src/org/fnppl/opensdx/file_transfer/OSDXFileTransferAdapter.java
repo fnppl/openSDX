@@ -45,49 +45,23 @@ package org.fnppl.opensdx.file_transfer;
  */
 import java.io.*;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.security.KeyStore;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Vector;
 
-import org.apache.velocity.runtime.parser.node.SetPropertyExecutor;
 import org.fnppl.opensdx.common.Util;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCloseConnectionCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferDeleteCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferDownloadCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferFileInfoCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferListCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferLoginCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferMkDirCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferRenameCommand;
-import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUploadOldStyleCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferUserPassLoginCommand;
-import org.fnppl.opensdx.file_transfer.errors.OSDXError;
 import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCode;
 import org.fnppl.opensdx.file_transfer.errors.OSDXException;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
-import org.fnppl.opensdx.file_transfer.model.FileTransferAccount;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
-import org.fnppl.opensdx.file_transfer.model.Transfer;
-import org.fnppl.opensdx.gui.DefaultConsoleMessageHandler;
-import org.fnppl.opensdx.gui.Dialogs;
-import org.fnppl.opensdx.gui.MessageHandler;
 import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.helper.ProgressListener;
-import org.fnppl.opensdx.keyserver.helper.IdGenerator;
 import org.fnppl.opensdx.security.AsymmetricKeyPair;
-import org.fnppl.opensdx.security.Identity;
-import org.fnppl.opensdx.security.KeyApprovingStore;
 import org.fnppl.opensdx.security.MD5;
-import org.fnppl.opensdx.security.MasterKey;
 import org.fnppl.opensdx.security.OSDXKey;
 import org.fnppl.opensdx.security.SecurityHelper;
 import org.fnppl.opensdx.security.SymmetricKey;
 import org.fnppl.opensdx.xml.Document;
-import org.fnppl.opensdx.xml.Element;
 
 public class OSDXFileTransferAdapter {
 	private static boolean DEBUG = false;
@@ -114,7 +88,6 @@ public class OSDXFileTransferAdapter {
 	private SecureConnection dataOut = null;
 	private SecureConnection dataIn = null;
 	private String errorMsg = null; //We will keep this solution for now to avoid side effects
-//	private OSDXError errorObj = null; //Better way to determine errors
 
 	private boolean secureConnectionEstablished = false;
 	private byte[] client_nonce = null;
@@ -479,9 +452,12 @@ public class OSDXFileTransferAdapter {
 		System.out.println("Connection closed by Server.");
 	}
 
-	public boolean mkdir(String absoluteDirectoryName) {
+	public boolean mkdir(String absoluteDirectoryName) throws OSDXException {
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut);
 		boolean ok = cmd.process("MKDIR "+absoluteDirectoryName);
+		if(dataIn.isError()){
+			dataIn.getError().throwException(cmd.errorMsg);
+		}
 		errorMsg = cmd.errorMsg;
 		return ok;
 	}
@@ -492,21 +468,26 @@ public class OSDXFileTransferAdapter {
 	public boolean delete(String absoluteRemoteFilename) throws OSDXException {
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut);
 		boolean ok = cmd.process("DELETE "+absoluteRemoteFilename);
+		if(dataIn.isError()){
+			dataIn.getError().throwException(cmd.errorMsg);
+		}
 		errorMsg = cmd.errorMsg;
 		return ok;
 	}
 
-	public boolean rename(String absoluteRemoteFilename, String newfilename) {
+	public boolean rename(String absoluteRemoteFilename, String newfilename) throws OSDXException {
 		String[] params = new String[] {absoluteRemoteFilename,newfilename};
 		String command = "RENAME "+Util.makeParamsString(params);
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut);
-
 		boolean ok = cmd.process(command);
+		if(dataIn.isError()){
+			dataIn.getError().throwException(cmd.errorMsg);
+		}
 		errorMsg = cmd.errorMsg;
 		return ok;
 	}
 
-	public Vector<RemoteFile> list(String absoluteDirectoryName) {
+	public Vector<RemoteFile> list(String absoluteDirectoryName) throws OSDXException {
 		final Vector<RemoteFile> list = new Vector<RemoteFile>();
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut) {
 			public boolean onACK() {
@@ -527,6 +508,9 @@ public class OSDXFileTransferAdapter {
 		};
 
 		boolean ok = cmd.process("LIST "+absoluteDirectoryName);
+		if(dataIn.isError()){
+			dataIn.getError().throwException(cmd.errorMsg);
+		}		
 		errorMsg = cmd.errorMsg;
 		if (!ok) {
 			return null;
@@ -535,7 +519,7 @@ public class OSDXFileTransferAdapter {
 		}
 	}
 
-	public RemoteFile fileinfo(String absoluteRemoteFilename) {
+	public RemoteFile fileinfo(String absoluteRemoteFilename) throws OSDXException {
 		final Vector<RemoteFile> list = new Vector<RemoteFile>();
 		SimpleCommand cmd = new SimpleCommand(dataIn, dataOut) {
 			public boolean onACK() {
@@ -551,6 +535,9 @@ public class OSDXFileTransferAdapter {
 		};
 
 		boolean ok = cmd.process("FILE "+absoluteRemoteFilename);
+		if(dataIn.isError()){
+			dataIn.getError().throwException(cmd.errorMsg);
+		}		
 		errorMsg = cmd.errorMsg;
 		if (!ok) {
 			return null;
@@ -586,7 +573,7 @@ public class OSDXFileTransferAdapter {
 		return ret;
 	}
 	
-	public boolean uploadResume(File localFile, String absoluteRemotePath) {
+	public boolean uploadResume(File localFile, String absoluteRemotePath) throws OSDXException {
 		boolean ret = false;
 		try {
 			System.out.println("Upload/Resume of file: "+localFile.getCanonicalPath()+" -> "+absoluteRemotePath);
@@ -601,6 +588,9 @@ public class OSDXFileTransferAdapter {
 					System.out.println("ERROR: "+errorMsg+"\n");
 				}
 			}
+		}catch (OSDXException osdxe){
+			osdxe.printStackTrace();
+			throw osdxe; //Rethrow
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -953,6 +943,9 @@ public class OSDXFileTransferAdapter {
 			} else {
 				//stop upload (if running)
 				transferData = false;
+				if(dataIn.isError()){
+					dataIn.getError().throwException(getMessageFromContent(dataIn.content));
+				}
 				errorMsg = getMessageFromContent(dataIn.content);
 				return false;
 			}
@@ -983,6 +976,9 @@ public class OSDXFileTransferAdapter {
 					System.out.println("ERROR: "+errorMsg+"\n");
 				}
 			}
+		} catch (OSDXException osdxe){
+			osdxe.printStackTrace();
+			throw osdxe; //Rethrow
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -1084,14 +1080,16 @@ public class OSDXFileTransferAdapter {
 							byte[] your_md5 = SecurityHelper.HexDecoder.decode(md5String);
 							if (!Arrays.equals(my_md5,your_md5)) {
 								//System.out.println("MD5 check failed for resuming upload");
-								errorMsg = "MD5 check failed for resuming upload";
-								return false;
+//								errorMsg = "MD5 check failed for resuming upload";
+//								return false;
+								OSDXErrorCode.ERROR_MD5_CHECK.throwException("MD5 check failed for resuming upload");
 							}
 						}
 						else if (resumeParam.length==1 && resumeParam[0].equals("0")) {
 							//normal put
 						}
 						else {
+							OSDXErrorCode.ERROR_WITH_MESSAGE.throwException("MD5 check failed for resuming upload");
 							errorMsg = "wrong format: data upload resume position not parseable";
 							return false;
 						}
@@ -1157,6 +1155,9 @@ public class OSDXFileTransferAdapter {
 			} else {
 				//stop upload (if running)
 				transferData = false;
+				if(dataIn.isError()){
+					dataIn.getError().throwException(getMessageFromContent(dataIn.content));
+				}
 				errorMsg = getMessageFromContent(dataIn.content);
 				return false;
 			}
@@ -1450,6 +1451,7 @@ public class OSDXFileTransferAdapter {
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
+							OSDXErrorCode.ERROR_WRONG_FILESIZE.throwException("Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize");
 							errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
 							return false;
 						}
@@ -1467,6 +1469,7 @@ public class OSDXFileTransferAdapter {
 									return true;
 								} else {
 									System.out.println("MD5 check FAILD!");
+									OSDXErrorCode.ERROR_MD5_CHECK.throwException("Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!");
 									errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!";
 									return false;
 								}
@@ -1515,6 +1518,7 @@ public class OSDXFileTransferAdapter {
 						}
 
 						if (filePos>fileLen) {
+							OSDXErrorCode.ERROR_WRONG_FILESIZE.throwException("Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize");
 							errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
 							//System.out.println("ERROR wrong filesize.");
 							return false;
@@ -1528,6 +1532,7 @@ public class OSDXFileTransferAdapter {
 									return true;
 								} else {
 									System.out.println("MD5 check FAILD!");
+									OSDXErrorCode.ERROR_MD5_CHECK.throwException("Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!");
 									errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: MD5 check FAILD!";
 									return false;
 								}
@@ -1559,6 +1564,7 @@ public class OSDXFileTransferAdapter {
 				} catch (Exception ex) {
 					//ex.printStackTrace();
 				}
+				OSDXErrorCode.ERROR_WITH_MESSAGE.throwException(getMessageFromContent(dataIn.content));
 				errorMsg = getMessageFromContent(dataIn.content);
 				return false;
 			}
@@ -1666,6 +1672,7 @@ public class OSDXFileTransferAdapter {
 						}
 
 						if (filePos>fileLen) {
+							OSDXErrorCode.ERROR_WRONG_FILESIZE.throwException("Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize");
 							errorMsg = "Error downloading \""+absoluteRemoteFilename+"\" :: wrong filesize";
 							//System.out.println("ERROR wrong filesize.");
 							return false;
@@ -1711,6 +1718,7 @@ public class OSDXFileTransferAdapter {
 				} catch (Exception ex) {
 					//ex.printStackTrace();
 				}
+				OSDXErrorCode.ERROR_WITH_MESSAGE.throwException(getMessageFromContent(dataIn.content));
 				errorMsg = getMessageFromContent(dataIn.content);
 				return false;
 			}

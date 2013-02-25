@@ -376,16 +376,9 @@ public class SecureConnection {
 	 * 
 	 * @return OSDXError Object
 	 */
-	public OSDXError getError(){
+	public OSDXErrorCode getError(){
 		if(isError()){
-			String msg = getMessageFromContent(content);
-			OSDXErrorCode errorCode;
-			try{
-				errorCode = OSDXErrorCode.valueOf(msg.substring(0, msg.indexOf(" ")));
-				return new OSDXError(id, num, msg, errorCode);
-			} catch (NumberFormatException nfe) {
-				
-			}
+			OSDXErrorCode.byteToOSDXErrorCode(type);
 		}
 		return null;
 	}

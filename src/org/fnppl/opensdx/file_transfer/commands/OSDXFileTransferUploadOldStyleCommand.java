@@ -50,8 +50,6 @@ import java.util.Arrays;
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.OSDXFileTransferClient;
 import org.fnppl.opensdx.file_transfer.SecureConnection;
-import org.fnppl.opensdx.file_transfer.errors.OSDXError;
-import org.fnppl.opensdx.file_transfer.errors.OSDXErrorCode;
 import org.fnppl.opensdx.helper.Logger;
 import org.fnppl.opensdx.security.SecurityHelper;
 
