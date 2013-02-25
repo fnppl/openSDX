@@ -83,6 +83,46 @@ public class SecureConnection {
 	public static byte TYPE_ERROR_ED      = -19; // = ED
 	public static byte TYPE_ERROR         = -18; // = EE // error with error message
 	
+	//FILE ERROS
+	public static final byte ERROR_FILE_RESTRICTED = 1;
+	public static final byte ERROR_FILE_NOT_EXISTS = 2;
+	public static final byte ERROR_FILE_ALREADY_EXISTS = 3;
+	public static final byte ERROR_FILENAME_IS_MISSING = 4;
+	public static final byte ERROR_FILE_LENGTH_PARAM = 5;
+	public static final byte ERROR_CANNOT_DELETE_FILE = 6;
+	public static final byte ERROR_RETRIEVING_FILE_INFO = 7;
+	public static final byte ERROR_WRONG_FILESIZE = 8;
+	
+	//DIRECTORY ERRORS
+	public static final byte ERROR_CANNOT_DELETE_DIR = 9;
+	public static final byte ERROR_DIRECTORY_NOT_EXISTS = 10;
+	public static final byte ERROR_DIRECTORY_DEPTH = 11;
+	public static final byte ERROR_DIRECTORY_DOWNLOAD_NOT_IMPLEMENTED  = 12;
+	public static final byte ERROR_NOT_A_DIRECTORY = 13;
+	
+	//LOGIN ERRORS
+	public static final byte ERROR_LOGIN_ACCESS_DENIED = 14;
+	public static final byte ERROR_LOGIN_USERNAME_MISSING = 15;
+	
+	//UPLOAD ERRORS
+	public static final byte ERROR_UPLOAD_IS_NULL = 16;
+	public static final byte ERROR_UPLOAD_CANCEL = 17;
+	public static final byte ERROR_UPLOAD_HALT = 18;
+	
+	//FILESYSTEM ERRORS
+	public static final byte ERROR_PATH_IS_NOT_ABSOLUTE = 19;
+	public static final byte ERROR_PATH_IS_MISSING = 20;
+	public static final byte ERROR_WRONG_DESTINATION = 21;
+	public static final byte ERROR_CANNOT_RENAME = 22;
+	public static final byte ERROR_PATH_IS_RESTRICTED = 23;
+	public static final byte ERROR_PATH_ALREADY_EXISTS = 24;
+	public static final byte ERROR_MKDIR = 25;
+	
+	//OTHER ERRORS
+	public static final byte ERROR_WITH_MESSAGE  = 26;
+	public static final byte ERROR_MD5_CHECK  = 27;
+	public static final byte ERROR_RIGHTS_AND_DUTIES = 28;	
+	
 	public long id;
 	public int num;
 	public byte type;
@@ -183,8 +223,8 @@ public class SecureConnection {
 	public void setError(long id, int num, String message, OSDXErrorCode errCode) {
 		this.id = id;
 		this.num = num;
-		this.type = TYPE_ERROR;
-		setContent(errCode.getErrorCode() + " " + message);
+		this.type = OSDXErrorCode.OSDXErrorCodeToByte(errCode);
+		setContent(message);
 	}
 	
 	public void setErrorOLD(long id, int num, String message) {
@@ -307,7 +347,7 @@ public class SecureConnection {
 	}
 	
 	public boolean isError() {
-		if (type <= TYPE_ERROR && type >= TYPE_ERROR_E0) {
+		if (type <= TYPE_ERROR && type >= TYPE_ERROR_E0 || type >= ERROR_FILE_RESTRICTED && type <= ERROR_RIGHTS_AND_DUTIES) {
 			return true;
 		} else {
 			return false;
@@ -315,7 +355,7 @@ public class SecureConnection {
 	}
 	
 	public static boolean isError(byte code) {
-		if (code <= TYPE_ERROR && code >= TYPE_ERROR_E0) {
+		if (code <= TYPE_ERROR && code >= TYPE_ERROR_E0 || code >= ERROR_FILE_RESTRICTED && code <= ERROR_RIGHTS_AND_DUTIES) {
 			return true;
 		} else {
 			return false;

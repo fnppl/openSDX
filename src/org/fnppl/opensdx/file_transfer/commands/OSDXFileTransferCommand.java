@@ -145,7 +145,6 @@ public abstract class OSDXFileTransferCommand {
 		}
 	}
 	protected void notifyErrorFromContent(String content){
-		
 		notifyError(content);
 	}	
 //	protected void notifyError(OSDXErrorCode err){

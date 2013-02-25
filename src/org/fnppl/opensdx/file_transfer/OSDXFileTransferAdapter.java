@@ -323,7 +323,7 @@ public class OSDXFileTransferAdapter {
 			logger.logException(ex);
 		}
 		
-		return false;
+		return true;
 	}
 	
 	private void initSecureConnection(String host, OSDXKey key) {
