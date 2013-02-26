@@ -54,8 +54,6 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import javax.naming.NoInitialContextException;
-
 import org.fnppl.opensdx.common.Util;
 import org.fnppl.opensdx.file_transfer.helper.ClientSettings;
 import org.fnppl.opensdx.file_transfer.helper.FileTransferLog;
