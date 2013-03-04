@@ -143,6 +143,8 @@
             A contributor can be a label, performer, texter, editor, conductor, artist, singer,
             composer, mixer, remixer, producer, author, arranger, featuring-Artist, with-Artist, DJ,
             versus-Artist, meets-Artist, presents-Artist, narrator, compilator, copyright, production or clearinghouse.
+            For classical releases following contributors are supported:
+             ensemble, choir, accompanist and soloist
             A year should be provided in case the type equals copyright or production.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
@@ -1111,6 +1113,10 @@
             <xsd:enumeration value="production"/>
             <xsd:enumeration value="publisher"/>
             <xsd:enumeration value="clearinghouse"/>
+            <xsd:enumeration value="ensemble"/>
+            <xsd:enumeration value="choir"/>
+            <xsd:enumeration value="accompanist"/>
+            <xsd:enumeration value="soloist"/>
         </xsd:restriction>
     </xsd:simpleType>
     <xsd:simpleType name="compositionType">

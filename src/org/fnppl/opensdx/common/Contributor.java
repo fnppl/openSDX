@@ -82,6 +82,10 @@ public class Contributor extends BusinessObject {
 	public static String TYPE_CLEARINGHOUSE = "clearinghouse";
 	
 	public static String TYPE_NARRATOR = "narrator";
+	public static String TYPE_ENSEMBLE = "ensemble";
+	public static String TYPE_CHOIR = "choir";
+	public static String TYPE_ACCOMPANIST = "accompanist";
+	public static String TYPE_SOLOIST = "soloist";
 	
 	public static final Vector<String> TYPES = new Vector<String>();
 	
