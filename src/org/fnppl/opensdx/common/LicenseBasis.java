@@ -56,6 +56,7 @@ public class LicenseBasis extends BusinessObject {
 	private Territorial territorial;  							 //MUST
 	private BusinessCollection<BusinessDatetimeItem> timeframe;	 //MUST
 	private BusinessObject pricing;								 //SHOULD
+	private BusinessBooleanItem download_allowed;				 //COULD
 	private BusinessBooleanItem streaming_allowed;				 //COULD
 	private BusinessCollection<BusinessStringItem> channels;	 //COULD
 	private BusinessBooleanItem asOnBundle;
@@ -75,6 +76,7 @@ public class LicenseBasis extends BusinessObject {
 		b.timeframe.add(new BusinessDatetimeItem("from", from));
 		b.timeframe.add(new BusinessDatetimeItem("to", to));
 		b.pricing = null;
+		b.download_allowed = null;
 		b.streaming_allowed = null;
 		b.channels = null;
 		b.asOnBundle = null;
@@ -86,6 +88,7 @@ public class LicenseBasis extends BusinessObject {
 		b.territorial = null;
 		b.timeframe = null;
 		b.pricing = null;
+		b.download_allowed = null;
 		b.streaming_allowed = null;
 		b.channels = null;
 		b.asOnBundle = null;
@@ -97,6 +100,7 @@ public class LicenseBasis extends BusinessObject {
 		b.territorial = null;
 		b.timeframe = null;
 		b.pricing = null;
+		b.download_allowed = null;
 		b.streaming_allowed = null;
 		b.channels = null;
 		b.asOnBundle = new BusinessBooleanItem("as_on_bundle", true);
@@ -140,6 +144,7 @@ public class LicenseBasis extends BusinessObject {
 		if (b.pricing!=null) {
 			b.pricing.showOtherObjectsMessage = false;
 		}
+		b.download_allowed = BusinessBooleanItem.fromBusinessObject(b, "download_allowed");
 		b.streaming_allowed = BusinessBooleanItem.fromBusinessObject(b, "streaming_allowed");
 		
 		b.channels = null;
@@ -254,6 +259,14 @@ public class LicenseBasis extends BusinessObject {
 		return this;
 	}
 	
+	public LicenseBasis download_allowed(boolean download_allowed) {
+		this.download_allowed = new BusinessBooleanItem("download_allowed", download_allowed);
+		if (!download_allowed) {
+			channels = null;
+		}
+		return this;
+	}
+	
 	public LicenseBasis addChannel(String name, boolean allow) {
 		if (channels == null) {
 			channels = new BusinessCollection<BusinessStringItem>() {
@@ -275,6 +288,15 @@ public class LicenseBasis extends BusinessObject {
 	
 	public boolean hasStreaming_allowed() {
 		return (streaming_allowed != null);
+	}
+	
+	public boolean isDownload_allowed() {
+		if (download_allowed==null) return false;
+		return download_allowed.getBoolean();
+	}
+	
+	public boolean hasDownload_allowed() {
+		return (download_allowed != null);
 	}
 
 	

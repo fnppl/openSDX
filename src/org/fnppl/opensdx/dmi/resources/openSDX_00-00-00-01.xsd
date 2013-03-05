@@ -318,12 +318,14 @@
     <xsd:complexType name="license_basis">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element includes the basic rules and information under which 
-            this bundle is provided. The optional element "streaming_allowed" tells if streaming is allowed or not.</xsd:documentation>
+            this bundle is provided. If "download_allowed" is given it will be evaluated, if it's not included, basic download is allowed. 
+            The element "streaming_allowed" tells if streaming is allowed or not.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="territorial" type="territorial" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="timeframe" type="timeframe" maxOccurs="1" minOccurs="1"/>
             <xsd:element name="pricing" type="pricing" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="download_allowed" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="streaming_allowed" type="xsd:boolean" maxOccurs="1" minOccurs="1"/>
             <xsd:element name="channels" type="channels" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
@@ -331,12 +333,14 @@
     <xsd:complexType name="license_basis_item">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element includes the basic rules and information under which 
-            this bundle is provided. The optional element "streaming_allowed" tells if streaming is allowed or not</xsd:documentation>
+            this bundle is provided.  If "download_allowed" is given it will be evaluated, if it's not included, basic download is allowed.
+            The optional element "streaming_allowed" tells if streaming is allowed or not</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="territorial" type="territorial" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="timeframe" type="timeframe" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="pricing" type="pricing" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="download_allowed" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="streaming_allowed" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="channels" type="channels" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="as_on_bundle" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
