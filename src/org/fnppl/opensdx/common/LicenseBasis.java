@@ -281,6 +281,22 @@ public class LicenseBasis extends BusinessObject {
 		return this;
 	}
 
+	public LicenseBasis addChannel(String name, boolean allow, boolean download_allowed, boolean streaming_allowed) {
+		if (channels == null) {
+			channels = new BusinessCollection<BusinessStringItem>() {
+				public String getKeyname() {
+					return "channels";
+				}
+			}; 
+		}
+		BusinessStringItem item = new BusinessStringItem("channel", name);
+		item.setAttribute("type", (allow?"allow":"disallow"));
+		item.setAttribute("download_allowed", (Boolean.toString(download_allowed)));
+		item.setAttribute("streaming_allowed", (Boolean.toString(streaming_allowed)));
+		channels.add(item);
+		return this;
+	}
+	
 	public boolean isStreaming_allowed() {
 		if (streaming_allowed==null) return false;
 		return streaming_allowed.getBoolean();
@@ -380,6 +396,18 @@ public class LicenseBasis extends BusinessObject {
 		String type = channels.get(index).getAttribute("type");
 		if (type.equalsIgnoreCase("disallow")) return true;
 		return false;
+	}
+	
+	public boolean getChannelDownloadAllowed(int index) {
+		if (channels==null) return false;
+		String download_allowed = channels.get(index).getAttribute("download_allowed");
+		return Boolean.valueOf(download_allowed);
+	}
+	
+	public boolean getChannelStreamingAllowed(int index) {
+		if (channels==null) return false;
+		String streaming_allowed = channels.get(index).getAttribute("streaming_allowed");
+		return Boolean.valueOf(streaming_allowed);
 	}
 	
 	public void removeChannel(int index) {

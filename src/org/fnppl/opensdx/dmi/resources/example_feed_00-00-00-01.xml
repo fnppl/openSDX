@@ -353,11 +353,11 @@
 				<pricecode>MEDIUM</pricecode><!-- COULD ; arbitrary-info ; mainly agreed in  -->
 				<wholesale>EUR 9.99</wholesale><!-- COULD ; an explicitly given wholesale-price overrides the basic pricecode-given-wp ; most probably either one of pricecode OR wholesaleprice should be given -->
 			</pricing>
-			<download_allowed>true</download_allowed> <!-- COULD; Meaning explicit allowing or disallowing of basic use case: a la cart download. Mainly used to DISALLOW download and ALLOW Streaming (Streaming only) -->
+			<download_allowed>true</download_allowed> <!-- COULD; Meaning explicit allowing or disallowing the basic use case: "ala cart download". Mainly used to DISALLOW download and ALLOW Streaming (Streaming only). If it's not given than download_allowed=true -->
 			<streaming_allowed>true</streaming_allowed>
 	        <channels>
 	          <channel type="allow">ad supported</channel>  <!-- all | ad supported | premium -->
-			  <channel type="allow">Shop XYZ</channel>  <!-- if specific channels (or shops) should be included -->
+			  <channel type="allow" download_allowed="true" streaming_allowed="false">Shop XYZ</channel>  <!-- if specific channels (or shops) should be included; if attributes are give, these are special for that channel only -->
 	          <channel type="disallow">Shop XYZ</channel>  <!-- if specific channels (or shops) should be excluded from further use -->
 	        </channels>
 		</license_basis><!-- these are the basic rules under which this bundle is provided to u (of course on basis of those agreed on in the contracting phase) -->

@@ -318,7 +318,7 @@
     <xsd:complexType name="license_basis">
         <xsd:annotation>
             <xsd:documentation xml:lang="en">This element includes the basic rules and information under which 
-            this bundle is provided. If "download_allowed" is given it will be evaluated, if it's not included, basic download is allowed. 
+            this bundle is provided. If "download_allowed" is given it will be evaluated, if it's not included, basic download is allowed per default. 
             The element "streaming_allowed" tells if streaming is allowed or not.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
@@ -364,6 +364,8 @@
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
                 <xsd:attribute name="type" type="allowance" use="required"/>
+                <xsd:attribute name="download_allowed" type="xsd:boolean" use="optional"/>
+                <xsd:attribute name="streaming_allowed" type="xsd:boolean" use="optional"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
