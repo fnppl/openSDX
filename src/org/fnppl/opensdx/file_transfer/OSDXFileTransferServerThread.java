@@ -70,7 +70,15 @@ import org.fnppl.opensdx.security.SymmetricKey;
 import org.fnppl.opensdx.xml.Document;
 
 public class OSDXFileTransferServerThread extends Thread {
-	public final static boolean DEBUG = true;
+	public final static int DEBUG_LEVEL = 0; //0=off, 50=some, 100=all
+	
+	public final static int DEBUG_MSGVISIBILITY_HIGH = 1;
+	public final static int DEBUG_MSGVISIBILITY_MID = 51;
+	public final static int DEBUG_MSGVISIBILITY_LOW = 101;
+	
+	public final static int DEBUG_MSGTYPE_INFO = 1;
+	public final static int DEBUG_MSGTYPE_ERROR = 2;
+	public final static int DEBUG_MSGTYPE_WARNING = 3;
 	
 	private OSDXFileTransferServer server;
 	private Socket socket;
@@ -105,8 +113,8 @@ public class OSDXFileTransferServerThread extends Thread {
 		clientID = socket.getInetAddress().getHostAddress()+":"+socket.getPort();
 		addr = socket.getInetAddress().getHostAddress();
 		
-//		if(DEBUG) System.out.println("connected to client: "+clientID+ " at "+FileTransferLog.getDateString()); 
-		if(DEBUG) System.out.println("connected to client: "+clientID+ " at "+FileTransferLog.getDateString());
+//		debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_INFO,"connected to client: "+clientID+ " at "+FileTransferLog.getDateString()); 
+		debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_INFO, "connected to client: "+clientID+ " at "+FileTransferLog.getDateString());		
 		if (server!=null) server.log.logIncomingConnection(clientID, addr,"");
 	}
 
@@ -129,7 +137,8 @@ public class OSDXFileTransferServerThread extends Thread {
 				ex.printStackTrace();
 			}
 		}
-		if(DEBUG) System.out.println("closing socket to client: "+clientID+ " at "+FileTransferLog.getDateString());
+		
+		debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_INFO, "closing socket to client: "+clientID+ " at "+FileTransferLog.getDateString());
 		server.log.logConnectionClose(clientID, socket.getInetAddress().getHostAddress(),"");
 	}
 
@@ -151,10 +160,10 @@ public class OSDXFileTransferServerThread extends Thread {
 	public void onRequestReceived(long commandid, int num, byte code, byte[] content) {
 		try {
 			
-			if(DEBUG) System.out.print("RECEIVED REQUEST at "+FileTransferLog.getDateString()+" : id="+commandid+"\tCLIENTID["+clientID+"]");
+			String msg = "RECEIVED REQUEST at "+FileTransferLog.getDateString()+" : id="+commandid+"\tCLIENTID["+clientID+"]";
 			
 			if (code == SecureConnection.TYPE_DATA && content !=null) {
-				if(DEBUG) System.out.println(", DATA len="+content.length);
+				debugMSG(DEBUG_MSGVISIBILITY_MID, DEBUG_MSGTYPE_INFO, msg+ ", DATA len="+content.length);
 				//handle data
 				FileUploadInfo upload = uploads.get(commandid);
 				if (upload!=null) {
@@ -162,7 +171,7 @@ public class OSDXFileTransferServerThread extends Thread {
 						upload.out = new FileOutputStream(upload.file, true);
 					}
 					
-					if(DEBUG) System.out.println("appending "+content.length+" bytes to "+upload.file.getAbsolutePath());
+					debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_INFO, "appending "+content.length+" bytes to "+upload.file.getAbsolutePath());
 					
 					upload.out.write(content);
 					upload.loaded += content.length;
@@ -174,7 +183,8 @@ public class OSDXFileTransferServerThread extends Thread {
 					else {
 						if (upload.loaded>=upload.length) {
 							//ready with upload
-							if(DEBUG) System.out.println("upload ready: "+upload.file.getAbsolutePath());
+							debugMSG(DEBUG_MSGVISIBILITY_MID, DEBUG_MSGTYPE_INFO, "upload ready: "+upload.file.getAbsolutePath());
+							
 							upload.out.close();
 							if (upload.loaded == upload.length) {
 								boolean ok = true;
@@ -185,9 +195,10 @@ public class OSDXFileTransferServerThread extends Thread {
 										byte[] your_md5 = SecurityHelper.HexDecoder.decode(upload.md5String);
 										if (!Arrays.equals(my_md5,your_md5)) {
 											ok = false;
-											System.out.println("MD5 check failed for "+upload.file.getAbsolutePath());
+											
+											debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_INFO, "MD5 check failed for "+upload.file.getAbsolutePath());
 										} else {
-											System.out.println("MD5 check ok for "+upload.file.getAbsolutePath());
+											debugMSG(DEBUG_MSGVISIBILITY_MID, DEBUG_MSGTYPE_INFO, "MD5 check ok for "+upload.file.getAbsolutePath());
 										}
 									} catch (Exception ex) {
 										ok = false;
@@ -221,13 +232,13 @@ public class OSDXFileTransferServerThread extends Thread {
 					}
 				}
 				else {
-					if(DEBUG) System.out.println("No UploadInfo found for id:"+commandid);
+					debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_INFO, "No UploadInfo found for id:"+commandid);
 				}
 				
 			}
 			else if (content != null) { //if (code == SecureConnection.TYPE_TEXT) {
 				String text = new String(content,"UTF-8");
-				if(DEBUG)  System.out.println(", "+SecurityHelper.HexDecoder.encode(new byte[]{(byte)code})+" :: MSG: "+text);
+				debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_INFO, msg+", "+SecurityHelper.HexDecoder.encode(new byte[]{(byte)code})+" :: MSG: "+text);
 				
 				//parse command
 				String command = text;
@@ -246,13 +257,13 @@ public class OSDXFileTransferServerThread extends Thread {
 					commandHandler.invoke(this, commandid, num, code, param);
 
 				} catch (NoSuchMethodException ex) {
-					if(DEBUG) System.out.println("NoSuchMethodException");
+					debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, "NoSuchMethodException");
 					handle_command_not_implemented(commandid, num, code, command, param);
 				} catch (InvocationTargetException ex) {
-					if(DEBUG) System.out.println("InvocationTargetException");
+					debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, "InvocationTargetException");
 					handle_command_not_implemented(commandid, num, code, command, param);
 				} catch (IllegalAccessException ex) {
-					if(DEBUG) System.out.println("IllegalAccessException");
+					debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, "IllegalAccessException");
 					handle_command_not_implemented(commandid, num, code, command, param);
 				}
 			}
@@ -325,12 +336,13 @@ public class OSDXFileTransferServerThread extends Thread {
 
 				} else {
 					server.log.logError(clientID, addr, "initSecureConnection :: ERROR: verification of client_nonce signature faild!");
-					if(DEBUG) System.out.println("ERROR: verification of client_nonce signature failed!");
+					debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, "ERROR: verification of client_nonce signature failed!");
+					
 					String debugMsg = "";
-					for (int i=0;i<lines.length;i++) {
-						if(DEBUG) System.out.println("("+(i+1)+")"+" "+lines[i]);
+					for (int i=0;i<lines.length;i++) {						
 						debugMsg += lines[i]+"\n";
 					}
+					debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_ERROR, debugMsg);
 					server.log.logDebug(clientID, addr, debugMsg);
 					ok = false;
 					//				String msg = version+" 421 You are not authorized to make the connection\n";
@@ -341,7 +353,8 @@ public class OSDXFileTransferServerThread extends Thread {
 			}
 		} catch (Exception e1) {
 			server.log.logError(clientID, addr, "initSecureConnection :: Exception :: "+e1.getMessage());
-			e1.printStackTrace();
+			debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, clientID+" "+addr+" initSecureConnection :: Exception :: "+e1.getMessage());
+			e1.printStackTrace();			
 		}
 		return false;
 	}
@@ -350,23 +363,23 @@ public class OSDXFileTransferServerThread extends Thread {
 	// COMMAND IMPLEMENTATIONS
 	
 	public void handle_command_not_implemented(long commandid, int num, byte code, String command, String param) throws Exception {
-		if(DEBUG) System.out.println("COMMAND NOT UNDERSTOOD: "+command+" PARAM="+param);
+		debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR,clientID+" "+addr+" COMMAND NOT UNDERSTOOD: "+command+" PARAM="+param);
 		data.setErrorCommandNotUnderstood(commandid, num);
 		data.sendPackage();
 		server.log.logError(clientID, addr, "COMMAND NOT UNDERSTOOD :: "+command);
 	}
 	
 	public void handle_login(long commandid, int num, byte code, String username) throws Exception {
-		if(DEBUG) System.out.println("handle_login :: "+username);
+		debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_INFO,"handle_login :: "+username);
 		if (username!=null) {
 			String userid = username+"::"+client_keyid;
-			if(DEBUG) System.out.println("userid: "+userid);
+			debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_INFO,"userid: "+userid);
 			cs  = server.getClientSetting(userid);
 			
 			if (cs!=null) {
 				//login ok -> ACK with rights and duties
 				String param = Util.makeParamsString(new String[]{client_keyid, Document.buildDocument(cs.getRightsAndDuties().toElement(true)).toStringCompact()});
-				if(DEBUG) System.out.println("SENDING: ACK :: "+param);
+				debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_INFO,"SENDING: ACK :: "+param);
 				data.setAck(commandid, num, param);
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "LOGIN", username, param);
@@ -381,6 +394,8 @@ public class OSDXFileTransferServerThread extends Thread {
 				//OLD: data.setError(commandid, num, "ERROR IN LOGIN :: ACCESS DENIED");
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: ACCESS DENIED");
+				debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, clientID+" "+ addr+ " LOGIN "+ username+" ERROR IN LOGIN :: ACCESS DENIED"); 				
+				
 			}
 		} else {
 			//login failed
@@ -388,24 +403,26 @@ public class OSDXFileTransferServerThread extends Thread {
 			//OLD: data.setError(commandid, num, "ERROR IN LOGIN :: MISSING USERNAME");
 			data.sendPackage();
 			server.log.logCommand(clientID, addr, "LOGIN", username, "ERROR IN LOGIN :: MISSING USERNAME");
+			debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, clientID+" "+ addr+ " LOGIN "+ username+" ERROR IN LOGIN :: MISSING USERNAME");
+						
 		}
 	}
 	
 	public void handle_userpasslogin(long commandid, int num, byte code, String userauth) throws Exception {
-		if(DEBUG) System.out.println("handle_userpasslogin :: "+userauth);
+		debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_INFO,"handle_userpasslogin :: "+userauth);
 		String username = userauth.substring(0, userauth.indexOf("\t"));
 		String auth = userauth.substring(userauth.indexOf("\t")+1);
 		
 		if (username != null && auth != null) {
 			String userid = username+"::"+auth;
 			
-			if(DEBUG) System.out.println("userid: "+userid);
+			debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_INFO,"userid: "+userid);
 			cs  = server.getClientSetting(userid);
 
 			if(cs != null) {
 				//login ok -> ACK with rights and duties
 				String param = Util.makeParamsString(new String[]{client_keyid, Document.buildDocument(cs.getRightsAndDuties().toElement(true)).toStringCompact()});
-				if(DEBUG) System.out.println("SENDING: ACK :: "+param);
+				debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_INFO,"SENDING: ACK :: "+param);
 				data.setAck(commandid, num, param);
 				data.sendPackage();
 				server.log.logCommand(clientID, addr, "LOGIN", username, param);
@@ -509,7 +526,7 @@ public class OSDXFileTransferServerThread extends Thread {
 					server.log.logCommand(clientID, addr, "DELETE", param, "file does not exist");
 				} else {
 					//delete
-					if(DEBUG) System.out.println("DELETING: "+file.getAbsolutePath());
+					debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_INFO,"DELETING: "+file.getAbsolutePath());
 					if (file.isDirectory()) {
 						boolean ok = deleteDirectory(file);
 						if (ok) {
@@ -624,7 +641,7 @@ public class OSDXFileTransferServerThread extends Thread {
 							}
 							else {
 								//rename
-								if(DEBUG) System.out.println("RENAMEING: "+file.getAbsolutePath()+" -> "+dest.getAbsolutePath());
+								debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_INFO,"RENAMEING: "+file.getAbsolutePath()+" -> "+dest.getAbsolutePath());
 								
 								boolean ok = file.renameTo(dest);
 								if (ok) {
@@ -1390,7 +1407,7 @@ public class OSDXFileTransferServerThread extends Thread {
 						try {
 							md5 = SecurityHelper.HexDecoder.encode(SecurityHelper.getMD5(file));
 						} catch (Exception ex) {
-							if(DEBUG) System.out.println("Error calculating md5 hash of "+file.getAbsolutePath());
+							debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_INFO,"Error calculating md5 hash of "+file.getAbsolutePath());
 							ex.printStackTrace();
 							md5 = null;
 						}
@@ -1490,7 +1507,7 @@ public class OSDXFileTransferServerThread extends Thread {
 							try {
 								md5 = SecurityHelper.HexDecoder.encode(SecurityHelper.getMD5(file));
 							} catch (Exception ex) {
-								if(DEBUG) System.out.println("Error calculating md5 hash of "+file.getAbsolutePath());
+								debugMSG(DEBUG_MSGVISIBILITY_LOW, DEBUG_MSGTYPE_INFO,"Error calculating md5 hash of "+file.getAbsolutePath());
 								ex.printStackTrace();
 								md5 = null;
 							}
@@ -1580,5 +1597,11 @@ public class OSDXFileTransferServerThread extends Thread {
 		public boolean fromStream = false;
 		public boolean canCancel = false;
 		
+	}
+	
+	private final static void debugMSG(int myLevel, int debugType, String msg) {
+		if(DEBUG_LEVEL >= myLevel) {
+			System.out.println(msg);
+		}
 	}
 }
