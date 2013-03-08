@@ -70,7 +70,7 @@ import org.fnppl.opensdx.security.SymmetricKey;
 import org.fnppl.opensdx.xml.Document;
 
 public class OSDXFileTransferServerThread extends Thread {
-	public final static int DEBUG_LEVEL = 0; //0=off, 50=some, 100=all
+	public final static int DEBUG_LEVEL = 50; //0=off, 50=some, 100=all
 	
 	public final static int DEBUG_MSGVISIBILITY_HIGH = 1;
 	public final static int DEBUG_MSGVISIBILITY_MID = 51;
