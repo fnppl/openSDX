@@ -4,8 +4,52 @@ import java.security.SecureRandom;
 import java.util.Hashtable;
 import java.util.Vector;
 
+/*
+ * Copyright (C) 2010-2013 
+ * 							fine people e.V. <opensdx@fnppl.org> 
+ * 							Henning Thieß <ht@fnppl.org>
+ * 
+ * 							http://fnppl.org
+*/
 
-public class GRidGenerator {
+/*
+ * Software license
+ *
+ * As far as this file or parts of this file is/are software, rather than documentation, this software-license applies / shall be applied.
+ *  
+ * This file is part of openSDX
+ * openSDX is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * openSDX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * and GNU General Public License along with openSDX.
+ * If not, see <http://www.gnu.org/licenses/>.
+ *      
+ */
+
+/*
+ * Documentation license
+ * 
+ * As far as this file or parts of this file is/are documentation, rather than software, this documentation-license applies / shall be applied.
+ * 
+ * This file is part of openSDX.
+ * Permission is granted to copy, distribute and/or modify this document 
+ * under the terms of the GNU Free Documentation License, Version 1.3 
+ * or any later version published by the Free Software Foundation; 
+ * with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. 
+ * A copy of the license is included in the section entitled "GNU 
+ * Free Documentation License" resp. in the file called "FDL.txt".
+ * 
+ */
+
+public class GRIDGenerator {
 
 //	static int maxIndex;
 //	static String anfang = "A1-0389P";
@@ -22,24 +66,24 @@ public class GRidGenerator {
 	}
 	
 	/**
-	 * ermittelt das letzte zeichen bzw. die prüsumme des GRid's
-	 * @param grid
+	 * ermittelt das letzte zeichen bzw. die prüsumme des GRID's
+	 * @param GRID
 	 * @return
 	 */
-	public static char checkCharacterCalculation(char[] prefix, char[] variable_part_of_grid) throws Exception {
+	public static char checkCharacterCalculation(char[] prefix, char[] variable_part_of_GRID) throws Exception {
 		if(prefix.length != 7) {
-			throw new Exception("Grid-prefix != 7");
+			throw new Exception("GRID-prefix != 7");
 		}
-		if(variable_part_of_grid.length != 10) {
-			throw new Exception("Grid-base != 10");
+		if(variable_part_of_GRID.length != 10) {
+			throw new Exception("GRID-base != 10");
 		}
 		
 		char[] a = new char[18];
 		for(int i=0;i<prefix.length;i++) {
 			a[17-i] = prefix[i];
 		}
-		for(int i=0;i<variable_part_of_grid.length;i++) {
-			a[17-prefix.length-i] = variable_part_of_grid[i];
+		for(int i=0;i<variable_part_of_GRID.length;i++) {
+			a[17-prefix.length-i] = variable_part_of_GRID[i];
 		}
 		
 		int s = 0;
@@ -72,30 +116,30 @@ public class GRidGenerator {
 	}
 	
 	/**
-	 * wandelt ein GRid in einen String inkl. Bindestrichen um
-	 * @param grid zu aendernder GRid
+	 * wandelt ein GRID in einen String inkl. Bindestrichen um
+	 * @param GRID zu aendernder GRID
 	 * @return konvertierten String
 	 */
-	public static String convertGridToString (char[] grid) {
+	public static String convertGRIDToString (char[] GRID) {
 		String converted = "";
-		for ( int i = 0; i < grid.length; i++) {
+		for ( int i = 0; i < GRID.length; i++) {
 			if ( i == 2 || i == 7 || i == 17) {
 				converted += "-";
 			}
-			converted += grid[i];
+			converted += GRID[i];
 		}
 		return converted;
 	}
 	
 	/**
-	 * erstellt komplette GRid's
+	 * erstellt komplette GRID's
 	 * @param prefix
 	 * @param variable
 	 * @param anzahl
 	 * @return
 	 * @throws Exception
 	 */
-	public static Vector<char[]> generateRandomGrids(char[] prefix, char[] variable, int anzahl) throws Exception {
+	public static Vector<char[]> generateRandomGRIDs(char[] prefix, char[] variable, int anzahl) throws Exception {
 		//OBACHT: variable kann hier länge 0 bis 9 haben => das sind die VON VORNE vorgegebenen werte
 		//TODO HT 2013-02-27
 		
@@ -125,7 +169,7 @@ public class GRidGenerator {
 		return veci;
 	}
 	
-	public static char[] albumIDToGRid(char[] prefix, long albumID) throws Exception {
+	public static char[] albumIDToGRID(char[] prefix, long albumID) throws Exception {
 		
 		char[] issuerCode = new char[10];
 		String neueBasis = Long.toString(albumID, 36).toUpperCase();
@@ -139,20 +183,20 @@ public class GRidGenerator {
 				}
 			}
 		}
-		char[] grid = new char[prefix.length +issuerCode.length +1];
+		char[] GRID = new char[prefix.length +issuerCode.length +1];
 		char checkCharacter = checkCharacterCalculation(prefix, issuerCode);
-		System.arraycopy(prefix, 0, grid, 0, prefix.length);
-		System.arraycopy(issuerCode, 0, grid, prefix.length, issuerCode.length);
-		grid[grid.length-1] = checkCharacter;
-		return grid;
+		System.arraycopy(prefix, 0, GRID, 0, prefix.length);
+		System.arraycopy(issuerCode, 0, GRID, prefix.length, issuerCode.length);
+		GRID[GRID.length-1] = checkCharacter;
+		return GRID;
 	}
 	
-	public static long gridToAlbumID (char[] grid) {
+	public static long GRIDToAlbumID (char[] GRID) {
 //		char[] issuerCode = new char[10];
 		String uglyIssuerCode = "";
 		for (int i=11; i>=2; i--) {
-//			issuerCode[11-i] = grid[grid.length-i];
-			uglyIssuerCode +=  grid[grid.length-i]; // nicht schoen, aber funktional
+//			issuerCode[11-i] = GRID[GRID.length-i];
+			uglyIssuerCode +=  GRID[GRID.length-i]; // nicht schoen, aber funktional
 		}
 		long albumID = Long.parseLong(uglyIssuerCode, 36);
 		return albumID;
@@ -161,7 +205,7 @@ public class GRidGenerator {
 	public static void main(String[] args) throws Exception {
 		
 //		/**
-//		 * test albumIDToGRid und gridToAlbumId
+//		 * test albumIDToGRID und GRIDToAlbumId
 //		 */
 //		char[] prefix = new char[]{
 //				'A','1','0','3','8','9','P'
@@ -169,18 +213,18 @@ public class GRidGenerator {
 //		long albumID = 1358781035676L;
 //		System.out.println(albumID);
 //		System.out.println("===");
-//		char[] testChar = albumIDToGRid(prefix, albumID);
+//		char[] testChar = albumIDToGRID(prefix, albumID);
 //		for (int a=0; a<testChar.length; a++) {
 //			System.out.print(testChar[a]);
 //		}
 //		System.out.println("\n===");
-//		long testgridToAlbumID = gridToAlbumID(testChar);
-//		System.out.println(testgridToAlbumID);
+//		long testGRIDToAlbumID = GRIDToAlbumID(testChar);
+//		System.out.println(testGRIDToAlbumID);
 		
 //==============================================================================================================	
 		
 //		/**
-//		 * test generateRandomGrids
+//		 * test generateRandomGRIDs
 //		 */
 //		char[] prefix = new char[]{
 //				'A','1','0','3','8','9','P'
@@ -189,14 +233,14 @@ public class GRidGenerator {
 //				'A','B','C',
 //		};
 //		int anzahl = 10;
-//		Vector<char[]> probe = generateRandomGrids(prefix, variable, anzahl);
+//		Vector<char[]> probe = generateRandomGRIDs(prefix, variable, anzahl);
 //		for ( int a = 0; a < probe.size(); a++) {
 //			char[] tmp = probe.get(a);
 //			for(int b = 0; b < tmp.length; b++){
 //				System.out.print(tmp[b]);
 //			}
 //			System.out.print("\t");
-//			System.out.println(convertGridToString(probe.get(a)));
+//			System.out.println(convertGRIDToString(probe.get(a)));
 //		}
 	}
 }

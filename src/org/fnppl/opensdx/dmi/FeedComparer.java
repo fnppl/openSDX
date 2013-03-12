@@ -2,7 +2,7 @@ package org.fnppl.opensdx.dmi;
 
 
 /*
- * Copyright (C) 2010-2012 
+ * Copyright (C) 2010-2013 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Stefan Puchta <sp@fnppl.org>
  * 

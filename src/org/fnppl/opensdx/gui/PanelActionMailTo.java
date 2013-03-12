@@ -8,7 +8,7 @@ import org.fnppl.opensdx.common.TriggeredActions;
 import org.fnppl.opensdx.gui.helper.MyObservable;
 import org.fnppl.opensdx.gui.helper.MyObserver;
 /*
- * Copyright (C) 2010-2012
+ * Copyright (C) 2010-2013
  * 							fine people e.V. <opensdx@fnppl.org>
  * 							Henning Thieß <ht@fnppl.org>
  *

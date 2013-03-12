@@ -7,7 +7,7 @@ import org.fnppl.opensdx.dmi.FeedValidator;
 import org.fnppl.opensdx.security.*;
 
 /*
- * Copyright (C) 2010-2012 
+ * Copyright (C) 2010-2013 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 

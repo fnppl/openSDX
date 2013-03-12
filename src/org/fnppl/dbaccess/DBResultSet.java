@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.*;
 
 /*
- * Copyright (C) 2010-2012
+ * Copyright (C) 2010-2013
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
