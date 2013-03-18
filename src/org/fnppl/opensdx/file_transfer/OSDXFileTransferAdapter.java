@@ -1062,7 +1062,7 @@ public class OSDXFileTransferAdapter {
 					
 					if (resume) {
 						String[] resumeParam = Util.getParams(getMessageFromContentNN(dataIn.content));
-						if (resumeParam.length>=2) {
+						if (resumeParam.length>=2) { 
 							long transferred = Long.parseLong(resumeParam[0]);
 							String md5String = resumeParam[1];
 							MD5 md5Local = new MD5();
@@ -1074,11 +1074,12 @@ public class OSDXFileTransferAdapter {
 							if (nextPackSize>maxPacketSize) {
 								nextPackSize = maxPacketSize;
 							}
-							while (nextPackSize>0) {
+							int read = 0;
+							while (nextPackSize>0 && read != -1) { //CON-5 infinite loop solved
 								if (nextPackSize<maxPacketSize) {
 									buf = new byte[nextPackSize];
 								}
-								int read = fileIn.read(buf);
+								read = fileIn.read(buf);
 								if (read>0) {
 									md5.update(buf,read);
 									md5Local.update(buf,read);
@@ -1094,9 +1095,6 @@ public class OSDXFileTransferAdapter {
 							byte[] my_md5 = md5Local.getMD5bytes(); //can only read the md5 bytes one time !!!
 							byte[] your_md5 = SecurityHelper.HexDecoder.decode(md5String);
 							if (!Arrays.equals(my_md5,your_md5)) {
-								//System.out.println("MD5 check failed for resuming upload");
-//								errorMsg = "MD5 check failed for resuming upload";
-//								return false;
 								OSDXErrorCode.ERROR_MD5_CHECK.throwException("MD5 check failed for resuming upload");
 							}
 						}
