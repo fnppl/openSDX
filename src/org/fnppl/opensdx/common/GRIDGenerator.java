@@ -1,8 +1,7 @@
 package org.fnppl.opensdx.common;
 
 import java.security.SecureRandom;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 /*
  * Copyright (C) 2010-2013 
@@ -57,18 +56,40 @@ public class GRIDGenerator {
 	public static String range = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	public static Hashtable<Character, Integer> charToInt = new Hashtable<Character, Integer>(); 
 	public static Hashtable<Integer, Character> intToChar = new Hashtable<Integer, Character>();
+	public static Hashtable<Character, Integer> charToIntISO = new Hashtable<Character, Integer>(); 
+	public static Hashtable<Integer, Character> intToCharISO = new Hashtable<Integer, Character>();
 	static {
 		for( int c=0; c<range.length(); c++) {
 			char l = range.charAt(c);
 			charToInt.put(l, c);
 			intToChar.put(c, l);
-		}		
+		}
+		for (int d=0; d<range.length(); d++) {
+			char m = range.charAt(d);
+			if (d>=13) {
+				int eins = d+1;
+				if (eins>=26) {
+					int zwei = d+2;
+					charToIntISO.put(m, zwei);
+					intToCharISO.put(zwei, m);
+//					}
+				} else {
+					charToIntISO.put(m, eins);
+					intToCharISO.put(eins, m);
+				}
+			} else {
+				charToIntISO.put(m, d);
+				intToCharISO.put(d, m);
+			}
+		}
 	}
-	
+
 	/**
-	 * ermittelt das letzte zeichen bzw. die prüsumme des GRID's
-	 * @param GRID
-	 * @return
+	 * Ermittelt das letzte zeichen bzw. die prüfsumme des GRIDs.
+	 * @param prefix besteht aus "Identifier Scheme element" und "Issuer Code element"
+	 * @param variable_part_of_GRID ist das "Release Number element"
+	 * @return check character als char
+	 * @throws Exception falls die parameter nicht die richtige laenge haben.
 	 */
 	public static char checkCharacterCalculation(char[] prefix, char[] variable_part_of_GRID) throws Exception {
 		if(prefix.length != 7) {
@@ -116,9 +137,33 @@ public class GRIDGenerator {
 	}
 	
 	/**
-	 * wandelt ein GRID in einen String inkl. Bindestrichen um
+	 * Ermittelt aus albumID und variable (wird vor albumID gesetzt) das check digit nach ISO6346 Norm.
+	 * Wobei hier nicht 11 der Teiler ist, sondern 13.
+	 * @param albumID
+	 * @param variable
+	 * @return check digit als char
+	 */
+	public static char checkAlbumidISO (long albumID, char[] variable) {
+		char[] albumChar = String.valueOf(albumID).toCharArray();
+		char[] toCheckISO = new char[2+albumChar.length];
+		System.arraycopy(variable, 0, toCheckISO, 0, variable.length);
+		System.arraycopy(albumChar, 0, toCheckISO, variable.length, albumChar.length);
+		int sum = 0;
+		
+		for (int a=0; a<toCheckISO.length; a++) {
+			sum = (int) (sum+(Math.pow(2, a)*charToIntISO.get(toCheckISO[a])));
+		}
+		int quotient = sum/13;
+		int produkt = quotient*13;
+		int differenz = sum-produkt;
+		char checkISO = intToCharISO.get(differenz);
+//		System.out.println("summe: " +sum +", quotient: " +quotient +", produkt: " +produkt +", differenz: " +differenz +", checkISO: " +checkISO);
+		return checkISO;
+	}
+	/**
+	 * Wandelt ein GRID in einen String inkl. Bindestrichen um.
 	 * @param GRID zu aendernder GRID
-	 * @return konvertierten String
+	 * @return konvertierter String
 	 */
 	public static String convertGRIDToString (char[] GRID) {
 		String converted = "";
@@ -132,16 +177,15 @@ public class GRIDGenerator {
 	}
 	
 	/**
-	 * erstellt komplette GRID's
-	 * @param prefix
-	 * @param variable
-	 * @param anzahl
-	 * @return
+	 * Erstellt komplette GRID's.
+	 * @param prefix besteht aus "Identifier Scheme element" und "Issuer Code element"
+	 * @param variable wird am anfang von "Release Number element" gesetzt
+	 * @param anzahl anzahl der zu erstellenden GRIDs
+	 * @return einen Vector mit der gewuenschten Anzahl GRIDs
 	 * @throws Exception
 	 */
 	public static Vector<char[]> generateRandomGRIDs(char[] prefix, char[] variable, int anzahl) throws Exception {
 		//OBACHT: variable kann hier länge 0 bis 9 haben => das sind die VON VORNE vorgegebenen werte
-		//TODO HT 2013-02-27
 		
 		SecureRandom rand = new SecureRandom();
 		Vector<char[]> veci= new Vector<char[]>();
@@ -169,63 +213,109 @@ public class GRIDGenerator {
 		return veci;
 	}
 	
-	public static char[] albumIDToGRID(char[] prefix, long albumID) throws Exception {
-		
-		char[] issuerCode = new char[10];
-		String neueBasis = Long.toString(albumID, 36).toUpperCase();
-		if ( neueBasis.length()<=issuerCode.length ) {
-			int unterschied = issuerCode.length-neueBasis.length();
-			for (int i=0; i<issuerCode.length; i++) {
-				if (i<unterschied) {
-					issuerCode[i] = '0';
+	/**
+	 * Erstellt aus einer albumid ein kompletten grid. Ein check character, der albumid nach
+	 * DIN 6346 norm prueft und ein pattern, welches anzeigt, dass der grid aus einer albumid
+	 * gemacht wurde, sind auch enthalen.
+	 * @param prefix besteht aus "Identifier Scheme element" und "Issuer Code element"
+	 * @param variable wird am anfang von "Release Number element" gesetzt (als Pattern)
+	 * @param albumID Grundlage des neuen GRIDs
+	 * @return GRID in form eines char-arrays
+	 * @throws Exception, falls checkCharacterCalculation scheitert
+	 */
+	public static char[] albumIDToGRID(char[] prefix, char[] variable, long albumID) throws Exception {
+		char[] releaseNumberElement = new char[10];
+		long albumIDKurz = albumID/1000;
+		String neueBasis = Long.toString(albumIDKurz, 36).toUpperCase();
+		char checkISO = checkAlbumidISO(albumID, variable);
+		if (neueBasis.length()<releaseNumberElement.length) {
+			int unterschied = releaseNumberElement.length-neueBasis.length()-1;
+			for (int i=0; i<(releaseNumberElement.length-1); i++) {
+				if (i<variable.length) {
+					releaseNumberElement[i] = variable[i];
+				}else if (i<unterschied) {
+					releaseNumberElement[i] = '0';
 				} else {
-				issuerCode[i] = neueBasis.charAt(i-unterschied);
+				releaseNumberElement[i] = neueBasis.charAt(i-unterschied);
 				}
 			}
 		}
-		char[] GRID = new char[prefix.length +issuerCode.length +1];
-		char checkCharacter = checkCharacterCalculation(prefix, issuerCode);
+		releaseNumberElement[releaseNumberElement.length-1] = checkISO;
+		char[] GRID = new char[prefix.length +releaseNumberElement.length +1];
+		char checkCharacter = checkCharacterCalculation(prefix, releaseNumberElement);
 		System.arraycopy(prefix, 0, GRID, 0, prefix.length);
-		System.arraycopy(issuerCode, 0, GRID, prefix.length, issuerCode.length);
+		System.arraycopy(releaseNumberElement, 0, GRID, prefix.length, releaseNumberElement.length);
 		GRID[GRID.length-1] = checkCharacter;
 		return GRID;
 	}
 	
-	public static long GRIDToAlbumID (char[] GRID) {
-//		char[] issuerCode = new char[10];
-		String uglyIssuerCode = "";
-		for (int i=11; i>=2; i--) {
-//			issuerCode[11-i] = GRID[GRID.length-i];
-			uglyIssuerCode +=  GRID[GRID.length-i]; // nicht schoen, aber funktional
+	/**
+	 * Erstellt aus einen grid eine Liste von möglichen albumids. 
+	 * Vorher wird geprueft, ob der grid aus einer albumid entstanden sein könnte. 
+	 * @param GRID Grundlage des Vektors mit den möglichen albumids. 
+	 * @param variable pattern, um zu erkennen, dass der grid aus einer albumid entstanden sein koennte 
+	 * 			laenge: 2 zeichen
+	 * @return vector mit allen möglichen albumids, die zum grid passen
+	 */
+	public static Vector<Long> GRIDToAlbumID (char[] GRID, char[] variable) {
+		if ( variable.length==2 && GRID[7]==variable[0] && GRID[8]==variable[1] ) {
+			String uglyReleaseNumberElement = "";
+			Vector<Long> albumVector = new Vector<Long>();
+			for (int i=9; i>=3; i--) {
+				uglyReleaseNumberElement +=  GRID[GRID.length-i]; // nicht schoen, aber funktional
+			}
+			long albumID = Long.parseLong(uglyReleaseNumberElement, 36);
+			
+			albumID = albumID*1000;
+			long control = albumID;
+			for ( int l=0; l<1000; l++){
+				char iso = checkAlbumidISO(control, variable);
+				if (iso == GRID[GRID.length-2]) {
+					albumVector.add(control);
+	//				System.out.println(">>>" +control +" at pos " +m);
+				}
+				control++;
+			}
+			if ( albumVector.size()>0 ) {
+				return albumVector;
+			} else {
+				throw new Error("no possible GRIDs"); //TODO:fehlernachricht ergänzen
+			}
+		} else {
+			throw new Error("pattern-check failed"); //TODO:fehlernachricht ergänzen
 		}
-		long albumID = Long.parseLong(uglyIssuerCode, 36);
-		return albumID;
 	}
 	
 	public static void main(String[] args) throws Exception {
 		
-//		/**
-//		 * test albumIDToGRID und GRIDToAlbumId
-//		 */
+		/**
+		 * test albumIDToGRID und GRIDToAlbumId
+		 */
 //		char[] prefix = new char[]{
 //				'A','1','0','3','8','9','P'
+//		};
+//		char[] variable = new char[]{
+//			'F','T'
 //		};
 //		long albumID = 1358781035676L;
 //		System.out.println(albumID);
 //		System.out.println("===");
-//		char[] testChar = albumIDToGRID(prefix, albumID);
-//		for (int a=0; a<testChar.length; a++) {
-//			System.out.print(testChar[a]);
+//		char[] gridTest = albumIDToGRID(prefix, variable, albumID);
+//		for (int a=0; a<gridTest.length; a++) {
+//			System.out.print(gridTest[a]);
 //		}
-//		System.out.println("\n===");
-//		long testGRIDToAlbumID = GRIDToAlbumID(testChar);
-//		System.out.println(testGRIDToAlbumID);
+//		System.out.println("\n" +convertGRIDToString(gridTest));
+//		System.out.println("===");
+//		Vector<Long> testGRIDToAlbumID = GRIDToAlbumID(gridTest, variable);
+//		for (int b=0; b<testGRIDToAlbumID.size(); b++){
+//			System.out.println(testGRIDToAlbumID.get(b));
+//		}
 		
 //==============================================================================================================	
 		
-//		/**
-//		 * test generateRandomGRIDs
-//		 */
+		/**
+		 * test generateRandomGRIDs
+		 */
 //		char[] prefix = new char[]{
 //				'A','1','0','3','8','9','P'
 //		};
