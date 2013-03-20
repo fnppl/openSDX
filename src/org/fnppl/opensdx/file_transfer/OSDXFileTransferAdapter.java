@@ -589,10 +589,14 @@ public class OSDXFileTransferAdapter {
 	}
 	
 	public boolean uploadResume(File localFile, String absoluteRemotePath) throws OSDXException {
+		return uploadResume(localFile, absoluteRemotePath, null);
+	}
+	
+	public boolean uploadResume(File localFile, String absoluteRemotePath, ProgressListener pg) throws OSDXException {
 		boolean ret = false;
 		try {
 			System.out.println("Upload/Resume of file: "+localFile.getCanonicalPath()+" -> "+absoluteRemotePath);
-			boolean ok = upload(localFile, absoluteRemotePath, true, null);
+			boolean ok = upload(localFile, absoluteRemotePath, true, pg);
 			if (ok) {
 				System.out.println("Upload/Resume finished.\n");
 				ret = true;
