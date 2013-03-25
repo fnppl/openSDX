@@ -233,6 +233,9 @@ public class OSDXFileTransferServerThread extends Thread {
 				}
 				else {
 					debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_INFO, "No UploadInfo found for id:"+commandid);
+					
+					Exception ex = new Exception("No UploadInfo found for id:"+commandid);
+					ex.printStackTrace();
 				}
 				
 			}
