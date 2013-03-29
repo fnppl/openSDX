@@ -64,6 +64,7 @@ import org.fnppl.opensdx.dmi.BundleItemStructuredName;
 import org.fnppl.opensdx.dmi.FeedCreator;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferCommand;
 import org.fnppl.opensdx.file_transfer.commands.OSDXFileTransferListCommand;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.gui.DefaultMessageHandler;
 import org.fnppl.opensdx.gui.Dialogs;
@@ -639,13 +640,18 @@ public class Beamer {
 		//String dir = normFeedid+"_"+SecurityHelper.getFormattedDate(System.currentTimeMillis()).substring(0,19).replace(' ', '_');
 		//dir = Util.filterCharactersFile(dir);
 		
-		
 		//test if dir already exists
 		boolean exists = false;
 		
-		RemoteFile testDirExists = client.fileinfo("/"+dir);
+		RemoteFile testDirExists = null;
+		try {
+			testDirExists = client.fileinfo("/"+dir);
+		}
+		catch(OSDXException.FileDoesNotExistException ex) {
+			//ex.printStackTrace();			
+		}
 		
-		if (testDirExists!=null) {
+		if (testDirExists != null) {
 			return Result.error("A feed with this id already exists on the server.\nPlease select another feedid.");
 		}
 		

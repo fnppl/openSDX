@@ -72,7 +72,10 @@ import org.fnppl.opensdx.xml.Document;
 public class OSDXFileTransferAdapter {
 	private static boolean DEBUG = false;
 
-	private static String version = "osdx_ftclient_sync v.2012-07-25";
+	private static String OSDX_FILETRANSFERADAPTER_VERSION = "osdx_ftclient_sync v.2013-03-29";
+	static {
+		System.out.println("OSDXFileTransferAdapter :: starting in version "+OSDX_FILETRANSFERADAPTER_VERSION);
+	}
 	protected int maxPacketSize = 50*1024; //50kB
 
 	private Logger logger = Logger.getFileTransferLogger();
@@ -129,7 +132,7 @@ public class OSDXFileTransferAdapter {
 		client_nonce = null;
 		server_nonce = null;
 		try {
-			logger.logMsg("trying to connect to host: "+host+" port: "+port+" version: "+version);
+			logger.logMsg("trying to connect to host: "+host+" port: "+port+" version: "+OSDX_FILETRANSFERADAPTER_VERSION);
 			socket = new Socket(host, port);
 		} catch (Exception ex) {
 			logger.logException(ex);
@@ -172,7 +175,7 @@ public class OSDXFileTransferAdapter {
 		client_nonce = null;
 		server_nonce = null;
 		try {
-			logger.logMsg("trying to connect to host: "+host+" port: "+port+" version: "+version);
+			logger.logMsg("trying to connect to host: "+host+" port: "+port+" version: "+OSDX_FILETRANSFERADAPTER_VERSION);
 			socket = new Socket(host, port);
 		} catch (Exception ex) {
 			logger.logException(ex);
@@ -222,7 +225,7 @@ public class OSDXFileTransferAdapter {
 			
 //			String pass_username
 //			asd
-			String init = version +"\n";
+			String init = OSDX_FILETRANSFERADAPTER_VERSION +"\n";
 			init += host+"\n";
 			init += SecurityHelper.HexDecoder.encode(client_nonce,':',-1)+"\n";			
 			init += userSessionKey.getKeyIDHex()+"\n";
@@ -313,7 +316,7 @@ public class OSDXFileTransferAdapter {
 			logger.logMsg("init secure connection to host: "+host+" with keyid: "+key.getKeyID()+" ...");
 			//send request
 			client_nonce = SecurityHelper.getRandomBytes(32);
-			String init = version +"\n";
+			String init = OSDX_FILETRANSFERADAPTER_VERSION +"\n";
 			init += host+"\n";
 			init += SecurityHelper.HexDecoder.encode(client_nonce,':',-1)+"\n";
 			init += key.getKeyID()+"\n";
@@ -550,8 +553,8 @@ public class OSDXFileTransferAdapter {
 		};
 
 		boolean ok = cmd.process("FILE "+absoluteRemoteFilename);
-		if(dataIn.isError()){
-			dataIn.getError().throwException(cmd.errorMsg);
+		if(dataIn.isError()) {
+			dataIn.getError().throwException(cmd.errorMsg+" REMOTEFILEPATH: "+absoluteRemoteFilename);
 		}		
 		errorMsg = cmd.errorMsg;
 		if (!ok) {
