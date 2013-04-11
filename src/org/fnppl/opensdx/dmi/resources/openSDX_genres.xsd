@@ -189,6 +189,7 @@
 		<xsd:enumeration value="Dance"/>
 		<xsd:enumeration value="Electro"/>
 		<xsd:enumeration value="Glitch hop"/>
+		<xsd:enumeration value="Minimal Techno"/>
 		<xsd:enumeration value="House"/>
 		<xsd:enumeration value="Acid House"/>
 		<xsd:enumeration value="Deep House"/>
