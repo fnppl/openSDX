@@ -116,6 +116,10 @@ public class Contributor extends BusinessObject {
 		TYPES.add(TYPE_PUBLISHER);
 		TYPES.add(TYPE_CLEARINGHOUSE);
 		TYPES.add(TYPE_NARRATOR);
+		TYPES.add(TYPE_ENSEMBLE);
+		TYPES.add(TYPE_CHOIR);
+		TYPES.add(TYPE_ACCOMPANIST);
+		TYPES.add(TYPE_SOLOIST);
 	}
 	
 	private BusinessStringItem name;	//MUST
