@@ -89,7 +89,7 @@
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="onlytest" type="xsd:boolean"/>
-            <xsd:element name="feedid" type="notemptystring"/>
+            <xsd:element name="feedid" type="notemptystringnospaces"/>
             <xsd:element name="creationdatetime" type="datetimeGMT"/>
             <xsd:element name="effectivedatetime" type="datetimeGMT"/>
             <xsd:element name="creator" type="creator" maxOccurs="1" minOccurs="0"/>
@@ -1247,6 +1247,13 @@
         <xsd:restriction base="notemptystring">
             <xsd:minLength value="8"/>
             <xsd:pattern value="([A-F0-9]{2}:){31}[A-F0-9]{2}"/>
+        </xsd:restriction>
+    </xsd:simpleType>    
+    <xsd:simpleType name="notemptystringnospaces">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+            <xsd:pattern value="[^\s]*"/>
+            <xsd:whiteSpace value="preserve"/>
         </xsd:restriction>
     </xsd:simpleType>
 </xsd:schema>
