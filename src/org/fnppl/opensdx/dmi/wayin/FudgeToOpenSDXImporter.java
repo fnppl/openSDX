@@ -207,22 +207,33 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	
         	// Translate territory_exceptions to rules
         	//TODO: CHECK IF THIS will happen
+        	Date defaultReleaseDate = new Date(digitalReleaseDate);
+        	boolean dateChanged = false;
         	if (root.getChild("territory_exceptions") != null) {
 	        	int num = 1;
 	        	Vector<Element> exceptions = root.getChild("territory_exceptions").getChildren("territory_exception");
 	        	for (Iterator<Element> itExceptions = exceptions.iterator(); itExceptions.hasNext();) {
 	        		Element exception = itExceptions.next();        	
-	        		
-	        		// rule for explicit physical release dates in territories
-	        		if(exception.getChild("territory")!=null && exception.getChild("consumer_release_date")!=null) {
-		        		LicenseRule rule = LicenseRule.make(num, "territory", LicenseRule.OPERATOR_EQUALS, exception.getChildTextNN("territory"));
-		        		String exception_physicalReleaseDate = exception.getChildTextNN("consumer_release_date");
-		        		cal.setTime(ymd.parse(exception_physicalReleaseDate));
-		        		rule.addThenProclaim("physical_release_datetime", ""+cal.getTimeInMillis());
-		        		license_specifics.addRule(rule);
+	        		// rule for explicit consumer_release_dates in territories
+	        		if(exception.getChild("territory")!=null && exception.getChild("c")!=null) {
+//		        		LicenseRule rule = LicenseRule.make(num, "territory", LicenseRule.OPERATOR_EQUALS, exception.getChildTextNN("territory"));
+//		        		String exception_physicalReleaseDate = exception.getChildTextNN("consumer_release_date");
+//		        		cal.setTime(ymd.parse(exception_physicalReleaseDate));
+//		        		rule.addThenProclaim("physical_release_datetime", ""+cal.getTimeInMillis());
+//		        		license_specifics.addRule(rule);
+	        			Date tmp = ymd.parse(exception.getChildText("consumer_release_date"));
+	        			//if this releaseDate is LATER than "normal" releasedate, set this as NEW releasedate
+	        			if (tmp.after(defaultReleaseDate)) {
+	        				defaultReleaseDate = tmp;
+	        				dateChanged = true;
+	        			}	        			
 		        		num++;
 	        		}
 	        	}     
+        	}
+        	if (dateChanged) {
+        		license_basis.timeframe_from_datetime(defaultReleaseDate.getTime());
+        		digitalReleaseDate = defaultReleaseDate.getTime();
         	}
         	
         	// receiver -> "MUST"
