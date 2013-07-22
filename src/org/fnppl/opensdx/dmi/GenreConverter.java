@@ -93,7 +93,7 @@ public class GenreConverter {
 		}
 		return convertedGenre;
 	}
-
+	
 	private void initMatchMap(URL url) {
 		try {
 			Document doc = Document.fromURL(url);

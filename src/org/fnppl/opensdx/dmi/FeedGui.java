@@ -1164,6 +1164,7 @@ public class FeedGui extends JFrame implements MyObserver {
 		try {
 			Document doc = Document.buildDocument(currentFeed.toElement(true));	
 			String msg = new FeedValidator().validateOSDX_latest(doc.toString());
+			System.out.println("FEED: "+doc.toString());
 			
 			if(msg.length()==0) {
 				msg = "Yehaw. Feed is valid.";

@@ -114,9 +114,9 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        String lic = root.getChild("contract").getChild("supplier").getChildTextNN("name");
 	        if (lic.length()==0) lic = "[NOT SET]";
 	        
-	        ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER, lic , "");
-	        ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR, lic, "");
-	        ContractPartner licensee = ContractPartner.make(ContractPartner.ROLE_LICENSEE,"","");
+	        ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER, lic , "-1");
+	        ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR, lic, "-1");
+	        ContractPartner licensee = ContractPartner.make(ContractPartner.ROLE_LICENSEE,"-1","-1");
 	        
 	        FeedInfo feedinfo = FeedInfo.make(onlytest, feedid, creationdatetime, effectivedatetime, sender, licensor, licensee);
 	        
@@ -127,36 +127,34 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        feed = Feed.make(feedinfo);              
 	
 	        // Information
-        	String streetReleaseDate = root.getChildTextNN("original_release_date");	        
-	        if(streetReleaseDate.length()>0) {
-	        	cal.setTime(ymd.parse(streetReleaseDate));
+        	String consumer_release_date = root.getChildTextNN("consumer_release_date");	        
+	        if(consumer_release_date.length()>0) {
+	        	cal.setTime(ymd.parse(consumer_release_date));
 	        }
 	        else {
 	        	// MUST: when not provided then today
 	        	cal.setTime(new Date());
 	        }
-	        
-	        // streetRelease
-	        long srd = cal.getTimeInMillis();
-        	
-        	String physicalReleaseDate = root.getChildTextNN("consumer_release_date");	        
-	        if(physicalReleaseDate.length()>0) {
-	        	cal.setTime(ymd.parse(physicalReleaseDate));
+	        // digitalReleaseDate
+	        long digitalReleaseDate = cal.getTimeInMillis();
+        		
+	        String original_release_date = root.getChildTextNN("original_release_date");	        
+	        if(original_release_date.length()>0) {
+	        	cal.setTime(ymd.parse(original_release_date));
 	        }
 	        else {
-	        	// MUST: when not provided then today
-	        	cal.setTime(new Date());
+	        	// use consumer_release_date
+	        	cal.setTime(ymd.parse(consumer_release_date));
 	        }
-	        
 	        // physicalRelease
-        	long prd = cal.getTimeInMillis();        	
+        	long physicalReleaseDate = cal.getTimeInMillis();     
         	
-        	BundleInformation info = BundleInformation.make(srd, prd);
+        	BundleInformation info = BundleInformation.make(physicalReleaseDate, digitalReleaseDate);
         	
         	// IDs of bundle -> more (?)
         	IDs bundleids = IDs.make();
         	if(root.getChild("upc_code")!=null) bundleids.upc(root.getChildTextNN("upc_code"));
-        	if(root.getChild("contract").getChild("supplier").getChild("reference")!=null) bundleids.licensor(root.getChild("contract").getChild("supplier").getChildTextNN("reference"));
+        	if(root.getChild("contract").getChild("supplier").getChild("reference")!=null && root.getChild("contract").getChild("supplier").getChildText("reference").length() > 0) bundleids.licensor(root.getChild("contract").getChild("supplier").getChildTextNN("reference"));
         	if(root.getChild("catalog_number")!=null) bundleids.labelordernum(root.getChildTextNN("catalog_number"));
         	
         	// displayname
@@ -177,7 +175,29 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	}
         	
         	// Release
-        	LicenseBasis license_basis = LicenseBasis.make(territorial, srd, prd);
+        	cal.setTime(ymd.parse("2070-01-01"));
+        	long canceldate = cal.getTimeInMillis();
+        	LicenseBasis license_basis = LicenseBasis.make(territorial, digitalReleaseDate, canceldate);
+        	
+        	//now streaming and download
+        	boolean isDownloadAllowed = false;
+        	boolean isStreamingAllowed = false;
+        	if (root.getChild("usage_rights") != null) {
+        		Vector<Element> usage_rights = root.getChildren("usage_rights");
+	        	for (Iterator<Element> itExceptions = usage_rights.iterator(); itExceptions.hasNext();) {
+	        		Element usage_right = itExceptions.next();        	
+	        		
+	        		// rule for explicit physical release dates in territories
+	        		if("PermanentDownload".equals(usage_right.getText())) {
+	        			isDownloadAllowed = true;
+	        		}
+	        		if("SubscriptionStreaming".equals(usage_right.getText())) {
+	        			isStreamingAllowed = true;
+	        		}
+	        	}    
+        	}
+        	license_basis.streaming_allowed(isStreamingAllowed);
+        	license_basis.download_allowed(isDownloadAllowed);
 
         	// license specifics -> empty!
         	LicenseSpecifics license_specifics = LicenseSpecifics.make();
@@ -186,31 +206,39 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	GenreConverter gc = GenreConverter.getInstance(GenreConverter.FUDGE_TO_OPENSDX);        	
         	
         	// Translate territory_exceptions to rules
-        	int num = 1;
-        	Vector<Element> exceptions = root.getChild("territory_exceptions").getChildren("territory_exception");
-        	for (Iterator<Element> itExceptions = exceptions.iterator(); itExceptions.hasNext();) {
-        		Element exception = itExceptions.next();        	
-        		
-        		// rule for explicit physical release dates in territories
-        		if(exception.getChild("territory")!=null && exception.getChild("consumer_release_date")!=null) {
-	        		LicenseRule rule = LicenseRule.make(num, "territory", LicenseRule.OPERATOR_EQUALS, exception.getChildTextNN("territory"));
-	        		String exception_physicalReleaseDate = exception.getChildTextNN("consumer_release_date");
-	        		cal.setTime(ymd.parse(exception_physicalReleaseDate));
-	        		rule.addThenProclaim("physical_release_datetime", ""+cal.getTimeInMillis());
-	        		license_specifics.addRule(rule);
-	        		num++;
-        		}
-        	}        	
+        	//TODO: CHECK IF THIS will happen
+        	if (root.getChild("territory_exceptions") != null) {
+	        	int num = 1;
+	        	Vector<Element> exceptions = root.getChild("territory_exceptions").getChildren("territory_exception");
+	        	for (Iterator<Element> itExceptions = exceptions.iterator(); itExceptions.hasNext();) {
+	        		Element exception = itExceptions.next();        	
+	        		
+	        		// rule for explicit physical release dates in territories
+	        		if(exception.getChild("territory")!=null && exception.getChild("consumer_release_date")!=null) {
+		        		LicenseRule rule = LicenseRule.make(num, "territory", LicenseRule.OPERATOR_EQUALS, exception.getChildTextNN("territory"));
+		        		String exception_physicalReleaseDate = exception.getChildTextNN("consumer_release_date");
+		        		cal.setTime(ymd.parse(exception_physicalReleaseDate));
+		        		rule.addThenProclaim("physical_release_datetime", ""+cal.getTimeInMillis());
+		        		license_specifics.addRule(rule);
+		        		num++;
+	        		}
+	        	}     
+        	}
         	
-        	// receiver -> "MUST" -> empty!
-        	feedinfo.receiver(Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER));
+        	// receiver -> "MUST"
+        	Receiver rec = Receiver.make(Receiver.TRANSFER_TYPE_OSDX_FILESERVER);
+        	//TODO Only set for validation success
+        	rec.servername("localhost");
+        	rec.serveripv4("127.0.0.1");
+        	feedinfo.receiver(rec);
         	
         	Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artistname, info, license_basis, license_specifics);
         	
         	// add Tags
         	ItemTags tags = ItemTags.make();   		
-        	tags.addGenre(gc.convert(root.getChildTextNN("main_genre")));
-        	if(root.getChild("main_subgenre")!=null) tags.addGenre(gc.convert(root.getChildTextNN("main_subgenre")));
+        	//TODO Change this for other genres
+        	tags.addGenre(gc.convert(root.getChildTextNN("main_genre"), "Miscellaneous"));
+        	if(root.getChild("main_subgenre")!=null) tags.addGenre(gc.convert(root.getChildTextNN("main_subgenre"), "Miscellaneous"));
         	
         	// explicit_lyrics
         	if(root.getChildTextNN("parental_advisory").length()>0) {
@@ -244,9 +272,13 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	info.texts(bt);
          	
          	String copyright = "";
-         	if(root.getChild("c_line_text")!=null) { copyright = root.getChildTextNN("c_line_text"); }
+         	if(root.getChild("c_line_text")!=null) { 
+         		copyright = root.getChildTextNN("c_line_text"); 
+         	}
          	String production = null;
-         	if(root.getChild("p_line_text")!=null) { production = root.getChildTextNN("p_line_text"); }
+         	if(root.getChild("p_line_text")!=null) {
+         		production = root.getChildTextNN("p_line_text"); 
+         	}
          	
          	if(copyright.length()>0) {
 	         		contributor = Contributor.make(copyright, Contributor.TYPE_COPYRIGHT, IDs.make());
@@ -275,8 +307,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         		String fpath = cover.getChild("file").getChildTextNN("path")+File.separator;
         		File f = new File(path+fpath+filename);
         		if(f!=null && f.exists()) {
-        			itemfile.setFile(f);
-        			
+        			itemfile.setFile(f);        			
         			// set delivered path to file 
         			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         		} else {
@@ -309,7 +340,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        	// display_artistname
 	        	String track_display_artistname = track.getChildTextNN("display_artist");
 	        	
-	        	BundleInformation track_info = BundleInformation.make(srd, prd);		        	
+	        	BundleInformation track_info = BundleInformation.make(physicalReleaseDate, digitalReleaseDate);		        	
 	        	
 	        	if(track.getChild("country_of_recording")!=null) track_info.origin_country(track.getChildTextNN("country_of_recording"));
 	        	
@@ -345,8 +376,8 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
              	
             	// add Tags
             	ItemTags track_tags = ItemTags.make();   		
-            	track_tags.addGenre(gc.convert(track.getChildTextNN("main_genre"))); 
-            	if(track.getChild("main_subgenre")!=null) track_tags.addGenre(gc.convert(track.getChildTextNN("main_subgenre")));
+            	track_tags.addGenre(gc.convert(track.getChildTextNN("main_genre"), "Miscellaneous"));
+            	if(track.getChild("main_subgenre")!=null) track_tags.addGenre(gc.convert(track.getChildTextNN("main_subgenre"), "Miscellaneous"));
             	
             	// explicit_lyrics
             	if(track.getChildTextNN("parental_advisory").length()>0) {
@@ -386,7 +417,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
             	
              	String track_copyright = "";
              	if(track.getChild("c_line_text")!=null) { track_copyright = track.getChildTextNN("c_line_text"); }
-             	String track_production = null;
+             	String track_production = "";
              	if(track.getChild("p_line_text")!=null) { track_production = track.getChildTextNN("p_line_text"); }
              	
              	if(track_copyright.length()>0) {
@@ -448,7 +479,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        	// display_artistname
 	        	String track_display_artistname = track.getChildTextNN("display_artist");
 	        	
-	        	BundleInformation track_info = BundleInformation.make(srd, prd);		        	
+	        	BundleInformation track_info = BundleInformation.make(physicalReleaseDate, digitalReleaseDate);			        	
 	        	
 	        	if(track.getChild("country_of_recording")!=null) track_info.origin_country(track.getChildTextNN("country_of_recording"));
 	        	
@@ -484,8 +515,8 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
              	
             	// add Tags
             	ItemTags track_tags = ItemTags.make();   		
-            	track_tags.addGenre(gc.convert(track.getChildTextNN("main_genre"))); 
-            	if(track.getChild("main_subgenre")!=null) track_tags.addGenre(gc.convert(track.getChildTextNN("main_subgenre")));
+            	track_tags.addGenre(gc.convert(track.getChildTextNN("main_genre"), "Miscellaneous"));
+            	if(track.getChild("main_subgenre")!=null) track_tags.addGenre(gc.convert(track.getChildTextNN("main_subgenre"), "Miscellaneous"));
             	
             	// explicit_lyrics
             	if(track.getChildTextNN("parental_advisory").length()>0) {
@@ -589,126 +620,128 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        	bundle.addItem(item);
         	}
         	
-        	Vector<Element> videos = root.getChild("assets").getChild("videos").getChildren("video");
-        	for (Iterator<Element> itVideos = videos.iterator(); itVideos.hasNext();) {
-        		Element video = itVideos.next();
-
-        		IDs videoids = IDs.make();
-            	if(video.getChild("upc_code")!=null) videoids.upc(video.getChildTextNN("upc"));
-            	if(video.getChild("isrc_code")!=null) videoids.isrc(video.getChildTextNN("isrc_code"));
-        		
-	        	// displayname
-	        	String track_displayname = video.getChildTextNN("name");  
-	        	
-	        	// display_artistname
-	        	String track_display_artistname = video.getChildTextNN("display_artist");
-	        	
-	        	BundleInformation video_info = BundleInformation.make(srd, prd);		        	
-	        	
-	        	// num
-	        	if(video.getChildTextNN("sequence_number").length()>0) {
-	        		video_info.num(Integer.parseInt(video.getChildText("sequence_number")));
-	        	}
-	        	
-	        	// setnum
-	        	if(video.getChildTextNN("on_disc").length()>0) {
-	        		video_info.setnum(Integer.parseInt(video.getChildText("on_disc")));
-	        	} 
-	        	
-        		// track license basis
-        		LicenseBasis video_license_basis = LicenseBasis.make();
-        		video_license_basis.as_on_bundle(true);
-            	
-	        	// license specifics -> empty!
-	        	LicenseSpecifics video_license_specifics = LicenseSpecifics.make(); 
-	        	video_license_specifics.as_on_bundle(true);
-	        	
-        		// license_basis of Bundle / license_specifics of Bundle / others (?)
-	        	Item item = Item.make(videoids, track_displayname, track_displayname, "", "video", track_display_artistname, video_info, video_license_basis, video_license_specifics);
-	        	            	
-        		// add contributor
-        		Contributor track_contributor = Contributor.make(video.getChildTextNN("display_artist"), Contributor.TYPE_DISPLAY_ARTIST, IDs.make());
-             	item.addContributor(track_contributor);  
-             	
-            	// add Tags
-            	ItemTags video_tags = ItemTags.make();   		
-            	video_tags.addGenre(gc.convert(video.getChildTextNN("main_genre"))); 
-            	if(video.getChild("main_subgenre")!=null) video_tags.addGenre(gc.convert(video.getChildTextNN("main_subgenre")));
-            	
-            	// explicit_lyrics
-            	if(video.getChildTextNN("parental_advisory").length()>0) {
-            		if(video.getChildTextNN("parental_advisory").toLowerCase().equals("false")) {
-            			video_tags.explicit_lyrics(ItemTags.EXPLICIT_LYRICS_FALSE);  
-            		}
-            		else if(video.getChildTextNN("parental_advisory").toLowerCase().equals("true")) {
-            			video_tags.explicit_lyrics(ItemTags.EXPLICIT_LYRICS_TRUE);  
-            		}            		
-            	}
-            	
-            	item.tags(video_tags);	        	
-	        	
-        		ItemFile itemfile = ItemFile.make();
-        		itemfile.type("full");
-        		
-            	Vector<Element> video_artists = video.getChild("artists").getChildren("artist");
-            	for (Iterator<Element> itVideoArtists = video_artists.iterator(); itVideoArtists.hasNext();) {
-            		Element video_artist = itVideoArtists.next();        	
-            	
-            		contributor = Contributor.make(video_artist.getChildTextNN("name"), Contributor.TYPE_DISPLAY_ARTIST, IDs.make().licensor(video_artist.getChildTextNN("id")));
-            		item.addContributor(contributor);
-            	}        		
-             	
-             	// ToDo: set all contributors! "rights_holder" & "rights_ownership"?!
-            	
-        		// check if file exist at path
-        		String filename = video.getChild("resources").getChild("video").getChild("file").getChildTextNN("name");
-        		String fpath = video.getChild("resources").getChild("video").getChild("file").getChildTextNN("path")+File.separator;
-        		File f = new File(path+fpath+filename);      		
-        		if(f!=null && f.exists()) {
-        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
-        			
-        			// set delivered path to file 
-        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
-        			
-        		} else {
-        			//file does not exist -> so we have to set the values "manually"
-        			
-        			//-> use filename as location
-        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
-        		
-        			//file size
-        			if(video.getChild("resources").getChild("video")!=null && video.getChild("resources").getChild("video").getChild("file")!=null && video.getChild("resources").getChild("video").getChild("file").getChild("size")!=null) {
-            			itemfile.bytes(Integer.parseInt(video.getChild("resources").getChild("video").getChild("file").getChildTextNN("size")));
-            		}        		
-        		} 
-        		//file type
-    			if(video.getChild("resources").getChild("video")!=null && video.getChild("resources").getChild("video").getChild("file_format")!=null) {
-    				itemfile.filetype(video.getChild("resources").getChild("video").getChild("file").getChildTextNN("file_format"));
-    			}
-    			
-        		//bitrate
-    			if(video.getChild("resources").getChild("video")!=null && video.getChild("resources").getChild("video").getChild("bitrate")!=null) {
-    				itemfile.bitrate(video.getChild("resources").getChild("video").getChild("file").getChildTextNN("bitrate"));
-    			}   
-    			
-        		//file dimension
-    			if(video.getChild("resources").getChild("video")!=null && video.getChild("resources").getChild("video").getChild("dimensions")!=null) {
-    				String[] dim = video.getChild("resources").getChild("video").getChildTextNN("dimensions").split("x");
-    				if(dim.length==2) {
-    					itemfile.dimension(Integer.parseInt(dim[0]), Integer.parseInt(dim[1]));
-    				}
-    			}
-    			
-        		//codec
-    			if(video.getChild("resources").getChild("video")!=null && video.getChild("resources").getChild("video").getChild("encoding")!=null) {
-    				itemfile.codec(video.getChild("resources").getChild("video").getChildTextNN("encoding"));
-    			}    			
-    			
-	        	item.addFile(itemfile);
-	        	
-	        	bundle.addItem(item);
-        	}        	
-         	
+        	if (root.getChild("assets") != null && root.getChild("assets").getChild("videos") != null) {
+	        	Vector<Element> videos = root.getChild("assets").getChild("videos").getChildren("video");
+	        	for (Iterator<Element> itVideos = videos.iterator(); itVideos.hasNext();) {
+	        		Element video = itVideos.next();
+	
+	        		IDs videoids = IDs.make();
+	            	if(video.getChild("upc_code")!=null) videoids.upc(video.getChildTextNN("upc"));
+	            	if(video.getChild("isrc_code")!=null) videoids.isrc(video.getChildTextNN("isrc_code"));
+	        		
+		        	// displayname
+		        	String track_displayname = video.getChildTextNN("name");  
+		        	
+		        	// display_artistname
+		        	String track_display_artistname = video.getChildTextNN("display_artist");
+		        	
+		        	BundleInformation video_info = BundleInformation.make(physicalReleaseDate, digitalReleaseDate);
+		        	
+		        	// num
+		        	if(video.getChildTextNN("sequence_number").length()>0) {
+		        		video_info.num(Integer.parseInt(video.getChildText("sequence_number")));
+		        	}
+		        	
+		        	// setnum
+		        	if(video.getChildTextNN("on_disc").length()>0) {
+		        		video_info.setnum(Integer.parseInt(video.getChildText("on_disc")));
+		        	} 
+		        	
+	        		// track license basis
+	        		LicenseBasis video_license_basis = LicenseBasis.make();
+	        		video_license_basis.as_on_bundle(true);
+	            	
+		        	// license specifics -> empty!
+		        	LicenseSpecifics video_license_specifics = LicenseSpecifics.make(); 
+		        	video_license_specifics.as_on_bundle(true);
+		        	
+	        		// license_basis of Bundle / license_specifics of Bundle / others (?)
+		        	Item item = Item.make(videoids, track_displayname, track_displayname, "", "video", track_display_artistname, video_info, video_license_basis, video_license_specifics);
+		        	            	
+	        		// add contributor
+	        		Contributor track_contributor = Contributor.make(video.getChildTextNN("display_artist"), Contributor.TYPE_DISPLAY_ARTIST, IDs.make());
+	             	item.addContributor(track_contributor);  
+	             	
+	            	// add Tags
+	            	ItemTags video_tags = ItemTags.make();   		
+	            	video_tags.addGenre(gc.convert(video.getChildTextNN("main_genre"), "Miscellaneous"));
+	            	if(video.getChild("main_subgenre")!=null) video_tags.addGenre(gc.convert(video.getChildTextNN("main_subgenre"), "Miscellaneous"));
+	            	
+	            	// explicit_lyrics
+	            	if(video.getChildTextNN("parental_advisory").length()>0) {
+	            		if(video.getChildTextNN("parental_advisory").toLowerCase().equals("false")) {
+	            			video_tags.explicit_lyrics(ItemTags.EXPLICIT_LYRICS_FALSE);  
+	            		}
+	            		else if(video.getChildTextNN("parental_advisory").toLowerCase().equals("true")) {
+	            			video_tags.explicit_lyrics(ItemTags.EXPLICIT_LYRICS_TRUE);  
+	            		}            		
+	            	}
+	            	
+	            	item.tags(video_tags);	        	
+		        	
+	        		ItemFile itemfile = ItemFile.make();
+	        		itemfile.type("full");
+	        		
+	            	Vector<Element> video_artists = video.getChild("artists").getChildren("artist");
+	            	for (Iterator<Element> itVideoArtists = video_artists.iterator(); itVideoArtists.hasNext();) {
+	            		Element video_artist = itVideoArtists.next();        	
+	            	
+	            		contributor = Contributor.make(video_artist.getChildTextNN("name"), Contributor.TYPE_DISPLAY_ARTIST, IDs.make().licensor(video_artist.getChildTextNN("id")));
+	            		item.addContributor(contributor);
+	            	}        		
+	             	
+	             	// ToDo: set all contributors! "rights_holder" & "rights_ownership"?!
+	            	
+	        		// check if file exist at path
+	        		String filename = video.getChild("resources").getChild("video").getChild("file").getChildTextNN("name");
+	        		String fpath = video.getChild("resources").getChild("video").getChild("file").getChildTextNN("path")+File.separator;
+	        		File f = new File(path+fpath+filename);      		
+	        		if(f!=null && f.exists()) {
+	        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
+	        			
+	        			// set delivered path to file 
+	        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
+	        			
+	        		} else {
+	        			//file does not exist -> so we have to set the values "manually"
+	        			
+	        			//-> use filename as location
+	        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
+	        		
+	        			//file size
+	        			if(video.getChild("resources").getChild("video")!=null && video.getChild("resources").getChild("video").getChild("file")!=null && video.getChild("resources").getChild("video").getChild("file").getChild("size")!=null) {
+	            			itemfile.bytes(Integer.parseInt(video.getChild("resources").getChild("video").getChild("file").getChildTextNN("size")));
+	            		}        		
+	        		} 
+	        		//file type
+	    			if(video.getChild("resources").getChild("video")!=null && video.getChild("resources").getChild("video").getChild("file_format")!=null) {
+	    				itemfile.filetype(video.getChild("resources").getChild("video").getChild("file").getChildTextNN("file_format"));
+	    			}
+	    			
+	        		//bitrate
+	    			if(video.getChild("resources").getChild("video")!=null && video.getChild("resources").getChild("video").getChild("bitrate")!=null) {
+	    				itemfile.bitrate(video.getChild("resources").getChild("video").getChild("file").getChildTextNN("bitrate"));
+	    			}   
+	    			
+	        		//file dimension
+	    			if(video.getChild("resources").getChild("video")!=null && video.getChild("resources").getChild("video").getChild("dimensions")!=null) {
+	    				String[] dim = video.getChild("resources").getChild("video").getChildTextNN("dimensions").split("x");
+	    				if(dim.length==2) {
+	    					itemfile.dimension(Integer.parseInt(dim[0]), Integer.parseInt(dim[1]));
+	    				}
+	    			}
+	    			
+	        		//codec
+	    			if(video.getChild("resources").getChild("video")!=null && video.getChild("resources").getChild("video").getChild("encoding")!=null) {
+	    				itemfile.codec(video.getChild("resources").getChild("video").getChildTextNN("encoding"));
+	    			}    			
+	    			
+		        	item.addFile(itemfile);
+		        	
+		        	bundle.addItem(item);
+	        	}  
+        	}
+	         	
         	feed.addBundle(bundle);
 	        
 		} catch (Exception e) {
