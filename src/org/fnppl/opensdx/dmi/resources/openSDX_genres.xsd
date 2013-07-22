@@ -181,6 +181,7 @@
 		<xsd:enumeration value="Ambient"/>
 		<xsd:enumeration value="Chill Out"/>
 		<xsd:enumeration value="Lounge"/>
+		<xsd:enumeration value="DJ Tools"/>
 		<xsd:enumeration value="Downbeat"/>
 		<xsd:enumeration value="Electronica"/>
 		<xsd:enumeration value="Indie Disco"/>

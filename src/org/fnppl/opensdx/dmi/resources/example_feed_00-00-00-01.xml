@@ -451,7 +451,7 @@
 				<displayname>Some Itemname (original version)</displayname><!-- MUST this is how this should be displayed in pos -->
 				<name>Some Itemname</name><!-- MUST name - should be without "version" or stuff could be totally same as in displayname -->
 				<version>original</version><!-- MUST version if different versions of this bundle exist - can be empty -->
-				<type>audio</type><!-- MUST ; audio, video, audiobook, classical-item, android-app, win32-program, whatever -->
+				<type>audio</type><!-- MUST ; audio, video, audiobook, classical, android-app, win32-program, whatever -->
 				<display_artistname>Artist</display_artistname>
 				<ids>
 					<isrc>DEZ650000000</isrc><!-- SHOULD isrc - not applicable on bundle-level, but for -->
