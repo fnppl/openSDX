@@ -60,6 +60,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	private Result ir = Result.succeeded();
 	// test?
 	boolean onlytest = true;
+    boolean use_territory_exception_in_license_specific = true;
     
 	public FudgeToOpenSDXImporter(ImportType type, File impFile, File savFile) {
 		super(type, impFile, savFile);
@@ -215,19 +216,23 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        	for (Iterator<Element> itExceptions = exceptions.iterator(); itExceptions.hasNext();) {
 	        		Element exception = itExceptions.next();        	
 	        		// rule for explicit consumer_release_dates in territories
-	        		if(exception.getChild("territory")!=null && exception.getChild("c")!=null) {
-//		        		LicenseRule rule = LicenseRule.make(num, "territory", LicenseRule.OPERATOR_EQUALS, exception.getChildTextNN("territory"));
-//		        		String exception_physicalReleaseDate = exception.getChildTextNN("consumer_release_date");
-//		        		cal.setTime(ymd.parse(exception_physicalReleaseDate));
-//		        		rule.addThenProclaim("physical_release_datetime", ""+cal.getTimeInMillis());
-//		        		license_specifics.addRule(rule);
-	        			Date tmp = ymd.parse(exception.getChildText("consumer_release_date"));
-	        			//if this releaseDate is LATER than "normal" releasedate, set this as NEW releasedate
-	        			if (tmp.after(defaultReleaseDate)) {
-	        				defaultReleaseDate = tmp;
-	        				dateChanged = true;
-	        			}	        			
-		        		num++;
+	        		if(exception.getChild("territory")!=null && exception.getChild("consumer_release_date")!=null) {
+		        		if (use_territory_exception_in_license_specific) {
+		        			LicenseRule rule = LicenseRule.make(num, "territory", LicenseRule.OPERATOR_EQUALS, exception.getChildTextNN("territory"));
+			        		String exception_physicalReleaseDate = exception.getChildTextNN("consumer_release_date");
+			        		cal.setTime(ymd.parse(exception_physicalReleaseDate));
+			        		rule.addThenProclaim("digital_release_datetime", ""+cal.getTimeInMillis());
+			        		license_specifics.addRule(rule);
+		        		}
+		        		else{
+			        		Date tmp = ymd.parse(exception.getChildText("consumer_release_date"));
+		        			//if this releaseDate is LATER than "normal" releasedate, set this as NEW releasedate
+		        			if (tmp.after(defaultReleaseDate)) {
+		        				defaultReleaseDate = tmp;
+		        				dateChanged = true;
+		        			}	        			
+			        		num++;		        		
+		        		}
 	        		}
 	        	}     
         	}

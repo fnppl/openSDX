@@ -44,7 +44,7 @@ import org.fnppl.opensdx.xml.XMLElementable;
 
 /**
  * 
- * @author Bertram Boedeker <bboedeker@gmx.de>
+ * @author Bertram Boedeker <bboedeker@gmx.de>, SP
  * 
  */
 
@@ -123,6 +123,17 @@ public class LicenseSpecifics extends BusinessObject {
 		return this;
 	}
 	
+	public BusinessCollection<LicenseRule> getRules() {
+		return rules;
+	}
+	
+	public int getRulesCount() {
+		if (rules != null) {
+			return rules.size();
+		}
+		return 0;
+	}
+	
 	public String getKeyname() {
 		return KEY_NAME;
 	}
@@ -144,6 +155,4 @@ public class LicenseSpecifics extends BusinessObject {
 			return asOnBundle.getBoolean();
 		}
 	}
-	
-	
 }
