@@ -125,6 +125,13 @@ public class LicenseSpecifics extends BusinessObject {
 		return rules;
 	}
 	
+	public LicenseRule getRule(int i) {
+		if (rules != null && i < rules.size()) {
+			return rules.get(i);
+		}
+		return null;
+	}
+	
 	public int getRulesCount() {
 		if (rules != null) {
 			return rules.size();
