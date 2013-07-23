@@ -60,7 +60,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	private Result ir = Result.succeeded();
 	// test?
 	boolean onlytest = true;
-    boolean use_territory_exception_in_license_specific = true;
+    boolean set_territory_exception_to_license_specific = true;
     
 	public FudgeToOpenSDXImporter(ImportType type, File impFile, File savFile) {
 		super(type, impFile, savFile);
@@ -218,7 +218,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        		Element exception = itExceptions.next();        	
 	        		// rule for explicit consumer_release_dates in territories
 	        		if(exception !=null && exception.getChild("consumer_release_date") != null) {
-		        		if (use_territory_exception_in_license_specific) {
+		        		if (set_territory_exception_to_license_specific) {
 		        			System.out.println("LIC SPEC: territory: "+exception.getChildTextNN("territory"));
 		        			LicenseRule rule = LicenseRule.make(num, "territory", LicenseRule.OPERATOR_EQUALS, exception.getChildTextNN("territory"));
 			        		String exception_physicalReleaseDate = exception.getChildTextNN("consumer_release_date");
