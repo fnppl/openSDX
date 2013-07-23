@@ -231,6 +231,31 @@ public class LicenseRule extends BusinessObject {
 		return e;
 	}
 	
+	
+	public int getNum() {
+		return num;
+	}
+
+	public String getIf_what() {
+		return if_what;
+	}
+
+	public String getIf_operator() {
+		return if_operator;
+	}
+
+	public String getIf_value() {
+		return if_value;
+	}
+
+	public Vector<Element> getThens() {
+		return thens;
+	}
+
+	public Vector<Element> getElses() {
+		return elses;
+	}
+
 	public String getKeyname() {
 		return KEY_NAME;
 	}
