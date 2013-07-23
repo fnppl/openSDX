@@ -1,9 +1,7 @@
 package org.fnppl.opensdx.common;
 
-import java.util.Vector;
-
 import org.fnppl.opensdx.xml.ChildElementIterator;
-import org.fnppl.opensdx.xml.XMLElementable;
+
 
 /*
  * Software license
