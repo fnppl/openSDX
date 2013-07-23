@@ -151,6 +151,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	long physicalReleaseDate = cal.getTimeInMillis();     
         	
         	BundleInformation info = BundleInformation.make(physicalReleaseDate, digitalReleaseDate);
+        	info.playlength(0); //DEFAULT VALUE
         	
         	// IDs of bundle -> more (?)
         	IDs bundleids = IDs.make();
@@ -216,8 +217,9 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        	for (Iterator<Element> itExceptions = exceptions.iterator(); itExceptions.hasNext();) {
 	        		Element exception = itExceptions.next();        	
 	        		// rule for explicit consumer_release_dates in territories
-	        		if(exception.getChild("territory")!=null && exception.getChild("consumer_release_date")!=null) {
+	        		if(exception !=null && exception.getChild("consumer_release_date") != null) {
 		        		if (use_territory_exception_in_license_specific) {
+		        			System.out.println("LIC SPEC: territory: "+exception.getChildTextNN("territory"));
 		        			LicenseRule rule = LicenseRule.make(num, "territory", LicenseRule.OPERATOR_EQUALS, exception.getChildTextNN("territory"));
 			        		String exception_physicalReleaseDate = exception.getChildTextNN("consumer_release_date");
 			        		cal.setTime(ymd.parse(exception_physicalReleaseDate));
