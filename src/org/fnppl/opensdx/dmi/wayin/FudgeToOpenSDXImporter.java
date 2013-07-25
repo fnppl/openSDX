@@ -104,10 +104,16 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        String feedid = UUID.randomUUID().toString();
 	        Calendar cal = Calendar.getInstance();
 	        
-	        // action types: insert, update, metadata_only, delete -> if delete don't take date, right?
-	        if(root.getChild("action")!=null && !root.getChild("action").getChildTextNN("type").equals("delete")) {
+	        String action = "insert";
+	        if(root.getChild("action")!=null) {
+	        	action = root.getChild("action").getChildTextNN("type");
+	        }
+	        
+	        // action types: insert, update, metadata_only, delete 
+	        //-> if delete don't take date, right? no.
+//	        if(!action.equals("delete")) {
 	        	cal.setTime(ymd.parse(root.getChild("action").getChildText("effective_date").substring(0, 9)));
-	        }	        
+//	        }	        
 	        
 	        long creationdatetime = cal.getTimeInMillis();	        
 	        long effectivedatetime = cal.getTimeInMillis();
@@ -179,6 +185,9 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	// Release
         	cal.setTime(ymd.parse("2070-01-01"));
         	long canceldate = cal.getTimeInMillis();
+        	if(action.equals("delete")) {
+        		canceldate = effectivedatetime;
+        	}
         	LicenseBasis license_basis = LicenseBasis.make(territorial, digitalReleaseDate, canceldate);
         	
         	//now streaming and download
