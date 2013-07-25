@@ -327,7 +327,10 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
          	}         	
         	        	
         	// cover
-        	Element cover = root.getChild("cover_art").getChild("image");
+        	Element cover = null;
+        	if(root.getChild("cover_art")!=null) {
+        		cover = root.getChild("cover_art").getChild("image");
+        	}
         	if(cover != null) {
         		ItemFile itemfile = ItemFile.make(); 
         		itemfile.type("frontcover");
@@ -469,28 +472,32 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
              	// ToDo: set all contributors! "rights_holder" & "rights_ownership"?!
             	
         		// check if file exist at path
-        		String filename = track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("name");
-        		String fpath = track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("path")+File.separator;
-        		File f = new File(path+fpath+filename);      		
-        		if(f!=null && f.exists()) {
-        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
-        			
-        			// set delivered path to file 
-        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
-        			
-        		} else {
-        			//file does not exist -> so we have to set the values "manually"
-        			
-        			//-> use filename as location
-        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
-        		
-        			//file size
-        			if(track.getChild("resources").getChild("audio")!=null && track.getChild("resources").getChild("audio").getChild("file")!=null && track.getChild("resources").getChild("audio").getChild("file").getChild("size")!=null) {
-            			itemfile.bytes(Integer.parseInt(track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("size")));
-            		}        		
-        		} 
-        		
-	        	item.addFile(itemfile);
+             	Element res = track.getChild("resources");
+             	if(res != null) {
+             		String filename = res.getChild("audio").getChild("file").getChildTextNN("name");
+             		String fpath = res.getChild("audio").getChild("file").getChildTextNN("path")+File.separator;
+             		File f = new File(path+fpath+filename);      		
+             		if(f!=null && f.exists()) {
+             			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
+
+             			// set delivered path to file 
+             			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
+
+             		} else {
+             			//file does not exist -> so we have to set the values "manually"
+
+             			//-> use filename as location
+             			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
+
+             			//file size
+             			if(track.getChild("resources").getChild("audio")!=null && track.getChild("resources").getChild("audio").getChild("file")!=null && track.getChild("resources").getChild("audio").getChild("file").getChild("size")!=null) {
+             				itemfile.bytes(Integer.parseInt(track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("size")));
+             			}        		
+             		}
+             		
+             		item.addFile(itemfile);
+             	}
+        			        	
 	        	
 	        	bundle.addItem(item);
         	}
