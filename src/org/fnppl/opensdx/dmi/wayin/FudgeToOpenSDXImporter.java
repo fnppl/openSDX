@@ -603,7 +603,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
     	         		item.addContributor(contributor);  
              	}
              	
-             	if(track_production.length()>0) {
+             	if(track_production!=null && track_production.length()>0) {
     	         		contributor = Contributor.make(track_production, Contributor.TYPE_PRODUCTION, IDs.make());
     	         		if(track.getChild("p_line_year")!=null) {
     	         			contributor.year(track.getChildTextNN("p_line_year"));
@@ -631,28 +631,35 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
             	}
              	
         		// check if file exist at path
-        		String filename = track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("name");
-        		String fpath = track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("path")+File.separator;
-        		File f = new File(path+fpath+filename);      		
+        		String filename = null;
+        		String fpath = null;
+        		File f = null;
+        		if(track.getChild("resources")!=null) {
+        			filename = track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("name");
+        			fpath = track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("path")+File.separator;
+        			f = new File(path+fpath+filename);
+        		}
+        		      		
         		if(f!=null && f.exists()) {
         			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
         			
         			// set delivered path to file 
         			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         			
-        		} else {
+        		} 
+        		else if(f!=null) {
         			//file does not exist -> so we have to set the values "manually"
-        			
         			//-> use filename as location
         			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         		
         			//file size
-        			if(track.getChild("resources").getChild("audio")!=null && track.getChild("resources").getChild("audio").getChild("file")!=null && track.getChild("resources").getChild("audio").getChild("file").getChild("size")!=null) {
+        			if(track.getChild("resources")!=null && track.getChild("resources").getChild("audio")!=null && track.getChild("resources").getChild("audio").getChild("file")!=null && track.getChild("resources").getChild("audio").getChild("file").getChild("size")!=null) {
             			itemfile.bytes(Integer.parseInt(track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("size")));
-            		}        		
+            		}
+        			
+        			item.addFile(itemfile);
         		} 
-        		
-	        	item.addFile(itemfile);
+	        	
 	        	
 	        	bundle.addItem(item);
         	}
