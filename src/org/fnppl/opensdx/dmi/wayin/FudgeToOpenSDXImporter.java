@@ -119,7 +119,9 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        long effectivedatetime = cal.getTimeInMillis();
 	        
 	        String lic = root.getChild("contract").getChild("supplier").getChildTextNN("name");
-	        if (lic.length()==0) lic = "[NOT SET]";
+	        if (lic.length()==0) {
+	        	lic = "[NOT SET]";
+	        }
 	        
 	        ContractPartner sender = ContractPartner.make(ContractPartner.ROLE_SENDER, lic , "-1");
 	        ContractPartner licensor = ContractPartner.make(ContractPartner.ROLE_LICENSOR, lic, "-1");
