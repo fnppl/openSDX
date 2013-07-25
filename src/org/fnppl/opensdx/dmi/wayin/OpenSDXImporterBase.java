@@ -66,20 +66,24 @@ public class OpenSDXImporterBase {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
+		int ret = 0;
+		File savFile = null;
 		try {
 			
 			if(args.length!=3) {
 				System.out.println("Please provide following arguments: Type / File to import / File to save");
-				System.exit(0);
+				ret = 1;
+				System.exit(ret);
 			}
 			
 			ImportType impType = ImportType.getImportType(args[0].toLowerCase().trim());
 			File impFile = new File(args[1].trim());
-			File savFile = new File(args[2].trim());
+			savFile = new File(args[2].trim());
 			
 			if(!impFile.exists()) {
 				System.out.println("ERROR: File to import not exist! Please check and try again.");
-				System.exit(0);
+				ret = 2;
+				System.exit(ret);
 			}
 			
 			Result ir = null;
@@ -117,9 +121,10 @@ public class OpenSDXImporterBase {
 					ir = impCLD.formatToOpenSDXFile();		
 					break;		
 				default:
+					ret = 4;
 					break;
 			}
-			if(ir.succeeded) {
+			if(ir!=null && ir.succeeded) {
 				System.out.println("Import succeeded! Nice!");
 				System.out.println("But what about validation? Lets have a look.\n");
 				System.out.println("#+++++++++++++++++++++++++++++++++++++++++++++++++++#\n");
@@ -128,11 +133,18 @@ public class OpenSDXImporterBase {
 				
 			}
 			else {
+				ret = 5;
 				System.out.println("Import NOT succeeded! ERROR: "+ir.errorMessage);
 			}
 		} catch (Exception ex) {
+			ret = 6;
 			System.out.println("Failed! Please provide following arguments: Type / File to import / File to save");
 		}
-
+		
+		if(ret != 0 && savFile!=null && savFile.exists()) {
+			savFile.delete();
+		}
+		
+		System.exit(ret);
 	}
 }

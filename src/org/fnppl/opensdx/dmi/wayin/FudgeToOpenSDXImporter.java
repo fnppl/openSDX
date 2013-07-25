@@ -248,6 +248,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	//TODO Only set for validation success
         	rec.servername("localhost");
         	rec.serveripv4("127.0.0.1");
+        	rec.authtype("login");
         	feedinfo.receiver(rec);
         	
         	Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artistname, info, license_basis, license_specifics);
