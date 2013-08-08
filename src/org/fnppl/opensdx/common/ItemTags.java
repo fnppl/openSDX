@@ -75,7 +75,6 @@ public class ItemTags extends BusinessObject {
 		return tags;
 	}
 
-
 	public static ItemTags fromBusinessObject(BusinessObject bo) {
 		if (bo==null) return null;
 		if (!bo.getKeyname().equals(KEY_NAME)) {
@@ -120,6 +119,20 @@ public class ItemTags extends BusinessObject {
 		return this;
 	}
 	
+	public ItemTags addGenre(String genre, int genreid) {
+		if (genres==null) {
+			genres = new BusinessCollection<BusinessStringItem>() {
+				public String getKeyname() {
+					return "genres";
+				}
+			};
+		}
+		BusinessStringItem bsi = new BusinessStringItem("genre", genre);
+		bsi.setAttribute("id", ""+genreid);
+		genres.add(bsi);
+		return this;
+	}
+	
 	public void removeGenre(int index) {
 		if (genres==null) return;
 		genres.remove(index);
@@ -139,12 +152,20 @@ public class ItemTags extends BusinessObject {
 		if (genres==null) return null;
 		return genres.get(index).getString();
 	}
+	
+	public int getGenreId(int index) {
+		if (genres != null && genres.get(index) != null && genres.get(index).getAttribute("id") != null) {
+			return Integer.parseInt(genres.get(index).getAttribute("id"));
+		}
+		return -1;
+	}
 
 
 	public ItemTags bundle_only(boolean bundle_only) {
 		this.bundle_only = new BusinessBooleanItem("bundle_only", bundle_only);
 		return this;
 	}
+	
 	public ItemTags explicit_lyrics(String explicit_lyrics) {
 		if (explicit_lyrics==null) {
 			this.explicit_lyrics = null;
@@ -153,6 +174,7 @@ public class ItemTags extends BusinessObject {
 		}
 		return this;
 	}
+	
 	public ItemTags explicit_lyrics(boolean explicit_lyrics) {
 		this.explicit_lyrics = new BusinessStringItem("explicit_lyrics", (explicit_lyrics?"true":"false"));
 		return this;

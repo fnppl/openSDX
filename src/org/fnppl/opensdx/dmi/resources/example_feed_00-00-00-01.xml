@@ -434,7 +434,7 @@
 		
 		<tags>
 			<genres>
-				<genre>Rock</genre>
+				<genre id="1000">Rock</genre> <!-- Genre with optional GenreID -->
 				<genre>Beat</genre>
 			</genres>
 			<bundle_only>false</bundle_only> <!--  true|false -->
