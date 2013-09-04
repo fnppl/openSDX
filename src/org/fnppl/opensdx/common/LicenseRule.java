@@ -214,6 +214,7 @@ public class LicenseRule extends BusinessObject {
 		if (thens!=null && thens.size()>0) {
 			Element eThen = new Element("then");
 			for (Element c : thens) {
+				c.detach();
 				eThen.addContent(c);
 			}		
 			e.addContent(eThen);			
@@ -223,6 +224,7 @@ public class LicenseRule extends BusinessObject {
 		if (elses!=null && elses.size()>0) {
 			Element eElse = new Element("else");
 			for (Element c : elses) {
+				c.detach();
 				eElse.addContent(c);
 			}
 			e.addContent(eElse);
