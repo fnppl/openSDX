@@ -369,6 +369,20 @@
 			<!-- HT 14.02.2011 - using some *basic-if-then-else*-style here because of clarity and easy implemenation-possibility -->
 			<rules>
 				<rule num="1"><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
+		          <if>
+		            <what>streaming_allowed</what> 
+		            <operator>equals</operator><!-- equals/before/after/contains/containedin -->
+		            <value>true</value>
+		          </if>
+		          <then>
+		            <proclaim>
+		              <what>timeframe_from</what>
+		              <for>2013-08-25 22:00:40 GMT+00:00</for>
+		            </proclaim>
+		          </then>
+		        </rule><!-- numbered since we need an ordered mode here - first come first match -->
+		        
+				<rule num="2">
 					<if>
 						<what>territory</what>
 						<operator>containedin</operator><!-- equals/before/after/contains/containedin -->
@@ -389,18 +403,19 @@
 						</proclaim>
 						<break />
 					</else>
-				</rule><!-- numbered since we need an ordered mode here - first come first match -->
+				</rule>
 				
-				<rule num="2"><!-- HT 14.02.2011 yeah, starting at #1 ;-) -->
+				<rule num="3">
 					<if>
 						<what>territory</what><!-- *field* -->
 						<operator>equals</operator><!-- equals/before/after/contains/containedin -->
 						<value>DE</value>
 					</if>
 					<then>
-						<echo>YOU CANNOT EVEN REACH ME - since RULE1 breaks and DE is in EU</echo>					
+						<echo>YOU CANNOT EVEN REACH ME - since RULE2 breaks and DE is in EU</echo>					
 					</then>				
 				</rule>
+				
 			</rules>
 		</license_specifics><!-- MUST ; if no specific rules should be applied: empty node -->
 		
