@@ -82,11 +82,25 @@ public class SymmetricKey {
 	
 	private byte[] initVector = null;
 	private byte[] keyBytes = null;
+
+	private final byte[] my_buff = new byte[16];
+	private final byte[] my_buff2 = new byte[48];
+	PaddedBufferedBlockCipher aesCipher = null;
 	
 	public SymmetricKey(byte[] key_bytes, byte[] iv
 			) {
 		this.keyBytes = key_bytes;
 		this.initVector = iv;
+		
+		CBCBlockCipher aesCBC = new CBCBlockCipher(new AESEngine());
+		KeyParameter kp = new KeyParameter(keyBytes);
+		ParametersWithIV aesCBCParams = new ParametersWithIV(kp, initVector);
+		
+	    aesCipher = new PaddedBufferedBlockCipher(
+	    		aesCBC,
+	            new PKCS7Padding()
+	    	);
+	    aesCipher.init(true, aesCBCParams);
 	}
 	
 	public static SymmetricKey getRandomKey() {
@@ -122,30 +136,21 @@ public class SymmetricKey {
 		return sk;
 	}
 	
+	
+	
+	
 	public void encrypt(InputStream in, OutputStream out) throws Exception {
-
-		CBCBlockCipher aesCBC = new CBCBlockCipher(new AESEngine());
-		KeyParameter kp = new KeyParameter(keyBytes);
-		ParametersWithIV aesCBCParams = new ParametersWithIV(kp, initVector);
-		
-	    PaddedBufferedBlockCipher aesCipher = new PaddedBufferedBlockCipher(
-	    		aesCBC,
-	            new PKCS7Padding()
-	    	);
-	    aesCipher.init(true, aesCBCParams);
-	    
 	    int read = -1;
 	    int or = 0;
 	    int rr = 0;
-	    byte[] buff = new byte[16];
-	    byte[] buff2 = new byte[48];
-	    while((read=in.read(buff)) != -1) {
+	    
+	    while((read=in.read(my_buff)) != -1) {
 	    	rr += read;
-			int rg = aesCipher.processBytes(buff, 0, read, buff2, 0);
+			int rg = aesCipher.processBytes(my_buff, 0, read, my_buff2, 0);
 //			System.err.println("READ: "+read);
 //			System.err.println("PROCESS_BYTES_RETURN: "+rg);
 			
-			out.write(buff2, 0, rg);
+			out.write(my_buff2, 0, rg);
 			or += rg;
 		}
 //		int oss = aesCipher.getOutputSize(rr);
@@ -155,15 +160,16 @@ public class SymmetricKey {
 //		System.err.println("AESCIPHER.getOutputSize("+rr+"): "+oss);
 		
 //		int rest = oss - or;
-		read = aesCipher.doFinal(buff2, 0);
+		read = aesCipher.doFinal(my_buff2, 0);
 //		System.err.println("READ_LAST: "+read);
 		
-		out.write(buff2, 0, read);	
+		out.write(my_buff2, 0, read);	
 	}
+	
+	//TODO HT 2013-10-11 optimize for direct byte-buffer !!!
 	public byte[] encrypt(byte[] b) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		encrypt(new ByteArrayInputStream(b), out);
-		
 		return out.toByteArray();
 	 }
 	public byte[] decrypt(byte[] b) throws Exception {
