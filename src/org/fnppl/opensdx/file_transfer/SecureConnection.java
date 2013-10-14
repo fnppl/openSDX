@@ -265,7 +265,7 @@ public class SecureConnection {
 	}
 
 	private ByteArrayInputStream bin = null;
-	private ByteArrayOutputStream bout = new ByteArrayOutputStream();
+	private ByteArrayOutputStream bout = new ByteArrayOutputStream(64*1024);
 //	sk.encrypt(bin, bout);
 //	return bout.toByteArray();
 	
