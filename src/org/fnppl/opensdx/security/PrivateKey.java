@@ -134,7 +134,10 @@ public class PrivateKey {
 	}
 	
 	public byte[] getEncrytedPrivateKey(SymmetricKey sk) throws Exception {
-		return sk.encrypt(priv.getExponent().toByteArray());
+		ByteArrayInputStream bin = new ByteArrayInputStream(priv.getExponent().toByteArray());
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		sk.encrypt(bin, bout);
+		return bout.toByteArray();
 	}
 	
 }

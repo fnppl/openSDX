@@ -45,6 +45,8 @@ package org.fnppl.opensdx.file_transfer;
  */
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 
 import org.fnppl.opensdx.file_transfer.errors.*;
@@ -262,12 +264,22 @@ public class SecureConnection {
 		} catch (UnsupportedEncodingException ex) {	ex.printStackTrace();}	
 	}
 
+	private ByteArrayInputStream bin = null;
+	private ByteArrayOutputStream bout = new ByteArrayOutputStream();
+//	sk.encrypt(bin, bout);
+//	return bout.toByteArray();
+	
 	public void sendPackage() throws Exception {
 		//content
 		len = 0;
 		byte[] encContent = null;
 		if (content != null) {
-			encContent = key.encrypt(content);
+			
+			bin = new ByteArrayInputStream(content);			
+			bout.reset();		
+			key.encrypt(bin, bout);
+			
+			encContent = bout.toByteArray();
 			len = encContent.length;
 			if (len > 16777216) {
 				throw new RuntimeException("Max. 16Mb of content allowed.");
@@ -276,7 +288,12 @@ public class SecureConnection {
 
 		//header
 		byte[] header = buildPackageHeader(id, num, type, len);
-		byte[] encHeader = key.encrypt(header);
+		
+		bin = new ByteArrayInputStream(header);
+		bout.reset();		
+		key.encrypt(bin, bout);
+		
+		byte[] encHeader = bout.toByteArray();
 
 		//package
 		if (DEBUG) {

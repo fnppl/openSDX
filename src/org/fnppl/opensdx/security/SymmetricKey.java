@@ -166,12 +166,12 @@ public class SymmetricKey {
 		out.write(my_buff2, 0, read);	
 	}
 	
-	//TODO HT 2013-10-11 optimize for direct byte-buffer !!!
-	public byte[] encrypt(byte[] b) throws Exception {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		encrypt(new ByteArrayInputStream(b), out);
-		return out.toByteArray();
-	 }
+//	//TODO HT 2013-10-11 optimize for direct byte-buffer !!!
+//	public byte[] encrypt(byte[] b) throws Exception {
+//		ByteArrayOutputStream out = new ByteArrayOutputStream();
+//		encrypt(new ByteArrayInputStream(b), out);
+//		return out.toByteArray();
+//	 }
 	public byte[] decrypt(byte[] b) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		decrypt(new ByteArrayInputStream(b), out);
@@ -257,7 +257,13 @@ public class SymmetricKey {
 ////		
 		byte[] test = "ich asda will encoded werden...".getBytes();
 //		
-		byte[] enc = sk.encrypt(test); 
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		
+		ByteArrayInputStream bin = new ByteArrayInputStream(test);			
+		bout.reset();		
+		sk.encrypt(bin, bout);
+		
+		byte[] enc = bout.toByteArray(); 
 		byte[] dec = sk.decrypt(enc);
 		
 		System.out.println("BEFORE: "+(new String(test)));
