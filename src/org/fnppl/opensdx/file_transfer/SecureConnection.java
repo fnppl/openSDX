@@ -292,9 +292,9 @@ public class SecureConnection {
 			//System.out.println("package:     "+SecurityHelper.HexDecoder.encode(encHeader)+SecurityHelper.HexDecoder.encode(encContent));
 		}
 		
-		out.write(encHeader);
-		if (encContent != null) {
-			out.write(encContent);
+		out.write(encHeader, 0, len_header);
+		if (content != null) {
+			out.write(encContent, 0, len);
 		}
 		out.flush();
 	}
