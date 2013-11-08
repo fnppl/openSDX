@@ -82,11 +82,28 @@ public class SymmetricKey {
 	
 	private byte[] initVector = null;
 	private byte[] keyBytes = null;
+
+	private final byte[] my_buff = new byte[16];
+	private final byte[] my_buff2 = new byte[48];
+	PaddedBufferedBlockCipher aesCipher = null;
+	private int blockSize = -1;
 	
 	public SymmetricKey(byte[] key_bytes, byte[] iv
 			) {
 		this.keyBytes = key_bytes;
 		this.initVector = iv;
+		
+		CBCBlockCipher aesCBC = new CBCBlockCipher(new AESEngine());
+		KeyParameter kp = new KeyParameter(keyBytes);
+		ParametersWithIV aesCBCParams = new ParametersWithIV(kp, initVector);
+		
+	    aesCipher = new PaddedBufferedBlockCipher(
+	    		aesCBC,
+	            new PKCS7Padding()
+	    	);
+	    aesCipher.init(true, aesCBCParams);
+	    
+	    blockSize = aesCipher.getBlockSize();
 	}
 	
 	public static SymmetricKey getRandomKey() {
@@ -122,30 +139,61 @@ public class SymmetricKey {
 		return sk;
 	}
 	
-	public void encrypt(InputStream in, OutputStream out) throws Exception {
+	
+//	public byte[] encrypt(byte[] in) throws Exception {				
+//		int blockSize = aesCipher.getBlockSize();
+//		byte[] cipherTextBlock = new byte[blockSize];
+//		int size = aesCipher.getOutputSize(in.length);
+//		
+//		byte[] result = new byte[size];
+//        int olen = aesCipher.processBytes(in, 0, in.length, result, 0);
+//        olen += aesCipher.doFinal(result, olen);
+//
+//        
+//        if (olen < size) {
+//        	System.out.println("SymmetricKey::encrypt::olen!=size: "+olen+"!="+size);
+//            
+//            byte[] tmp = new byte[olen];
+//            System.arraycopy(result, 0, tmp, 0, olen);
+//            result = tmp;
+//        }
+//
+//        return result;            
+//	}
+	
+	
+	public int encrypt(byte[] in, byte[] out) throws Exception {				
+		int size = aesCipher.getOutputSize(in.length);
+		if(out.length<size) {
+			throw new Exception("outbuffer.size("+out.length+") too small to hold "+size+" bytes");
+		}
 
-		CBCBlockCipher aesCBC = new CBCBlockCipher(new AESEngine());
-		KeyParameter kp = new KeyParameter(keyBytes);
-		ParametersWithIV aesCBCParams = new ParametersWithIV(kp, initVector);
-		
-	    PaddedBufferedBlockCipher aesCipher = new PaddedBufferedBlockCipher(
-	    		aesCBC,
-	            new PKCS7Padding()
-	    	);
-	    aesCipher.init(true, aesCBCParams);
-	    
+        int olen = aesCipher.processBytes(in, 0, in.length, out, 0);
+        olen += aesCipher.doFinal(out, olen);
+
+        if (olen < size) {
+        	System.out.println("SymmetricKey::encrypt::olen!=size: "+olen+"!="+size);
+//            
+//            byte[] tmp = new byte[olen];
+//            System.arraycopy(result, 0, tmp, 0, olen);
+//            result = tmp;
+        }
+
+        return olen;            
+	}
+	
+	public void encrypt(InputStream in, OutputStream out) throws Exception {
 	    int read = -1;
 	    int or = 0;
 	    int rr = 0;
-	    byte[] buff = new byte[16];
-	    byte[] buff2 = new byte[48];
-	    while((read=in.read(buff)) != -1) {
+	    
+	    while((read=in.read(my_buff)) != -1) {
 	    	rr += read;
-			int rg = aesCipher.processBytes(buff, 0, read, buff2, 0);
+			int rg = aesCipher.processBytes(my_buff, 0, read, my_buff2, 0);
 //			System.err.println("READ: "+read);
 //			System.err.println("PROCESS_BYTES_RETURN: "+rg);
 			
-			out.write(buff2, 0, rg);
+			out.write(my_buff2, 0, rg);
 			or += rg;
 		}
 //		int oss = aesCipher.getOutputSize(rr);
@@ -155,17 +203,18 @@ public class SymmetricKey {
 //		System.err.println("AESCIPHER.getOutputSize("+rr+"): "+oss);
 		
 //		int rest = oss - or;
-		read = aesCipher.doFinal(buff2, 0);
+		read = aesCipher.doFinal(my_buff2, 0);
 //		System.err.println("READ_LAST: "+read);
 		
-		out.write(buff2, 0, read);	
+		out.write(my_buff2, 0, read);	
 	}
-	public byte[] encrypt(byte[] b) throws Exception {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		encrypt(new ByteArrayInputStream(b), out);
-		
-		return out.toByteArray();
-	 }
+	
+//	//TODO HT 2013-10-11 optimize for direct byte-buffer !!!
+//	public byte[] encrypt(byte[] b) throws Exception {
+//		ByteArrayOutputStream out = new ByteArrayOutputStream();
+//		encrypt(new ByteArrayInputStream(b), out);
+//		return out.toByteArray();
+//	 }
 	public byte[] decrypt(byte[] b) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		decrypt(new ByteArrayInputStream(b), out);
@@ -250,12 +299,25 @@ public class SymmetricKey {
 //		SymmetricKey l = new SymmetricKey(key, init);
 ////		
 		byte[] test = "ich asda will encoded werden...".getBytes();
+//		byte[] test = "ich".getBytes();
 //		
-		byte[] enc = sk.encrypt(test); 
-		byte[] dec = sk.decrypt(enc);
+//		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+//		
+//		ByteArrayInputStream bin = new ByteArrayInputStream(test);			
+//		bout.reset();		
+//		sk.encrypt(bin, bout);
+//		
+//		byte[] enc = bout.toByteArray();
+		byte[] enc = new byte[512];
+//		byte[] enc = sk.encrypt(test);
+		int r = sk.encrypt(test, enc);
+		
+		byte[] enc_t = new byte[r];
+		System.arraycopy(enc, 0, enc_t, 0, r);
+		byte[] dec = sk.decrypt(enc_t);
 		
 		System.out.println("BEFORE: "+(new String(test)));
-		System.out.println("ENC: "+SecurityHelper.HexDecoder.encode(enc,':',-1));
+		System.out.println("ENC: "+SecurityHelper.HexDecoder.encode(enc_t,':',-1));
 		System.out.println("AFTER: "+(new String(dec)));
 		
 	}

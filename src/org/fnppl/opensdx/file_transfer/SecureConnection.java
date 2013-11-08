@@ -45,6 +45,8 @@ package org.fnppl.opensdx.file_transfer;
  */
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 
 import org.fnppl.opensdx.file_transfer.errors.*;
@@ -262,13 +264,15 @@ public class SecureConnection {
 		} catch (UnsupportedEncodingException ex) {	ex.printStackTrace();}	
 	}
 
+	private final byte[] encContent = new byte[16777216];
+	private final byte[] encHeader = new byte[500*1024];
+	
 	public void sendPackage() throws Exception {
 		//content
 		len = 0;
-		byte[] encContent = null;
+		
 		if (content != null) {
-			encContent = key.encrypt(content);
-			len = encContent.length;
+			len = key.encrypt(content, encContent);
 			if (len > 16777216) {
 				throw new RuntimeException("Max. 16Mb of content allowed.");
 			}
@@ -276,20 +280,21 @@ public class SecureConnection {
 
 		//header
 		byte[] header = buildPackageHeader(id, num, type, len);
-		byte[] encHeader = key.encrypt(header);
-
+		
+		int len_header = key.encrypt(header, encHeader);
+		
 		//package
 		if (DEBUG) {
-			System.out.println("header:      "+SecurityHelper.HexDecoder.encode(header));
-			System.out.println("header: enc  "+SecurityHelper.HexDecoder.encode(encHeader));
-			System.out.println("content:     "+SecurityHelper.HexDecoder.encode(content));
-			System.out.println("content: enc "+SecurityHelper.HexDecoder.encode(encContent));
+			System.out.println("header:      "+SecurityHelper.HexDecoder.encode(header, 0, header.length, ':', -1));
+			System.out.println("header: enc  "+SecurityHelper.HexDecoder.encode(encHeader, 0, len_header, ':', -1));
+			System.out.println("content:     "+SecurityHelper.HexDecoder.encode(content, 0, content.length, ':', -1));
+			System.out.println("content: enc "+SecurityHelper.HexDecoder.encode(encContent, 0, len, ':', -1));
 			//System.out.println("package:     "+SecurityHelper.HexDecoder.encode(encHeader)+SecurityHelper.HexDecoder.encode(encContent));
 		}
 		
-		out.write(encHeader);
-		if (encContent != null) {
-			out.write(encContent);
+		out.write(encHeader, 0, len_header);
+		if (content != null) {
+			out.write(encContent, 0, len);
 		}
 		out.flush();
 	}
