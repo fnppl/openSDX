@@ -339,21 +339,28 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         		String filename = cover.getChild("file").getChildTextNN("name");
         		String fpath = cover.getChild("file").getChildTextNN("path")+File.separator;
         		File f = new File(path+fpath+filename);
-        		if(f!=null && f.exists()) {
+        		if (f != null && f.exists()) {
         			itemfile.setFile(f);        			
         			// set delivered path to file 
         			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
         		} else {
-        			//file does not exist -> so we have to set the values "manually"
-        			
-        			//-> use filename for location
-        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
-        		
-        			//file size
-        			if(cover.getChild("file").getChild("size")!=null) {
-            			itemfile.bytes(Integer.parseInt(cover.getChild("file").getChildTextNN("size")));
-            		}        		
-            		
+        			//first check if we found it within that directory
+        			//Get path of importFile
+        			f = new File(importFile.getParentFile(), filename);
+        			if (f != null && f.exists()) {
+            			itemfile.setFile(f);        			
+            			// set delivered path to file 
+            			itemfile.setLocation(FileLocation.make(filename, fpath+filename));
+        			}
+        			else {
+	        			//file does not exist -> so we have to set the values "manually"	        			
+	        			//-> use filename for location
+	        			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
+	        			//file size
+	        			if(cover.getChild("file").getChild("size")!=null) {
+	            			itemfile.bytes(Integer.parseInt(cover.getChild("file").getChildTextNN("size")));
+	            		}        		
+        			}
         		}
         		
         		bundle.addFile(itemfile);
@@ -479,20 +486,28 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
              		File f = new File(path+fpath+filename);      		
              		if(f!=null && f.exists()) {
              			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
-
              			// set delivered path to file 
              			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
 
              		} else {
-             			//file does not exist -> so we have to set the values "manually"
-
-             			//-> use filename as location
-             			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
-
-             			//file size
-             			if(track.getChild("resources").getChild("audio")!=null && track.getChild("resources").getChild("audio").getChild("file")!=null && track.getChild("resources").getChild("audio").getChild("file").getChild("size")!=null) {
-             				itemfile.bytes(Integer.parseInt(track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("size")));
-             			}        		
+             			//first check if we found it within that directory
+            			//Get path of importFile
+            			f = new File(importFile.getParentFile(), filename);
+            			if (f != null && f.exists()) {
+                			itemfile.setFile(f);        			
+                			// set delivered path to file 
+                			itemfile.setLocation(FileLocation.make(filename, fpath+filename));
+            			}
+            			else {
+            				//file does not exist -> so we have to set the values "manually"	
+	             			//-> use filename as location
+	             			itemfile.setLocation(FileLocation.make(fpath+filename,fpath+filename));
+	
+	             			//file size
+	             			if(track.getChild("resources").getChild("audio")!=null && track.getChild("resources").getChild("audio").getChild("file")!=null && track.getChild("resources").getChild("audio").getChild("file").getChild("size")!=null) {
+	             				itemfile.bytes(Integer.parseInt(track.getChild("resources").getChild("audio").getChild("file").getChildTextNN("size")));
+	             			} 
+            			}
              		}
              		
              		item.addFile(itemfile);
