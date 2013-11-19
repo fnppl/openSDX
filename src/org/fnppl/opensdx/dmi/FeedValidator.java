@@ -47,6 +47,8 @@ package org.fnppl.opensdx.dmi;
 import java.io.*;
 import java.net.URL;
 
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -342,12 +344,24 @@ public class FeedValidator {
 		int mode = 0; //file-mode
 //		int mode = 1; //string-mode
 //		int mode = 2; //feed-mode
+		File f = null;
+		
+		// if no arguments given, you can select the file via JFileChooser
+		if(args.length == 0){
+			JFileChooser fc = new JFileChooser();
+			int result = fc.showOpenDialog(new JPanel());
+			if(result == JFileChooser.APPROVE_OPTION){
+				f = fc.getSelectedFile();
+			} else {
+				return; //quit
+			}
+		}
 		
 		switch(mode) {
 			case 0:
 			{
 				System.out.println("file-mode");
-				File f = new File(args[0]);
+//				f = new File(args[0]);
 				FeedValidator fv = new FeedValidator();
 				String msg = fv.validateOSDX_latest(f);
 
@@ -363,7 +377,7 @@ public class FeedValidator {
 			case 1:
 			{
 				System.out.println("string-mode");
-				File f = new File(args[0]);
+//				f = new File(args[0]);
 				BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
 				String zeile = null;
 				StringBuffer sb = new StringBuffer();
@@ -388,7 +402,7 @@ public class FeedValidator {
 			case 2:
 			{
 				System.out.println("feed-mode");
-				File f = new File(args[0]);
+//				f = new File(args[0]);
 				SAXBuilder sax = new SAXBuilder();
 				Document d = sax.build(f);
 				org.jdom.Element r = (org.jdom.Element)d.getRootElement().detach();

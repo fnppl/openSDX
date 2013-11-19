@@ -293,6 +293,15 @@
 		</contributors><!-- MUST the contributors are ordered from 1 to n - most significant ones (per type) are the ones with the smalles n -->
 		
 		<information>
+			<!-- AJ 19.11.2013 - prepareing classical data -->
+			<classical_work>
+				<displayname>Test</displayname>
+				<art>Opus</art>
+				<number>26</number>
+				<key>C#</key>
+				<tempo>laid back</tempo>
+			</classical_work>
+			
 			<texts>
 				<promotext lang="en">
 				EN asdasd
