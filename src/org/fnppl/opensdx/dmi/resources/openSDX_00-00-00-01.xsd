@@ -52,7 +52,7 @@
     <xsd:import namespace="http://fnppl.org/opensdx/countrycodes"
         schemaLocation="openSDX_countryCodes.xsd"/>
     <xsd:import namespace="http://fnppl.org/opensdx/genres" schemaLocation="openSDX_genres.xsd"/>
-    <xsd:import namespace="http://fnppl.org/opensdx/tempos" schemaLocation="openSDX_tempos.xsd"/>
+    <xsd:import namespace="http://fnppl.org/opensdx/tempos" schemaLocation="file:///home/ajovanovic/eclipse_workspace/openSDX/src/org/fnppl/opensdx/dmi/resources/openSDX_tempos.xsd"/>
     <xsd:import namespace="http://fnppl.org/opensdx/languages"
         schemaLocation="openSDX_languages.xsd"/>
     <xsd:element name="feed">
@@ -266,7 +266,6 @@
     		<xsd:element name="number" type="xsd:decimal" minOccurs="1" maxOccurs="1"/>
     		<xsd:element name="tempo" type="t:tempoValue" minOccurs="1" maxOccurs="1"/>
     		<xsd:element name="key" type="key" minOccurs="1" maxOccurs="1"/>
-    		<xsd:element name="is_opera" type="xsd:boolean" minOccurs="1" maxOccurs="1"/>
     	</xsd:sequence>
     </xsd:complexType>
     <xsd:simpleType name="key">
