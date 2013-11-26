@@ -296,10 +296,13 @@
 			<!-- AJ 19.11.2013 - preparing classical data -->
 			<classical_work>
 				<displayname>Test</displayname>
-				<art>Opus</art>
+				<art>Opus</art> 
 				<number>26</number>
-				<tempo>laid back</tempo>
-				<key>A#</key>
+				<tempo>Larghissimo</tempo>
+				<key>
+					<keynote>Bb</keynote>
+					<movement>minor</movement>
+				</key>
 			</classical_work>
 			
 			<texts>

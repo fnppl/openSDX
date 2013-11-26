@@ -268,7 +268,25 @@
     		<xsd:element name="key" type="key" minOccurs="1" maxOccurs="1"/>
     	</xsd:sequence>
     </xsd:complexType>
-    <xsd:simpleType name="key">
+    <xsd:complexType name="key">
+    	<xsd:annotation>
+    		<xsd:documentation xml:lang="en">This element represents the key in wich the classical item is composed. It contains the keynote and the movement.</xsd:documentation>
+    	</xsd:annotation>
+    	<xsd:sequence>
+    		<xsd:element name="keynote" type="keynote" minOccurs="1" maxOccurs="1"/>
+    		<xsd:element name="movement" type="movement" minOccurs="1" maxOccurs="1"/>
+    	</xsd:sequence>
+    </xsd:complexType>
+    <xsd:simpleType name="movement">
+    	<xsd:annotation>
+    		<xsd:documentation>This type represents the key note in wich the classical item is composed.</xsd:documentation>
+    	</xsd:annotation>
+    	<xsd:restriction base="xsd:string">
+    		<xsd:enumeration value="minor"/>
+    		<xsd:enumeration value="major"/>
+    	</xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="keynote">
     	<xsd:annotation>
     		<xsd:documentation>This type represents the key note in wich the classical item is composed.</xsd:documentation>
     	</xsd:annotation>
