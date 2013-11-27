@@ -52,7 +52,7 @@
     <xsd:import namespace="http://fnppl.org/opensdx/countrycodes"
         schemaLocation="openSDX_countryCodes.xsd"/>
     <xsd:import namespace="http://fnppl.org/opensdx/genres" schemaLocation="openSDX_genres.xsd"/>
-    <xsd:import namespace="http://fnppl.org/opensdx/tempos" schemaLocation="file:///home/ajovanovic/eclipse_workspace/openSDX/src/org/fnppl/opensdx/dmi/resources/openSDX_tempos.xsd"/>
+    <xsd:import namespace="http://fnppl.org/opensdx/tempos" schemaLocation="openSDX_tempos.xsd"/>
     <xsd:import namespace="http://fnppl.org/opensdx/languages"
         schemaLocation="openSDX_languages.xsd"/>
     <xsd:element name="feed">
