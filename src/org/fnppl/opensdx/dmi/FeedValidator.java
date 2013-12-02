@@ -71,6 +71,7 @@ public class FeedValidator {
 	public final static String  RESSOURCE_OSDX_0_0_1_COUNTRIES = "openSDX_countryCodes.xsd";
 	public final static String  RESSOURCE_OSDX_0_0_1_GENRES = "openSDX_genres.xsd";
 	public final static String  RESSOURCE_OSDX_0_0_1_LANGUAGES = "openSDX_languages.xsd";
+	public final static String  RESSOURCE_OSDX_0_0_1_TEMPOS = "openSDX_tempos.xsd";
 	
 	private String message = "";
 	private int errorCount = 0;
@@ -121,7 +122,10 @@ public class FeedValidator {
 			
 //			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_GENRES);
 			SecurityHelper.copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_GENRES), xsdDir, RESSOURCE_OSDX_0_0_1_GENRES);
-			
+
+//			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_TEMPOS);
+			SecurityHelper.copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_TEMPOS), xsdDir, RESSOURCE_OSDX_0_0_1_TEMPOS);
+						
 		} catch(Exception ex) {
 			ex.printStackTrace();
 		}
