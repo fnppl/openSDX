@@ -59,6 +59,7 @@ import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileAlreadyExistsExc
 import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileDoesNotExistException;
 import org.fnppl.opensdx.file_transfer.errors.OSDXException.FileSizeException;
 import org.fnppl.opensdx.file_transfer.errors.OSDXException.MakeDirectoryException;
+import org.fnppl.opensdx.file_transfer.errors.OSDXException.SocketNotConnectedException;
 import org.fnppl.opensdx.file_transfer.helper.RightsAndDuties;
 import org.fnppl.opensdx.file_transfer.model.RemoteFile;
 import org.fnppl.opensdx.helper.Logger;
@@ -596,7 +597,7 @@ public class OSDXFileTransferAdapter {
 		return uploadResume(localFile, absoluteRemotePath, null);
 	}
 	
-	public boolean uploadResume(File localFile, String absoluteRemotePath, ProgressListener pg) throws OSDXException, SocketException {
+	public boolean uploadResume(File localFile, String absoluteRemotePath, ProgressListener pg) throws OSDXException {
 		boolean ret = false;
 		try {
 			System.out.println("Upload/Resume of file: "+localFile.getCanonicalPath()+" -> "+absoluteRemotePath);
@@ -617,7 +618,8 @@ public class OSDXFileTransferAdapter {
 		} catch (SocketException se){
 			se.printStackTrace();
 			errorMsg = "The connection to the serve is lost!";
-			throw se;
+			//Hier nun die äquivalente OSDX Exception werfen
+			throw new OSDXException().new SocketNotConnectedException(errorMsg);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
