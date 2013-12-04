@@ -115,7 +115,7 @@ public class OSDXFileTransferAdapter {
 			e.printStackTrace();
 		}
 	}
-
+	
 	public boolean connect(String host, int port, String prepath, String username, String pass) throws Exception {
 		this.host = host;
 		this.port = port;
@@ -618,6 +618,7 @@ public class OSDXFileTransferAdapter {
 		} catch (SocketException se){
 			se.printStackTrace();
 			errorMsg = "The connection to the serve is lost!";
+			secureConnectionEstablished = false;
 			//Hier nun die äquivalente OSDX Exception werfen
 			throw new OSDXException().new SocketNotConnectedException(errorMsg);
 		} catch (Exception ex) {
