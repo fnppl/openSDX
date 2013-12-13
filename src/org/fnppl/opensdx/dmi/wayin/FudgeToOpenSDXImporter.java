@@ -196,20 +196,22 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	boolean isDownloadAllowed = false;
         	boolean isStreamingAllowed = false;
         	if (root.getChild("usage_rights") != null) {
-        		Vector<Element> usage_rights = root.getChildren("usage_rights");
+        		Vector<Element> usage_rights = root.getChild("usage_rights").getChildren("usage_right");        		
 	        	for (Iterator<Element> itExceptions = usage_rights.iterator(); itExceptions.hasNext();) {
 	        		Element usage_right = itExceptions.next();        	
-	        		
+	        		//System.out.println("SUB-Elements: "+usage_right.getName());
 	        		// rule for explicit physical release dates in territories
 	        		if("PermanentDownload".equals(usage_right.getText())) {
 	        			isDownloadAllowed = true;
 	        		}
 	        		if("SubscriptionStreaming".equals(usage_right.getText())) {
 	        			isStreamingAllowed = true;
+	        			//System.out.println("Found SubscriptionStreaming ... set to true");
 	        		}
 	        	}    
         	}
         	license_basis.streaming_allowed(isStreamingAllowed);
+        	//System.out.println("Set isStreamingAllowed to "+isStreamingAllowed);
         	license_basis.download_allowed(isDownloadAllowed);
 
         	// license specifics -> empty!
