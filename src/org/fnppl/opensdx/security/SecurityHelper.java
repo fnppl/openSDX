@@ -690,9 +690,12 @@ public class SecurityHelper {
 	
 	
 	public static byte[] getMD5(byte[] data) {
+		return getMD5(data, 0, data.length);
+	}
+	public static byte[] getMD5(byte[] data, int off, int len) {
 		org.bouncycastle.crypto.digests.MD5Digest md5 = new org.bouncycastle.crypto.digests.MD5Digest();
 		byte[] ret = new byte[md5.getDigestSize()];
-		md5.update(data, 0, data.length);
+		md5.update(data, off, len);
 		md5.doFinal(ret, 0);
 		return ret;
 	}
