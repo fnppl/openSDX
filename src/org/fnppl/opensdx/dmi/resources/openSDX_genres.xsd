@@ -353,7 +353,7 @@
 			<xsd:enumeration value="Soukous"/>
 			<xsd:enumeration value="Zouk"/>
 			<xsd:enumeration value="Zulu"/>
-			<xsd:enumeration value="Russion Chansons"/>
+			<xsd:enumeration value="Russian Chansons"/>
 			<xsd:enumeration value="Dini"/>
 			<xsd:enumeration value="Halk"/>
 			<xsd:enumeration value="Sanat"/>
