@@ -45,9 +45,9 @@
 
 package org.fnppl.opensdx.keyserverfe;
 
-import org.jdom.*;
-import org.jdom.input.*;
-import org.jdom.output.*;
+import org.jdom2.*;
+import org.jdom2.input.*;
+import org.jdom2.output.*;
 
 import java.io.*;
 
@@ -373,7 +373,7 @@ public abstract class MyAction {
 
 	}
 	public final static String getStringXML(Element e, String encoding) {
-		org.jdom.output.Format f = org.jdom.output.Format.getCompactFormat();
+		org.jdom2.output.Format f = org.jdom2.output.Format.getCompactFormat();
 		f.setEncoding(encoding);
 		XMLOutputter xout = new XMLOutputter(f);
 
@@ -381,7 +381,7 @@ public abstract class MyAction {
 
 	}
 	public final static String getCuteXML(Element e) {
-		org.jdom.output.Format f = org.jdom.output.Format.getPrettyFormat();
+		org.jdom2.output.Format f = org.jdom2.output.Format.getPrettyFormat();
 		f.setEncoding("UTF-8");
 		XMLOutputter xout = new XMLOutputter(f);
 

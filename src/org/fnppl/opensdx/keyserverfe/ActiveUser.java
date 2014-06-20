@@ -56,7 +56,7 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.velocity.VelocityContext;
-import org.jdom.Element;
+import org.jdom2.Element;
 
 public class ActiveUser {
 	public final static long MAX_LOGINTIME = 16*60*60*1000;//16h
@@ -271,7 +271,7 @@ public class ActiveUser {
     
     public static Hashtable<String, Object> buildSessionHash(String xml) {
 	    Hashtable<String, Object> hash = new Hashtable<String, Object>();
-	    org.jdom.input.SAXBuilder sax = new org.jdom.input.SAXBuilder(false);
+	    org.jdom2.input.SAXBuilder sax = new org.jdom2.input.SAXBuilder(false);
 	    
 	    try {
 	    	//System.out.println("XML: "+xml);
@@ -317,7 +317,7 @@ public class ActiveUser {
             }
         }
         
-        org.jdom.output.XMLOutputter xout = new org.jdom.output.XMLOutputter();
+        org.jdom2.output.XMLOutputter xout = new org.jdom2.output.XMLOutputter();
         return xout.outputString(e);
     }
 }

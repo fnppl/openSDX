@@ -48,7 +48,7 @@ package org.fnppl.opensdx.keyserverfe;
 
 import java.io.*;
 import java.util.*;
-import org.jdom.*;
+import org.jdom2.*;
 import org.apache.velocity.*;
 import org.apache.velocity.app.*;
 

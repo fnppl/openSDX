@@ -51,8 +51,8 @@ import java.net.*;
 import java.text.*;
 
 import org.fnppl.dbaccess.DBResultSet;
-import org.jdom.*;
-import org.jdom.output.*;
+import org.jdom2.*;
+import org.jdom2.output.*;
 
 
 public class Helper {
@@ -75,7 +75,7 @@ public class Helper {
             return null;
         
         try{
-            org.jdom.output.Format f = org.jdom.output.Format.getPrettyFormat();
+            org.jdom2.output.Format f = org.jdom2.output.Format.getPrettyFormat();
             f.setEncoding(XML_OUTPUTTER_CHARSET);
             XMLOutputter xmlOutputter = new XMLOutputter(f);
 
@@ -95,7 +95,7 @@ public class Helper {
             return null;
         
         try{
-            org.jdom.output.Format f = org.jdom.output.Format.getPrettyFormat();
+            org.jdom2.output.Format f = org.jdom2.output.Format.getPrettyFormat();
             f.setEncoding(XML_OUTPUTTER_CHARSET);
             XMLOutputter xmlOutputter = new XMLOutputter(f);
             
@@ -114,7 +114,7 @@ public class Helper {
             return ;
         
         try{
-            org.jdom.output.Format f = org.jdom.output.Format.getPrettyFormat();
+            org.jdom2.output.Format f = org.jdom2.output.Format.getPrettyFormat();
             f.setEncoding(XML_OUTPUTTER_CHARSET);
             XMLOutputter xmlOutputter = new XMLOutputter(f);
             
@@ -130,7 +130,7 @@ public class Helper {
             return ;
         
         try{
-            org.jdom.output.Format f = org.jdom.output.Format.getPrettyFormat();
+            org.jdom2.output.Format f = org.jdom2.output.Format.getPrettyFormat();
             f.setEncoding(XML_OUTPUTTER_CHARSET);
             XMLOutputter xmlOutputter = new XMLOutputter(f);
             
@@ -162,7 +162,7 @@ public class Helper {
             }
         }
         
-        org.jdom.output.XMLOutputter xout = new org.jdom.output.XMLOutputter();
+        org.jdom2.output.XMLOutputter xout = new org.jdom2.output.XMLOutputter();
         return xout.outputString(e);
     }
     public static void printHashtable(Hashtable hash) {
@@ -177,7 +177,7 @@ public class Helper {
     }
     public static Hashtable buildSessionHash(String xml) {
         Hashtable hash = new Hashtable();
-        org.jdom.input.SAXBuilder sax = new org.jdom.input.SAXBuilder(false);
+        org.jdom2.input.SAXBuilder sax = new org.jdom2.input.SAXBuilder(false);
         try {
             Element e = sax.build(new StringReader(xml)).getRootElement();
             Iterator it = e.getChildren().iterator();

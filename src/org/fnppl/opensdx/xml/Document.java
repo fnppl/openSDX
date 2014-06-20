@@ -49,18 +49,18 @@ package org.fnppl.opensdx.xml;
 import java.io.*;
 import java.net.URL;
 
-import org.jdom.*;
-import org.jdom.input.*;
-import org.jdom.output.*;
+import org.jdom2.*;
+import org.jdom2.input.*;
+import org.jdom2.output.*;
 
 public class Document {
-	private org.jdom.Document base = null;
+	private org.jdom2.Document base = null;
 	private Element rt = null;
 	
 	private Document() {
 		
 	}
-	private Document(org.jdom.Document dc) {
+	private Document(org.jdom2.Document dc) {
 		this.base = dc;
 		rt = new Element(base.getRootElement());
 		
@@ -101,7 +101,7 @@ public class Document {
 	
 	public static Document buildDocument(Element root) {
 		Document d = new Document();
-		d.base = new org.jdom.Document((org.jdom.Element)root.base.detach());
+		d.base = new org.jdom2.Document((org.jdom2.Element)root.base.detach());
 		d.rt = root;
 		return d;
 	}
@@ -186,15 +186,15 @@ public class Document {
 		return null;
 	}
 	
-	public static org.jdom.Document buildJDOMDocument(Element openSDXRoot) {
+	public static org.jdom2.Document buildJDOMDocument(Element openSDXRoot) {
 		return buildJDOMDocument(openSDXRoot, "openSDX_00-00-00-01.xsd");
 	}
-	public static org.jdom.Document buildJDOMDocument(Element openSDXRoot, String url) {
-		org.jdom.Element root = (org.jdom.Element)openSDXRoot.base.detach();
+	public static org.jdom2.Document buildJDOMDocument(Element openSDXRoot, String url) {
+		org.jdom2.Element root = (org.jdom2.Element)openSDXRoot.base.detach();
 		Namespace ns = Namespace.getNamespace("xsi","http://www.w3.org/2001/XMLSchema-instance");
 		root.setAttribute("noNamespaceSchemaLocation", url, ns);
 		Document d = new Document();
-		d.base = new org.jdom.Document(root);
+		d.base = new org.jdom2.Document(root);
 		return d.base;
 	}
 }
