@@ -66,6 +66,7 @@ public class Bundle extends BusinessObject {
 	private ItemTags tags;									//COULD
 	private BusinessCollection<Item> items;					//SHOULD
 	private BusinessCollection<ItemFile> files;	 			//COULD
+	private BusinessCollection<Localization> localizations; //COULD
 
 	public static Bundle make(IDs ids, String displayname, String name, String version, String display_artistname, BundleInformation information, LicenseBasis license_basis, LicenseSpecifics license_specifics) {
 		Bundle bundle = new Bundle();
@@ -152,6 +153,25 @@ public class Bundle extends BusinessObject {
 			};
 		}
 		files.add(file);
+		return this;
+	}
+	
+	public Bundle addLocalization(Localization localization){
+		if(localization == null){
+			return this;
+		}
+		
+		//remove old one - no doubles
+		if(localizations != null){
+			for(int i = 0; i<localizations.size(); i++){
+				Localization l = localizations.get(i);
+				if(l.equals(localization)){
+					localizations.remove(i--);
+				}
+			}
+		}
+		
+		localizations.add(localization);
 		return this;
 	}
 	

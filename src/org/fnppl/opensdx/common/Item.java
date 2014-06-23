@@ -66,6 +66,7 @@ public class Item extends BusinessObject {
 	private ItemTags tags;									//SHOULD
 	private Fingerprint fingerprint;						//COULD
 	private BusinessCollection<ItemFile> files;
+	private BusinessCollection<Localization> localizations; //COULD
 	
 	
 	private Item() {
@@ -137,6 +138,25 @@ public class Item extends BusinessObject {
 		item.fingerprint = Fingerprint.fromBusinessObject(bo);
 		
 		return item;
+	}
+	
+	public Item addLocalization(Localization localization){
+		if(localization == null){
+			return this;
+		}
+		
+		//remove old one - no doubles
+		if(localizations != null){
+			for(int i = 0; i<localizations.size(); i++){
+				Localization l = localizations.get(i);
+				if(l.equals(localization)){
+					localizations.remove(i--);
+				}
+			}
+		}
+		
+		localizations.add(localization);
+		return this;
 	}
 	
 	public Item addContributor(Contributor contributor) {
