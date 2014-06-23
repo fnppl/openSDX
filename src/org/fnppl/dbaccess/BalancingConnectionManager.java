@@ -46,7 +46,7 @@ package org.fnppl.dbaccess;
 import java.util.*;
 import java.io.*;
 
-import org.jdom.*;
+import org.jdom2.*;
 
 import org.apache.commons.dbcp.cpdsadapter.*;
 import org.apache.commons.dbcp.datasources.*;

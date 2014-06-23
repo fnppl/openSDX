@@ -60,8 +60,8 @@ import javax.xml.validation.SchemaFactory;
 
 import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.security.SecurityHelper;
-import org.jdom.Document;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.input.SAXBuilder;
 import org.xml.sax.*;
 
 
@@ -409,7 +409,7 @@ public class FeedValidator {
 //				f = new File(args[0]);
 				SAXBuilder sax = new SAXBuilder();
 				Document d = sax.build(f);
-				org.jdom.Element r = (org.jdom.Element)d.getRootElement().detach();
+				org.jdom2.Element r = (org.jdom2.Element)d.getRootElement().detach();
 				
 				Feed fe = Feed.fromBusinessObject(Feed.fromElement(org.fnppl.opensdx.xml.Element.buildElement(r)));
 				

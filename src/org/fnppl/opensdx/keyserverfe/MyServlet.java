@@ -50,8 +50,8 @@ import java.util.*;
 
 import javax.servlet.http.*;
 
-import org.jdom.*;
-import org.jdom.input.*;
+import org.jdom2.*;
+import org.jdom2.input.*;
 
 import org.fnppl.dbaccess.*;
 

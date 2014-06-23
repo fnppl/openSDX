@@ -8,7 +8,7 @@ import org.fnppl.opensdx.common.*;
 import org.fnppl.opensdx.xml.*;
 import org.fnppl.opensdx.security.*;
 
-import org.jdom.output.XMLOutputter;
+import org.jdom2.output.XMLOutputter;
 
 /*
  * Copyright (C) 2010-2013 

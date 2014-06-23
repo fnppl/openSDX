@@ -51,26 +51,26 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
 
-import org.jdom.Attribute;
-import org.jdom.Comment;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Attribute;
+import org.jdom2.Comment;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 public class Element {
-	protected org.jdom.Element base = null;
+	protected org.jdom2.Element base = null;
 	
-	public static Element buildElement(org.jdom.Element jdomElement) {
+	public static Element buildElement(org.jdom2.Element jdomElement) {
 		return new Element(jdomElement);
 	}
 	public Element(String name) {
-		base = new org.jdom.Element(name);
+		base = new org.jdom2.Element(name);
 	}
 	
 	public Element(String name, String value) {
-		base = new org.jdom.Element(name).setText(value);
+		base = new org.jdom2.Element(name).setText(value);
 		
 	}
-	protected Element(org.jdom.Element e) {
+	protected Element(org.jdom2.Element e) {
 		base = e;
 	}	
 	
@@ -88,7 +88,7 @@ public class Element {
 		return this;
 	}
 	
-	public org.jdom.Element getJDOMBaseElement() {
+	public org.jdom2.Element getJDOMBaseElement() {
 		return base;
 	}
 	
@@ -128,7 +128,7 @@ public class Element {
 	}
 	public Element getChild(String name) {
 		//beware double-invoke!!!
-		org.jdom.Element b = base.getChild(name);
+		org.jdom2.Element b = base.getChild(name);
 		if (b==null) return null;
 		return new Element(b);
 	}
@@ -178,7 +178,7 @@ public class Element {
 //		if(value == null) {
 //			return;
 //		}
-		base.addContent((new org.jdom.Element(name)).setText(value));
+		base.addContent((new org.jdom2.Element(name)).setText(value));
 	}
 	
 	
@@ -190,7 +190,7 @@ public class Element {
 		Vector<Element> ret = new Vector<Element>();
 		List l = base.getChildren();
 		for(int i=0;i<l.size();i++) {
-			ret.add(new Element((org.jdom.Element)l.get(i)));
+			ret.add(new Element((org.jdom2.Element)l.get(i)));
 		}
 		return ret;
 	}
@@ -198,7 +198,7 @@ public class Element {
 		Vector<Element> ret = new Vector<Element>();
 		List l = base.getChildren(name);
 		for(int i=0;i<l.size();i++) {
-			ret.add(new Element((org.jdom.Element)l.get(i)));
+			ret.add(new Element((org.jdom2.Element)l.get(i)));
 		}
 		
 		return ret;
