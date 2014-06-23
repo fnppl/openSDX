@@ -54,13 +54,18 @@ import java.util.Hashtable;
  */
 public class Localization extends BusinessObject{
 	public enum Type{
-		RELEASE,
-		TRACK,
-		ARTIST,
-		UNDEFINED
+		NAME,
+		DISPLAYNAME
+//		RELEASE,
+//		TRACK,
+//		ARTIST,
+//		UNDEFINED
 	}
 	
-	private Type type = Type.UNDEFINED;
+	private Type type = null;
+	private BusinessObject iamlocalizating = null;
+	private String lang = null; //hould be a generic object "Lang" in the future...
+	private String value = null;
 	
 	/*
 	 * Hashtable depends on the Localization.Type
@@ -69,36 +74,38 @@ public class Localization extends BusinessObject{
 	 * String (combination of "tracknumber_setnumber") and the value is another
 	 * Hashtable with Key: Integer (Iso code) and Value: String.
 	 */
-	private Hashtable<?, ?> data = null;
 	
 	public Type getType(){
 		return type;
 	}
 	
-	public Hashtable<?, ?> getData(){
-		return data;
+	public String getValue(){
+		return value;
+	}
+	public String getLang(){
+		return lang;
 	}
 	
 	//TrackEditor, Contributor.TYPE_EDITOR, IDs.make()
-	public static Localization make(Hashtable<?, ?> data, Type type){
+	public static Localization make(BusinessObject tolocalize, Type type, String value){
 		Localization ret = new Localization();
 		ret.type = type;
-		ret.data = data;
+		ret.value = value;
+		ret.iamlocalizating = tolocalize;
 		return ret;
 	}
 	
 	@Override
-	public String getKeyname() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public boolean equals(Object o){
 		if(o instanceof Localization){
 			Localization l = (Localization)o;
-			return this.type.equals(l.getType());
+			return this.type.equals(l.getType()) && value.equals(l.getValue()) && lang.equals(l.getLang());
 		}
-		return false;
+		return o.equals(this);
+	}
+
+	@Override
+	public String getKeyname() { 
+		return "localization_" + iamlocalizating.getKeyname() +"_"+ type +"_"+ lang;
 	}
 }
