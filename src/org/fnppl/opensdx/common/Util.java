@@ -50,12 +50,14 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
+
 /**
  * 
  * @author Bertram Bödeker <bboedeker@gmx.de>
  *
  */
 public class Util {
+	private static Vector<String> languages = null;
 	
 	private static char[] goodChars = null;
 	public static String filterCharacters(String s) {
@@ -365,4 +367,27 @@ public class Util {
 		}
 	}
     
+    /**
+     * check if the language is part of the openSDX_languages.xsd 
+     * (keep in mind that this is case sensitive)
+     * @param lang language to check
+     * @return true if valid else false
+     * @author mwitt
+     * @throws Exception 
+     */
+    public static boolean checkLanguage(String lang) throws Exception {
+    	if (languages==null){
+    		File f = new File("src/org/fnppl/opensdx/dmi/resources/openSDX_languages.xsd");
+    		org.jdom2.input.SAXBuilder sax = new org.jdom2.input.SAXBuilder();
+    		org.jdom2.filter.ElementFilter filter = new org.jdom2.filter.ElementFilter("enumeration");
+    		org.jdom2.Document doc = sax.build(f);
+    		
+    		languages = new Vector<String>();
+    		for(org.jdom2.Element e : doc.getRootElement().getDescendants(filter)) {
+    			languages.addElement(e.getAttribute("value").getValue());
+    		}
+    	}
+    			
+    	return languages.contains(lang);
+    }
 }
