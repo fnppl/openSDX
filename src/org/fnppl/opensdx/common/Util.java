@@ -368,14 +368,14 @@ public class Util {
 	}
     
     /**
-     * check if the language is part of the openSDX_languages.xsd 
+     * check if the languagecode is part of the openSDX_languages.xsd 
      * (keep in mind that this is case sensitive)
-     * @param lang language to check
+     * @param languagecode language to check
      * @return true if valid else false
      * @author mwitt
      * @throws Exception 
      */
-    public static boolean checkLanguage(String lang) throws Exception {
+    public static boolean checkLanguage(String languagecode) throws Exception {
     	if (languages==null){
     		File f = new File("src/org/fnppl/opensdx/dmi/resources/openSDX_languages.xsd");
     		org.jdom2.input.SAXBuilder sax = new org.jdom2.input.SAXBuilder();
@@ -388,6 +388,6 @@ public class Util {
     		}
     	}
     			
-    	return languages.contains(lang);
+    	return languages.contains(languagecode);
     }
 }
