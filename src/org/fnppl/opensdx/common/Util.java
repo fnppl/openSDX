@@ -46,9 +46,10 @@ package org.fnppl.opensdx.common;
  */
 
 import java.io.*;
-
 import java.util.*;
 import java.util.zip.*;
+
+import org.fnppl.opensdx.dmi.FeedValidator;
 
 
 /**
@@ -57,7 +58,7 @@ import java.util.zip.*;
  *
  */
 public class Util {
-	private static Vector<String> languages = null;
+	private static HashSet<String> languages = null;
 	
 	private static char[] goodChars = null;
 	public static String filterCharacters(String s) {
@@ -375,16 +376,16 @@ public class Util {
      * @author mwitt
      * @throws Exception 
      */
-    public static boolean checkLanguage(String languagecode) throws Exception {
-    	if (languages==null){
-    		File f = new File("src/org/fnppl/opensdx/dmi/resources/openSDX_languages.xsd");
+    public static boolean languageCodeExistsInXSD(String languagecode) throws Exception {
+    	if (languages == null) {    		
+    		
     		org.jdom2.input.SAXBuilder sax = new org.jdom2.input.SAXBuilder();
     		org.jdom2.filter.ElementFilter filter = new org.jdom2.filter.ElementFilter("enumeration");
-    		org.jdom2.Document doc = sax.build(f);
+    		org.jdom2.Document doc = sax.build(org.fnppl.opensdx.dmi.FeedValidator.class.getResourceAsStream("resources/"+org.fnppl.opensdx.dmi.FeedValidator.RESSOURCE_OSDX_0_0_1_LANGUAGES));
     		
-    		languages = new Vector<String>();
+    		languages = new HashSet<String>();
     		for(org.jdom2.Element e : doc.getRootElement().getDescendants(filter)) {
-    			languages.addElement(e.getAttribute("value").getValue());
+    			languages.add(e.getAttribute("value").getValue());
     		}
     	}
     			
