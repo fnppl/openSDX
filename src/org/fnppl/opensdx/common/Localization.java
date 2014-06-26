@@ -1,7 +1,5 @@
 package org.fnppl.opensdx.common;
 
-import java.util.Hashtable;
-
 /*
  * Copyright (C) 2010-2013 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -56,24 +54,13 @@ public class Localization extends BusinessObject{
 	public enum Type{
 		NAME,
 		DISPLAYNAME
-//		RELEASE,
-//		TRACK,
-//		ARTIST,
-//		UNDEFINED
 	}
 	
 	private Type type = null;
-	private BusinessObject iamlocalizating = null;
+	private BusinessObject iamlocalizating = null; // Reference on the localized Object
+	private BusinessObject iampartoff = null; // Reference on the Object, the localized Object is part of, null if standalone
 	private String lang = null; //hould be a generic object "Lang" in the future...
 	private String value = null;
-	
-	/*
-	 * Hashtable depends on the Localization.Type
-	 * If the type is a Release or Artist, the Key is an Integer (Iso code) and
-	 * the value is a String. Otherwise if the type is a Track the key is a 
-	 * String (combination of "tracknumber_setnumber") and the value is another
-	 * Hashtable with Key: Integer (Iso code) and Value: String.
-	 */
 	
 	public Type getType(){
 		return type;
@@ -87,11 +74,12 @@ public class Localization extends BusinessObject{
 	}
 	
 	//TrackEditor, Contributor.TYPE_EDITOR, IDs.make()
-	public static Localization make(BusinessObject tolocalize, Type type, String value){
+	public static Localization make(BusinessObject tolocalize, Type type, String lang, String value){
 		Localization ret = new Localization();
 		ret.type = type;
 		ret.value = value;
 		ret.iamlocalizating = tolocalize;
+		ret.lang = lang;
 		return ret;
 	}
 	

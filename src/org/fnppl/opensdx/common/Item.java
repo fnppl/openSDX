@@ -57,7 +57,7 @@ public class Item extends BusinessObject {
 	private BusinessStringItem name;						//MUST
 	private BusinessStringItem version;						//MUST
 	private BusinessStringItem type;						//MUST
-	private BusinessStringItem display_artistname;				//SHOULD
+	private BusinessStringItem display_artistname;			//SHOULD
 	private IDs ids;										//MUST
 	private BusinessCollection<Contributor> contributors;	//MUST
 	private BundleInformation information;					//MUST
