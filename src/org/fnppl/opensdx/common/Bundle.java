@@ -169,6 +169,13 @@ public class Bundle extends BusinessObject {
 					localizations.remove(i--);
 				}
 			}
+		} else {
+			localizations = new BusinessCollection<Localization>() {
+				@Override
+				public String getKeyname() {
+					return "localization";
+				}
+			};
 		}
 		
 		localizations.add(localization);
@@ -283,6 +290,13 @@ public class Bundle extends BusinessObject {
 	public int getContributorCount() {
 		if (contributors==null) return 0;
 		return contributors.size();
+	}
+	
+	public int getLocalizationsCount(){
+		if(localizations == null){
+			return 0;
+		}
+		return localizations.size();
 	}
 	
 	public Vector<Contributor> getAllContributors() {
@@ -443,6 +457,12 @@ public class Bundle extends BusinessObject {
 		return contributors.get(index);
 	}
 
+	public Localization getLocalization(int index){
+		if(localizations == null || index < 0 || index >= contributors.size()){
+			return null;
+		}
+		return localizations.get(index);
+	}
 
 	public BundleInformation getInformation() {
 		if (information==null) return null;
@@ -479,6 +499,19 @@ public class Bundle extends BusinessObject {
 				try {	
 					//System.out.println(f.getName());
 					Object thisFieldsObject = f.get(this);
+					if(thisFieldsObject == localizations){
+						Element e = new Element(localizations.getKeyname());
+						for(int i=0; i<getLocalizationsCount(); i++){
+							Localization l = getLocalization(i);
+							if(l.getLocalizating() != null && l.getLocalizating() instanceof Bundle){
+								Element e2 = l.toElement(); //Customized toElement Function
+								e.addContent(e2);
+							}
+						}
+						if(e != null){
+							resultElement.addContent(e);
+						}
+					}
 					if (thisFieldsObject == contributors) {
 						Element e = new Element(contributors.getKeyname());
 						for (int i=0;i<getContributorCount();i++) {

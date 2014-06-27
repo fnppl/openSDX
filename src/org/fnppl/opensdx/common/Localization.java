@@ -1,5 +1,7 @@
 package org.fnppl.opensdx.common;
 
+import org.fnppl.opensdx.xml.Element;
+
 /*
  * Copyright (C) 2010-2013 
  * 							fine people e.V. <opensdx@fnppl.org> 
@@ -53,33 +55,53 @@ package org.fnppl.opensdx.common;
 public class Localization extends BusinessObject{
 	public enum Type{
 		NAME,
-		DISPLAYNAME
+		DISPLAYNAME,
+		DISPLAYARTISTNAME // Special case for Displayartistnames on Bundle/Item level
 	}
 	
 	private Type type = null;
 	private BusinessObject iamlocalizating = null; // Reference on the localized Object
-	private BusinessObject iampartoff = null; // Reference on the Object, the localized Object is part of, null if standalone
-	private String lang = null; //hould be a generic object "Lang" in the future...
+	private BusinessObject iampartof = null; // Reference on the Object, the localized Object is part of, null if standalone
+	private String lang = null; //should be a generic object "Lang" in the future...
 	private String value = null;
 	
 	public Type getType(){
 		return type;
 	}
-	
 	public String getValue(){
 		return value;
 	}
 	public String getLang(){
 		return lang;
 	}
+	public BusinessObject getLocalizating(){
+		return iamlocalizating;
+	}
+	public BusinessObject getPartOf(){
+		return iampartof;
+	}
+	
+	private String typeToString(Type type){
+		switch(type){
+			case DISPLAYARTISTNAME:
+				return "display_artistname";
+			case DISPLAYNAME:
+				return "displayname";
+			case NAME:
+				return "name";
+			default:
+				return null;
+		}
+	}
 	
 	//TrackEditor, Contributor.TYPE_EDITOR, IDs.make()
-	public static Localization make(BusinessObject tolocalize, Type type, String lang, String value){
+	public static Localization make(BusinessObject tolocalize, BusinessObject partof, Type type, String lang, String value){
 		Localization ret = new Localization();
 		ret.type = type;
 		ret.value = value;
 		ret.iamlocalizating = tolocalize;
 		ret.lang = lang;
+		ret.iampartof = partof;
 		return ret;
 	}
 	
@@ -94,6 +116,14 @@ public class Localization extends BusinessObject{
 
 	@Override
 	public String getKeyname() { 
-		return "localization_" + iamlocalizating.getKeyname() +"_"+ type +"_"+ lang;
+		return "localization_" + iamlocalizating.getKeyname() +"_"+iampartof.getKeyname()+"_"+ type +"_"+ lang;
+	}
+	
+	@Override
+	public Element toElement(){
+		Element ret = new Element(typeToString(type));
+		ret.setText(value);
+		ret.setAttribute("lang", lang.toLowerCase());
+		return ret;
 	}
 }
