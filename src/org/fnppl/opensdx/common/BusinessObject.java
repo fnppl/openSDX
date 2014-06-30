@@ -78,7 +78,7 @@ public abstract class BusinessObject implements XMLElementable {
 	
 	protected static Hashtable<Class, Field[]> getDeclaredFieldsCache = new Hashtable<Class, Field[]>();
 	public Element toElement() {
-		//System.out.println(getKeyname());
+		System.out.println(getKeyname());
 		Element resultElement = new Element(getKeyname());
 		if (attribs!=null) {
 			for (Entry<String,String> a : attribs.entrySet()) {

@@ -9,6 +9,14 @@ import java.util.Vector;
  * 							http://fnppl.org
 */
 
+
+
+
+
+import org.fnppl.opensdx.xml.ChildElementIterator;
+import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLElementable;
+
 /*
  * Software license
  *
@@ -123,6 +131,7 @@ public class Contributor extends BusinessObject {
 	}
 	
 	private BusinessStringItem name;	//MUST
+	private BusinessCollection<Localization> localizations; //COULD
 	private BusinessStringItem type;	//MUST
 	private BusinessStringItem year;	//SHOULD: for copyright & production	
 	private IDs ids;					//MUST
@@ -162,6 +171,17 @@ public class Contributor extends BusinessObject {
 		contributor.name = BusinessStringItem.fromBusinessObject(bo, "name");
 		contributor.type = BusinessStringItem.fromBusinessObject(bo, "type");
 		contributor.year = BusinessStringItem.fromBusinessObject(bo, "year");
+		//Localizations
+		BusinessObject localizations = bo.getBusinessObject("localization");
+		if(localizations != null){
+			Vector<XMLElementable> oo2 = localizations.getOtherObjects();
+			for(XMLElementable blub: oo2){ //Hier morgen weiter
+				BusinessStringItem bo3 = BusinessStringItem.fromBusinessObject(localizations, blub.getKeyname());
+				System.out.println("lang="+bo3.getAttribute("lang")+" value="+bo3.getString());
+				contributor.addLocalization(Localization.make(contributor, Localization.stringToType(blub.getKeyname()), bo3.getAttribute("lang"), bo3.getString()));
+			}
+		}		
+//		contributor.localizations = Localization.fromBusinessObject(bo);
 		contributor.ids = IDs.fromBusinessObject(bo);
 		contributor.www = InfoWWW.fromBusinessObject(bo);
 		
@@ -223,5 +243,30 @@ public class Contributor extends BusinessObject {
 	
 	public String getKeyname() {
 		return KEY_NAME;
+	}
+	
+	public void addLocalization(Localization localization){
+		if(localization == null){
+			return;
+		}
+		
+		//remove old one - no doubles
+		if(localizations != null){
+			for(int i = 0; i<localizations.size(); i++){
+				Localization l = localizations.get(i);
+				if(l.equals(localization)){
+					localizations.remove(i--);
+				}
+			}
+		} else {
+			localizations = new BusinessCollection<Localization>() {
+				@Override
+				public String getKeyname() {
+					return "localization";
+				}
+			};
+		}
+		
+		localizations.add(localization);
 	}
 }

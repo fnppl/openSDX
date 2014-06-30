@@ -59,6 +59,7 @@ public class Bundle extends BusinessObject {
 	private BusinessStringItem name;						//MUST
 	private BusinessStringItem version;						//MUST
 	private BusinessStringItem display_artistname;			//SHOULD
+	private BusinessCollection<Localization> localizations; //COULD
 	private BusinessCollection<Contributor> contributors;	//MUST
 	private BundleInformation information;					//MUST
 	private LicenseBasis license_basis;						//MUST
@@ -66,7 +67,6 @@ public class Bundle extends BusinessObject {
 	private ItemTags tags;									//COULD
 	private BusinessCollection<Item> items;					//SHOULD
 	private BusinessCollection<ItemFile> files;	 			//COULD
-	private BusinessCollection<Localization> localizations; //COULD
 
 	public static Bundle make(IDs ids, String displayname, String name, String version, String display_artistname, BundleInformation information, LicenseBasis license_basis, LicenseSpecifics license_specifics) {
 		Bundle bundle = new Bundle();
@@ -499,19 +499,6 @@ public class Bundle extends BusinessObject {
 				try {	
 					//System.out.println(f.getName());
 					Object thisFieldsObject = f.get(this);
-					if(thisFieldsObject == localizations){
-						Element e = new Element(localizations.getKeyname());
-						for(int i=0; i<getLocalizationsCount(); i++){
-							Localization l = getLocalization(i);
-							if(l.getLocalizating() != null && l.getLocalizating() instanceof Bundle){
-								Element e2 = l.toElement(); //Customized toElement Function
-								e.addContent(e2);
-							}
-						}
-						if(e != null){
-							resultElement.addContent(e);
-						}
-					}
 					if (thisFieldsObject == contributors) {
 						Element e = new Element(contributors.getKeyname());
 						for (int i=0;i<getContributorCount();i++) {

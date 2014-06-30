@@ -53,6 +53,8 @@ import org.fnppl.opensdx.xml.Element;
  * @author ajovanovic
  */
 public class Localization extends BusinessObject{
+	public static String KEY_NAME = "localization";
+	
 	public enum Type{
 		NAME,
 		DISPLAYNAME,
@@ -61,7 +63,6 @@ public class Localization extends BusinessObject{
 	
 	private Type type = null;
 	private BusinessObject iamlocalizating = null; // Reference on the localized Object
-	private BusinessObject iampartof = null; // Reference on the Object, the localized Object is part of, null if standalone
 	private String lang = null; //should be a generic object "Lang" in the future...
 	private String value = null;
 	
@@ -77,11 +78,8 @@ public class Localization extends BusinessObject{
 	public BusinessObject getLocalizating(){
 		return iamlocalizating;
 	}
-	public BusinessObject getPartOf(){
-		return iampartof;
-	}
 	
-	private String typeToString(Type type){
+	public static String typeToString(Type type){
 		switch(type){
 			case DISPLAYARTISTNAME:
 				return "display_artistname";
@@ -94,14 +92,17 @@ public class Localization extends BusinessObject{
 		}
 	}
 	
+	public static Type stringToType(String type){
+		return Type.valueOf(type.toUpperCase());
+	}
+	
 	//TrackEditor, Contributor.TYPE_EDITOR, IDs.make()
-	public static Localization make(BusinessObject tolocalize, BusinessObject partof, Type type, String lang, String value){
+	public static Localization make(BusinessObject tolocalize, Type type, String lang, String value){
 		Localization ret = new Localization();
 		ret.type = type;
 		ret.value = value;
 		ret.iamlocalizating = tolocalize;
 		ret.lang = lang;
-		ret.iampartof = partof;
 		return ret;
 	}
 	
@@ -116,7 +117,8 @@ public class Localization extends BusinessObject{
 
 	@Override
 	public String getKeyname() { 
-		return "localization_" + iamlocalizating.getKeyname() +"_"+iampartof.getKeyname()+"_"+ type +"_"+ lang;
+		return KEY_NAME;
+//		return "localization_" + iamlocalizating.getKeyname() +"_"+ type +"_"+ lang;
 	}
 	
 	@Override
@@ -124,6 +126,42 @@ public class Localization extends BusinessObject{
 		Element ret = new Element(typeToString(type));
 		ret.setText(value);
 		ret.setAttribute("lang", lang.toLowerCase());
+		return ret;
+	}
+	
+	public static BusinessCollection<Localization> fromBusinessObject(BusinessObject bo) {
+//		if (bo==null) return null;
+//		if (!bo.getKeyname().equals(KEY_NAME)) {
+//			bo = bo.handleBusinessObject(KEY_NAME);
+//		}
+//		if (bo==null) return null;
+		BusinessCollection<Localization> ret = new BusinessCollection<Localization>() {
+			@Override
+			public String getKeyname() {
+				return KEY_NAME;
+			}
+		};
+		
+		System.out.println("");
+		
+//		IDs ids = new IDs();
+//		ids.initFromBusinessObject(bo);
+		
+//		ids.grid = BusinessStringItem.fromBusinessObject(bo, "grid");
+//		ids.upc = BusinessStringItem.fromBusinessObject(bo, "upc");
+//		ids.isrc = BusinessStringItem.fromBusinessObject(bo, "isrc");
+//		ids.iswc = BusinessStringItem.fromBusinessObject(bo, "iswc");
+//		ids.contentauth = BusinessStringItem.fromBusinessObject(bo, "contentauth");
+//		ids.labelordernum = BusinessStringItem.fromBusinessObject(bo, "labelordernum");
+//		ids.amzn = BusinessStringItem.fromBusinessObject(bo, "amzn");
+//		ids.isbn = BusinessStringItem.fromBusinessObject(bo, "isbn");
+//		ids.finetunes = BusinessStringItem.fromBusinessObject(bo, "finetunes");
+//		ids.licensor = BusinessStringItem.fromBusinessObject(bo, "licensor");
+//		ids.licensee = BusinessStringItem.fromBusinessObject(bo, "licensee");
+//		ids.gvl = BusinessStringItem.fromBusinessObject(bo, "gvl");
+//		ids.amg = BusinessStringItem.fromBusinessObject(bo, "amg");
+		
+		
 		return ret;
 	}
 }

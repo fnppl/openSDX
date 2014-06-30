@@ -10,6 +10,8 @@ import org.fnppl.opensdx.xml.ChildElementIterator;
  * 
  * 							http://fnppl.org
 */
+import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLElementable;
 
 /*
  * Software license
@@ -58,6 +60,7 @@ public class Item extends BusinessObject {
 	private BusinessStringItem version;						//MUST
 	private BusinessStringItem type;						//MUST
 	private BusinessStringItem display_artistname;			//SHOULD
+	private BusinessCollection<Localization> localizations; //COULD
 	private IDs ids;										//MUST
 	private BusinessCollection<Contributor> contributors;	//MUST
 	private BundleInformation information;					//MUST
@@ -66,7 +69,6 @@ public class Item extends BusinessObject {
 	private ItemTags tags;									//SHOULD
 	private Fingerprint fingerprint;						//COULD
 	private BusinessCollection<ItemFile> files;
-	private BusinessCollection<Localization> localizations; //COULD
 	
 	
 	private Item() {
@@ -153,6 +155,13 @@ public class Item extends BusinessObject {
 					localizations.remove(i--);
 				}
 			}
+		} else {
+			localizations = new BusinessCollection<Localization>() {
+				@Override
+				public String getKeyname() {
+					return "localization";
+				}
+			};
 		}
 		
 		localizations.add(localization);
@@ -163,6 +172,8 @@ public class Item extends BusinessObject {
 		if (contributor == null) {
 			return this;
 		}
+		
+		
 		//remove old one -> no doubles
 		for (int j=0;j<getContributorCount();j++) {
 			Contributor ic = getContributor(j);
@@ -174,6 +185,10 @@ public class Item extends BusinessObject {
 			}
 		}
 		
+		//debug
+		if(contributor.getName().equals("Track Contributor To Localize")){
+			System.out.println("STOP");
+		}
 		//clone for renumbering
 		Contributor cNew = Contributor.fromBusinessObject(BusinessObject.fromElement(contributor.toElement()));
 		cNew.setAttribute("num", ""+(contributors.size()+1));
@@ -384,6 +399,16 @@ public class Item extends BusinessObject {
 		return KEY_NAME;
 	}
 
+	@Override
+	public Element toElement(){
+		Element ret = null;
+		
+		if(true){
+			return super.toElement();
+		}
+		
+		return ret;
+	}
 
 
 }

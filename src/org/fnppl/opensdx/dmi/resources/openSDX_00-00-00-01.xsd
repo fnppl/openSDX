@@ -113,6 +113,7 @@
             <xsd:element name="name" type="notemptystring" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="version" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="display_artistname" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="localization" type="localization" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="ids" type="ids"/>
             <xsd:element name="items" type="items" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="contributors" type="contributors" maxOccurs="1" minOccurs="0"/>
