@@ -13,6 +13,7 @@ import java.util.Vector;
 
 
 
+
 import org.fnppl.opensdx.xml.ChildElementIterator;
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLElementable;
@@ -165,23 +166,24 @@ public class Contributor extends BusinessObject {
 		}
 		if (bo==null) return null;
 		
-		Contributor contributor = new Contributor();
+		final Contributor contributor = new Contributor();
 		contributor.initFromBusinessObject(bo);
 		
 		contributor.name = BusinessStringItem.fromBusinessObject(bo, "name");
 		contributor.type = BusinessStringItem.fromBusinessObject(bo, "type");
 		contributor.year = BusinessStringItem.fromBusinessObject(bo, "year");
-		//Localizations
+		
+		//Get Localizations
 		BusinessObject localizations = bo.getBusinessObject("localization");
 		if(localizations != null){
 			Vector<XMLElementable> oo2 = localizations.getOtherObjects();
-			for(XMLElementable blub: oo2){ //Hier morgen weiter
-				BusinessStringItem bo3 = BusinessStringItem.fromBusinessObject(localizations, blub.getKeyname());
-				System.out.println("lang="+bo3.getAttribute("lang")+" value="+bo3.getString());
-				contributor.addLocalization(Localization.make(contributor, Localization.stringToType(blub.getKeyname()), bo3.getAttribute("lang"), bo3.getString()));
+			for(int i=0; i<oo2.size(); i++){
+				XMLElementable element = oo2.elementAt(i);
+				BusinessStringItem bo3 = BusinessStringItem.fromBusinessObject(localizations, element.getKeyname());
+				contributor.addLocalization(Localization.make(contributor, Localization.stringToType(element.getKeyname()), bo3.getAttribute("lang"), bo3.getString()));
 			}
-		}		
-//		contributor.localizations = Localization.fromBusinessObject(bo);
+		}
+		
 		contributor.ids = IDs.fromBusinessObject(bo);
 		contributor.www = InfoWWW.fromBusinessObject(bo);
 		
@@ -268,5 +270,6 @@ public class Contributor extends BusinessObject {
 		}
 		
 		localizations.add(localization);
+		setAppendOtherObjectToOutput(false);
 	}
 }

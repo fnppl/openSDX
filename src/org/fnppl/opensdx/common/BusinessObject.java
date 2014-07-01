@@ -79,6 +79,11 @@ public abstract class BusinessObject implements XMLElementable {
 	protected static Hashtable<Class, Field[]> getDeclaredFieldsCache = new Hashtable<Class, Field[]>();
 	public Element toElement() {
 		System.out.println(getKeyname());
+		boolean stop = false;
+		if(getKeyname().equals("contributor") && "11".equals(getAttribute("num"))){
+			System.out.println("STOP: "+getAttribute("num"));
+			stop = true;
+		}
 		Element resultElement = new Element(getKeyname());
 		if (attribs!=null) {
 			for (Entry<String,String> a : attribs.entrySet()) {
@@ -102,6 +107,9 @@ public abstract class BusinessObject implements XMLElementable {
 					Object thisFieldsObject = f.get(this);
 					if (thisFieldsObject instanceof XMLElementable) {
 						//System.out.println("   "+f.getName());
+						if(stop){
+							System.out.println("STOP");
+						}
 						Element e = ((XMLElementable)thisFieldsObject).toElement();
 						if (e!=null) {
 							resultElement.addContent(e);
@@ -112,6 +120,9 @@ public abstract class BusinessObject implements XMLElementable {
 						Vector<?> vector = (Vector<?>)thisFieldsObject;
 						for (Object vectorsObject : vector) {
 							if (vectorsObject instanceof XMLElementable) {
+								if(stop){
+									System.out.println("STOP");
+								}
 								Element e = ((XMLElementable)vectorsObject).toElement();
 								if (e!=null) {
 									resultElement.addContent(e);
@@ -123,6 +134,9 @@ public abstract class BusinessObject implements XMLElementable {
 					ex.printStackTrace();
 				}
 			}
+		}
+		if(stop){
+			System.out.println("STOP");
 		}
 		if (appendOtherObjects) {
 			for (XMLElementable ue : otherObjects) {

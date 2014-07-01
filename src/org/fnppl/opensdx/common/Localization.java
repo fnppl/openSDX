@@ -1,6 +1,9 @@
 package org.fnppl.opensdx.common;
 
+import java.util.Vector;
+
 import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLElementable;
 
 /*
  * Copyright (C) 2010-2013 
@@ -126,42 +129,6 @@ public class Localization extends BusinessObject{
 		Element ret = new Element(typeToString(type));
 		ret.setText(value);
 		ret.setAttribute("lang", lang.toLowerCase());
-		return ret;
-	}
-	
-	public static BusinessCollection<Localization> fromBusinessObject(BusinessObject bo) {
-//		if (bo==null) return null;
-//		if (!bo.getKeyname().equals(KEY_NAME)) {
-//			bo = bo.handleBusinessObject(KEY_NAME);
-//		}
-//		if (bo==null) return null;
-		BusinessCollection<Localization> ret = new BusinessCollection<Localization>() {
-			@Override
-			public String getKeyname() {
-				return KEY_NAME;
-			}
-		};
-		
-		System.out.println("");
-		
-//		IDs ids = new IDs();
-//		ids.initFromBusinessObject(bo);
-		
-//		ids.grid = BusinessStringItem.fromBusinessObject(bo, "grid");
-//		ids.upc = BusinessStringItem.fromBusinessObject(bo, "upc");
-//		ids.isrc = BusinessStringItem.fromBusinessObject(bo, "isrc");
-//		ids.iswc = BusinessStringItem.fromBusinessObject(bo, "iswc");
-//		ids.contentauth = BusinessStringItem.fromBusinessObject(bo, "contentauth");
-//		ids.labelordernum = BusinessStringItem.fromBusinessObject(bo, "labelordernum");
-//		ids.amzn = BusinessStringItem.fromBusinessObject(bo, "amzn");
-//		ids.isbn = BusinessStringItem.fromBusinessObject(bo, "isbn");
-//		ids.finetunes = BusinessStringItem.fromBusinessObject(bo, "finetunes");
-//		ids.licensor = BusinessStringItem.fromBusinessObject(bo, "licensor");
-//		ids.licensee = BusinessStringItem.fromBusinessObject(bo, "licensee");
-//		ids.gvl = BusinessStringItem.fromBusinessObject(bo, "gvl");
-//		ids.amg = BusinessStringItem.fromBusinessObject(bo, "amg");
-		
-		
 		return ret;
 	}
 }
