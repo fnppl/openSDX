@@ -272,4 +272,20 @@ public class Contributor extends BusinessObject {
 		localizations.add(localization);
 		setAppendOtherObjectToOutput(false);
 	}
+	
+	public int getLocalizationCount(){
+		if(localizations == null){
+			return 0;
+		}
+		
+		return localizations.size();
+	}
+	
+	public Localization getLocalization(int i){
+		if(localizations == null && i > localizations.size() && i < 0){
+			return null;
+		}
+		
+		return localizations.get(i);
+	}
 }

@@ -463,7 +463,19 @@ public class Bundle extends BusinessObject {
 		}
 		return localizations.get(index);
 	}
-
+	
+	public Vector<Localization> getAllLocalizations(){
+		Vector<Localization> ret = null;
+		int lc = getLocalizationsCount();
+		if(lc > 0){
+			ret = new Vector<Localization>();
+			for(int i=0; i<lc; i++){
+				ret.add(getLocalization(i));
+			}
+		}
+		return ret;
+	}
+	
 	public BundleInformation getInformation() {
 		if (information==null) return null;
 		return information;
