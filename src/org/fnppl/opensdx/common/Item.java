@@ -185,10 +185,6 @@ public class Item extends BusinessObject {
 			}
 		}
 		
-		//debug
-		if(contributor.getName().equals("Track Contributor To Localize")){
-			System.out.println("STOP");
-		}
 		//clone for renumbering
 		Contributor cNew = Contributor.fromBusinessObject(BusinessObject.fromElement(contributor.toElement()));
 		cNew.setAttribute("num", ""+(contributors.size()+1));
@@ -398,17 +394,4 @@ public class Item extends BusinessObject {
 	public String getKeyname() {
 		return KEY_NAME;
 	}
-
-	@Override
-	public Element toElement(){
-		Element ret = null;
-		
-		if(true){
-			return super.toElement();
-		}
-		
-		return ret;
-	}
-
-
 }
