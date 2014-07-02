@@ -168,6 +168,32 @@ public class Item extends BusinessObject {
 		return this;
 	}
 	
+	public int getLocalizationsCount(){
+		if(localizations == null){
+			return 0;
+		}
+		return localizations.size();
+	}
+	
+	public Localization getLocalization(int index){
+		if(localizations == null || index < 0 || index >= contributors.size()){
+			return null;
+		}
+		return localizations.get(index);
+	}
+	
+	public Vector<Localization> getAllLocalizations(){
+		Vector<Localization> ret = null;
+		int lc = getLocalizationsCount();
+		if(lc > 0){
+			ret = new Vector<Localization>();
+			for(int i=0; i<lc; i++){
+				ret.add(getLocalization(i));
+			}
+		}
+		return ret;
+	}
+	
 	public Item addContributor(Contributor contributor) {
 		if (contributor == null) {
 			return this;
