@@ -100,11 +100,11 @@ public class Localization extends BusinessObject{
 	}
 	
 	//TrackEditor, Contributor.TYPE_EDITOR, IDs.make()
-	public static Localization make(BusinessObject tolocalize, Type type, String lang, String value){
+	public static Localization make(BusinessObject iamlocalizating, Type type, String lang, String value){
 		Localization ret = new Localization();
 		ret.type = type;
 		ret.value = value;
-		ret.iamlocalizating = tolocalize;
+		ret.iamlocalizating = iamlocalizating;
 		ret.lang = lang;
 		return ret;
 	}
@@ -129,6 +129,29 @@ public class Localization extends BusinessObject{
 		Element ret = new Element(typeToString(type));
 		ret.setText(value);
 		ret.setAttribute("lang", lang.toLowerCase());
+		return ret;
+	}
+
+	public static BusinessCollection<Localization> fromBusinessObject(BusinessObject bo, BusinessObject iamlocalizating) {
+		if (bo==null) return null;
+		if (!bo.getKeyname().equals(KEY_NAME)) {
+			bo = bo.handleBusinessObject(KEY_NAME);
+		}
+		if (bo==null) return null;
+		BusinessCollection<Localization> ret = new BusinessCollection<Localization>() {
+			public String getKeyname() {
+				return KEY_NAME;
+			}
+		};
+		Vector<XMLElementable> elems = bo.getOtherObjects();
+		while(elems.size() > 0){
+			BusinessStringItem elem = BusinessStringItem.fromBusinessObject(bo, elems.elementAt(0).getKeyname());
+			Type type = stringToType(elem.getKeyname());
+			String lang = elem.getAttribute("lang");
+			String value = elem.getString();
+			ret.add(Localization.make(iamlocalizating, type, lang, value));
+		}
+		
 		return ret;
 	}
 }

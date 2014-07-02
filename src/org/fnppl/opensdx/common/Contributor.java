@@ -14,6 +14,10 @@ import java.util.Vector;
 
 
 
+
+
+
+
 import org.fnppl.opensdx.xml.ChildElementIterator;
 import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLElementable;
@@ -147,6 +151,7 @@ public class Contributor extends BusinessObject {
 		contributor.year = null;		
 		contributor.ids = ids;
 		contributor.www = null;
+		contributor.localizations = null;
 		return contributor;
 	}
 	
@@ -172,17 +177,40 @@ public class Contributor extends BusinessObject {
 		contributor.name = BusinessStringItem.fromBusinessObject(bo, "name");
 		contributor.type = BusinessStringItem.fromBusinessObject(bo, "type");
 		contributor.year = BusinessStringItem.fromBusinessObject(bo, "year");
-		
-		//Get Localizations
-		BusinessObject localizations = bo.getBusinessObject("localization");
-		if(localizations != null){
-			Vector<XMLElementable> oo2 = localizations.getOtherObjects();
-			for(int i=0; i<oo2.size(); i++){
-				XMLElementable element = oo2.elementAt(i);
-				BusinessStringItem bo3 = BusinessStringItem.fromBusinessObject(localizations, element.getKeyname());
-				contributor.addLocalization(Localization.make(contributor, Localization.stringToType(element.getKeyname()), bo3.getAttribute("lang"), bo3.getString()));
-			}
-		}
+		new ChildElementIterator(bo, "localization") {
+			public void processBusinessObject(BusinessObject bo, BusinessObject iamlocalizing) {
+				contributor.localizations = Localization.fromBusinessObject(bo, contributor);
+			};
+//			public void processBusinessObject(BusinessObject bo,) {
+////				item.addLocalization(Localization.fromBusinessObject(bo));
+//				item.localizations = Localization.fromBusinessObject(bo);
+//			}
+		};
+//		new ChildElementIterator(bo, "localization", "name") {
+//			public void processBusinessObject(BusinessObject bo) {
+//				contributor.addLocalization(Localization.fromBusinessObject(bo));
+//			}
+//		};
+//		new ChildElementIterator(bo, "localization", "displayname") {
+//			public void processBusinessObject(BusinessObject bo) {
+//				contributor.addLocalization(Localization.fromBusinessObject(bo));
+//			}
+//		};
+//		new ChildElementIterator(bo, "localization", "display_artistname") {
+//			public void processBusinessObject(BusinessObject bo) {
+//				contributor.addLocalization(Localization.fromBusinessObject(bo));
+//			}
+//		};
+//		//Get Localizations OLD STYLE
+//		BusinessObject localizations = bo.getBusinessObject("localization");
+//		if(localizations != null){
+//			Vector<XMLElementable> oo2 = localizations.getOtherObjects();
+//			for(int i=0; i<oo2.size(); i++){
+//				XMLElementable element = oo2.elementAt(i);
+//				BusinessStringItem bo3 = BusinessStringItem.fromBusinessObject(localizations, element.getKeyname());
+//				contributor.addLocalization(Localization.make(contributor, Localization.stringToType(element.getKeyname()), bo3.getAttribute("lang"), bo3.getString()));
+//			}
+//		}
 		
 		contributor.ids = IDs.fromBusinessObject(bo);
 		contributor.www = InfoWWW.fromBusinessObject(bo);

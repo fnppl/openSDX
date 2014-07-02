@@ -111,6 +111,37 @@ public class Item extends BusinessObject {
 		item.version = BusinessStringItem.fromBusinessObject(bo, "version");
 		item.type = BusinessStringItem.fromBusinessObject(bo, "type");
 		item.display_artistname = BusinessStringItem.fromBusinessObject(bo, "display_artistname");
+		
+		item.localizations = new BusinessCollection<Localization>(){
+			public String getKeyname(){
+				return "localization";
+			}
+		};
+		new ChildElementIterator(bo, "localization") {
+			public void processBusinessObject(BusinessObject bo, BusinessObject iamlocalizing) {
+				item.localizations = Localization.fromBusinessObject(bo, item);
+			};
+//			public void processBusinessObject(BusinessObject bo,) {
+////				item.addLocalization(Localization.fromBusinessObject(bo));
+//				item.localizations = Localization.fromBusinessObject(bo);
+//			}
+		};
+//		new ChildElementIterator(bo, "localization", "name") {
+//			public void processBusinessObject(BusinessObject bo) {
+//				item.addLocalization(Localization.fromBusinessObject(bo));
+//			}
+//		};
+//		new ChildElementIterator(bo, "localization", "displayname") {
+//			public void processBusinessObject(BusinessObject bo) {
+//				item.addLocalization(Localization.fromBusinessObject(bo));
+//			}
+//		};
+//		new ChildElementIterator(bo, "localization", "display_artistname") {
+//			public void processBusinessObject(BusinessObject bo) {
+//				item.addLocalization(Localization.fromBusinessObject(bo));
+//			}
+//		};
+		
 		item.contributors =  new BusinessCollection<Contributor>() {
 			public String getKeyname() {
 				return "contributors";
@@ -176,7 +207,7 @@ public class Item extends BusinessObject {
 	}
 	
 	public Localization getLocalization(int index){
-		if(localizations == null || index < 0 || index >= contributors.size()){
+		if(localizations == null || index < 0 || index >= localizations.size()){
 			return null;
 		}
 		return localizations.get(index);
