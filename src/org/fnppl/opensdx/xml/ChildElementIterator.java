@@ -9,13 +9,6 @@ import org.fnppl.opensdx.common.BusinessStringItem;
 public abstract class ChildElementIterator {
 	
 	public ChildElementIterator(BusinessObject bo, String collectionName, String name) {
-		System.out.println("KEYNAME: "+bo.getKeyname());
-		if(bo.getKeyname().equals("localization")){
-			System.out.println("DAMN!");
-		}
-		if(collectionName.equals("localization")){
-			System.out.println("STOP");
-		}
 		if (bo==null) return;
 		bo = bo.handleBusinessObject(collectionName);
 		if (bo==null) return;
@@ -41,9 +34,6 @@ public abstract class ChildElementIterator {
 	}
 	
 	public ChildElementIterator(BusinessObject bo, String name) {
-		if(name.equals("localization")){
-			System.out.println("STOP");
-		}
 		if (bo==null) return;
 		Vector<XMLElementable> eChildren = bo.handleObjects(name);
 		for (XMLElementable eChild : eChildren) {

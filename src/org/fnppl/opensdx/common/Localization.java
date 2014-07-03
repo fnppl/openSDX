@@ -121,7 +121,6 @@ public class Localization extends BusinessObject{
 	@Override
 	public String getKeyname() { 
 		return KEY_NAME;
-//		return "localization_" + iamlocalizating.getKeyname() +"_"+ type +"_"+ lang;
 	}
 	
 	@Override

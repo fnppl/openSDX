@@ -121,26 +121,7 @@ public class Item extends BusinessObject {
 			public void processBusinessObject(BusinessObject bo, BusinessObject iamlocalizing) {
 				item.localizations = Localization.fromBusinessObject(bo, item);
 			};
-//			public void processBusinessObject(BusinessObject bo,) {
-////				item.addLocalization(Localization.fromBusinessObject(bo));
-//				item.localizations = Localization.fromBusinessObject(bo);
-//			}
 		};
-//		new ChildElementIterator(bo, "localization", "name") {
-//			public void processBusinessObject(BusinessObject bo) {
-//				item.addLocalization(Localization.fromBusinessObject(bo));
-//			}
-//		};
-//		new ChildElementIterator(bo, "localization", "displayname") {
-//			public void processBusinessObject(BusinessObject bo) {
-//				item.addLocalization(Localization.fromBusinessObject(bo));
-//			}
-//		};
-//		new ChildElementIterator(bo, "localization", "display_artistname") {
-//			public void processBusinessObject(BusinessObject bo) {
-//				item.addLocalization(Localization.fromBusinessObject(bo));
-//			}
-//		};
 		
 		item.contributors =  new BusinessCollection<Contributor>() {
 			public String getKeyname() {

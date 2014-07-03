@@ -118,26 +118,7 @@ public class Bundle extends BusinessObject {
 			public void processBusinessObject(BusinessObject bo, BusinessObject iamlocalizing) {
 				bundle.localizations = Localization.fromBusinessObject(bo, bundle);
 			};
-//			public void processBusinessObject(BusinessObject bo,) {
-////				item.addLocalization(Localization.fromBusinessObject(bo));
-//				item.localizations = Localization.fromBusinessObject(bo);
-//			}
 		};
-//		new ChildElementIterator(bo, "localization", "name") {
-//			public void processBusinessObject(BusinessObject bo) {
-//				bundle.addLocalization(Localization.fromBusinessObject(bo));
-//			}
-//		};
-//		new ChildElementIterator(bo, "localization", "displayname") {
-//			public void processBusinessObject(BusinessObject bo) {
-//				bundle.addLocalization(Localization.fromBusinessObject(bo));
-//			}
-//		};
-//		new ChildElementIterator(bo, "localization", "display_artistname") {
-//			public void processBusinessObject(BusinessObject bo) {
-//				bundle.addLocalization(Localization.fromBusinessObject(bo));
-//			}
-//		};
 		
 		bundle.contributors =  new BusinessCollection<Contributor>() {
 			public String getKeyname() {
