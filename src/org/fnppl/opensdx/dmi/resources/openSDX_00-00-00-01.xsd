@@ -1343,10 +1343,12 @@
 
     <xsd:complexType name="localization">
     	<xsd:sequence>
-	    	<!-- Define allowed elements within the localization here -->
-	    	<xsd:element name="displayname" type="localized" maxOccurs="unbounded" minOccurs="0" />
-	    	<xsd:element name="display_artistname" type="localized" maxOccurs="unbounded" minOccurs="0" />
-	    	<xsd:element name="name" type="localized" maxOccurs="unbounded" minOccurs="0" />
+	    	<xsd:choice minOccurs="0" maxOccurs="unbounded">
+		    	<!-- Define allowed elements within the localization here -->
+		    	<xsd:element name="displayname" type="localized" />
+		    	<xsd:element name="display_artistname" type="localized" />
+		    	<xsd:element name="name" type="localized" />
+	    	</xsd:choice>
     	</xsd:sequence>
     </xsd:complexType>
 

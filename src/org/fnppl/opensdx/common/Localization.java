@@ -61,7 +61,7 @@ public class Localization extends BusinessObject{
 	public enum Type{
 		NAME,
 		DISPLAYNAME,
-		DISPLAYARTISTNAME // Special case for Displayartistnames on Bundle/Item level
+		DISPLAY_ARTISTNAME // Special case for Displayartistnames on Bundle/Item level
 	}
 	
 	private Type type = null;
@@ -84,7 +84,7 @@ public class Localization extends BusinessObject{
 	
 	public static String typeToString(Type type){
 		switch(type){
-			case DISPLAYARTISTNAME:
+			case DISPLAY_ARTISTNAME:
 				return "display_artistname";
 			case DISPLAYNAME:
 				return "displayname";
