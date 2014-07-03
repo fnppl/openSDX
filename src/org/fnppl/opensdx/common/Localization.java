@@ -131,6 +131,11 @@ public class Localization extends BusinessObject{
 		ret.setAttribute("lang", lang.toLowerCase());
 		return ret;
 	}
+	
+	@Override
+	public String toString(){
+		return lang+" "+type+" "+value;
+	}
 
 	public static BusinessCollection<Localization> fromBusinessObject(BusinessObject bo, BusinessObject iamlocalizating) {
 		if (bo==null) return null;
