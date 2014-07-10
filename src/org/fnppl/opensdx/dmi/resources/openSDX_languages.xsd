@@ -973,6 +973,16 @@
 	        <xsd:documentation>Zulu</xsd:documentation>
 	      </xsd:annotation>
 	    </xsd:enumeration>
+ 	   <xsd:enumeration value="z1">
+	      <xsd:annotation>
+	        <xsd:documentation>Chinese Traditional</xsd:documentation>
+	      </xsd:annotation>
+	    </xsd:enumeration>
+ 	   <xsd:enumeration value="z2">
+	      <xsd:annotation>
+	        <xsd:documentation>Shinese Simplified</xsd:documentation>
+	      </xsd:annotation>
+	    </xsd:enumeration>
     </xsd:restriction>
   </xsd:simpleType>    
 </xsd:schema>

@@ -9,6 +9,7 @@ import java.util.Vector;
  * 							http://fnppl.org
 */
 
+
 import org.fnppl.opensdx.xml.ChildElementIterator;
 
 /*
@@ -261,7 +262,7 @@ public class Contributor extends BusinessObject {
 		setAppendOtherObjectToOutput(false);
 	}
 	
-	public int getLocalizationCount(){
+	public int getLocalizationsCount(){
 		if(localizations == null){
 			return 0;
 		}
@@ -275,5 +276,17 @@ public class Contributor extends BusinessObject {
 		}
 		
 		return localizations.get(i);
+	}
+	
+	public Vector<Localization> getAllLocalizations(){
+		Vector<Localization> ret = null;
+		int lc = getLocalizationsCount();
+		if(lc > 0){
+			ret = new Vector<Localization>();
+			for(int i=0; i<lc; i++){
+				ret.add(getLocalization(i));
+			}
+		}
+		return ret;
 	}
 }
