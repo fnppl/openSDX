@@ -394,7 +394,21 @@
 		          </then>
 		        </rule><!-- numbered since we need an ordered mode here - first come first match -->
 		        
-				<rule num="2">
+		        <rule num="2">
+					<if>
+						<what>territory</what><!-- *field* -->
+						<operator>equals</operator><!-- equals/before/after/contains/containedin -->
+						<value>DE</value>
+					</if>
+					<then>
+						<proclaim>
+							<what>timeframe_from</what>
+							<for>2013-08-24 22:00:40 GMT+00:00</for><!-- default releasedate (timeframe from) is one day earlier in DE than rest of world -->
+						</proclaim>					
+					</then>				
+				</rule>
+				
+		        <rule num="3">
 					<if>
 						<what>territory</what>
 						<operator>containedin</operator><!-- equals/before/after/contains/containedin -->
@@ -417,14 +431,14 @@
 					</else>
 				</rule>
 				
-				<rule num="3">
+				<rule num="4">
 					<if>
 						<what>territory</what><!-- *field* -->
 						<operator>equals</operator><!-- equals/before/after/contains/containedin -->
 						<value>DE</value>
 					</if>
 					<then>
-						<echo>YOU CANNOT EVEN REACH ME - since RULE2 breaks and DE is in EU</echo>					
+						<echo>YOU CANNOT EVEN REACH ME - since RULE3 breaks and DE is in EU</echo>					
 					</then>				
 				</rule>
 				
