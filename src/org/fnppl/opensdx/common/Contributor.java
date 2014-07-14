@@ -9,6 +9,9 @@ import java.util.Vector;
  * 							http://fnppl.org
 */
 
+
+import org.fnppl.opensdx.xml.ChildElementIterator;
+
 /*
  * Software license
  *
@@ -123,6 +126,7 @@ public class Contributor extends BusinessObject {
 	}
 	
 	private BusinessStringItem name;	//MUST
+	private BusinessCollection<Localization> localizations; //COULD
 	private BusinessStringItem type;	//MUST
 	private BusinessStringItem year;	//SHOULD: for copyright & production	
 	private IDs ids;					//MUST
@@ -137,6 +141,7 @@ public class Contributor extends BusinessObject {
 		contributor.year = null;		
 		contributor.ids = ids;
 		contributor.www = null;
+		contributor.localizations = null;
 		return contributor;
 	}
 	
@@ -156,12 +161,18 @@ public class Contributor extends BusinessObject {
 		}
 		if (bo==null) return null;
 		
-		Contributor contributor = new Contributor();
+		final Contributor contributor = new Contributor();
 		contributor.initFromBusinessObject(bo);
 		
 		contributor.name = BusinessStringItem.fromBusinessObject(bo, "name");
 		contributor.type = BusinessStringItem.fromBusinessObject(bo, "type");
 		contributor.year = BusinessStringItem.fromBusinessObject(bo, "year");
+		new ChildElementIterator(bo, "localization") {
+			public void processBusinessObject(BusinessObject bo, BusinessObject iamlocalizing) {
+				contributor.localizations = Localization.fromBusinessObject(bo, contributor);
+			};
+		};
+
 		contributor.ids = IDs.fromBusinessObject(bo);
 		contributor.www = InfoWWW.fromBusinessObject(bo);
 		
@@ -223,5 +234,59 @@ public class Contributor extends BusinessObject {
 	
 	public String getKeyname() {
 		return KEY_NAME;
+	}
+	
+	public void addLocalization(Localization localization){
+		if(localization == null){
+			return;
+		}
+		
+		//remove old one - no doubles
+		if(localizations != null){
+			for(int i = 0; i<localizations.size(); i++){
+				Localization l = localizations.get(i);
+				if(l.equals(localization)){
+					localizations.remove(i--);
+				}
+			}
+		} else {
+			localizations = new BusinessCollection<Localization>() {
+				@Override
+				public String getKeyname() {
+					return "localization";
+				}
+			};
+		}
+		
+		localizations.add(localization);
+		setAppendOtherObjectToOutput(false);
+	}
+	
+	public int getLocalizationsCount(){
+		if(localizations == null){
+			return 0;
+		}
+		
+		return localizations.size();
+	}
+	
+	public Localization getLocalization(int i){
+		if(localizations == null && i > localizations.size() && i < 0){
+			return null;
+		}
+		
+		return localizations.get(i);
+	}
+	
+	public Vector<Localization> getAllLocalizations(){
+		Vector<Localization> ret = null;
+		int lc = getLocalizationsCount();
+		if(lc > 0){
+			ret = new Vector<Localization>();
+			for(int i=0; i<lc; i++){
+				ret.add(getLocalization(i));
+			}
+		}
+		return ret;
 	}
 }

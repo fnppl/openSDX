@@ -78,7 +78,6 @@ public abstract class BusinessObject implements XMLElementable {
 	
 	protected static Hashtable<Class, Field[]> getDeclaredFieldsCache = new Hashtable<Class, Field[]>();
 	public Element toElement() {
-		//System.out.println(getKeyname());
 		Element resultElement = new Element(getKeyname());
 		if (attribs!=null) {
 			for (Entry<String,String> a : attribs.entrySet()) {
@@ -101,14 +100,12 @@ public abstract class BusinessObject implements XMLElementable {
 				try {	
 					Object thisFieldsObject = f.get(this);
 					if (thisFieldsObject instanceof XMLElementable) {
-						//System.out.println("   "+f.getName());
 						Element e = ((XMLElementable)thisFieldsObject).toElement();
 						if (e!=null) {
 							resultElement.addContent(e);
 						}
 					}
 					else if (thisFieldsObject instanceof Vector<?>) {
-						//System.out.println("   "+f.getName());
 						Vector<?> vector = (Vector<?>)thisFieldsObject;
 						for (Object vectorsObject : vector) {
 							if (vectorsObject instanceof XMLElementable) {

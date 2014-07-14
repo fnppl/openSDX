@@ -113,6 +113,7 @@
             <xsd:element name="name" type="notemptystring" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="version" type="xsd:string" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="display_artistname" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="localization" type="localization" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="ids" type="ids"/>
             <xsd:element name="items" type="items" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="contributors" type="contributors" maxOccurs="1" minOccurs="0"/>
@@ -143,11 +144,14 @@
             A year should be provided in case the type equals copyright or production.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="name" type="notemptystring"/>
-            <xsd:element name="type" type="contributorType"/>
-            <xsd:element name="year" type="year" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="ids" type="ids"/>
-            <xsd:element name="www" type="www" maxOccurs="1" minOccurs="0"/>
+        	<xsd:element name="name" type="notemptystring" />
+        	<xsd:element name="type" type="contributorType" />
+        	<xsd:element name="year" type="year" maxOccurs="1"
+        		minOccurs="0" />
+        	<xsd:element name="ids" type="ids" />
+        	<xsd:element name="www" type="www" maxOccurs="1"
+        		minOccurs="0" />
+        	<xsd:element name="localization" type="localization" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
         <xsd:attribute name="num" type="xsd:integer"/>
     </xsd:complexType>
@@ -214,20 +218,33 @@
             files for this item.</xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="displayname" type="notemptystring" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="name" type="notemptystring" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="version" type="xsd:string" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="type" type="notemptystring" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="display_artistname" type="notemptystring" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="ids" type="ids" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="contributors" type="contributors"/>
-            <xsd:element name="information" type="information"/>
-            <xsd:element name="license_basis" type="license_basis_item"/>
-            <xsd:element name="license_specifics" type="license_specifics_item"/>
-            <xsd:element name="tags" type="tags" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="fingerprint" type="fingerprint" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="reporting" type="reporting" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="files" type="files" maxOccurs="1" minOccurs="0"/>
+        	<xsd:element name="displayname" type="notemptystring"
+        		maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="name" type="notemptystring" maxOccurs="1"
+        		minOccurs="0" />
+        	<xsd:element name="version" type="xsd:string" maxOccurs="1"
+        		minOccurs="0" />
+        	<xsd:element name="type" type="notemptystring" maxOccurs="1"
+        		minOccurs="0" />
+        	<xsd:element name="display_artistname" type="notemptystring"
+        		maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="ids" type="ids" maxOccurs="1"
+        		minOccurs="0" />
+        	<xsd:element name="contributors" type="contributors" />
+        	<xsd:element name="information" type="information" />
+        	<xsd:element name="license_basis" type="license_basis_item" />
+        	<xsd:element name="license_specifics"
+        		type="license_specifics_item" />
+        	<xsd:element name="tags" type="tags" maxOccurs="1"
+        		minOccurs="0" />
+        	<xsd:element name="fingerprint" type="fingerprint"
+        		maxOccurs="1" minOccurs="0" />
+        	<xsd:element name="reporting" type="reporting" maxOccurs="1"
+        		minOccurs="0" />
+        	<xsd:element name="files" type="files" maxOccurs="1"
+        		minOccurs="0" />
+        	<xsd:element name="localization" type="localization"
+        		maxOccurs="1" minOccurs="0" />
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="information">
@@ -1323,4 +1340,23 @@
             <xsd:whiteSpace value="preserve"/>
         </xsd:restriction>
     </xsd:simpleType>
+
+    <xsd:complexType name="localization">
+    	<xsd:sequence>
+	    	<xsd:choice minOccurs="0" maxOccurs="unbounded">
+		    	<!-- Define allowed elements within the localization here -->
+		    	<xsd:element name="displayname" type="localized" />
+		    	<xsd:element name="display_artistname" type="localized" />
+		    	<xsd:element name="name" type="localized" />
+	    	</xsd:choice>
+    	</xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="localized">
+    	<xsd:simpleContent>
+    		<xsd:extension base="xsd:string">
+    			<xsd:attribute name="lang" type="l:language" />
+    		</xsd:extension>
+    	</xsd:simpleContent>
+    </xsd:complexType>
 </xsd:schema>

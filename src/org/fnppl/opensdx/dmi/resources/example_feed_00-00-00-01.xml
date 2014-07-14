@@ -494,6 +494,14 @@
 				<version>original</version><!-- MUST version if different versions of this bundle exist - can be empty -->
 				<type>audio</type><!-- MUST ; audio, video, audiobook, classical, android-app, win32-program, whatever -->
 				<display_artistname>Artist</display_artistname>
+				
+				<localization><!-- This element contains several elements with it's localizations (lang attribute, see openSDX_languages.xsd) -->
+					<displayname lang="en">English Displayname</displayname>
+					<displayname lang="de">Deutscher Anzeigename</displayname>
+					<display_artistname lang="en">English Display Artistname</display_artistname>
+					<display_artistname lang="de">Deuscher Anzeigename des Künstlers</display_artistname>
+				</localization>
+				
 				<ids>
 					<isrc>DEZ650000000</isrc><!-- SHOULD isrc - not applicable on bundle-level, but for -->
 					<finetunes>1111222333445</finetunes><!-- strange finetunes id -->
@@ -506,6 +514,10 @@
 						<name>SOME_DISPLAY_ARTISTNAME</name><!-- could be artistname -->
 						<type>display_artist</type><!-- e.g. display_artist -->
 						<year>2005</year><!-- SHOULD for copyright/production -->
+						<localization>
+							<name lang="en">English Contributor Displayname</name>
+							<name lang="de">Deutscher Anzeigename für Mitwirkenden</name>
+						</localization>
 						<ids>
 							<finetunes>1111222333445</finetunes><!-- finetunes-strange-id -->							
 						</ids>

@@ -59,6 +59,7 @@ public class Bundle extends BusinessObject {
 	private BusinessStringItem name;						//MUST
 	private BusinessStringItem version;						//MUST
 	private BusinessStringItem display_artistname;			//SHOULD
+	private BusinessCollection<Localization> localizations; //COULD
 	private BusinessCollection<Contributor> contributors;	//MUST
 	private BundleInformation information;					//MUST
 	private LicenseBasis license_basis;						//MUST
@@ -107,6 +108,18 @@ public class Bundle extends BusinessObject {
 		bundle.name = BusinessStringItem.fromBusinessObject(bo, "name");
 		bundle.version = BusinessStringItem.fromBusinessObject(bo, "version");
 		bundle.display_artistname = BusinessStringItem.fromBusinessObject(bo, "display_artistname");
+		
+		bundle.localizations = new BusinessCollection<Localization>(){
+			public String getKeyname() {
+				return "localization";
+			}
+		};
+		new ChildElementIterator(bo, "localization") {
+			public void processBusinessObject(BusinessObject bo, BusinessObject iamlocalizing) {
+				bundle.localizations = Localization.fromBusinessObject(bo, bundle);
+			};
+		};
+		
 		bundle.contributors =  new BusinessCollection<Contributor>() {
 			public String getKeyname() {
 				return "contributors";
@@ -152,6 +165,32 @@ public class Bundle extends BusinessObject {
 			};
 		}
 		files.add(file);
+		return this;
+	}
+	
+	public Bundle addLocalization(Localization localization){
+		if(localization == null){
+			return this;
+		}
+		
+		//remove old one - no doubles
+		if(localizations != null){
+			for(int i = 0; i<localizations.size(); i++){
+				Localization l = localizations.get(i);
+				if(l.equals(localization)){
+					localizations.remove(i--);
+				}
+			}
+		} else {
+			localizations = new BusinessCollection<Localization>() {
+				@Override
+				public String getKeyname() {
+					return "localization";
+				}
+			};
+		}
+		
+		localizations.add(localization);
 		return this;
 	}
 	
@@ -263,6 +302,13 @@ public class Bundle extends BusinessObject {
 	public int getContributorCount() {
 		if (contributors==null) return 0;
 		return contributors.size();
+	}
+	
+	public int getLocalizationsCount(){
+		if(localizations == null){
+			return 0;
+		}
+		return localizations.size();
 	}
 	
 	public Vector<Contributor> getAllContributors() {
@@ -423,7 +469,25 @@ public class Bundle extends BusinessObject {
 		return contributors.get(index);
 	}
 
-
+	public Localization getLocalization(int index){
+		if(localizations == null || index < 0 || index >= localizations.size()){
+			return null;
+		}
+		return localizations.get(index);
+	}
+	
+	public Vector<Localization> getAllLocalizations(){
+		Vector<Localization> ret = null;
+		int lc = getLocalizationsCount();
+		if(lc > 0){
+			ret = new Vector<Localization>();
+			for(int i=0; i<lc; i++){
+				ret.add(getLocalization(i));
+			}
+		}
+		return ret;
+	}
+	
 	public BundleInformation getInformation() {
 		if (information==null) return null;
 		return information;

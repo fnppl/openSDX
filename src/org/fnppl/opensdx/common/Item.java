@@ -10,6 +10,8 @@ import org.fnppl.opensdx.xml.ChildElementIterator;
  * 
  * 							http://fnppl.org
 */
+import org.fnppl.opensdx.xml.Element;
+import org.fnppl.opensdx.xml.XMLElementable;
 
 /*
  * Software license
@@ -57,7 +59,8 @@ public class Item extends BusinessObject {
 	private BusinessStringItem name;						//MUST
 	private BusinessStringItem version;						//MUST
 	private BusinessStringItem type;						//MUST
-	private BusinessStringItem display_artistname;				//SHOULD
+	private BusinessStringItem display_artistname;			//SHOULD
+	private BusinessCollection<Localization> localizations; //COULD
 	private IDs ids;										//MUST
 	private BusinessCollection<Contributor> contributors;	//MUST
 	private BundleInformation information;					//MUST
@@ -108,6 +111,18 @@ public class Item extends BusinessObject {
 		item.version = BusinessStringItem.fromBusinessObject(bo, "version");
 		item.type = BusinessStringItem.fromBusinessObject(bo, "type");
 		item.display_artistname = BusinessStringItem.fromBusinessObject(bo, "display_artistname");
+		
+		item.localizations = new BusinessCollection<Localization>(){
+			public String getKeyname(){
+				return "localization";
+			}
+		};
+		new ChildElementIterator(bo, "localization") {
+			public void processBusinessObject(BusinessObject bo, BusinessObject iamlocalizing) {
+				item.localizations = Localization.fromBusinessObject(bo, item);
+			};
+		};
+		
 		item.contributors =  new BusinessCollection<Contributor>() {
 			public String getKeyname() {
 				return "contributors";
@@ -139,10 +154,64 @@ public class Item extends BusinessObject {
 		return item;
 	}
 	
+	public Item addLocalization(Localization localization){
+		if(localization == null){
+			return this;
+		}
+		
+		//remove old one - no doubles
+		if(localizations != null){
+			for(int i = 0; i<localizations.size(); i++){
+				Localization l = localizations.get(i);
+				if(l.equals(localization)){
+					localizations.remove(i--);
+				}
+			}
+		} else {
+			localizations = new BusinessCollection<Localization>() {
+				@Override
+				public String getKeyname() {
+					return "localization";
+				}
+			};
+		}
+		
+		localizations.add(localization);
+		return this;
+	}
+	
+	public int getLocalizationsCount(){
+		if(localizations == null){
+			return 0;
+		}
+		return localizations.size();
+	}
+	
+	public Localization getLocalization(int index){
+		if(localizations == null || index < 0 || index >= localizations.size()){
+			return null;
+		}
+		return localizations.get(index);
+	}
+	
+	public Vector<Localization> getAllLocalizations(){
+		Vector<Localization> ret = null;
+		int lc = getLocalizationsCount();
+		if(lc > 0){
+			ret = new Vector<Localization>();
+			for(int i=0; i<lc; i++){
+				ret.add(getLocalization(i));
+			}
+		}
+		return ret;
+	}
+	
 	public Item addContributor(Contributor contributor) {
 		if (contributor == null) {
 			return this;
 		}
+		
+		
 		//remove old one -> no doubles
 		for (int j=0;j<getContributorCount();j++) {
 			Contributor ic = getContributor(j);
@@ -363,7 +432,4 @@ public class Item extends BusinessObject {
 	public String getKeyname() {
 		return KEY_NAME;
 	}
-
-
-
 }
