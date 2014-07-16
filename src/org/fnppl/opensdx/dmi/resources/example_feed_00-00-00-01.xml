@@ -408,7 +408,21 @@
 					</then>				
 				</rule>
 				
-		        <rule num="3">
+				<rule num="3">
+					<if>
+						<what>territory</what><!-- *field* -->
+						<operator>equals</operator><!-- equals/before/after/contains/containedin -->
+						<value>AT</value>
+					</if>
+					<then>
+						<proclaim>
+							<what>streaming_timeframe_from</what>
+							<for>2013-08-26 22:00:40 GMT+00:00</for><!-- default streaming releasedate (timeframe from) is 1 day later in AT than rest of world -->
+						</proclaim>					
+					</then>				
+				</rule>
+				
+		        <rule num="4">
 					<if>
 						<what>territory</what>
 						<operator>containedin</operator><!-- equals/before/after/contains/containedin -->
@@ -431,14 +445,14 @@
 					</else>
 				</rule>
 				
-				<rule num="4">
+				<rule num="5">
 					<if>
 						<what>territory</what><!-- *field* -->
 						<operator>equals</operator><!-- equals/before/after/contains/containedin -->
 						<value>DE</value>
 					</if>
 					<then>
-						<echo>YOU CANNOT EVEN REACH ME - since RULE3 breaks and DE is in EU</echo>					
+						<echo>YOU CANNOT EVEN REACH ME - since RULE4 breaks and DE is in EU</echo>					
 					</then>				
 				</rule>
 				
