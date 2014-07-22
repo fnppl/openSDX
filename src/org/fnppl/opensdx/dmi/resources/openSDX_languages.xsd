@@ -973,14 +973,19 @@
 	        <xsd:documentation>Zulu</xsd:documentation>
 	      </xsd:annotation>
 	    </xsd:enumeration>
- 	   <xsd:enumeration value="z1">
+ 	   <xsd:enumeration value="cmn-hant">
 	      <xsd:annotation>
 	        <xsd:documentation>Chinese Traditional</xsd:documentation>
 	      </xsd:annotation>
 	    </xsd:enumeration>
- 	   <xsd:enumeration value="z2">
+ 	   <xsd:enumeration value="cmn-hans">
 	      <xsd:annotation>
-	        <xsd:documentation>Shinese Simplified</xsd:documentation>
+	        <xsd:documentation>Chinese Simplified</xsd:documentation>
+	      </xsd:annotation>
+	    </xsd:enumeration>
+ 	   <xsd:enumeration value="yue-hant">
+	      <xsd:annotation>
+	        <xsd:documentation>Chinese Cantonese</xsd:documentation>
 	      </xsd:annotation>
 	    </xsd:enumeration>
     </xsd:restriction>
