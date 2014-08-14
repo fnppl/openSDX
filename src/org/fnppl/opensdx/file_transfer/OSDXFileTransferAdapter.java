@@ -1781,6 +1781,12 @@ public class OSDXFileTransferAdapter {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		try {
+			socket.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private boolean isAllowed(int rightType) {
