@@ -132,6 +132,7 @@ public class SecureConnection {
 	public SymmetricKey key;
 	public byte[] content;
 	
+	
 	public BufferedInputStream in;
 	public BufferedOutputStream out;
 	private FileTransferLog log = null;
@@ -264,11 +265,11 @@ public class SecureConnection {
 		} catch (UnsupportedEncodingException ex) {	ex.printStackTrace();}	
 	}
 
-	private final byte[] encContent = new byte[16777216];
-	private final byte[] encHeader = new byte[500*1024];
-	
 	public void sendPackage() throws Exception {
-		//content
+		byte[] encContent = new byte[16777216];
+		byte[] encHeader = new byte[500*1024];
+		
+		//content		
 		len = 0;
 		
 		if (content != null) {
