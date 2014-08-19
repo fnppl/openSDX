@@ -1570,6 +1570,8 @@ public class OSDXFileTransferServerThread extends Thread {
 	}
 	
 	public void handle_quit(long commandid, int num, byte code, String param) throws Exception {
+		debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_INFO,"handle_quit");
+		
 		//do nothing... socket closes automatically on client disconnection
 		server.log.logCommand(clientID, addr, "QUIT", param, "");
 		

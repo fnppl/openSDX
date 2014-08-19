@@ -6,3 +6,4 @@ lib/servlet.jar
 tokeyserver.sh
 startFileTransferServer.sh
 /bin
+src/org/fnppl/opensdx/dmi/resources/img
