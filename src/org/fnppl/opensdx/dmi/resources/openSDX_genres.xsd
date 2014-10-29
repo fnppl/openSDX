@@ -941,7 +941,15 @@
 			<xsd:enumeration value="Tai-Pop"/>
 			<xsd:enumeration value="Taiwanese Folk"/>
 			<xsd:enumeration value="Thai Pop"/>
-			<xsd:enumeration value="Tibetan Native Music"/>
+			<xsd:enumeration value="Tibetan Native Music"/>			
+			<xsd:enumeration value="Pop Punk"/>
+			<xsd:enumeration value="Art Song"/>
+			<xsd:enumeration value="UK Hip Hop"/>
+			<xsd:enumeration value="Arabic"/>
+			<xsd:enumeration value="Arabic Pop"/>
+			<xsd:enumeration value="Islamic"/>
+			<xsd:enumeration value="Khaleeji"/>
+			<xsd:enumeration value="North African"/>	
 	    </xsd:restriction>
 	  </xsd:simpleType>    
 </xsd:schema>
