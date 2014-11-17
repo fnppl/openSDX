@@ -255,19 +255,72 @@ public class OSDXFileTransferServerThread extends Thread {
 				}
 				//find right handler method
 				command = command.toLowerCase();
-				try {
-					Method commandHandler = getClass().getMethod("handle_"+command, Long.TYPE, Integer.TYPE, Byte.TYPE, String.class);
-					commandHandler.invoke(this, commandid, num, code, param);
+				if(command.equals("put_eof")) {
+					handle_put_eof(commandid, num, code, param);
+				}
+				else if(command.equals("put")) {
+					handle_put(commandid, num, code, param);
+				}
+				else if(command.equals("delete")) {
+					handle_delete(commandid, num, code, param);
+				}
+				else if(command.equals("put_resume")) {
+					handle_put_resume(commandid, num, code, param);
+				}
+				else if(command.equals("file")) {
+					handle_file(commandid, num, code, param);
+				}
+				else if(command.equals("get")) {					
+					handle_get(commandid, num, code, param);
+				}
+				else if(command.equals("list")) {
+					handle_list(commandid, num, code, param);
+				}
+				else if(command.equals("login")) {
+					handle_login(commandid, num, code, param);
+				}
+				else if(command.equals("mkdir")) {	
+					handle_mkdir(commandid, num, code, param);
+				}
+				else if(command.equals("put_break")) {
+					handle_put_break(commandid, num, code, param);
+				}
+				else if(command.equals("put_cancel")) {
+					handle_put_cancel(commandid, num, code, param);
+				}
+				else if(command.equals("quit")) {
+					handle_quit(commandid, num, code, param);
+				}
+				else if(command.equals("rename")) {
+					handle_rename(commandid, num, code, param);
+				}
+				else if(command.equals("resumeget")) {
+					handle_resumeget(commandid, num, code, param);
+				}
+				else if(command.equals("resumeput")) {
+					handle_resumeput(commandid, num, code, param);
+				}
+				else if(command.equals("userpasslogin")) {
+					handle_userpasslogin(commandid, num, code, param);
+				}
+				else {
+					try {
+						Method commandHandler = OSDXFileTransferServerThread.class.getMethod("handle_"+command, Long.TYPE, Integer.TYPE, Byte.TYPE, String.class);
 
-				} catch (NoSuchMethodException ex) {
-					debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, "NoSuchMethodException");
-					handle_command_not_implemented(commandid, num, code, command, param);
-				} catch (InvocationTargetException ex) {
-					debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, "InvocationTargetException");
-					handle_command_not_implemented(commandid, num, code, command, param);
-				} catch (IllegalAccessException ex) {
-					debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, "IllegalAccessException");
-					handle_command_not_implemented(commandid, num, code, command, param);
+						commandHandler.invoke(this, commandid, num, code, param);
+
+						//					public void handle_put_eof(long commandid, int num, byte code, String param) throws Exception {
+
+					} catch (NoSuchMethodException ex) {
+						debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, "NoSuchMethodException for \"handle_"+command+"\"@commandid="+commandid+",num="+num+",code="+code+",param="+param);
+						handle_command_not_implemented(commandid, num, code, command, param);
+					} catch (InvocationTargetException ex) {
+						debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, "InvocationTargetException for \"handle_"+command+"\"@commandid="+commandid+",num="+num+",code="+code+",param="+param);
+						handle_command_not_implemented(commandid, num, code, command, param);
+					} catch (IllegalAccessException ex) {
+						debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR, "IllegalAccessException for \"handle_"+command+"\"@commandid="+commandid+",num="+num+",code="+code+",param="+param);
+						handle_command_not_implemented(commandid, num, code, command, param);
+					}
 				}
 			}
 			
