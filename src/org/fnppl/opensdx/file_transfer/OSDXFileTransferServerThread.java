@@ -366,7 +366,11 @@ public class OSDXFileTransferServerThread extends Thread {
 	// COMMAND IMPLEMENTATIONS
 	
 	public void handle_command_not_implemented(long commandid, int num, byte code, String command, String param) throws Exception {
-		debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR,clientID+" "+addr+" COMMAND NOT UNDERSTOOD: "+command+" PARAM="+param);
+		String s = clientID+" "+addr+" COMMAND NOT UNDERSTOOD: "+command+" PARAM="+param;
+		Exception ex = new Exception(s);
+		ex.printStackTrace();
+		
+		debugMSG(DEBUG_MSGVISIBILITY_HIGH, DEBUG_MSGTYPE_ERROR,s);
 		data.setErrorCommandNotUnderstood(commandid, num);
 		data.sendPackage();
 		server.log.logError(clientID, addr, "COMMAND NOT UNDERSTOOD :: "+command);
