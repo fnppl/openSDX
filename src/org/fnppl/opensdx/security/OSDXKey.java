@@ -591,13 +591,13 @@ public class OSDXKey {
 				byte[] pubkey_exponent = akp.getPublicExponent();
 				akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
 			}
-			else if (lockedPrivateKey.getName().equals("pgp")) {
-				byte[] exponent = PGPKeyStore.getExponentFromSecretKey(SecurityHelper.HexDecoder.decode(lockedPrivateKey.getText()), password);
-				if (exponent == null) throw new Exception("wrong password");
-				byte[] modulus = akp.getPublicModulus();
-				byte[] pubkey_exponent = akp.getPublicExponent();
-				akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
-			}
+//			else if (lockedPrivateKey.getName().equals("pgp")) {
+//				byte[] exponent = PGPKeyStore.getExponentFromSecretKey(SecurityHelper.HexDecoder.decode(lockedPrivateKey.getText()), password);
+//				if (exponent == null) throw new Exception("wrong password");
+//				byte[] modulus = akp.getPublicModulus();
+//				byte[] pubkey_exponent = akp.getPublicExponent();
+//				akp = new AsymmetricKeyPair(modulus, pubkey_exponent, exponent);
+//			}
 		}
 	}
 	
