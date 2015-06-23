@@ -6,7 +6,7 @@ import org.fnppl.opensdx.xml.Element;
 import org.fnppl.opensdx.xml.XMLElementable;
 
 /*
- * Copyright (C) 2010-2013 
+ * Copyright (C) 2010-2015 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
@@ -53,7 +53,7 @@ import org.fnppl.opensdx.xml.XMLElementable;
 /**
  * This class contains necessary informations about Localization
  * 
- * @author ajovanovic
+ * @author Aleksandar Jovanovic <a.jovanovic@finetunes.net>
  */
 public class Localization extends BusinessObject{
 	public static String KEY_NAME = "localization";

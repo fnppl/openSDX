@@ -2,7 +2,7 @@ package org.fnppl.opensdx.common;
 
 import org.fnppl.opensdx.xml.ChildElementIterator;
 /*
- * Copyright (C) 2010-2013 
+ * Copyright (C) 2010-2015 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 

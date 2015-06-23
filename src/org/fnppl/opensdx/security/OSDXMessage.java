@@ -14,7 +14,7 @@ import sun.misc.BASE64Encoder;
 
 
 /*
- * Copyright (C) 2010-2013 
+ * Copyright (C) 2010-2015 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 

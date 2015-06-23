@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 
+ * Copyright (C) 2010-2015 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
@@ -45,14 +45,17 @@
 package org.fnppl.opensdx.keyserverfe;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.*;
 
 import javax.servlet.http.*;
 
+//import net.finetunes.dbaccess.BalancingConnectionManager;
+
 import org.jdom2.*;
 import org.jdom2.input.*;
-
 import org.fnppl.dbaccess.*;
 
 
@@ -121,17 +124,55 @@ public class MyServlet extends HttpServlet {
 //        MyServlet m = new MyServlet();
         MyServlet.readConfig();
         
-        System.out.println("Trying to init DB local: true");
-        
-        MyServlet.initLoadDB(true, 1);
+        initLoadDB(1);
     }
     
     public static void initLoadDB() {        
-        initLoadDB(false, -1);
+        initLoadDB(-1);
     }
-    public static void initLoadDB(boolean local, int limitconns) {
+    public static void initLoadDB(int limitconns) {
         Element lbconfig = config.getChild("dbloadbalancer");
-        BalancingConnectionManager.init(lbconfig,local,limitconns);
+//        BalancingConnectionManager.init(lbconfig,local,limitconns);
+        
+        String applicationname = lbconfig.getChildText("applicationname");
+        if(applicationname == null) {
+        	applicationname = System.getProperty("user.name")+"/openSDX";
+        	try {
+//				applicationname = InetAddress.getLocalHost().getHostName();
+	        	applicationname = System.getProperty("user.name")+"@"+InetAddress.getLocalHost().getHostName()+"/openSDX";
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+        	
+        }
+        
+    	String drivermanager = lbconfig.getChildText("drivermanager");
+    	String dbserver = lbconfig.getChildText("dbserver");                                
+    	String dbdbname = lbconfig.getChildText("dbdbname");
+    	String dbusername = lbconfig.getChildText("dbusername");
+    	String dbpassword = lbconfig.getChildText("dbpassword");
+    	int dbport = Integer.parseInt(lbconfig.getChildText("dbport"));
+    	String dbname = lbconfig.getChildText("dbname");
+
+    	int initialconnections = Integer.parseInt(lbconfig.getChildText("initialconnections"));
+    	int maxconnections = Integer.parseInt(lbconfig.getChildText("maxconnections"));
+    	if(limitconns>0) {
+    		maxconnections = Math.min(limitconns, maxconnections);
+    	}
+    	
+        BalancingConnectionManager.initDefaultPool(
+        		drivermanager, 
+        		dbserver, 
+        		dbport, 
+        		dbname, 
+        		dbdbname, 
+        		applicationname, 
+        		dbusername, 
+        		dbpassword, 
+        		initialconnections, 
+        		maxconnections
+        	);
+        
     }
         
     

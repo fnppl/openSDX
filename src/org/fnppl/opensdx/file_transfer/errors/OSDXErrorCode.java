@@ -2,7 +2,7 @@ package org.fnppl.opensdx.file_transfer.errors;
 
 import org.fnppl.opensdx.file_transfer.SecureConnection;
 /*
- * Copyright (C) 2010-2013 
+ * Copyright (C) 2010-2015 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 

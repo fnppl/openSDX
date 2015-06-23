@@ -56,7 +56,7 @@
       	<ipv6>127.0.0.1</ipv6>
       	<logfile>/tmp/osdx_ftserver_log.txt</logfile>
       	<max_directory_depth>-1</max_directory_depth>
-      	<clients_config_file backup="true">/home/ajovanovic/fileserver/openSDX/file_transfer_server/config/filetransfer_config_clients.xml</clients_config_file>
+      	<clients_config_file backup="true">/home/Aleksandar Jovanovic <a.jovanovic@finetunes.net>/fileserver/openSDX/file_transfer_server/config/filetransfer_config_clients.xml</clients_config_file>
       	<triggers>
       		<trigger>
       			<event>login</event>  <!-- login, logout, mkdir, delete, rename, upload_start, upload_end, download_start, download_end -->
