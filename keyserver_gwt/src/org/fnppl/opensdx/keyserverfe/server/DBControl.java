@@ -1,7 +1,7 @@
 package org.fnppl.opensdx.keyserverfe.server;
 
 /*
- * Copyright (C) 2010-2012
+ * Copyright (C) 2010-2015
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
