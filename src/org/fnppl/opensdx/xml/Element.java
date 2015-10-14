@@ -53,11 +53,13 @@ import java.util.*;
 
 import org.jdom2.Attribute;
 import org.jdom2.Comment;
+import org.jdom2.Namespace;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 public class Element {
 	protected org.jdom2.Element base = null;
+	//protected Namespace ns = null;
 	
 	public static Element buildElement(org.jdom2.Element jdomElement) {
 		return new Element(jdomElement);
@@ -67,8 +69,7 @@ public class Element {
 	}
 	
 	public Element(String name, String value) {
-		base = new org.jdom2.Element(name).setText(value);
-		
+		base = new org.jdom2.Element(name).setText(value);		
 	}
 	protected Element(org.jdom2.Element e) {
 		base = e;
@@ -92,6 +93,20 @@ public class Element {
 		return base;
 	}
 	
+	
+	
+	/**
+	 * @return the ns
+	 */
+//	public Namespace getNamespace() {
+//		return ns;
+//	}
+//	/**
+//	 * @param ns the ns to set
+//	 */
+//	public void setNamespace(Namespace ns) {
+//		this.ns = ns;
+//	}
 	public void addComment(String comment)  {
 		base.addContent(new Comment(comment));
 	}
@@ -128,7 +143,7 @@ public class Element {
 	}
 	public Element getChild(String name) {
 		//beware double-invoke!!!
-		org.jdom2.Element b = base.getChild(name);
+		org.jdom2.Element b = base.getChild(name);	
 		if (b==null) return null;
 		return new Element(b);
 	}
@@ -140,8 +155,9 @@ public class Element {
 		}
 		return s;
 	}
+	
 	public String getChildText(String name) {
-		String s = base.getChildText(name);		
+		String s = base.getChildText(name);	
 		return s;
 	}
 	
