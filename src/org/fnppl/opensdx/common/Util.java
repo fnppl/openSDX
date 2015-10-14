@@ -1,7 +1,7 @@
 package org.fnppl.opensdx.common;
 
 /*
- * Copyright (C) 2010-2013 
+ * Copyright (C) 2010-2015 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
@@ -373,7 +373,7 @@ public class Util {
      * (keep in mind that this is case sensitive)
      * @param languagecode language to check
      * @return true if valid else false
-     * @author mwitt
+     * @author Michael Witt <m.witt@finetunes.net>
      * @throws Exception 
      */
     public static boolean languageCodeExistsInXSD(String languagecode) throws Exception {

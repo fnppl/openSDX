@@ -8,7 +8,7 @@ import javax.servlet.http.*;
 
 /**
  *
- * @author mathis
+ * @author Henning Thieß <ht@fnppl.org>
  */
 public class MultiTypeRequest implements HttpServletRequest {
 //    public MultipartRequest mpr = null;

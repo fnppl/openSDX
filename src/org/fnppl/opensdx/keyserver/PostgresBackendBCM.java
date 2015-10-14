@@ -1,7 +1,7 @@
 package org.fnppl.opensdx.keyserver;
 
 /*
- * Copyright (C) 2010-2013 
+ * Copyright (C) 2010-2015 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
@@ -48,7 +48,9 @@ package org.fnppl.opensdx.keyserver;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -130,7 +132,31 @@ public class PostgresBackendBCM implements KeyServerBackend {
 		String drivermanager = DB_DRIVER;
 		int initialconnections = 1;
 		int maxconnections = 10;
-		BalancingConnectionManager.init(drivermanager, dbserver, dbport, dbname, dbdbname, dbusername, dbpassword, initialconnections, maxconnections);
+		
+		String applicationname = null;
+        if(applicationname == null) {
+        	applicationname = System.getProperty("user.name")+"/openSDX";
+        	try {
+//				applicationname = InetAddress.getLocalHost().getHostName();
+	        	applicationname = System.getProperty("user.name")+"@"+InetAddress.getLocalHost().getHostName()+"/openSDX";
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+        	
+        }
+        
+		BalancingConnectionManager.initDefaultPool( //drivermanager, dbserver, dbport, dbdbname, dbdbname, applicationname, dbusername, dbpassword, initialconnections, maxconnections) (
+				drivermanager, 
+				dbserver, 
+				dbport, 
+				dbname, 
+				dbdbname, 
+				applicationname,
+				dbusername, 
+				dbpassword, 
+				initialconnections, 
+				maxconnections
+			);
 		
 //		try {
 //			SQLStatement sql = new SQLStatement("SELECT keysha1 FROM keys");

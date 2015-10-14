@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 
+ * Copyright (C) 2010-2015 
  * 							fine people e.V. <opensdx@fnppl.org> 
  * 							Henning Thieß <ht@fnppl.org>
  * 
@@ -60,7 +60,7 @@ import javax.servlet.http.*;
 
 /**
  *
- * @author  thiess
+ * @author Henning Thieß <ht@fnppl.org>
  */
 public class EchoPageAction extends MyAction {
 	public String tmpl = null;
