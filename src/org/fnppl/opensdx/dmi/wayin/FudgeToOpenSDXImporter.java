@@ -201,9 +201,11 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	LicenseBasis license_basis = LicenseBasis.make(territorial, digitalReleaseDate, canceldate);
         	
         	//now streaming and download
-        	boolean isDownloadAllowed = false;
-        	boolean isStreamingAllowed = false;
+        	boolean isDownloadAllowed = true;
+        	boolean isStreamingAllowed = true;
         	if (root.getChild("usage_rights") != null) {
+        		isDownloadAllowed = false;
+            	isStreamingAllowed = false;
         		Vector<Element> usage_rights = root.getChild("usage_rights").getChildren("usage_right");        		
 	        	for (Iterator<Element> itExceptions = usage_rights.iterator(); itExceptions.hasNext();) {
 	        		Element usage_right = itExceptions.next();        	
