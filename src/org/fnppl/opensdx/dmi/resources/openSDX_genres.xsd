@@ -381,6 +381,7 @@
 			<xsd:enumeration value="Chinese Strings"/>
 			<xsd:enumeration value="C-Pop"/>
 			<xsd:enumeration value="Cantopop/HK Pop"/>
+			<xsd:enumeration value="Mandopop"/>
 			<xsd:enumeration value="Kayokyoku"/>
 			<xsd:enumeration value="Korean Classical"/>
 			<xsd:enumeration value="Korean Folk-Pop"/>
