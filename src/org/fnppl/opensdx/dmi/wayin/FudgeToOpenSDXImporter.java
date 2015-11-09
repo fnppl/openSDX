@@ -136,6 +136,9 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
 	        feed = Feed.make(feedinfo);              
 	
 	        // Information
+	        
+	        String teasertextEN = root.getChildTextNN("album_notes");
+	        
         	String consumer_release_date = root.getChildTextNN("consumer_release_date");	        
 	        if(consumer_release_date.length()>0) {
 	        	cal.setTime(ymd.parse(consumer_release_date));
@@ -160,6 +163,11 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	
         	BundleInformation info = BundleInformation.make(physicalReleaseDate, digitalReleaseDate);
         	info.playlength(0); //DEFAULT VALUE
+        	
+        	BundleTexts bt = BundleTexts.make();
+        	if (teasertextEN != null && !teasertextEN.isEmpty()) {
+        		bt.setTeasertext("en", teasertextEN);
+        	}
         	
         	// IDs of bundle -> more (?)
         	IDs bundleids = IDs.make();
@@ -286,8 +294,7 @@ public class FudgeToOpenSDXImporter extends OpenSDXImporterBase {
         	
         	Contributor contributor = Contributor.make(root.getChildTextNN("label"), Contributor.TYPE_LABEL, IDs.make());
         	bundle.addContributor(contributor);
-        	BundleTexts bt = BundleTexts.make();
-        	
+
         	int index = 0;
         	Vector<Element> artists = root.getChild("artists").getChildren("artist");
         	for (Iterator<Element> itArtists = artists.iterator(); itArtists.hasNext();) {
