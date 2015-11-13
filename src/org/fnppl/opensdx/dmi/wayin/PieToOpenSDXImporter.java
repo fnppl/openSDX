@@ -99,7 +99,9 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 			// (1) get XML-Data from import document
 	        Document impDoc = Document.fromFile(this.importFile);
 	        Element root = impDoc.getRootElement();
-//	        root.setNamespace(Namespace.getNamespace("http://apple.com/itunes/importer"));
+	        
+	        //(1.1) sets the activen namespace for this root element to avoid parameter overhead for all Element getters.
+	        root.setActiveNamespace(root.getNamespace());
 	          
 	        // (2) get FeedInfo from import and create feedid and new FeedInfo for openSDX
 	        String feedid = UUID.randomUUID().toString();
@@ -450,5 +452,22 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	public void setIr(Result ir) {
 		this.ir = ir;
 	}	
-
+	
+	/**
+	 * For testing purpose, TODO: DELETE
+	 * @param args
+	 * @throws Exception
+	 */
+	public static void main(String args[]) throws Exception{
+		File file = new File("/home/ajovanovic/Arbeitsfläche/metadata-iTunes.xml");
+		File dstF = new File("/home/ajovanovic/Desktop/opensdx.out");
+		if(!dstF.exists()){
+			dstF.createNewFile();
+		}
+		
+		ImportType it = ImportType.getImportType("pie");
+		PieToOpenSDXImporter p2o = new PieToOpenSDXImporter(it, file, dstF);
+		Result result = p2o.formatToOpenSDXFile();
+		System.out.println(result.toString());
+	}
 }

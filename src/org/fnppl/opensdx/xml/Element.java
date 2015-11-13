@@ -59,7 +59,7 @@ import org.jdom2.output.XMLOutputter;
 
 public class Element {
 	protected org.jdom2.Element base = null;
-	//protected Namespace ns = null;
+	protected Namespace activeNamespace = null; //For implicit namespace use in getters.
 	
 	public static Element buildElement(org.jdom2.Element jdomElement) {
 		return new Element(jdomElement);
@@ -74,6 +74,10 @@ public class Element {
 	protected Element(org.jdom2.Element e) {
 		base = e;
 	}	
+	protected Element(org.jdom2.Element e, Namespace activeNamespace){
+		base = e;
+		this.activeNamespace = activeNamespace;
+	}
 	
 	public Element setAttribute(String name, String value) {
 		base.setAttribute(name, value);
@@ -93,20 +97,6 @@ public class Element {
 		return base;
 	}
 	
-	
-	
-	/**
-	 * @return the ns
-	 */
-//	public Namespace getNamespace() {
-//		return ns;
-//	}
-//	/**
-//	 * @param ns the ns to set
-//	 */
-//	public void setNamespace(Namespace ns) {
-//		this.ns = ns;
-//	}
 	public void addComment(String comment)  {
 		base.addContent(new Comment(comment));
 	}
@@ -141,13 +131,113 @@ public class Element {
 	public String getName() {
 		return base.getName();
 	}
+	
+	/**
+	 * Gets the Namespace for this element.
+	 * @return Namespace.
+	 */
+	public Namespace getNamespace(){
+		return base.getNamespace();
+	}
+	
+	/**
+	 * Gets all additional Namespaces for this element.
+	 * @return Additional Namespaces.
+	 */
+	public List<Namespace> getAdditionalNamespaces(){
+		return base.getAdditionalNamespaces();
+	}
+	
+	/**
+	 * Sets the active Namespace so that the get methods implicitly use that 
+	 * namespace together with the given name.
+	 * 
+	 * @param namespace The namespace to set.
+	 */
+	public void setActiveNamespace(Namespace activeNamespace){
+		this.activeNamespace = activeNamespace;
+	}
+	
+	/**
+	 * Checks if an active namespace is set.
+	 * @return if an active namespace is set.
+	 */
+	public boolean hasActiveNamespace(){
+		return activeNamespace != null;
+	}
+	
+	/**
+	 * Disables the use of an active namespace.
+	 */
+	public void disableActiveNamespace(){
+		activeNamespace = null;
+	}
+	
+	/**
+	 * Excplicit method to get a child element for a certain namespace.
+	 * 
+	 * @param name Child element name.
+	 * @param namespace The namespace.
+	 * @return Child element or null if nothig was found.
+	 */
+	public Element getChild(String name, Namespace namespace){
+		//beware double-invoke!!!
+		org.jdom2.Element b = base.getChild(name, namespace);
+		if(b == null) return null;
+		return new Element(b, namespace);
+	}
+	
+	/**
+	 * Method to get a child element.
+	 * Implicitly checks if an active namespace was set and uses that one.
+	 * 
+	 * @param name Child element name.
+	 * @return Child element.
+	 */
 	public Element getChild(String name) {
+		//implicitly uses active namespace
+		if(hasActiveNamespace()){
+			return getChild(name, activeNamespace);
+		}
+		
 		//beware double-invoke!!!
 		org.jdom2.Element b = base.getChild(name);	
 		if (b==null) return null;
 		return new Element(b);
 	}
+	
+	/**
+	 * Explicit method to get an child text for the given child 
+	 * name and namespace. This method will never return null but an empty 
+	 * string instead.
+	 * 
+	 * @param name Child name.
+	 * @param namespace Child namespace.
+	 * @return Child text or empty string in case of null.
+	 */
+	public String getChildTextNN(String name, Namespace namespace){
+		//beware double-invoke!!!
+		String s = base.getChildText(name, namespace);
+		if(s == null){
+			return "";
+		}
+		return s;
+	}
+	
+	/**
+	 * Method to get a child text for the given child. This method will never 
+	 * return a null but an empty string instead.
+	 * Implicitly checks if an active namespace was set and uses that one.
+	 * 
+	 * @param name Child name.
+	 * @return Child text or empty string in case of null.
+	 */
 	public String getChildTextNN(String name) {
+		//implicitly uses active namespace
+		if(hasActiveNamespace()){
+			return getChildTextNN(name, activeNamespace);
+		}
+				
 		//beware double-invoke!!!
 		String s = base.getChildText(name);
 		if (s == null) {
@@ -156,7 +246,31 @@ public class Element {
 		return s;
 	}
 	
+	
+	/**
+	 * Explicit method to get the child text for the given Child name and namespace.
+	 * 
+	 * @param name Child name.
+	 * @param namespace Namespace.
+	 * @return Child name or null.
+	 */
+	public String getChildText(String name, Namespace namespace) {
+		String s = base.getChildText(name, namespace);	
+		return s;
+	}
+	
+	/**
+	 * Method to get the child text for the given name.
+	 * Implicitly checks if an active namespace is given and uses that one.
+	 * 
+	 * @param name Child name.
+	 * @return Child text or null.
+	 */
 	public String getChildText(String name) {
+		if(hasActiveNamespace()){
+			return getChildText(name, activeNamespace);
+		}
+		
 		String s = base.getChildText(name);	
 		return s;
 	}
@@ -169,6 +283,7 @@ public class Element {
 			return Integer.MIN_VALUE;
 		}
 	}
+	
 	public long getChildLong(String name) {
 		//beware double-invoke!!!
 		try {
@@ -177,6 +292,7 @@ public class Element {
 			return Long.MIN_VALUE;
 		}
 	}
+	
 	public boolean getChildBoolean(String name, boolean onError) {
 		try {
 			String s = base.getChildText(name);
@@ -210,7 +326,35 @@ public class Element {
 		}
 		return ret;
 	}
+	
+	/**
+	 * Gets a vector of all child elemends of the given name and namespace.
+	 * 
+	 * @param name Child element name.
+	 * @param namespace Namespace
+	 * @return Children with the given name and namespace.
+	 */
+	public Vector<Element> getChildren(String name, Namespace namespace) {
+		Vector<Element> ret = new Vector<Element>();
+		List l = base.getChildren(name, namespace);
+		for(int i=0;i<l.size();i++) {
+			ret.add(new Element((org.jdom2.Element)l.get(i), namespace));
+		}
+		
+		return ret;
+	}
+	
+	/**
+	 * Gets a vector of all children elements of the given name.
+	 * Implicitly checks if an active namespace wwas given and uses this one.
+	 * 
+	 * @param name Children element name. 
+	 * @return Children with the given name.
+	 */
 	public Vector<Element> getChildren(String name) {
+		if(hasActiveNamespace()){
+			return getChildren(name, activeNamespace);
+		}
 		Vector<Element> ret = new Vector<Element>();
 		List l = base.getChildren(name);
 		for(int i=0;i<l.size();i++) {

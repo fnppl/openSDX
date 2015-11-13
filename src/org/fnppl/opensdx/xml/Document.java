@@ -63,7 +63,6 @@ public class Document {
 	private Document(org.jdom2.Document dc) {
 		this.base = dc;
 		rt = new Element(base.getRootElement());
-		
 	}
 	
 	public static Document fromFile(File f) throws Exception {
