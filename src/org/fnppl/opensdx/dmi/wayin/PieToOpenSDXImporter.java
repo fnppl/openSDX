@@ -292,7 +292,7 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
         	Vector<Element> genres = album.getChild("genres").getChildren("genre");
         	for (Iterator<Element> itGenres = genres.iterator(); itGenres.hasNext();) {
         		Element genre = itGenres.next();        	
-        		tags.addGenre(gc.convert(genre.getText()));
+        		tags.addGenre(gc.convert(genre.getAttribute("code")));
         	}
         	
     		bundle.tags(tags);        	        	
@@ -385,7 +385,7 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
             	Vector<Element> track_genres = track.getChild("genres").getChildren("genre");
             	for (Iterator<Element> itTrackGenres = track_genres.iterator(); itTrackGenres.hasNext();) {
             		Element genre = itTrackGenres.next();        	
-            		tags.addGenre(gc.convert(genre.getText()));
+            		tags.addGenre(gc.convert(genre.getAttribute("code")));
             	}          	
             	
             	item.tags(track_tags);	        	
