@@ -58,6 +58,7 @@ import org.jdom2.Namespace;
 
 public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	DateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
+	private boolean forceImport = false; //in case we need to import a takedown xmls, this flag needs to be set on true.
 	private Result ir = Result.succeeded();
 	// test?
 	boolean onlytest = true;
@@ -147,7 +148,7 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	        if(root.getChild("language")!=null && root.getChildTextNN("language").length()>0) {
 	        	info.main_language(root.getChildText("language").substring(0, 2));
 	        }
-	        	        
+	        
         	// IDs of bundle -> more (?)
         	IDs bundleids = IDs.make();
         	if(album.getChild("upc")!=null) bundleids.upc(album.getChildTextNN("upc"));
@@ -187,8 +188,36 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
         	rec.username("testuser");
         	feedinfo.receiver(rec);
         	
+        	// Album 
+        	boolean downloadAllowed = true;
+        	boolean streamingAllowed = true;
+        	Element albumProducts = album.getChild("products");
+        	if(albumProducts != null){
+        		Vector<Element> products = albumProducts.getChildren("product");
+        		if(products != null && products.size() > 0){
+        			for(Element p: products){
+        				String territory = p.getChildText("territory");
+        				if(forceImport){
+        					territorial.allow(territory);
+        				} else {
+        					downloadAllowed =  downloadAllowed && p.getChildBoolean("cleared_for_sale", false);
+        					streamingAllowed = streamingAllowed && p.getChildBoolean("cleared_for_stream", false);
+        					if(downloadAllowed || streamingAllowed){
+        						territorial.allow(territory);
+        					} else {
+        						territorial.disallow(territory);
+        					}
+        				}
+        			}
+        		}
+        	}
+        	
+        	//allow download and streaming based on territories.
+        	license_basis.download_allowed(downloadAllowed);
+        	license_basis.streaming_allowed(streamingAllowed);
+        	
         	Bundle bundle = Bundle.make(bundleids, displayname, displayname, "", display_artistname, info, license_basis, license_specifics);  
-
+        	
         	// add contributor label
         	Contributor con = Contributor.make(album.getChildTextNN("label_name"), Contributor.TYPE_LABEL, IDs.make());
         	bundle.addContributor(con);
@@ -278,7 +307,7 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
             			}
             		}
         		}
-       
+        		
         		bundle.addFile(itemfile);
         	}
         	
@@ -296,7 +325,7 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
         	}
         	
     		bundle.tags(tags);        	        	
-        	
+//        	
         	Vector<Element> tracks = album.getChild("tracks").getChildren("track");
         	for (Iterator<Element> itTracks = tracks.iterator(); itTracks.hasNext();) {
         		Element track = itTracks.next();
@@ -343,30 +372,30 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make();         	      		
 	        	
 	        	// license_basis of Bundle / license_specifics of Bundle / others (?)
-	        	Item item = Item.make(trackids, track_displayname, track_displayname, "", "audio", track_display_artistname, track_info, track_license_basis, track_license_specifics);
-             	
+	        	Item item = Item.make(trackids, track_displayname, track_display_artistname, "", "audio", track_display_artistname, track_info, track_license_basis, track_license_specifics);
+	        	
 	        	contributors = track.getChild("artists").getChildren("artist");
 	        	for (Iterator<Element> itContributors = contributors.iterator(); itContributors.hasNext();) {
 	        		Element contributor = itContributors.next();
 	 
 	        		boolean display_artist_isSet = false;
 	        		if(contributor.getChild("primary")!=null) {
-	        			if(contributor.getChildTextNN("primary").equals("true")&&!display_artist_isSet) { item.display_artistname(contributor.getChildTextNN("name")); display_artist_isSet=true; }
+	        			if(contributor.getChildTextNN("primary").equals("true")&&!display_artist_isSet) { item.display_artistname(contributor.getChildTextNN("artist_name")); display_artist_isSet=true; }
 	        		}
 	        		
 	        		if(contributor.getChild("roles")!=null && contributor.getChild("roles").getChild("role")!=null) {
 	        			String role = contributor.getChild("roles").getChildTextNN("role").trim().toLowerCase();
 	        			if(role.equals("performer")) {
-	        				con = Contributor.make(contributor.getChildTextNN("name"), Contributor.TYPE_PERFORMER, IDs.make());	
+	        				con = Contributor.make(contributor.getChildTextNN("artist_name"), Contributor.TYPE_PERFORMER, IDs.make());	
 	        			}
 	        			else if(role.equals("featuring")) {
-	        				con = Contributor.make(contributor.getChildTextNN("name"), Contributor.TYPE_FEATURING, IDs.make());	
+	        				con = Contributor.make(contributor.getChildTextNN("artist_name"), Contributor.TYPE_FEATURING, IDs.make());	
 	        			}
 	        			else if(role.equals("composer")) {
-	        				con = Contributor.make(contributor.getChildTextNN("name"), Contributor.TYPE_COMPOSER, IDs.make());	
+	        				con = Contributor.make(contributor.getChildTextNN("artist_name"), Contributor.TYPE_COMPOSER, IDs.make());	
 	        			}
 	        			else if(role.equals("producer")) {
-	        				con = Contributor.make(contributor.getChildTextNN("name"), Contributor.TYPE_PRODUCER, IDs.make());	
+	        				con = Contributor.make(contributor.getChildTextNN("artist_name"), Contributor.TYPE_PRODUCER, IDs.make());	
 	        			} 
 	        			
 	        			// Maybe more roles? Insert!
@@ -454,6 +483,14 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	}	
 	
 	/**
+	 * In case you need to import a "Pie" takedown XML, you can enforce it to act
+	 * like a regualr import XML.
+	 */
+	public void forceTakedownImport(){
+		this.forceImport = true;
+	}
+	
+	/**
 	 * For testing purpose, TODO: DELETE
 	 * @param args
 	 * @throws Exception
@@ -467,6 +504,7 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 		
 		ImportType it = ImportType.getImportType("pie");
 		PieToOpenSDXImporter p2o = new PieToOpenSDXImporter(it, file, dstF);
+		p2o.forceTakedownImport(); //enforce takedown to be imported
 		Result result = p2o.formatToOpenSDXFile();
 		System.out.println(result.toString());
 	}
