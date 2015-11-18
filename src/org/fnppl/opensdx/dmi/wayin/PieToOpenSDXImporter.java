@@ -188,22 +188,71 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
         	rec.username("testuser");
         	feedinfo.receiver(rec);
         	
-        	// Album 
-        	boolean downloadAllowed = true;
-        	boolean streamingAllowed = true;
+        	// Album Territories, Streaming and Download
+        	HashMap<String, Element> albumTerritories = new HashMap<String, Element>(); //Global album territories to match with Pies track territories
+        	boolean downloadAllowed = false;
+        	boolean streamingAllowed = false;
+        	
+        	//calculate major streaming & sales date
+        	HashMap<String, String> majorDates = calculateDateMajorities(album.getChild("products").getChildren("product").iterator());
+        	
         	Element albumProducts = album.getChild("products");
         	if(albumProducts != null){
         		Vector<Element> products = albumProducts.getChildren("product");
         		if(products != null && products.size() > 0){
         			for(Element p: products){
+        				albumTerritories.put(p.getChildTextNN("territory"), p); //Puts the current territory for later track territory comparison
         				String territory = p.getChildText("territory");
         				if(forceImport){
         					territorial.allow(territory);
+        					//rules in case <sales_start_date> != <stream_start_date>
+        					if(!p.getChildTextNN("sales_start_date").equals(p.getChildTextNN("stream_start_date"))){
+        						//add rule
+        						LicenseRule rule = LicenseRule.make(1, "streaming_allowed", "equals", "true");
+        						rule.addElseProclaim("timeframe_from", p.getChildTextNN("sales_start_date"));
+        						license_specifics.addRule(rule);
+        					}
+        					
+        					if(!p.getChildTextNN("sales_start_date").equals(majorDates.get("sales"))){
+        						//add rule for sales
+        						LicenseRule rule = LicenseRule.make(2, "territory", "equals", territory);
+        						rule.addElseProclaim("timeframe_from", majorDates.get("sales"));
+        						license_specifics.addRule(rule);
+        					}
+        					
+        					if(!p.getChildTextNN("stream_start_date").equals(majorDates.get("stream"))){
+        						//add rule for streaming
+        						LicenseRule rule = LicenseRule.make(3, "territory", "equals", territory);
+        						rule.addElseProclaim("streaming_timeframe_from", majorDates.get("stream"));
+        						license_specifics.addRule(rule);
+        					}
+        					
         				} else {
-        					downloadAllowed =  downloadAllowed && p.getChildBoolean("cleared_for_sale", false);
-        					streamingAllowed = streamingAllowed && p.getChildBoolean("cleared_for_stream", false);
-        					if(downloadAllowed || streamingAllowed){
+        					downloadAllowed |=  p.getChildBoolean("cleared_for_sale", false);
+        					streamingAllowed |= p.getChildBoolean("cleared_for_stream", false);
+        					if(p.getChildBoolean("cleared_for_sale", false) || p.getChildBoolean("cleared_for_stream", false)){
         						territorial.allow(territory);
+            					//rules in case <sales_start_date> != <stream_start_date>
+            					if(!p.getChildTextNN("sales_start_date").equals(p.getChildTextNN("stream_start_date"))){
+            						//add rule
+            						LicenseRule rule = LicenseRule.make(1, "streaming_allowed", "equals", "true");
+            						rule.addElseProclaim("timeframe_from", p.getChildTextNN("sales_start_date"));
+            						license_specifics.addRule(rule);
+            					}
+            					
+            					if(!p.getChildTextNN("sales_start_date").equals(majorDates.get("sales"))){
+            						//add rule for sales
+            						LicenseRule rule = LicenseRule.make(2, "territory", "equals", territory);
+            						rule.addElseProclaim("timeframe_from", majorDates.get("sales"));
+            						license_specifics.addRule(rule);
+            					}
+            					
+            					if(!p.getChildTextNN("stream_start_date").equals(majorDates.get("stream"))){
+            						//add rule for streaming
+            						LicenseRule rule = LicenseRule.make(3, "territory", "equals", territory);
+            						rule.addElseProclaim("streaming_timeframe_from", majorDates.get("stream"));
+            						license_specifics.addRule(rule);
+            					}        						
         					} else {
         						territorial.disallow(territory);
         					}
@@ -406,7 +455,24 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	        			con = Contributor.make(contributor.getChildTextNN("name"), Contributor.TYPE_PERFORMER, IDs.make());
 	        			item.addContributor(con);
 	        		}
-	        	}	        	
+	        	}	        
+	        	
+	        	// Check if track territory equal to those on bundle level
+	        	boolean asOnBundle = asOnBundle(albumTerritories, track.getChild("products").getChildren("product"));
+	        	if(asOnBundle){
+	        		track_license_basis.as_on_bundle(asOnBundle);
+	        	} else {
+	        		//Check track territories again.
+	        		Vector<Element> tmp = track.getChild("products").getChildren("product");
+	        		for(Element t: tmp){
+	        			String territory = t.getChildText("territory");
+	        			if(t.getChildBoolean("cleared_for_sale", false) || t.getChildBoolean("cleared_for_stream", false)){
+	        				track_territorial.allow(territory);
+	        			} else {
+	        				track_territorial.disallow(territory);
+	        			}
+	        		}
+	        	}
 	        	
             	// add Tags
             	ItemTags track_tags = ItemTags.make();   	
@@ -468,6 +534,94 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 			ir.exception = e;			
 		}		        
         return feed;
+	}
+
+	private HashMap<String, String> calculateDateMajorities(Iterator<Element> it){
+		HashMap<String, String> ret = new HashMap<String, String>();
+    	HashMap<String, Integer> salesDates = new HashMap<String, Integer>(); // kay = date | value = count
+    	HashMap<String, Integer> streamingDates = new HashMap<String, Integer>(); // kay = date | value = count
+    	String majorSalesDate = null;
+    	int majorSalesCount = -1;
+    	String majorStreamDate = null;
+    	int majorStreamCount = -1;
+    	
+    	while(it.hasNext()){
+    		Element e = it.next();
+    		String territory = e.getChildTextNN("territory");
+			//count major sales & streaming date
+			if(e.getChildTextNN("sales_start_date").length() > 0){
+				//sales
+				if(salesDates.get(territory) == null){
+					//add
+					salesDates.put(territory, 1);
+				} else {
+					//increment
+					salesDates.put(territory, salesDates.get(territory)+1);
+				}
+			}
+			
+			if(e.getChildTextNN("stream_start_date").length() > 0){
+				//stream
+				if(streamingDates.get(territory) == null){
+					//add
+					streamingDates.put(territory, 1);
+				} else {
+					//increment
+					streamingDates.put(territory, streamingDates.get(territory)+1);
+				}
+			}
+    	}	
+    	
+    	Iterator<String> itSale = salesDates.keySet().iterator();
+    	while(itSale.hasNext()){
+    		String key = itSale.next();
+    		int i = salesDates.get(key);
+    		if(i > majorSalesCount){
+    			majorSalesCount = i;
+    			majorSalesDate = key;
+    		}
+    	}
+    	
+    	Iterator<String> itStream= streamingDates.keySet().iterator();
+    	while(itStream.hasNext()){
+    		String key = itSale.next();
+    		int i = streamingDates.get(key);
+    		if(i > majorStreamCount){
+    			majorStreamCount = i;
+    			majorStreamDate = key;
+    		}
+    		
+    	}
+
+    	ret.put("stream", majorStreamDate);
+    	ret.put("sale", majorSalesDate);
+    	
+    	return ret;
+	}
+	
+	/**
+	 * Checks if the trackTerritories are equal to those on bundle level.
+	 * 
+	 * @param albumTerritories HashMap with all Territories on bundle leve.
+	 * @param trackTerritories Element with all Territories for the track.
+	 * 
+	 * @return true if albumTerritories equal to trackTerritories
+	 */
+	private boolean asOnBundle(HashMap<String, Element> albumTerritories, Vector<Element> trackTerritories){
+		boolean ret = false;
+		if(albumTerritories != null && trackTerritories != null 
+				&& albumTerritories.size() == trackTerritories.size()){
+			ret = true;
+			Iterator<Element> it = trackTerritories.iterator();
+			while(it.hasNext() && ret){
+				Element trackT = it.next();
+				Element albumT = albumTerritories.get(trackT.getChildTextNN("territory"));
+				
+				ret = (trackT.getChildTextNN("cleared_for_sale").equals(albumT.getChildTextNN("cleared_for_sale")) &&
+						trackT.getChildTextNN("cleared_for_stream").equals(albumT.getChildTextNN("cleared_for_stream")));
+			}
+		}
+		return ret;
 	}
 	
 	public Feed getFormatedFeedFromImport() {			
