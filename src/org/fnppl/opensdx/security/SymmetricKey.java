@@ -58,7 +58,7 @@ import org.bouncycastle.crypto.encodings.*;
 import org.bouncycastle.crypto.paddings.*;
 import org.bouncycastle.crypto.params.*;
 
-import com.sun.crypto.provider.AESCipher;
+//import com.sun.crypto.provider.AESCipher;
 import com.sun.org.apache.bcel.internal.generic.AASTORE;
 
 

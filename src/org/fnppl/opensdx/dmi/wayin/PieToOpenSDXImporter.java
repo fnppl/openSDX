@@ -58,7 +58,7 @@ import org.jdom2.Namespace;
 
 public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	DateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
-	private boolean forceImport = false; //in case we need to import a takedown xmls, this flag needs to be set on true.
+	private boolean forceImport = true; //in case we need to import a takedown xmls, this flag needs to be set on true.
 	private Result ir = Result.succeeded();
 	// test?
 	boolean onlytest = true;
@@ -204,29 +204,10 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
         				albumTerritories.put(p.getChildTextNN("territory"), p); //Puts the current territory for later track territory comparison
         				String territory = p.getChildText("territory");
         				if(forceImport){
+        					//no rules necessary, just import. Download and streaming allowed = true, streaming start & enddate are the regular releasedate
+        					downloadAllowed = true;
+        					streamingAllowed = true;
         					territorial.allow(territory);
-        					//rules in case <sales_start_date> != <stream_start_date>
-        					if(!p.getChildTextNN("sales_start_date").equals(p.getChildTextNN("stream_start_date"))){
-        						//add rule
-        						LicenseRule rule = LicenseRule.make(1, "streaming_allowed", "equals", "true");
-        						rule.addElseProclaim("timeframe_from", p.getChildTextNN("sales_start_date"));
-        						license_specifics.addRule(rule);
-        					}
-        					
-        					if(!p.getChildTextNN("sales_start_date").equals(majorDates.get("sales"))){
-        						//add rule for sales
-        						LicenseRule rule = LicenseRule.make(2, "territory", "equals", territory);
-        						rule.addElseProclaim("timeframe_from", majorDates.get("sales"));
-        						license_specifics.addRule(rule);
-        					}
-        					
-        					if(!p.getChildTextNN("stream_start_date").equals(majorDates.get("stream"))){
-        						//add rule for streaming
-        						LicenseRule rule = LicenseRule.make(3, "territory", "equals", territory);
-        						rule.addElseProclaim("streaming_timeframe_from", majorDates.get("stream"));
-        						license_specifics.addRule(rule);
-        					}
-        					
         				} else {
         					downloadAllowed |=  p.getChildBoolean("cleared_for_sale", false);
         					streamingAllowed |= p.getChildBoolean("cleared_for_stream", false);
@@ -236,21 +217,21 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
             					if(!p.getChildTextNN("sales_start_date").equals(p.getChildTextNN("stream_start_date"))){
             						//add rule
             						LicenseRule rule = LicenseRule.make(1, "streaming_allowed", "equals", "true");
-            						rule.addElseProclaim("timeframe_from", p.getChildTextNN("sales_start_date"));
+            						rule.addThenProclaim("timeframe_from", p.getChildTextNN("sales_start_date"));
             						license_specifics.addRule(rule);
             					}
             					
             					if(!p.getChildTextNN("sales_start_date").equals(majorDates.get("sales"))){
             						//add rule for sales
             						LicenseRule rule = LicenseRule.make(2, "territory", "equals", territory);
-            						rule.addElseProclaim("timeframe_from", majorDates.get("sales"));
+            						rule.addThenProclaim("timeframe_from", majorDates.get("sales"));
             						license_specifics.addRule(rule);
             					}
             					
             					if(!p.getChildTextNN("stream_start_date").equals(majorDates.get("stream"))){
             						//add rule for streaming
             						LicenseRule rule = LicenseRule.make(3, "territory", "equals", territory);
-            						rule.addElseProclaim("streaming_timeframe_from", majorDates.get("stream"));
+            						rule.addThenProclaim("streaming_timeframe_from", majorDates.get("stream"));
             						license_specifics.addRule(rule);
             					}        						
         					} else {
@@ -458,18 +439,23 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	        	}	        
 	        	
 	        	// Check if track territory equal to those on bundle level
-	        	boolean asOnBundle = asOnBundle(albumTerritories, track.getChild("products").getChildren("product"));
-	        	if(asOnBundle){
-	        		track_license_basis.as_on_bundle(asOnBundle);
+	        	if(forceImport){
+	        		//In case of force import, just like on bundle (Just allow everything)
+	        		track_license_basis.as_on_bundle(true);
 	        	} else {
-	        		//Check track territories again.
-	        		Vector<Element> tmp = track.getChild("products").getChildren("product");
-	        		for(Element t: tmp){
-	        			String territory = t.getChildText("territory");
-	        			if(t.getChildBoolean("cleared_for_sale", false) || t.getChildBoolean("cleared_for_stream", false)){
-	        				track_territorial.allow(territory);
-	        			} else {
-	        				track_territorial.disallow(territory);
+	        		boolean asOnBundle = asOnBundle(albumTerritories, track.getChild("products").getChildren("product"));
+	        		if(asOnBundle){
+	        			track_license_basis.as_on_bundle(asOnBundle);
+	        		} else {
+	        			//Check track territories again.
+	        			Vector<Element> tmp = track.getChild("products").getChildren("product");
+	        			for(Element t: tmp){
+	        				String territory = t.getChildText("territory");
+	        				if(t.getChildBoolean("cleared_for_sale", false) || t.getChildBoolean("cleared_for_stream", false)){
+	        					track_territorial.allow(territory);
+	        				} else {
+	        					track_territorial.disallow(territory);
+	        				}
 	        			}
 	        		}
 	        	}
@@ -548,26 +534,28 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
     	while(it.hasNext()){
     		Element e = it.next();
     		String territory = e.getChildTextNN("territory");
+    		String stream_date = e.getChildTextNN("sales_start_date");
+    		String streamDate = e.getChildTextNN("stream_start_date");
 			//count major sales & streaming date
-			if(e.getChildTextNN("sales_start_date").length() > 0){
+			if(stream_date.length() > 0){
 				//sales
-				if(salesDates.get(territory) == null){
+				if(salesDates.get(stream_date) == null){
 					//add
-					salesDates.put(territory, 1);
+					salesDates.put(stream_date, 1);
 				} else {
 					//increment
-					salesDates.put(territory, salesDates.get(territory)+1);
+					salesDates.put(stream_date, salesDates.get(stream_date)+1);
 				}
 			}
 			
-			if(e.getChildTextNN("stream_start_date").length() > 0){
+			if(streamDate.length() > 0){
 				//stream
-				if(streamingDates.get(territory) == null){
+				if(streamingDates.get(streamDate) == null){
 					//add
-					streamingDates.put(territory, 1);
+					streamingDates.put(streamDate, 1);
 				} else {
 					//increment
-					streamingDates.put(territory, streamingDates.get(territory)+1);
+					streamingDates.put(streamDate, streamingDates.get(streamDate)+1);
 				}
 			}
     	}	
@@ -650,15 +638,16 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	 * @throws Exception
 	 */
 	public static void main(String args[]) throws Exception{
-		File file = new File("/home/ajovanovic/Arbeitsfläche/metadata-iTunes.xml");
-		File dstF = new File("/home/ajovanovic/Desktop/opensdx.out");
+//		File file = new File("/home/ajovanovic/Arbeitsfläche/metadata-iTunes.xml");
+		File file = new File("/home/ajovanovic/Arbeitsfläche/metadata.xml");
+		File dstF = new File("/home/ajovanovic/Desktop/opensdx_out.xml");
 		if(!dstF.exists()){
 			dstF.createNewFile();
 		}
 		
 		ImportType it = ImportType.getImportType("pie");
 		PieToOpenSDXImporter p2o = new PieToOpenSDXImporter(it, file, dstF);
-		p2o.forceTakedownImport(); //enforce takedown to be imported
+//		p2o.forceTakedownImport(); //enforce takedown to be imported
 		Result result = p2o.formatToOpenSDXFile();
 		System.out.println(result.toString());
 	}
