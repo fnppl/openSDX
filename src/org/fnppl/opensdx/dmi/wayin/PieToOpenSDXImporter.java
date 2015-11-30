@@ -471,42 +471,44 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
             	
             	item.tags(track_tags);	        	
 	        	
-        		ItemFile itemfile = ItemFile.make();
-        		itemfile.type("full");
-        		// check if file exist at path
-        		String filename = track.getChild("audio_file").getChildTextNN("file_name");
-        		File f = new File(path+filename);      		
-        		if(f!=null && f.exists()) {
-        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
-        			
-        			// set delivered path to file 
-        			itemfile.setLocation(FileLocation.make(filename,filename));        			
-        		} else {
-        			//file does not exist -> so we have to set the values "manually"
-        			
-        			//-> use filename as location
-        			itemfile.setLocation(FileLocation.make(filename,filename));
-        		
-        			//file size
-        			if(track.getChild("audio_file").getChild("size")!=null) {
-            			itemfile.bytes(Integer.parseInt(track.getChild("audio_file").getChildText("size")));
-            		}        		
-            		
-            		// checksum md5
-            		if(track.getChild("audio_file").getChild("checksum")!=null) {
-            			Element cs = track.getChild("audio_file").getChild("checksum");
-            			if (cs!=null) {
-            				if(cs.getAttribute("type").equals("md5")) {
-            					String sMd5 =  cs.getText();
-	            				byte[] md5 = SecurityHelper.HexDecoder.decode(sMd5);
-	            				itemfile.checksums(Checksums.make().md5(md5));
-            				}
-            			}
-            		}            		
-            		
-        		}        		
-        		
-	        	item.addFile(itemfile);
+            	Element audioFile = track.getChild("audio_file");
+            	// check if file exist at path (Optional, in case of an update XML this element may be missing)
+            	if(audioFile != null){
+	        		ItemFile itemfile = ItemFile.make();
+	        		itemfile.type("full");
+	        		String filename = track.getChild("audio_file").getChildTextNN("file_name");
+	        		File f = new File(path+filename);      		
+	        		if(f!=null && f.exists()) {
+	        			itemfile.setFile(f); //this will also set the filesize and calculate the checksums
+	        			
+	        			// set delivered path to file 
+	        			itemfile.setLocation(FileLocation.make(filename,filename));        			
+	        		} else {
+	        			//file does not exist -> so we have to set the values "manually"
+	        			
+	        			//-> use filename as location
+	        			itemfile.setLocation(FileLocation.make(filename,filename));
+	        			
+	        			//file size
+	        			if(track.getChild("audio_file").getChild("size")!=null) {
+	        				itemfile.bytes(Integer.parseInt(track.getChild("audio_file").getChildText("size")));
+	        			}        		
+	        			
+	        			// checksum md5
+	        			if(track.getChild("audio_file").getChild("checksum")!=null) {
+	        				Element cs = track.getChild("audio_file").getChild("checksum");
+	        				if (cs!=null) {
+	        					if(cs.getAttribute("type").equals("md5")) {
+	        						String sMd5 =  cs.getText();
+	        						byte[] md5 = SecurityHelper.HexDecoder.decode(sMd5);
+	        						itemfile.checksums(Checksums.make().md5(md5));
+	        					}
+	        				}
+	        			}            		
+	        			
+	        		}        		
+	        		item.addFile(itemfile);
+        		}
 	        	
 	        	bundle.addItem(item);
         	} 
@@ -533,18 +535,17 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
     	
     	while(it.hasNext()){
     		Element e = it.next();
-    		String territory = e.getChildTextNN("territory");
-    		String stream_date = e.getChildTextNN("sales_start_date");
+    		String salesDate = e.getChildTextNN("sales_start_date");
     		String streamDate = e.getChildTextNN("stream_start_date");
 			//count major sales & streaming date
-			if(stream_date.length() > 0){
+			if(salesDate.length() > 0){
 				//sales
-				if(salesDates.get(stream_date) == null){
+				if(salesDates.get(salesDate) == null){
 					//add
-					salesDates.put(stream_date, 1);
+					salesDates.put(salesDate, 1);
 				} else {
 					//increment
-					salesDates.put(stream_date, salesDates.get(stream_date)+1);
+					salesDates.put(salesDate, salesDates.get(salesDate)+1);
 				}
 			}
 			
@@ -572,7 +573,7 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
     	
     	Iterator<String> itStream= streamingDates.keySet().iterator();
     	while(itStream.hasNext()){
-    		String key = itSale.next();
+    		String key = itStream.next();
     		int i = streamingDates.get(key);
     		if(i > majorStreamCount){
     			majorStreamCount = i;
@@ -630,25 +631,5 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	 */
 	public void forceTakedownImport(){
 		this.forceImport = true;
-	}
-	
-	/**
-	 * For testing purpose, TODO: DELETE
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String args[]) throws Exception{
-//		File file = new File("/home/ajovanovic/Arbeitsfläche/metadata-iTunes.xml");
-		File file = new File("/home/ajovanovic/Arbeitsfläche/metadata.xml");
-		File dstF = new File("/home/ajovanovic/Desktop/opensdx_out.xml");
-		if(!dstF.exists()){
-			dstF.createNewFile();
-		}
-		
-		ImportType it = ImportType.getImportType("pie");
-		PieToOpenSDXImporter p2o = new PieToOpenSDXImporter(it, file, dstF);
-//		p2o.forceTakedownImport(); //enforce takedown to be imported
-		Result result = p2o.formatToOpenSDXFile();
-		System.out.println(result.toString());
 	}
 }
