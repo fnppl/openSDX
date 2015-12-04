@@ -145,8 +145,10 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
         	BundleInformation info = BundleInformation.make(srd, prd);	        
 	        
         	// language
+        	String lang = null;
 	        if(root.getChild("language")!=null && root.getChildTextNN("language").length()>0) {
-	        	info.main_language(root.getChildText("language").substring(0, 2));
+	        	lang = root.getChildText("language").substring(0, 2);
+	        	info.main_language(lang);
 	        }
 	        
         	// IDs of bundle -> more (?)
@@ -348,13 +350,19 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
         	// add Tags
         	ItemTags tags = ItemTags.make();
         	
+        	HashSet<String> usedGenres = new HashSet<String>();
+        	
         	Vector<Element> genres = album.getChild("genres").getChildren("genre");
         	for (Iterator<Element> itGenres = genres.iterator(); itGenres.hasNext();) {
         		Element genre = itGenres.next();        	
-        		tags.addGenre(gc.convert(genre.getAttribute("code")));
+        		String g = gc.convert(genre.getAttribute("code"));
+        		if(usedGenres.add(g)){
+        			tags.addGenre(gc.convert(genre.getAttribute("code")));
+        		}
         	}
         	
-    		bundle.tags(tags);        	        	
+    		bundle.tags(tags);
+
 //        	
         	Vector<Element> tracks = album.getChild("tracks").getChildren("track");
         	for (Iterator<Element> itTracks = tracks.iterator(); itTracks.hasNext();) {
@@ -369,11 +377,16 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	        	// display_artistname / later set this to track artist if available
 	        	String track_display_artistname = display_artistname;
 	        	
-	        	BundleInformation track_info = BundleInformation.make(srd, prd);		        	
+	        	BundleInformation track_info = BundleInformation.make(srd, prd);	
+	        	
+	        	//lang
+	        	if(lang != null){
+	        		track_info.main_language(lang);
+	        	}
 	        	
 	        	// num
-	        	if(track.getChildTextNN("number").length()>0) {
-	        		track_info.num(Integer.parseInt(track.getChildText("number")));
+	        	if(track.getChildTextNN("track_number").length()>0) {
+	        		track_info.num(Integer.parseInt(track.getChildText("track_number")));
 	        	}
 	        	
 	        	// setnum
@@ -402,7 +415,8 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	        	LicenseSpecifics track_license_specifics = LicenseSpecifics.make();         	      		
 	        	
 	        	// license_basis of Bundle / license_specifics of Bundle / others (?)
-	        	Item item = Item.make(trackids, track_displayname, track_display_artistname, "", "audio", track_display_artistname, track_info, track_license_basis, track_license_specifics);
+	        	//itms has no clean name just the displayname, therefore we put track_displayname for clean name
+	        	Item item = Item.make(trackids, track_displayname, track_displayname, "", "audio", track_display_artistname, track_info, track_license_basis, track_license_specifics);
 	        	
 	        	contributors = track.getChild("artists").getChildren("artist");
 	        	for (Iterator<Element> itContributors = contributors.iterator(); itContributors.hasNext();) {
@@ -427,6 +441,9 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	        			else if(role.equals("producer")) {
 	        				con = Contributor.make(contributor.getChildTextNN("artist_name"), Contributor.TYPE_PRODUCER, IDs.make());	
 	        			} 
+	        			else if(role.equals("lyricist")) {
+	        				con = Contributor.make(contributor.getChildTextNN("artist_name"), Contributor.TYPE_TEXTER, IDs.make());	
+	        			} 
 	        			
 	        			// Maybe more roles? Insert!
 	        			
@@ -436,7 +453,20 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
 	        			con = Contributor.make(contributor.getChildTextNN("name"), Contributor.TYPE_PERFORMER, IDs.make());
 	        			item.addContributor(con);
 	        		}
-	        	}	        
+	        	}	
+	        	
+	        	//Cline Pline from album on item.
+	         	if(copyright.length()>0) {
+		         		con = Contributor.make(copyright.substring(5), Contributor.TYPE_COPYRIGHT, IDs.make());
+		         		con.year(copyright.substring(0, 4));
+		         		item.addContributor(con);  
+	         	}
+	         	
+	         	if(production.length()>0) {
+		         		con = Contributor.make(production.substring(5), Contributor.TYPE_PRODUCTION, IDs.make());
+		         		con.year(production.substring(0, 4));
+		         		item.addContributor(con);  
+	         	} 
 	        	
 	        	// Check if track territory equal to those on bundle level
 	        	if(forceImport){
@@ -463,10 +493,14 @@ public class PieToOpenSDXImporter extends OpenSDXImporterBase {
             	// add Tags
             	ItemTags track_tags = ItemTags.make();   	
             	
+            	usedGenres.clear();
             	Vector<Element> track_genres = track.getChild("genres").getChildren("genre");
             	for (Iterator<Element> itTrackGenres = track_genres.iterator(); itTrackGenres.hasNext();) {
             		Element genre = itTrackGenres.next();        	
-            		tags.addGenre(gc.convert(genre.getAttribute("code")));
+            		String g = gc.convert(genre.getAttribute("code"));
+            		if(usedGenres.add(g)){
+            			track_tags.addGenre(g);
+            		}
             	}          	
             	
             	item.tags(track_tags);	        	
