@@ -106,21 +106,44 @@
   </Europe>
   <Americas name="Americas" groupid="19">
     <Northern_America name="Northern America" groupid="21">
-      <BM name="Bermuda" />
-      <CA name="Canada" />
-      <GL name="Greenland" />
-      <PM name="Saint Pierre and Miquelon" />
-      <US name="United States of America" />
-    </Northern_America>
-    <Central_America name="Central America" groupid="13">
+      <AI name="Anguilla" />
+      <AG name="Antigua and Barbuda" />
+      <AW name="Aruba" />
+      <BS name="Bahamas" />
+      <BB name="Barbados" />
       <BZ name="Belize" />
+      <BM name="Bermuda" />
+      <VG name="British Virgin Islands" />
+      <CA name="Canada" />
+      <KY name="Cayman Islands" />
       <CR name="Costa Rica" />
+      <CU name="Cuba" />
+      <DM name="Dominica" />
+      <DO name="Dominican Republic" />
       <SV name="El Salvador" />
+      <GL name="Greenland" />
+      <GD name="Grenada" />
+      <GP name="Guadeloupe" />
       <GT name="Guatemala" />
+      <HT name="Haiti" />
       <HN name="Honduras" />
+      <JM name="Jamaica" />
+      <MQ name="Martinique" />
       <MX name="Mexico" />
+      <MS name="Montserrat" />
       <NI name="Nicaragua" />
       <PA name="Panama" />
+      <PR name="Puerto Rico" />
+      <KN name="Saint Kitts and Nevis" />
+      <LC name="Saint Lucia" />
+      <PM name="Saint Pierre and Miquelon" />
+      <VC name="Saint Vincent and the Grenadines" />
+      <TT name="Trinidad and Tobago" />
+      <TC name="Turks and Caicos Islands" />
+      <US name="United States of America" />
+      <VI name="United States Virgin Islands" />
+    </Northern_America>
+    <Central_America name="Central America" groupid="13">
     </Central_America>
     <South_America name="South America" groupid="5">
       <AR name="Argentina" />
@@ -139,30 +162,7 @@
       <VE name="Venezuela" />
     </South_America>
     <Caribbean name="Caribbean" groupid="29">
-      <AI name="Anguilla" />
-      <AG name="Antigua and Barbuda" />
-      <AW name="Aruba" />
-      <BS name="Bahamas" />
-      <BB name="Barbados" />
-      <KY name="Cayman Islands" />
-      <CU name="Cuba" />
-      <DM name="Dominica" />
-      <DO name="Dominican Republic" />
-      <GD name="Grenada" />
-      <GP name="Guadeloupe" />
-      <HT name="Haiti" />
-      <JM name="Jamaica" />
-      <MQ name="Martinique" />
-      <MS name="Montserrat" />
       <AN name="Netherlands Antilles" />
-      <PR name="Puerto Rico" />
-      <KN name="Saint Kitts and Nevis" />
-      <LC name="Saint Lucia" />
-      <VC name="Saint Vincent and the Grenadines" />
-      <TT name="Trinidad and Tobago" />
-      <TC name="Turks and Caicos Islands" />
-      <VG name="British Virgin Islands" />
-      <VI name="United States Virgin Islands" />
     </Caribbean>
   </Americas>
   <Asia name="Asia" groupid="142">
