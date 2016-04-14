@@ -62,12 +62,16 @@
       <CH name="Switzerland" />
     </Western_Europe>
     <Northern_Europe name="Northern Europe" groupid="154">
+      <AX name="Aland Islands" />
       <DK name="Denmark" />
       <EE name="Estonia" />
       <FO name="Faeroe Islands" />
       <FI name="Finland" />
+      <GG name="Guernsey" />
       <IS name="Iceland" />
       <IE name="Ireland" />
+      <IM name="Isle of Man" />
+      <JE name="Jersey" />
       <LV name="Latvia" />
       <LT name="Lithuania" />
       <NO name="Norway" />
@@ -85,8 +89,10 @@
       <VA name="Holy See" />
       <IT name="Italy" />
       <MT name="Malta" />
+      <ME name="Montenegro" />
       <PT name="Portugal" />
       <SM name="San Marino" />
+      <RS name="Serbia" />
       <SI name="Slovenia" />
       <ES name="Spain" />
       <MK name="The former Yugoslav Republic of Macedonia" />
@@ -144,9 +150,11 @@
       <AW name="Aruba" />
       <BS name="Bahamas" />
       <BB name="Barbados" />
+      <BQ name="Bonaire, Sint Eustatius and Saba " />
       <VG name="British Virgin Islands" />
       <KY name="Cayman Islands" />
       <CU name="Cuba" />
+      <CW name="Curacao" />
       <DM name="Dominica" />
       <DO name="Dominican Republic" />
       <GD name="Grenada" />
@@ -157,9 +165,12 @@
       <MS name="Montserrat" />
       <AN name="Netherlands Antilles" />
       <PR name="Puerto Rico" />
+      <BL name="Saint Barthelemy" />
       <KN name="Saint Kitts and Nevis" />
       <LC name="Saint Lucia" />
+      <MF name="Saint Martin (French part)" />
       <VC name="Saint Vincent and the Grenadines" />
+      <SX name="Sint Maarten (Dutch part)" />
       <TT name="Trinidad and Tobago" />
       <TC name="Turks and Caicos Islands" />
       <VI name="United States Virgin Islands" />
@@ -181,15 +192,10 @@
       <BT name="Bhutan" />
       <IN name="India" />
       <IR name="Iran (Islamic Republic of)" />
-      <KZ name="Kazakhstan" />
-      <KG name="Kyrgyzstan" />
       <MV name="Maldives" />
       <NP name="Nepal" />
       <PK name="Pakistan" />
       <LK name="Sri Lanka" />
-      <TJ name="Tajikistan" />
-      <TM name="Turkmenistan" />
-      <UZ name="Uzbekistan" />
     </Southern_Asia>
     <South-Eastern_Asia name="South-Eastern Asia" groupid="35">
       <BN name="Brunei Darussalam" />
@@ -197,9 +203,11 @@
       <ID name="Indonesia" />
       <LA name="Lao People's Democratic Republic" />
       <MY name="Malaysia" />
+      <MM name="Myanmar" />
       <PH name="Philippines" />
       <SG name="Singapore" />
       <TH name="Thailand" />
+      <TL name="Timor-Leste" />
       <VN name="Viet Nam" />
     </South-Eastern_Asia>
     <Western_Asia name="Western Asia" groupid="145">
@@ -216,10 +224,19 @@
       <OM name="Oman" />
       <QA name="Qatar" />
       <SA name="Saudi Arabia" />
+      <PS name="State of Palestine" />
       <SY name="Syrian Arab Republic" />
+      <TR name="Turkey" />
       <AE name="United Arab Emirates" />
       <YE name="Yemen" />
     </Western_Asia>
+    <Central_Asia name="Central Asia" groupid="143">
+      <KZ name="Kazakhstan" />
+      <KG name="Kyrgyzstan" />
+      <TJ name="Tajikistan" />
+      <TM name="Turkmenistan" />
+      <UZ name="Uzbekistan" />
+    </Central_Asia>
   </Asia>
   <Africa name="Africa" groupid="2">
     <Eastern_Africa name="Eastern Africa" groupid="14">
@@ -238,8 +255,9 @@
       <RW name="Rwanda" />
       <SC name="Seychelles" />
       <SO name="Somalia" />
-      <TZ name="United Republic of Tanzania" />
+      <SS name="South Sudan" />
       <UG name="Uganda" />
+      <TZ name="United Republic of Tanzania" />
       <ZM name="Zambia" />
       <ZW name="Zimbabwe" />
     </Eastern_Africa>
@@ -248,8 +266,8 @@
       <CM name="Cameroon" />
       <CF name="Central African Republic" />
       <TD name="Chad" />
-      <CD name="Democratic Republic of the Congo" />
       <CG name="Congo" />
+      <CD name="Democratic Republic of the Congo" />
       <GQ name="Equatorial Guinea" />
       <GA name="Gabon" />
       <ST name="Sao Tome and Principe" />
@@ -284,9 +302,9 @@
       <MR name="Mauritania" />
       <NE name="Niger" />
       <NG name="Nigeria" />
+      <SH name="Saint Helena" />
       <SN name="Senegal" />
       <SL name="Sierra Leone" />
-      <SH name="Saint Helena" />
       <TG name="Togo" />
     </Western_Africa>
   </Africa>
@@ -305,6 +323,7 @@
     </Melanesia>
     <Micronesia name="Micronesia" groupid="57">
       <GU name="Guam" />
+      <KI name="Kiribati" />
       <MH name="Marshall Islands" />
       <FM name="Micronesia (Federated States of)" />
       <NR name="Nauru" />
