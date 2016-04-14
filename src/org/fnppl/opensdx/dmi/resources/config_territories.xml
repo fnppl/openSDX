@@ -51,15 +51,15 @@
 <WW name="world wide">
   <Europe name="Europe" groupid="150">
     <Western_Europe name="Western Europe" groupid="155">
-      <DE name="Germany" />
-      <FR name="France" />
       <AT name="Austria" />
-      <CH name="Switzerland" />
       <BE name="Belgium" />
+      <FR name="France" />
+      <DE name="Germany" />
       <LI name="Liechtenstein" />
       <LU name="Luxembourg" />
       <MC name="Monaco" />
       <NL name="Netherlands" />
+      <CH name="Switzerland" />
     </Western_Europe>
     <Northern_Europe name="Northern Europe" groupid="154">
       <DK name="Denmark" />
@@ -68,16 +68,14 @@
       <FI name="Finland" />
       <IS name="Iceland" />
       <IE name="Ireland" />
-      <GB name="United Kingdom of Great Britain and Northern Ireland" />
-      <SE name="Sweden" />
       <LV name="Latvia" />
       <LT name="Lithuania" />
       <NO name="Norway" />
       <SJ name="Svalbard and Jan Mayen Islands" />
+      <SE name="Sweden" />
+      <GB name="United Kingdom of Great Britain and Northern Ireland" />
     </Northern_Europe>
     <Southern_Europe name="Southern Europe" groupid="39">
-      <ES name="Spain" />
-      <IT name="Italy" />
       <AL name="Albania" />
       <AD name="Andorra" />
       <BA name="Bosnia and Herzegovina" />
@@ -85,19 +83,21 @@
       <GI name="Gibraltar" />
       <GR name="Greece" />
       <VA name="Holy See" />
-      <MK name="The former Yugoslav Republic of Macedonia" />
+      <IT name="Italy" />
       <MT name="Malta" />
       <PT name="Portugal" />
       <SM name="San Marino" />
       <SI name="Slovenia" />
+      <ES name="Spain" />
+      <MK name="The former Yugoslav Republic of Macedonia" />
     </Southern_Europe>
     <Eastern_Europe name="Eastern Europe" groupid="151">
       <BY name="Belarus" />
       <BG name="Bulgaria" />
       <CZ name="Czech Republic" />
       <HU name="Hungary" />
-      <MD name="Republic of Moldova" />
       <PL name="Poland" />
+      <MD name="Republic of Moldova" />
       <RO name="Romania" />
       <RU name="Russian Federation" />
       <SK name="Slovakia" />
@@ -107,7 +107,7 @@
   <Americas name="Americas" groupid="19">
     <Northern_America name="Northern America" groupid="21">
       <BM name="Bermuda" />
-      <CA name="Canada" />
+	  <CA name="Canada" />      
       <GL name="Greenland" />
       <PM name="Saint Pierre and Miquelon" />
       <US name="United States of America" />
@@ -144,6 +144,7 @@
       <AW name="Aruba" />
       <BS name="Bahamas" />
       <BB name="Barbados" />
+      <VG name="British Virgin Islands" />
       <KY name="Cayman Islands" />
       <CU name="Cuba" />
       <DM name="Dominica" />
@@ -161,19 +162,18 @@
       <VC name="Saint Vincent and the Grenadines" />
       <TT name="Trinidad and Tobago" />
       <TC name="Turks and Caicos Islands" />
-      <VG name="British Virgin Islands" />
       <VI name="United States Virgin Islands" />
     </Caribbean>
   </Americas>
   <Asia name="Asia" groupid="142">
     <Eastern_Asia name="Eastern Asia" groupid="30">
-      <JP name="Japan" />
       <CN name="China" />
-      <HK name="Hong Kong Special Administrative Region of China" />
       <KP name="Democratic People's Republic of Korea" />
-      <KR name="Republic of Korea" />
+      <HK name="Hong Kong Special Administrative Region of China" />
+      <JP name="Japan" />
       <MO name="Macao Special Administrative Region of China" />
       <MN name="Mongolia" />
+      <KR name="Republic of Korea" />
     </Eastern_Asia>
     <Southern_Asia name="Southern Asia" groupid="62">
       <AF name="Afghanistan" />
@@ -223,7 +223,6 @@
   </Asia>
   <Africa name="Africa" groupid="2">
     <Eastern_Africa name="Eastern Africa" groupid="14">
-      <ZW name="Zimbabwe" />
       <BI name="Burundi" />
       <KM name="Comoros" />
       <DJ name="Djibouti" />
@@ -242,6 +241,7 @@
       <TZ name="United Republic of Tanzania" />
       <UG name="Uganda" />
       <ZM name="Zambia" />
+      <ZW name="Zimbabwe" />
     </Eastern_Africa>
     <Middle_Africa name="Middle Africa" groupid="17">
       <AO name="Angola" />
@@ -317,11 +317,11 @@
       <PF name="French Polynesia" />
       <NU name="Niue" />
       <PN name="Pitcairn" />
+      <WS name="Samoa" />
       <TK name="Tokelau" />
       <TO name="Tonga" />
       <TV name="Tuvalu" />
       <WF name="Wallis and Futuna Islands" />
-      <WS name="Samoa" />
     </Polynesia>
   </Oceania>
 </WW>
