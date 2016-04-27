@@ -1173,6 +1173,7 @@
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="label"/>
             <xsd:enumeration value="performer"/>
+            <xsd:enumeration value="artist"/>
             <xsd:enumeration value="texter"/>
             <xsd:enumeration value="editor"/>
             <xsd:enumeration value="conductor"/>

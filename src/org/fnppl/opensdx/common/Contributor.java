@@ -60,6 +60,7 @@ public class Contributor extends BusinessObject {
 
 	public static String TYPE_LABEL = "label";
 	public static String TYPE_PERFORMER = "performer";
+	public static String TYPE_ARTIST = "artist";
 	public static String TYPE_TEXTER = "texter";
 	public static String TYPE_EDITOR = "editor";
 	public static String TYPE_CONDUCTOR = "conductor";
@@ -95,6 +96,7 @@ public class Contributor extends BusinessObject {
 	static {
 		TYPES.add(TYPE_LABEL);
 		TYPES.add(TYPE_PERFORMER);
+		TYPES.add(TYPE_ARTIST);
 		TYPES.add(TYPE_TEXTER);
 		TYPES.add(TYPE_EDITOR);
 		TYPES.add(TYPE_CONDUCTOR);

@@ -850,7 +850,7 @@
                     <xsd:element name="pass" type="notemptystring" maxOccurs="1" minOccurs="0"/>
                     <xsd:element name="expiresdatetime" type="datetimeGMT"/>
                 </xsd:all>
-            </xsd:extension>
+           </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:complexType name="http_addheader">
@@ -1102,6 +1102,7 @@
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="label"/>
             <xsd:enumeration value="performer"/>
+            <xsd:enumeration value="artist"/>
             <xsd:enumeration value="texter"/>
             <xsd:enumeration value="editor"/>
             <xsd:enumeration value="conductor"/>
