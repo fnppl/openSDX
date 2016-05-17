@@ -90,6 +90,8 @@ public class Contributor extends BusinessObject {
 	public static String TYPE_CHOIR = "choir";
 	public static String TYPE_ACCOMPANIST = "accompanist";
 	public static String TYPE_SOLOIST = "soloist";
+	public static String TYPE_CURATOR = "curator";
+
 	
 	public static final Vector<String> TYPES = new Vector<String>();
 	
@@ -125,6 +127,7 @@ public class Contributor extends BusinessObject {
 		TYPES.add(TYPE_CHOIR);
 		TYPES.add(TYPE_ACCOMPANIST);
 		TYPES.add(TYPE_SOLOIST);
+		TYPES.add(TYPE_CURATOR);
 	}
 	
 	private BusinessStringItem name;	//MUST

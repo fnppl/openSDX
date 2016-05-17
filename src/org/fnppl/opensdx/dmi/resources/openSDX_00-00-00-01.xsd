@@ -1182,6 +1182,7 @@
             <xsd:enumeration value="choir"/>
             <xsd:enumeration value="accompanist"/>
             <xsd:enumeration value="soloist"/>
+            <xsd:enumeration value="curator"/>
             <xsd:enumeration value="display_artist"/>
             <xsd:enumeration value="singer"/>
             <xsd:enumeration value="composer"/>
