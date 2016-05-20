@@ -306,6 +306,12 @@ public class FeedValidator {
 			message = "Error validating file." + ioe;
 			// throw new Exception("Error validating file.", ioe);
 		}  	
+    	catch (Exception ioe)
+		{
+    		ioe.printStackTrace();
+			message = "FeedValidator::validateXmlFile::Error validating file." + ioe;
+			// throw new Exception("Error validating file.", ioe);
+		}
     	
     	return message;
 	}

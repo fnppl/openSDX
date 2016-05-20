@@ -59,7 +59,6 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.bouncycastle.util.test.Test;
 import org.fnppl.opensdx.common.BundleInformation;
 import org.fnppl.opensdx.common.FeedInfo;
 import org.fnppl.opensdx.dmi.FeedGui;
