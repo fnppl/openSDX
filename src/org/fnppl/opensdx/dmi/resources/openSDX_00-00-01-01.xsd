@@ -506,6 +506,7 @@
             <xsd:element name="genres" type="genres" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="bundle_only" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="explicit_lyrics" type="explicitLyrics" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="clean_lyrics" type="explicitLyrics" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="recommended_age_from" type="xsd:integer" maxOccurs="1" minOccurs="0"/> <!-- SHOULD -->
             <xsd:element name="live" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="accoustic" type="xsd:boolean" maxOccurs="1" minOccurs="0"/>
