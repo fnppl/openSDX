@@ -83,9 +83,15 @@ public class FeedValidator {
 	}
 	
 	public FeedValidator() {
+		System.out.println("FeedValidator::constructor");
 	}
 	
 	public static void initXSDs() {
+		System.out.println("FeedValidator::initXSDs");
+		if(xsdDir != null) {
+			System.out.println("FeedValidator::initXSDs::already inited: "+xsdDir.getAbsolutePath());
+			return;
+		}
 		try {
 			File f = new File(System.getProperty("user.home"), "openSDX");
 			f = new File(f, "xsd");
