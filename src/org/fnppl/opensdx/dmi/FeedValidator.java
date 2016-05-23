@@ -83,9 +83,15 @@ public class FeedValidator {
 	}
 	
 	public FeedValidator() {
+		System.out.println("FeedValidator::constructor");
 	}
 	
 	public static void initXSDs() {
+		System.out.println("FeedValidator::initXSDs");
+		if(xsdDir != null) {
+			System.out.println("FeedValidator::initXSDs::already inited: "+xsdDir.getAbsolutePath());
+			return;
+		}
 		try {
 			File f = new File(System.getProperty("user.home"), "openSDX");
 			f = new File(f, "xsd");
@@ -111,19 +117,19 @@ public class FeedValidator {
 			}
 			xsdDir = f;
 
-//			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1);
+			System.out.println("FeedValidator::initXSDs::Getting resources/"+RESSOURCE_OSDX_0_0_1);
 			SecurityHelper.copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1), xsdDir, RESSOURCE_OSDX_0_0_1);
 			
-//			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_COUNTRIES);
+			System.out.println("FeedValidator::initXSDs::Getting resources/"+RESSOURCE_OSDX_0_0_1_COUNTRIES);
 			SecurityHelper.copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_COUNTRIES), xsdDir, RESSOURCE_OSDX_0_0_1_COUNTRIES);
 			
-//			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_LANGUAGES);
+			System.out.println("FeedValidator::initXSDs::Getting resources/"+RESSOURCE_OSDX_0_0_1_LANGUAGES);
 			SecurityHelper.copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_LANGUAGES), xsdDir, RESSOURCE_OSDX_0_0_1_LANGUAGES);
 			
-//			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_GENRES);
+			System.out.println("FeedValidator::initXSDs::Getting resources/"+RESSOURCE_OSDX_0_0_1_GENRES);
 			SecurityHelper.copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_GENRES), xsdDir, RESSOURCE_OSDX_0_0_1_GENRES);
 
-//			System.out.println("Getting resources/"+RESSOURCE_OSDX_0_0_1_TEMPOS);
+			System.out.println("FeedValidator::initXSDs::Getting resources/"+RESSOURCE_OSDX_0_0_1_TEMPOS);
 			SecurityHelper.copyResource(FeedValidator.class.getResourceAsStream("resources/"+RESSOURCE_OSDX_0_0_1_TEMPOS), xsdDir, RESSOURCE_OSDX_0_0_1_TEMPOS);
 						
 		} catch(Exception ex) {
