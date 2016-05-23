@@ -56,6 +56,7 @@ public class ItemTags extends BusinessObject {
 	private BusinessCollection<BusinessStringItem> genres;	//COULD
 	private BusinessBooleanItem bundle_only;				//COULD
 	private BusinessStringItem explicit_lyrics;				//COULD
+	private BusinessStringItem clean_lyrics;				//COULD
 	private BusinessIntegerItem recommended_age_from;		//COULD
 	private BusinessBooleanItem live;						//COULD
 	private BusinessBooleanItem accoustic;					//COULD
@@ -67,6 +68,7 @@ public class ItemTags extends BusinessObject {
 		tags.genres = null;
 		tags.bundle_only = null;
 		tags.explicit_lyrics = null;
+		tags.clean_lyrics = null;
 		tags.recommended_age_from = null;
 		tags.live = null;
 		tags.accoustic = null;
@@ -99,6 +101,7 @@ public class ItemTags extends BusinessObject {
 		
 		tags.bundle_only = BusinessBooleanItem.fromBusinessObject(bo, "bundle_only");
 		tags.explicit_lyrics = BusinessStringItem.fromBusinessObject(bo, "explicit_lyrics");
+		tags.clean_lyrics = BusinessStringItem.fromBusinessObject(bo, "clean_lyrics");
 		tags.recommended_age_from = BusinessIntegerItem.fromBusinessObject(bo, "recommended_age_from");
 		tags.live = BusinessBooleanItem.fromBusinessObject(bo, "live");
 		tags.accoustic = BusinessBooleanItem.fromBusinessObject(bo, "accoustic");
@@ -180,6 +183,20 @@ public class ItemTags extends BusinessObject {
 		return this;
 	}
 	
+	public ItemTags clean_lyrics(String clean_lyrics) {
+		if (clean_lyrics==null) {
+			this.clean_lyrics = null;
+		} else {
+			this.clean_lyrics = new BusinessStringItem("clean_lyrics", clean_lyrics);
+		}
+		return this;
+	}
+	
+	public ItemTags clean_lyrics(boolean clean_lyrics) {
+		this.clean_lyrics = new BusinessStringItem("clean_lyrics", (clean_lyrics?"true":"false"));
+		return this;
+	}
+	
 	public ItemTags recommended_age_from(int recommended_age_from) {
 		this.recommended_age_from = new BusinessIntegerItem("recommended_age_from", recommended_age_from);
 		return this;
@@ -224,6 +241,17 @@ public class ItemTags extends BusinessObject {
 	public boolean hasExplicit_lyrics() {
 		return (explicit_lyrics != null);
 	}
+	
+	public boolean isClean_lyrics() {
+		if (clean_lyrics==null) return false;
+		String e = clean_lyrics.getString();
+		if (e.equalsIgnoreCase("true")) return true;
+		return false;
+	}
+	
+	public boolean hasClean_lyrics() {
+		return (clean_lyrics != null);
+	}
 		
 	public int getRecommended_age_from() {
 		if (recommended_age_from==null) return -1;
@@ -237,6 +265,11 @@ public class ItemTags extends BusinessObject {
 	public String getExplicit_lyrics() {
 		if (explicit_lyrics==null) return null;
 		return explicit_lyrics.getString();
+	}
+	
+	public String getClean_lyrics() {
+		if (clean_lyrics==null) return null;
+		return clean_lyrics.getString();
 	}
 	
 	public boolean isLive() {
@@ -282,7 +315,8 @@ public class ItemTags extends BusinessObject {
 	public Element toElement() {
 		if (genres == null
 		   && bundle_only == null
-		   && explicit_lyrics == null) {
+		   && explicit_lyrics == null
+		   && clean_lyrics == null) {
 			return null;
 		}
 		return super.toElement();
