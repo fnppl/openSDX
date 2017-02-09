@@ -173,7 +173,11 @@
             <xsd:element name="licensor" type="notemptystring" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="licensee" type="notemptystring" maxOccurs="1" minOccurs="0"/>
             <xsd:element name="gvl" type="gvl" maxOccurs="1" minOccurs="0"/>
-            <xsd:element name="amg" type="amg" maxOccurs="1" minOccurs="0"/>
+            <xsd:element name="apple" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+	    <xsd:element name="spotify" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+	    <xsd:element name="deezer" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+	    <xsd:element name="tidal" type="notemptystring" maxOccurs="1" minOccurs="0"/>
+	    <xsd:element name="amg" type="amg" maxOccurs="1" minOccurs="0"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="www">
