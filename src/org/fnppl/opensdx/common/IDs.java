@@ -1,6 +1,6 @@
 package org.fnppl.opensdx.common;
 
-import java.util.*;
+import java.util.HashSet;
 
 /*
  * Copyright (C) 2010-2015 
@@ -70,6 +70,10 @@ public class IDs extends BusinessObject {
 	private BusinessStringItem licensee;			//COULD
 	private BusinessStringItem gvl;					//COULD
 	private BusinessStringItem amg;					//COULD
+	private BusinessStringItem apple;				//COULD
+	private BusinessStringItem spotify;				//COULD
+	private BusinessStringItem deezer;				//COULD
+	private BusinessStringItem tidal;				//COULD
 
 
 	public static IDs make() {
@@ -87,6 +91,10 @@ public class IDs extends BusinessObject {
 		ids.licensee = null;
 		ids.gvl = null;
 		ids.amg = null;
+		ids.apple = null;
+		ids.spotify = null;
+		ids.deezer = null;
+		ids.tidal = null;
 		return ids;
 	}
 
@@ -112,6 +120,10 @@ public class IDs extends BusinessObject {
 		ids.licensee = BusinessStringItem.fromBusinessObject(bo, "licensee");
 		ids.gvl = BusinessStringItem.fromBusinessObject(bo, "gvl");
 		ids.amg = BusinessStringItem.fromBusinessObject(bo, "amg");
+		ids.apple = BusinessStringItem.fromBusinessObject(bo, "apple");
+		ids.spotify = BusinessStringItem.fromBusinessObject(bo, "spotify");
+		ids.deezer = BusinessStringItem.fromBusinessObject(bo, "deezer");
+		ids.tidal = BusinessStringItem.fromBusinessObject(bo, "tidal");
 		
 		
 		return ids;
@@ -195,6 +207,38 @@ public class IDs extends BusinessObject {
 		return this;
 	}
 
+	public IDs apple(String apple) {
+		if (apple == null)
+			this.apple = null;
+		else
+			this.apple = new BusinessStringItem("apple", apple);
+		return this;
+	}
+
+	public IDs spotify(String spotify) {
+		if (spotify == null)
+			this.spotify = null;
+		else
+			this.spotify = new BusinessStringItem("spotify", spotify);
+		return this;
+	}
+
+	public IDs deezer(String deezer) {
+		if (deezer == null)
+			this.deezer = null;
+		else
+			this.deezer = new BusinessStringItem("deezer", deezer);
+		return this;
+	}
+
+	public IDs tidal(String tidal) {
+		if (tidal == null)
+			this.tidal = null;
+		else
+			this.tidal = new BusinessStringItem("tidal", tidal);
+		return this;
+	}
+
 	public String getGrid() {
 		if (grid==null) return null;
 		return grid.getString();
@@ -260,6 +304,30 @@ public class IDs extends BusinessObject {
 		return amg.getString();
 	}
 	
+	public String getApple() {
+		if (apple == null)
+			return null;
+		return apple.getString();
+	}
+
+	public String getSpotify() {
+		if (spotify == null)
+			return null;
+		return spotify.getString();
+	}
+
+	public String getDeezer() {
+		if (deezer == null)
+			return null;
+		return deezer.getString();
+	}
+
+	public String getTidal() {
+		if (tidal == null)
+			return null;
+		return tidal.getString();
+	}
+
 	public String getKeyname() {
 		return KEY_NAME;
 	}
@@ -326,6 +394,10 @@ public class IDs extends BusinessObject {
 			relevant.add("licensor");
 			relevant.add("licensee");
 			relevant.add("amg");
+			relevant.add("apple");
+			relevant.add("spotify");
+			relevant.add("deezer");
+			relevant.add("tidal");
 			return relevant;
 		}
 		
@@ -339,6 +411,10 @@ public class IDs extends BusinessObject {
 			relevant.add("licensor");
 			relevant.add("licensee");
 			relevant.add("amg");
+			relevant.add("apple");
+			relevant.add("spotify");
+			relevant.add("deezer");
+			relevant.add("tidal");
 			return relevant;
 		}
 		
